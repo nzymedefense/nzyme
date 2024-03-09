@@ -170,3 +170,29 @@ i.additional-context-available {
 div.rendered-markdown pre {
     background-color: #40435e;
 }
+
+button.card-title-option {
+    color: #fff;
+}
+
+button.card-title-option:hover {
+    color: #71769F;
+}
+
+button.accordion-button:not(.collapsed) {
+    background-color: #40435e;
+    color: #fff;
+}
+
+button.accordion-button {
+    background-color: #313349;
+    color: #fff;
+}
+
+div.accordion-item h2 {
+    background-color: #12131c;
+}
+
+div.accordion-item {
+    background-color: #2B2D42;
+}

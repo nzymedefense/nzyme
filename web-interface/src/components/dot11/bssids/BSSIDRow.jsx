@@ -16,8 +16,7 @@ function BSSIDRow(props) {
   const tapContext = useContext(TapContext);
 
   const bssid = props.bssid;
-  const minutes = props.minutes;
-  const isAutoRefresh = props.isAutoRefresh;
+  const timeRange = props.timeRange;
 
   const [ssids, setSSIDs] = useState(null);
   const [ssidsLoading, setSSIDsLoading] = useState(false);
@@ -34,7 +33,7 @@ function BSSIDRow(props) {
 
     if (ssids === null) {
       setSSIDsLoading(true);
-      dot11Service.findSSIDsOfBSSID(bssid, minutes, selectedTaps, function(ssids) {
+      dot11Service.findSSIDsOfBSSID(bssid, timeRange, selectedTaps, function(ssids) {
         setSSIDs(ssids);
         setSSIDsLoading(false);
       });
@@ -59,7 +58,7 @@ function BSSIDRow(props) {
           <td><BSSIDSecurityProtocols bssid={bssid} /></td>
           <td>{bssid.bssid.oui ? bssid.bssid.oui : "Unknown"}</td>
           <td title={moment(bssid.last_seen).format()}>
-            {isAutoRefresh ? moment(bssid.last_seen).fromNow() : "n/a"}
+            {moment(bssid.last_seen).fromNow()}
           </td>
         </tr>
         <BSSIDDetailsRows bssid={bssid.bssid} ssids={ssids} loading={ssidsLoading} />

@@ -3,17 +3,12 @@ import Dot11Service from "../../../services/Dot11Service";
 import {TapContext} from "../../../App";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import BSSIDsTable from "./BSSIDsTable";
-import AutoRefreshSelector from "../../misc/AutoRefreshSelector";
 import BSSIDAndSSIDChart from "./BSSIDAndSSIDChart";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
+import CardTitleWithControls from "../../shared/CardTitleWithControls";
+import {Presets} from "../../shared/timerange/TimeRange";
 
 const dot11Service = new Dot11Service();
-const MINUTES = 15;
-
-const loadData = function(taps, setBSSIDs, setLastUpdated) {
-  dot11Service.findAllBSSIDs(MINUTES, taps, setBSSIDs);
-  setLastUpdated(new Date());
-}
 
 function BSSIDsPage() {
 
@@ -22,21 +17,15 @@ function BSSIDsPage() {
 
   const [bssids, setBSSIDs] = useState(null);
 
-  const [isAutoRefresh, setIsAutoRefresh] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState(null);
+  const [bssidTimeRange, setBssidTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+
+  const [bssidChartTimeRange, setBssidChartTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [ssidChartTimeRange, setSsidChartTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   useEffect(() => {
     setBSSIDs(null);
-    loadData(selectedTaps, setBSSIDs, setLastUpdated);
-
-    const timer = setInterval(() => {
-      if (isAutoRefresh) {
-        loadData(selectedTaps, setBSSIDs, setLastUpdated);
-      }
-    }, 15000);
-
-    return () => clearInterval(timer);
-  }, [isAutoRefresh, selectedTaps])
+    dot11Service.findAllBSSIDs(bssidTimeRange, selectedTaps, setBSSIDs);
+  }, [selectedTaps, bssidTimeRange])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -46,8 +35,12 @@ function BSSIDsPage() {
     }
   }, [tapContext]);
 
-  if (!bssids) {
-    return <LoadingSpinner />
+  const table = () => {
+    if (!bssids) {
+      return <LoadingSpinner />
+    }
+
+    return <BSSIDsTable bssids={bssids} timeRange={bssidTimeRange} />
   }
 
   return (
@@ -63,18 +56,22 @@ function BSSIDsPage() {
                 <div className="col-md-6">
                   <div className="card">
                     <div className="card-body">
-                      <h3 className="mb-0">Active BSSIDs</h3>
+                      <CardTitleWithControls title="Active BSSIDs" slim={true}
+                                             timeRange={bssidChartTimeRange}
+                                             setTimeRange={setBssidChartTimeRange} />
 
-                      <BSSIDAndSSIDChart parameter="bssid_count" />
+                      <BSSIDAndSSIDChart parameter="bssid_count" timeRange={bssidChartTimeRange} />
                     </div>
                   </div>
                 </div>
                 <div className="col-md-6">
                   <div className="card">
                     <div className="card-body">
-                      <h3 className="mb-0">Active SSIDs</h3>
+                      <CardTitleWithControls title="Active SSIDs" slim={true}
+                                             timeRange={ssidChartTimeRange}
+                                             setTimeRange={setSsidChartTimeRange} />
 
-                      <BSSIDAndSSIDChart parameter="ssid_count" />
+                      <BSSIDAndSSIDChart parameter="ssid_count" timeRange={ssidChartTimeRange} />
                     </div>
                   </div>
                 </div>
@@ -86,22 +83,16 @@ function BSSIDsPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-body">
-                  <h3 style={{display: "inline-block"}}>
-                    Access Points <small>Last 15 minutes</small>
-                  </h3>
-
-                  <div className="float-end">
-                    <AutoRefreshSelector isAutoRefresh={isAutoRefresh}
-                                         setIsAutoRefresh={setIsAutoRefresh}
-                                         lastUpdated={lastUpdated} />
-                  </div>
+                  <CardTitleWithControls title="Access Points / BSSIDs"
+                                         timeRange={bssidTimeRange}
+                                         setTimeRange={setBssidTimeRange} />
 
                   <p className="text-muted">
                     List of all access points advertised by recorded beacon or probe response frames. Click on a BSSID
                     to open a list of all advertised SSIDs and their respective channels.
                   </p>
 
-                  <BSSIDsTable bssids={bssids} minutes={MINUTES} isAutoRefresh={isAutoRefresh} />
+                  {table()}
                 </div>
               </div>
             </div>

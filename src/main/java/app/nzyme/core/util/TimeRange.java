@@ -9,10 +9,13 @@ public abstract class TimeRange {
     public abstract DateTime from();
     public abstract DateTime to();
 
-    public static TimeRange create(DateTime from, DateTime to) {
+    public abstract boolean isAllTime();
+
+    public static TimeRange create(DateTime from, DateTime to, boolean isAllTime) {
         return builder()
                 .from(from)
                 .to(to)
+                .isAllTime(isAllTime)
                 .build();
     }
 
@@ -25,6 +28,8 @@ public abstract class TimeRange {
         public abstract Builder from(DateTime from);
 
         public abstract Builder to(DateTime to);
+
+        public abstract Builder isAllTime(boolean isAllTime);
 
         public abstract TimeRange build();
     }

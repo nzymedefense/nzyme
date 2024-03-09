@@ -14,7 +14,7 @@ function TapBasedSignalStrengthTable(props) {
   }
 
   return (
-      <table className="table table-sm table-hover table-striped mb-0">
+      <table className="table table-sm table-hover table-striped mb-0 mt-0">
         <thead>
         <tr>
           <th>Tap</th>

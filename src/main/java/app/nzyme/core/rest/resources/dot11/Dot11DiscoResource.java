@@ -24,6 +24,7 @@ import app.nzyme.core.rest.responses.dot11.disco.Dot11DiscoMonitorAnomalyDetails
 import app.nzyme.core.rest.responses.dot11.disco.Dot11DiscoMonitorAnomalyListResponse;
 import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -70,12 +71,13 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
     @Path("/histogram")
     public Response histogram(@Context SecurityContext sc,
                               @QueryParam("disco_type") String type,
-                              @QueryParam("minutes") int minutes,
+                              @QueryParam("time_range") @Valid String timeRangeParameter,
                               @QueryParam("taps") String taps,
                               @QueryParam("bssids") @Nullable List<String> bssids, // or monitoredNetworkId
                               @QueryParam("monitored_network_id") @Nullable UUID monitoredNetworkId) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         Dot11.DiscoType discoType;
         try {
@@ -105,20 +107,9 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                     .collect(Collectors.toList());
         }
 
-        Map<DateTime, DiscoHistogramEntry> histogram = Maps.newHashMap();
-        for (DiscoHistogramEntry h : nzyme.getDot11().getDiscoHistogram(discoType, minutes, tapUuids, selectedBssids)) {
-            histogram.put(h.bucket(), h);
-        }
-
         Map<DateTime, DiscoHistogramValueResponse> response = Maps.newTreeMap();
-        for (int x = minutes; x != 0; x--) {
-            DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
-            DiscoHistogramEntry entry = histogram.get(bucket);
-            if (entry == null) {
-                response.put(bucket, DiscoHistogramValueResponse.create(bucket, 0));
-            } else {
-                response.put(bucket, DiscoHistogramValueResponse.create(entry.bucket(), entry.frameCount()));
-            }
+        for (DiscoHistogramEntry h : nzyme.getDot11().getDiscoHistogram(discoType, timeRange, tapUuids, selectedBssids)) {
+            response.put(h.bucket(), DiscoHistogramValueResponse.create(h.bucket(), h.frameCount()));
         }
 
         return Response.ok(response).build();
@@ -128,13 +119,14 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
     @Path("/lists/{list_type}")
     public Response list(@Context SecurityContext sc,
                          @PathParam("list_type") @NotEmpty String listTypeParam,
-                         @QueryParam("minutes") int minutes,
+                         @QueryParam("time_range") @Valid String timeRangeParameter,
                          @QueryParam("taps") String taps,
                          @QueryParam("monitored_network_id") @Nullable UUID monitoredNetworkId,
                          @QueryParam("bssids") @Nullable String bssidsParam,
                          @QueryParam("limit") int limit,
                          @QueryParam("offset") int offset) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
@@ -180,8 +172,8 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
         switch (listType) {
             case SENDERS:
                 List<TwoColumnTableHistogramValueResponse> sendersValues = Lists.newArrayList();
-                total = nzyme.getDot11().countDiscoTopSenders(minutes, tapUuids, selectedBssids);
-                for (Dot11MacFrameCount s : nzyme.getDot11().getDiscoTopSenders(minutes, limit, offset, tapUuids, selectedBssids)) {
+                total = nzyme.getDot11().countDiscoTopSenders(timeRange, tapUuids, selectedBssids);
+                for (Dot11MacFrameCount s : nzyme.getDot11().getDiscoTopSenders(timeRange, limit, offset, tapUuids, selectedBssids)) {
                     Optional<MacAddressContextEntry> macContext = nzyme.getContextService().findMacAddressContext(
                             s.mac(),
                             authenticatedUser.getOrganizationId(),
@@ -216,8 +208,8 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 return Response.ok(TwoColumnTableHistogramResponse.create(total, sendersValues)).build();
             case RECEIVERS:
                 List<TwoColumnTableHistogramValueResponse> receiversValues = Lists.newArrayList();
-                total = nzyme.getDot11().countDiscoTopReceivers(minutes, tapUuids, selectedBssids);
-                for (Dot11MacFrameCount s : nzyme.getDot11().getDiscoTopReceivers(minutes, limit, offset, tapUuids, selectedBssids)) {
+                total = nzyme.getDot11().countDiscoTopReceivers(timeRange, tapUuids, selectedBssids);
+                for (Dot11MacFrameCount s : nzyme.getDot11().getDiscoTopReceivers(timeRange, limit, offset, tapUuids, selectedBssids)) {
                     Optional<MacAddressContextEntry> macContext = nzyme.getContextService().findMacAddressContext(
                             s.mac(),
                             authenticatedUser.getOrganizationId(),
@@ -252,8 +244,8 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 return Response.ok(TwoColumnTableHistogramResponse.create(total, receiversValues)).build();
             case PAIRS:
                 List<ThreeColumnTableHistogramValueResponse> pairsValues = Lists.newArrayList();
-                total = nzyme.getDot11().countDiscoTopPairs(minutes, tapUuids, selectedBssids);
-                for (BSSIDPairFrameCount s : nzyme.getDot11().getDiscoTopPairs(minutes, limit, offset, tapUuids, selectedBssids)) {
+                total = nzyme.getDot11().countDiscoTopPairs(timeRange, tapUuids, selectedBssids);
+                for (BSSIDPairFrameCount s : nzyme.getDot11().getDiscoTopPairs(timeRange, limit, offset, tapUuids, selectedBssids)) {
                     Optional<MacAddressContextEntry> senderMacContext = nzyme.getContextService().findMacAddressContext(
                             s.sender(),
                             authenticatedUser.getOrganizationId(),

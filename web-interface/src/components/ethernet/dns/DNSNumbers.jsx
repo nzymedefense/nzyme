@@ -1,7 +1,7 @@
 import React from 'react'
 import LoadingSpinner from '../../misc/LoadingSpinner'
-import NumberCard from '../../presentation/NumberCard'
-import ByteSizeCard from '../../presentation/ByteSizeCard'
+import NumberCard from '../../widgets/presentation/NumberCard'
+import ByteSizeCard from '../../widgets/presentation/ByteSizeCard'
 
 function DNSNumbers (props) {
   if (!props.data || !props.data.traffic_summary) {

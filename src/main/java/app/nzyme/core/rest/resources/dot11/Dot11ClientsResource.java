@@ -12,6 +12,7 @@ import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.TapBasedSignalStrengthResponse;
 import app.nzyme.core.rest.responses.dot11.clients.*;
+import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -282,7 +283,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         // Disconnection frames.
         List<DiscoHistogramEntry> discos = nzyme.getDot11().getDiscoHistogram(
                 Dot11.DiscoType.DISCONNECTION,
-                24 * 60,
+                TimeRangeFactory.oneDay(),
                 tapUuids,
                 List.of(c.mac())
         );

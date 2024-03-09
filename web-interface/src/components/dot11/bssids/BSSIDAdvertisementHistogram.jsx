@@ -10,6 +10,7 @@ function BSSIDAdvertisementHistogram(props) {
 
   const bssid = props.bssid;
   const parameter = props.parameter;
+  const timeRange = props.timeRange;
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -17,8 +18,8 @@ function BSSIDAdvertisementHistogram(props) {
   const [histogram, setHistogram] = useState(null);
 
   useEffect(() => {
-    dot11Service.getBSSIDAdvertisementHistogram(bssid,24*60, selectedTaps, setHistogram);
-  }, [bssid, selectedTaps])
+    dot11Service.getBSSIDAdvertisementHistogram(bssid, timeRange, selectedTaps, setHistogram);
+  }, [bssid, timeRange, selectedTaps])
 
   const formatData = function(data) {
     const result = {}

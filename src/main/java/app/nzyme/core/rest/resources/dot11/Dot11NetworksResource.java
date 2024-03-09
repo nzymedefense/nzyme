@@ -13,6 +13,7 @@ import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.UpdateTrackDetectorConfigurationRequest;
 import app.nzyme.core.rest.responses.dot11.*;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -21,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -30,11 +32,9 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Path("/api/dot11/networks")
 @Produces(MediaType.APPLICATION_JSON)
@@ -57,14 +57,15 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     @GET
     @Path("/bssids")
     public Response bssids(@Context SecurityContext sc,
-                           @QueryParam("minutes") int minutes,
+                           @QueryParam("time_range") @Valid String timeRangeParameter,
                            @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         List<BSSIDSummaryDetailsResponse> bssids = Lists.newArrayList();
 
-        for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(minutes, tapUuids)) {
+        for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(timeRange, tapUuids)) {
             Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
                     bssid.bssid(),
                     authenticatedUser.getOrganizationId(),
@@ -168,7 +169,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         List<TapBasedSignalStrengthResponse> signalStrength = Lists.newArrayList();
         for (TapBasedSignalStrengthResult ss : nzyme.getDot11()
-                .findBSSIDSignalStrengthPerTap(bssid.bssid(), TimeRange.create(DateTime.now().minusMinutes(15), DateTime.now()), tapUuids)) {
+                .findBSSIDSignalStrengthPerTap(bssid.bssid(), TimeRange.create(DateTime.now().minusMinutes(15), DateTime.now(), false), tapUuids)) {
             signalStrength.add(TapBasedSignalStrengthResponse.create(ss.tapUuid(), ss.tapName(), ss.signalStrength()));
         }
 
@@ -184,10 +185,11 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     @Path("/bssids/show/{bssid}/signal/waterfall")
     public Response bssidSignalWaterfall(@Context SecurityContext sc,
                                          @PathParam("bssid") String bssid,
-                                         @QueryParam("minutes") int minutes,
+                                         @QueryParam("time_range") @Valid String timeRangeParameter,
                                          @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         if (tapUuids.size() != 1) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -198,7 +200,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         Tap tap = nzyme.getTapManager().findTap(tapUuids.get(0)).get();
 
         List<SignalTrackHistogramEntry> signals = nzyme.getDot11().getBSSIDSignalStrengthWaterfall(
-                bssid, minutes, tap.uuid()
+                bssid, timeRange, tap.uuid()
         );
 
         TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
@@ -217,36 +219,24 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     @GET
     @Path("/bssids/show/{bssid}/advertisements/histogram")
     public Response bssidAdvertisementHistogram(@Context SecurityContext sc,
-                                                      @PathParam("bssid") String bssid,
-                                                      @QueryParam("minutes") int minutes,
-                                                      @QueryParam("taps") String taps) {
+                                                @PathParam("bssid") String bssid,
+                                                @QueryParam("time_range") @Valid String timeRangeParameter,
+                                                @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
-
-        Map<DateTime, Dot11AdvertisementHistogramEntry> histogram = Maps.newHashMap();
-        for (Dot11AdvertisementHistogramEntry entry : nzyme.getDot11()
-                .getBSSIDAdvertisementHistogram(bssid, minutes, tapUuids)) {
-            histogram.put(entry.bucket(), entry);
-        }
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         Map<DateTime, AdvertisementHistogramValueResponse> response = Maps.newTreeMap();
-        for (int x = minutes; x != 0; x--) {
-            DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
-            Dot11AdvertisementHistogramEntry entry = histogram.get(bucket);
-            if (entry == null) {
-                response.put(bucket,
-                        AdvertisementHistogramValueResponse.create(bucket, 0, 0)
-                );
-            } else {
-                response.put(
-                        bucket,
-                        AdvertisementHistogramValueResponse.create(
-                                entry.bucket(),
-                                entry.beacons(),
-                                entry.probeResponses()
-                        )
-                );
-            }
+        for (Dot11AdvertisementHistogramEntry entry : nzyme.getDot11()
+                .getBSSIDAdvertisementHistogram(bssid, timeRange, tapUuids)) {
+            response.put(
+                    entry.bucket(),
+                    AdvertisementHistogramValueResponse.create(
+                            entry.bucket(),
+                            entry.beacons(),
+                            entry.probeResponses()
+                    )
+            );
         }
 
         return Response.ok(AdvertisementHistogramResponse.create(response)).build();
@@ -256,13 +246,14 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     @Path("/bssids/show/{bssid}/frequencies/histogram")
     public Response bssidActiveChannelHistogram(@Context SecurityContext sc,
                                                 @PathParam("bssid") String bssid,
-                                                @QueryParam("minutes") int minutes,
+                                                @QueryParam("time_range") @Valid String timeRangeParameter,
                                                 @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         List<ActiveChannelDetailsResponse> channels = Lists.newArrayList();
-        for (ActiveChannel c : nzyme.getDot11().getBSSIDChannelUsageHistogram(bssid, minutes, tapUuids)) {
+        for (ActiveChannel c : nzyme.getDot11().getBSSIDChannelUsageHistogram(bssid, timeRange, tapUuids)) {
             channels.add(ActiveChannelDetailsResponse.create(
                     Dot11.frequencyToChannel(c.frequency()),
                     c.frequency(),
@@ -278,16 +269,17 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     @Path("/bssids/show/{bssid}/ssids")
     public Response bssidSSIDs(@Context SecurityContext sc,
                                @PathParam("bssid") String bssid,
-                               @QueryParam("minutes") int minutes,
+                               @QueryParam("time_range") @Valid String timeRangeParameter,
                                @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
-        if (!nzyme.getDot11().bssidExist(bssid, minutes, tapUuids)) {
+        if (!nzyme.getDot11().bssidExist(bssid, timeRange, tapUuids)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        List<SSIDChannelDetails> ssids = nzyme.getDot11().findSSIDsOfBSSID(minutes, bssid, tapUuids);
+        List<SSIDChannelDetails> ssids = nzyme.getDot11().findSSIDsOfBSSID(timeRange, bssid, tapUuids);
 
         // Find main active channel per SSID.
         Map<String, Map<Integer, Long>> activeChannels = Maps.newHashMap();
@@ -337,34 +329,25 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     @GET
     @Path("/bssids/histogram")
     public Response histogram(@Context SecurityContext sc,
-                           @QueryParam("minutes") int minutes,
-                           @QueryParam("taps") String taps) {
+                              @QueryParam("time_range") @Valid String timeRangeParameter,
+                              @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
-        Map<DateTime, BSSIDAndSSIDCountHistogramEntry> histogram = Maps.newHashMap();
-        for (BSSIDAndSSIDCountHistogramEntry h : nzyme.getDot11().getBSSIDAndSSIDCountHistogram(minutes, tapUuids)) {
-            histogram.put(h.bucket(), h);
-        }
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Map<DateTime, BSSIDAndSSIDHistogramValueResponse> response = Maps.newTreeMap();
-        for (int x = minutes; x != 0; x--) {
-            DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
-            BSSIDAndSSIDCountHistogramEntry entry = histogram.get(bucket);
-            if (entry == null) {
-                response.put(bucket,
-                        BSSIDAndSSIDHistogramValueResponse.create(bucket, 0, 0)
-                );
-            } else {
-                response.put(
-                        bucket,
-                        BSSIDAndSSIDHistogramValueResponse.create(
-                                entry.bucket(),
-                                entry.bssidCount(),
-                                entry.ssidCount()
-                        )
-                );
-            }
+        for (BSSIDAndSSIDCountHistogramEntry h : nzyme.getDot11()
+                .getBSSIDAndSSIDCountHistogram(timeRange, bucketing, tapUuids)) {
+            response.put(
+                    h.bucket(),
+                    BSSIDAndSSIDHistogramValueResponse.create(
+                            h.bucket(),
+                            h.bssidCount(),
+                            h.ssidCount()
+                    )
+            );
         }
 
         return Response.ok(BSSIDAndSSIDHistogramResponse.create(response)).build();
@@ -434,7 +417,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         List<TapBasedSignalStrengthResponse> signalStrength = Lists.newArrayList();
         for (TapBasedSignalStrengthResult ss : nzyme.getDot11()
-                .findBSSIDSignalStrengthPerTap(bssid, TimeRange.create(DateTime.now().minusMinutes(15), DateTime.now()), tapUuids)) {
+                .findBSSIDSignalStrengthPerTap(bssid, TimeRange.create(DateTime.now().minusMinutes(15), DateTime.now(), false), tapUuids)) {
             signalStrength.add(TapBasedSignalStrengthResponse.create(ss.tapUuid(), ss.tapName(), ss.signalStrength()));
         }
 

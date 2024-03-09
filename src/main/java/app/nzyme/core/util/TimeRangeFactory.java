@@ -16,13 +16,13 @@ public class TimeRangeFactory {
                     throw new IllegalArgumentException("Invalid time range parameters provided.");
                 }
 
-                return TimeRange.create(now.minusMinutes(tr.minutes()), now);
+                return TimeRange.create(now.minusMinutes(tr.minutes()), now, false);
             case "absolute":
                 if (tr.from() == null || tr.to() == null || tr.from().isAfter(tr.to())) {
                     throw new IllegalArgumentException("Invalid time range parameters provided.");
                 }
 
-                return TimeRange.create(tr.from().withMillisOfSecond(0), tr.to().withMillisOfSecond(0));
+                return TimeRange.create(tr.from().withMillisOfSecond(0), tr.to().withMillisOfSecond(0), false);
             case "named":
                 if (Strings.isNullOrEmpty(tr.name())) {
                     throw new IllegalArgumentException("Invalid time range parameters provided.");
@@ -32,29 +32,47 @@ public class TimeRangeFactory {
                     case "today":
                         return TimeRange.create(
                                 now.withTimeAtStartOfDay(),
-                                now.plusDays(1).withTimeAtStartOfDay().minusSeconds(1)
+                                now.plusDays(1).withTimeAtStartOfDay().minusSeconds(1),
+                                false
                         );
                     case "yesterday":
                         return TimeRange.create(
                                 now.withTimeAtStartOfDay().minusDays(1),
-                                now.withTimeAtStartOfDay().minusSeconds(1)
+                                now.withTimeAtStartOfDay().minusSeconds(1),
+                                false
                         );
                     case "week_to_date":
                         return TimeRange.create(
                                 now.withTimeAtStartOfDay().dayOfWeek().withMinimumValue(),
-                                now.plusDays(1).withTimeAtStartOfDay().minusSeconds(1)
+                                now.plusDays(1).withTimeAtStartOfDay().minusSeconds(1),
+                                false
                         );
                     case "month_to_date":
                         return TimeRange.create(
                                 now.withTimeAtStartOfDay().dayOfMonth().withMinimumValue(),
-                                now.plusDays(1).withTimeAtStartOfDay().minusSeconds(1)
+                                now.plusDays(1).withTimeAtStartOfDay().minusSeconds(1),
+                                false
                         );
                    case "all_time":
-                       return TimeRange.create(new DateTime(0), new DateTime().plusYears(1000));
+                       return allTime();
                 }
             default:
                 throw new IllegalArgumentException("Unknown time range type provided.");
         }
+    }
+
+    public static TimeRange allTime() {
+        return TimeRange.create(new DateTime(0), new DateTime().plusYears(1000), true);
+    }
+
+    public static TimeRange fifteenMinutes() {
+        DateTime now = DateTime.now();
+        return TimeRange.create(now.minusMinutes(15), now, false);
+    }
+
+    public static TimeRange oneDay() {
+        DateTime now = DateTime.now();
+        return TimeRange.create(now.minusHours(24), now, false);
     }
 
 }

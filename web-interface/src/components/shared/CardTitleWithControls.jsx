@@ -6,11 +6,26 @@ function CardTitleWithControls(props) {
 
   const title = props.title;
 
+  // Optional styling.
+  const slim = props.slim;
+
   // Required for time range selector.
   const setTimeRange = props.setTimeRange;
   const timeRange = props.timeRange;
 
+  // Optional.
+  const smallTextParam = props.smallText;
+  const fixedAppliedTimeRange = props.fixedAppliedTimeRange;
+
   const [timeRangeDialogOpened, setTimeRangeDialogOpened] = useState(false);
+
+  const smallText = () => {
+    if (!smallTextParam) {
+      return null;
+    }
+
+    return <small>{smallTextParam}</small>
+  }
 
   const timeRangeButton = () => {
     if (setTimeRange && timeRange) {
@@ -39,11 +54,25 @@ function CardTitleWithControls(props) {
     );
   }
 
+  const appliedTimeRange = () => {
+    if (!timeRange && !fixedAppliedTimeRange) {
+      return null;
+    }
+
+    return (
+        <div className="row">
+          <div className="col-12">
+            <AppliedTimeRange timeRange={timeRange ? timeRange : fixedAppliedTimeRange}/>
+          </div>
+        </div>
+    )
+  }
+
   return (
-      <div className="card-title">
+      <div className="card-title" style={slim ? {marginBottom:0} : {}}>
         <div className="row">
           <div className="col-11">
-            <h3>{title}</h3>
+            <h3>{title} {smallText()}</h3>
           </div>
 
           <div className="col-1 text-end">{timeRangeButton()}</div>
@@ -51,13 +80,9 @@ function CardTitleWithControls(props) {
           {timeRangeDialog()}
         </div>
 
-        <div className="row">
-          <div className="col-12">
-            <AppliedTimeRange timeRange={props.timeRange}/>
-          </div>
-        </div>
+        {appliedTimeRange()}
 
-        <hr />
+        {slim ? null : <hr />}
       </div>
 )
 

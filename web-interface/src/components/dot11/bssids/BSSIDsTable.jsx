@@ -4,8 +4,7 @@ import BSSIDRow from "./BSSIDRow";
 function BSSIDsTable(props) {
 
   const bssids = props.bssids;
-  const minutes = props.minutes;
-  const isAutoRefresh = props.isAutoRefresh;
+  const timeRange = props.timeRange;
 
   if (bssids.length === 0) {
     return <div className="alert alert-info mb-0">
@@ -30,7 +29,7 @@ function BSSIDsTable(props) {
         <tbody>
         {Object.keys(bssids.sort((a, b) => b.signal_strength_average - a.signal_strength_average))
             .map(function (key, i) {
-          return <BSSIDRow key={'bssid-' + i} bssid={bssids[key]} minutes={minutes} isAutoRefresh={isAutoRefresh} />
+          return <BSSIDRow key={'bssid-' + i} bssid={bssids[key]} timeRange={timeRange} />
         })}
         </tbody>
       </table>

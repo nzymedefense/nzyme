@@ -13,6 +13,7 @@ function DiscoPairsTable(props) {
 
   const bssids = props.bssids;
   const highlightValue = props.highlightValue;
+  const timeRange = props.timeRange;
 
   const monitoredNetworkContext = useContext(MonitoredNetworkContext);
   const tapContext = useContext(TapContext);
@@ -29,9 +30,9 @@ function DiscoPairsTable(props) {
     setTopPairs(null);
 
     dot11Service.getDiscoTopPairs(
-        24*60, selectedTaps, monitoredNetworkId, bssids, limit, 0, setTopPairs
+        timeRange, selectedTaps, monitoredNetworkId, bssids, limit, 0, setTopPairs
     );
-  }, [selectedTaps, limit, monitoredNetworkId]);
+  }, [selectedTaps, timeRange, limit, monitoredNetworkId]);
 
   if (!topPairs) {
     return <LoadingSpinner />

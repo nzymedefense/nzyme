@@ -13,7 +13,7 @@ function BSSIDSignalWaterfallChart(props) {
   const HEIGHT = 450;
 
   const bssid = props.bssid;
-  const minutes = props.minutes;
+  const timeRange = props.timeRange;
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -37,9 +37,9 @@ function BSSIDSignalWaterfallChart(props) {
   useEffect(() => {
     if (singleTapSelected(selectedTaps)) {
       setWaterfall(null);
-      dot11Service.getBSSIDSignalWaterfall(bssid, minutes, selectedTaps, setWaterfall);
+      dot11Service.getBSSIDSignalWaterfall(bssid, timeRange, selectedTaps, setWaterfall);
     }
-  }, [bssid, minutes, selectedTaps])
+  }, [bssid, timeRange, selectedTaps])
 
   if (!singleTapSelected(selectedTaps)) {
     return (

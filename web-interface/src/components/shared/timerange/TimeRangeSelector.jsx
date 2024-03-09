@@ -78,7 +78,7 @@ function TimeRangeSelector(props) {
         <div className="accordion-item">
           <h2 className="accordion-header" id="trs-presets-heading">
             <button className="accordion-button" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#trs-presets-collapse" aria-expanded="false" aria-controls="trs-presets-collapse">
+                    data-bs-target="#trs-presets-collapse" aria-expanded="true" aria-controls="trs-presets-collapse">
               <i className="accordion-icon fa-regular fa-star"></i> Presets
             </button>
           </h2>
@@ -90,7 +90,6 @@ function TimeRangeSelector(props) {
                 <div className="col-4">
                   <h3>Relative</h3>
                   <ul>
-                    <li>{presetOption(Relative(1, "Last 1 Minute"), "Last 1 Minute")}</li>
                     <li>{presetOption(Relative(5, "Last 5 Minutes"), "Last 5 Minutes")}</li>
                     <li>{presetOption(Relative(15, "Last 15 Minutes"), "Last 15 Minutes")}</li>
                     <li>{presetOption(Relative(30, "Last 30 Minutes"), "Last 30 Minutes")}</li>

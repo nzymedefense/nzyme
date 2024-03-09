@@ -19,7 +19,7 @@ import BSSIDSignalWaterfallChart from "./BSSIDSignalWaterfallChart";
 import ReadOnlyTrilaterationResultFloorPlanWrapper
   from "../../shared/floorplan/ReadOnlyTrilaterationResultFloorPlanWrapper";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
-import {Relative} from "../../shared/timerange/TimeRange";
+import {Presets, Relative} from "../../shared/timerange/TimeRange";
 
 const dot11Service = new Dot11Service();
 
@@ -33,7 +33,15 @@ function BSSIDDetailsPage() {
   const [bssid, setBSSID] = useState(null);
   const [ssids, setSSIDs] = useState(null);
 
-  const [trilaterationTimeRange, setTrilaterationTimeRange] = useState(Relative(15, "Last 15 Minutes"))
+  const [ssidsTimeRange, setSsidsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [signalWaterfallRange, setSignalWaterfallRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [advertisementsBeaconTimeRange, setAdvertisementsBeaconTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [advertisementsProbeRespTimeRange, setAdvertisementsProbeRespTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [activeChannelsTimeRange, setActiveChannelsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [discoFramesTimeRange, setDiscoFramesTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [discoPairsTimeRange, setDiscoPairsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+
+  const [trilaterationTimeRange, setTrilaterationTimeRange] = useState(Presets.RELATIVE_MINUTES_15)
   const [trilaterationFloor, setTrilaterationFloor] = useState(null);
   const [trilaterationResult, setTrilaterationResult] = useState(null);
   const [trilaterationError, setTrilaterationError] = useState(null);
@@ -41,10 +49,13 @@ function BSSIDDetailsPage() {
 
   useEffect(() => {
     setBSSID(null);
-    setSSIDs(null);
     dot11Service.findBSSID(bssidParam, selectedTaps, setBSSID);
-    dot11Service.findSSIDsOfBSSID(bssidParam, 24*60, selectedTaps, (ssids) => setSSIDs(ssids));
   }, [bssidParam, selectedTaps]);
+
+  useEffect(() => {
+    setSSIDs(null);
+    dot11Service.findSSIDsOfBSSID(bssidParam, ssidsTimeRange, selectedTaps, (ssids) => setSSIDs(ssids));
+  }, [ssidsTimeRange, selectedTaps]);
 
   useEffect(() => {
     setTrilaterationResult(null);
@@ -67,6 +78,20 @@ function BSSIDDetailsPage() {
     }
   }, [tapContext]);
 
+  const ssidsTable = () => {
+    if (!ssids) {
+      return <LoadingSpinner />
+    }
+
+    return (
+        <table style={{width: "100%"}}>
+          <tbody>
+          <BSSIDDetailsRows bssid={bssid.summary} ssids={ssids} loading={false} hideBSSIDLink={true}/>
+          </tbody>
+        </table>
+    )
+  }
+
   const onFloorSelected = (locationUuid, floorUuid) => {
     setTrilaterationFloor({location: locationUuid, floor: floorUuid});
   }
@@ -75,7 +100,7 @@ function BSSIDDetailsPage() {
     setTrilaterationRevision((prevRev => prevRev + 1));
   }
 
-  if (!bssid || ssids == null) {
+  if (!bssid) {
     return <LoadingSpinner />
   }
 
@@ -104,7 +129,8 @@ function BSSIDDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>Access Point Information <small>All Time</small></h3>
+                <CardTitleWithControls title="Access Point Information"
+                                       fixedAppliedTimeRange={Presets.ALL_TIME} />
 
                 <dl className="mb-0">
                   <dt>MAC Address</dt>
@@ -127,7 +153,8 @@ function BSSIDDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>Activity <small>All Time</small></h3>
+                <CardTitleWithControls title="Activity"
+                                       fixedAppliedTimeRange={Presets.ALL_TIME} />
 
                 <dl className="mb-0">
                   <dt>First Seen</dt>
@@ -147,13 +174,11 @@ function BSSIDDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>Advertised SSIDs <small>Last 24 Hours</small></h3>
+                <CardTitleWithControls title="Advertised SSIDs"
+                                       timeRange={ssidsTimeRange}
+                                       setTimeRange={setSsidsTimeRange} />
 
-                <table style={{width: "100%"}}>
-                  <tbody>
-                  <BSSIDDetailsRows bssid={bssid.summary} ssids={ssids} loading={false} hideBSSIDLink={true} />
-                  </tbody>
-                </table>
+                {ssidsTable()}
               </div>
             </div>
           </div>
@@ -165,7 +190,8 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Fingerprints <small>All Time, All SSIDs</small></h3>
+                    <CardTitleWithControls title="Fingerprints"
+                                           fixedAppliedTimeRange={Presets.ALL_TIME} />
 
                     <ul className="mb-0">
                       {bssid.summary.fingerprints.map((fp, i) => {
@@ -181,7 +207,8 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Average Signal Strength <small>Last 15 minutes, All SSIDs</small></h3>
+                    <CardTitleWithControls title="Average Signal Strength"
+                                           fixedAppliedTimeRange={Presets.RELATIVE_MINUTES_15} />
 
                     <TapBasedSignalStrengthTable strengths={bssid.signal_strength}/>
                   </div>
@@ -193,9 +220,11 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Signal Waterfall <small>Last 24 hours maximum</small></h3>
+                    <CardTitleWithControls title="Signal Waterfall"
+                                           timeRange={signalWaterfallRange}
+                                           setTimeRange={setSignalWaterfallRange} />
 
-                    <BSSIDSignalWaterfallChart bssid={bssid.summary.bssid.address} minutes={24 * 60}/>
+                    <BSSIDSignalWaterfallChart bssid={bssid.summary.bssid.address} timeRange={signalWaterfallRange} />
                   </div>
                 </div>
               </div>
@@ -223,9 +252,13 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Beacon Advertisements <small>Last 24 Hours, All SSIDs</small></h3>
+                    <CardTitleWithControls title="Beacon Advertisements"
+                                           timeRange={advertisementsBeaconTimeRange}
+                                           setTimeRange={setAdvertisementsBeaconTimeRange} />
 
-                    <BSSIDAdvertisementHistogram bssid={bssid.summary.bssid.address} parameter="beacon_count"/>
+                    <BSSIDAdvertisementHistogram bssid={bssid.summary.bssid.address}
+                                                 timeRange={advertisementsBeaconTimeRange}
+                                                 parameter="beacon_count" />
                   </div>
                 </div>
               </div>
@@ -235,9 +268,13 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Probe Response Advertisements <small>Last 24 Hours, All SSIDs</small></h3>
+                    <CardTitleWithControls title="Probe Response Advertisements"
+                                           timeRange={advertisementsProbeRespTimeRange}
+                                           setTimeRange={setAdvertisementsProbeRespTimeRange} />
 
-                    <BSSIDAdvertisementHistogram bssid={bssid.summary.bssid.address} parameter="proberesp_count"/>
+                    <BSSIDAdvertisementHistogram bssid={bssid.summary.bssid.address}
+                                                 timeRange={advertisementsProbeRespTimeRange}
+                                                 parameter="proberesp_count"/>
                   </div>
                 </div>
               </div>
@@ -247,9 +284,11 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Active Channels <small>Last 24 Hours, All SSIDs</small></h3>
+                    <CardTitleWithControls title="Active Channels"
+                                           timeRange={activeChannelsTimeRange}
+                                           setTimeRange={setActiveChannelsTimeRange} />
 
-                    <BSSIDChannelUsageHistogram bssid={bssid.summary.bssid.address} minutes={24 * 60}/>
+                    <BSSIDChannelUsageHistogram bssid={bssid.summary.bssid.address} timeRange={activeChannelsTimeRange} />
                   </div>
                 </div>
               </div>
@@ -261,9 +300,8 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>
-                      Clients connected to BSSID <small>Last 24 Hours</small>
-                    </h3>
+                    <CardTitleWithControls title="Clients connected to BSSID"
+                                           fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24} />
 
                     <p className="text-muted">
                       Please note that recording clients generally demands closer proximity, as
@@ -284,9 +322,13 @@ function BSSIDDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>Disconnection Frames <small>Last 24 hours</small></h3>
+                <CardTitleWithControls title="Disconnection Frames"
+                                       timeRange={discoFramesTimeRange}
+                                       setTimeRange={setDiscoFramesTimeRange} />
 
-                <DiscoHistogram discoType="disconnection" minutes={24*60} bssids={[bssid.summary.bssid.address]} />
+                <DiscoHistogram discoType="disconnection"
+                                timeRange={discoFramesTimeRange}
+                                bssids={[bssid.summary.bssid.address]} />
 
                 <p className="text-muted mb-0 mt-3">
                   Disconnection activity refers to the sum of deauthentication and disassociation frames.
@@ -300,9 +342,13 @@ function BSSIDDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3 className="mb-0">Top Disconnection Pairs <small>Last 24 hours</small></h3>
+                <CardTitleWithControls title="Top Disconnection Pairs"
+                                       timeRange={discoPairsTimeRange}
+                                       setTimeRange={setDiscoPairsTimeRange} />
 
-                <DiscoPairsTable bssids={[bssid.summary.bssid.address]} highlightValue={bssid.summary.bssid.address} />
+                <DiscoPairsTable bssids={[bssid.summary.bssid.address]}
+                                 timeRange={discoPairsTimeRange}
+                                 highlightValue={bssid.summary.bssid.address} />
 
                 <p className="mb-0 mt-3 text-muted">
                   The MAC address of this access point is <span className="highlighted">highlighted.</span>

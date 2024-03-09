@@ -12,7 +12,9 @@ import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11SecurityInfo
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.Tools;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -125,7 +127,7 @@ public class Dot11 {
 
     private Dot11MacAddressMetadata fetchMacAddressMetadataNoCache(Dot11MacAddressLookupCompositeKey lookup) {
         // Is this a access point?
-        boolean isAccessPoint = bssidExist(lookup.mac(), Integer.MAX_VALUE, lookup.taps());
+        boolean isAccessPoint = bssidExist(lookup.mac(), TimeRangeFactory.allTime(), lookup.taps());
 
         // Is this a client?
         boolean isClient = clientExist(lookup.mac(), Integer.MAX_VALUE, lookup.taps());
@@ -203,7 +205,9 @@ public class Dot11 {
         );
     }
 
-    public List<Dot11AdvertisementHistogramEntry> getBSSIDAdvertisementHistogram(String bssid, int minutes, List<UUID> taps) {
+    public List<Dot11AdvertisementHistogramEntry> getBSSIDAdvertisementHistogram(String bssid,
+                                                                                 TimeRange timeRange,
+                                                                                 List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -212,10 +216,11 @@ public class Dot11 {
                 handle.createQuery("SELECT SUM(beacon_advertisements) AS beacons, " +
                                 "SUM(proberesp_advertisements) AS proberesponses, " +
                                 "DATE_TRUNC('minute', created_at) AS bucket FROM dot11_ssids " +
-                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
-                                "AND bssid = :bssid " +
+                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) AND bssid = :bssid " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .bind("bssid", bssid)
                         .mapTo(Dot11AdvertisementHistogramEntry.class)
@@ -224,7 +229,7 @@ public class Dot11 {
     }
 
 
-    public List<ActiveChannel> getBSSIDChannelUsageHistogram(String bssid, int minutes, List<UUID> taps) {
+    public List<ActiveChannel> getBSSIDChannelUsageHistogram(String bssid, TimeRange timeRange, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -233,9 +238,11 @@ public class Dot11 {
                 handle.createQuery("SELECT c.frequency, sum(c.stats_frames) AS frames, sum(c.stats_bytes) AS bytes " +
                                 "FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channels c on s.id = c.ssid_id " +
-                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) AND s.bssid = :bssid " +
+                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) AND s.bssid = :bssid " +
                                 "GROUP BY c.frequency")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .bind("bssid", bssid)
                         .mapTo(ActiveChannel.class)
@@ -243,7 +250,7 @@ public class Dot11 {
         );
     }
 
-    public List<BSSIDSummary> findBSSIDs(int minutes, List<UUID> taps) {
+    public List<BSSIDSummary> findBSSIDs(TimeRange timeRange, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -264,25 +271,29 @@ public class Dot11 {
                                 "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
                                 "AND ssp.attribute = 'security_protocol' " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
-                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                                "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
+                                "AND b.tap_uuid IN (<taps>) " +
                                 "GROUP BY b.bssid")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(BSSIDSummary.class)
                         .list()
         );
     }
 
-    public boolean bssidExist(String bssid, int minutes, List<UUID> taps) {
+    public boolean bssidExist(String bssid, TimeRange timeRange, List<UUID> taps) {
         if (taps.isEmpty()) {
             return false;
         }
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT EXISTS (SELECT 1 FROM dot11_bssids " +
-                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
+                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +
                                 "AND bssid = :bssid)")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .bind("bssid", bssid)
                         .mapTo(Boolean.class)
@@ -307,7 +318,7 @@ public class Dot11 {
         );
     }
 
-    public List<SSIDChannelDetails> findSSIDsOfBSSID(int minutes, String bssid, List<UUID> taps) {
+    public List<SSIDChannelDetails> findSSIDsOfBSSID(TimeRange timeRange, String bssid, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -326,10 +337,12 @@ public class Dot11 {
                                 "AND ssp.attribute = 'security_protocol' " +
                                 "LEFT JOIN dot11_ssid_settings AS ssw on s.id = ssw.ssid_id " +
                                 "AND ssw.attribute = 'has_wps' " +
-                                "WHERE created_at > :cutoff AND bssid = :bssid AND tap_uuid IN (<taps>) " +
+                                "WHERE s.created_at >= :tr_from AND s.created_at <= :tr_to " +
+                                "AND bssid = :bssid AND tap_uuid IN (<taps>) " +
                                 "GROUP BY s.ssid, c.frequency")
                         .bind("bssid", bssid)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(SSIDChannelDetails.class)
                         .list()
@@ -378,19 +391,24 @@ public class Dot11 {
         );
     }
 
-    public List<BSSIDAndSSIDCountHistogramEntry> getBSSIDAndSSIDCountHistogram(int minutes, List<UUID> taps) {
+    public List<BSSIDAndSSIDCountHistogramEntry> getBSSIDAndSSIDCountHistogram(TimeRange timeRange,
+                                                                               Bucketing.BucketingConfiguration bc,
+                                                                               List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(b.bssid)) as bssid_count, " +
-                                "COUNT(DISTINCT(s.ssid)) as ssid_count, DATE_TRUNC('minute', b.created_at) as bucket " +
+                                "COUNT(DISTINCT(s.ssid)) as ssid_count, DATE_TRUNC(:date_trunc, b.created_at) as bucket " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids s ON b.id = s.bssid_id " +
-                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                                "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
+                                "AND b.tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("date_trunc", bc.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(BSSIDAndSSIDCountHistogramEntry.class)
                         .list()
@@ -460,15 +478,16 @@ public class Dot11 {
         );
     }
 
-    public List<SignalTrackHistogramEntry> getBSSIDSignalStrengthWaterfall(String bssid, int minutes, UUID tapId) {
+    public List<SignalTrackHistogramEntry> getBSSIDSignalStrengthWaterfall(String bssid, TimeRange timeRange, UUID tapId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DATE_TRUNC('minute', s.created_at) AS bucket, signal_strength, " +
                                 "SUM(frame_count) AS frame_count FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channel_histograms h on s.id = h.ssid_id " +
-                                "WHERE created_at > :cutoff AND s.tap_uuid = :tap_id AND bssid = :bssid " +
+                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND s.tap_uuid = :tap_id AND bssid = :bssid " +
                                 "GROUP BY bucket, signal_strength ORDER BY bucket DESC")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
-                        .bind("tap_id", tapId)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())                        .bind("tap_id", tapId)
                         .bind("bssid", bssid)
                         .mapTo(SignalTrackHistogramEntry.class)
                         .list()
@@ -1442,14 +1461,14 @@ public class Dot11 {
     }
 
     public List<DiscoHistogramEntry> getDiscoHistogram(DiscoType discoType,
-                                                       int minutes,
+                                                       TimeRange timeRange,
                                                        UUID tap,
                                                        @Nullable List<String> bssids) {
-        return getDiscoHistogram(discoType, minutes, List.of(tap), bssids);
+        return getDiscoHistogram(discoType, timeRange, List.of(tap), bssids);
     }
 
     public List<DiscoHistogramEntry> getDiscoHistogram(DiscoType discoType,
-                                                       int minutes,
+                                                       TimeRange timeRange,
                                                        List<UUID> taps,
                                                        @Nullable List<String> bssids) {
         if (taps.isEmpty()) {
@@ -1483,10 +1502,11 @@ public class Dot11 {
                                     "FROM dot11_disco_activity AS senders " +
                                     "WHERE senders.disco_type IN (<disco_types>) " +
                                     "AND senders.bssid IN (<bssids>) " +
-                                    "AND senders.created_at > :cutoff " +
+                                    "AND senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
                                     "AND senders.tap_uuid IN (<taps>) " +
                                     "GROUP BY bucket ORDER BY bucket DESC")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("disco_types", discoTypes)
                             .bindList("bssids", bssids)
                             .bindList("taps", taps)
@@ -1500,10 +1520,11 @@ public class Dot11 {
                                     "AS frame_count, DATE_TRUNC('minute', senders.created_at) AS bucket " +
                                     "FROM dot11_disco_activity AS senders " +
                                     "WHERE senders.disco_type IN (<disco_types>) " +
-                                    "AND senders.created_at > :cutoff " +
+                                    "AND senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
                                     "AND senders.tap_uuid IN (<taps>) " +
                                     "GROUP BY bucket ORDER BY bucket DESC")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("disco_types", discoTypes)
                             .bindList("taps", taps)
                             .mapTo(DiscoHistogramEntry.class)
@@ -1522,10 +1543,11 @@ public class Dot11 {
                                     "ON receivers.disco_activity_id = senders.id " +
                                     "WHERE senders.disco_type IN (<disco_types>) " +
                                     "AND receivers.bssid IN (<bssids>) " +
-                                    "AND senders.created_at > :cutoff " +
+                                    "AND senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
                                     "AND senders.tap_uuid IN (<taps>) " +
                                     "GROUP BY bucket ORDER BY bucket DESC")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("disco_types", discoTypes)
                             .bindList("bssids", bssids)
                             .bindList("taps", taps)
@@ -1574,7 +1596,7 @@ public class Dot11 {
         }
     }
 
-    public List<Dot11MacFrameCount> getDiscoTopSenders(int minutes,
+    public List<Dot11MacFrameCount> getDiscoTopSenders(TimeRange timeRange,
                                                        int limit,
                                                        int offset,
                                                        List<UUID> taps,
@@ -1594,11 +1616,13 @@ public class Dot11 {
                                     "FROM dot11_disco_activity AS senders " +
                                     "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
                                     "ON senders.id = receivers.disco_activity_id " +
-                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "WHERE senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
+                                    "AND senders.tap_uuid IN (<taps>) " +
                                     "AND (senders.bssid IN (<bssids>) OR receivers.bssid IN (<bssids>)) " +
                                     "GROUP BY senders.bssid ORDER BY frame_count DESC " +
                                     "LIMIT :limit OFFSET :offset")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .bindList("bssids", bssids)
                             .bind("limit", limit)
@@ -1611,10 +1635,12 @@ public class Dot11 {
             return nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT bssid, SUM(sent_frames) AS frame_count " +
                                     "FROM dot11_disco_activity " +
-                                    "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
+                                    "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                    "AND tap_uuid IN (<taps>) " +
                                     "GROUP BY bssid ORDER BY frame_count DESC " +
                                     "LIMIT :limit OFFSET :offset")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .bind("limit", limit)
                             .bind("offset", offset)
@@ -1624,7 +1650,7 @@ public class Dot11 {
         }
     }
 
-    public Long countDiscoTopSenders(int minutes, List<UUID> taps, @Nullable List<String> bssids) {
+    public Long countDiscoTopSenders(TimeRange timeRange, List<UUID> taps, @Nullable List<String> bssids) {
         if (taps.isEmpty()) {
             return 0L;
         }
@@ -1640,9 +1666,11 @@ public class Dot11 {
                                     "FROM dot11_disco_activity AS senders " +
                                     "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
                                     "ON senders.id = receivers.disco_activity_id " +
-                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "WHERE senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
+                                    "AND senders.tap_uuid IN (<taps>) " +
                                     "AND (senders.bssid IN (<bssids>) OR receivers.bssid IN (<bssids>))")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .bindList("bssids", bssids)
                             .mapTo(Long.class)
@@ -1653,8 +1681,10 @@ public class Dot11 {
             return nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT COUNT(DISTINCT(bssid)) " +
                                     "FROM dot11_disco_activity " +
-                                    "WHERE created_at > :cutoff AND tap_uuid IN (<taps>)")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                                    "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                    "AND tap_uuid IN (<taps>)")
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .mapTo(Long.class)
                             .one()
@@ -1662,7 +1692,7 @@ public class Dot11 {
         }
     }
 
-    public List<Dot11MacFrameCount> getDiscoTopReceivers(int minutes,
+    public List<Dot11MacFrameCount> getDiscoTopReceivers(TimeRange timeRange,
                                                          int limit,
                                                          int offset,
                                                          List<UUID> taps,
@@ -1682,11 +1712,13 @@ public class Dot11 {
                                     "FROM dot11_disco_activity_receivers AS receivers " +
                                     "LEFT JOIN dot11_disco_activity AS senders " +
                                     "ON senders.id = receivers.disco_activity_id " +
-                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "WHERE senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
+                                    "AND senders.tap_uuid IN (<taps>) " +
                                     "AND (receivers.bssid IN (<bssids>) OR senders.bssid IN (<bssids>)) " +
                                     "GROUP BY receivers.bssid ORDER BY frame_count DESC " +
                                     "LIMIT :limit OFFSET :offset")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .bindList("bssids", bssids)
                             .bind("limit", limit)
@@ -1701,10 +1733,12 @@ public class Dot11 {
                                     "FROM dot11_disco_activity_receivers AS receivers " +
                                     "LEFT JOIN dot11_disco_activity AS senders " +
                                     "ON senders.id = receivers.disco_activity_id " +
-                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "WHERE senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
+                                    "AND senders.tap_uuid IN (<taps>) " +
                                     "GROUP BY receivers.bssid ORDER BY frame_count DESC " +
                                     "LIMIT :limit OFFSET :offset")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .bind("limit", limit)
                             .bind("offset", offset)
@@ -1714,7 +1748,7 @@ public class Dot11 {
         }
     }
 
-    public Long countDiscoTopReceivers(int minutes, List<UUID> taps, @Nullable List<String> bssids) {
+    public Long countDiscoTopReceivers(TimeRange timeRange, List<UUID> taps, @Nullable List<String> bssids) {
         if (taps.isEmpty()) {
             return 0L;
         }
@@ -1730,9 +1764,11 @@ public class Dot11 {
                                     "FROM dot11_disco_activity_receivers AS receivers " +
                                     "LEFT JOIN dot11_disco_activity AS senders " +
                                     "ON senders.id = receivers.disco_activity_id " +
-                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "WHERE senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
+                                    "AND senders.tap_uuid IN (<taps>) " +
                                     "AND (receivers.bssid IN (<bssids>) OR senders.bssid IN (<bssids>))")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .bindList("bssids", bssids)
                             .mapTo(Long.class)
@@ -1745,8 +1781,10 @@ public class Dot11 {
                                     "FROM dot11_disco_activity_receivers AS receivers " +
                                     "LEFT JOIN dot11_disco_activity AS senders " +
                                     "ON senders.id = receivers.disco_activity_id " +
-                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>)")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                                    "WHERE senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
+                                    "AND senders.tap_uuid IN (<taps>)")
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .mapTo(Long.class)
                             .one()
@@ -1754,7 +1792,7 @@ public class Dot11 {
         }
     }
 
-    public List<BSSIDPairFrameCount> getDiscoTopPairs(int minutes,
+    public List<BSSIDPairFrameCount> getDiscoTopPairs(TimeRange timeRange,
                                                       int limit,
                                                       int offset,
                                                       List<UUID> taps,
@@ -1775,12 +1813,14 @@ public class Dot11 {
                                     "FROM dot11_disco_activity AS senders " +
                                     "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
                                     "ON senders.id = receivers.disco_activity_id " +
-                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "WHERE senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
+                                    "AND senders.tap_uuid IN (<taps>) " +
                                     "AND (receivers.bssid IN (<bssids>) OR senders.bssid IN (<bssids>)) " +
                                     "GROUP BY senders.bssid, receivers.bssid " +
                                     "ORDER BY frame_count " +
                                     "DESC LIMIT :limit OFFSET :offset")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .bindList("bssids", bssids)
                             .bind("limit", limit)
@@ -1796,11 +1836,13 @@ public class Dot11 {
                                     "FROM dot11_disco_activity AS senders " +
                                     "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
                                     "ON senders.id = receivers.disco_activity_id " +
-                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "WHERE senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
+                                    "AND senders.tap_uuid IN (<taps>) " +
                                     "GROUP BY senders.bssid, receivers.bssid " +
                                     "ORDER BY frame_count " +
                                     "DESC LIMIT :limit OFFSET :offset")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .bind("limit", limit)
                             .bind("offset", offset)
@@ -1810,7 +1852,7 @@ public class Dot11 {
         }
     }
 
-    public Long countDiscoTopPairs(int minutes, List<UUID> taps, @Nullable List<String> bssids) {
+    public Long countDiscoTopPairs(TimeRange timeRange, List<UUID> taps, @Nullable List<String> bssids) {
         if (taps.isEmpty()) {
             return 0L;
         }
@@ -1826,9 +1868,11 @@ public class Dot11 {
                                     "FROM dot11_disco_activity AS senders " +
                                     "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
                                     "ON senders.id = receivers.disco_activity_id " +
-                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "WHERE senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
+                                    "AND senders.tap_uuid IN (<taps>) " +
                                     "AND (receivers.bssid IN (<bssids>) OR senders.bssid IN (<bssids>))")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .bindList("bssids", bssids)
                             .mapTo(Long.class)
@@ -1841,8 +1885,10 @@ public class Dot11 {
                                     "FROM dot11_disco_activity AS senders " +
                                     "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
                                     "ON senders.id = receivers.disco_activity_id " +
-                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>)")
-                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                                    "WHERE senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
+                                    "AND senders.tap_uuid IN (<taps>)")
+                            .bind("tr_from", timeRange.from())
+                            .bind("tr_to", timeRange.to())
                             .bindList("taps", taps)
                             .mapTo(Long.class)
                             .one()

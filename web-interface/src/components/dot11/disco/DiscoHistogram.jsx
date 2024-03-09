@@ -12,7 +12,7 @@ function DiscoHistogram(props) {
   const monitoredNetworkContext = useContext(MonitoredNetworkContext);
 
   const discoType = props.discoType;
-  const minutes = props.minutes;
+  const timeRange = props.timeRange;
   const bssids = props.bssids;
 
   const [monitoredNetworkId, setMonitoredNetworkId] = useState(props.monitoredNetworkId);
@@ -24,8 +24,8 @@ function DiscoHistogram(props) {
 
   useEffect(() => {
     setHistogram(null);
-    dot11Service.getDiscoHistogram(discoType, minutes, selectedTaps, bssids, monitoredNetworkId, setHistogram);
-  }, [discoType, minutes, selectedTaps, monitoredNetworkId]);
+    dot11Service.getDiscoHistogram(discoType, timeRange, selectedTaps, bssids, monitoredNetworkId, setHistogram);
+  }, [discoType, timeRange, selectedTaps, monitoredNetworkId]);
 
   useEffect(() => {
     if (monitoredNetworkContext) {

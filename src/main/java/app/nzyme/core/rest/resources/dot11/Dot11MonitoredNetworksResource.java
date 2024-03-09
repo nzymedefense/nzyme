@@ -15,6 +15,8 @@ import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.SSIDSimilarityResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.*;
 import app.nzyme.core.rest.responses.dot11.monitoring.configimport.*;
+import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -168,7 +170,8 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 fingerprints.add(MonitoredFingerprintResponse.create(fp.uuid(), fp.fingerprint()));
             }
 
-            boolean isOnline = nzyme.getDot11().bssidExist(bssid.bssid(), 15, allAccessibleTapUUIDs);
+            boolean isOnline = nzyme.getDot11()
+                    .bssidExist(bssid.bssid(), TimeRangeFactory.fifteenMinutes(), allAccessibleTapUUIDs);
 
             Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
                     bssid.bssid(),
