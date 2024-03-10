@@ -226,9 +226,11 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
         Map<DateTime, AdvertisementHistogramValueResponse> response = Maps.newTreeMap();
         for (Dot11AdvertisementHistogramEntry entry : nzyme.getDot11()
-                .getBSSIDAdvertisementHistogram(bssid, timeRange, tapUuids)) {
+                .getBSSIDAdvertisementHistogram(bssid, timeRange, bucketing, tapUuids)) {
             response.put(
                     entry.bucket(),
                     AdvertisementHistogramValueResponse.create(
@@ -469,9 +471,11 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
         Map<DateTime, AdvertisementHistogramValueResponse> response = Maps.newTreeMap();
         for (Dot11AdvertisementHistogramEntry entry : nzyme.getDot11()
-                .getSSIDAdvertisementHistogram(bssid, ssid, timeRange, tapUuids)) {
+                .getSSIDAdvertisementHistogram(bssid, ssid, timeRange, bucketing, tapUuids)) {
             response.put(
                     entry.bucket(),
                     AdvertisementHistogramValueResponse.create(

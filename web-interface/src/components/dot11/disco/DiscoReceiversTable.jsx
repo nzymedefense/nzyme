@@ -8,7 +8,9 @@ import {MonitoredNetworkContext} from "./DiscoPage";
 
 const dot11Service = new Dot11Service();
 
-function DiscoReceiversTable() {
+function DiscoReceiversTable(props) {
+
+  const timeRange = props.timeRange;
 
   const monitoredNetworkContext = useContext(MonitoredNetworkContext);
   const tapContext = useContext(TapContext);
@@ -21,9 +23,9 @@ function DiscoReceiversTable() {
   useEffect(() => {
     setTopReceivers(null);
     dot11Service.getDiscoTopReceivers(
-        24*60, selectedTaps, monitoredNetworkContext.network, limit, 0, setTopReceivers
+        timeRange, selectedTaps, monitoredNetworkContext.network, limit, 0, setTopReceivers
     );
-  }, [selectedTaps, limit, monitoredNetworkContext.network]);
+  }, [selectedTaps, limit, timeRange, monitoredNetworkContext.network]);
 
   if (!topReceivers) {
     return <LoadingSpinner />

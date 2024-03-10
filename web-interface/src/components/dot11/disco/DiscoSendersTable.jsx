@@ -8,7 +8,9 @@ import {MonitoredNetworkContext} from "./DiscoPage";
 
 const dot11Service = new Dot11Service();
 
-function DiscoSendersTable() {
+function DiscoSendersTable(props) {
+
+  const timeRange = props.timeRange;
 
   const monitoredNetworkContext = useContext(MonitoredNetworkContext);
   const tapContext = useContext(TapContext);
@@ -21,9 +23,9 @@ function DiscoSendersTable() {
   useEffect(() => {
     setTopSenders(null);
     dot11Service.getDiscoTopSenders(
-        24*60, selectedTaps, monitoredNetworkContext.network, limit, 0, setTopSenders
+        timeRange, selectedTaps, monitoredNetworkContext.network, limit, 0, setTopSenders
     );
-  }, [selectedTaps, limit, monitoredNetworkContext.network]);
+  }, [selectedTaps, limit, timeRange, monitoredNetworkContext.network]);
 
   if (!topSenders) {
     return <LoadingSpinner />

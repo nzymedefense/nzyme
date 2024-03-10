@@ -24,6 +24,7 @@ import app.nzyme.core.rest.responses.dot11.disco.Dot11DiscoMonitorAnomalyDetails
 import app.nzyme.core.rest.responses.dot11.disco.Dot11DiscoMonitorAnomalyListResponse;
 import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -79,6 +80,8 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
         Dot11.DiscoType discoType;
         try {
             discoType = Dot11.DiscoType.valueOf(type.toUpperCase());
@@ -108,7 +111,8 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
         }
 
         Map<DateTime, DiscoHistogramValueResponse> response = Maps.newTreeMap();
-        for (DiscoHistogramEntry h : nzyme.getDot11().getDiscoHistogram(discoType, timeRange, tapUuids, selectedBssids)) {
+        for (DiscoHistogramEntry h : nzyme.getDot11()
+                .getDiscoHistogram(discoType, timeRange, bucketing, tapUuids, selectedBssids)) {
             response.put(h.bucket(), DiscoHistogramValueResponse.create(h.bucket(), h.frameCount()));
         }
 

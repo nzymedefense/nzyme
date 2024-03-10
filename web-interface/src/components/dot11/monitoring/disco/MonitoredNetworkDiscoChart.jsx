@@ -8,6 +8,7 @@ function MonitoredNetworkDiscoChart(props) {
 
   const tapUuid = props.selectedTapUuid;
   const monitoredNetwork = props.monitoredNetwork;
+  const timeRange = props.timeRange;
 
   const [histogram, setHistogram] = useState(null);
   const [anomalies, setAnomalies] = useState(null);
@@ -24,7 +25,7 @@ function MonitoredNetworkDiscoChart(props) {
 
       dot11Service.getDiscoHistogram(
           "disconnection",
-          24 * 60,
+          timeRange,
           [tapUuid],
           null,
           monitoredNetwork.uuid,

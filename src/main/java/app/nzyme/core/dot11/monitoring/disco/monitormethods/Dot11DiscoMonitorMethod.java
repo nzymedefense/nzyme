@@ -7,6 +7,7 @@ import app.nzyme.core.dot11.db.monitoring.MonitoredBSSID;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.dot11.monitoring.disco.DiscoMonitorAnomaly;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRangeFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -54,10 +55,11 @@ public abstract class Dot11DiscoMonitorMethod {
 
         return calculate(
                 nzyme.getDot11().getDiscoHistogram(
-                    Dot11.DiscoType.DISCONNECTION,
-                    TimeRangeFactory.oneDay(),
-                    tap.uuid(),
-                    bssidList
+                        Dot11.DiscoType.DISCONNECTION,
+                        TimeRangeFactory.oneDay(),
+                        Bucketing.getConfig(TimeRangeFactory.oneDay()),
+                        tap.uuid(),
+                        bssidList
                 )
         );
     }

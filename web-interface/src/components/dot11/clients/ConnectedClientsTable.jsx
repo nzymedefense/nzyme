@@ -2,15 +2,14 @@ import React from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Paginator from "../../misc/Paginator";
 import moment from "moment";
+import numeral from "numeral";
 import SSIDsList from "../util/SSIDsList";
 import ApiRoutes from "../../../util/ApiRoutes";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 
-
 function ConnectedClientsTable(props) {
 
   const clients = props.clients;
-  const minutes = props.minutes;
 
   const perPage = props.perPage;
   const page = props.page;
@@ -23,14 +22,14 @@ function ConnectedClientsTable(props) {
   if (clients.total === 0) {
     return (
         <div className="alert alert-info mb-2">
-          No WiFi clients recorded in last {minutes} minutes.
+          No WiFi clients recorded in selected time frame.
         </div>
     )
   }
 
   return (
       <React.Fragment>
-        <p className="mb-1">Total Connected Clients: {clients.total}</p>
+        <p className="mb-1">Total Connected Clients: {numeral(clients.total).format("0,0")}</p>
 
         <table className="table table-sm table-hover table-striped">
           <thead>

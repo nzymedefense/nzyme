@@ -7,6 +7,8 @@ import MonitoredNetworkSelector from "../../shared/MonitoredNetworkSelector";
 import {useLocation} from "react-router-dom";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import {TapContext} from "../../../App";
+import {Presets} from "../../shared/timerange/TimeRange";
+import CardTitleWithControls from "../../shared/CardTitleWithControls";
 
 export const MonitoredNetworkContext = createContext(null);
 
@@ -23,6 +25,13 @@ function DiscoPage() {
   const [monitoredNetwork, setMonitoredNetwork] = useState(
       urlQuery.get("monitored-network-id") ? urlQuery.get("monitored-network-id") : ""
   );
+
+  const [discoHistogramTimeRange, setDiscoHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [deauthHistogramTimeRange, setDeauthHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [disassocHistogramTimeRange, setDisassocHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [pairsTimeRange, setPairsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [sendersTimeRange, setSendersTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [receiversTimeRange, setReceiversTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -57,9 +66,11 @@ function DiscoPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-body">
-                  <h3>Disconnection Frame Monitor</h3>
+                  <CardTitleWithControls title="Disconnection Frames Observed"
+                                         timeRange={discoHistogramTimeRange}
+                                         setTimeRange={setDiscoHistogramTimeRange} />
 
-                  <DiscoHistogram discoType="disconnection" minutes={24*60} />
+                  <DiscoHistogram discoType="disconnection" timeRange={discoHistogramTimeRange} />
 
                   <p className="mb-0 mt-3 text-muted">
                     <i>Disconnection activity</i> refers to the sum of deauthentication and disassociation frames.
@@ -73,9 +84,11 @@ function DiscoPage() {
             <div className="col-md-6">
               <div className="card">
                 <div className="card-body">
-                  <h3>Deauthentication Frames Observed</h3>
+                  <CardTitleWithControls title="Deauthentication Frames Observed"
+                                         timeRange={deauthHistogramTimeRange}
+                                         setTimeRange={setDeauthHistogramTimeRange} />
 
-                  <DiscoHistogram discoType="deauthentication" minutes={24*60} />
+                  <DiscoHistogram discoType="deauthentication" timeRange={deauthHistogramTimeRange} />
                 </div>
               </div>
             </div>
@@ -83,9 +96,11 @@ function DiscoPage() {
             <div className="col-md-6">
               <div className="card">
                 <div className="card-body">
-                  <h3>Disassociation Frames Observed</h3>
+                  <CardTitleWithControls title="Disassociation Frames Observed"
+                                         timeRange={disassocHistogramTimeRange}
+                                         setTimeRange={setDisassocHistogramTimeRange} />
 
-                  <DiscoHistogram discoType="disassociation" minutes={24*60} />
+                  <DiscoHistogram discoType="disassociation" timeRange={disassocHistogramTimeRange} />
                 </div>
               </div>
             </div>
@@ -95,9 +110,11 @@ function DiscoPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-body">
-                  <h3 className="mb-0">Top Pairs</h3>
+                  <CardTitleWithControls title="Top Pairs"
+                                         timeRange={pairsTimeRange}
+                                         setTimeRange={setPairsTimeRange} />
 
-                  <DiscoPairsTable />
+                  <DiscoPairsTable timeRange={pairsTimeRange} />
                 </div>
               </div>
             </div>
@@ -107,9 +124,11 @@ function DiscoPage() {
             <div className="col-md-6">
               <div className="card">
                 <div className="card-body">
-                  <h3 className="mb-0">Top Senders</h3>
+                  <CardTitleWithControls title="Top Senders"
+                                         timeRange={sendersTimeRange}
+                                         setTimeRange={setSendersTimeRange} />
 
-                  <DiscoSendersTable />
+                  <DiscoSendersTable timeRange={sendersTimeRange} />
                 </div>
               </div>
             </div>
@@ -117,9 +136,11 @@ function DiscoPage() {
             <div className="col-md-6">
               <div className="card">
                 <div className="card-body">
-                  <h3 className="mb-0">Top Receivers</h3>
+                  <CardTitleWithControls title="Top Receivers"
+                                         timeRange={receiversTimeRange}
+                                         setTimeRange={setReceiversTimeRange} />
 
-                  <DiscoReceiversTable />
+                  <DiscoReceiversTable timeRange={receiversTimeRange} />
                 </div>
               </div>
             </div>

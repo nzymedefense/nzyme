@@ -5,6 +5,8 @@ import Dot11Service from "../../../services/Dot11Service";
 import DisconnectedClientsTable from "./DisconnectedClientsTable";
 import ClientHistogram from "./ClientHistogram";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
+import {Presets} from "../../shared/timerange/TimeRange";
+import CardTitleWithControls from "../../shared/CardTitleWithControls";
 
 const dot11Service = new Dot11Service();
 const MINUTES = 15;
@@ -14,22 +16,50 @@ function ClientsPage() {
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
+  const [connectedClientsHistogramTimeRange, setConnectedClientsHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [connectedClientsHistogram, setConnectedClientsHistogram] = useState(null);
+  const [disconnectedClientsHistogramTimeRange, setDisconnectedClientsHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [disconnectedClientsHistogram, setDisconnectedClientsHistogram] = useState(null);
+
   const [connectedClients, setConnectedClients] = useState(null);
+  const [connectedClientsTimeRange, setConnectedClientsTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [connectedClientsPage, setConnectedClientsPage] = useState(1);
+
   const [disconnectedClients, setDisconnectedClients] = useState(null);
-  const [histograms, setHistograms] = useState(null);
+  const [disconnectedClientsTimeRange, setDisconnectedClientsTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [disconnectedClientsPage, setDisconnectedClientsPage] = useState(1);
 
   const perPage = 25;
-  const [connectedClientsPage, setConnectedClientsPage] = useState(1);
-  const [disconnectedClientsPage, setDisconnectedClientsPage] = useState(1);
+
+  useEffect(() => {
+    setConnectedClientsHistogram(null);
+
+    dot11Service.getConnectedClientsHistogram(
+        connectedClientsHistogramTimeRange, selectedTaps, setConnectedClientsHistogram
+    );
+  }, [connectedClientsHistogramTimeRange, selectedTaps])
+
+  useEffect(() => {
+    setDisconnectedClientsHistogram(null);
+
+    dot11Service.getDisconnectedClientsHistogram(
+        disconnectedClientsHistogramTimeRange, selectedTaps, setDisconnectedClientsHistogram
+    );
+  }, [disconnectedClientsHistogramTimeRange, selectedTaps])
 
   useEffect(() => {
     setConnectedClients(null);
+
+    dot11Service.findConnectedClients(connectedClientsTimeRange, selectedTaps, setConnectedClients,
+        perPage, (connectedClientsPage-1)*perPage);
+  }, [connectedClientsPage, connectedClientsTimeRange, selectedTaps])
+
+  useEffect(() => {
     setDisconnectedClients(null);
 
-    dot11Service.getClientHistograms(selectedTaps, setHistograms);
-    dot11Service.findAllClients(MINUTES, selectedTaps, setConnectedClients, setDisconnectedClients, perPage,
-        (connectedClientsPage-1)*perPage, perPage,(disconnectedClientsPage-1)*perPage);
-  }, [selectedTaps, connectedClientsPage, disconnectedClientsPage])
+    dot11Service.findDisconnectedClients(disconnectedClientsTimeRange, selectedTaps, setDisconnectedClients,
+        perPage, (disconnectedClientsPage-1)*perPage);
+  }, [disconnectedClientsPage, disconnectedClientsTimeRange, selectedTaps])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -51,9 +81,11 @@ function ClientsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>Connected Clients</h3>
+                <CardTitleWithControls title="Connected Clients" slim={true}
+                                       timeRange={connectedClientsHistogramTimeRange}
+                                       setTimeRange={setConnectedClientsHistogramTimeRange} />
 
-                <ClientHistogram param="connected" histograms={histograms} />
+                <ClientHistogram histogram={connectedClientsHistogram} />
               </div>
             </div>
           </div>
@@ -61,9 +93,11 @@ function ClientsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>Disconnected Clients</h3>
+                <CardTitleWithControls title="Disconnected Clients" slim={true}
+                                       timeRange={disconnectedClientsHistogramTimeRange}
+                                       setTimeRange={setDisconnectedClientsHistogramTimeRange} />
 
-                <ClientHistogram param="disconnected" histograms={histograms} />
+                <ClientHistogram histogram={disconnectedClientsHistogram} />
               </div>
             </div>
           </div>
@@ -73,7 +107,9 @@ function ClientsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>Connected Clients <small>Last 15 minutes</small></h3>
+                <CardTitleWithControls title="Connected Clients"
+                                       timeRange={connectedClientsTimeRange}
+                                       setTimeRange={setConnectedClientsTimeRange} />
 
                 <p className="text-muted">
                   All clients currently observed as connected to an access point within range are listed here. The
@@ -94,7 +130,9 @@ function ClientsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>Disconnected Clients <small>Last 15 minutes</small></h3>
+                <CardTitleWithControls title="Disconnected Clients"
+                                       timeRange={disconnectedClientsTimeRange}
+                                       setTimeRange={setDisconnectedClientsTimeRange} />
 
                 <p className="text-muted">
                   It should be noted that many modern WiFi devices utilize MAC address randomization when they are not

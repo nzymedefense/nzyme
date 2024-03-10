@@ -4,20 +4,19 @@ import SimpleLineChart from "../../widgets/charts/SimpleLineChart";
 
 function ClientHistogram(props) {
 
-  const histograms = props.histograms;
-  const param = props.param;
+  const histogram = props.histogram;
 
   const formatData = function(data) {
     const result = {}
 
-    Object.keys(data[param]).sort().forEach(function(key) {
-      result[key] = data[param][key]["client_count"];
+    Object.keys(data).sort().forEach(function(key) {
+      result[key] = data[key]["client_count"];
     })
 
     return result
   }
 
-  if (!histograms) {
+  if (!histogram) {
     return <LoadingSpinner />
   }
 
@@ -25,7 +24,7 @@ function ClientHistogram(props) {
       height={200}
       lineWidth={1}
       customMarginBottom={35}
-      data={formatData(histograms)}
+      data={formatData(histogram.values)}
   />
 
 }

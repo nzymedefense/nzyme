@@ -207,6 +207,7 @@ public class Dot11 {
 
     public List<Dot11AdvertisementHistogramEntry> getBSSIDAdvertisementHistogram(String bssid,
                                                                                  TimeRange timeRange,
+                                                                                 Bucketing.BucketingConfiguration bucketing,
                                                                                  List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
@@ -215,12 +216,13 @@ public class Dot11 {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT SUM(beacon_advertisements) AS beacons, " +
                                 "SUM(proberesp_advertisements) AS proberesponses, " +
-                                "DATE_TRUNC('minute', created_at) AS bucket FROM dot11_ssids " +
+                                "DATE_TRUNC(:date_trunc, created_at) AS bucket FROM dot11_ssids " +
                                 "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) AND bssid = :bssid " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bindList("taps", taps)
                         .bind("bssid", bssid)
                         .mapTo(Dot11AdvertisementHistogramEntry.class)
@@ -419,6 +421,7 @@ public class Dot11 {
     public List<Dot11AdvertisementHistogramEntry> getSSIDAdvertisementHistogram(String bssid,
                                                                                 String ssid,
                                                                                 TimeRange timeRange,
+                                                                                Bucketing.BucketingConfiguration bc,
                                                                                 List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
@@ -427,13 +430,14 @@ public class Dot11 {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT SUM(beacon_advertisements) AS beacons, " +
                                 "SUM(proberesp_advertisements) AS proberesponses, " +
-                                "DATE_TRUNC('minute', created_at) AS bucket FROM dot11_ssids " +
+                                "DATE_TRUNC(:date_trunc, created_at) AS bucket FROM dot11_ssids " +
                                 "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "AND bssid = :bssid AND ssid = :ssid " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
+                        .bind("date_trunc", bc.type().getDateTruncName())
                         .bindList("taps", taps)
                         .bind("bssid", bssid)
                         .bind("ssid", ssid)
@@ -576,7 +580,7 @@ public class Dot11 {
         }
     }
 
-    public long countBSSIDClients(int minutes, List<UUID> taps) {
+    public long countBSSIDClients(TimeRange timeRange, List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
@@ -585,15 +589,17 @@ public class Dot11 {
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
-                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>)")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                                "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
+                                "AND b.tap_uuid IN (<taps>)")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(Long.class)
                         .one()
         );
     }
 
-    public List<ConnectedClientDetails> findBSSIDClients(int minutes,
+    public List<ConnectedClientDetails> findBSSIDClients(TimeRange timeRange,
                                                          List<UUID> taps,
                                                          int limit,
                                                          int offset,
@@ -608,12 +614,14 @@ public class Dot11 {
                                 "MAX(b.created_at) AS last_seen " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
-                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                                "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
+                                "AND b.tap_uuid IN (<taps>) " +
                                 "GROUP BY c.client_mac, b.bssid " +
                                 "HAVING c.client_mac IS NOT NULL " +
                                 "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .define("order_column", orderColumn.getColumnName())
                         .define("order_direction", orderDirection)
@@ -624,7 +632,7 @@ public class Dot11 {
         );
     }
 
-    public List<String> findMacAddressesOfAllBSSIDClients(int minutes, List<UUID> taps) {
+    public List<String> findMacAddressesOfAllBSSIDClients(TimeRange timeRange, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -632,8 +640,10 @@ public class Dot11 {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT(b.bssid) AS bssid " +
                                 "FROM dot11_bssids AS b " +
-                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>)")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                                "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
+                                "AND b.tap_uuid IN (<taps>)")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(String.class)
                         .list()
@@ -659,7 +669,7 @@ public class Dot11 {
         );
     }
 
-    public long countClients(int minutes, List<UUID> taps) {
+    public long countClients(TimeRange timeRange, List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
@@ -668,15 +678,17 @@ public class Dot11 {
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) " +
                                 "FROM dot11_clients AS c " +
                                 "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
-                                "WHERE c.created_at > :cutoff AND c.tap_uuid IN (<taps>)")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                                "WHERE c.created_at >= :tr_from AND c.created_at <= :tr_to " +
+                                "AND c.tap_uuid IN (<taps>)")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(Long.class)
                         .one()
         );
     }
 
-    public List<DisconnectedClientDetails> findClients(int minutes,
+    public List<DisconnectedClientDetails> findClients(TimeRange timeRange,
                                                        List<UUID> taps,
                                                        List<String> excludeClientMacs,
                                                        int limit,
@@ -692,12 +704,14 @@ public class Dot11 {
                                 "ARRAY_AGG(DISTINCT(pr.ssid)) AS probe_requests " +
                                 "FROM dot11_clients AS c " +
                                 "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
-                                "WHERE c.created_at > :cutoff AND c.tap_uuid IN (<taps>) " +
+                                "WHERE c.created_at >= :tr_from AND c.created_at <= :tr_to " +
+                                "AND c.tap_uuid IN (<taps>) " +
                                 "AND NOT c.client_mac IN (<exclude_client_macs>) " +
                                 "GROUP BY c.client_mac " +
                                 "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .bindList("exclude_client_macs", excludeClientMacs == null || excludeClientMacs.isEmpty() ?
                                 noValuesBindList : excludeClientMacs)
@@ -732,20 +746,26 @@ public class Dot11 {
         );
     }
 
-    public List<ClientHistogramEntry> getClientHistogram(int minutes, List<UUID> taps, List<String> excludeClientMacs) {
+    public List<ClientHistogramEntry> getDisconnectedClientHistogram(TimeRange timeRange,
+                                                                     Bucketing.BucketingConfiguration bc,
+                                                                     List<UUID> taps,
+                                                                     List<String> excludeClientMacs) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) AS client_count, " +
-                                "DATE_TRUNC('minute', c.created_at) as bucket " +
+                                "DATE_TRUNC(:date_trunc, c.created_at) as bucket " +
                                 "FROM dot11_clients AS c " +
-                                "WHERE c.created_at > :cutoff AND c.tap_uuid IN (<taps>) " +
+                                "WHERE c.created_at >= :tr_from AND c.created_at <= :tr_to " +
+                                "AND c.tap_uuid IN (<taps>) " +
                                 "AND NOT c.client_mac IN (<exclude_client_macs>) " +
                                 "GROUP BY bucket " +
                                 "ORDER BY bucket DESC")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("date_trunc", bc.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .bindList("exclude_client_macs", excludeClientMacs == null || excludeClientMacs.isEmpty() ?
                                 noValuesBindList : excludeClientMacs)
@@ -754,20 +774,25 @@ public class Dot11 {
         );
     }
 
-    public List<ClientHistogramEntry> getConnectedClientHistogram(int minutes, List<UUID> taps) {
+    public List<ClientHistogramEntry> getConnectedClientHistogram(TimeRange timeRange,
+                                                                  Bucketing.BucketingConfiguration bc,
+                                                                  List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) AS client_count, " +
-                                "DATE_TRUNC('minute', b.created_at) as bucket " +
+                                "DATE_TRUNC(:date_trunc, b.created_at) as bucket " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
-                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                                "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
+                                "AND b.tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket " +
                                 "ORDER BY bucket DESC")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("date_trunc", bc.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(ClientHistogramEntry.class)
                         .list()
@@ -1476,13 +1501,15 @@ public class Dot11 {
 
     public List<DiscoHistogramEntry> getDiscoHistogram(DiscoType discoType,
                                                        TimeRange timeRange,
+                                                       Bucketing.BucketingConfiguration bucketing,
                                                        UUID tap,
                                                        @Nullable List<String> bssids) {
-        return getDiscoHistogram(discoType, timeRange, List.of(tap), bssids);
+        return getDiscoHistogram(discoType, timeRange, bucketing, List.of(tap), bssids);
     }
 
     public List<DiscoHistogramEntry> getDiscoHistogram(DiscoType discoType,
                                                        TimeRange timeRange,
+                                                       Bucketing.BucketingConfiguration bucketing,
                                                        List<UUID> taps,
                                                        @Nullable List<String> bssids) {
         if (taps.isEmpty()) {
@@ -1512,7 +1539,7 @@ public class Dot11 {
             // BSSID filter applied.
             senders = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT SUM(senders.sent_frames) " +
-                                    "AS frame_count, DATE_TRUNC('minute', senders.created_at) AS bucket " +
+                                    "AS frame_count, DATE_TRUNC(:date_trunc, senders.created_at) AS bucket " +
                                     "FROM dot11_disco_activity AS senders " +
                                     "WHERE senders.disco_type IN (<disco_types>) " +
                                     "AND senders.bssid IN (<bssids>) " +
@@ -1521,6 +1548,7 @@ public class Dot11 {
                                     "GROUP BY bucket ORDER BY bucket DESC")
                             .bind("tr_from", timeRange.from())
                             .bind("tr_to", timeRange.to())
+                            .bind("date_trunc", bucketing.type().getDateTruncName())
                             .bindList("disco_types", discoTypes)
                             .bindList("bssids", bssids)
                             .bindList("taps", taps)
@@ -1531,7 +1559,7 @@ public class Dot11 {
             // No BSSID filter.
             senders = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT SUM(senders.sent_frames) " +
-                                    "AS frame_count, DATE_TRUNC('minute', senders.created_at) AS bucket " +
+                                    "AS frame_count, DATE_TRUNC(:date_trunc, senders.created_at) AS bucket " +
                                     "FROM dot11_disco_activity AS senders " +
                                     "WHERE senders.disco_type IN (<disco_types>) " +
                                     "AND senders.created_at >= :tr_from AND senders.created_at <= :tr_to " +
@@ -1539,6 +1567,7 @@ public class Dot11 {
                                     "GROUP BY bucket ORDER BY bucket DESC")
                             .bind("tr_from", timeRange.from())
                             .bind("tr_to", timeRange.to())
+                            .bind("date_trunc", bucketing.type().getDateTruncName())
                             .bindList("disco_types", discoTypes)
                             .bindList("taps", taps)
                             .mapTo(DiscoHistogramEntry.class)
@@ -1551,7 +1580,7 @@ public class Dot11 {
             // BSSID filter applied.
             receivers = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT SUM(receivers.received_frames) " +
-                                    "AS frame_count, DATE_TRUNC('minute', senders.created_at) AS bucket " +
+                                    "AS frame_count, DATE_TRUNC(:date_trunc, senders.created_at) AS bucket " +
                                     "FROM dot11_disco_activity_receivers AS receivers " +
                                     "LEFT JOIN dot11_disco_activity AS senders " +
                                     "ON receivers.disco_activity_id = senders.id " +
@@ -1562,6 +1591,7 @@ public class Dot11 {
                                     "GROUP BY bucket ORDER BY bucket DESC")
                             .bind("tr_from", timeRange.from())
                             .bind("tr_to", timeRange.to())
+                            .bind("date_trunc", bucketing.type().getDateTruncName())
                             .bindList("disco_types", discoTypes)
                             .bindList("bssids", bssids)
                             .bindList("taps", taps)

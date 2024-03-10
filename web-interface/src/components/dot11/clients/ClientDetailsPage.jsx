@@ -14,6 +14,8 @@ import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 import MacAddressContextLine from "../../shared/context/macs/details/MacAddressContextLine";
 import TapBasedSignalStrengthTable from "../shared/TapBasedSignalStrengthTable";
 import ClientSignalStrengthChart from "./ClientSignalStrengthChart";
+import CardTitleWithControls from "../../shared/CardTitleWithControls";
+import {Presets} from "../../shared/timerange/TimeRange";
 
 const dot11Service = new Dot11Service();
 
@@ -25,6 +27,8 @@ function ClientDetailsPage() {
   const selectedTaps = tapContext.taps;
 
   const [client, setClient] = useState(null);
+
+  const [discoPairsTimeRange, setDiscoPairsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   useEffect(() => {
     setClient(null);
@@ -71,9 +75,9 @@ function ClientDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>
-                  Client Information <small>All Time</small>
-                </h3>
+                <CardTitleWithControls title="Client Information"
+                                       fixedAppliedTimeRange={Presets.ALL_TIME} />
+
                 <dl className="mb-0">
                   <dt>MAC Address</dt>
                   <dd>
@@ -96,9 +100,9 @@ function ClientDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>
-                  Activity <small>All Time</small>
-                </h3>
+                <CardTitleWithControls title="Activity"
+                                       fixedAppliedTimeRange={Presets.ALL_TIME} />
+
                 <dl className="mb-0">
                   <dt>First Seen</dt>
                   <dd>
@@ -117,9 +121,8 @@ function ClientDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>
-                  Observed Connections to BSSIDs <small>All Time</small>
-                </h3>
+                <CardTitleWithControls title="Observed Connections to BSSIDs"
+                                       fixedAppliedTimeRange={Presets.ALL_TIME} />
 
                 <ClientBSSIDHistory connectedBSSID={client.connected_bssid ? client.connected_bssid : null}
                                     bssids={client.connected_bssid_history}/>
@@ -130,9 +133,8 @@ function ClientDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>
-                  Observed Probe Requests <small>All Time</small>
-                </h3>
+                <CardTitleWithControls title="Observed Probe Requests"
+                                       fixedAppliedTimeRange={Presets.ALL_TIME} />
 
                 <ObservedProbeRequestsList probeRequests={client.probe_requests}/>
               </div>
@@ -146,7 +148,9 @@ function ClientDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Average Data &amp; Control Frames Signal Strengths By Tap <small>Last 15 minutes</small></h3>
+                    <CardTitleWithControls title="Average Data &amp; Control Frames Signal Strengths By Tap"
+                                           fixedAppliedTimeRange={Presets.RELATIVE_MINUTES_15} />
+
                     <TapBasedSignalStrengthTable strengths={client.connected_signal_strength}/>
                   </div>
                 </div>
@@ -157,7 +161,8 @@ function ClientDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Data &amp; Control Frames Signal Strength</h3>
+                    <CardTitleWithControls title="Data &amp; Control Frames Signal Strength"
+                                           fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24} />
 
                     <ClientSignalStrengthChart data={client.connected_signal_strength_histogram} />
                   </div>
@@ -171,7 +176,9 @@ function ClientDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Average Probe Request Frame Signal Strengths By Tap <small>Last 15 minutes</small></h3>
+                    <CardTitleWithControls title="Average Probe Request Frames Signal Strengths By Tap"
+                                           fixedAppliedTimeRange={Presets.RELATIVE_MINUTES_15} />
+
                     <TapBasedSignalStrengthTable strengths={client.disconnected_signal_strength}/>
                   </div>
                 </div>
@@ -181,7 +188,8 @@ function ClientDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Probe Request Frames Signal Strength</h3>
+                    <CardTitleWithControls title="Probe Request Frames Signal Strength"
+                                           fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24} />
 
                     <ClientSignalStrengthChart data={client.disconnected_signal_strength_histogram} />
                   </div>
@@ -195,17 +203,12 @@ function ClientDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>Data &amp; Control Frames <small>Last 24 hours</small></h3>
+                <CardTitleWithControls title="Data &amp; Control Frames"
+                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24} />
 
                 <ClientActivityHistogram histogram={client.activity_histogram}
                                          parameter="connected_frames"
                                          type="line"/>
-
-                <p className="text-muted mb-0 mt-3">
-                  <i>Connected</i> means that the client was connected to an access point. The frame types include data
-                  and
-                  control frames.
-                </p>
               </div>
             </div>
           </div>
@@ -215,7 +218,8 @@ function ClientDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>Probe Request Frames <small>Last 24 hours</small></h3>
+                <CardTitleWithControls title="Probe Request Frames"
+                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24} />
 
                 <ClientActivityHistogram histogram={client.activity_histogram}
                                          parameter="disconnected_frames"
@@ -229,7 +233,8 @@ function ClientDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>Disconnection Frames <small>Last 24 hours</small></h3>
+                <CardTitleWithControls title="Disconnection Frames"
+                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24} />
 
                 <ClientActivityHistogram histogram={client.activity_histogram}
                                          parameter="disconnection_activity"
@@ -237,7 +242,6 @@ function ClientDetailsPage() {
 
                 <p className="text-muted mb-0 mt-3">
                   Disconnection activity refers to the sum of deauthentication and disassociation frames.
-
                 </p>
               </div>
             </div>
@@ -248,9 +252,11 @@ function ClientDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3 className="mb-0">Top Disconnection Pairs <small>Last 24 hours</small></h3>
+                <CardTitleWithControls title="Top Disconnection Pairs"
+                                       timeRange={discoPairsTimeRange}
+                                       setTimeRange={setDiscoPairsTimeRange} />
 
-                <DiscoPairsTable bssids={[client.mac]} highlightValue={client.mac}/>
+                <DiscoPairsTable bssids={[client.mac.address]} highlightValue={client.mac} timeRange={discoPairsTimeRange} />
 
                 <p className="mb-0 mt-3 text-muted">
                   The MAC address of this client is <span className="highlighted">highlighted.</span>

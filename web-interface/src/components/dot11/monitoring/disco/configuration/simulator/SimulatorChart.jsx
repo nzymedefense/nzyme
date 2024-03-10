@@ -3,6 +3,7 @@ import Dot11Service from "../../../../../../services/Dot11Service";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import SimpleBarChart from "../../../../../widgets/charts/SimpleBarChart";
 import AnomaliesTable from "./AnomaliesTable";
+import {Presets} from "../../../../../shared/timerange/TimeRange";
 
 const dot11Service = new Dot11Service();
 
@@ -23,7 +24,7 @@ function SimulatorChart(props) {
 
       dot11Service.getDiscoHistogram(
           "disconnection",
-          24 * 60,
+          Presets.RELATIVE_HOURS_24,
           [tapUuid],
           null,
           monitoredNetworkId,

@@ -107,24 +107,38 @@ class Dot11Service {
     })
   }
 
-  findAllClients(minutes, taps, setConnectedClients, setDisconnectedClients, connectedLimit, connectedOffset, disconnectedLimit, disconnectedOffset) {
+  findConnectedClients(timeRange, taps, setClients, limit, offset) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
-    RESTClient.get("/dot11/clients",
-        { minutes: minutes, taps: tapsList, connectedLimit: connectedLimit, connectedOffset: connectedOffset,
-          disconnectedLimit: disconnectedLimit, disconnectedOffset: disconnectedOffset },
+    RESTClient.get("/dot11/clients/connected",
+        { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
         function (response) {
-          setConnectedClients(response.data.connected);
-          setDisconnectedClients(response.data.disconnected);
-    })
+          setClients(response.data);
+        })
   }
 
-  getClientHistograms(taps, setHistograms) {
+  findDisconnectedClients(timeRange, taps, setClients, limit, offset) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
-    RESTClient.get("/dot11/clients/histograms", { taps: tapsList }, function (response) {
-          setHistograms(response.data);
-    })
+    RESTClient.get("/dot11/clients/disconnected",
+        { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
+        function (response) {
+          setClients(response.data);
+        })
+  }
+
+  getConnectedClientsHistogram(timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/clients/connected/histogram", { time_range: timeRange, taps: tapsList },
+        function (response) { setHistogram(response.data); })
+  }
+
+  getDisconnectedClientsHistogram(timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/clients/disconnected/histogram", { time_range: timeRange, taps: tapsList },
+        function (response) { setHistogram(response.data); })
   }
 
   findMergedConnectedOrDisconnectedClient(clientMac, taps, setClient) {
@@ -291,23 +305,23 @@ class Dot11Service {
     })
   }
 
-  getDiscoTopSenders(minutes, taps, monitoredNetworkId, limit, offset, setTopSenders) {
+  getDiscoTopSenders(timeRange, taps, monitoredNetworkId, limit, offset, setTopSenders) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
     const monitoredNetworkIdParam = monitoredNetworkId ? monitoredNetworkId : null;
 
     RESTClient.get("/dot11/disco/lists/senders",
-        { minutes: minutes, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, limit: limit, offset: offset},
+        { time_range: timeRange, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, limit: limit, offset: offset},
         function (response) {
           setTopSenders(response.data)
     })
   }
 
-  getDiscoTopReceivers(minutes, taps, monitoredNetworkId, limit, offset, setTopReceivers) {
+  getDiscoTopReceivers(timeRange, taps, monitoredNetworkId, limit, offset, setTopReceivers) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
     const monitoredNetworkIdParam = monitoredNetworkId ? monitoredNetworkId : null;
 
     RESTClient.get("/dot11/disco/lists/receivers",
-        { minutes: minutes, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, limit: limit, offset: offset},
+        { time_range: timeRange, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, limit: limit, offset: offset},
         function (response) {
           setTopReceivers(response.data)
         })

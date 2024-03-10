@@ -16,6 +16,7 @@ import DiscoDetectionDetails from "./disco/DiscoDetectionDetails";
 import MonitoredNetworkDiscoChart from "./disco/MonitoredNetworkDiscoChart";
 import InlineTapSelector from "../../shared/InlineTapSelector";
 import {isValidMACAddress} from "../../../util/Tools";
+import {Presets} from "../../shared/timerange/TimeRange";
 
 const dot11Service = new Dot11Service();
 
@@ -313,7 +314,8 @@ function MonitoredNetworkDetailsPage() {
 
                 <InlineTapSelector onTapSelected={(tapUuid) => setDiscoSimulationTapUuid(tapUuid)}/>
 
-                <MonitoredNetworkDiscoChart selectedTapUuid={discoSimulationTapUuid}
+                <MonitoredNetworkDiscoChart timeRange={Presets.RELATIVE_HOURS_24}
+                                            selectedTapUuid={discoSimulationTapUuid}
                                             monitoredNetwork={ssid}/>
 
                 <p className="mt-2 mb-0 text-muted">
