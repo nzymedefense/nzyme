@@ -122,7 +122,7 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
             <button className="btn btn-secondary btn-sm" onClick={(e) => {
               e.preventDefault();
               onFloorSelected(null, null);
-            }}>Reset
+            }}>Retry
             </button>
           </div>
         </React.Fragment>

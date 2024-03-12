@@ -125,7 +125,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
 
             if (instantSignalStrengths.size() < 3) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(ErrorResponse.create("A valid selection was made, but less than three taps recorded this " +
+                        .entity(ErrorResponse.create("Less than three taps recorded this " +
                                 "BSSID during the selected timeframe and trilateration cannot be performed."))
                         .build();
             }
@@ -135,9 +135,9 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
 
             if (guessedFloor.isEmpty()) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(ErrorResponse.create("A valid selection was made, but nzyme could not determine a floor " +
+                        .entity(ErrorResponse.create("The system could not determine a floor " +
                                 "with at least three placed taps that have recorded a signal of the BSSID during the " +
-                                "selected timeframe and trilateration cannot be performed."))
+                                "selected timeframe. Trilateration cannot be performed."))
                         .build();
             }
 
@@ -192,16 +192,6 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                     .build();
         }
 
-        // Make sure taps are valid.
-        if (!validateTapsForTrilateration(taps)) {
-            // This needs no user error message because the UI pre-selects only valid floors.
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(ErrorResponse.create("Tap selection not valid for trilateration. Must be at least " +
-                            "three taps and all taps must be located at the same location and on the same floor."))
-                    .build();
-        }
-
-
         long locationFloorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(location.uuid());
         long locationTapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(location.uuid());
 
@@ -221,8 +211,9 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
 
         if (!validateSignalsForTrilateration(signals)) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(ErrorResponse.create("A valid selection was made, but less than three taps recorded this " +
-                            "BSSID during the selected timeframe and trilateration cannot be performed."))
+                    .entity(ErrorResponse.create("The determined/selected floor has three placed taps but less than " +
+                            "three taps recorded this BSSID during the selected timeframe. Trilateration cannot be " +
+                            "performed."))
                     .build();
         }
 
@@ -285,37 +276,6 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                 DateTime.now(),
                 "BSSID " + bssidParam
         )).build();
-    }
-
-    private boolean validateTapsForTrilateration(List<Tap> taps) {
-        if (taps.size() < 3) {
-            return false;
-        }
-
-        // All must be in same tenant location.
-        UUID locationUUID = null;
-
-        for (Tap tap : taps) {
-            if (tap.locationId() == null) {
-                LOG.debug("Passed taps insufficient for trilateration. Tap [{}/{}] not placed on any " +
-                        "floor plan.", tap.name(), tap.uuid());
-                return false;
-            }
-
-            if (locationUUID == null) {
-                // First tap.
-                locationUUID = tap.locationId();
-                continue;
-            }
-
-            if (!tap.locationId().equals(locationUUID)) {
-                LOG.debug("Passed taps insufficient for trilateration. Tap [{}/{}] not placed at " +
-                        "same location [{}] as others.", tap.name(), tap.uuid(), locationUUID);
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private boolean validateSignalsForTrilateration(List<TapBasedSignalStrengthResultHistogramEntry> signals) {
