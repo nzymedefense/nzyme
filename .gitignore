@@ -33,4 +33,5 @@ src/main/resources/git.properties
 
 tap/target/
 tap/nzyme-tap.conf
+tap/data*
 tap/perf.data*

@@ -434,7 +434,7 @@ impl DnsTable {
         }
     }
 
-    pub fn clear_ephemeral(&self) {
+    pub fn post_transmission(&self) {
         match self.ips.lock() {
             Ok(mut ips) => ips.clear(),
             Err(e) => error!("Could not acquire mutex to clear DNS IPs table: {}", e)

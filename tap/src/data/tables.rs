@@ -36,17 +36,6 @@ impl Tables {
         }
     }
 
-    pub fn run_table_jobs(&self) {
-        loop {
-            thread::sleep(Duration::from_secs(60));
-
-            match self.tcp.lock() {
-                Ok(tcp) => tcp.execute_background_jobs(),
-                Err(e) => error!("Could not acquire mutex to execute TCP background jobs: {}", e)
-            }
-        }
-    }
-
     pub fn calculate_metrics(&self) {
         match self.dns.lock() {
             Ok(dns) => dns.calculate_metrics(),
@@ -54,14 +43,21 @@ impl Tables {
         }
     }
 
-    pub fn clear_ephemeral(&self) {
+    pub fn pre_transmission(&self) {
+        match self.tcp.lock() {
+            Ok(tcp) => tcp.pre_transmission(),
+            Err(e) => error!("Could not acquire mutex to execute TCP pre transmission jobs: {}", e)
+        }
+    }
+
+    pub fn post_transmission(&self) {
         match self.dns.lock() {
-            Ok(dns) => dns.clear_ephemeral(),
+            Ok(dns) => dns.post_transmission(),
             Err(e) => error!("Could not acquire mutex to clear DNS table: {}", e)
         }
 
         match self.dot11.lock() {
-            Ok(mut dot11) => dot11.clear_ephemeral(),
+            Ok(mut dot11) => dot11.post_transmission(),
             Err(e) => error!("Could not acquire mutex to clear 802.11 table: {}", e)
         }
     }

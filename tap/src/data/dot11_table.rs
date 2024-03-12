@@ -536,7 +536,7 @@ impl Dot11Table {
         map
     }
 
-    pub fn clear_ephemeral(&mut self) {
+    pub fn post_transmission(&mut self) {
         self.clear_mutex_hashmap(&self.bssids);
         self.clear_mutex_hashmap(&self.clients);
         self.clear_mutex_hashmap(&self.disco.deauth);

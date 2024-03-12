@@ -1,4 +1,4 @@
-use std::hash::{Hash, Hasher};
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::net::IpAddr;
 
 #[derive(Eq, Clone, Debug)]
@@ -29,6 +29,12 @@ impl TcpSessionKey {
                 port_high: source_port,
             }
         }
+    }
+
+    pub fn calculate_hash(&self) -> u64 {
+        let mut s = DefaultHasher::new();
+        self.hash(&mut s);
+        s.finish()
     }
 }
 

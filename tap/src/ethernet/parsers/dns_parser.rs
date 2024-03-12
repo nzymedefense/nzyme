@@ -143,7 +143,7 @@ fn parse_string(data: &[u8], full_packet: &[u8]) -> Result<(usize, String)> {
             };
 
             let prev = String::from_utf8_lossy(&chars).to_string();
-            let full = prev + "." + &res;
+            let full = prev + "." + res.as_str();
             cursor += 2; // The pointer size.
 
             return Ok((cursor, full));

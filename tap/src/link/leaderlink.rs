@@ -32,7 +32,7 @@ impl Leaderlink {
         };
 
         let mut default_headers = HeaderMap::new();
-        let bearer = "Bearer ".to_owned() + &configuration.general.leader_secret;
+        let bearer = "Bearer ".to_owned() + configuration.general.leader_secret.as_str();
         default_headers.insert(AUTHORIZATION, bearer.parse().unwrap());
 
         let http_client = reqwest::blocking::Client::builder()
@@ -56,6 +56,8 @@ impl Leaderlink {
     pub fn run(&mut self) {
         loop {
             sleep(Duration::from_secs(10));
+
+            self.tables.pre_transmission();
 
             // Status report.
             match self.send_status() {
@@ -84,12 +86,12 @@ impl Leaderlink {
             /*
              * Clear tables after submission attempt. We might lose some data that was written between
              * the send attempt and the receipt, but that is OK considering the nature of the data and
-             * the significantly more complex implementation required to guarantuee no data loss.
+             * the significantly more complex implementation required to guarantee no data loss.
              * 
              * We are also accepting that data is lost when the submission failed. For now, this is
              * easier than implementing a robust and disk-persistent retry mechanism.
             */
-            self.tables.clear_ephemeral();
+            self.tables.post_transmission();
         }
     }
 

@@ -1,10 +1,14 @@
 
 use std::{sync::{Arc}};
 use std::collections::HashMap;
+use std::hash::Hash;
 use std::net::IpAddr;
 use std::sync::Mutex;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use log::{error, info, trace, warn};
+use polars::df;
+use polars::prelude::*;
+use strum_macros::Display;
 use crate::data::tcp_table::TcpSessionState::{ClosedFin, ClosedRst, ClosedTimeout, Established, FinWait1, FinWait2, Refused, SynReceived, SynSent};
 use crate::ethernet::packets::{TcpSegment};
 use crate::ethernet::tcp_session_key::TcpSessionKey;
@@ -22,12 +26,12 @@ pub struct TcpSession {
     pub destination_port: u16,
     pub start_time: DateTime<Utc>,
     pub end_time: Option<DateTime<Utc>>,
-    pub segment_count: u128,
-    pub bytes_count: u128,
+    pub segment_count: u64,
+    pub bytes_count: u64,
     pub content: Vec<u8>
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Debug, Display, Clone)]
 pub enum TcpSessionState {
     SynSent,
     SynReceived,
@@ -57,13 +61,13 @@ impl TcpTable {
 
                         session.state = session_state.clone();
                         session.segment_count += 1;
-                        session.bytes_count += segment.size as u128;
+                        session.bytes_count += segment.size as u64;
 
                         if session.end_time == None && (session_state == ClosedFin || session_state == ClosedRst) {
                             session.end_time = Some(Utc::now());
                         }
 
-                        info!("Existing TCP Session: {:?}, State: {:?}, Flags: {:?}",
+                        trace!("Existing TCP Session: {:?}, State: {:?}, Flags: {:?}",
                             segment.session_key, session_state, segment.flags);
                     },
                     None => {
@@ -80,11 +84,11 @@ impl TcpTable {
                                 destination_address: segment.destination_address,
                                 destination_port: segment.destination_port,
                                 segment_count: 1,
-                                bytes_count: segment.size as u128,
+                                bytes_count: segment.size as u64,
                                 content: Vec::new() // TODO
                             };
 
-                            info!("New TCP Session: {:?}, State: {:?}, Flags: {:?}",
+                            trace!("New TCP Session: {:?}, State: {:?}, Flags: {:?}",
                             segment.session_key, session_state, segment.flags);
 
                             sessions.insert(segment.session_key.clone(), new_session);
@@ -98,8 +102,56 @@ impl TcpTable {
         }
     }
 
-    pub fn execute_background_jobs(&self) {
-        // Write to disk.
+    pub fn pre_transmission(&self) {
+        let mut session_keys: Vec<u64> = Vec::new();
+        let mut states: Vec<String> = Vec::new();
+        let mut start_times: Vec<NaiveDateTime> = Vec::new();
+        let mut end_times: Vec<Option<NaiveDateTime>> = Vec::new();
+        let mut source_addresses: Vec<String> = Vec::new();
+        let mut source_ports: Vec<u16> = Vec::new();
+        let mut destination_addresses: Vec<String> = Vec::new();
+        let mut destination_ports: Vec<u16> = Vec::new();
+        let mut segment_counts: Vec<u64> = Vec::new();
+        let mut byte_counts: Vec<u64> = Vec::new();
+
+        match self.sessions.lock() {
+            Ok(mut sessions) => {
+                for (session_key, session) in &*sessions {
+                    session_keys.push(session_key.calculate_hash());
+                    states.push(session.state.to_string());
+                    start_times.push(session.start_time.naive_utc());
+                    end_times.push(session.end_time.map(|set| set.naive_utc()));
+                    source_addresses.push(session.source_address.to_string());
+                    source_ports.push(session.source_port);
+                    destination_addresses.push(session.destination_address.to_string());
+                    destination_ports.push(session.destination_port);
+                    segment_counts.push(session.segment_count);
+                    byte_counts.push(session.bytes_count);
+                }
+
+                sessions.clear();
+            },
+            Err(e) => {
+                error!("Could not acquire TCP sessions table mutex: {}", e);
+                return
+            }
+        }
+
+        let mut df = df!(
+            "session" => &session_keys,
+            "state" => &states,
+            "start_time" => &start_times,
+            "end_time" => &end_times,
+            "source_address" => &source_addresses,
+            "source_port" => &source_ports,
+            "destination_address" => &destination_addresses,
+            "destination_port" => &destination_ports,
+            "segment_count" => &segment_counts,
+            "byte_count" => &byte_counts
+        ).unwrap();
+
+        let mut file = std::fs::File::create(format!("data/nzs_tcp_sessions_{}.parquet", Utc::now().timestamp())).unwrap();
+        ParquetWriter::new(&mut file).finish(&mut df).unwrap();
     }
 
     fn determine_session_state(segment: &TcpSegment, session: Option<&TcpSession>)
@@ -145,12 +197,15 @@ impl TcpTable {
                     /*
                      * Either normal segment flow in established connection or final
                      * ACK in handshake or final ACK in FIN process. Considering that there was
-                     * no previous segment recorded, we assume the likeliest case: A normal segment
-                     * exchange during an established connection.
+                     * no previous segment recorded, we assume the likeliest case: A segment
+                     * exchanged during an established connection.
                      *
                      * We'd falsely mark this connection as ESTABLISHED and have it time out if
                      * this was a FIN ACK and accept that risk, as it can only happen right after
                      * capture start.
+                     *
+                     * Additionally, the processing logic is only recording newly established
+                     * connections and discarding anything else.
                      */
                     Established
                 } else if segment.flags.fin {
