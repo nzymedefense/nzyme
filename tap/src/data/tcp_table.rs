@@ -3,18 +3,23 @@ use std::{sync::{Arc}};
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::net::IpAddr;
+use std::path::PathBuf;
 use std::sync::Mutex;
 use chrono::{DateTime, NaiveDateTime, Utc};
-use log::{error, info, trace, warn};
+use log::{error, trace, warn};
 use polars::df;
 use polars::prelude::*;
 use strum_macros::Display;
 use crate::data::tcp_table::TcpSessionState::{ClosedFin, ClosedRst, ClosedTimeout, Established, FinWait1, FinWait2, Refused, SynReceived, SynSent};
 use crate::ethernet::packets::{TcpSegment};
 use crate::ethernet::tcp_session_key::TcpSessionKey;
+use crate::helpers::fs;
+
+static TYPE_NAME: &str = "tcp_sessions";
 
 pub struct TcpTable {
-    pub sessions: Mutex<HashMap<TcpSessionKey, TcpSession>>
+    pub sessions: Mutex<HashMap<TcpSessionKey, TcpSession>>,
+    pub data_directory: Arc<PathBuf>
 }
 
 #[derive(Debug)]
@@ -46,9 +51,10 @@ pub enum TcpSessionState {
 
 impl TcpTable {
 
-    pub fn new() -> Self {
+    pub fn new(data_directory: Arc<PathBuf>) -> Self {
         Self {
-            sessions: Mutex::new(HashMap::new())
+            sessions: Mutex::new(HashMap::new()),
+            data_directory
         }
     }
 
@@ -103,6 +109,15 @@ impl TcpTable {
     }
 
     pub fn pre_transmission(&self) {
+        // Make sure directory exists and create if not.
+        if let Err(e) = fs::ensure_tap_data_type_subdirectory(
+            &self.data_directory, TYPE_NAME) {
+            error!("Could not ensure that tap data type subdirectory exists: {}", e);
+            return;
+        }
+        let parquet_path = fs::get_tap_data_type_path(&self.data_directory, TYPE_NAME)
+            .join(format!("nz_{}.parquet", Utc::now().timestamp()));
+
         let mut session_keys: Vec<u64> = Vec::new();
         let mut states: Vec<String> = Vec::new();
         let mut start_times: Vec<NaiveDateTime> = Vec::new();
@@ -150,7 +165,7 @@ impl TcpTable {
             "byte_count" => &byte_counts
         ).unwrap();
 
-        let mut file = std::fs::File::create(format!("data/nzs_tcp_sessions_{}.parquet", Utc::now().timestamp())).unwrap();
+        let mut file = std::fs::File::create(parquet_path).unwrap();
         ParquetWriter::new(&mut file).finish(&mut df).unwrap();
     }
 

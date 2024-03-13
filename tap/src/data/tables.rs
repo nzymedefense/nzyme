@@ -2,8 +2,9 @@ use std::{
     collections::HashMap,
     sync::{Arc, Mutex}, thread
 };
+use std::path::PathBuf;
 
-use log::{error, info};
+use log::{error};
 use std::time::Duration;
 use crate::data::tcp_table::TcpTable;
 
@@ -20,12 +21,12 @@ pub struct Tables {
 
 impl Tables {
 
-    pub fn new(metrics: Arc<Mutex<Metrics>>) -> Self {
+    pub fn new(metrics: Arc<Mutex<Metrics>>, data_directory: Arc<PathBuf>) -> Self {
         Tables {
             arp: Arc::new(Mutex::new(HashMap::new())),
             dns: Arc::new(Mutex::new(DnsTable::new(metrics))),
             dot11: Arc::new(Mutex::new(Dot11Table::new())),
-            tcp: Arc::new(Mutex::new(TcpTable::new()))
+            tcp: Arc::new(Mutex::new(TcpTable::new(data_directory)))
         }
     }
 

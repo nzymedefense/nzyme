@@ -26,6 +26,7 @@ use messagebus::bus::Bus;
 use system_state::SystemState;
 
 use crate::dot11::{channel_hopper::ChannelHopper};
+use crate::helpers::fs;
 use crate::helpers::network::Channel;
 
 #[derive(Parser,Debug)]
@@ -43,10 +44,7 @@ struct Arguments {
 
 fn main() {
     let args = Arguments::parse();
-    let log_level = match args.log_level {
-        Some(log_level) => log_level,
-        None => "info".to_string()
-    };
+    let log_level = args.log_level.unwrap_or_else(|| "info".to_string());
 
     if args.generate_channels {
         // we only initialize logging for the channel toml generation if it is not info, so we don't pollute the output
@@ -123,7 +121,13 @@ fn main() {
             exit(exit_code::EX_CONFIG);
         }
     };
-    
+
+    info!("Data directory: [{}]", configuration.general.data_directory.path.display());
+    if let Err(e) = fs::ensure_tap_data_subdirectory(&configuration.general.data_directory.path) {
+        error!("Fatal error: Could not create tap data subdirectory in data directory. {}", e);
+        exit(exit_code::EX_UNAVAILABLE);
+    }
+
     let system_state = Arc::new(
         SystemState::new(configuration.misc.training_period_minutes as usize).initialize()
     );
@@ -132,7 +136,7 @@ fn main() {
     
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new()));
     let bus = Arc::new(Bus::new(metrics.clone(), "ethernet_packets".to_string(), configuration.clone()));
-    let tables = Arc::new(Tables::new(metrics.clone()));
+    let tables = Arc::new(Tables::new(metrics.clone(), Arc::new(configuration.clone().general.data_directory.path)));
 
     let tables_bg = tables.clone();
     thread::spawn(move || {
@@ -180,7 +184,7 @@ fn main() {
                         Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
                         Err(e) => error!("Could not acquire mutex of metrics: {}", e)
                     }
-                    thread::sleep(time::Duration::from_secs(5));
+                    sleep(Duration::from_secs(5));
                 }
             });
         }
