@@ -1,7 +1,5 @@
 use std::collections::HashMap;
-use std::{fs};
-use std::fs::{File, read_to_string};
-use std::path::{Path, PathBuf};
+use std::fs::read_to_string;
 
 use anyhow::{Result, bail};
 use reqwest::Url;
@@ -17,19 +15,11 @@ pub struct Configuration {
     pub misc: Misc
 }
 
-// Custom type so we can have deserializer with custom error message.
-#[derive(Debug, Clone)]
-pub struct DataDirectory {
-    pub path: PathBuf
-}
-
 #[derive(Debug, Clone, Deserialize)]
 pub struct General {
     pub leader_secret: String,
     pub leader_uri: String,
     pub accept_insecure_certs: bool,
-    #[serde(deserialize_with = "deserialize_data_directory")]
-    pub data_directory: DataDirectory
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -73,16 +63,6 @@ pub fn load(path: String) -> Result<Configuration, anyhow::Error> {
 
     if doc.general.leader_secret.len() < 64 {
         bail!("Configuration variable `leader_secret` must be at least 64 characters long.");
-    }
-
-    if !directory_is_readable(&doc.general.data_directory.path) {
-        bail!("Configuration variable `data_directory` must be a path to a readable and \
-                writable directory, but it is not readable. Resolved path was: {}", doc.general.data_directory.path.display());
-    }
-
-    if !directory_is_writable(&doc.general.data_directory.path) {
-        bail!("Configuration variable `data_directory` must be a path to a readable and \
-                writable directory but it is not writable. Resolved path was: {}", doc.general.data_directory.path.display());
     }
 
     if doc.misc.training_period_minutes <= 0 {
@@ -147,30 +127,4 @@ pub fn load(path: String) -> Result<Configuration, anyhow::Error> {
     };
 
     Ok(doc)
-}
-
-fn deserialize_data_directory<'de, D>(deserializer: D) -> Result<DataDirectory, D::Error>
-    where
-        D: Deserializer<'de>,
-{
-    let s = String::deserialize(deserializer)?;
-
-    match PathBuf::from(s).canonicalize() {
-        Ok(path) => Ok(DataDirectory { path }),
-        Err(e) => Err(D::Error::custom(format!("Could not deserialize `data_directory` \
-                        configuration. Error was: {}", e)))
-    }
-}
-
-fn directory_is_writable<P: AsRef<Path>>(path: P) -> bool {
-    let path = path.as_ref().join(".temp_file_for_permission_check");
-
-    File::create(&path).map(|_| {
-        fs::remove_file(&path).unwrap(); // Unlikely that file removal would fail here.
-        true
-    }).unwrap_or(false)
-}
-
-fn directory_is_readable<P: AsRef<Path>>(path: P) -> bool {
-    fs::read_dir(path).is_ok()
 }

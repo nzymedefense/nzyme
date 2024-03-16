@@ -57,8 +57,6 @@ impl Leaderlink {
         loop {
             sleep(Duration::from_secs(10));
 
-            self.tables.pre_transmission();
-
             // Status report.
             match self.send_status() {
                 Ok(r) => {
@@ -162,13 +160,20 @@ impl Leaderlink {
     }
 
     fn send_tables(&mut self) -> Result<Response, Error> {
+        match self.tables.tcp.lock() {
+            Ok(tcp) => tcp.process_report(),
+            Err(e) => error!("Could not acquire TCP table mutex. {}", e)
+        }
+
+        // TODO change all reports below to new process
+
         let mut uri = self.uri.clone();
         uri.set_path("/api/taps/tables");
 
         let arp = match self.tables.arp.lock() {
             Ok(table) => table.clone(),
             Err(e) => {
-                error!("Could not aquire ARP table mutex. {}", e);
+                error!("Could not acquire ARP table mutex. {}", e);
                 HashMap::new()
             }
         };
@@ -176,7 +181,7 @@ impl Leaderlink {
         let dns = match self.tables.dns.lock() {
             Ok(dns) => dns.generate_report(),
             Err(e) => {
-                error!("Could not aquire DNS table mutex. {}", e);
+                error!("Could not acquire DNS table mutex. {}", e);
                 DnsTableReport {
                     ips: HashMap::new(),
                     nxdomains: Vec::new(),

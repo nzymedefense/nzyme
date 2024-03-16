@@ -1,25 +1,22 @@
 
 use std::{sync::{Arc}};
+use std::collections::hash_map::ValuesMut;
 use std::collections::HashMap;
-use std::hash::Hash;
 use std::net::IpAddr;
-use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use chrono::{DateTime, NaiveDateTime, Utc};
-use log::{error, trace, warn};
+use log::{error, info, trace, warn};
 use polars::df;
 use polars::prelude::*;
 use strum_macros::Display;
 use crate::data::tcp_table::TcpSessionState::{ClosedFin, ClosedRst, ClosedTimeout, Established, FinWait1, FinWait2, Refused, SynReceived, SynSent};
 use crate::ethernet::packets::{TcpSegment};
 use crate::ethernet::tcp_session_key::TcpSessionKey;
-use crate::helpers::fs;
 
-static TYPE_NAME: &str = "tcp_sessions";
+static SESSION_TIMEOUT: usize = 60;
 
 pub struct TcpTable {
     pub sessions: Mutex<HashMap<TcpSessionKey, TcpSession>>,
-    pub data_directory: Arc<PathBuf>
 }
 
 #[derive(Debug)]
@@ -51,10 +48,9 @@ pub enum TcpSessionState {
 
 impl TcpTable {
 
-    pub fn new(data_directory: Arc<PathBuf>) -> Self {
+    pub fn new() -> Self {
         Self {
-            sessions: Mutex::new(HashMap::new()),
-            data_directory
+            sessions: Mutex::new(HashMap::new())
         }
     }
 
@@ -63,13 +59,13 @@ impl TcpTable {
             Ok(mut sessions) => {
                 match sessions.get_mut(&segment.session_key) {
                     Some(session) => {
-                        let session_state = Self::determine_session_state(&segment, Some(session));
+                        let session_state = Self::determine_session_state(segment, Some(session));
 
                         session.state = session_state.clone();
                         session.segment_count += 1;
                         session.bytes_count += segment.size as u64;
 
-                        if session.end_time == None && (session_state == ClosedFin || session_state == ClosedRst) {
+                        if session.end_time.is_none() && (session_state == ClosedFin || session_state == ClosedRst) {
                             session.end_time = Some(Utc::now());
                         }
 
@@ -77,7 +73,7 @@ impl TcpTable {
                             segment.session_key, session_state, segment.flags);
                     },
                     None => {
-                        let session_state = Self::determine_session_state(&segment, None);
+                        let session_state = Self::determine_session_state(segment, None);
 
                         // We only record new connections, not mid-connection.
                         if session_state == SynSent {
@@ -108,29 +104,24 @@ impl TcpTable {
         }
     }
 
-    pub fn pre_transmission(&self) {
-        // Make sure directory exists and create if not.
-        if let Err(e) = fs::ensure_tap_data_type_subdirectory(
-            &self.data_directory, TYPE_NAME) {
-            error!("Could not ensure that tap data type subdirectory exists: {}", e);
-            return;
-        }
-        let parquet_path = fs::get_tap_data_type_path(&self.data_directory, TYPE_NAME)
-            .join(format!("nz_{}.parquet", Utc::now().timestamp()));
-
-        let mut session_keys: Vec<u64> = Vec::new();
-        let mut states: Vec<String> = Vec::new();
-        let mut start_times: Vec<NaiveDateTime> = Vec::new();
-        let mut end_times: Vec<Option<NaiveDateTime>> = Vec::new();
-        let mut source_addresses: Vec<String> = Vec::new();
-        let mut source_ports: Vec<u16> = Vec::new();
-        let mut destination_addresses: Vec<String> = Vec::new();
-        let mut destination_ports: Vec<u16> = Vec::new();
-        let mut segment_counts: Vec<u64> = Vec::new();
-        let mut byte_counts: Vec<u64> = Vec::new();
-
+    pub fn process_report(&self) { // -> Report
         match self.sessions.lock() {
             Ok(mut sessions) => {
+                // 0) Mark all timed out sessions in table as ClosedTimeout.
+                timeout_sweep(&mut sessions);
+
+                // 1) Write current table data to dataframe.
+                let mut session_keys: Vec<u64> = Vec::new();
+                let mut states: Vec<String> = Vec::new();
+                let mut start_times: Vec<NaiveDateTime> = Vec::new();
+                let mut end_times: Vec<Option<NaiveDateTime>> = Vec::new();
+                let mut source_addresses: Vec<String> = Vec::new();
+                let mut source_ports: Vec<u16> = Vec::new();
+                let mut destination_addresses: Vec<String> = Vec::new();
+                let mut destination_ports: Vec<u16> = Vec::new();
+                let mut segment_counts: Vec<u64> = Vec::new();
+                let mut byte_counts: Vec<u64> = Vec::new();
+
                 for (session_key, session) in &*sessions {
                     session_keys.push(session_key.calculate_hash());
                     states.push(session.state.to_string());
@@ -144,29 +135,30 @@ impl TcpTable {
                     byte_counts.push(session.bytes_count);
                 }
 
-                sessions.clear();
+                let df = df!(
+                    "session" => &session_keys,
+                    "state" => &states,
+                    "start_time" => &start_times,
+                    "end_time" => &end_times,
+                    "source_address" => &source_addresses,
+                    "source_port" => &source_ports,
+                    "destination_address" => &destination_addresses,
+                    "destination_port" => &destination_ports,
+                    "segment_count" => &segment_counts,
+                    "byte_count" => &byte_counts
+                ).unwrap().lazy();
+
+                // 2) Query Data and build report.
+                info!("DATA: {}", df.collect().unwrap());
+
+                // 3) Send data. Only proceed with cleanup if successful.
+
+                // 4) Delete all timed out and closedfin/closedrst sessions in table.
             },
             Err(e) => {
                 error!("Could not acquire TCP sessions table mutex: {}", e);
-                return
             }
         }
-
-        let mut df = df!(
-            "session" => &session_keys,
-            "state" => &states,
-            "start_time" => &start_times,
-            "end_time" => &end_times,
-            "source_address" => &source_addresses,
-            "source_port" => &source_ports,
-            "destination_address" => &destination_addresses,
-            "destination_port" => &destination_ports,
-            "segment_count" => &segment_counts,
-            "byte_count" => &byte_counts
-        ).unwrap();
-
-        let mut file = std::fs::File::create(parquet_path).unwrap();
-        ParquetWriter::new(&mut file).finish(&mut df).unwrap();
     }
 
     fn determine_session_state(segment: &TcpSegment, session: Option<&TcpSession>)
@@ -237,4 +229,12 @@ impl TcpTable {
         }
     }
 
+
+
+}
+
+fn timeout_sweep(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>) {
+    for session in sessions.values_mut() {
+        if session.last_segment
+    }
 }

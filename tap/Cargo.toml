@@ -74,6 +74,5 @@ polars = { version = "0.38.2", features = [
     "sql",
     "streaming",
     "performant",
-    "parquet",
     "fmt"
 ]}

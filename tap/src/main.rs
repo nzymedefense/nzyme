@@ -26,7 +26,6 @@ use messagebus::bus::Bus;
 use system_state::SystemState;
 
 use crate::dot11::{channel_hopper::ChannelHopper};
-use crate::helpers::fs;
 use crate::helpers::network::Channel;
 
 #[derive(Parser,Debug)]
@@ -122,12 +121,6 @@ fn main() {
         }
     };
 
-    info!("Data directory: [{}]", configuration.general.data_directory.path.display());
-    if let Err(e) = fs::ensure_tap_data_subdirectory(&configuration.general.data_directory.path) {
-        error!("Fatal error: Could not create tap data subdirectory in data directory. {}", e);
-        exit(exit_code::EX_UNAVAILABLE);
-    }
-
     let system_state = Arc::new(
         SystemState::new(configuration.misc.training_period_minutes as usize).initialize()
     );
@@ -136,7 +129,7 @@ fn main() {
     
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new()));
     let bus = Arc::new(Bus::new(metrics.clone(), "ethernet_packets".to_string(), configuration.clone()));
-    let tables = Arc::new(Tables::new(metrics.clone(), Arc::new(configuration.clone().general.data_directory.path)));
+    let tables = Arc::new(Tables::new(metrics.clone()));
 
     let tables_bg = tables.clone();
     thread::spawn(move || {
