@@ -1,10 +1,9 @@
 
 use std::{sync::{Arc}};
-use std::collections::hash_map::ValuesMut;
 use std::collections::HashMap;
 use std::net::IpAddr;
 use std::sync::{Mutex, MutexGuard};
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Duration, NaiveDateTime, Utc};
 use log::{error, info, trace, warn};
 use polars::df;
 use polars::prelude::*;
@@ -28,6 +27,7 @@ pub struct TcpSession {
     pub destination_port: u16,
     pub start_time: DateTime<Utc>,
     pub end_time: Option<DateTime<Utc>>,
+    pub most_recent_segment_time: DateTime<Utc>,
     pub segment_count: u64,
     pub bytes_count: u64,
     pub content: Vec<u8>
@@ -61,12 +61,13 @@ impl TcpTable {
                     Some(session) => {
                         let session_state = Self::determine_session_state(segment, Some(session));
 
+                        session.most_recent_segment_time = segment.timestamp;
                         session.state = session_state.clone();
                         session.segment_count += 1;
                         session.bytes_count += segment.size as u64;
 
                         if session.end_time.is_none() && (session_state == ClosedFin || session_state == ClosedRst) {
-                            session.end_time = Some(Utc::now());
+                            session.end_time = Some(segment.timestamp);
                         }
 
                         trace!("Existing TCP Session: {:?}, State: {:?}, Flags: {:?}",
@@ -81,6 +82,7 @@ impl TcpTable {
                                 state: session_state.clone(),
                                 start_time: segment.timestamp,
                                 end_time: None,
+                                most_recent_segment_time: segment.timestamp,
                                 source_address: segment.source_address,
                                 source_port: segment.source_port,
                                 destination_address: segment.destination_address,
@@ -107,14 +109,15 @@ impl TcpTable {
     pub fn process_report(&self) { // -> Report
         match self.sessions.lock() {
             Ok(mut sessions) => {
-                // 0) Mark all timed out sessions in table as ClosedTimeout.
+                // 1) Mark all timed out sessions in table as ClosedTimeout.
                 timeout_sweep(&mut sessions);
 
-                // 1) Write current table data to dataframe.
+                // 2) Write current table data to dataframe.
                 let mut session_keys: Vec<u64> = Vec::new();
                 let mut states: Vec<String> = Vec::new();
                 let mut start_times: Vec<NaiveDateTime> = Vec::new();
                 let mut end_times: Vec<Option<NaiveDateTime>> = Vec::new();
+                let mut most_recent_segment_times: Vec<NaiveDateTime> = Vec::new();
                 let mut source_addresses: Vec<String> = Vec::new();
                 let mut source_ports: Vec<u16> = Vec::new();
                 let mut destination_addresses: Vec<String> = Vec::new();
@@ -127,6 +130,7 @@ impl TcpTable {
                     states.push(session.state.to_string());
                     start_times.push(session.start_time.naive_utc());
                     end_times.push(session.end_time.map(|set| set.naive_utc()));
+                    most_recent_segment_times.push(session.most_recent_segment_time.naive_utc());
                     source_addresses.push(session.source_address.to_string());
                     source_ports.push(session.source_port);
                     destination_addresses.push(session.destination_address.to_string());
@@ -140,6 +144,7 @@ impl TcpTable {
                     "state" => &states,
                     "start_time" => &start_times,
                     "end_time" => &end_times,
+                    "most_recent_segment_time" => &most_recent_segment_times,
                     "source_address" => &source_addresses,
                     "source_port" => &source_ports,
                     "destination_address" => &destination_addresses,
@@ -148,15 +153,17 @@ impl TcpTable {
                     "byte_count" => &byte_counts
                 ).unwrap().lazy();
 
-                // 2) Query Data and build report.
-                info!("DATA: {}", df.collect().unwrap());
+                // 3) Query Data and build report.
+                info!("DATA: {}", df.count().collect().unwrap());
 
-                // 3) Send data. Only proceed with cleanup if successful.
+                // 4) Send data. Only proceed with cleanup if successful.
+                // ASSUME SUCCESS
 
-                // 4) Delete all timed out and closedfin/closedrst sessions in table.
+                // 5) Delete all timed out and closedfin/closedrst sessions in table.
+                retention_sweep(&mut sessions);
             },
             Err(e) => {
-                error!("Could not acquire TCP sessions table mutex: {}", e);
+                error!("Could not acquire TCP sessions table mutex for report generation: {}", e);
             }
         }
     }
@@ -228,13 +235,17 @@ impl TcpTable {
             }
         }
     }
-
-
-
 }
 
 fn timeout_sweep(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>) {
     for session in sessions.values_mut() {
-        if session.last_segment
+        if Utc::now() - session.most_recent_segment_time
+            > Duration::try_seconds(SESSION_TIMEOUT as i64).unwrap() {
+            session.state = ClosedTimeout;
+        }
     }
+}
+
+fn retention_sweep(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>) {
+    sessions.retain(|_, s| s.state == ClosedTimeout || s.state == ClosedRst || s.state == ClosedFin)
 }

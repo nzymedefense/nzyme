@@ -119,13 +119,13 @@ impl EthernetBroker {
                                 };
                             }
 
-                            // To UDP pipeline.
-                            to_pipeline!(
+                            // To UDP pipeline. TODO re-enable
+                            /*to_pipeline!(
                                 ChannelName::UdpPipeline,
                                 bus.udp_pipeline.sender,
                                 udp,
                                 size
-                            );
+                            );*/
                         },
                         types::ProtocolType::Icmp6 |
                         types::ProtocolType::Icmp => {}
