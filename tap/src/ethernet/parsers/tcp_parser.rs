@@ -19,6 +19,9 @@ pub fn parse(packet: IPv4Packet) -> Result<TcpSegment> {
         packet.source_address, source_port, packet.destination_address, destination_port
     );
 
+    let sequence_number = BigEndian::read_u32(&packet.payload[4..8]);
+    let ack_number = BigEndian::read_u32(&packet.payload[8..12]);
+
     let header_length: usize = ((&packet.payload[12] >> 4)*4) as usize;
 
     let flags = &packet.payload[13..15].view_bits::<Lsb0>();
@@ -46,6 +49,8 @@ pub fn parse(packet: IPv4Packet) -> Result<TcpSegment> {
         source_port,
         destination_port,
         session_key,
+        sequence_number,
+        ack_number,
         flags,
         payload,
         size, 

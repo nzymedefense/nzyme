@@ -1,6 +1,8 @@
 use std::net::IpAddr;
 use chrono::{DateTime, Utc};
+use crate::data::tcp_table::TcpSession;
 use crate::ethernet::tcp_session_key::TcpSessionKey;
+use crate::ethernet::traffic_direction::TrafficDirection;
 
 use super::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass, DNSDataType};
 
@@ -52,6 +54,8 @@ pub struct IPv4Packet {
 
 #[derive(Debug)]
 pub struct TcpSegment {
+    pub sequence_number: u32,
+    pub ack_number: u32,
     pub source_mac: String,
     pub destination_mac: String,
     pub source_address: IpAddr,
@@ -63,6 +67,17 @@ pub struct TcpSegment {
     pub payload: Vec<u8>,
     pub size: u32,
     pub timestamp: DateTime<Utc>
+}
+
+impl TcpSegment {
+    pub fn determine_direction(&self) -> TrafficDirection {
+        if self.session_key.address_low == self.source_address
+            && self.session_key.port_low == self.source_port {
+            TrafficDirection::ServerToClient
+        } else {
+            TrafficDirection::ClientToServer
+        }
+    }
 }
 
 #[derive(Debug)]
