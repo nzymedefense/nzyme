@@ -1,17 +1,21 @@
 use std::collections::HashMap;
 use std::sync::MutexGuard;
-use log::info;
+use strum_macros::Display;
 use crate::data::tcp_table::TcpSession;
+use crate::ethernet::detection::l4_session_tagger::L4SessionTag::{Http, Unencrypted};
+use crate::ethernet::detection::taggers::http_tagger;
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 
-enum L4SessionTag {
-    HttpUnencrypted,
-    HttpTls,
-    SmtpUnencrypted,
-    ImapUnencrypted,
-    Pop3Unencrypted,
+#[derive(Debug, Display, PartialEq, Clone)]
+pub enum L4SessionTag {
+    Unencrypted,
+    Http,
+    Smtp,
+    Imap,
+    Pop3,
     Ftp,
-    Telnet
+    Telnet,
+    Tls
 }
 
 pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>) {
@@ -27,20 +31,19 @@ pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSess
             server_to_client_data.extend(segment_data);
         }
 
-        if session.source_port == 11000 || session.destination_port == 11000 {
-            info!("CLIENT TO SERVER: {:?}", String::from_utf8(client_to_server_data));
-            info!("SERVER TO CLIENT: {:?}", String::from_utf8(server_to_client_data));
-        }
+        // We overwrite the tags because they may have changed with more segments coming in.
+        session.tags = tag_all(client_to_server_data, server_to_client_data);
     }
 }
 
-/*
- * Re-Tag? Check what tags are already attached? only allow one?
- */
-fn tag(client_to_server: Vec<u8>, server_to_client: Vec<u8>) {
-    // Remove all control characters. Case insensitivity. Ignore redirects.
-    let cts = String::from_utf8(client_to_server);
-    let stc = String::from_utf8(server_to_client);
+fn tag_all(client_to_server: Vec<u8>, server_to_client: Vec<u8>) -> Option<Vec<L4SessionTag>> {
+    // Remove all control characters. Case insensitivity. Ignore redirects. TODO unwraps
+    let cts = String::from_utf8_lossy(&client_to_server).to_string();
+    let stc = String::from_utf8_lossy(&server_to_client).to_string();
 
-    if ()
+    if http_tagger::tag(&cts, &stc) {
+        return Some(vec![Unencrypted, Http])
+    }
+
+    None
 }

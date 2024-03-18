@@ -76,3 +76,4 @@ polars = { version = "0.38.2", features = [
     "performant",
     "fmt"
 ]}
+regex = "1.10.3"

@@ -7,9 +7,10 @@ use chrono::{DateTime, Duration, NaiveDateTime, Utc};
 use log::{error, info, trace, warn};
 use polars::df;
 use polars::prelude::*;
+use polars::sql::{sql_expr, SQLContext};
 use strum_macros::Display;
 use crate::data::tcp_table::TcpSessionState::{ClosedFin, ClosedRst, ClosedTimeout, Established, FinWait1, FinWait2, Refused, SynReceived, SynSent};
-use crate::ethernet::detection::l4_session_tagger::tag_tcp_sessions;
+use crate::ethernet::detection::l4_session_tagger::{L4SessionTag, tag_tcp_sessions};
 use crate::ethernet::packets::{TcpSegment};
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::ethernet::traffic_direction::TrafficDirection;
@@ -33,7 +34,8 @@ pub struct TcpSession {
     pub segment_count: u64,
     pub bytes_count: u64,
     pub segments_client_to_server: BTreeMap<u32, Vec<u8>>,
-    pub segments_server_to_client: BTreeMap<u32, Vec<u8>>
+    pub segments_server_to_client: BTreeMap<u32, Vec<u8>>,
+    pub tags: Option<Vec<L4SessionTag>>
 }
 
 #[derive(PartialEq, Debug, Display, Clone)]
@@ -106,7 +108,8 @@ impl TcpTable {
                                 segment_count: 1,
                                 bytes_count: segment.size as u64,
                                 segments_client_to_server: BTreeMap::new(),
-                                segments_server_to_client: BTreeMap::new()
+                                segments_server_to_client: BTreeMap::new(),
+                                tags: None
                             };
 
                             trace!("New TCP Session: {:?}, State: {:?}, Flags: {:?}",
@@ -143,8 +146,14 @@ impl TcpTable {
                 let mut destination_ports: Vec<u16> = Vec::new();
                 let mut segment_counts: Vec<u64> = Vec::new();
                 let mut byte_counts: Vec<u64> = Vec::new();
+                let mut tags: Vec<Option<String>> = Vec::new();
 
                 for (session_key, session) in &*sessions {
+                    let tag_values: Option<Vec<String>> = match &session.tags {
+                        Some(tags) => Some(tags.iter().map(|e| e.to_string()).collect()),
+                        None => None
+                    };
+
                     session_keys.push(session_key.calculate_hash());
                     states.push(session.state.to_string());
                     start_times.push(session.start_time.naive_utc());
@@ -156,6 +165,7 @@ impl TcpTable {
                     destination_ports.push(session.destination_port);
                     segment_counts.push(session.segment_count);
                     byte_counts.push(session.bytes_count);
+                    tags.push(tag_values.map(|tags| tags.join(",")))
                 }
 
                 let df = df!(
@@ -169,11 +179,17 @@ impl TcpTable {
                     "destination_address" => &destination_addresses,
                     "destination_port" => &destination_ports,
                     "segment_count" => &segment_counts,
-                    "byte_count" => &byte_counts
+                    "byte_count" => &byte_counts,
+                    "tags" => &tags
                 ).unwrap().lazy();
 
-                // Query Data and build report.
-                info!("DATA: {}", df.count().collect().unwrap());
+                // Query Data and build report. TODO unwrap
+                /*let result = df.with_columns([col("tags")
+                    .str()
+                    .split(lit(","))
+                ]).filter(lit("Http").is_in(col("tags"))).collect().unwrap();
+                info!("RESULT: {}", result);*/
+                info!("{}", df.collect().unwrap());
 
                 // Send data. Only proceed with cleanup if successful.
                 // ASSUME SUCCESS
