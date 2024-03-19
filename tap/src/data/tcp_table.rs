@@ -4,16 +4,14 @@ use std::collections::{BTreeMap, HashMap};
 use std::net::IpAddr;
 use std::sync::{Mutex, MutexGuard};
 use chrono::{DateTime, Duration, NaiveDateTime, Utc};
-use log::{error, info, trace, warn};
-use polars::df;
-use polars::prelude::*;
-use polars::sql::{sql_expr, SQLContext};
+use log::{error, trace, warn};
 use strum_macros::Display;
 use crate::data::tcp_table::TcpSessionState::{ClosedFin, ClosedRst, ClosedTimeout, Established, FinWait1, FinWait2, Refused, SynReceived, SynSent};
 use crate::ethernet::detection::l4_session_tagger::{L4SessionTag, tag_tcp_sessions};
 use crate::ethernet::packets::{TcpSegment};
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::ethernet::traffic_direction::TrafficDirection;
+use crate::link::reports::tcp_sessions_report;
 
 static SESSION_TIMEOUT: usize = 60;
 
@@ -134,62 +132,7 @@ impl TcpTable {
 
                 tag_tcp_sessions(&mut sessions);
 
-                // Write current table data to dataframe.
-                let mut session_keys: Vec<u64> = Vec::new();
-                let mut states: Vec<String> = Vec::new();
-                let mut start_times: Vec<NaiveDateTime> = Vec::new();
-                let mut end_times: Vec<Option<NaiveDateTime>> = Vec::new();
-                let mut most_recent_segment_times: Vec<NaiveDateTime> = Vec::new();
-                let mut source_addresses: Vec<String> = Vec::new();
-                let mut source_ports: Vec<u16> = Vec::new();
-                let mut destination_addresses: Vec<String> = Vec::new();
-                let mut destination_ports: Vec<u16> = Vec::new();
-                let mut segment_counts: Vec<u64> = Vec::new();
-                let mut byte_counts: Vec<u64> = Vec::new();
-                let mut tags: Vec<Option<String>> = Vec::new();
-
-                for (session_key, session) in &*sessions {
-                    let tag_values: Option<Vec<String>> = match &session.tags {
-                        Some(tags) => Some(tags.iter().map(|e| e.to_string()).collect()),
-                        None => None
-                    };
-
-                    session_keys.push(session_key.calculate_hash());
-                    states.push(session.state.to_string());
-                    start_times.push(session.start_time.naive_utc());
-                    end_times.push(session.end_time.map(|set| set.naive_utc()));
-                    most_recent_segment_times.push(session.most_recent_segment_time.naive_utc());
-                    source_addresses.push(session.source_address.to_string());
-                    source_ports.push(session.source_port);
-                    destination_addresses.push(session.destination_address.to_string());
-                    destination_ports.push(session.destination_port);
-                    segment_counts.push(session.segment_count);
-                    byte_counts.push(session.bytes_count);
-                    tags.push(tag_values.map(|tags| tags.join(",")))
-                }
-
-                let df = df!(
-                    "session" => &session_keys,
-                    "state" => &states,
-                    "start_time" => &start_times,
-                    "end_time" => &end_times,
-                    "most_recent_segment_time" => &most_recent_segment_times,
-                    "source_address" => &source_addresses,
-                    "source_port" => &source_ports,
-                    "destination_address" => &destination_addresses,
-                    "destination_port" => &destination_ports,
-                    "segment_count" => &segment_counts,
-                    "byte_count" => &byte_counts,
-                    "tags" => &tags
-                ).unwrap().lazy();
-
-                // Query Data and build report. TODO unwrap
-                /*let result = df.with_columns([col("tags")
-                    .str()
-                    .split(lit(","))
-                ]).filter(lit("Http").is_in(col("tags"))).collect().unwrap();
-                info!("RESULT: {}", result);*/
-                info!("{}", df.collect().unwrap());
+                tcp_sessions_report::generate(&sessions);
 
                 // Send data. Only proceed with cleanup if successful.
                 // ASSUME SUCCESS
