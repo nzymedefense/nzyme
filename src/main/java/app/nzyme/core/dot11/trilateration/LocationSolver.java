@@ -1,10 +1,8 @@
 package app.nzyme.core.dot11.trilateration;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.dot11.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.dot11.db.TapBasedSignalStrengthResultHistogramEntry;
 import app.nzyme.core.taps.Tap;
-import app.nzyme.core.util.TimeRange;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -13,8 +11,6 @@ import com.lemmingapex.trilateration.NonLinearLeastSquaresSolver;
 import com.lemmingapex.trilateration.TrilaterationFunction;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
@@ -28,7 +24,8 @@ public class LocationSolver {
         this.nzyme = nzyme;
     }
 
-    public TrilaterationResult solve(List<TapBasedSignalStrengthResultHistogramEntry> signals) throws InvalidTapsException {
+    public TrilaterationResult solve(List<TapBasedSignalStrengthResultHistogramEntry> signals, float pathLossExponent)
+            throws InvalidTapsException {
         // Sort the signal data into a queryable histogram.
         Map<DateTime, List<TapBasedSignalStrengthResultHistogramEntry>> histo = Maps.newHashMap();
         DateTime earliest = DateTime.now();
@@ -80,9 +77,7 @@ public class LocationSolver {
                     }
 
                     positions.add(new Double[]{(double) tap.x(), (double) tap.y()});
-
-                    double distance = Math.pow(10, (double)(-40 - (s.signalStrength())) / (10 * 3));
-                    distances.add(distance);
+                    distances.add(calculateDistance(-15, s.signalStrength(), pathLossExponent));
                 }
 
                 if (positions.size() < 3 || positions.size() != distances.size()) {
@@ -110,6 +105,10 @@ public class LocationSolver {
         }
 
         return TrilaterationResult.create(result);
+    }
+
+    private double calculateDistance(double RSSI0, double RSSI, double n) {
+        return Math.pow(10.0, (RSSI0 - RSSI) / (10.0 * n));
     }
 
     @AutoValue

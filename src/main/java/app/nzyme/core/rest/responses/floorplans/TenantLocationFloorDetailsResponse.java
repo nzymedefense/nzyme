@@ -31,13 +31,16 @@ public abstract class TenantLocationFloorDetailsResponse {
     @JsonProperty("tap_positions")
     public abstract List<TapPositionResponse> tapPositions();
 
+    @JsonProperty("path_loss_exponent")
+    public abstract float pathLossExponent();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static TenantLocationFloorDetailsResponse create(UUID id, UUID locationId, long number, String name, boolean hasFloorPlan, long tapCount, List<TapPositionResponse> tapPositions, DateTime createdAt, DateTime updatedAt) {
+    public static TenantLocationFloorDetailsResponse create(UUID id, UUID locationId, long number, String name, boolean hasFloorPlan, long tapCount, List<TapPositionResponse> tapPositions, float pathLossExponent, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .locationId(locationId)
@@ -46,6 +49,7 @@ public abstract class TenantLocationFloorDetailsResponse {
                 .hasFloorPlan(hasFloorPlan)
                 .tapCount(tapCount)
                 .tapPositions(tapPositions)
+                .pathLossExponent(pathLossExponent)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -70,6 +74,8 @@ public abstract class TenantLocationFloorDetailsResponse {
         public abstract Builder tapCount(long tapCount);
 
         public abstract Builder tapPositions(List<TapPositionResponse> tapPositions);
+
+        public abstract Builder pathLossExponent(float pathLossExponent);
 
         public abstract Builder createdAt(DateTime createdAt);
 

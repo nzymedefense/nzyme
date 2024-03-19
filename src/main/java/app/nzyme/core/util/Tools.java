@@ -23,6 +23,8 @@ import jakarta.validation.constraints.NotNull;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -84,6 +86,12 @@ public class Tools {
 
     public static boolean isTapActive(DateTime lastReport) {
         return lastReport != null && lastReport.isAfter(DateTime.now().minusMinutes(2));
+    }
+
+    public static float round(float f, int decimalPlaces) {
+        BigDecimal bd = new BigDecimal(Float.toString(f));
+        bd = bd.setScale(decimalPlaces, RoundingMode.HALF_UP);
+        return bd.floatValue();
     }
 
 }

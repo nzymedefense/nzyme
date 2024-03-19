@@ -27,8 +27,8 @@ function CreateFloorPage() {
     authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation)
   }, [organizationId, tenantId, locationId])
 
-  const create = (number, name) => {
-    authenticationManagementService.createFloorOfTenantLocation(organization.id, tenant.id, location.id, number, name, () => {
+  const create = (number, name, pathLossExponent) => {
+    authenticationManagementService.createFloorOfTenantLocation(organization.id, tenant.id, location.id, number, name, pathLossExponent, () => {
       notify.show('Floor created.', 'success');
       setRedirect(true);
     }, (error) => {

@@ -1484,6 +1484,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     floor.plan() != null,
                     tapPositions.size(),
                     tapPositions,
+                    Tools.round(floor.pathLossExponent(), 1),
                     floor.createdAt(),
                     floor.updatedAt()
             ));
@@ -1544,6 +1545,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 floor.plan() != null,
                 tapPositions.size(),
                 tapPositions,
+                Tools.round(floor.pathLossExponent(), 1),
                 floor.createdAt(),
                 floor.updatedAt()
         )).build();
@@ -1583,7 +1585,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         String name = Strings.isNullOrEmpty(req.name()) ? null : req.name();
-        nzyme.getAuthenticationService().createFloorOfTenantLocation(location.get().uuid(), req.number(), name);
+        nzyme.getAuthenticationService().createFloorOfTenantLocation(
+                location.get().uuid(), req.number(), name, Tools.round(req.pathLossExponent(), 1)
+        );
         nzyme.getAuthenticationService().updateUpdatedAtOfTenantLocation(location.get().id());
 
         return Response.status(Response.Status.CREATED).build();
@@ -1593,7 +1597,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}")
     public Response updateFloorOfTenantLocation(@Context SecurityContext sc,
-                                                @Valid UpdateTenantLocationFloorRequest req,
+                                                @Valid UpdateFloorOfTenantLocationRequest req,
                                                 @PathParam("organizationId") UUID organizationId,
                                                 @PathParam("tenantId") UUID tenantId,
                                                 @PathParam("locationId") UUID locationId,
@@ -1635,7 +1639,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             ).build();
         }
 
-        nzyme.getAuthenticationService().updateFloorOfTenantLocation(floor.id(), req.number(), req.name());
+        nzyme.getAuthenticationService().updateFloorOfTenantLocation(
+                floor.id(), req.number(), req.name(), Tools.round(req.pathLossExponent(), 1)
+        );
         nzyme.getAuthenticationService().updateUpdatedAtOfTenantLocation(location.get().id());
 
         return Response.ok().build();
@@ -1645,7 +1651,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}")
     public Response deleteFloorOfTenantLocation(@Context SecurityContext sc,
-                                                @Valid UpdateTenantLocationFloorRequest req,
+                                                @Valid UpdateFloorOfTenantLocationRequest req,
                                                 @PathParam("organizationId") UUID organizationId,
                                                 @PathParam("tenantId") UUID tenantId,
                                                 @PathParam("locationId") UUID locationId,

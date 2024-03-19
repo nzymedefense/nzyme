@@ -235,6 +235,7 @@ function BSSIDDetailsPage() {
                 <div className="card">
                   <div className="card-body">
                     <CardTitleWithControls title="Physical Location / Trilateration"
+                                           helpLink="https://go.nzyme.org/wifi-trilateration"
                                            timeRange={trilaterationTimeRange}
                                            setTimeRange={setTrilaterationTimeRange} />
 

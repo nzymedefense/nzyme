@@ -276,14 +276,14 @@ class AuthenticationManagementService {
         })
   }
 
-  createFloorOfTenantLocation(organizationId, tenantId, locationId, number, name, successCallback, errorCallback) {
+  createFloorOfTenantLocation(organizationId, tenantId, locationId, number, name, pathLossExponent, successCallback, errorCallback) {
     RESTClient.post("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors",
-        {number: number, name: name}, successCallback, errorCallback)
+        {number: number, name: name, path_loss_exponent: pathLossExponent}, successCallback, errorCallback)
   }
 
-  editFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, number, name, successCallback, errorCallback) {
+  editFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, number, name, pathLossExponent, successCallback, errorCallback) {
     RESTClient.put("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors/show/" + floorId,
-        {number: number, name: name}, successCallback, errorCallback)
+        {number: number, name: name, path_loss_exponent: pathLossExponent}, successCallback, errorCallback)
   }
 
   deleteFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, successCallback) {

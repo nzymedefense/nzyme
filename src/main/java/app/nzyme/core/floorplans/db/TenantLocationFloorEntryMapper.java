@@ -21,6 +21,7 @@ public class TenantLocationFloorEntryMapper implements RowMapper<TenantLocationF
                 rs.getBytes("plan"),
                 rs.getLong("plan_width"),
                 rs.getLong("plan_height"),
+                rs.getFloat("path_loss_exponent"),
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("updated_at"))
         );

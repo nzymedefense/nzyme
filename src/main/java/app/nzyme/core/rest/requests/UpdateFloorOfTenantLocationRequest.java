@@ -5,10 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 
 @AutoValue
-public abstract class CreateFloorOfTenantLocationRequest {
+public abstract class UpdateFloorOfTenantLocationRequest {
 
     @Min(0)
     public abstract long number();
@@ -20,7 +19,7 @@ public abstract class CreateFloorOfTenantLocationRequest {
     public abstract float pathLossExponent();
 
     @JsonCreator
-    public static CreateFloorOfTenantLocationRequest create(@JsonProperty("number") long number,
+    public static UpdateFloorOfTenantLocationRequest create(@JsonProperty("number") long number,
                                                             @JsonProperty("name") String name,
                                                             @JsonProperty("path_loss_exponent") float pathLossExponent) {
         return builder()
@@ -31,17 +30,17 @@ public abstract class CreateFloorOfTenantLocationRequest {
     }
 
     public static Builder builder() {
-        return new AutoValue_CreateFloorOfTenantLocationRequest.Builder();
+        return new AutoValue_UpdateFloorOfTenantLocationRequest.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder number(long number);
+        public abstract Builder number(@Min(0) long number);
 
         public abstract Builder name(String name);
 
-        public abstract Builder pathLossExponent(@NotEmpty float pathLossExponent);
+        public abstract Builder pathLossExponent(@Min(0) float pathLossExponent);
 
-        public abstract CreateFloorOfTenantLocationRequest build();
+        public abstract UpdateFloorOfTenantLocationRequest build();
     }
 }

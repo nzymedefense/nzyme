@@ -21,10 +21,11 @@ public abstract class TenantLocationFloorEntry {
     public abstract Long planWidth();
     @Nullable
     public abstract Long planHeight();
+    public abstract Float pathLossExponent();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static TenantLocationFloorEntry create(long id, UUID uuid, UUID locationId, long number, String name, byte[] plan, Long planWidth, Long planHeight, DateTime createdAt, DateTime updatedAt) {
+    public static TenantLocationFloorEntry create(long id, UUID uuid, UUID locationId, long number, String name, byte[] plan, Long planWidth, Long planHeight, Float pathLossExponent, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -34,6 +35,7 @@ public abstract class TenantLocationFloorEntry {
                 .plan(plan)
                 .planWidth(planWidth)
                 .planHeight(planHeight)
+                .pathLossExponent(pathLossExponent)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -60,6 +62,8 @@ public abstract class TenantLocationFloorEntry {
         public abstract Builder planWidth(Long planWidth);
 
         public abstract Builder planHeight(Long planHeight);
+
+        public abstract Builder pathLossExponent(Float pathLossExponent);
 
         public abstract Builder createdAt(DateTime createdAt);
 

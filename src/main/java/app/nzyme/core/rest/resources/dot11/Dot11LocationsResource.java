@@ -92,6 +92,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                     floor.plan() != null,
                     tapPositions.size(),
                     tapPositions,
+                    Tools.round(floor.pathLossExponent(), 1),
                     floor.createdAt(),
                     floor.updatedAt()
             ));
@@ -221,7 +222,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         LocationSolver solver = new LocationSolver(nzyme);
         LocationSolver.TrilaterationResult bssidLocation;
         try {
-            bssidLocation = solver.solve(signals);
+            bssidLocation = solver.solve(signals, floor.pathLossExponent());
         } catch (LocationSolver.InvalidTapsException e) {
             LOG.error("Could not calculate BSSID location.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -270,6 +271,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                         true, // It has if we reached here.
                         tapPositions.size(),
                         tapPositions,
+                        Tools.round(floor.pathLossExponent(), 1),
                         floor.createdAt(),
                         floor.updatedAt()
                 ),

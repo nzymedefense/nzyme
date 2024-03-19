@@ -4432,4 +4432,12 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_floor_path_loss_exponent" author="lennartkoopmann">
+        <addColumn tableName="auth_tenants_locations_floors">
+            <column name="path_loss_exponent" type="float" defaultValue="3.0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

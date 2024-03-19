@@ -32,8 +32,8 @@ function FloorDetailsPage() {
     authenticationManagementService.findFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, setFloor);
   }, [organizationId, tenantId])
 
-  const update = (name, description) => {
-    authenticationManagementService.editFloorOfTenantLocation(organization.id, tenant.id, location.id, floor.id, name, description, () => {
+  const update = (name, description, pathLossExponent) => {
+    authenticationManagementService.editFloorOfTenantLocation(organization.id, tenant.id, location.id, floor.id, name, description, pathLossExponent, () => {
       notify.show('Floor updated.', 'success');
       setRedirect(true);
     }, (error) => {
@@ -105,7 +105,7 @@ function FloorDetailsPage() {
                 <h3>Edit Floor</h3>
 
                 <FloorForm submitText="Update Floor" number={floor.number} name={floor.name}
-                           onSubmit={update} errorMessage={errorMessage} />
+                           pathLossExponent={floor.path_loss_exponent} onSubmit={update} errorMessage={errorMessage} />
               </div>
             </div>
           </div>
