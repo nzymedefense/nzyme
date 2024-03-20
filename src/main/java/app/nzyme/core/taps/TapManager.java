@@ -525,7 +525,7 @@ public class TapManager {
             return Optional.empty();
         }
 
-        int highest = -255;
+        int highest = Integer.MIN_VALUE;
         TapPositionKey result = null;
         for (Map.Entry<TapPositionKey, Integer> summary : filteredFloorSummaries.entrySet()) {
             if (summary.getValue() > highest) {

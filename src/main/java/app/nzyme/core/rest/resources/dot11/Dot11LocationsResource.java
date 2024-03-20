@@ -237,7 +237,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         BufferedImage floorPlanImage;
         try {
             if (floor.plan() == null) {
-                LOG.info("Floor plan of floor [{}] is null. This is a database inconsistency.", floor.uuid());
+                LOG.error("Floor plan of floor [{}] is null. This is a database inconsistency.", floor.uuid());
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
 
