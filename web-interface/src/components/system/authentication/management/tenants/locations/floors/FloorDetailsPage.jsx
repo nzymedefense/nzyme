@@ -6,6 +6,7 @@ import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import FloorPlan from "../../../../../../shared/floorplan/FloorPlan";
 import {notify} from "react-notify-toast";
 import moment from "moment/moment";
+import numeral from "numeral";
 import UploadFloorPlanForm from "./UploadFloorPlanForm";
 import FloorPlanTapsTable from "./FloorPlanTapsTable";
 
@@ -106,6 +107,19 @@ function FloorDetailsPage() {
     })
   }
 
+  const dimensions = () => {
+    if (!plan) {
+      return false;
+    }
+
+    return (
+        <p>
+          Width: {numeral(plan.width_meters).format(0)} Meters / {numeral(plan.width_meters * 3.28084).format(0)} Feet,
+          Length: {numeral(plan.length_meters).format(0)} Meters / {numeral(plan.length_meters * 3.28084).format(0)} Feet
+        </p>
+    )
+  }
+
   if (redirect) {
     return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)} />
   }
@@ -202,6 +216,8 @@ function FloorDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <h3>Floor Plan</h3>
+
+                {dimensions()}
 
                 <FloorPlan containerHeight={500}
                            floorHasPlan={floor.has_floor_plan}

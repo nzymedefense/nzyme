@@ -2036,7 +2036,9 @@ public class Dot11 {
         );
     }
 
-    public List<TapBasedSignalStrengthResult> findBSSIDSignalStrengthPerTap(String bssid, TimeRange timeRange, List<UUID> taps) {
+    public List<TapBasedSignalStrengthResult> findBSSIDSignalStrengthPerTap(String bssid,
+                                                                            TimeRange timeRange,
+                                                                            List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.tap_uuid AS tap_uuid, t.name AS tap_name, " +
                                 "AVG(b.signal_strength_average) AS signal_strength " +
@@ -2056,6 +2058,7 @@ public class Dot11 {
 
     public List<TapBasedSignalStrengthResultHistogramEntry> getBSSIDSignalStrengthPerTapHistogram(String bssid,
                                                                                                   TimeRange timeRange,
+                                                                                                  Bucketing.BucketingConfiguration bucketing,
                                                                                                   List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DATE_TRUNC('minute', b.created_at) AS bucket, " +
@@ -2069,6 +2072,7 @@ public class Dot11 {
                         .bindList("taps", taps)
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
                         .mapTo(TapBasedSignalStrengthResultHistogramEntry.class)
                         .list()
         );

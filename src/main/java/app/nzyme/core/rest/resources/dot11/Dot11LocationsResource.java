@@ -13,6 +13,7 @@ import app.nzyme.core.rest.parameters.TimeRangeParameter;
 import app.nzyme.core.rest.responses.floorplans.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -111,6 +112,8 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
         TenantLocationEntry location;
         TenantLocationFloorEntry floor;
 
@@ -208,7 +211,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         // Get location heatmap data.
         List<UUID> tapUuids = taps.stream().map(Tap::uuid).collect(Collectors.toList());
         List<TapBasedSignalStrengthResultHistogramEntry> signals = nzyme.getDot11()
-                .getBSSIDSignalStrengthPerTapHistogram(bssidParam, timeRange, tapUuids);
+                .getBSSIDSignalStrengthPerTapHistogram(bssidParam, timeRange, bucketing, tapUuids);
 
         if (!validateSignalsForTrilateration(signals)) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -222,7 +225,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         LocationSolver solver = new LocationSolver(nzyme);
         LocationSolver.TrilaterationResult bssidLocation;
         try {
-            bssidLocation = solver.solve(signals, floor.pathLossExponent());
+            bssidLocation = solver.solve(signals, floor);
         } catch (LocationSolver.InvalidTapsException e) {
             LOG.error("Could not calculate BSSID location.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -247,12 +250,15 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
+        //noinspection DataFlowIssue
         return Response.ok(TrilaterationResponse.create(
                 locations,
                 FloorPlanResponse.create(
                         BaseEncoding.base64().encode(floor.plan()),
                         floorPlanImage.getWidth(),
-                        floorPlanImage.getHeight()
+                        floorPlanImage.getHeight(),
+                        floor.planWidthMeters(),
+                        floor.planLengthMeters()
                 ),
                 TenantLocationDetailsResponse.create(
                         location.uuid(),

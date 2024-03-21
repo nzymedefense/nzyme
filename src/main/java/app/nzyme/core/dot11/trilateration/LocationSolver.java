@@ -2,6 +2,7 @@ package app.nzyme.core.dot11.trilateration;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.TapBasedSignalStrengthResultHistogramEntry;
+import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.taps.Tap;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
@@ -22,17 +23,21 @@ public class LocationSolver {
 
     private static final Logger LOG = LogManager.getLogger(LocationSolver.class);
 
-    public static int WIDTH = 14;
-    public static int LENGTH = 13;
-
     private final NzymeNode nzyme;
 
     public LocationSolver(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 
-    public TrilaterationResult solve(List<TapBasedSignalStrengthResultHistogramEntry> signals, float pathLossExponent)
+    public TrilaterationResult solve(List<TapBasedSignalStrengthResultHistogramEntry> signals,
+                                     TenantLocationFloorEntry floor)
             throws InvalidTapsException {
+
+        if (floor.planLengthPixels() == null || floor.planWidthPixels() == null
+                || floor.planLengthMeters() == null || floor.planWidthMeters() == null) {
+            throw new RuntimeException("Cannot run location solver on incomplete floor configuration.");
+        }
+
         // Sort the signal data into a queryable histogram.
         Map<DateTime, List<TapBasedSignalStrengthResultHistogramEntry>> histo = Maps.newHashMap();
         DateTime earliest = DateTime.now();
@@ -86,10 +91,17 @@ public class LocationSolver {
                         continue;
                     }
 
-                    double distance = calculateDistance(-15, s.signalStrength(), pathLossExponent);
+                    double distance = calculateDistance(-15, s.signalStrength(), floor.pathLossExponent());
 
                     totalDataPoints++;
-                    if(isDistanceOutsideOfBoundaries(tap.name(), distance, tap.x(), tap.y(), WIDTH, LENGTH, 1178, 1232)) {
+                    if(isDistanceOutsideOfBoundaries(
+                            distance,
+                            tap.x(),
+                            tap.y(),
+                            floor.planWidthMeters(),
+                            floor.planLengthMeters(),
+                            floor.planWidthPixels(),
+                            floor.planLengthPixels())) {
                         distancesOutsideOfBoundaries++;
                         continue;
                     }
@@ -133,42 +145,25 @@ public class LocationSolver {
         return TrilaterationResult.create(result);
     }
 
-    private boolean isDistanceOutsideOfBoundaries(String tapName, double distance, int tapXPixel, int tapYPixel, int floorplanWidthMeters, int floorplanLengthMeters, int floorplanWidthPixels, int floorplanHeightPixels) {
-        // Calculate scale factors
-        double floorplanWidth = (double) floorplanWidthMeters / floorplanWidthPixels;
-        double floorplanLength = (double) floorplanLengthMeters / floorplanHeightPixels;
+    private boolean isDistanceOutsideOfBoundaries(double distanceMeters, int tapXPixel, int tapYPixel, int floorPlanWidthMeters, int floorPlanLengthMeters, int floorPlanWidthPixels, int floorPlanLengthPixels) {
+        // Calculate scale factors.
+        double scaleX = (double) floorPlanWidthMeters / floorPlanWidthPixels;
+        double scaleY = (double) floorPlanLengthMeters / floorPlanLengthPixels;
 
-        // Convert tap positions from pixels to meters
-        double tapX = tapXPixel * floorplanWidth;
-        double tapY = tapYPixel * floorplanLength;
+        // Calculate distances in pixels to each corner.
+        double distanceToTopLeft = calculateFloorPlanDistance(tapXPixel, tapYPixel, 0, 0);
+        double distanceToTopRight = calculateFloorPlanDistance(tapXPixel, tapYPixel, floorPlanWidthPixels, 0);
+        double distanceToBottomLeft = calculateFloorPlanDistance(tapXPixel, tapYPixel, 0, floorPlanLengthPixels);
+        double distanceToBottomRight = calculateFloorPlanDistance(tapXPixel, tapYPixel, floorPlanWidthPixels, floorPlanLengthPixels);
 
-        ////////////////////
-        // Example values
-        double pointX = tapXPixel; // The X coordinate of your point
-        double pointY = tapYPixel; // The Y coordinate of your point
-        double planWidthPixels = floorplanWidthPixels; // Width of the floor plan in pixels
-        double planHeightPixels = floorplanHeightPixels; // Height of the floor plan in pixels
-        double planWidthMeters = floorplanWidthMeters; // Width of the floor plan in meters
-        double planHeightMeters = floorplanLengthMeters; // Height of the floor plan in meters
-
-        // Calculate scale factors
-        double scaleX = planWidthMeters / planWidthPixels;
-        double scaleY = planHeightMeters / planHeightPixels;
-
-        // Calculate distances in pixels to each corner
-        double distanceToTopLeft = calculateFloorPlanDistance(pointX, pointY, 0, 0);
-        double distanceToTopRight = calculateFloorPlanDistance(pointX, pointY, planWidthPixels, 0);
-        double distanceToBottomLeft = calculateFloorPlanDistance(pointX, pointY, 0, planHeightPixels);
-        double distanceToBottomRight = calculateFloorPlanDistance(pointX, pointY, planWidthPixels, planHeightPixels);
-
-        // Convert pixel distances to meters
+        // Convert pixel distances to meters.
         double[] distancesToCorners = new double[4];
         distancesToCorners[0] = distanceToTopLeft * scaleX;
         distancesToCorners[1] = distanceToTopRight * Math.sqrt(scaleX * scaleX + scaleY * scaleY);
         distancesToCorners[2] = distanceToBottomLeft * Math.sqrt(scaleX * scaleX + scaleY * scaleY);
         distancesToCorners[3] = distanceToBottomRight * scaleX;
 
-        // Find the maximum distance to any corner
+        // Find the maximum distance to any corner.
         double maxDistanceToCorner = 0;
         for (double dist : distancesToCorners) {
             if (dist > maxDistanceToCorner) {
@@ -177,7 +172,7 @@ public class LocationSolver {
         }
 
         // If the estimated distance to the signal source is greater than the maximum distance to any corner, it's likely outside
-        return distance > maxDistanceToCorner;
+        return distanceMeters > maxDistanceToCorner;
     }
 
     private static double calculateFloorPlanDistance(double x1, double y1, double x2, double y2) {

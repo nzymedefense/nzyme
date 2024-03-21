@@ -1213,14 +1213,17 @@ public class AuthenticationService {
         );
     }
 
-    public void writeFloorPlan(long floorId, byte[] plan, int width, int height) {
+    public void writeFloorPlan(long floorId, byte[] plan, int widthPixels, int lengthPixels, int widthMeters, int lengthMeters) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_tenants_locations_floors SET plan = :plan, " +
-                                "plan_width = :width, plan_height = :height, updated_at = NOW() " +
-                                "WHERE id = :id")
+                                "plan_width_pixels = :width_pixels, plan_length_pixels = :length_pixels, " +
+                                "plan_width_meters = :width_meters, plan_length_meters = :length_meters, " +
+                                "updated_at = NOW() WHERE id = :id")
                         .bind("plan", plan)
-                        .bind("width", width)
-                        .bind("height", height)
+                        .bind("width_pixels", widthPixels)
+                        .bind("length_pixels", lengthPixels)
+                        .bind("width_meters", widthMeters)
+                        .bind("length_meters", lengthMeters)
                         .bind("id", floorId)
                         .execute()
         );

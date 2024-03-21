@@ -93,7 +93,7 @@ function FloorPlan(props) {
 
   useEffect(() => {
     if (plan) {
-      const bounds = [[0, 0], [plan.height, plan.width]];
+      const bounds = [[0, 0], [plan.length_pixels, plan.width_pixels]];
 
       if (map) {
         // Reset map on reload.
@@ -118,7 +118,7 @@ function FloorPlan(props) {
   useEffect(() => {
     // Map was (re-) initialized.
     if (map) {
-      const bounds = [[0, 0], [plan.height, plan.width]];
+      const bounds = [[0, 0], [plan.length_pixels, plan.width_pixels]];
       L.imageOverlay("data:image/png;base64," + plan.image_base64, bounds).addTo(map);
       map.fitBounds(bounds);
       map.attributionControl.setPrefix("");
@@ -234,7 +234,7 @@ function FloorPlan(props) {
   // New tap placed.
   useEffect(() => {
     if (plan && placedTap) {
-      const newTap = L.marker(xy(Math.round(plan.width/2), Math.round(plan.height/2)), {
+      const newTap = L.marker(xy(Math.round(plan.width_pixels/2), Math.round(plan.length_pixels/2)), {
         icon: transientTapIcon,
         draggable: true,
         autoPan: true

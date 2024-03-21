@@ -4439,5 +4439,24 @@
             </column>
         </addColumn>
     </changeSet>
+    
+    <changeSet id="add_and_rename_floor_plan_dimension_columns" author="lennartkoopmann">
+        <renameColumn tableName="auth_tenants_locations_floors" oldColumnName="plan_width" newColumnName="plan_width_pixels" />
+        <renameColumn tableName="auth_tenants_locations_floors" oldColumnName="plan_height" newColumnName="plan_height_pixels" />
+
+        <addColumn tableName="auth_tenants_locations_floors">
+            <column name="plan_width_meters" type="integer" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="plan_height_meters" type="integer" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="rename_floor_plan_dimension_columns_to_height" author="lennartkoopmann">
+        <renameColumn tableName="auth_tenants_locations_floors" oldColumnName="plan_height_pixels" newColumnName="plan_length_pixels" />
+        <renameColumn tableName="auth_tenants_locations_floors" oldColumnName="plan_height_meters" newColumnName="plan_length_meters" />
+    </changeSet>
 
 </databaseChangeLog>

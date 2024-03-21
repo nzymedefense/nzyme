@@ -18,14 +18,18 @@ public abstract class TenantLocationFloorEntry {
     @Nullable
     public abstract byte[] plan();
     @Nullable
-    public abstract Long planWidth();
+    public abstract Integer planWidthPixels();
     @Nullable
-    public abstract Long planHeight();
+    public abstract Integer planLengthPixels();
+    @Nullable
+    public abstract Integer planWidthMeters();
+    @Nullable
+    public abstract Integer planLengthMeters();
     public abstract Float pathLossExponent();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static TenantLocationFloorEntry create(long id, UUID uuid, UUID locationId, long number, String name, byte[] plan, Long planWidth, Long planHeight, Float pathLossExponent, DateTime createdAt, DateTime updatedAt) {
+    public static TenantLocationFloorEntry create(long id, UUID uuid, UUID locationId, long number, String name, byte[] plan, Integer planWidthPixels, Integer planLengthPixels, Integer planWidthMeters, Integer planLengthMeters, Float pathLossExponent, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -33,8 +37,10 @@ public abstract class TenantLocationFloorEntry {
                 .number(number)
                 .name(name)
                 .plan(plan)
-                .planWidth(planWidth)
-                .planHeight(planHeight)
+                .planWidthPixels(planWidthPixels)
+                .planLengthPixels(planLengthPixels)
+                .planWidthMeters(planWidthMeters)
+                .planLengthMeters(planLengthMeters)
                 .pathLossExponent(pathLossExponent)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
@@ -59,9 +65,13 @@ public abstract class TenantLocationFloorEntry {
 
         public abstract Builder plan(byte[] plan);
 
-        public abstract Builder planWidth(Long planWidth);
+        public abstract Builder planWidthPixels(Integer planWidthPixels);
 
-        public abstract Builder planHeight(Long planHeight);
+        public abstract Builder planLengthPixels(Integer planLengthPixels);
+
+        public abstract Builder planWidthMeters(Integer planWidthMeters);
+
+        public abstract Builder planLengthMeters(Integer planLengthMeters);
 
         public abstract Builder pathLossExponent(Float pathLossExponent);
 

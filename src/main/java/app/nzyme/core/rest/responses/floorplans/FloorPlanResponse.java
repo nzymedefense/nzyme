@@ -9,17 +9,25 @@ public abstract class FloorPlanResponse {
     @JsonProperty("image_base64")
     public abstract String imageBase64();
 
-    @JsonProperty("width")
-    public abstract int width();
+    @JsonProperty("width_pixels")
+    public abstract int widthPixels();
 
-    @JsonProperty("height")
-    public abstract int height();
+    @JsonProperty("length_pixels")
+    public abstract int lengthPixels();
 
-    public static FloorPlanResponse create(String imageBase64, int width, int height) {
+    @JsonProperty("width_meters")
+    public abstract int widthMeters();
+
+    @JsonProperty("length_meters")
+    public abstract int lengthMeters();
+
+    public static FloorPlanResponse create(String imageBase64, int widthPixels, int lengthPixels, int widthMeters, int lengthMeters) {
         return builder()
                 .imageBase64(imageBase64)
-                .width(width)
-                .height(height)
+                .widthPixels(widthPixels)
+                .lengthPixels(lengthPixels)
+                .widthMeters(widthMeters)
+                .lengthMeters(lengthMeters)
                 .build();
     }
 
@@ -31,9 +39,13 @@ public abstract class FloorPlanResponse {
     public abstract static class Builder {
         public abstract Builder imageBase64(String imageBase64);
 
-        public abstract Builder width(int width);
+        public abstract Builder widthPixels(int widthPixels);
 
-        public abstract Builder height(int height);
+        public abstract Builder lengthPixels(int lengthPixels);
+
+        public abstract Builder widthMeters(int widthMeters);
+
+        public abstract Builder lengthMeters(int lengthMeters);
 
         public abstract FloorPlanResponse build();
     }

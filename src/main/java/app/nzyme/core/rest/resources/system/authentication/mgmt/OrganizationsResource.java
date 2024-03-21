@@ -42,6 +42,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1739,8 +1740,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         try {
             BufferedImage image = ImageIO.read(imageBytes);
 
+            //noinspection DataFlowIssue
             return Response.ok(FloorPlanResponse.create(
-                    BaseEncoding.base64().encode(floor.get().plan()), image.getWidth(), image.getHeight())
+                    BaseEncoding.base64().encode(
+                            floor.get().plan()), image.getWidth(), image.getHeight(), floor.get().planWidthMeters(), floor.get().planLengthMeters()
+                    )
             ).build();
         } catch (Exception e) {
             LOG.error("Could not read floor plan image data from database. Floor: {}", floor.get(), e);
@@ -1753,11 +1757,17 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}/plan")
     public Response uploadFloorPlan(@Context SecurityContext sc,
                                     @FormDataParam("plan") InputStream planFile,
+                                    @FormDataParam("width_meters") int widthMeters,
+                                    @FormDataParam("length_meters") int lengthMeters,
                                     @PathParam("organizationId") UUID organizationId,
                                     @PathParam("tenantId") UUID tenantId,
                                     @PathParam("locationId") UUID locationId,
                                     @PathParam("floorId") UUID floorId) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (widthMeters <= 0 || lengthMeters <= 0) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -1821,8 +1831,14 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             ByteArrayOutputStream pngOut = new ByteArrayOutputStream();
             ImageIO.write(image, "png", pngOut);
 
-            nzyme.getAuthenticationService()
-                    .writeFloorPlan(floor.get().id(), pngOut.toByteArray(), image.getWidth(), image.getHeight());
+            nzyme.getAuthenticationService().writeFloorPlan(
+                    floor.get().id(),
+                    pngOut.toByteArray(),
+                    image.getWidth(),
+                    image.getHeight(),
+                    widthMeters,
+                    lengthMeters
+            );
         } catch (Exception e) {
             LOG.warn("Could not process uploaded floor plan file.", e);
             return Response.status(Response.Status.BAD_REQUEST)
