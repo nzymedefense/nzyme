@@ -113,10 +113,12 @@ function FloorDetailsPage() {
     }
 
     return (
-        <p>
-          Width: {numeral(plan.width_meters).format(0)} Meters / {numeral(plan.width_meters * 3.28084).format(0)} Feet,
-          Length: {numeral(plan.length_meters).format(0)} Meters / {numeral(plan.length_meters * 3.28084).format(0)} Feet
-        </p>
+        <dl>
+          <dt>Width (X Axis)</dt>
+          <dd>{numeral(plan.width_meters).format(0)} Meters / {numeral(plan.width_meters * 3.28084).format(0)} Feet</dd>
+          <dt>Length (Y Axis)</dt>
+          <dd>{numeral(plan.length_meters).format(0)} Meters / {numeral(plan.length_meters * 3.28084).format(0)} Feet</dd>
+        </dl>
     )
   }
 
