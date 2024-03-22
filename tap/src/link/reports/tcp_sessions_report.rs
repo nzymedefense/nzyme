@@ -22,13 +22,14 @@ pub struct TcpSessionReport {
     pub most_recent_segment_time: DateTime<Utc>,
     pub segment_count: u64,
     pub bytes_count: u64,
-    pub tags: Option<Vec<String>>}
+    pub tags: Option<Vec<String>>
+}
 
-pub fn generate(sessions: &MutexGuard<HashMap<TcpSessionKey, TcpSession>>) -> TcpSessionsReport {
-    let mut rs: Vec<TcpSessionReport> = Vec::new();
+pub fn generate(s: &MutexGuard<HashMap<TcpSessionKey, TcpSession>>) -> TcpSessionsReport {
+    let mut sessions: Vec<TcpSessionReport> = Vec::new();
 
-    for session in sessions.values() {
-        rs.push(TcpSessionReport {
+    for session in s.values() {
+        sessions.push(TcpSessionReport {
             state: session.state.to_string(),
             source_address: session.source_address.to_string(),
             source_port: session.source_port,
@@ -48,6 +49,6 @@ pub fn generate(sessions: &MutexGuard<HashMap<TcpSessionKey, TcpSession>>) -> Tc
     }
 
     TcpSessionsReport {
-        sessions: rs
+        sessions
     }
 }

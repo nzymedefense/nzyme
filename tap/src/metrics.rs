@@ -135,7 +135,7 @@ impl Metrics {
                 dropped_interface
             });
         } else {
-            error!("Capture [{}] not found during attemped metric update. Ignoring.", name);
+            error!("Capture [{}] not found during attempted metric update. Ignoring.", name);
         }
     }
 
@@ -153,7 +153,7 @@ impl Metrics {
                  dropped_interface: previous.dropped_interface
              });
          } else {
-            error!("Capture [{}] not found during attemped metric update. Ignoring.", name);
+            error!("Capture [{}] not found during attempted metric update. Ignoring.", name);
          }
     }
 

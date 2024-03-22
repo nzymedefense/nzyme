@@ -3,7 +3,7 @@ use std::{sync::{Arc}};
 use std::collections::{BTreeMap, HashMap};
 use std::net::IpAddr;
 use std::sync::{Mutex, MutexGuard};
-use chrono::{DateTime, Duration, NaiveDateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use log::{error, trace, warn};
 use strum_macros::Display;
 use crate::data::tcp_table::TcpSessionState::{ClosedFin, ClosedRst, ClosedTimeout, Established, FinWait1, FinWait2, Refused, SynReceived, SynSent};
@@ -11,11 +11,13 @@ use crate::ethernet::detection::l4_session_tagger::{L4SessionTag, tag_tcp_sessio
 use crate::ethernet::packets::{TcpSegment};
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::ethernet::traffic_direction::TrafficDirection;
+use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::tcp_sessions_report;
 
 static SESSION_TIMEOUT: usize = 60;
 
 pub struct TcpTable {
+    pub leaderlink: Arc<Mutex<Leaderlink>>,
     pub sessions: Mutex<HashMap<TcpSessionKey, TcpSession>>,
 }
 
@@ -51,8 +53,9 @@ pub enum TcpSessionState {
 
 impl TcpTable {
 
-    pub fn new() -> Self {
+    pub fn new(leaderlink: Arc<Mutex<Leaderlink>>) -> Self {
         Self {
+            leaderlink,
             sessions: Mutex::new(HashMap::new())
         }
     }
@@ -124,7 +127,7 @@ impl TcpTable {
         }
     }
 
-    pub fn process_report(&self) { // -> Report
+    pub fn process_report(&self) {
         match self.sessions.lock() {
             Ok(mut sessions) => {
                 // Mark all timed out sessions in table as ClosedTimeout.
@@ -132,10 +135,18 @@ impl TcpTable {
 
                 tag_tcp_sessions(&mut sessions);
 
-                tcp_sessions_report::generate(&sessions);
+                let report: String = serde_json::to_string(&tcp_sessions_report::generate(&sessions)).unwrap(); // TODO unwrap
 
                 // Send data. Only proceed with cleanup if successful.
-                // ASSUME SUCCESS
+                // TODO error handling.
+                match self.leaderlink.lock() {
+                    Ok(link) => {
+                        if let Err(e) = link.send_report("tcp/sessions", report) {
+                            error!("Could not submit TCP report: {}", e);
+                        }
+                    },
+                    Err(e) => error!("Could not acquire TCP table lock for report submission: {}", e)
+                }
 
                 // Delete all timed out and closedfin/closedrst sessions in table.
                 retention_sweep(&mut sessions);

@@ -81,8 +81,6 @@ impl EthernetBroker {
                 }
             };
 
-            // TODO To IPv4 Pipeline
-
             match types::ProtocolType::try_from(ipv4.protocol) {
                 Ok(protocol_type) => { 
                     match protocol_type {

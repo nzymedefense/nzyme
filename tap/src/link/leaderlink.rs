@@ -21,11 +21,10 @@ pub struct Leaderlink {
     system: System,
     metrics: Arc<Mutex<Metrics>>,
     bus: Arc<Bus>,
-    tables: Arc<Tables>
 }
 
 impl Leaderlink {
-    pub fn new(configuration: Configuration, metrics: Arc<Mutex<Metrics>>, bus: Arc<Bus>, tables: Arc<Tables>) -> anyhow::Result<Self, anyhow::Error> {
+    pub fn new(configuration: Configuration, metrics: Arc<Mutex<Metrics>>, bus: Arc<Bus>) -> anyhow::Result<Self, anyhow::Error> {
         let uri = match Url::parse(&configuration.general.leader_uri) {
             Ok(uri) => uri,
             Err(err) => bail!("Could not parse leader URI. {}", err)
@@ -48,49 +47,33 @@ impl Leaderlink {
             uri,
             system: System::new(),
             metrics,
-            bus,
-            tables
+            bus
         })
     }
 
     pub fn run(&mut self) {
-        loop {
-            sleep(Duration::from_secs(10));
-
-            // Status report.
-            match self.send_status() {
-                Ok(r) => {
-                    if !r.status().is_success() {
-                        error!("Could not send status to leader. Received response code [HTTP {}].", r.status());
-                    }
-                },
-                Err(e) => {
-                    error!("Could not send status to leader. {}", e);
+        // Status report.
+        match self.send_status() {
+            Ok(r) => {
+                if !r.status().is_success() {
+                    error!("Could not send status to leader. Received response code [HTTP {}].", r.status());
                 }
-            };
+            },
+            Err(e) => {
+                error!("Could not send status to leader. {}", e);
+            }
+        };
+    }
 
-            // Tables.
-            match self.send_tables() {
-                Ok(r) => {
-                    if !r.status().is_success() {
-                        error!("Could not send tables to leader. Received response code [HTTP {}].", r.status());
-                    }
-                },
-                Err(e) => {
-                    error!("Could not send tables to leader. {}", e);
-                }
-            };
+    pub fn send_report(&self, path: &str, report: String) -> Result<Response, Error> {
+        let mut uri = self.uri.clone();
+        uri.set_path(format!("/api/taps/tables/{}", path).as_str());
 
-            /*
-             * Clear tables after submission attempt. We might lose some data that was written between
-             * the send attempt and the receipt, but that is OK considering the nature of the data and
-             * the significantly more complex implementation required to guarantee no data loss.
-             * 
-             * We are also accepting that data is lost when the submission failed. For now, this is
-             * easier than implementing a robust and disk-persistent retry mechanism.
-            */
-            self.tables.post_transmission();
-        }
+        self.http_client
+            .post(uri)
+            .header("Content-Type", "application/json")
+            .body(report.clone())
+            .send()
     }
 
     fn send_status(&mut self) -> Result<Response, Error> {
@@ -156,69 +139,6 @@ impl Leaderlink {
         self.http_client
             .post(uri)
             .json(&status)
-            .send()
-    }
-
-    fn send_tables(&mut self) -> Result<Response, Error> {
-        match self.tables.tcp.lock() {
-            Ok(tcp) => tcp.process_report(),
-            Err(e) => error!("Could not acquire TCP table mutex. {}", e)
-        }
-
-        // TODO change all reports below to new process
-
-        let mut uri = self.uri.clone();
-        uri.set_path("/api/taps/tables");
-
-        let arp = match self.tables.arp.lock() {
-            Ok(table) => table.clone(),
-            Err(e) => {
-                error!("Could not acquire ARP table mutex. {}", e);
-                HashMap::new()
-            }
-        };
-
-        let dns = match self.tables.dns.lock() {
-            Ok(dns) => dns.generate_report(),
-            Err(e) => {
-                error!("Could not acquire DNS table mutex. {}", e);
-                DnsTableReport {
-                    ips: HashMap::new(),
-                    nxdomains: Vec::new(),
-                    entropy_log: Vec::new(),
-                    pairs: HashMap::new(),
-                    retro_queries: Vec::new(),
-                    retro_responses: Vec::new()
-                }
-            }
-        };
-
-        let dot11 = match self.tables.dot11.lock() {
-            Ok(dot11) => dot11.generate_report(),
-            Err(e) => {
-                error!("Could not acquire 802.11 networks table mutex. {}", e);
-                Dot11TableReport {
-                    bssids: HashMap::new(),
-                    clients: HashMap::new(),
-                    disco: Dot11DiscoReport {
-                        deauth: HashMap::new(),
-                        disassoc: HashMap::new(),
-                    },
-                    alerts: Vec::new()
-                }
-            }
-        };
-
-        let tables = TablesReport {
-            timestamp: Utc::now(),
-            arp,
-            dns,
-            dot11
-        };
-
-        self.http_client
-            .post(uri)
-            .json(&tables)
             .send()
     }
 

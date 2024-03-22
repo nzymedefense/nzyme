@@ -6,6 +6,7 @@ use std::{
 use log::{error};
 use std::time::Duration;
 use crate::data::tcp_table::TcpTable;
+use crate::link::leaderlink::Leaderlink;
 
 use crate::metrics::Metrics;
 
@@ -20,38 +21,31 @@ pub struct Tables {
 
 impl Tables {
 
-    pub fn new(metrics: Arc<Mutex<Metrics>>) -> Self {
+    pub fn new(metrics: Arc<Mutex<Metrics>>, leaderlink: Arc<Mutex<Leaderlink>>) -> Self {
         Tables {
             arp: Arc::new(Mutex::new(HashMap::new())),
             dns: Arc::new(Mutex::new(DnsTable::new(metrics))),
             dot11: Arc::new(Mutex::new(Dot11Table::new())),
-            tcp: Arc::new(Mutex::new(TcpTable::new()))
+            tcp: Arc::new(Mutex::new(TcpTable::new(leaderlink)))
         }
     }
 
     pub fn run_background_jobs(&self) {
         loop {
+            match self.tcp.lock() {
+                Ok(tcp) => tcp.process_report(),
+                Err(e) => error!("Could not acquire TCP table lock for report processing: {}", e)
+            }
+
             self.calculate_metrics();
             thread::sleep(Duration::from_secs(10));
         }
     }
 
-    pub fn calculate_metrics(&self) {
+    fn calculate_metrics(&self) {
         match self.dns.lock() {
             Ok(dns) => dns.calculate_metrics(),
             Err(e) => error!("Could not acquire mutex to calculate DNS metrics: {}", e)
-        }
-    }
-
-    pub fn post_transmission(&self) {
-        match self.dns.lock() {
-            Ok(dns) => dns.post_transmission(),
-            Err(e) => error!("Could not acquire mutex to execute DNS post transmission jobs: {}", e)
-        }
-
-        match self.dot11.lock() {
-            Ok(mut dot11) => dot11.post_transmission(),
-            Err(e) => error!("Could not acquire mutex to execute 802.11 post transmission jobs: {}", e)
         }
     }
 

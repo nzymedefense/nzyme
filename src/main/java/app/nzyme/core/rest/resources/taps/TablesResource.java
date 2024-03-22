@@ -21,6 +21,8 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
 import app.nzyme.core.rest.resources.taps.reports.tables.TablesReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -71,6 +73,20 @@ public class TablesResource {
                     DNSRetroReportConverter.responseReportToEntries(report.tapName(), report.dns().retroResponses())
             );
         }*/
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("/tcp/sessions")
+    public Response tcpSessions(@Context SecurityContext sc, TcpSessionsReport report) {
+        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+
+        LOG.debug("Received table report from [{}]: {}", tapId, report);
+
+        for (TcpSessionReport session : report.sessions()) {
+            LOG.info("SESSION: {}", session);
+        }
 
         return Response.status(Response.Status.CREATED).build();
     }

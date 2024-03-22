@@ -126,10 +126,20 @@ fn main() {
     );
 
     ethernet::capture::print_devices();
-    
+
+
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new()));
     let bus = Arc::new(Bus::new(metrics.clone(), "ethernet_packets".to_string(), configuration.clone()));
-    let tables = Arc::new(Tables::new(metrics.clone()));
+
+    let mut leaderlink = match Leaderlink::new(configuration.clone(), metrics.clone(), bus.clone()) {
+        Ok(leaderlink) => Arc::new(Mutex::new(leaderlink)),
+        Err(e) => {
+            error!("Fatal error: Could not set up conection to nzyme leader. {}", e);
+            exit(exit_code::EX_CONFIG);
+        }
+    };
+
+    let tables = Arc::new(Tables::new(metrics.clone(), leaderlink.clone()));
 
     let tables_bg = tables.clone();
     thread::spawn(move || {
@@ -245,16 +255,16 @@ fn main() {
         metrics::MetricsMonitor::new(monitormetrics).run();
     });
 
+    let leaderlink_runner = leaderlink.clone();
     thread::spawn(move || { // TODO capsule into struct
-        let mut leaderlink = match Leaderlink::new(configuration, metrics, bus, tables) {
-            Ok(leaderlink) => leaderlink,
-            Err(e) => {
-                error!("Fatal error: Could not set up conection to nzyme leader. {}", e);
-                exit(exit_code::EX_CONFIG);
-            }
-        };
+        loop {
+            sleep(Duration::from_secs(10));
 
-        leaderlink.run();
+            match leaderlink_runner.lock() {
+                Ok(mut link) => link.run(),
+                Err(e) => error!("Could not acquire Leaderlink mutex to run background jobs.")
+            }
+        }
     });
 
     info!("Bootstrap complete.");
