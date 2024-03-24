@@ -18,15 +18,18 @@ use crate::{
 };
 use chrono::{DateTime, Utc};
 use log::error;
+use crate::data::table_helpers::{clear_mutex_hashmap, clear_mutex_vector};
+use crate::link::leaderlink::Leaderlink;
 
 pub struct DnsTable {
+    leaderlink: Arc<Mutex<Leaderlink>>,
     ips: Mutex<HashMap<IpAddr, DnsStatistics>>,
     nxdomains: Mutex<Vec<NXDomainLog>>,
     entropy_log: Mutex<Vec<EntropyLog>>,
     pairs: Mutex<HashMap<IpAddr, Mutex<HashMap<IpAddr, u128>>>>,
     metrics: Arc<Mutex<Metrics>>,
-    retro_query_log: Mutex<Vec<DNSRetroQueryLog>>,
-    retro_response_log: Mutex<Vec<DNSRetroResponseLog>>
+    query_log: Mutex<Vec<DNSQueryLog>>,
+    response_log: Mutex<Vec<DNSResponseLog>>
 }
 
 #[derive(Default, Debug)]
@@ -56,7 +59,7 @@ pub struct EntropyLog {
     timestamp: DateTime<Utc>
 }
 
-pub struct DNSRetroQueryLog {
+pub struct DNSQueryLog {
     ip: IpAddr,
     server: IpAddr,
     source_mac: String,
@@ -67,7 +70,7 @@ pub struct DNSRetroQueryLog {
     timestamp: DateTime<Utc>
 }
 
-pub struct DNSRetroResponseLog {
+pub struct DNSResponseLog {
     ip: IpAddr,
     server: IpAddr,
     source_mac: String,
@@ -79,14 +82,15 @@ pub struct DNSRetroResponseLog {
 
 impl DnsTable {
 
-    pub fn new(metrics: Arc<Mutex<Metrics>>) -> Self {
+    pub fn new(metrics: Arc<Mutex<Metrics>>, leaderlink: Arc<Mutex<Leaderlink>>) -> Self {
         DnsTable {
+            leaderlink,
             ips: Mutex::new(HashMap::new()),
             nxdomains: Mutex::new(Vec::new()),
             entropy_log: Mutex::new(Vec::new()),
             pairs: Mutex::new(HashMap::new()),
-            retro_query_log: Mutex::new(Vec::new()),
-            retro_response_log: Mutex::new(Vec::new()),
+            query_log: Mutex::new(Vec::new()),
+            response_log: Mutex::new(Vec::new()),
             metrics
         }
     }
@@ -167,12 +171,12 @@ impl DnsTable {
             }
         };
 
-        // Retro: Queries.
-        match self.retro_query_log.lock() {
+        // Raw queries.
+        match self.query_log.lock() {
             Ok(mut retro) => {
                                 if let Some(queries) = &request.queries {
                     for query_data in queries {
-                        retro.push(DNSRetroQueryLog {
+                        retro.push(DNSQueryLog {
                             ip: request.source_address.clone(),
                             server: request.destination_address.clone(),
                             source_mac: request.source_mac.clone(),
@@ -267,12 +271,12 @@ impl DnsTable {
         }
 
         // Retro.
-        match self.retro_response_log.lock() {
+        match self.response_log.lock() {
             Ok(mut retro) => {
                 if let Some(responses) = &response.responses {
                     for response_data in responses {
                         if let Some(response_value) = &response_data.value {
-                            retro.push(DNSRetroResponseLog {
+                            retro.push(DNSResponseLog {
                                 ip: response.destination_address.clone(),
                                 server: response.source_address.clone(),
                                 source_mac: response.source_mac.clone(),
@@ -297,8 +301,37 @@ impl DnsTable {
         }
     }
 
+    pub fn process_report(&self) {
+        // Generate JSON.
+        let report = match serde_json::to_string(&self.generate_report()) {
+            Ok(report) => report,
+            Err(e) => {
+                error!("Could not serialize DNS report: {}", e);
+                return;
+            }
+        };
+
+        // Send report.
+        match self.leaderlink.lock() {
+            Ok(link) => {
+                if let Err(e) = link.send_report("dns/summary", report) {
+                    error!("Could not submit DNS report: {}", e);
+                }
+            },
+            Err(e) => error!("Could not acquire DNS table lock for report submission: {}", e)
+        }
+
+        // Clean up.
+        clear_mutex_hashmap(&self.ips);
+        clear_mutex_hashmap(&self.pairs);
+        clear_mutex_vector(&self.query_log);
+        clear_mutex_vector(&self.response_log);
+        clear_mutex_vector(&self.nxdomains);
+        clear_mutex_vector(&self.entropy_log);
+    }
+
     #[allow(clippy::too_many_lines)]
-    pub fn generate_report(&self) -> DnsTableReport {
+    fn generate_report(&self) -> DnsTableReport {
         let mut ips = HashMap::new();
         match self.ips.lock() {
             Ok(x) => {
@@ -374,7 +407,7 @@ impl DnsTable {
             }
         };
 
-        let retro_queries = match self.retro_query_log.lock() {
+        let retro_queries = match self.query_log.lock() {
             Ok(retro) => {
                 let mut result = Vec::new();
 
@@ -400,7 +433,7 @@ impl DnsTable {
         };
 
         
-        let retro_responses = match self.retro_response_log.lock() {
+        let retro_responses = match self.response_log.lock() {
             Ok(retro) => {
                 let mut result = Vec::new();
 
@@ -431,38 +464,6 @@ impl DnsTable {
             pairs,
             retro_queries,
             retro_responses
-        }
-    }
-
-    pub fn post_transmission(&self) {
-        match self.ips.lock() {
-            Ok(mut ips) => ips.clear(),
-            Err(e) => error!("Could not acquire mutex to clear DNS IPs table: {}", e)
-        }
-
-        match self.nxdomains.lock() {
-            Ok(mut nxdomains) => nxdomains.clear(),
-            Err(e) => error!("Could not acquire mutex to clear NXDOMAIN table: {}", e)
-        }
-
-        match self.entropy_log.lock() {
-            Ok(mut log) => log.clear(),
-            Err(e) => error!("Could not acquire mutex to clear DNS entropy table: {}", e)
-        }
-
-        match self.pairs.lock() {
-            Ok(mut pairs) => pairs.clear(),
-            Err(e) => error!("Could not acquire mutex to clear DNS pairs table: {}", e)
-        }
-
-        match self.retro_query_log.lock() {
-            Ok(mut retro) => retro.clear(),
-            Err(e) => error!("Could not acquire mutex to clear DNS retro query log: {}", e)
-        }
-
-        match self.retro_response_log.lock() {
-            Ok(mut retro) => retro.clear(),
-            Err(e) => error!("Could not acquire mutex to clear DNS retro response log: {}", e)
         }
     }
 

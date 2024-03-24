@@ -31,7 +31,6 @@ import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
-import app.nzyme.core.periodicals.data.RetentionCleaner;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.registry.RegistryChangeMonitorImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
@@ -230,7 +229,6 @@ public class NzymeNodeImpl implements NzymeNode {
         PeriodicalManager periodicalManager = new PeriodicalManager();
         periodicalManager.scheduleAtFixedRate(new NodeUpdater(this), 0, 5, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
-        periodicalManager.scheduleAtFixedRate(new RetentionCleaner(this), 0, 1, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new Dot11SignalTrackMonitor(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new Dot11DiscoMonitor(this), 1, 1, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {

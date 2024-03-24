@@ -143,7 +143,7 @@ fn main() {
 
     let tables_bg = tables.clone();
     thread::spawn(move || {
-        tables_bg.run_background_jobs();
+        tables_bg.run_jobs();
     });
 
     // Ethernet handler.

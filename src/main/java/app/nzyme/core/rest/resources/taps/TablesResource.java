@@ -20,7 +20,8 @@ package app.nzyme.core.rest.resources.taps;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
-import app.nzyme.core.rest.resources.taps.reports.tables.TablesReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.DNSTablesReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11TablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
 import jakarta.inject.Inject;
@@ -33,6 +34,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import java.util.UUID;
 
@@ -47,32 +49,12 @@ public class TablesResource {
     private NzymeNode nzyme;
 
     @POST
-    public Response report(@Context SecurityContext sc, TablesReport report) {
+    @Path("/dot11/summary")
+    public Response dot11Summary(@Context SecurityContext sc, Dot11TablesReport report) {
         UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
 
-        LOG.debug("Received table report from [{}]: {}", tapId, report);
-
-        // DNS.
-        nzyme.getTablesService().dns().handleReport(tapId, report.timestamp(), report.dns());
-
-        // 802.11
-        nzyme.getTablesService().dot11().handleReport(tapId, report.timestamp(), report.dot11());
-
-        // Submit to Retro if service is present. TODO move to tap UUIDs instead of names.
-        /*if (nzyme.retroService().isPresent()) {
-            // TODO queue this. Don't wait for completion.
-            nzyme.retroService().get().l4().handleL4ConnectionPairReport(
-                    L4RetroReportConverter.pairReportToEntries(report.tapName(), report.l4().retroPairs())
-            );
-
-            nzyme.retroService().get().dns().handleQueryLogReport(
-                    DNSRetroReportConverter.queryReportToEntries(report.tapName(), report.dns().retroQueries())
-            );
-
-            nzyme.retroService().get().dns().handleResponseLogReport(
-                    DNSRetroReportConverter.responseReportToEntries(report.tapName(), report.dns().retroResponses())
-            );
-        }*/
+        LOG.debug("Received 802.11 summary report from [{}]: {}", tapId, report);
+        nzyme.getTablesService().dot11().handleReport(tapId, DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -82,11 +64,21 @@ public class TablesResource {
     public Response tcpSessions(@Context SecurityContext sc, TcpSessionsReport report) {
         UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
 
-        LOG.debug("Received table report from [{}]: {}", tapId, report);
+        LOG.debug("Received TCP session table report from [{}]: {}", tapId, report);
 
         for (TcpSessionReport session : report.sessions()) {
-            LOG.info("SESSION: {}", session);
         }
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("/dns/summary")
+    public Response dnsSummary(@Context SecurityContext sc, DNSTablesReport report) {
+        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+
+        LOG.debug("Received DNS summary report from [{}]: {}", tapId, report);
+        nzyme.getTablesService().dns().handleReport(tapId, DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

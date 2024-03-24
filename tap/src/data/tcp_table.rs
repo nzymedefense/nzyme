@@ -133,12 +133,19 @@ impl TcpTable {
                 // Mark all timed out sessions in table as ClosedTimeout.
                 timeout_sweep(&mut sessions);
 
+                // Scan session payloads and tag.
                 tag_tcp_sessions(&mut sessions);
 
-                let report: String = serde_json::to_string(&tcp_sessions_report::generate(&sessions)).unwrap(); // TODO unwrap
+                // Generate JSON.
+                let report = match serde_json::to_string(&tcp_sessions_report::generate(&sessions)) {
+                    Ok(report) => report,
+                    Err(e) => {
+                        error!("Could not serialize TCP sessions report: {}", e);
+                        return;
+                    }
+                };
 
-                // Send data. Only proceed with cleanup if successful.
-                // TODO error handling.
+                // Send report.
                 match self.leaderlink.lock() {
                     Ok(link) => {
                         if let Err(e) = link.send_report("tcp/sessions", report) {

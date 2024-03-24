@@ -24,17 +24,27 @@ impl Tables {
     pub fn new(metrics: Arc<Mutex<Metrics>>, leaderlink: Arc<Mutex<Leaderlink>>) -> Self {
         Tables {
             arp: Arc::new(Mutex::new(HashMap::new())),
-            dns: Arc::new(Mutex::new(DnsTable::new(metrics))),
-            dot11: Arc::new(Mutex::new(Dot11Table::new())),
+            dns: Arc::new(Mutex::new(DnsTable::new(metrics, leaderlink.clone()))),
+            dot11: Arc::new(Mutex::new(Dot11Table::new(leaderlink.clone()))),
             tcp: Arc::new(Mutex::new(TcpTable::new(leaderlink)))
         }
     }
 
-    pub fn run_background_jobs(&self) {
+    pub fn run_jobs(&self) {
         loop {
             match self.tcp.lock() {
                 Ok(tcp) => tcp.process_report(),
                 Err(e) => error!("Could not acquire TCP table lock for report processing: {}", e)
+            }
+
+            match self.dot11.lock() {
+                Ok(dot11) => dot11.process_report(),
+                Err(e) => error!("Could not acquire 802.11 table lock for report processing: {}", e)
+            }
+
+            match self.dns.lock() {
+                Ok(dns) => dns.process_report(),
+                Err(e) => error!("Could not acquire DNS table lock for report processing: {}", e)
             }
 
             self.calculate_metrics();

@@ -4,6 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.Subsystem;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.dot11.Dot11;
+import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.dot11.bandits.Dot11BanditDescription;
 import app.nzyme.core.dot11.bandits.Dot11Bandits;
@@ -671,7 +672,32 @@ public class Dot11Table implements DataTable {
 
     @Override
     public void retentionClean() {
-        // called to retention clean db tables TODO
-    }
+        NzymeNode nzyme = tablesService.getNzyme();
+        int dot11RetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                .getValue(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key())
+                .orElse(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
+        );
+        DateTime dot11CutOff = DateTime.now().minusDays(dot11RetentionDays);
+
+        LOG.info("802.11/WiFi data retention: <{}> days / Delete data older than <{}>.",
+                dot11RetentionDays, dot11CutOff);
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_bssids WHERE created_at < :cutoff")
+                        .bind("cutoff", dot11CutOff)
+                        .execute()
+        );
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_clients WHERE created_at < :cutoff")
+                        .bind("cutoff", dot11CutOff)
+                        .execute()
+        );
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_disco_activity WHERE created_at < :cutoff")
+                        .bind("cutoff", dot11CutOff)
+                        .execute()
+        );    }
 
 }

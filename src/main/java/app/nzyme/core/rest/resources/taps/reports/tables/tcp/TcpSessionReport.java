@@ -6,6 +6,8 @@ import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
+import java.util.List;
+
 @AutoValue
 public abstract class TcpSessionReport {
 
@@ -21,7 +23,7 @@ public abstract class TcpSessionReport {
     public abstract long segmentCount();
     public abstract long bytesCount();
     @Nullable
-    public abstract String tags();
+    public abstract List<String> tags();
 
     @JsonCreator
     public static TcpSessionReport create(@JsonProperty("state") String state,
@@ -34,7 +36,7 @@ public abstract class TcpSessionReport {
                                           @JsonProperty("most_recent_segment_time") DateTime mostRecentSegmentTime,
                                           @JsonProperty("segment_count") long segmentCount,
                                           @JsonProperty("bytes_count") long bytesCount,
-                                          @JsonProperty("tags") String tags) {
+                                          @JsonProperty("tags") List<String> tags) {
         return builder()
                 .state(state)
                 .sourceAddress(sourceAddress)
@@ -76,7 +78,7 @@ public abstract class TcpSessionReport {
 
         public abstract Builder bytesCount(long bytesCount);
 
-        public abstract Builder tags(String tags);
+        public abstract Builder tags(List<String> tags);
 
         public abstract TcpSessionReport build();
     }

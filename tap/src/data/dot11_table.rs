@@ -1,4 +1,5 @@
 use std::{collections::HashMap, sync::Mutex};
+use std::sync::Arc;
 
 use log::error;
 
@@ -10,11 +11,13 @@ use crate::{
     }, helpers::network::is_mac_address_multicast,
 };
 use crate::alerting::alert_types::Dot11Alert;
+use crate::data::table_helpers::{clear_mutex_hashmap, clear_mutex_vector};
 use crate::dot11::frames::{Dot11Capabilities, Dot11DeauthenticationFrame, Dot11DisassociationFrame, Dot11ProbeResponseFrame, PmfMode, RadiotapHeader, TaggedParameters};
+use crate::link::leaderlink::Leaderlink;
 use crate::link::payloads::{DiscoTransmitterReport, Dot11AlertReport, Dot11DiscoReport, PmfReport};
 
-#[derive(Debug)]
 pub struct Dot11Table {
+    pub leaderlink: Arc<Mutex<Leaderlink>>,
     pub bssids: Mutex<HashMap<String, Bssid>>,
     pub clients: Mutex<HashMap<String, Client>>,
     pub disco: DiscoTable,
@@ -79,12 +82,13 @@ pub struct DiscoTransmitter {
 }
 
 impl Dot11Table {
-    pub fn new() -> Self {
+    pub fn new(leaderlink: Arc<Mutex<Leaderlink>>) -> Self {
         Self {
             bssids: Mutex::new(HashMap::new()),
             clients: Mutex::new(HashMap::new()),
             disco: DiscoTable::default(),
-            alerts: Mutex::new(Vec::new())
+            alerts: Mutex::new(Vec::new()),
+            leaderlink
         }
     }
 
@@ -525,6 +529,7 @@ impl Dot11Table {
             }
         }
     }
+
     pub fn build_initial_signal_strengths(channel: &Option<u16>, signal_strength: i8) -> HashMap<u16, Vec<i8>> {
         let mut map = HashMap::new();
 
@@ -536,30 +541,36 @@ impl Dot11Table {
         map
     }
 
-    pub fn post_transmission(&mut self) {
-        self.clear_mutex_hashmap(&self.bssids);
-        self.clear_mutex_hashmap(&self.clients);
-        self.clear_mutex_hashmap(&self.disco.deauth);
-        self.clear_mutex_hashmap(&self.disco.disassoc);
-
-        self.clear_mutex_vector(&self.alerts);
-    }
-
-    fn clear_mutex_hashmap<T>(&self, table: &Mutex<HashMap<String, T>>) {
-        match table.lock() {
-            Ok(mut table) => table.clear(),
-            Err(e) =>  error!("Could not acquire table mutex: {}", e)
+    pub fn process_report(&self) {
+        // Generate JSON.
+        let report = match serde_json::to_string(&self.generate_report()) {
+            Ok(report) => report,
+            Err(e) => {
+                error!("Could not serialize 802.11 report: {}", e);
+                return;
+            }
         };
+
+        // Send report.
+        match self.leaderlink.lock() {
+            Ok(link) => {
+                if let Err(e) = link.send_report("dot11/summary", report) {
+                    error!("Could not submit 802.11 report: {}", e);
+                }
+            },
+            Err(e) => error!("Could not acquire 802.11 table lock for report submission: {}", e)
+        }
+
+        // Clean up.
+        clear_mutex_hashmap(&self.bssids);
+        clear_mutex_hashmap(&self.clients);
+        clear_mutex_hashmap(&self.disco.deauth);
+        clear_mutex_hashmap(&self.disco.disassoc);
+
+        clear_mutex_vector(&self.alerts);
     }
 
-    fn clear_mutex_vector<T>(&self, vec: &Mutex<Vec<T>>) {
-        match vec.lock() {
-            Ok(mut vec) => vec.clear(),
-            Err(e) =>  error!("Could not acquire table mutex: {}", e)
-        };
-    }
-
-    pub fn generate_report(&self) -> Dot11TableReport {
+    fn generate_report(&self) -> Dot11TableReport {
         let mut bssid_report: HashMap<String, BssidReport> = HashMap::new();
 
         match self.bssids.lock() {
@@ -656,7 +667,7 @@ impl Dot11Table {
                         tx_bytes: stats.tx_bytes,
                         rx_frames: stats.rx_frames,
                         rx_bytes: stats.rx_bytes,
-                        signal_strength: calculate_1d_signal_strengh_report(&stats.signal_strengths)
+                        signal_strength: calculate_1d_signal_strength_report(&stats.signal_strengths)
                     });
                 }
 
@@ -666,7 +677,7 @@ impl Dot11Table {
                         advertised_networks,
                         clients,
                         hidden_ssid_frames: info.hidden_ssid_frames,
-                        signal_strength: calculate_1d_signal_strengh_report(
+                        signal_strength: calculate_1d_signal_strength_report(
                             &info.signal_strengths,
                         ),
                         fingerprints: info.fingerprints.clone(),
@@ -685,7 +696,7 @@ impl Dot11Table {
                         Dot11ClientReport {
                             probe_request_ssids: info.probe_request_ssids.clone(),
                             wildcard_probe_requests: info.wildcard_probe_requests,
-                            signal_strength: calculate_1d_signal_strengh_report(
+                            signal_strength: calculate_1d_signal_strength_report(
                                 &info.signal_strengths
                             )
                         }
@@ -781,7 +792,7 @@ fn calculate_signal_strengh_report(signal_strengths: &HashMap<u16, Vec<i8>>) -> 
     }
 }
 
-fn calculate_1d_signal_strengh_report(signal_strengths: &Vec<i8>) -> SignalStrengthReport {
+fn calculate_1d_signal_strength_report(signal_strengths: &Vec<i8>) -> SignalStrengthReport {
     let mut sum: i128 = 0;
     let mut min = 0;
     let mut max = -100;
