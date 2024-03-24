@@ -139,7 +139,7 @@ fn main() {
         }
     };
 
-    let tables = Arc::new(Tables::new(metrics.clone(), leaderlink.clone()));
+    let tables = Arc::new(Tables::new(metrics.clone(), leaderlink.clone(), &configuration));
 
     let tables_bg = tables.clone();
     thread::spawn(move || {

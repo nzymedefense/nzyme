@@ -24,5 +24,9 @@ wifi_brokers = 1
 wifi_broker_buffer_capacity = 65535
 ethernet_broker_buffer_capacity = 65535
 
+[protocols.tcp]
+reassembly_buffer_size = 1048576
+session_timeout_seconds = 60
+
 [misc]
 training_period_minutes = 5

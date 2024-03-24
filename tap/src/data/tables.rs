@@ -5,6 +5,7 @@ use std::{
 
 use log::{error};
 use std::time::Duration;
+use crate::configuration::Configuration;
 use crate::data::tcp_table::TcpTable;
 use crate::link::leaderlink::Leaderlink;
 
@@ -21,12 +22,16 @@ pub struct Tables {
 
 impl Tables {
 
-    pub fn new(metrics: Arc<Mutex<Metrics>>, leaderlink: Arc<Mutex<Leaderlink>>) -> Self {
+    pub fn new(metrics: Arc<Mutex<Metrics>>, leaderlink: Arc<Mutex<Leaderlink>>, configuration: &Configuration) -> Self {
         Tables {
             arp: Arc::new(Mutex::new(HashMap::new())),
             dns: Arc::new(Mutex::new(DnsTable::new(metrics, leaderlink.clone()))),
             dot11: Arc::new(Mutex::new(Dot11Table::new(leaderlink.clone()))),
-            tcp: Arc::new(Mutex::new(TcpTable::new(leaderlink)))
+            tcp: Arc::new(Mutex::new(TcpTable::new(
+                leaderlink,
+                configuration.protocols.tcp.reassembly_buffer_size,
+                configuration.protocols.tcp.session_timeout_seconds
+            )))
         }
     }
 

@@ -14,11 +14,11 @@ use crate::ethernet::traffic_direction::TrafficDirection;
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::tcp_sessions_report;
 
-static SESSION_TIMEOUT: usize = 60;
-
 pub struct TcpTable {
-    pub leaderlink: Arc<Mutex<Leaderlink>>,
-    pub sessions: Mutex<HashMap<TcpSessionKey, TcpSession>>,
+    leaderlink: Arc<Mutex<Leaderlink>>,
+    sessions: Mutex<HashMap<TcpSessionKey, TcpSession>>,
+    reassembly_buffer_size: i32,
+    session_timeout_seconds: i32
 }
 
 #[derive(Debug)]
@@ -53,10 +53,14 @@ pub enum TcpSessionState {
 
 impl TcpTable {
 
-    pub fn new(leaderlink: Arc<Mutex<Leaderlink>>) -> Self {
+    pub fn new(leaderlink: Arc<Mutex<Leaderlink>>,
+               reassembly_buffer_size: i32,
+               session_timeout_seconds: i32) -> Self {
         Self {
             leaderlink,
-            sessions: Mutex::new(HashMap::new())
+            sessions: Mutex::new(HashMap::new()),
+            reassembly_buffer_size,
+            session_timeout_seconds
         }
     }
 
@@ -67,18 +71,6 @@ impl TcpTable {
                     Some(session) => {
                         let session_state = Self::determine_session_state(segment, Some(session));
 
-                        // TOOD direction.
-                        if !segment.payload.is_empty() {
-                            match segment.determine_direction() {
-                                TrafficDirection::ClientToServer => {
-                                    insert_session_segment(segment, &mut session.segments_client_to_server);
-                                }
-                                TrafficDirection::ServerToClient => {
-                                    insert_session_segment(segment, &mut session.segments_server_to_client);
-                                }
-                            }
-                        }
-
                         session.most_recent_segment_time = segment.timestamp;
                         session.state = session_state.clone();
                         session.segment_count += 1;
@@ -86,6 +78,22 @@ impl TcpTable {
 
                         if session.end_time.is_none() && (session_state == ClosedFin || session_state == ClosedRst) {
                             session.end_time = Some(segment.timestamp);
+                        }
+
+                        if !segment.payload.is_empty() {
+                            if session.bytes_count <= self.reassembly_buffer_size as u64 {
+                                match segment.determine_direction() {
+                                    TrafficDirection::ClientToServer => {
+                                        insert_session_segment(segment, &mut session.segments_client_to_server);
+                                    }
+                                    TrafficDirection::ServerToClient => {
+                                        insert_session_segment(segment, &mut session.segments_server_to_client);
+                                    }
+                                }
+                            } else {
+                                trace!("TCP session [{:?}] has reached maximum segment buffer size.",
+                                    session);
+                            }
                         }
 
                         trace!("Segment of existing TCP Session: {:?}, State: {:?}, Flags: {:?}",
@@ -131,7 +139,7 @@ impl TcpTable {
         match self.sessions.lock() {
             Ok(mut sessions) => {
                 // Mark all timed out sessions in table as ClosedTimeout.
-                timeout_sweep(&mut sessions);
+                timeout_sweep(&mut sessions, self.session_timeout_seconds as i64);
 
                 // Scan session payloads and tag.
                 tag_tcp_sessions(&mut sessions);
@@ -246,10 +254,10 @@ fn insert_session_segment(segment: &TcpSegment, segments: &mut BTreeMap<u32, Vec
     }
 }
 
-fn timeout_sweep(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>) {
+fn timeout_sweep(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>, timeout: i64) {
     for session in sessions.values_mut() {
         if Utc::now() - session.most_recent_segment_time
-            > Duration::try_seconds(SESSION_TIMEOUT as i64).unwrap() {
+            > Duration::try_seconds(timeout).unwrap() {
             session.state = ClosedTimeout;
         }
     }
