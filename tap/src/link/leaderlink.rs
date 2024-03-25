@@ -1,6 +1,6 @@
 use anyhow::bail;
 use chrono::Utc;
-use log::error;
+use log::{error, info};
 use reqwest::{blocking::Client, blocking::Response, header::{HeaderMap, AUTHORIZATION}, Error, Url};
 use std::{thread::{sleep, self}, time::Duration, sync::{Mutex, Arc}, collections::HashMap};
 use systemstat::{System, Platform};
@@ -10,7 +10,7 @@ use crate::{
     configuration::Configuration,
     metrics::Metrics, data::tables::Tables, messagebus::{channel_names::ChannelName, bus::Bus}, link::payloads::{DnsTableReport, Dot11TableReport}
 };
-use crate::link::payloads::Dot11DiscoReport;
+use crate::link::payloads::{Dot11DiscoReport, TimerReport};
 
 use super::{payloads::{StatusReport, SystemMetricsReport, TablesReport, TotalWithAverage, ChannelReport, CaptureReport}};
 
@@ -82,6 +82,7 @@ impl Leaderlink {
         let mut channels: Vec<ChannelReport> = Vec::new();
         let mut captures: Vec<CaptureReport> = Vec::new();
         let mut gauges_long: HashMap<String, i128> = HashMap::new();
+        let mut timers: HashMap<String, TimerReport> = HashMap::new();
 
         match self.metrics.lock() {
             Ok(mut metrics) => {
@@ -112,6 +113,13 @@ impl Leaderlink {
                 }
 
                 gauges_long = metrics.get_gauges_long();
+
+                for (name, timer) in metrics.get_timer_snapshots().iter() {
+                    timers.insert(name.clone(), TimerReport {
+                        mean: timer.mean,
+                        p99: timer.p99
+                    });
+                }
             },
             Err(e) => {
                 error!("Could not acquire metrics mutex. {}", e);
@@ -130,7 +138,8 @@ impl Leaderlink {
             bus: super::payloads::BusReport { channels, name: self.bus.name.clone() },
             system_metrics,
             captures,
-            gauges_long
+            gauges_long,
+            timers
         };
         
         let mut uri = self.uri.clone();

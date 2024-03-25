@@ -1,8 +1,13 @@
 use std::{thread, time::Duration, sync::{Mutex, Arc}, collections::HashMap};
+use std::collections::BTreeMap;
+use chrono::{DateTime, Utc};
 use strum::IntoEnumIterator;
 use strum_macros::Display;
+use statrs::statistics::{Distribution, Statistics};
+use statrs::statistics::OrderStatistics;
+use statrs::statistics::Data;
 
-use log::{warn, error};
+use log::{warn, error, info};
 
 use crate::messagebus::channel_names::ChannelName;
 
@@ -25,6 +30,12 @@ impl TotalWithAverage {
         self.avg_tmp = 0;
     }
 
+}
+
+#[derive(Debug)]
+pub struct TimerSnapshot {
+    pub mean: f64,
+    pub p99: f64
 }
 
 #[derive(Default)]
@@ -71,7 +82,8 @@ pub struct Metrics {
     captures: HashMap<String, Capture>,
     processed_bytes: TotalWithAverage,
     channels: Channels,
-    gauges_long: HashMap<String, i128>
+    gauges_long: HashMap<String, i128>,
+    timers: Mutex<HashMap<String, BTreeMap<DateTime<Utc>, i64>>>
 }
 
 impl Metrics {
@@ -90,7 +102,8 @@ impl Metrics {
                 dns_pipeline: ChannelUtilization::default(),
             },
             captures: HashMap::new(),
-            gauges_long: HashMap::new()
+            gauges_long: HashMap::new(),
+            timers: Mutex::new(HashMap::new())
         }
     }
 
@@ -198,6 +211,27 @@ impl Metrics {
         self.gauges_long.insert(name.to_string(), value);
     }
 
+    pub fn record_timer(&mut self, name: &str, microseconds: i64) {
+        match self.timers.lock() {
+            Ok(mut timers) => {
+                match timers.get_mut(name) {
+                    Some(timer) => {
+                        timer.insert(Utc::now(), microseconds);
+                    },
+                    None => {
+                        // Timer not seen before. Insert new, with initial value.
+                        let mut timer: BTreeMap<DateTime<Utc>, i64> = BTreeMap::new();
+                        timer.insert(Utc::now(), microseconds);
+                        timers.insert(name.to_string(), timer);
+                    }
+                }
+            },
+            Err(e) => {
+                error!("Could not acquire metrics timers mutex: {}", e);
+            }
+        }
+    }
+
     /*
      * GETTERS
      */
@@ -222,6 +256,53 @@ impl Metrics {
         cloned.clone_from(&self.gauges_long);
 
         cloned
+    }
+
+    pub fn get_timer_snapshots(&self) -> HashMap<String, TimerSnapshot> {
+        let mut snapshots = HashMap::new();
+
+        match self.timers.lock() {
+            Ok(timers) => {
+                for (name, timer) in timers.iter() {
+                    let timings: Vec<f64> = timer.values().map(|v| *v as f64).collect();
+
+                    if timings.is_empty() {
+                        continue
+                    }
+
+                    let mut sdata = Data::new(timings);
+
+                    snapshots.insert(name.clone(), TimerSnapshot {
+                        mean: sdata.mean().unwrap(),
+                        p99: sdata.percentile(99)
+                    });
+                }
+            },
+            Err(e) => {
+                error!("Could not acquire metrics timers mutex: {}", e);
+            }
+        }
+
+        snapshots
+    }
+
+    pub fn run_timer_maintenance(&self) {
+        match self.timers.lock() {
+            Ok(mut timers) => {
+                for (name, timer) in timers.clone().iter() {
+                    // Get rid of all timings older than 60 seconds.
+                    let new_map: BTreeMap<DateTime<Utc>, i64> = timer
+                        .range(Utc::now()-Duration::from_secs(60)..)
+                        .map(|(&key, &value)| (key, value))
+                        .collect();
+
+                    timers.insert(name.clone(), new_map);
+                }
+            },
+            Err(e) => {
+                error!("Could not acquire metrics timers mutex for maintenance: {}", e);
+            }
+        }
     }
 }
 
@@ -271,6 +352,7 @@ impl MetricsAggregator {
         loop {
             match self.metrics.lock() {
                 Ok(mut metrics) => {
+                    metrics.run_timer_maintenance();
                     metrics.calculate_averages();
                 },
                 Err(e) => { warn!("Could not acquire metrics mutex in aggregator: {}", e) }

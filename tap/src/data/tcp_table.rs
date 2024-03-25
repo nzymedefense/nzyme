@@ -11,11 +11,14 @@ use crate::ethernet::detection::l4_session_tagger::{L4SessionTag, tag_tcp_sessio
 use crate::ethernet::packets::{TcpSegment};
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::ethernet::traffic_direction::TrafficDirection;
+use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::tcp_sessions_report;
+use crate::metrics::Metrics;
 
 pub struct TcpTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
+    metrics: Arc<Mutex<Metrics>>,
     sessions: Mutex<HashMap<TcpSessionKey, TcpSession>>,
     reassembly_buffer_size: i32,
     session_timeout_seconds: i32
@@ -54,10 +57,12 @@ pub enum TcpSessionState {
 impl TcpTable {
 
     pub fn new(leaderlink: Arc<Mutex<Leaderlink>>,
+               metrics: Arc<Mutex<Metrics>>,
                reassembly_buffer_size: i32,
                session_timeout_seconds: i32) -> Self {
         Self {
             leaderlink,
+            metrics,
             sessions: Mutex::new(HashMap::new()),
             reassembly_buffer_size,
             session_timeout_seconds
@@ -69,6 +74,7 @@ impl TcpTable {
             Ok(mut sessions) => {
                 match sessions.get_mut(&segment.session_key) {
                     Some(session) => {
+                        let mut timer = Timer::new();
                         let session_state = Self::determine_session_state(segment, Some(session));
 
                         session.most_recent_segment_time = segment.timestamp;
@@ -98,9 +104,18 @@ impl TcpTable {
 
                         trace!("Segment of existing TCP Session: {:?}, State: {:?}, Flags: {:?}",
                             segment.session_key, session_state, segment.flags);
+
+                        timer.stop();
+                        record_timer(
+                            timer.elapsed_microseconds(),
+                            "tables.tcp.sessions.timer.register_existing",
+                            &self.metrics
+                        );
                     },
                     None => {
                         // First time seeing this session.
+                        let mut timer = Timer::new();
+
                         let session_state = Self::determine_session_state(segment, None);
 
                         // We only record new sessions, not mid-session.
@@ -125,6 +140,13 @@ impl TcpTable {
                             segment.session_key, session_state, segment.flags);
 
                             sessions.insert(segment.session_key.clone(), new_session);
+
+                            timer.stop();
+                            record_timer(
+                                timer.elapsed_microseconds(),
+                                "tables.tcp.sessions.timer.register_new",
+                                &self.metrics
+                            );
                         }
                     }
                 }
@@ -169,6 +191,29 @@ impl TcpTable {
             Err(e) => {
                 error!("Could not acquire TCP sessions table mutex for report generation: {}", e);
             }
+        }
+    }
+
+    pub fn calculate_metrics(&self) {
+        let (sessions_size, sessions_bytes): (i128, i128) = match self.sessions.lock() {
+            Ok(sessions) => {
+                let mut bytes: i128 = 0;
+                sessions.values().for_each(|s| bytes += s.bytes_count as i128);
+                (sessions.len() as i128, bytes)
+            },
+            Err(e) => {
+                error!("Could not acquire mutex to calculate TCP session table sizes: {}", e);
+
+                (-1, -1)
+            }
+        };
+
+        match self.metrics.lock() {
+            Ok(mut metrics) => {
+                metrics.set_gauge("tables.tcp.sessions.size", sessions_size);
+                metrics.set_gauge("tables.tcp.sessions.bytes", sessions_bytes);
+            },
+            Err(e) => error!("Could not acquire metrics mutex: {}", e)
         }
     }
 

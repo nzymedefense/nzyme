@@ -4458,5 +4458,47 @@
         <renameColumn tableName="auth_tenants_locations_floors" oldColumnName="plan_height_pixels" newColumnName="plan_length_pixels" />
         <renameColumn tableName="auth_tenants_locations_floors" oldColumnName="plan_height_meters" newColumnName="plan_length_meters" />
     </changeSet>
+    
+    <changeSet id="create_metrics_timers" author="lennartkoopmann">
+        <createTable tableName="tap_metrics_timers">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="metric_name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="mean" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="p99" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    
+    <changeSet id="add_metrics_indices" author="lennartkoopmann">
+        <createIndex tableName="tap_metrics_gauges" indexName="gauges_stdlookup">
+            <column name="metric_name" />
+            <column name="tap_uuid" />
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex tableName="tap_metrics_timers" indexName="timers_stdlookup">
+            <column name="metric_name" />
+            <column name="tap_uuid" />
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
 
 </databaseChangeLog>

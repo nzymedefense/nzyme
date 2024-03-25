@@ -4,6 +4,7 @@ use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};
 use crate::alerting::alert_types::{Dot11AlertAttribute, Dot11AlertType};
 
+#[derive(Serialize)]
 pub struct StatusReport {
     pub version: String,
     pub timestamp: DateTime<Utc>,
@@ -11,7 +12,8 @@ pub struct StatusReport {
     pub bus: BusReport,
     pub captures: Vec<CaptureReport>,
     pub system_metrics: SystemMetricsReport,
-    pub gauges_long: HashMap<String, i128>
+    pub gauges_long: HashMap<String, i128>,
+    pub timers: HashMap<String, TimerReport>
 }
 
 #[derive(Serialize)]
@@ -41,6 +43,12 @@ pub struct SystemMetricsReport {
     pub cpu_load: f32,
     pub memory_total: u64,
     pub memory_free: u64
+}
+
+#[derive(Serialize)]
+pub struct TimerReport {
+    pub mean: f64,
+    pub p99: f64
 }
 
 #[derive(Serialize)]
@@ -231,21 +239,6 @@ impl TotalWithAverage {
         }
     }
 
-}
-
-impl Serialize for StatusReport {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where S: serde::Serializer {
-        let mut state = serializer.serialize_struct("StatusReport", 7)?;
-        state.serialize_field("version", &self.version)?;
-        state.serialize_field("timestamp", &self.timestamp.to_rfc3339())?;
-        state.serialize_field("processed_bytes", &self.processed_bytes)?;
-        state.serialize_field("bus", &self.bus)?;
-        state.serialize_field("system_metrics", &self.system_metrics)?;
-        state.serialize_field("captures", &self.captures)?;
-        state.serialize_field("gauges_long", &self.gauges_long)?;
-        state.end()
-    }
 }
 
 impl Serialize for TablesReport {

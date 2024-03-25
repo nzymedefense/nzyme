@@ -25,10 +25,11 @@ impl Tables {
     pub fn new(metrics: Arc<Mutex<Metrics>>, leaderlink: Arc<Mutex<Leaderlink>>, configuration: &Configuration) -> Self {
         Tables {
             arp: Arc::new(Mutex::new(HashMap::new())),
-            dns: Arc::new(Mutex::new(DnsTable::new(metrics, leaderlink.clone()))),
+            dns: Arc::new(Mutex::new(DnsTable::new(metrics.clone(), leaderlink.clone()))),
             dot11: Arc::new(Mutex::new(Dot11Table::new(leaderlink.clone()))),
             tcp: Arc::new(Mutex::new(TcpTable::new(
                 leaderlink,
+                metrics,
                 configuration.protocols.tcp.reassembly_buffer_size,
                 configuration.protocols.tcp.session_timeout_seconds
             )))
@@ -38,7 +39,10 @@ impl Tables {
     pub fn run_jobs(&self) {
         loop {
             match self.tcp.lock() {
-                Ok(tcp) => tcp.process_report(),
+                Ok(tcp) => {
+                    tcp.calculate_metrics();
+                    tcp.process_report();
+                },
                 Err(e) => error!("Could not acquire TCP table lock for report processing: {}", e)
             }
 
@@ -48,19 +52,14 @@ impl Tables {
             }
 
             match self.dns.lock() {
-                Ok(dns) => dns.process_report(),
+                Ok(dns) => {
+                    dns.calculate_metrics();
+                    dns.process_report();
+                },
                 Err(e) => error!("Could not acquire DNS table lock for report processing: {}", e)
             }
 
-            self.calculate_metrics();
             thread::sleep(Duration::from_secs(10));
-        }
-    }
-
-    fn calculate_metrics(&self) {
-        match self.dns.lock() {
-            Ok(dns) => dns.calculate_metrics(),
-            Err(e) => error!("Could not acquire mutex to calculate DNS metrics: {}", e)
         }
     }
 

@@ -468,38 +468,38 @@ impl DnsTable {
     }
 
     pub fn calculate_metrics(&self) {
-        let ips_size: usize;
-        match self.ips.lock() {
-            Ok(ips) => ips_size = ips.len(),
+        let ips_size: i128 = match self.ips.lock() {
+            Ok(ips) => ips.len() as i128,
             Err(e) => {
-                ips_size = 0;
                 error!("Could not acquire mutex to calculate DNS IPs table size: {}", e);
-            }
-        }
 
-        let nxdomains_size: usize;
-        match self.ips.lock() {
-            Ok(nxdomains) => nxdomains_size = nxdomains.len(),
+                -1
+            }
+        };
+
+        let nxdomains_size: i128 = match self.nxdomains.lock() {
+            Ok(nxdomains) => nxdomains.len() as i128,
             Err(e) => {
-                nxdomains_size = 0;
                 error!("Could not acquire mutex to calculate NXDOMAIN table size: {}", e);
-            }
-        }
 
-        let entropylog_size: usize;
-        match self.entropy_log.lock() {
-            Ok(log) => entropylog_size = log.len(),
-            Err(e) => {
-                entropylog_size = 0;
-                error!("Could not acquire mutex to calculate DNS entropy table size: {}", e);
+                -1
             }
-        }
+        };
+
+        let entropylog_size: i128 = match self.entropy_log.lock() {
+            Ok(log) => log.len() as i128,
+            Err(e) => {
+                error!("Could not acquire mutex to calculate DNS entropy table size: {}", e);
+
+                -1
+            }
+        };
 
         match self.metrics.lock() {
             Ok(mut metrics) => {
-                metrics.set_gauge("tables.dns.ips.size", ips_size as i128);
-                metrics.set_gauge("tables.dns.nxdomains.size", nxdomains_size as i128);
-                metrics.set_gauge("tables.dns.entropy_log.size", entropylog_size as i128);
+                metrics.set_gauge("tables.dns.ips.size", ips_size);
+                metrics.set_gauge("tables.dns.nxdomains.size", nxdomains_size);
+                metrics.set_gauge("tables.dns.entropy_log.size", entropylog_size);
             },
             Err(e) => error!("Could not acquire metrics mutex: {}", e)
         }

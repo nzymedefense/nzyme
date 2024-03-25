@@ -5,6 +5,7 @@ import app.nzyme.core.dot11.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.resources.taps.reports.TimersReport;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -195,10 +196,16 @@ public class TapManager {
             }
         }
 
-        // Metrics
+        // Gauges.
         for (Map.Entry<String, Long> metric : report.gaugesLong().entrySet()) {
             writeGauge(tapUUID, metric.getKey(), metric.getValue(), report.timestamp());
         }
+
+        // Timers.
+        for (Map.Entry<String, TimersReport> timer : report.timers().entrySet()) {
+            writeTimer(tapUUID, timer.getKey(), timer.getValue().mean(), timer.getValue().p99(), report.timestamp());
+        }
+
 
         // Additional metrics.
         writeGauge(tapUUID, "system.captures.throughput_bit_sec", report.processedBytes().average()*8/10, report.timestamp());
@@ -213,17 +220,37 @@ public class TapManager {
     private void writeGauge(UUID tapUUID, String metricName, Double metricValue, DateTime timestamp) {
         nzyme.getDatabase().withHandle(handle ->
                 handle.createUpdate("INSERT INTO tap_metrics_gauges(tap_uuid, metric_name, metric_value, created_at) " +
-                                "VALUES(:tap_uuid, :metric_name, :metric_value, NOW())")
-                .bind("tap_uuid", tapUUID)
-                .bind("metric_name", metricName)
-                .bind("metric_value", metricValue)
-                .execute()
+                                "VALUES(:tap_uuid, :metric_name, :metric_value, :timestamp)")
+                        .bind("tap_uuid", tapUUID)
+                        .bind("metric_name", metricName)
+                        .bind("metric_value", metricValue)
+                        .bind("timestamp", timestamp)
+                        .execute()
+        );
+    }
+
+    private void writeTimer(UUID tapUUID, String metricName, double mean, double p99, DateTime timestamp) {
+        nzyme.getDatabase().withHandle(handle ->
+                handle.createUpdate("INSERT INTO tap_metrics_timers(tap_uuid, metric_name, mean, p99, created_at) " +
+                                "VALUES(:tap_uuid, :metric_name, :mean, :p99, NOW())")
+                        .bind("tap_uuid", tapUUID)
+                        .bind("metric_name", metricName)
+                        .bind("mean", mean)
+                        .bind("p99", p99)
+                        .bind("timestamp", timestamp)
+                        .execute()
         );
     }
 
     private void retentionCleanMetrics() {
         nzyme.getDatabase().useHandle(handle -> {
             handle.createUpdate("DELETE FROM tap_metrics_gauges WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(24))
+                    .execute();
+        });
+
+        nzyme.getDatabase().useHandle(handle -> {
+            handle.createUpdate("DELETE FROM tap_metrics_timers WHERE created_at < :created_at")
                     .bind("created_at", DateTime.now().minusHours(24))
                     .execute();
         });
