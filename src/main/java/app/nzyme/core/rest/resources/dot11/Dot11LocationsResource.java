@@ -231,6 +231,10 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
+        if (bssidLocation.outsideOfFloorPlanBoundaries()) {
+            LOG.info("OUTSIDE");
+        }
+
         Map<DateTime, TrilaterationLocationResponse> locations = Maps.newTreeMap();
         for (Map.Entry<DateTime, LocationSolver.TrilaterationLocation> loc : bssidLocation.locations().entrySet()) {
             locations.put(loc.getKey(), TrilaterationLocationResponse.create(loc.getValue().x(), loc.getValue().y()));

@@ -140,9 +140,8 @@ public class LocationSolver {
             }
         }
 
-        LOG.info("{}/{} - {}%", distancesOutsideOfBoundaries, totalDataPoints, distancesOutsideOfBoundaries*100.0/totalDataPoints);
-
-        return TrilaterationResult.create(result);
+        boolean outsideOfFloorPlanBoundaries = distancesOutsideOfBoundaries*100.0/totalDataPoints > 66;
+        return TrilaterationResult.create(result, outsideOfFloorPlanBoundaries);
     }
 
     private boolean isDistanceOutsideOfBoundaries(double distanceMeters, int tapXPixel, int tapYPixel, int floorPlanWidthMeters, int floorPlanLengthMeters, int floorPlanWidthPixels, int floorPlanLengthPixels) {
@@ -187,10 +186,12 @@ public class LocationSolver {
     public abstract static class TrilaterationResult {
 
         public abstract Map<DateTime, TrilaterationLocation> locations();
+        public abstract boolean outsideOfFloorPlanBoundaries();
 
-        public static TrilaterationResult create(Map<DateTime, TrilaterationLocation> locations) {
+        public static TrilaterationResult create(Map<DateTime, TrilaterationLocation> locations, boolean outsideOfFloorPlanBoundaries) {
             return builder()
                     .locations(locations)
+                    .outsideOfFloorPlanBoundaries(outsideOfFloorPlanBoundaries)
                     .build();
         }
 
@@ -201,6 +202,8 @@ public class LocationSolver {
         @AutoValue.Builder
         public abstract static class Builder {
             public abstract Builder locations(Map<DateTime, TrilaterationLocation> locations);
+
+            public abstract Builder outsideOfFloorPlanBoundaries(boolean outsideOfFloorPlanBoundaries);
 
             public abstract TrilaterationResult build();
         }
