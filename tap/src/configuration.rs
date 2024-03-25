@@ -57,6 +57,7 @@ pub struct Protocols {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsTcp {
+    pub pipeline_size: i32,
     pub reassembly_buffer_size: i32,
     pub session_timeout_seconds: i32
 }
@@ -93,6 +94,10 @@ pub fn load(path: String) -> Result<Configuration, anyhow::Error> {
 
     if doc.performance.ethernet_broker_buffer_capacity == 0 {
         bail!("Configuration variable `ethernet_pkt_buffer_capacity` must be set to a value greater than 0.");
+    }
+
+    if doc.protocols.tcp.pipeline_size <= 0 {
+        bail!("Configuration variable `protocols.tcp.pipeline_size` must be set to a value greater than 0.");
     }
 
     if doc.protocols.tcp.session_timeout_seconds <= 0 {
