@@ -127,11 +127,11 @@ fn main() {
 
     ethernet::capture::print_devices();
 
-
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new()));
-    let bus = Arc::new(Bus::new(metrics.clone(), "ethernet_packets".to_string(), configuration.clone()));
+    let ethernet_bus = Arc::new(Bus::new(metrics.clone(), "ethernet_packets".to_string(), configuration.clone()));
+    let dot11_bus = Arc::new(Bus::new(metrics.clone(), "dot11_frames".to_string(), configuration.clone()));
 
-    let mut leaderlink = match Leaderlink::new(configuration.clone(), metrics.clone(), bus.clone()) {
+    let mut leaderlink = match Leaderlink::new(configuration.clone(), metrics.clone(), ethernet_bus.clone(), dot11_bus.clone()) {
         Ok(leaderlink) => Arc::new(Mutex::new(leaderlink)),
         Err(e) => {
             error!("Fatal error: Could not set up conection to nzyme leader. {}", e);
@@ -147,13 +147,13 @@ fn main() {
     });
 
     // Ethernet handler.
-    let ethernet_handlerbus = bus.clone();
+    let ethernet_handlerbus = ethernet_bus.clone();
     thread::spawn(move || {
         brokers::ethernet_broker::EthernetBroker::new(ethernet_handlerbus, configuration.performance.ethernet_brokers as usize).run();
     });
 
     // WiFi handler.
-    let wifi_handlerbus = bus.clone();
+    let wifi_handlerbus = dot11_bus.clone();
     thread::spawn(move || {
         brokers::dot11_broker::Dot11Broker::new(wifi_handlerbus, configuration.performance.wifi_brokers as usize).run();
     });
@@ -167,7 +167,7 @@ fn main() {
                 continue;
             }
             let capture_metrics = metrics.clone();
-            let capture_bus = bus.clone();
+            let capture_bus = ethernet_bus.clone();
             thread::spawn(move || {
                 let mut ethernet_capture = ethernet::capture::Capture {
                     metrics: capture_metrics.clone(),
@@ -203,7 +203,7 @@ fn main() {
             }
 
             let capture_metrics = metrics.clone();
-            let capture_bus = bus.clone();
+            let capture_bus = dot11_bus.clone();
             thread::spawn(move || {
                 let mut dot11_capture = dot11::capture::Capture {
                     metrics: capture_metrics.clone(),
@@ -241,7 +241,7 @@ fn main() {
     }
 
     // Processors. TODO follow impl method like metrics aggr/mon
-    processors::distributor::spawn(bus.clone(), &tables, system_state, metrics.clone());
+    processors::distributor::spawn(ethernet_bus.clone(), dot11_bus.clone(), &tables, system_state, metrics.clone());
 
     // Metrics aggregator.
     let aggregatormetrics = metrics.clone();

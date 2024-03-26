@@ -7,7 +7,6 @@ use byteorder::{BigEndian, ByteOrder};
 use crate::ethernet::packets::EthernetData;
 use crate::ethernet::parsers::{udp_parser, dns_parser, tcp_parser};
 use crate::messagebus::bus::Bus;
-use crate::messagebus::channel_names::ChannelName;
 use crate::to_pipeline;
 use crate::{helpers::network::to_mac_address_string, ethernet::types};
 use crate::ethernet::{
@@ -15,6 +14,7 @@ use crate::ethernet::{
     types::{EtherType, find_ethertype},
     parsers::{ipv4_parser, ipv6_parser, arp_parser}
 };
+use crate::messagebus::channel_names::EthernetChannelName;
 
 pub struct EthernetBroker {
     num_threads: usize,
@@ -66,7 +66,7 @@ impl EthernetBroker {
 
         // To Ethernet Pipeline.
         to_pipeline!(
-            ChannelName::EthernetPipeline,
+            EthernetChannelName::EthernetPipeline,
             bus.ethernet_pipeline.sender,
             packet.clone(),
             packet.data.len() as u32
@@ -90,7 +90,7 @@ impl EthernetBroker {
 
                             // To TCP pipeline.
                             to_pipeline!(
-                                ChannelName::TcpPipeline,
+                                EthernetChannelName::TcpPipeline,
                                 bus.tcp_pipeline.sender,
                                 tcp,
                                 size
@@ -107,7 +107,7 @@ impl EthernetBroker {
                                         // To DNS pipeline.
                                         let size = dns.size;
                                         to_pipeline!(
-                                            ChannelName::DnsPipeline,
+                                            EthernetChannelName::DnsPipeline,
                                             bus.dns_pipeline.sender,
                                             Arc::new(dns),
                                             size
@@ -140,7 +140,7 @@ impl EthernetBroker {
                 Ok(packet) => {
                     let size = packet.size;
                     to_pipeline!(
-                        ChannelName::ArpPipeline,
+                        EthernetChannelName::ArpPipeline,
                         bus.arp_pipeline.sender,
                         Arc::new(packet),
                         size

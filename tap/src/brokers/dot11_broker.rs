@@ -5,8 +5,9 @@ use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{ByteOrder, LittleEndian};
 use log::{info, warn, trace, error};
 
-use crate::{messagebus::{bus::Bus, channel_names::ChannelName}, dot11::frames::{Dot11Frame, RadiotapHeader, RadiotapHeaderPresentFlags, RadiotapHeaderFlags, FrameType, FrameTypeInformation, FrameSubType, Dot11RawFrame}, to_pipeline};
+use crate::{messagebus::{bus::Bus}, dot11::frames::{Dot11Frame, RadiotapHeader, RadiotapHeaderPresentFlags, RadiotapHeaderFlags, FrameType, FrameTypeInformation, FrameSubType, Dot11RawFrame}, to_pipeline};
 use crate::helpers::network::dot11_frequency_to_channel;
+use crate::messagebus::channel_names::Dot11ChannelName;
 
 pub struct Dot11Broker {
     num_threads: usize,
@@ -235,7 +236,7 @@ impl Dot11Broker {
 
         // Send to processor pipeline.
         to_pipeline!(
-            ChannelName::Dot11FramesPipeline,
+            Dot11ChannelName::Dot11FramesPipeline,
             bus.dot11_frames_pipeline.sender,
             Arc::new(Dot11Frame {
                 header: radiotap_header,

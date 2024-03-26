@@ -9,7 +9,7 @@ pub struct StatusReport {
     pub version: String,
     pub timestamp: DateTime<Utc>,
     pub processed_bytes: TotalWithAverage,
-    pub bus: BusReport,
+    pub buses: Vec<BusReport>,
     pub captures: Vec<CaptureReport>,
     pub system_metrics: SystemMetricsReport,
     pub gauges_long: HashMap<String, i128>,

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{ethernet::packets::{EthernetPacket, IPv4Packet}, helpers::network::to_ipv4_address_string};
+use crate::{ethernet::packets::{EthernetPacket, IPv4Packet}};
 use anyhow::{Result, bail};
 use crate::helpers::network::to_ipv4_address;
 

@@ -1,6 +1,5 @@
 use std::net::IpAddr;
 use chrono::{DateTime, Utc};
-use crate::data::tcp_table::TcpSession;
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::ethernet::traffic_direction::TrafficDirection;
 

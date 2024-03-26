@@ -3,13 +3,10 @@ use std::collections::BTreeMap;
 use chrono::{DateTime, Utc};
 use strum::IntoEnumIterator;
 use strum_macros::Display;
-use statrs::statistics::{Distribution, Statistics};
-use statrs::statistics::OrderStatistics;
-use statrs::statistics::Data;
+use statrs::statistics::{Distribution, OrderStatistics, Data};
 
-use log::{warn, error, info};
-
-use crate::messagebus::channel_names::ChannelName;
+use log::{warn, error};
+use crate::messagebus::channel_names::{Dot11ChannelName, EthernetChannelName};
 
 #[derive(Default, Clone)]
 pub struct TotalWithAverage {
@@ -110,8 +107,15 @@ impl Metrics {
     pub fn calculate_averages(&mut self) {
         self.processed_bytes.calculate_averages();
 
-        for channel in ChannelName::iter() {
-            let c = self.select_channel(&channel.clone());
+        for channel in EthernetChannelName::iter() {
+            let c = self.select_channel(&channel.to_string());
+            c.throughput_bytes.calculate_averages();
+            c.throughput_messages.calculate_averages();
+            c.errors.calculate_averages();
+        }
+
+        for channel in Dot11ChannelName::iter() {
+            let c = self.select_channel(&channel.to_string());
             c.throughput_bytes.calculate_averages();
             c.throughput_messages.calculate_averages();
             c.errors.calculate_averages();
@@ -170,36 +174,37 @@ impl Metrics {
          }
     }
 
-    pub fn select_channel(&mut self, channel: &ChannelName) -> &mut ChannelUtilization {
+    pub fn select_channel(&mut self, channel: &str) -> &mut ChannelUtilization {
         match channel {
-            ChannelName::EthernetBroker => &mut self.channels.ethernet_broker,
-            ChannelName::Dot11Broker => &mut self.channels.dot11_broker,
-            ChannelName::Dot11FramesPipeline => &mut self.channels.dot11_frames_pipeline,
-            ChannelName::EthernetPipeline => &mut self.channels.ethernet_pipeline,
-            ChannelName::ArpPipeline => &mut self.channels.arp_pipeline,
-            ChannelName::TcpPipeline => &mut self.channels.tcp_pipeline,
-            ChannelName::UdpPipeline => &mut self.channels.udp_pipeline,
-            ChannelName::DnsPipeline => &mut self.channels.dns_pipeline
+            "EthernetBroker" => &mut self.channels.ethernet_broker,
+            "Dot11Broker" => &mut self.channels.dot11_broker,
+            "Dot11FramesPipeline" => &mut self.channels.dot11_frames_pipeline,
+            "EthernetPipeline" => &mut self.channels.ethernet_pipeline,
+            "ArpPipeline" => &mut self.channels.arp_pipeline,
+            "TcpPipeline" => &mut self.channels.tcp_pipeline,
+            "UdpPipeline" => &mut self.channels.udp_pipeline,
+            "DnsPipeline" => &mut self.channels.dns_pipeline,
+            _ => panic!("Unknown channel {}", channel)
         }
     }
 
-    pub fn increment_channel_errors(&mut self, channel: &ChannelName, x: u32) {
+    pub fn increment_channel_errors(&mut self, channel: &str, x: u32) {
         self.select_channel(channel).errors.increment(x);
     }
 
-    pub fn increment_channel_throughput_bytes(&mut self, channel: &ChannelName, x: u32) {
+    pub fn increment_channel_throughput_bytes(&mut self, channel: &str, x: u32) {
         self.select_channel(channel).throughput_bytes.increment(x);
     }
     
-    pub fn increment_channel_throughput_messages(&mut self, channel: &ChannelName, x: u32) {
+    pub fn increment_channel_throughput_messages(&mut self, channel: &str, x: u32) {
         self.select_channel(channel).throughput_messages.increment(x);
     }
 
-    pub fn record_channel_watermark(&mut self, channel: &ChannelName, watermark: u128) {
+    pub fn record_channel_watermark(&mut self, channel: &str, watermark: u128) {
         self.select_channel(channel).watermark = watermark;
     }
     
-    pub fn record_channel_capacity(&mut self, channel: &ChannelName, capacity: u128) {
+    pub fn record_channel_capacity(&mut self, channel: &str, capacity: u128) {
         self.select_channel(channel).capacity = capacity;
     }
 
@@ -240,7 +245,7 @@ impl Metrics {
         self.processed_bytes.clone()
     }
 
-    pub fn get_channel_errors(&mut self, channel: &ChannelName) -> TotalWithAverage {
+    pub fn get_channel_errors(&mut self, channel: &str) -> TotalWithAverage {
         self.select_channel(channel).errors.clone()
     }
 
@@ -322,11 +327,20 @@ impl MetricsMonitor {
 
             match self.metrics.lock() {
                 Ok(mut metrics) => {
-                    for channel in ChannelName::iter() {
-                        let errors = metrics.get_channel_errors(&channel.clone()).avg;
+                    for channel in EthernetChannelName::iter() {
+                        let errors = metrics.get_channel_errors(&channel.to_string()).avg;
 
                         if errors > 0 {
                             error!("Channel [{:?}] had <{}> submit errors in last <{}> seconds. You are losing packets.", 
+                                channel, errors, AVERAGE_INTERVAL);
+                        }
+                    }
+
+                    for channel in Dot11ChannelName::iter() {
+                        let errors = metrics.get_channel_errors(&channel.to_string()).avg;
+
+                        if errors > 0 {
+                            error!("Channel [{:?}] had <{}> submit errors in last <{}> seconds. You are losing packets.",
                                 channel, errors, AVERAGE_INTERVAL);
                         }
                     }

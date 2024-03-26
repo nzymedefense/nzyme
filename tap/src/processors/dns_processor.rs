@@ -193,7 +193,7 @@ impl DnsProcessor {
             Ok(mut table) => {
                 let mut new_table: HashMap<DateTime<Utc>, f32> = HashMap::new();
 
-                let cutoff = Utc::now() - Duration::minutes(10);
+                #[allow(deprecated)] let cutoff = Utc::now() - Duration::minutes(10);
                 for (dt, val) in &*table {
                     if *dt > cutoff {
                         new_table.insert(*dt, *val);

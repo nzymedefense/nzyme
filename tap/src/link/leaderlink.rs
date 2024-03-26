@@ -1,18 +1,20 @@
 use anyhow::bail;
 use chrono::Utc;
-use log::{error, info};
+use log::error;
 use reqwest::{blocking::Client, blocking::Response, header::{HeaderMap, AUTHORIZATION}, Error, Url};
-use std::{thread::{sleep, self}, time::Duration, sync::{Mutex, Arc}, collections::HashMap};
+use std::{thread::self, time::Duration, sync::{Mutex, Arc}, collections::HashMap};
 use systemstat::{System, Platform};
 use strum::IntoEnumIterator;
 
 use crate::{
     configuration::Configuration,
-    metrics::Metrics, data::tables::Tables, messagebus::{channel_names::ChannelName, bus::Bus}, link::payloads::{DnsTableReport, Dot11TableReport}
+    metrics::Metrics, messagebus::bus::Bus
 };
-use crate::link::payloads::{Dot11DiscoReport, TimerReport};
+use crate::link::payloads::TimerReport;
+use crate::messagebus::channel_names::{Dot11ChannelName, EthernetChannelName};
+use crate::metrics::ChannelUtilization;
 
-use super::{payloads::{StatusReport, SystemMetricsReport, TablesReport, TotalWithAverage, ChannelReport, CaptureReport}};
+use super::{payloads::{StatusReport, SystemMetricsReport, TotalWithAverage, ChannelReport, CaptureReport}};
 
 
 pub struct Leaderlink {
@@ -20,11 +22,12 @@ pub struct Leaderlink {
     uri: Url,
     system: System,
     metrics: Arc<Mutex<Metrics>>,
-    bus: Arc<Bus>,
+    ethernet_bus: Arc<Bus>,
+    dot11_bus: Arc<Bus>
 }
 
 impl Leaderlink {
-    pub fn new(configuration: Configuration, metrics: Arc<Mutex<Metrics>>, bus: Arc<Bus>) -> anyhow::Result<Self, anyhow::Error> {
+    pub fn new(configuration: Configuration, metrics: Arc<Mutex<Metrics>>, ethernet_bus: Arc<Bus>, dot11_bus: Arc<Bus>) -> anyhow::Result<Self, anyhow::Error> {
         let uri = match Url::parse(&configuration.general.leader_uri) {
             Ok(uri) => uri,
             Err(err) => bail!("Could not parse leader URI. {}", err)
@@ -47,7 +50,8 @@ impl Leaderlink {
             uri,
             system: System::new(),
             metrics,
-            bus
+            ethernet_bus,
+            dot11_bus
         })
     }
 
@@ -79,7 +83,8 @@ impl Leaderlink {
     fn send_status(&mut self) -> Result<Response, Error> {
         let mut processed_bytes_total =0;
         let mut processed_bytes_avg = 0;
-        let mut channels: Vec<ChannelReport> = Vec::new();
+        let mut ethernet_channels: Vec<ChannelReport> = Vec::new();
+        let mut dot11_channels: Vec<ChannelReport> = Vec::new();
         let mut captures: Vec<CaptureReport> = Vec::new();
         let mut gauges_long: HashMap<String, i128> = HashMap::new();
         let mut timers: HashMap<String, TimerReport> = HashMap::new();
@@ -89,16 +94,16 @@ impl Leaderlink {
                 processed_bytes_total = metrics.get_processed_bytes().total;
                 processed_bytes_avg = metrics.get_processed_bytes().avg;
 
-                for channel in ChannelName::iter() {
-                    let c = metrics.select_channel(&channel);
-                    channels.push(ChannelReport {
-                        name: channel.to_string(),
-                        capacity: c.capacity,
-                        watermark: c.watermark,
-                        errors: TotalWithAverage::from_metric(&c.errors),
-                        throughput_bytes: TotalWithAverage::from_metric(&c.throughput_bytes),
-                        throughput_messages: TotalWithAverage::from_metric(&c.throughput_messages)
-                    });
+                for c in EthernetChannelName::iter() {
+                    ethernet_channels.push(
+                        Self::build_channel_report(metrics.select_channel(&c.to_string()), c.to_string())
+                    );
+                }
+
+                for c in Dot11ChannelName::iter() {
+                    dot11_channels.push(
+                        Self::build_channel_report(metrics.select_channel(&c.to_string()), c.to_string())
+                    );
                 }
 
                 for capture in metrics.get_captures().into_values() {
@@ -135,7 +140,7 @@ impl Leaderlink {
                 total: processed_bytes_total,
                 average: processed_bytes_avg
             },
-            bus: super::payloads::BusReport { channels, name: self.bus.name.clone() },
+            buses: vec![super::payloads::BusReport { channels: ethernet_channels, name: self.ethernet_bus.name.clone() }, super::payloads::BusReport { channels: dot11_channels, name: self.dot11_bus.name.clone() }],
             system_metrics,
             captures,
             gauges_long,
@@ -191,6 +196,17 @@ impl Leaderlink {
             cpu_load,
             memory_total,
             memory_free
+        }
+    }
+
+    fn build_channel_report(metrics: &ChannelUtilization, name: String) -> ChannelReport {
+        ChannelReport {
+            name,
+            capacity: metrics.capacity,
+            watermark: metrics.watermark,
+            errors: TotalWithAverage::from_metric(&metrics.errors),
+            throughput_bytes: TotalWithAverage::from_metric(&metrics.throughput_bytes),
+            throughput_messages: TotalWithAverage::from_metric(&metrics.throughput_messages)
         }
     }
 

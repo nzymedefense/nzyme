@@ -15,8 +15,7 @@ use crate::{
     metrics::Metrics, dot11::frames::{Dot11RawFrame, Dot11Frame}
 };
 use crate::configuration::Configuration;
-
-use super::channel_names::ChannelName;
+use crate::messagebus::channel_names::{Dot11ChannelName, EthernetChannelName};
 
 pub struct Bus {
     pub name: String,
@@ -35,7 +34,7 @@ pub struct Bus {
 
 pub struct NzymeChannelSender<T> {
     sender: Sender<Arc<T>>,
-    name: ChannelName,
+    name: String,
     metrics: Arc<Mutex<Metrics>>
 }
 
@@ -94,7 +93,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: ethernet_broker_sender,
-                    name: ChannelName::EthernetBroker
+                    name: EthernetChannelName::EthernetBroker.to_string()
                 }),
                 receiver: Arc::new(ethernet_broker_receiver),
             },
@@ -102,7 +101,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: dot11_broker_sender,
-                    name: ChannelName::Dot11Broker
+                    name: Dot11ChannelName::Dot11Broker.to_string()
                 }),
                 receiver: Arc::new(dot11_broker_receiver),
             },
@@ -110,7 +109,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: dot11_frames_sender,
-                    name: ChannelName::Dot11FramesPipeline
+                    name: Dot11ChannelName::Dot11FramesPipeline.to_string()
                 }),
                 receiver: Arc::new(dot11_frames_receiver),
             },
@@ -118,7 +117,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: ethernet_pipeline_sender,
-                    name: ChannelName::EthernetPipeline 
+                    name: EthernetChannelName::EthernetPipeline.to_string()
                 }),
                 receiver: Arc::new(ethernet_pipeline_receiver),
             },
@@ -126,7 +125,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),  
                     sender: arp_pipeline_sender,
-                    name: ChannelName::ArpPipeline 
+                    name: EthernetChannelName::ArpPipeline.to_string()
                 }),
                 receiver: Arc::new(arp_pipeline_receiver),
             },
@@ -134,7 +133,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: tcp_pipeline_sender,
-                    name: ChannelName::TcpPipeline 
+                    name: EthernetChannelName::TcpPipeline.to_string()
                 }),
                 receiver: Arc::new(tcp_pipeline_receiver),
             },
@@ -142,7 +141,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: udp_pipeline_sender,
-                    name: ChannelName::UdpPipeline 
+                    name: EthernetChannelName::UdpPipeline.to_string()
                 }),
                 receiver: Arc::new(udp_pipeline_receiver),
             },
@@ -150,7 +149,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics,
                     sender: dns_pipeline_sender,
-                    name: ChannelName::DnsPipeline 
+                    name: EthernetChannelName::DnsPipeline.to_string()
                 }),
                 receiver: Arc::new(dns_pipeline_receiver),
             },

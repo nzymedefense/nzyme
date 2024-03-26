@@ -3,8 +3,7 @@ use std::fs::read_to_string;
 
 use anyhow::{Result, bail};
 use reqwest::Url;
-use serde::{Deserialize, Deserializer};
-use serde::de::Error;
+use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Configuration {

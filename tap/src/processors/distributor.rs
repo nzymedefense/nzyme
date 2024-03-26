@@ -11,16 +11,16 @@ use super::{
     dot11_frame_processor::Dot11FrameProcessor,
 };
 
-pub fn spawn(bus: Arc<Bus>, tables: &Arc<Tables>, system_state: Arc<SystemState>, metrics: Arc<Mutex<Metrics>>) {
-    spawn_base_ethernet(bus.clone());
-    spawn_base_dot11_management(bus.clone(), &tables.clone());
+pub fn spawn(ethernet_bus: Arc<Bus>, dot11_bus: Arc<Bus>, tables: &Arc<Tables>, system_state: Arc<SystemState>, metrics: Arc<Mutex<Metrics>>) {
+    spawn_base_ethernet(ethernet_bus.clone());
+    spawn_base_dot11(dot11_bus.clone(), &tables.clone());
 
-    spawn_base_arp(bus.clone(), tables.clone()); // TODO borrow
+    spawn_base_arp(ethernet_bus.clone(), tables.clone()); // TODO borrow
     
-    spawn_base_tcp(bus.clone(), &tables.clone());
-    spawn_base_udp(bus.clone(), &tables.clone());    
+    spawn_base_tcp(ethernet_bus.clone(), &tables.clone());
+    spawn_base_udp(ethernet_bus.clone(), &tables.clone());
     
-    spawn_base_dns(bus, tables, system_state, metrics);    
+    spawn_base_dns(ethernet_bus, tables, system_state, metrics);
 }
 
 // TODO don't exit here
@@ -36,7 +36,7 @@ fn spawn_base_ethernet(bus: Arc<Bus>) {
     });
 }
 
-fn spawn_base_dot11_management(bus: Arc<Bus>, tables: &Arc<Tables>) {
+fn spawn_base_dot11(bus: Arc<Bus>, tables: &Arc<Tables>) {
     let processor = Dot11FrameProcessor::new(tables.dot11.clone());
 
     thread::spawn(move || {

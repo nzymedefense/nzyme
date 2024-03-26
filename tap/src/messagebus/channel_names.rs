@@ -1,15 +1,18 @@
 use strum_macros::{EnumIter, Display};
 
 #[derive(Debug, Clone, EnumIter, Display)]
-pub enum ChannelName {
+pub enum EthernetChannelName {
     EthernetBroker,
-    Dot11Broker,
-
-    Dot11FramesPipeline,
-
     EthernetPipeline,
     ArpPipeline,
     TcpPipeline,
     UdpPipeline,
     DnsPipeline
+}
+
+
+#[derive(Debug, Clone, EnumIter, Display)]
+pub enum Dot11ChannelName {
+    Dot11Broker,
+    Dot11FramesPipeline,
 }
