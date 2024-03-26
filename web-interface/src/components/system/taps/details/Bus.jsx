@@ -6,7 +6,7 @@ function Bus (props) {
         <div>
             <h6>Bus: {props.bus.name}</h6>
 
-            <ChannelsTable channels={props.bus.channels} />
+            <ChannelsTable channels={props.bus.channels} tap={props.tap} busName={props.bus.name} />
         </div>
   )
 }

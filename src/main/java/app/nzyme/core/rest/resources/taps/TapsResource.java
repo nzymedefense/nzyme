@@ -116,6 +116,10 @@ public class TapsResource extends UserAuthenticatedResource {
 
         Map<String, TapMetricsGaugeResponse> parsedGauges = Maps.newHashMap();
         for (TapMetricsGauge gauge : gauges) {
+            if (gauge.metricName().startsWith("captures") || gauge.metricName().startsWith("channels")) {
+                continue;
+            }
+
             parsedGauges.put(
                     gauge.metricName(),
                     TapMetricsGaugeResponse.create(

@@ -104,6 +104,28 @@ public class TapManager {
                                 .execute()
                 );
             }
+
+            // Capture metrics.
+            writeGauge(
+                    tapUUID,
+                    "captures." + capture.interfaceName().toLowerCase() + ".received",
+                    capture.received(),
+                    report.timestamp()
+            );
+
+            writeGauge(
+                    tapUUID,
+                    "captures." + capture.interfaceName().toLowerCase() + ".dropped_if",
+                    capture.droppedInterface(),
+                    report.timestamp()
+            );
+
+            writeGauge(
+                    tapUUID,
+                    "captures." + capture.interfaceName().toLowerCase() + ".dropped_buffer",
+                    capture.droppedBuffer(),
+                    report.timestamp()
+            );
         }
 
         // Register buses.
@@ -196,6 +218,42 @@ public class TapManager {
                                     .execute()
                     );
                 }
+
+                // Capture metrics.
+                writeGauge(
+                        tapUUID,
+                        "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".usage",
+                        channel.watermark(),
+                        report.timestamp()
+                );
+
+                writeGauge(
+                        tapUUID,
+                        "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".usage_percent",
+                        channel.watermark() > 0 ? channel.watermark()*100/channel.capacity() : 0,
+                        report.timestamp()
+                );
+
+                writeGauge(
+                        tapUUID,
+                        "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".throughput_messages",
+                        channel.throughputMessages().average()/10,
+                        report.timestamp()
+                );
+
+                writeGauge(
+                        tapUUID,
+                        "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".throughput_bytes",
+                        channel.throughputBytes().average()/10,
+                        report.timestamp()
+                );
+
+                writeGauge(
+                        tapUUID,
+                        "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".errors",
+                        channel.errors().average()/10,
+                        report.timestamp()
+                );
             }
         }
 

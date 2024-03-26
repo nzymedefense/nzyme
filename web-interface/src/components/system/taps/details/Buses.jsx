@@ -9,7 +9,7 @@ function Buses (props) {
   return (
         <div>
             {Object.keys(props.tap.buses).map(function (key, i) {
-              return <Bus key={'bus-' + i} bus={props.tap.buses[i]} />
+              return <Bus key={'bus-' + i} bus={props.tap.buses[i]} tap={props.tap} />
             })}
         </div>
   )

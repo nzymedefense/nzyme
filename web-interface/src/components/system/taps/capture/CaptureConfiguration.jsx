@@ -20,7 +20,7 @@ function CaptureConfiguration (props) {
             </thead>
             <tbody>
             {Object.keys(props.tap.captures.sort((a, b) => a.interface_name.localeCompare(b.interface_name))).map(function (key, i) {
-              return <CaptureRow key={'capture-' + i} capture={props.tap.captures[i]} />
+              return <CaptureRow key={'capture-' + i} capture={props.tap.captures[i]} tap={props.tap} />
             })}
             </tbody>
         </table>
