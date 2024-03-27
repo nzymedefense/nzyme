@@ -4,13 +4,12 @@ import app.nzyme.core.monitoring.health.Indicator;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.taps.TapManager;
-import app.nzyme.core.taps.metrics.TapMetrics;
-import app.nzyme.core.taps.metrics.TapMetricsGauge;
+import app.nzyme.core.taps.db.metrics.TapMetrics;
+import app.nzyme.core.taps.db.metrics.TapMetricsGauge;
 import com.google.common.math.DoubleMath;
 import org.joda.time.DateTime;
 
 import java.util.List;
-import java.util.Optional;
 
 public class TapThroughputIndicator extends Indicator {
 
@@ -29,8 +28,7 @@ public class TapThroughputIndicator extends Indicator {
                 continue;
             }
 
-            TapMetrics metrics = tapManager.findMetricsOfTap(tap.uuid());
-            for (TapMetricsGauge gauge : metrics.gauges()) {
+            for (TapMetricsGauge gauge : tapManager.findGaugesOfTap(tap.uuid())) {
                 if (gauge.metricName().equals("system.captures.throughput_bit_sec")) {
                     // Oh god why is it Double
                     if (DoubleMath.fuzzyEquals(gauge.metricValue(), 0, 0.01)) {

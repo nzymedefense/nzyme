@@ -15,38 +15,42 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package app.nzyme.core.taps.metrics;
+package app.nzyme.core.taps.db.metrics;
 
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 @AutoValue
-public abstract class TapMetricsGauge {
+public abstract class TapMetricsGaugeAggregation {
 
-    public abstract String metricName();
-    public abstract Double metricValue();
-    public abstract DateTime createdAt();
+    public abstract DateTime bucket();
+    public abstract Double average();
+    public abstract Double maximum();
+    public abstract Double minimum();
 
-    public static TapMetricsGauge create(String metricName, Double metricValue, DateTime createdAt) {
+    public static TapMetricsGaugeAggregation create(DateTime bucket, Double average, Double maximum, Double minimum) {
         return builder()
-                .metricName(metricName)
-                .metricValue(metricValue)
-                .createdAt(createdAt)
+                .bucket(bucket)
+                .average(average)
+                .maximum(maximum)
+                .minimum(minimum)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_TapMetricsGauge.Builder();
+        return new AutoValue_TapMetricsGaugeAggregation.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder metricName(String metricName);
+        public abstract Builder bucket(DateTime bucket);
 
-        public abstract Builder metricValue(Double metricValue);
+        public abstract Builder average(Double average);
 
-        public abstract Builder createdAt(DateTime createdAt);
+        public abstract Builder maximum(Double maximum);
 
-        public abstract TapMetricsGauge build();
+        public abstract Builder minimum(Double minimum);
+
+        public abstract TapMetricsGaugeAggregation build();
     }
 }

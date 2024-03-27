@@ -28,21 +28,26 @@ public abstract class TapMetricsResponse {
     @JsonProperty("gauges")
     public abstract Map<String, TapMetricsGaugeResponse> gauges();
 
-    public static TapMetricsResponse create(Map<String, TapMetricsGaugeResponse> gauges) {
+    @JsonProperty("timers")
+    public abstract Map<String, TapMetricsTimerResponse> timers();
+
+    public static TapMetricsResponse create(Map<String, TapMetricsGaugeResponse> gauges, Map<String, TapMetricsTimerResponse> timers) {
         return builder()
                 .gauges(gauges)
+                .timers(timers)
                 .build();
     }
 
     public static Builder builder() {
         return new AutoValue_TapMetricsResponse.Builder();
     }
-
+    
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder gauges(Map<String, TapMetricsGaugeResponse> gauges);
 
+        public abstract Builder timers(Map<String, TapMetricsTimerResponse> timers);
+
         public abstract TapMetricsResponse build();
     }
-
 }

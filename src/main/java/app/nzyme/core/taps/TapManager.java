@@ -2,18 +2,14 @@ package app.nzyme.core.taps;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.TapBasedSignalStrengthResult;
-import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.resources.taps.reports.*;
+import app.nzyme.core.taps.db.metrics.*;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import app.nzyme.core.taps.metrics.BucketSize;
-import app.nzyme.core.taps.metrics.TapMetrics;
-import app.nzyme.core.taps.metrics.TapMetricsGauge;
-import app.nzyme.core.taps.metrics.TapMetricsGaugeAggregation;
 import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -489,8 +485,8 @@ public class TapManager {
         );
     }
 
-    public TapMetrics findMetricsOfTap(UUID tapUUID) {
-        List<TapMetricsGauge> gauges = nzyme.getDatabase().withHandle(handle ->
+    public List<TapMetricsGauge> findGaugesOfTap(UUID tapUUID) {
+         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT ON (metric_name) metric_name, tap_uuid, metric_value, created_at " +
                         "FROM tap_metrics_gauges WHERE tap_uuid = :tap_uuid AND created_at > :created_at " +
                         "ORDER BY metric_name, created_at DESC")
@@ -499,8 +495,18 @@ public class TapManager {
                         .mapTo(TapMetricsGauge.class)
                         .list()
         );
+    }
 
-        return TapMetrics.create(tapUUID, gauges);
+    public List<TapMetricsTimer> findTimersOfTap(UUID tapUUID) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT ON (metric_name) metric_name, tap_uuid, mean, p99, created_at " +
+                                "FROM tap_metrics_timers WHERE tap_uuid = :tap_uuid AND created_at > :created_at " +
+                                "ORDER BY metric_name, created_at DESC")
+                        .bind("tap_uuid", tapUUID)
+                        .bind("created_at", DateTime.now().minusMinutes(1))
+                        .mapTo(TapMetricsTimer.class)
+                        .list()
+        );
     }
 
     public Optional<Map<DateTime, TapMetricsGaugeAggregation>> findMetricsHistogram(UUID tapUUID, String metricName, int hours, BucketSize bucketSize) {

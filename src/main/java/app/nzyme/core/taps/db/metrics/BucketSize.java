@@ -15,7 +15,7 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package app.nzyme.core.taps.metrics;
+package app.nzyme.core.taps.db.metrics;
 
 public enum BucketSize {
     DAY,

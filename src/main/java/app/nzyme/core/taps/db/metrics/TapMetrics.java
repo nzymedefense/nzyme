@@ -17,23 +17,27 @@
 
 package app.nzyme.core.taps.db.metrics;
 
-import org.jdbi.v3.core.mapper.RowMapper;
-import org.jdbi.v3.core.statement.StatementContext;
-import org.joda.time.DateTime;
+import com.google.auto.value.AutoValue;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.List;
+import java.util.UUID;
 
-public class TapMetricsGaugeAggregationMapper implements RowMapper<TapMetricsGaugeAggregation> {
+@AutoValue
+public abstract class TapMetrics {
 
-    @Override
-    public TapMetricsGaugeAggregation map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return TapMetricsGaugeAggregation.create(
-                new DateTime(rs.getTimestamp("bucket")),
-                rs.getDouble("average"),
-                rs.getDouble("maximum"),
-                rs.getDouble("minimum")
-        );
+    public abstract UUID tapUUID();
+    public abstract List<TapMetricsGauge> gauges();
+
+    public static Builder builder() {
+        return new AutoValue_TapMetrics.Builder();
     }
 
+    @AutoValue.Builder
+    public abstract static class Builder {
+        public abstract Builder tapUUID(UUID tapUUID);
+
+        public abstract Builder gauges(List<TapMetricsGauge> gauges);
+
+        public abstract TapMetrics build();
+    }
 }

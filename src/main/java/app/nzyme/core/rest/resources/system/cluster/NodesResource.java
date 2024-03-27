@@ -10,7 +10,7 @@ import app.nzyme.core.rest.requests.NodesConfigurationUpdateRequest;
 import app.nzyme.core.rest.responses.metrics.GaugeResponse;
 import app.nzyme.core.rest.responses.metrics.TimerResponse;
 import app.nzyme.core.rest.responses.nodes.*;
-import app.nzyme.core.taps.metrics.BucketSize;
+import app.nzyme.core.taps.db.metrics.BucketSize;
 import app.nzyme.core.util.MetricNames;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;

@@ -17,7 +17,6 @@
 
 package app.nzyme.core.taps.db.metrics;
 
-import app.nzyme.core.taps.metrics.TapMetricsGauge;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;

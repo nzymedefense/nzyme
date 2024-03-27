@@ -28,6 +28,7 @@ import app.nzyme.core.security.authentication.db.TenantEntryMapper;
 import app.nzyme.core.security.authentication.db.UserEntryMapper;
 import app.nzyme.core.security.sessions.db.SessionEntryMapper;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetailsMapper;
+import app.nzyme.core.taps.db.metrics.TapMetricsTimerMapper;
 import app.nzyme.plugin.Database;
 import app.nzyme.core.crypto.database.PGPKeyFingerprintMapper;
 import app.nzyme.core.ethernet.dns.db.DNSPairSummaryMapper;
@@ -135,7 +136,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new ClientSignalStrengthResultMapper())
                 .registerRowMapper(new TenantLocationEntryMapper())
                 .registerRowMapper(new TenantLocationFloorEntryMapper())
-                .registerRowMapper(new TapBasedSignalStrengthResultHistogramEntryMapper());
+                .registerRowMapper(new TapBasedSignalStrengthResultHistogramEntryMapper())
+                .registerRowMapper(new TapMetricsTimerMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

@@ -4,7 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.pgp.PGPKeys;
 import app.nzyme.core.distributed.database.NodeEntry;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
-import app.nzyme.core.taps.metrics.BucketSize;
+import app.nzyme.core.taps.db.metrics.BucketSize;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Snapshot;

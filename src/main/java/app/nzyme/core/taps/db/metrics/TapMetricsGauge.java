@@ -15,36 +15,38 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package app.nzyme.core.taps.metrics;
+package app.nzyme.core.taps.db.metrics;
 
 import com.google.auto.value.AutoValue;
-
-import java.util.List;
-import java.util.UUID;
+import org.joda.time.DateTime;
 
 @AutoValue
-public abstract class TapMetrics {
+public abstract class TapMetricsGauge {
 
-    public abstract UUID tapUUID();
-    public abstract List<TapMetricsGauge> gauges();
+    public abstract String metricName();
+    public abstract Double metricValue();
+    public abstract DateTime createdAt();
 
-    public static TapMetrics create(UUID tapUUID, List<TapMetricsGauge> gauges) {
+    public static TapMetricsGauge create(String metricName, Double metricValue, DateTime createdAt) {
         return builder()
-                .tapUUID(tapUUID)
-                .gauges(gauges)
+                .metricName(metricName)
+                .metricValue(metricValue)
+                .createdAt(createdAt)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_TapMetrics.Builder();
+        return new AutoValue_TapMetricsGauge.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder tapUUID(UUID tapUUID);
+        public abstract Builder metricName(String metricName);
 
-        public abstract Builder gauges(List<TapMetricsGauge> gauges);
+        public abstract Builder metricValue(Double metricValue);
 
-        public abstract TapMetrics build();
+        public abstract Builder createdAt(DateTime createdAt);
+
+        public abstract TapMetricsGauge build();
     }
 }

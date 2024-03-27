@@ -3,24 +3,18 @@ package app.nzyme.core.rest.resources.taps;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.responses.taps.metrics.*;
+import app.nzyme.core.taps.db.metrics.*;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import app.nzyme.core.rest.responses.taps.metrics.TapMetricsGaugeHistogramResponse;
-import app.nzyme.core.rest.responses.taps.metrics.TapMetricsGaugeHistogramValueResponse;
-import app.nzyme.core.taps.metrics.BucketSize;
-import app.nzyme.core.taps.metrics.TapMetrics;
-import app.nzyme.core.taps.metrics.TapMetricsGauge;
 import app.nzyme.core.rest.responses.taps.*;
-import app.nzyme.core.rest.responses.taps.metrics.TapMetricsGaugeResponse;
-import app.nzyme.core.rest.responses.taps.metrics.TapMetricsResponse;
 import app.nzyme.core.taps.Bus;
 import app.nzyme.core.taps.Capture;
 import app.nzyme.core.taps.Channel;
 import app.nzyme.core.taps.Tap;
-import app.nzyme.core.taps.metrics.TapMetricsGaugeAggregation;
 import org.joda.time.DateTime;
 
 import jakarta.inject.Inject;
@@ -111,11 +105,8 @@ public class TapsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        TapMetrics metrics = nzyme.getTapManager().findMetricsOfTap(uuid);
-        List<TapMetricsGauge> gauges = metrics.gauges();
-
         Map<String, TapMetricsGaugeResponse> parsedGauges = Maps.newHashMap();
-        for (TapMetricsGauge gauge : gauges) {
+        for (TapMetricsGauge gauge : nzyme.getTapManager().findGaugesOfTap(uuid)) {
             if (gauge.metricName().startsWith("captures") || gauge.metricName().startsWith("channels")) {
                 continue;
             }
@@ -130,11 +121,20 @@ public class TapsResource extends UserAuthenticatedResource {
             );
         }
 
-        return Response.ok(
-                TapMetricsResponse.create(
-                        parsedGauges
-                )
-        ).build();
+        Map<String, TapMetricsTimerResponse> parsedTimers = Maps.newHashMap();
+        for (TapMetricsTimer timer : nzyme.getTapManager().findTimersOfTap(uuid)) {
+            parsedTimers.put(
+                    timer.metricName(),
+                    TapMetricsTimerResponse.create(
+                            timer.metricName(),
+                            timer.mean(),
+                            timer.p99(),
+                            timer.createdAt()
+                    )
+            );
+        }
+
+        return Response.ok(TapMetricsResponse.create(parsedGauges, parsedTimers)).build();
     }
 
     @GET
