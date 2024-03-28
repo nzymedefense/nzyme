@@ -66,9 +66,6 @@ public class TablesResource {
 
         LOG.debug("Received TCP session table report from [{}]: {}", tapId, report);
 
-        for (TcpSessionReport session : report.sessions()) {
-        }
-
         return Response.status(Response.Status.CREATED).build();
     }
 
