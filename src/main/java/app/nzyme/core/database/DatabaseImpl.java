@@ -35,7 +35,7 @@ import app.nzyme.core.ethernet.dns.db.DNSPairSummaryMapper;
 import app.nzyme.core.ethernet.dns.db.DNSStatisticsBucketMapper;
 import app.nzyme.core.ethernet.dns.db.DNSTrafficSummaryMapper;
 import app.nzyme.core.taps.db.*;
-import app.nzyme.core.taps.db.metrics.TapMetricsGaugeAggregationMapper;
+import app.nzyme.core.taps.db.metrics.TapMetricsAggregationMapper;
 import app.nzyme.core.taps.db.metrics.TapMetricsGaugeMapper;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -80,7 +80,7 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new ChannelMapper())
                 .registerRowMapper(new CaptureMapper())
                 .registerRowMapper(new TapMetricsGaugeMapper())
-                .registerRowMapper(new TapMetricsGaugeAggregationMapper())
+                .registerRowMapper(new TapMetricsAggregationMapper())
                 .registerRowMapper(new DNSStatisticsBucketMapper())
                 .registerRowMapper(new DNSTrafficSummaryMapper())
                 .registerRowMapper(new DNSPairSummaryMapper())

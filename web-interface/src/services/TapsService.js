@@ -30,6 +30,12 @@ class TapService {
     })
   }
 
+  findTimerMetricHistogramOfTap(uuid, metricName, setTapMetric) {
+    RESTClient.get('/taps/show/' + uuid + '/metrics/timers/' + metricName + '/histogram', {}, function (response) {
+      setTapMetric(response.data)
+    })
+  }
+
 }
 
 export default TapService

@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import TapMetricsGaugeChart from './charts/TapMetricGaugeChart'
 import TapsService from '../../../../../services/TapsService'
+import TapMetricsChart from "./charts/TapMetricChart";
 
 const tapsService = new TapsService()
 
-function fetchData (tapName, metricName, setData) {
+function fetchGaugeData (tapName, metricName, setData) {
   tapsService.findGaugeMetricHistogramOfTap(tapName, metricName, setData)
+}
+function fetchTimerData (tapName, metricName, setData) {
+  tapsService.findTimerMetricHistogramOfTap(tapName, metricName, setData)
 }
 
 function throughputConversion (x) {
@@ -23,9 +26,13 @@ function TapMetricsChartProxy (props) {
   const name = props.name;
 
   useEffect(() => {
-    fetchData(tapUuid, name, setData)
-    const id = setInterval(() => fetchData(tapUuid, name, setData), 30000)
-    return () => clearInterval(id)
+    if (props.type === "gauge") {
+      fetchGaugeData(tapUuid, name, setData)
+    }
+
+    if (props.type === "timer") {
+      fetchTimerData(tapUuid, name, setData)
+    }
   }, [tapUuid, name])
 
   if (props.type === 'gauge') {
@@ -47,8 +54,10 @@ function TapMetricsChartProxy (props) {
     }
 
     return (
-      <TapMetricsGaugeChart data={data} conversion={conversion} valueType={valueType} />
+        <TapMetricsChart data={data} conversion={conversion} valueType={valueType}/>
     )
+  } else if (props.type === 'timer') {
+    return <TapMetricsChart data={data} valueType="&#956;s" />
   } else {
     return <div className="alert alert-danger">Unknown metric type.</div>
   }

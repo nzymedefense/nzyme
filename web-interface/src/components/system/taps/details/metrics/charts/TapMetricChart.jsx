@@ -2,7 +2,7 @@ import React from 'react'
 import SimpleLineChart from '../../../../../widgets/charts/SimpleLineChart'
 import LoadingSpinner from '../../../../../misc/LoadingSpinner'
 
-function TapMetricsGaugeChart (props) {
+function TapMetricsChart (props) {
   if (!props.data) {
     return <LoadingSpinner />
   }
@@ -35,4 +35,4 @@ function formatData (data, conversion) {
   return result
 }
 
-export default TapMetricsGaugeChart
+export default TapMetricsChart;

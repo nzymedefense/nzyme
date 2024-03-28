@@ -155,7 +155,7 @@ public class TapsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Optional<Map<DateTime, TapMetricsGaugeAggregation>> histo = nzyme.getTapManager().findMetricsHistogram(
+        Optional<Map<DateTime, TapMetricsAggregation>> histo = nzyme.getTapManager().findMetricsGaugeHistogram(
                 uuid, metricName, 24, BucketSize.MINUTE
         );
 
@@ -163,16 +163,52 @@ public class TapsResource extends UserAuthenticatedResource {
             return Response.ok(Maps.newHashMap()).build();
         }
 
-        Map<DateTime, TapMetricsGaugeHistogramValueResponse> result = Maps.newTreeMap();
-        for (TapMetricsGaugeAggregation value : histo.get().values()) {
-            result.put(value.bucket(), TapMetricsGaugeHistogramValueResponse.create(
+        Map<DateTime, TapMetricsHistogramValueResponse> result = Maps.newTreeMap();
+        for (TapMetricsAggregation value : histo.get().values()) {
+            result.put(value.bucket(), TapMetricsHistogramValueResponse.create(
                     value.bucket(), value.average(), value.maximum(), value.minimum()
             ));
         }
 
-        return Response.ok(TapMetricsGaugeHistogramResponse.create(result)).build();
+        return Response.ok(TapMetricsHistogramResponse.create(result)).build();
     }
-    
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{uuid}/metrics/timers/{metricName}/histogram")
+    public Response tapMetricsTimer(@Context SecurityContext sc,
+                                    @PathParam("uuid") UUID uuid,
+                                    @PathParam("metricName") String metricName) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser).contains(uuid)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<Tap> tap = nzyme.getTapManager().findTap(uuid);
+
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Map<DateTime, TapMetricsAggregation>> histo = nzyme.getTapManager().findMetricsTimerHistogram(
+                uuid, metricName, 24, BucketSize.MINUTE
+        );
+
+        if (histo.isEmpty()) {
+            return Response.ok(Maps.newHashMap()).build();
+        }
+
+        Map<DateTime, TapMetricsHistogramValueResponse> result = Maps.newTreeMap();
+        for (TapMetricsAggregation value : histo.get().values()) {
+            result.put(value.bucket(), TapMetricsHistogramValueResponse.create(
+                    value.bucket(), value.average(), value.maximum(), value.minimum()
+            ));
+        }
+
+        return Response.ok(TapMetricsHistogramResponse.create(result)).build();
+    }
+
     private TapDetailsResponse buildTapResponse(Tap tap) {
         List<BusDetailsResponse> busesResponse = Lists.newArrayList();
 

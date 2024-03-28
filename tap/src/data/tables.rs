@@ -38,6 +38,8 @@ impl Tables {
 
     pub fn run_jobs(&self) {
         loop {
+            thread::sleep(Duration::from_secs(10));
+
             match self.tcp.lock() {
                 Ok(tcp) => {
                     tcp.calculate_metrics();
@@ -58,8 +60,6 @@ impl Tables {
                 },
                 Err(e) => error!("Could not acquire DNS table lock for report processing: {}", e)
             }
-
-            thread::sleep(Duration::from_secs(10));
         }
     }
 

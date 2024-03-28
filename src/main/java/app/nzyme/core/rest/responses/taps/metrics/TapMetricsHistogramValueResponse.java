@@ -15,22 +15,30 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package app.nzyme.core.taps.db.metrics;
+package app.nzyme.core.rest.responses.taps.metrics;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 @AutoValue
-public abstract class TapMetricsGaugeAggregation {
+public abstract class TapMetricsHistogramValueResponse {
 
-    public abstract DateTime bucket();
+    @JsonProperty("timestamp")
+    public abstract DateTime timestamp();
+
+    @JsonProperty("average")
     public abstract Double average();
+
+    @JsonProperty("maximum")
     public abstract Double maximum();
+
+    @JsonProperty("minimum")
     public abstract Double minimum();
 
-    public static TapMetricsGaugeAggregation create(DateTime bucket, Double average, Double maximum, Double minimum) {
+    public static TapMetricsHistogramValueResponse create(DateTime timestamp, Double average, Double maximum, Double minimum) {
         return builder()
-                .bucket(bucket)
+                .timestamp(timestamp)
                 .average(average)
                 .maximum(maximum)
                 .minimum(minimum)
@@ -38,12 +46,12 @@ public abstract class TapMetricsGaugeAggregation {
     }
 
     public static Builder builder() {
-        return new AutoValue_TapMetricsGaugeAggregation.Builder();
+        return new AutoValue_TapMetricsHistogramValueResponse.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder bucket(DateTime bucket);
+        public abstract Builder timestamp(DateTime timestamp);
 
         public abstract Builder average(Double average);
 
@@ -51,6 +59,6 @@ public abstract class TapMetricsGaugeAggregation {
 
         public abstract Builder minimum(Double minimum);
 
-        public abstract TapMetricsGaugeAggregation build();
+        public abstract TapMetricsHistogramValueResponse build();
     }
 }

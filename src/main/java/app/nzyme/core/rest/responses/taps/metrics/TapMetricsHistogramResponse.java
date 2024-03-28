@@ -24,26 +24,25 @@ import org.joda.time.DateTime;
 import java.util.Map;
 
 @AutoValue
-public abstract class TapMetricsGaugeHistogramResponse {
+public abstract class TapMetricsHistogramResponse {
 
     @JsonProperty("values")
-    public abstract Map<DateTime, TapMetricsGaugeHistogramValueResponse> values();
+    public abstract Map<DateTime, TapMetricsHistogramValueResponse> values();
 
-    public static TapMetricsGaugeHistogramResponse create(Map<DateTime, TapMetricsGaugeHistogramValueResponse> values) {
+    public static TapMetricsHistogramResponse create(Map<DateTime, TapMetricsHistogramValueResponse> values) {
         return builder()
                 .values(values)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_TapMetricsGaugeHistogramResponse.Builder();
+        return new AutoValue_TapMetricsHistogramResponse.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder values(Map<DateTime, TapMetricsGaugeHistogramValueResponse> values);
+        public abstract Builder values(Map<DateTime, TapMetricsHistogramValueResponse> values);
 
-        public abstract TapMetricsGaugeHistogramResponse build();
+        public abstract TapMetricsHistogramResponse build();
     }
-
 }

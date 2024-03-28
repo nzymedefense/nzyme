@@ -509,10 +509,13 @@ public class TapManager {
         );
     }
 
-    public Optional<Map<DateTime, TapMetricsGaugeAggregation>> findMetricsHistogram(UUID tapUUID, String metricName, int hours, BucketSize bucketSize) {
-        Map<DateTime, TapMetricsGaugeAggregation> result = Maps.newHashMap();
+    public Optional<Map<DateTime, TapMetricsAggregation>> findMetricsGaugeHistogram(UUID tapUUID,
+                                                                                    String metricName,
+                                                                                    int hours,
+                                                                                    BucketSize bucketSize) {
+        Map<DateTime, TapMetricsAggregation> result = Maps.newHashMap();
 
-        List<TapMetricsGaugeAggregation> agg = nzyme.getDatabase().withHandle(handle ->
+        List<TapMetricsAggregation> agg = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT AVG(metric_value) AS average, MAX(metric_value) AS maximum, " +
                                 "MIN(metric_value) AS minimum, date_trunc(:bucket_size, created_at) AS bucket " +
                                 "FROM tap_metrics_gauges WHERE tap_uuid = :tap_uuid AND metric_name = :metric_name " +
@@ -521,7 +524,7 @@ public class TapManager {
                         .bind("tap_uuid", tapUUID)
                         .bind("metric_name", metricName)
                         .bind("created_at", DateTime.now().minusHours(hours))
-                        .mapTo(TapMetricsGaugeAggregation.class)
+                        .mapTo(TapMetricsAggregation.class)
                         .list()
         );
 
@@ -529,7 +532,37 @@ public class TapManager {
             return Optional.empty();
         }
 
-        for (TapMetricsGaugeAggregation x : agg) {
+        for (TapMetricsAggregation x : agg) {
+            result.put(x.bucket(), x);
+        }
+
+        return Optional.of(result);
+    }
+
+    public Optional<Map<DateTime, TapMetricsAggregation>> findMetricsTimerHistogram(UUID tapUUID,
+                                                                                         String metricName,
+                                                                                         int hours,
+                                                                                         BucketSize bucketSize) {
+        Map<DateTime, TapMetricsAggregation> result = Maps.newHashMap();
+
+        List<TapMetricsAggregation> agg = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT AVG(mean) AS average, MAX(mean) AS maximum, " +
+                                "MIN(mean) AS minimum, date_trunc(:bucket_size, created_at) AS bucket " +
+                                "FROM tap_metrics_timers WHERE tap_uuid = :tap_uuid AND metric_name = :metric_name " +
+                                "AND created_at > :created_at GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("bucket_size", bucketSize.toString().toLowerCase())
+                        .bind("tap_uuid", tapUUID)
+                        .bind("metric_name", metricName)
+                        .bind("created_at", DateTime.now().minusHours(hours))
+                        .mapTo(TapMetricsAggregation.class)
+                        .list()
+        );
+
+        if (agg == null || agg.isEmpty()) {
+            return Optional.empty();
+        }
+
+        for (TapMetricsAggregation x : agg) {
             result.put(x.bucket(), x);
         }
 
