@@ -161,12 +161,27 @@ impl TcpTable {
         match self.sessions.lock() {
             Ok(mut sessions) => {
                 // Mark all timed out sessions in table as ClosedTimeout.
+                let mut timer = Timer::new();
                 timeout_sweep(&mut sessions, self.session_timeout_seconds as i64);
+                timer.stop();
+                record_timer(
+                    timer.elapsed_microseconds(),
+                    "tables.tcp.timer.sessions.timeout_sweep",
+                    &self.metrics
+                );
 
                 // Scan session payloads and tag.
+                let mut timer = Timer::new();
                 tag_tcp_sessions(&mut sessions);
+                timer.stop();
+                record_timer(
+                    timer.elapsed_microseconds(),
+                    "tables.tcp.timer.sessions.tagging",
+                    &self.metrics
+                );
 
                 // Generate JSON.
+                let mut timer = Timer::new();
                 let report = match serde_json::to_string(&tcp_sessions_report::generate(&sessions)) {
                     Ok(report) => report,
                     Err(e) => {
@@ -174,6 +189,12 @@ impl TcpTable {
                         return;
                     }
                 };
+                timer.stop();
+                record_timer(
+                    timer.elapsed_microseconds(),
+                    "tables.tcp.timer.report_generation",
+                    &self.metrics
+                );
 
                 // Send report.
                 match self.leaderlink.lock() {
