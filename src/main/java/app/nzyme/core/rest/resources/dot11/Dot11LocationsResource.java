@@ -231,10 +231,6 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
-        if (bssidLocation.outsideOfFloorPlanBoundaries()) {
-            LOG.info("OUTSIDE");
-        }
-
         Map<DateTime, TrilaterationLocationResponse> locations = Maps.newTreeMap();
         for (Map.Entry<DateTime, LocationSolver.TrilaterationLocation> loc : bssidLocation.locations().entrySet()) {
             locations.put(loc.getKey(), TrilaterationLocationResponse.create(loc.getValue().x(), loc.getValue().y()));
@@ -257,6 +253,9 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         //noinspection DataFlowIssue
         return Response.ok(TrilaterationResponse.create(
                 locations,
+                bssidLocation.outsideOfPlanBoundariesPercentage(),
+                bssidLocation.isOutsideOfFloorPlanBoundaries(),
+                bssidLocation.outsideOfPlanBoundariesTapStrengths(),
                 FloorPlanResponse.create(
                         BaseEncoding.base64().encode(floor.plan()),
                         floorPlanImage.getWidth(),

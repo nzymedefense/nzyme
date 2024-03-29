@@ -135,7 +135,7 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
 
   return (
       <React.Fragment>
-      <div className="row">
+        <div className="row">
           <div className="col-md-9">
             <h5>Location: {data.tenant_location.name} / Floor: {data.tenant_floor.name}</h5>
           </div>
@@ -159,25 +159,60 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
                        floorHasPlan={true}
                        plan={data.plan}
                        taps={data.tenant_floor.tap_positions}
+                       outsideOfPlanTapStrengths={data.outside_of_plan_tap_strengths}
+                       outsideOfPlanPercentage={data.outside_of_plan_boundaries_percentage}
+                       outsideOfPlanPercentage={data.outside_of_plan_boundaries_percentage}
                        positions={data.locations}
                        contextText={contextText()}
                        onRefresh={onRefresh}
-                       editModeEnabled={false} />
+                       editModeEnabled={false}/>
           </div>
         </div>
 
-        <div className="row">
+        <div className="row mt-3">
           <div className="col-md-12">
-            <p className="text-muted mt-3 mb-0">
-              The trilateration functionality always uses data recorded by all taps on the selected floor and ignores
-              manual tap selection. It guesses the initial floor it presents based on the strongest recorded signal
-              strengths.
+
+            <p>
+              <i className="fa fa-solid fa-info-circle"/>{' '}
+              {numeral(data.outside_of_plan_boundaries_percentage).format("0.00")}% of signal sources were found to be
+              located outside the floor plan boundaries.
+
+              This occurrence can happen even if the source is within the floor plan limits, often caused by temporary
+              obstacles in the signal path or signal reflections.
             </p>
 
-            <p className="text-muted mt-3 mb-0">
-              The likely closest floor will be shown in case of a floor that has not at least three placed taps with a
-              recorded signal within the selected timeframe.
-            </p>
+            <details>
+              <summary>Learn more about how to interpret the data.</summary>
+
+              <p className="mt-2">
+                When interpreting this number, take into account rogue access points or signal sources that are
+                physically
+                moving beyond the floor plan boundaries. If the vast majority of signals are determined to be outside
+                these boundaries, it is highly likely that the signal source is indeed located outside the floor plan
+                limits.
+              </p>
+
+              <p>
+                To visualize the signal strength of sources outside your floor plan, click on the <i
+                  className="fa-regular fa-circle-dot"></i> icon. This
+                will reveal blue boxes on the map, each corresponding to a tap on the floor. The intensity of the blue
+                color signifies the strength of the signal: a deeper blue represents a stronger signal. This feature
+                assists in determining the likely direction from which a signal originates.
+              </p>
+
+              <p className="text-muted mt-3 mb-0">
+                The trilateration functionality always uses data recorded by all taps on the selected floor and
+                ignores
+                manual tap selection. It guesses the initial floor it presents based on the strongest recorded signal
+                strengths.
+              </p>
+
+              <p className="text-muted mt-3 mb-0">
+                The likely closest floor will be shown in case of a floor that has not at least three placed taps with
+                a
+                recorded signal within the selected timeframe.
+              </p>
+            </details>
           </div>
         </div>
       </React.Fragment>

@@ -13,6 +13,15 @@ public abstract class TrilaterationResponse {
     @JsonProperty("locations")
     public abstract Map<DateTime, TrilaterationLocationResponse> locations();
 
+    @JsonProperty("outside_of_plan_boundaries_percentage")
+    public abstract double outsideOfPlanBoundariesPercentage();
+
+    @JsonProperty("is_outside_of_plan_boundaries")
+    public abstract boolean isOutsideOfPlanBoundaries();
+
+    @JsonProperty("outside_of_plan_tap_strengths")
+    public abstract Map<Integer, Map<String, Integer>> outsideOfPlanBoundariesTapStrengths();
+
     @JsonProperty("plan")
     public abstract FloorPlanResponse plan();
 
@@ -28,9 +37,12 @@ public abstract class TrilaterationResponse {
     @JsonProperty("target_description")
     public abstract String targetDescription();
 
-    public static TrilaterationResponse create(Map<DateTime, TrilaterationLocationResponse> locations, FloorPlanResponse plan, TenantLocationDetailsResponse tenantLocation, TenantLocationFloorDetailsResponse tenantFloor, DateTime generatedAt, String targetDescription) {
+    public static TrilaterationResponse create(Map<DateTime, TrilaterationLocationResponse> locations, double outsideOfPlanBoundariesPercentage, boolean isOutsideOfPlanBoundaries, Map<Integer, Map<String, Integer>> outsideOfPlanBoundariesTapStrengths, FloorPlanResponse plan, TenantLocationDetailsResponse tenantLocation, TenantLocationFloorDetailsResponse tenantFloor, DateTime generatedAt, String targetDescription) {
         return builder()
                 .locations(locations)
+                .outsideOfPlanBoundariesPercentage(outsideOfPlanBoundariesPercentage)
+                .isOutsideOfPlanBoundaries(isOutsideOfPlanBoundaries)
+                .outsideOfPlanBoundariesTapStrengths(outsideOfPlanBoundariesTapStrengths)
                 .plan(plan)
                 .tenantLocation(tenantLocation)
                 .tenantFloor(tenantFloor)
@@ -46,6 +58,12 @@ public abstract class TrilaterationResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder locations(Map<DateTime, TrilaterationLocationResponse> locations);
+
+        public abstract Builder outsideOfPlanBoundariesPercentage(double outsideOfPlanBoundariesPercentage);
+
+        public abstract Builder isOutsideOfPlanBoundaries(boolean isOutsideOfPlanBoundaries);
+
+        public abstract Builder outsideOfPlanBoundariesTapStrengths(Map<Integer, Map<String, Integer>> outsideOfPlanBoundariesTapStrengths);
 
         public abstract Builder plan(FloorPlanResponse plan);
 

@@ -71,6 +71,8 @@ public class LocationSolver {
 
         Duration duration = new Duration(earliest, latest);
         Map<DateTime, TrilaterationLocation> result = new TreeMap<>();
+        Map<Tap, Integer> outsideOfBoundarySignalStrengths = Maps.newHashMap();
+        Map<Tap, Integer> outsideOfBoundarySignalCounts = Maps.newHashMap();
         for (int x = (int) duration.getStandardMinutes(); x != 0; x--) {
             DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
 
@@ -102,6 +104,14 @@ public class LocationSolver {
                             floor.planLengthMeters(),
                             floor.planWidthPixels(),
                             floor.planLengthPixels())) {
+                        outsideOfBoundarySignalStrengths.put(
+                                tap, Math.round(outsideOfBoundarySignalStrengths
+                                                .getOrDefault(tap, 0)+s.signalStrength()
+                                )
+                        );
+                        outsideOfBoundarySignalCounts.put(
+                                tap, outsideOfBoundarySignalCounts.getOrDefault(tap, 0)+1
+                        );
                         distancesOutsideOfBoundaries++;
                         continue;
                     }
@@ -140,8 +150,21 @@ public class LocationSolver {
             }
         }
 
-        boolean outsideOfFloorPlanBoundaries = distancesOutsideOfBoundaries*100.0/totalDataPoints > 66;
-        return TrilaterationResult.create(result, outsideOfFloorPlanBoundaries);
+        Map<Integer, Map<String, Integer>> outsideOfPlanBoundariesTapStrengths = Maps.newHashMap();
+        for (Map.Entry<Tap, Integer> t :outsideOfBoundarySignalStrengths.entrySet()) {
+            HashMap<String, Integer> location = Maps.newHashMap();
+            location.put("x", t.getKey().x());
+            location.put("y", t.getKey().y());
+            outsideOfPlanBoundariesTapStrengths.put(t.getValue()/outsideOfBoundarySignalCounts.get(t.getKey()), location);
+        }
+
+        double outsideOfPlanBoundariesPercentage = distancesOutsideOfBoundaries*100.0/totalDataPoints;
+        return TrilaterationResult.create(
+                result,
+                outsideOfPlanBoundariesPercentage,
+                outsideOfPlanBoundariesPercentage > 66,
+                outsideOfPlanBoundariesTapStrengths
+        );
     }
 
     private boolean isDistanceOutsideOfBoundaries(double distanceMeters, int tapXPixel, int tapYPixel, int floorPlanWidthMeters, int floorPlanLengthMeters, int floorPlanWidthPixels, int floorPlanLengthPixels) {
@@ -171,7 +194,7 @@ public class LocationSolver {
         }
 
         // If the estimated distance to the signal source is greater than the maximum distance to any corner, it's likely outside
-        return distanceMeters > maxDistanceToCorner;
+        return distanceMeters > maxDistanceToCorner+3; // 3m padding. This should be configurable or more dynamic in the future.
     }
 
     private static double calculateFloorPlanDistance(double x1, double y1, double x2, double y2) {
@@ -186,12 +209,16 @@ public class LocationSolver {
     public abstract static class TrilaterationResult {
 
         public abstract Map<DateTime, TrilaterationLocation> locations();
-        public abstract boolean outsideOfFloorPlanBoundaries();
+        public abstract double outsideOfPlanBoundariesPercentage();
+        public abstract boolean isOutsideOfFloorPlanBoundaries();
+        public abstract Map<Integer, Map<String, Integer>> outsideOfPlanBoundariesTapStrengths();
 
-        public static TrilaterationResult create(Map<DateTime, TrilaterationLocation> locations, boolean outsideOfFloorPlanBoundaries) {
+        public static TrilaterationResult create(Map<DateTime, TrilaterationLocation> locations, double outsideOfPlanBoundariesPercentage, boolean isOutsideOfFloorPlanBoundaries, Map<Integer, Map<String, Integer>> outsideOfPlanBoundariesTapStrengths) {
             return builder()
                     .locations(locations)
-                    .outsideOfFloorPlanBoundaries(outsideOfFloorPlanBoundaries)
+                    .outsideOfPlanBoundariesPercentage(outsideOfPlanBoundariesPercentage)
+                    .isOutsideOfFloorPlanBoundaries(isOutsideOfFloorPlanBoundaries)
+                    .outsideOfPlanBoundariesTapStrengths(outsideOfPlanBoundariesTapStrengths)
                     .build();
         }
 
@@ -203,7 +230,11 @@ public class LocationSolver {
         public abstract static class Builder {
             public abstract Builder locations(Map<DateTime, TrilaterationLocation> locations);
 
-            public abstract Builder outsideOfFloorPlanBoundaries(boolean outsideOfFloorPlanBoundaries);
+            public abstract Builder outsideOfPlanBoundariesPercentage(double outsideOfPlanBoundariesPercentage);
+
+            public abstract Builder isOutsideOfFloorPlanBoundaries(boolean isOutsideOfFloorPlanBoundaries);
+
+            public abstract Builder outsideOfPlanBoundariesTapStrengths(Map<Integer, Map<String, Integer>> outsideOfPlanBoundariesTapStrengths);
 
             public abstract TrilaterationResult build();
         }
