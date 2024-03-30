@@ -16,6 +16,8 @@ import TapBasedSignalStrengthTable from "../shared/TapBasedSignalStrengthTable";
 import ClientSignalStrengthChart from "./ClientSignalStrengthChart";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
+import ReadOnlyTrilaterationResultFloorPlanWrapper
+  from "../../shared/floorplan/ReadOnlyTrilaterationResultFloorPlanWrapper";
 
 const dot11Service = new Dot11Service();
 
@@ -30,10 +32,29 @@ function ClientDetailsPage() {
 
   const [discoPairsTimeRange, setDiscoPairsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
+  const [trilaterationTimeRange, setTrilaterationTimeRange] = useState(Presets.RELATIVE_MINUTES_15)
+  const [trilaterationFloor, setTrilaterationFloor] = useState(null);
+  const [trilaterationResult, setTrilaterationResult] = useState(null);
+  const [trilaterationError, setTrilaterationError] = useState(null);
+  const [trilaterationRevision, setTrilaterationRevision] = useState(0);
+
   useEffect(() => {
     setClient(null);
     dot11Service.findMergedConnectedOrDisconnectedClient(macParam, selectedTaps, setClient);
   }, [selectedTaps]);
+
+  useEffect(() => {
+    setTrilaterationResult(null);
+    if (trilaterationFloor == null) {
+      dot11Service.findClientLocation(
+          macParam, null, null, trilaterationTimeRange, setTrilaterationResult, setTrilaterationError
+      );
+    } else {
+      dot11Service.findClientLocation(
+          macParam, trilaterationFloor.location, trilaterationFloor.floor, trilaterationTimeRange, setTrilaterationResult, setTrilaterationError
+      );
+    }
+  }, [macParam, selectedTaps, trilaterationFloor, trilaterationRevision, trilaterationTimeRange]);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -42,6 +63,14 @@ function ClientDetailsPage() {
       disableTapSelector(tapContext);
     }
   }, [tapContext]);
+
+  const onFloorSelected = (locationUuid, floorUuid) => {
+    setTrilaterationFloor({location: locationUuid, floor: floorUuid});
+  }
+
+  const onTrilaterationRefresh = () => {
+    setTrilaterationRevision((prevRev => prevRev + 1));
+  }
 
   if (!client) {
     return <LoadingSpinner />
@@ -149,7 +178,7 @@ function ClientDetailsPage() {
                 <div className="card">
                   <div className="card-body">
                     <CardTitleWithControls title="Average Data &amp; Control Frames Signal Strengths By Tap"
-                                           fixedAppliedTimeRange={Presets.RELATIVE_MINUTES_15} />
+                                           fixedAppliedTimeRange={Presets.RELATIVE_MINUTES_15}/>
 
                     <TapBasedSignalStrengthTable strengths={client.connected_signal_strength}/>
                   </div>
@@ -161,10 +190,29 @@ function ClientDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <CardTitleWithControls title="Data &amp; Control Frames Signal Strength"
-                                           fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24} />
+                    <CardTitleWithControls title="Physical Location / Trilateration"
+                                           helpLink="https://go.nzyme.org/wifi-trilateration"
+                                           timeRange={trilaterationTimeRange}
+                                           setTimeRange={setTrilaterationTimeRange}/>
 
-                    <ClientSignalStrengthChart data={client.connected_signal_strength_histogram} />
+                    <ReadOnlyTrilaterationResultFloorPlanWrapper data={trilaterationResult}
+                                                                 onFloorSelected={onFloorSelected}
+                                                                 taps={selectedTaps}
+                                                                 onRefresh={onTrilaterationRefresh}
+                                                                 error={trilaterationError}/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <CardTitleWithControls title="Data &amp; Control Frames Signal Strength"
+                                           fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24}/>
+
+                    <ClientSignalStrengthChart data={client.connected_signal_strength_histogram}/>
                   </div>
                 </div>
               </div>
@@ -177,7 +225,7 @@ function ClientDetailsPage() {
                 <div className="card">
                   <div className="card-body">
                     <CardTitleWithControls title="Average Probe Request Frames Signal Strengths By Tap"
-                                           fixedAppliedTimeRange={Presets.RELATIVE_MINUTES_15} />
+                                           fixedAppliedTimeRange={Presets.RELATIVE_MINUTES_15}/>
 
                     <TapBasedSignalStrengthTable strengths={client.disconnected_signal_strength}/>
                   </div>
@@ -189,9 +237,9 @@ function ClientDetailsPage() {
                 <div className="card">
                   <div className="card-body">
                     <CardTitleWithControls title="Probe Request Frames Signal Strength"
-                                           fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24} />
+                                           fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24}/>
 
-                    <ClientSignalStrengthChart data={client.disconnected_signal_strength_histogram} />
+                    <ClientSignalStrengthChart data={client.disconnected_signal_strength_histogram}/>
                   </div>
                 </div>
               </div>

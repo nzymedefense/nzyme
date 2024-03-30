@@ -369,16 +369,16 @@ function FloorPlan(props) {
 
   const tapStrengthColors = (group) => {
     const colors = [
-      "#0000ff", // Deep Blue
-      "#1a1aff",
-      "#3434ff",
-      "#4e4eff",
-      "#6868ff", // Midway Blue
-      "#8282ff",
-      "#9c9cff",
-      "#b6b6ff",
+      "#eaeaff",
       "#d0d0ff",
-      "#eaeaff"  // Light Blue, optimized for clear visibility on light backgrounds
+      "#b6b6ff",
+      "#9c9cff",
+      "#8282ff",
+      "#6868ff",
+      "#4e4eff",
+      "#3434ff",
+      "#1a1aff",
+      "#0000ff"
     ];
 
     return colors[9 - group];

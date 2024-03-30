@@ -96,7 +96,7 @@ function BSSIDDetailsPage() {
     setTrilaterationFloor({location: locationUuid, floor: floorUuid});
   }
 
-  const onRefresh = () => {
+  const onTrilaterationRefresh = () => {
     setTrilaterationRevision((prevRev => prevRev + 1));
   }
 
@@ -242,7 +242,7 @@ function BSSIDDetailsPage() {
                     <ReadOnlyTrilaterationResultFloorPlanWrapper data={trilaterationResult}
                                                                  onFloorSelected={onFloorSelected}
                                                                  taps={selectedTaps}
-                                                                 onRefresh={onRefresh}
+                                                                 onRefresh={onTrilaterationRefresh}
                                                                  error={trilaterationError} />
                   </div>
                 </div>

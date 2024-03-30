@@ -1035,25 +1035,27 @@ public class Dot11 {
     }
 
     public List<TapBasedSignalStrengthResult> findDisconnectedClientSignalStrengthPerTap(String clientMac,
-                                                                                         int minutes,
+                                                                                         TimeRange timeRange,
                                                                                          List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT c.tap_uuid AS tap_uuid, t.name AS tap_name, " +
                                 "AVG(c.signal_strength_average) AS signal_strength " +
                                 "FROM dot11_clients AS c " +
                                 "LEFT JOIN taps AS t ON c.tap_uuid = t.uuid " +
-                                "WHERE c.client_mac = :client_mac AND c.tap_uuid IN (<taps>) AND c.created_at > :cutoff " +
+                                "WHERE c.client_mac = :client_mac AND c.tap_uuid IN (<taps>) " +
+                                "AND c.created_at >= :tr_from AND c.created_at <= :tr_to " +
                                 "GROUP BY c.tap_uuid, t.name")
                         .bind("client_mac", clientMac)
                         .bindList("taps", taps)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .mapTo(TapBasedSignalStrengthResult.class)
                         .list()
         );
     }
 
     public List<TapBasedSignalStrengthResult> findBssidClientSignalStrengthPerTap(String clientMac,
-                                                                                  int minutes,
+                                                                                  TimeRange timeRange,
                                                                                   List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.tap_uuid AS tap_uuid, t.name AS tap_name, " +
@@ -1061,19 +1063,21 @@ public class Dot11 {
                                 "FROM dot11_bssid_clients AS c " +
                                 "LEFT JOIN dot11_bssids AS b on b.id = c.bssid_id " +
                                 "LEFT JOIN taps AS t ON b.tap_uuid = t.uuid " +
-                                "WHERE c.client_mac = :client_mac AND b.tap_uuid IN (<taps>) AND b.created_at > :cutoff " +
+                                "WHERE c.client_mac = :client_mac AND b.tap_uuid IN (<taps>) " +
+                                "AND b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "GROUP BY b.tap_uuid, t.name")
                         .bind("client_mac", clientMac)
                         .bindList("taps", taps)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .mapTo(TapBasedSignalStrengthResult.class)
                         .list()
         );
     }
 
     public List<ClientSignalStrengthResult> findDisconnectedClientSignalStrengthHistogram(String clientMac,
-                                                                                            int minutes,
-                                                                                            UUID tap) {
+                                                                                          int minutes,
+                                                                                          UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT AVG(signal_strength_average) AS signal_strength, " +
                                 "DATE_TRUNC('minute', created_at) AS bucket " +
@@ -1103,6 +1107,51 @@ public class Dot11 {
                         .bind("tap_uuid", tap)
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
                         .mapTo(ClientSignalStrengthResult.class)
+                        .list()
+        );
+    }
+
+
+    public List<TapBasedSignalStrengthResultHistogramEntry> getDisconnectedClientSignalStrengthPerTapHistogram(String clientMac,
+                                                                                                               TimeRange timeRange,
+                                                                                                               Bucketing.BucketingConfiguration bucketing,
+                                                                                                               List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DATE_TRUNC('minute', c.created_at) AS bucket, " +
+                                "c.tap_uuid, t.name AS tap_name, AVG(c.signal_strength_average) AS signal_strength " +
+                                "FROM dot11_clients AS c LEFT JOIN taps AS t ON c.tap_uuid = t.uuid " +
+                                "WHERE c.client_mac = :client_mac AND c.tap_uuid IN (<taps>) " +
+                                "AND c.created_at >= :tr_from AND c.created_at <= :tr_to " +
+                                "GROUP BY c.tap_uuid, tap_name, bucket ORDER BY bucket DESC")
+                        .bind("client_mac", clientMac)
+                        .bindList("taps", taps)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .mapTo(TapBasedSignalStrengthResultHistogramEntry.class)
+                        .list()
+        );
+    }
+
+    public List<TapBasedSignalStrengthResultHistogramEntry> getConnectedClientSignalStrengthPerTapHistogram(String clientMac,
+                                                                                                            TimeRange timeRange,
+                                                                                                            Bucketing.BucketingConfiguration bucketing,
+                                                                                                            List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DATE_TRUNC('minute', b.created_at) AS bucket, " +
+                                "b.tap_uuid, t.name AS tap_name, AVG(c.signal_strength_average) AS signal_strength " +
+                                "FROM dot11_bssid_clients AS c " +
+                                "LEFT JOIN dot11_bssids AS b on b.id = c.bssid_id " +
+                                "LEFT JOIN taps AS t ON tap_uuid = t.uuid " +
+                                "WHERE c.client_mac = :client_mac AND b.tap_uuid IN (<taps>) " +
+                                "AND b.created_at >= :tr_from AND b.created_at <= :tr_to " +
+                                "GROUP BY b.tap_uuid, tap_name, bucket ORDER BY bucket DESC")
+                        .bind("client_mac", clientMac)
+                        .bindList("taps", taps)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .mapTo(TapBasedSignalStrengthResultHistogramEntry.class)
                         .list()
         );
     }

@@ -276,14 +276,14 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         // Recent signal strength by tap.
         List<TapBasedSignalStrengthResponse> connectedSignalStrengthsByTap = Lists.newArrayList();
         for (TapBasedSignalStrengthResult ssr : nzyme.getDot11()
-                .findBssidClientSignalStrengthPerTap(c.mac(), 15, tapUuids)) {
+                .findBssidClientSignalStrengthPerTap(c.mac(), TimeRangeFactory.fifteenMinutes(), tapUuids)) {
             connectedSignalStrengthsByTap.add(TapBasedSignalStrengthResponse.create(
                     ssr.tapUuid(), ssr.tapName(), ssr.signalStrength()
             ));
         }
         List<TapBasedSignalStrengthResponse> disconnectedSignalStrengthsByTap = Lists.newArrayList();
         for (TapBasedSignalStrengthResult ssr : nzyme.getDot11()
-                .findDisconnectedClientSignalStrengthPerTap(c.mac(), 15, tapUuids)) {
+                .findDisconnectedClientSignalStrengthPerTap(c.mac(),  TimeRangeFactory.fifteenMinutes(), tapUuids)) {
             disconnectedSignalStrengthsByTap.add(TapBasedSignalStrengthResponse.create(
                     ssr.tapUuid(), ssr.tapName(), ssr.signalStrength()
             ));

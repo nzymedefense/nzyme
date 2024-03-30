@@ -381,7 +381,21 @@ class Dot11Service {
   }
 
   findBSSIDLocation(bssid, locationUuid, floorUuid, timeRange, setResult, setErrorMessage) { // Floor UUID is optional.
-    RESTClient.get("/dot11/locations/locate/bssid/show/" + bssid, { time_range: timeRange, location_uuid: locationUuid, floor_uuid: floorUuid},
+    RESTClient.get("/dot11/locations/locate/bssid/" + bssid, { time_range: timeRange, location_uuid: locationUuid, floor_uuid: floorUuid},
+        (response) => {
+          setErrorMessage(null);
+          setResult(response.data)
+        }, (error) => {
+          if (error.response && error.response.status === 400 && error.response.data.message) {
+            setErrorMessage(error.response.data.message);
+          } else {
+            setErrorMessage("Unexpected error.");
+          }
+        })
+  }
+
+  findClientLocation(mac, locationUuid, floorUuid, timeRange, setResult, setErrorMessage) { // Floor UUID is optional.
+    RESTClient.get("/dot11/locations/locate/client/" + mac, { time_range: timeRange, location_uuid: locationUuid, floor_uuid: floorUuid},
         (response) => {
           setErrorMessage(null);
           setResult(response.data)
