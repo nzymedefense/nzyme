@@ -23,16 +23,12 @@ public abstract class ConnectedClientDetailsResponse {
     @JsonProperty("probe_request_ssids")
     public abstract List<String> probeRequests();
 
-    @JsonProperty("bssid_history")
-    public abstract List<ConnectedBSSID> bssidHistory();
-
-    public static ConnectedClientDetailsResponse create(Dot11MacAddressResponse mac, DateTime lastSeen, Dot11MacAddressResponse connectedBSSID, List<String> probeRequests, List<ConnectedBSSID> bssidHistory) {
+    public static ConnectedClientDetailsResponse create(Dot11MacAddressResponse mac, DateTime lastSeen, Dot11MacAddressResponse connectedBSSID, List<String> probeRequests) {
         return builder()
                 .mac(mac)
                 .lastSeen(lastSeen)
                 .connectedBSSID(connectedBSSID)
                 .probeRequests(probeRequests)
-                .bssidHistory(bssidHistory)
                 .build();
     }
 
@@ -49,8 +45,6 @@ public abstract class ConnectedClientDetailsResponse {
         public abstract Builder connectedBSSID(Dot11MacAddressResponse connectedBSSID);
 
         public abstract Builder probeRequests(List<String> probeRequests);
-
-        public abstract Builder bssidHistory(List<ConnectedBSSID> bssidHistory);
 
         public abstract ConnectedClientDetailsResponse build();
     }

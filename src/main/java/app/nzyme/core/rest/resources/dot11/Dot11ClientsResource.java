@@ -67,34 +67,6 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                     authenticatedUser.getTenantId()
             );
 
-            List<ConnectedBSSID> bssidHistory = Lists.newArrayList();
-            for (String bssid : nzyme.getDot11()
-                    .findBSSIDsClientWasConnectedTo(client.clientMac(), tapUuids)) {
-                Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
-                        bssid,
-                        authenticatedUser.getOrganizationId(),
-                        authenticatedUser.getTenantId()
-                );
-
-                // Find all SSIDs this BSSID advertised.
-                List<String> advertisedSSIDs = nzyme.getDot11().findSSIDsAdvertisedByBSSID(
-                        bssid, tapUuids);
-
-                bssidHistory.add(ConnectedBSSID.create(
-                        Dot11MacAddressResponse.create(
-                                bssid,
-                                nzyme.getOUIManager().lookupMac(bssid),
-                                bssidContext.map(macAddressContextEntry ->
-                                                Dot11MacAddressContextResponse.create(
-                                                        macAddressContextEntry.name(),
-                                                        macAddressContextEntry.description()
-                                                ))
-                                        .orElse(null)
-                        ),
-                        advertisedSSIDs
-                ));
-            }
-
             List<String> probeRequests = nzyme.getDot11()
                     .findProbeRequestsOfClient(client.clientMac(), tapUuids);
 
@@ -126,8 +98,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                                             ))
                                     .orElse(null)
                     ),
-                    probeRequests,
-                    bssidHistory
+                    probeRequests
             ));
         }
 
@@ -161,35 +132,6 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                     authenticatedUser.getTenantId()
             );
 
-            List<ConnectedBSSID> bssidHistory = Lists.newArrayList();
-
-            for (String bssid : nzyme.getDot11()
-                    .findBSSIDsClientWasConnectedTo(client.clientMac(), tapUuids)) {
-                Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
-                        bssid,
-                        authenticatedUser.getOrganizationId(),
-                        authenticatedUser.getTenantId()
-                );
-
-                // Find all SSIDs this BSSID advertised.
-                List<String> advertisedSSIDs = nzyme.getDot11().findSSIDsAdvertisedByBSSID(
-                        bssid, tapUuids);
-
-                bssidHistory.add(ConnectedBSSID.create(
-                        Dot11MacAddressResponse.create(
-                                bssid,
-                                nzyme.getOUIManager().lookupMac(bssid),
-                                bssidContext.map(macAddressContextEntry ->
-                                                Dot11MacAddressContextResponse.create(
-                                                        macAddressContextEntry.name(),
-                                                        macAddressContextEntry.description()
-                                                ))
-                                        .orElse(null)
-                        ),
-                        advertisedSSIDs
-                ));
-            }
-
             disconnectedClients.add(DisconnectedClientDetailsResponse.create(
                     Dot11MacAddressResponse.create(
                             client.clientMac(),
@@ -202,8 +144,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                                     .orElse(null)
                     ),
                     client.lastSeen(),
-                    client.probeRequests(),
-                    bssidHistory
+                    client.probeRequests()
             ));
         }
 

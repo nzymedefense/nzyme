@@ -36,7 +36,6 @@ function DisconnectedClientsTable(props) {
           <tr>
             <th>Client MAC</th>
             <th>Client OUI</th>
-            <th>BSSIDs</th>
             <th>Probe Requests</th>
             <th>Last Seen</th>
           </tr>
@@ -49,7 +48,6 @@ function DisconnectedClientsTable(props) {
                     <Dot11MacAddress addressWithContext={client.mac} href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac.address)} />
                   </td>
                   <td>{client.mac.oui ? client.mac.oui : <span className="text-muted">Unknown</span>}</td>
-                  <td>{client.bssid_history.length}</td>
                   <td>
                     { client.probe_request_ssids && client.probe_request_ssids.length > 0 ?
                         <SSIDsList ssids={client.probe_request_ssids} /> : <span className="text-muted">None</span> }
