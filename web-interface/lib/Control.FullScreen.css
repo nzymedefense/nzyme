@@ -1,8 +1,3 @@
-.fullscreen-icon {
-	background-image: url('icon-fullscreen.svg');
-	background-size: 26px 52px;
-}
-
 .fullscreen-icon.leaflet-fullscreen-on {
 	background-position: 0 -26px;
 }

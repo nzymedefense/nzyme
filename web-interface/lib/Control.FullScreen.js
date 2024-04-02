@@ -147,7 +147,7 @@
 		onAdd(map) {
 			let className = 'leaflet-control-zoom-fullscreen';
 			let container;
-			let content = '';
+			let content = '<i class="fa-solid fa-expand" style="margin-top: 8px; font-size: 15px;"></i>';
 
 			if (map.zoomControl && !this.options.forceSeparateButton) {
 				container = map.zoomControl._container;
