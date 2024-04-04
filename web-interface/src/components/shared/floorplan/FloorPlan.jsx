@@ -25,21 +25,21 @@ const xy = function(x, y) {
 };
 
 const transientTapIcon = L.icon({
-  iconUrl: '/static/leaflet/icon-tap-transient.png',
+  iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap-transient.png',
   iconSize: [24, 24],
   iconAnchor: [16, 16],
   tooltipAnchor: [0, 0]
 });
 
 const onlineTapIcon = L.icon({
-  iconUrl: '/static/leaflet/icon-tap.png',
+  iconUrl:  window.appConfig.assetsUri + '/static/leaflet/icon-tap.png',
   iconSize: [24, 24],
   iconAnchor: [12, 12],
   tooltipAnchor: [0, 0]
 });
 
 const offlineTapIcon = L.icon({
-  iconUrl: '/static/leaflet/icon-tap-offline.png',
+  iconUrl:  window.appConfig.assetsUri + '/static/leaflet/icon-tap-offline.png',
   iconSize: [24, 24],
   iconAnchor: [12, 12],
   tooltipAnchor: [0, 0]
