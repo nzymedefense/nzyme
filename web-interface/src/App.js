@@ -149,6 +149,7 @@ function App() {
   const [mfaEntryExpiresAt, setMfaEntryExpiresAt] = useState(null);
   const [nzymeInformation, setNzymeInformation] = useState(null);
   const [userInformation, setUserInformation] = useState(null);
+  const [branding, setBranding] = useState(null);
   const [plugins, setPlugins] = useState([]); // TODO
   const [selectedTaps, setSelectedTaps] = useState(Store.get("selected_taps"));
   const [tapSelectorEnabled, setTapSelectorEnabled] = useState(false);
@@ -174,6 +175,7 @@ function App() {
         setMfaSetup(sessionInfo.mfa_setup);
         setMfaEntryExpiresAt(sessionInfo.mfa_entry_expires_at);
         setUserInformation(sessionInfo.user);
+        setBranding(sessionInfo.branding);
 
         callback();
       }, function() {
@@ -271,7 +273,7 @@ function App() {
             <div className="nzyme d-flex">
               <UserContext.Provider value={userInformation}>
                 <TapContext.Provider value={{set: setSelectedTaps, taps: selectedTaps, selectorEnabled: tapSelectorEnabled, setSelectorEnabled: setTapSelectorEnabled}}>
-                  <Sidebar />
+                  <Sidebar branding={branding} />
 
                   <div id="main" className="flex-fill">
                     <Notifications/>

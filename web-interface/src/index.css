@@ -126,11 +126,18 @@ div.tap-selector ul li a {
     padding-left: 20px;
     padding-right: 20px;
     padding-top: 20px;
+    margin-bottom: 0;
 }
 
 #nav-side p.brand a {
     font-size: 20px;
     text-decoration: none;
+    color: #fff;
+}
+
+#nav-side p.brand-subtitle {
+    padding-left: 20px;
+    padding-right: 20px;
     color: #fff;
 }
 

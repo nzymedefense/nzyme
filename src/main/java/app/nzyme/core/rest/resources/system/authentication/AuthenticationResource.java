@@ -18,6 +18,7 @@
 package app.nzyme.core.rest.resources.system.authentication;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.branding.BrandingRegistryKeys;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
@@ -30,6 +31,7 @@ import app.nzyme.core.rest.responses.authentication.MFAInitResponse;
 import app.nzyme.core.rest.responses.authentication.SessionInformationResponse;
 import app.nzyme.core.rest.responses.authentication.SessionTokenResponse;
 import app.nzyme.core.rest.responses.authentication.SessionUserInformationDetailsResponse;
+import app.nzyme.core.rest.responses.authentication.branding.BrandingResponse;
 import app.nzyme.core.security.authentication.AuthenticationRegistryKeys;
 import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.security.authentication.PasswordHasher;
@@ -212,6 +214,13 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         DateTime mfaExpiresAt = session.get().mfaRequestedAt() == null
                 ? null : session.get().mfaRequestedAt().plusMinutes(mfaTimeoutMinutes);
 
+        //noinspection OptionalGetWithoutIsPresent
+        String sidebarTitleText = nzyme.getDatabaseCoreRegistry()
+                .getValue(BrandingRegistryKeys.SIDEBAR_TITLE_TEXT.key())
+                .orElse(BrandingRegistryKeys.SIDEBAR_TITLE_TEXT.defaultValue().get());
+        String sidebarSubtitleText = nzyme.getDatabaseCoreRegistry()
+                .getValueOrNull(BrandingRegistryKeys.SIDEBAR_TITLE_TEXT.key());
+
         return Response.ok(SessionInformationResponse.create(
                 SessionUserInformationDetailsResponse.create(
                         u.uuid(),
@@ -225,7 +234,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                 ),
                 session.get().mfaValid(),
                 user.get().mfaComplete(),
-                mfaExpiresAt
+                mfaExpiresAt,
+                BrandingResponse.create(sidebarTitleText, sidebarSubtitleText)
         )).build();
     }
 

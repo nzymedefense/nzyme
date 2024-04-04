@@ -17,6 +17,7 @@
 
 package app.nzyme.core.rest.responses.authentication;
 
+import app.nzyme.core.rest.responses.authentication.branding.BrandingResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
@@ -39,12 +40,16 @@ public abstract class SessionInformationResponse {
     @Nullable
     public abstract DateTime mfaEntryExpiresAt();
 
-    public static SessionInformationResponse create(SessionUserInformationDetailsResponse user, boolean mfaValid, boolean mfaSetup, DateTime mfaEntryExpiresAt) {
+    @JsonProperty("branding")
+    public abstract BrandingResponse branding();
+
+    public static SessionInformationResponse create(SessionUserInformationDetailsResponse user, boolean mfaValid, boolean mfaSetup, DateTime mfaEntryExpiresAt, BrandingResponse branding) {
         return builder()
                 .user(user)
                 .mfaValid(mfaValid)
                 .mfaSetup(mfaSetup)
                 .mfaEntryExpiresAt(mfaEntryExpiresAt)
+                .branding(branding)
                 .build();
     }
 
@@ -61,6 +66,8 @@ public abstract class SessionInformationResponse {
         public abstract Builder mfaSetup(boolean mfaSetup);
 
         public abstract Builder mfaEntryExpiresAt(DateTime mfaEntryExpiresAt);
+
+        public abstract Builder branding(BrandingResponse branding);
 
         public abstract SessionInformationResponse build();
     }
