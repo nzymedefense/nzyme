@@ -2,9 +2,11 @@ import React, {useState} from "react";
 import AssetStylesheet from "../../misc/AssetStylesheet";
 import MFAEntryStep from "./MFAEntryStep";
 import MFARecoveryCodeStep from "./MFARecoveryCodeStep";
+import LoginImage from "./LoginImage";
 
 function MFASetupPage(props) {
 
+  const customImage = props.customImage;
   const mfaEntryExpiresAt = props.mfaEntryExpiresAt;
 
   const [recoveryEnabled, setRecoveryEnabled] = useState(false);
@@ -40,10 +42,7 @@ function MFASetupPage(props) {
                     </div>
 
                     <div className="col-md-7 d-none d-md-block justify-content-center right-half">
-                      <video id="background-video" autoPlay loop muted
-                             poster={window.appConfig.assetsUri + "static/loginsplash_preview.jpg"}>
-                        <source src={window.appConfig.assetsUri + "static/loginsplash.mp4"} type="video/mp4"/>
-                      </video>
+                      <LoginImage customImage={customImage} />
                     </div>
 
                   </div>

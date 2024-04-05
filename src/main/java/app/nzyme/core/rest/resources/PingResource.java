@@ -18,6 +18,7 @@
 package app.nzyme.core.rest.resources;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.branding.BrandingRegistryKeys;
 import app.nzyme.core.rest.responses.system.PingResponse;
 
 import jakarta.inject.Inject;
@@ -40,8 +41,13 @@ public class PingResource {
 
     @GET
     public Response ping() {
+        String loginImage = nzyme.getDatabaseCoreRegistry()
+                .getValue(BrandingRegistryKeys.LOGIN_IMAGE.key())
+                .orElse(null);
+
         return Response.ok(PingResponse.create(
-                nzyme.getAuthenticationService().countSuperAdministrators() == 0
+                nzyme.getAuthenticationService().countSuperAdministrators() == 0,
+                loginImage
         )).build();
     }
 

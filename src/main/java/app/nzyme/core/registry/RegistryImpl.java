@@ -167,13 +167,6 @@ public class RegistryImpl implements Registry {
 
             throw new IllegalArgumentException("Key length exceeded.");
         }
-
-        if (buildNamespacedKey(namespace, value).length() > 255) {
-            LOG.error("Registry value length cannot exceed 255 characters. Provided <{}> characters for key [{}].",
-                    value.length(), buildNamespacedKey(namespace, key));
-
-            throw new IllegalArgumentException("Value length exceeded.");
-        }
     }
 
     public static String buildNamespacedKey(String namespace, String key) {

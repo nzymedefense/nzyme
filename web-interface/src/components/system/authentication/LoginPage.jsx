@@ -3,10 +3,13 @@ import AuthenticationService from '../../../services/AuthenticationService'
 import AssetStylesheet from "../../misc/AssetStylesheet";
 import Store from "../../../util/Store";
 import LoginFailedMessage from "./LoginFailedMessage";
+import LoginImage from "./LoginImage";
 
 const authenticationService = new AuthenticationService();
 
-function LoginPage() {
+function LoginPage(props) {
+
+  const customImage = props.customImage;
 
   const mask = useRef();
   const [isMasked, setIsMasked] = useState(true);
@@ -111,9 +114,7 @@ function LoginPage() {
                   </div>
 
                   <div className="col-md-7 d-none d-md-block justify-content-center right-half">
-                    <video id="background-video" autoPlay loop muted poster={window.appConfig.assetsUri + "static/loginsplash_preview.jpg"}>
-                      <source src={window.appConfig.assetsUri + "static/loginsplash.mp4"} type="video/mp4" />
-                    </video>
+                    <LoginImage customImage={customImage} />
                   </div>
                 </div>
               </div>

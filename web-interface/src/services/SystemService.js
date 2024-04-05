@@ -58,6 +58,25 @@ class SystemService {
     RESTClient.put('/system/database/retention', { change: newConfig }, successCallback, errorCallback)
   }
 
+  getSidebarTitle(setSidebarTitle, setSidebarSubtitle) {
+    RESTClient.get('/system/lookandfeel/sidebartitle', {}, function (response) {
+      setSidebarTitle(response.data.title);
+      setSidebarSubtitle(response.data.subtitle);
+    })
+  }
+
+  setSidebarTitle(sidebarTitle, sidebarSubtitle, onSuccess, onError) {
+    RESTClient.put('/system/lookandfeel/sidebartitle', {title: sidebarTitle, subtitle: sidebarSubtitle}, onSuccess, onError);
+  }
+
+  uploadLoginImage(formData, successCallback, errorCallback) {
+    RESTClient.postMultipart('/system/lookandfeel/loginimage', formData, false, successCallback, errorCallback);
+  }
+
+  resetLoginImage(successCallback) {
+    RESTClient.delete('/system/lookandfeel/loginimage', successCallback);
+  }
+
 }
 
 export default SystemService

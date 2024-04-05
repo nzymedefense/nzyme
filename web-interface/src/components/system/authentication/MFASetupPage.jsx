@@ -4,10 +4,13 @@ import AuthenticationService from "../../../services/AuthenticationService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import MFASetupStep1 from "./MFASetupStep1";
 import MFASetupStep2 from "./MFASetupStep2";
+import LoginImage from "./LoginImage";
 
 const authenticationService = new AuthenticationService();
 
-function MFASetupPage() {
+function MFASetupPage(props) {
+
+  const customImage = props.customImage;
 
   const [userSecret, setUserSecret] = useState(null);
   const [userEmail, setUserEmail] = useState(null);
@@ -69,10 +72,7 @@ function MFASetupPage() {
                     </div>
 
                     <div className="col-md-7 d-none d-md-block justify-content-center right-half">
-                      <video id="background-video" autoPlay loop muted
-                             poster={window.appConfig.assetsUri + "static/loginsplash_preview.jpg"}>
-                        <source src={window.appConfig.assetsUri + "static/loginsplash.mp4"} type="video/mp4"/>
-                      </video>
+                      <LoginImage customImage={customImage} />
                     </div>
 
                   </div>

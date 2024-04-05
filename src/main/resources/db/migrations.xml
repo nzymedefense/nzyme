@@ -4501,4 +4501,8 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="turn_registry_into_text_fields" author="lennartkoopmann">
+        <modifyDataType tableName="registry" columnName="value" newDataType="text" />
+    </changeSet>
+    
 </databaseChangeLog>

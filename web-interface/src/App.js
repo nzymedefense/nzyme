@@ -123,6 +123,7 @@ import LocationDetailsPage from "./components/system/authentication/management/t
 import EditLocationPage from "./components/system/authentication/management/tenants/locations/EditLocationPage";
 import CreateFloorPage from "./components/system/authentication/management/tenants/locations/floors/CreateFloorPage";
 import EditFloorPage from "./components/system/authentication/management/tenants/locations/floors/EditFloorPage";
+import LookAndFeelPage from "./components/system/lookandfeel/LookAndFeelPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -239,7 +240,7 @@ function App() {
           <DarkMode enabled={false} />
 
           <Notifications/>
-          <LoginPage />
+          <LoginPage customImage={nzymeInformation.login_image} />
         </div>
     )
   } else {
@@ -251,7 +252,7 @@ function App() {
             <div className="nzyme">
               <Notifications/>
 
-              <MFAEntryPage mfaEntryExpiresAt={mfaEntryExpiresAt} />
+              <MFAEntryPage mfaEntryExpiresAt={mfaEntryExpiresAt} customImage={nzymeInformation.login_image} />
             </div>
         )
       } else {
@@ -260,7 +261,7 @@ function App() {
           <div className="nzyme">
             <Notifications/>
 
-            <MFASetupPage />
+            <MFASetupPage customImage={nzymeInformation.login_image} />
           </div>
         )
       }
@@ -290,9 +291,6 @@ function App() {
 
                           { /* Search. */}
                           <Route path={ApiRoutes.SEARCH.RESULTS} element={<SearchResultPage />}/>
-
-                          { /* System/Misc. */}
-                          <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
 
                           { /* System/Authentication */ }
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
@@ -363,6 +361,10 @@ function App() {
 
                           { /* System/Database */ }
                           <Route path={ApiRoutes.SYSTEM.DATABASE.INDEX} element={<DatabasePage />} />
+
+                          { /* System/Misc. */}
+                          <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
+                          <Route path={ApiRoutes.SYSTEM.LOOKANDFEEL} element={<LookAndFeelPage />}/>
 
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>

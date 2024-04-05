@@ -187,6 +187,11 @@ function Sidebar(props) {
                 icon={<i className="sidebar-icon fa-solid fa-key"/>}/>
             <NavigationLink
                 show={user.is_superadmin}
+                href={ApiRoutes.SYSTEM.LOOKANDFEEL}
+                title="Look &amp; Feel"
+                icon={<i className="fa-solid fa-paint-roller"></i>}/>
+            <NavigationLink
+                show={user.is_superadmin}
                 href={ApiRoutes.SYSTEM.VERSION}
                 title="Version"
                 icon={<i className="sidebar-icon fa-solid fa-tag "/>}/>

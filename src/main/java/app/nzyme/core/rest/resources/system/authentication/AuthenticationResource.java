@@ -219,7 +219,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                 .getValue(BrandingRegistryKeys.SIDEBAR_TITLE_TEXT.key())
                 .orElse(BrandingRegistryKeys.SIDEBAR_TITLE_TEXT.defaultValue().get());
         String sidebarSubtitleText = nzyme.getDatabaseCoreRegistry()
-                .getValueOrNull(BrandingRegistryKeys.SIDEBAR_TITLE_TEXT.key());
+                .getValueOrNull(BrandingRegistryKeys.SIDEBAR_SUBTITLE_TEXT.key());
 
         return Response.ok(SessionInformationResponse.create(
                 SessionUserInformationDetailsResponse.create(

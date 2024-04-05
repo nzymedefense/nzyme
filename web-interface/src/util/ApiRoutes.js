@@ -116,7 +116,8 @@ const ApiRoutes = {
       SUBSCRIPTIONS: {
         DETAILS: eventTypeName => `/system/events/subscriptions/show/${eventTypeName}`
       }
-    }
+    },
+    LOOKANDFEEL: '/system/lookandfeel'
   },
   SEARCH: {
     RESULTS: '/search/results'
