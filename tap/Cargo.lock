@@ -1138,7 +1138,7 @@ dependencies = [
 
 [[package]]
 name = "nzyme-tap"
-version = "2.0.0-alpha.11-SNAPSHOT"
+version = "2.0.0-alpha.12-SNAPSHOT"
 dependencies = [
  "anyhow",
  "bitreader",
