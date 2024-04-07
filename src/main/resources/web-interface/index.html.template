@@ -8,8 +8,8 @@
     <link rel="icon" type="image/png" sizes="16x16" href="${appPrefix}assets/static/favicon-16x16.png">
 
     <link rel="stylesheet" href="${appPrefix}assets/static/css/fontawesome.css" />
-    <link rel="stylesheet" href="${appPrefix}assets/static/css/fonts.css" />
-    <link rel="stylesheet" href="/static/css/flag-icons.min.css" />
+    <link rel="stylesheet" href="${appPrefix}static/css/fonts.css" />
+    <link rel="stylesheet" href="${appPrefix}static/css/flag-icons.min.css" />
 
     ${foreach cssFiles cssFile}
     <link href="${appPrefix}assets/static/css/${cssFile}" rel="stylesheet">
