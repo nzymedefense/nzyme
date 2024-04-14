@@ -88,7 +88,7 @@ pub struct TcpFlags {
 }
 
 #[derive(Debug)]
-pub struct UDPPacket {
+pub struct Datagram {
     pub source_mac: String,
     pub destination_mac: String,
     pub source_address: IpAddr,

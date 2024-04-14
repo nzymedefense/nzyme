@@ -64,14 +64,6 @@ impl EthernetBroker {
             timestamp: Utc::now()
         }); 
 
-        // To Ethernet Pipeline.
-        to_pipeline!(
-            EthernetChannelName::EthernetPipeline,
-            bus.ethernet_pipeline.sender,
-            packet.clone(),
-            packet.data.len() as u32
-        );
-
         if packet.packet_type == EtherType::IPv4 {
             let ipv4 = match ipv4_parser::parse(&packet) {
                 Ok(x) => x,
@@ -87,7 +79,6 @@ impl EthernetBroker {
                         types::ProtocolType::Tcp  => {
                             let tcp = Arc::new(tcp_parser::parse(ipv4).unwrap()); // TODO unwrap
                             let size = tcp.size;
-
                             // To TCP pipeline.
                             to_pipeline!(
                                 EthernetChannelName::TcpPipeline,
@@ -100,30 +91,13 @@ impl EthernetBroker {
                             let udp = Arc::new(udp_parser::parse(ipv4).unwrap()); // TODO unwrap
                             let size = udp.size;
 
-                            // DNS
-                            if udp.destination_port == 53 || udp.source_port == 53 { // TODO configurable
-                                match dns_parser::parse(&udp) {
-                                    Ok(dns) => {
-                                        // To DNS pipeline.
-                                        let size = dns.size;
-                                        to_pipeline!(
-                                            EthernetChannelName::DnsPipeline,
-                                            bus.dns_pipeline.sender,
-                                            Arc::new(dns),
-                                            size
-                                        );
-                                    },
-                                    Err(e) => warn!("Could not parse DNS packet: {}", e)
-                                };
-                            }
-
-                            // To UDP pipeline. TODO re-enable
-                            /*to_pipeline!(
-                                ChannelName::UdpPipeline,
+                            // To UDP pipeline.
+                            to_pipeline!(
+                                EthernetChannelName::UdpPipeline,
                                 bus.udp_pipeline.sender,
                                 udp,
                                 size
-                            );*/
+                            );
                         },
                         types::ProtocolType::Icmp6 |
                         types::ProtocolType::Icmp => {}

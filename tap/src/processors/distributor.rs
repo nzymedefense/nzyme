@@ -4,6 +4,7 @@ use log::error;
 
 use crate::{messagebus::bus::Bus, exit_code, data::tables::Tables, system_state::SystemState, metrics::Metrics};
 use crate::processors::tcp_processor::TcpProcessor;
+use crate::processors::udp_processor::UDPProcessor;
 
 use super::{
     arp_processor::ARPProcessor,
@@ -12,7 +13,6 @@ use super::{
 };
 
 pub fn spawn(ethernet_bus: Arc<Bus>, dot11_bus: Arc<Bus>, tables: &Arc<Tables>, system_state: Arc<SystemState>, metrics: Arc<Mutex<Metrics>>) {
-    spawn_base_ethernet(ethernet_bus.clone());
     spawn_base_dot11(dot11_bus.clone(), &tables.clone());
 
     spawn_base_arp(ethernet_bus.clone(), tables.clone()); // TODO borrow
@@ -24,17 +24,6 @@ pub fn spawn(ethernet_bus: Arc<Bus>, dot11_bus: Arc<Bus>, tables: &Arc<Tables>, 
 }
 
 // TODO don't exit here
-
-fn spawn_base_ethernet(bus: Arc<Bus>) {
-    thread::spawn(move || {
-        for _packet in bus.ethernet_pipeline.receiver.iter() {
-            // noop
-        }
-
-        error!("Ethernet receiver disconnected.");
-        exit(exit_code::EX_UNAVAILABLE);
-    });
-}
 
 fn spawn_base_dot11(bus: Arc<Bus>, tables: &Arc<Tables>) {
     let processor = Dot11FrameProcessor::new(tables.dot11.clone());
@@ -75,7 +64,16 @@ fn spawn_base_tcp(bus: Arc<Bus>, tables: &Arc<Tables>) {
 }
 
 fn spawn_base_udp(bus: Arc<Bus>, tables: &Arc<Tables>) {
-    // TODO
+    let mut processor = UDPProcessor::new(bus.clone());
+
+    thread::spawn(move || {
+        for datagram in bus.udp_pipeline.receiver.iter() {
+            processor.process(&datagram);
+        }
+
+        error!("UDP receiver disconnected.");
+        exit(exit_code::EX_UNAVAILABLE);
+    });
 }
 
 fn spawn_base_dns(bus: Arc<Bus>, tables: &Arc<Tables>, system_state: Arc<SystemState>, metrics: Arc<Mutex<Metrics>>) {

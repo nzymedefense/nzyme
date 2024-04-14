@@ -66,6 +66,8 @@ public class TablesResource {
 
         LOG.debug("Received TCP session table report from [{}]: {}", tapId, report);
 
+        // Store in combined TCP/UDP table.
+
         return Response.status(Response.Status.CREATED).build();
     }
 

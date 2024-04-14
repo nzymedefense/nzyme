@@ -3,7 +3,6 @@ use strum_macros::{EnumIter, Display};
 #[derive(Debug, Clone, EnumIter, Display)]
 pub enum EthernetChannelName {
     EthernetBroker,
-    EthernetPipeline,
     ArpPipeline,
     TcpPipeline,
     UdpPipeline,

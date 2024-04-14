@@ -7,7 +7,7 @@ use chrono::{DateTime, Duration, Utc};
 use log::{error, trace, warn};
 use strum_macros::Display;
 use crate::data::tcp_table::TcpSessionState::{ClosedFin, ClosedRst, ClosedTimeout, Established, FinWait1, FinWait2, Refused, SynReceived, SynSent};
-use crate::ethernet::detection::l4_session_tagger::{L4SessionTag, tag_tcp_sessions};
+use crate::ethernet::detection::l7_tagger::{L7SessionTag, tag_tcp_sessions};
 use crate::ethernet::packets::{TcpSegment};
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::ethernet::traffic_direction::TrafficDirection;
@@ -38,7 +38,7 @@ pub struct TcpSession {
     pub bytes_count: u64,
     pub segments_client_to_server: BTreeMap<u32, Vec<u8>>,
     pub segments_server_to_client: BTreeMap<u32, Vec<u8>>,
-    pub tags: Option<Vec<L4SessionTag>>
+    pub tags: Option<Vec<L7SessionTag>>
 }
 
 #[derive(PartialEq, Debug, Display, Clone)]

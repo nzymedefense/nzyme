@@ -1,5 +1,5 @@
 use std::{sync::Arc, net::{Ipv4Addr, Ipv6Addr}};
-use crate::ethernet::{packets::{UDPPacket, DNSPacket, DNSData}, types::{DNSType, DNSDataType, DNSClass}};
+use crate::ethernet::{packets::{Datagram, DNSPacket, DNSData}, types::{DNSType, DNSDataType, DNSClass}};
 use anyhow::{Result, bail};
 use bitvec::{view::BitView, order::Msb0};
 use byteorder::{BigEndian, ByteOrder};
@@ -8,7 +8,7 @@ use chrono::Utc;
 use entropy::shannon_entropy;
 
 #[allow(clippy::cast_possible_truncation)]
-pub fn parse(udp: &Arc<UDPPacket>) -> Result<DNSPacket> {
+pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
 
     if udp.payload.len() < 13 {
         bail!("Payload too short to hold a DNS request or response.");

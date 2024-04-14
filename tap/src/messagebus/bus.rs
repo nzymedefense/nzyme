@@ -8,7 +8,7 @@ use crate::{
         EthernetPacket,
         ARPPacket,
         EthernetData,
-        UDPPacket,
+        Datagram,
         DNSPacket,
         TcpSegment
     },
@@ -25,10 +25,9 @@ pub struct Bus {
 
     pub dot11_frames_pipeline: NzymeChannel<Dot11Frame>,
 
-    pub ethernet_pipeline: NzymeChannel<EthernetPacket>,
     pub arp_pipeline: NzymeChannel<ARPPacket>,
     pub tcp_pipeline: NzymeChannel<TcpSegment>,
-    pub udp_pipeline: NzymeChannel<UDPPacket>,
+    pub udp_pipeline: NzymeChannel<Datagram>,
     pub dns_pipeline: NzymeChannel<DNSPacket>
 }
 
@@ -79,7 +78,6 @@ impl Bus<> {
 
         let (dot11_frames_sender, dot11_frames_receiver) = bounded(configuration.performance.wifi_broker_buffer_capacity);
 
-        let (ethernet_pipeline_sender, ethernet_pipeline_receiver) = bounded(65536); // TODO configurable
         let (arp_pipeline_sender, arp_pipeline_receiver) = bounded(512); // TODO configurable
 
         let (tcp_pipeline_sender, tcp_pipeline_receiver) = bounded(configuration.protocols.tcp.pipeline_size as usize); // TODO configurable
@@ -112,14 +110,6 @@ impl Bus<> {
                     name: Dot11ChannelName::Dot11FramesPipeline.to_string()
                 }),
                 receiver: Arc::new(dot11_frames_receiver),
-            },
-            ethernet_pipeline: NzymeChannel {
-                sender: Mutex::new(NzymeChannelSender {
-                    metrics: metrics.clone(),
-                    sender: ethernet_pipeline_sender,
-                    name: EthernetChannelName::EthernetPipeline.to_string()
-                }),
-                receiver: Arc::new(ethernet_pipeline_receiver),
             },
             arp_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {
