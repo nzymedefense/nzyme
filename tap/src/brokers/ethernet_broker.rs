@@ -5,7 +5,7 @@ use chrono::Utc;
 use log::{debug, info, warn, error};
 use byteorder::{BigEndian, ByteOrder};
 use crate::ethernet::packets::EthernetData;
-use crate::ethernet::parsers::{udp_parser, dns_parser, tcp_parser};
+use crate::ethernet::parsers::{udp_parser, tcp_parser};
 use crate::messagebus::bus::Bus;
 use crate::to_pipeline;
 use crate::{helpers::network::to_mac_address_string, ethernet::types};

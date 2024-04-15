@@ -1,5 +1,7 @@
 use std::net::IpAddr;
+use std::sync::Mutex;
 use chrono::{DateTime, Utc};
+use crate::ethernet::detection::l7_tagger::L7SessionTag;
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::ethernet::traffic_direction::TrafficDirection;
 
@@ -97,7 +99,8 @@ pub struct Datagram {
     pub destination_port: u16,
     pub payload: Vec<u8>,
     pub size: u32,
-    pub timestamp: DateTime<Utc>
+    pub timestamp: DateTime<Utc>,
+    pub tags: Mutex<Vec<L7SessionTag>>
 }
 
 

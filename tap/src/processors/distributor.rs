@@ -64,7 +64,7 @@ fn spawn_base_tcp(bus: Arc<Bus>, tables: &Arc<Tables>) {
 }
 
 fn spawn_base_udp(bus: Arc<Bus>, tables: &Arc<Tables>) {
-    let mut processor = UDPProcessor::new(bus.clone());
+    let mut processor = UDPProcessor::new(bus.clone(), tables.udp.clone());
 
     thread::spawn(move || {
         for datagram in bus.udp_pipeline.receiver.iter() {

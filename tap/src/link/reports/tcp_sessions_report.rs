@@ -22,7 +22,7 @@ pub struct TcpSessionReport {
     pub most_recent_segment_time: DateTime<Utc>,
     pub segment_count: u64,
     pub bytes_count: u64,
-    pub tags: Option<Vec<String>>
+    pub tags: Vec<String>
 }
 
 pub fn generate(s: &MutexGuard<HashMap<TcpSessionKey, TcpSession>>) -> TcpSessionsReport {
@@ -40,11 +40,9 @@ pub fn generate(s: &MutexGuard<HashMap<TcpSessionKey, TcpSession>>) -> TcpSessio
             most_recent_segment_time: session.most_recent_segment_time,
             segment_count: session.segment_count,
             bytes_count: session.bytes_count,
-            tags: session.tags.clone()
-                .map(|ts| ts.into_iter()
+            tags: session.tags.clone().into_iter()
                         .map(|t| t.to_string())
                         .collect()
-                )
         })
     }
 

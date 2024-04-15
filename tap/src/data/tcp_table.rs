@@ -38,7 +38,7 @@ pub struct TcpSession {
     pub bytes_count: u64,
     pub segments_client_to_server: BTreeMap<u32, Vec<u8>>,
     pub segments_server_to_client: BTreeMap<u32, Vec<u8>>,
-    pub tags: Option<Vec<L7SessionTag>>
+    pub tags: Vec<L7SessionTag>
 }
 
 #[derive(PartialEq, Debug, Display, Clone)]
@@ -133,7 +133,7 @@ impl TcpTable {
                                 bytes_count: segment.size as u64,
                                 segments_client_to_server: BTreeMap::new(),
                                 segments_server_to_client: BTreeMap::new(),
-                                tags: None
+                                tags: vec![]
                             };
 
                             trace!("New TCP Session: {:?}, State: {:?}, Flags: {:?}",

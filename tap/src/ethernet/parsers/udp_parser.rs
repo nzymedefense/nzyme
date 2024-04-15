@@ -1,3 +1,4 @@
+use std::sync::Mutex;
 use anyhow::{Result, bail};
 use byteorder::{BigEndian, ByteOrder};
 
@@ -27,7 +28,8 @@ pub fn parse(ip4: IPv4Packet) -> Result<Datagram> {
         destination_port,
         payload,
         size,
-        timestamp: ip4.timestamp
+        timestamp: ip4.timestamp,
+        tags: Mutex::new(vec![])
     })
 
 }

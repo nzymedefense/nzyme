@@ -1,11 +1,9 @@
 use std::collections::HashMap;
-use std::sync::{Arc, MutexGuard};
+use std::sync::{MutexGuard};
 use strum_macros::Display;
 use crate::data::tcp_table::TcpSession;
-use crate::ethernet::detection::l7_tagger::L7SessionTag::{Dns, Http, Unencrypted};
+use crate::ethernet::detection::l7_tagger::L7SessionTag::{Http, Unencrypted};
 use crate::ethernet::detection::taggers::http_tagger;
-use crate::ethernet::packets::Datagram;
-use crate::ethernet::parsers::dns_parser;
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 
 #[derive(Debug, Display, PartialEq, Clone)]
@@ -39,14 +37,14 @@ pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSess
     }
 }
 
-fn tag_all(client_to_server: Vec<u8>, server_to_client: Vec<u8>) -> Option<Vec<L7SessionTag>> {
+fn tag_all(client_to_server: Vec<u8>, server_to_client: Vec<u8>) -> Vec<L7SessionTag> {
     // Remove all control characters. Case insensitivity. Ignore redirects. TODO unwraps
     let cts = String::from_utf8_lossy(&client_to_server).to_string();
     let stc = String::from_utf8_lossy(&server_to_client).to_string();
 
     if http_tagger::tag(&cts, &stc) {
-        return Some(vec![Unencrypted, Http])
+        return vec![Unencrypted, Http]
     }
 
-    None
+    vec![]
 }

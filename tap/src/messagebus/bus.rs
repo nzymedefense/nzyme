@@ -5,7 +5,6 @@ use log::{debug, error};
 
 use crate::{
     ethernet::packets::{
-        EthernetPacket,
         ARPPacket,
         EthernetData,
         Datagram,
