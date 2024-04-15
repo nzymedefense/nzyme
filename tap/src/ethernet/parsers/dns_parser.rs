@@ -9,7 +9,6 @@ use entropy::shannon_entropy;
 
 #[allow(clippy::cast_possible_truncation)]
 pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
-
     if udp.payload.len() < 13 {
         bail!("Payload too short to hold a DNS request or response.");
     }
@@ -29,6 +28,11 @@ pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
 
     let question_count = BigEndian::read_u16(&udp.payload[4..6]);
     let answer_count = BigEndian::read_u16(&udp.payload[6..8]);
+
+    // Some UDP payloads will reach here, but have excessively large question/answer counts.
+    if question_count > 512 || answer_count > 512 {
+        bail!("Too many questions or answers.");
+    }
 
     // Queries.
     let mut cursor: usize = 12;
@@ -101,6 +105,8 @@ fn is_pointer(mask: u8) -> bool {
 }
 
 fn parse_label(data: &[u8], full_packet: &[u8]) -> Result<(usize, String)> {
+    let mut visited_pointer_offsets: Vec<u16> = vec![];
+
     if is_pointer(data[0]) {
         // Value is a pointer.
         if data.len() < 3 {
@@ -108,20 +114,23 @@ fn parse_label(data: &[u8], full_packet: &[u8]) -> Result<(usize, String)> {
         }
 
         let offset = BigEndian::read_u16(&[data[0] & 0b0011_1111, data[1]]);
-        return match parse_string(&full_packet[(offset as usize)..full_packet.len()], full_packet) {
+        return match parse_string(&full_packet[(offset as usize)..full_packet.len()], full_packet, &mut visited_pointer_offsets) {
             Ok((_, s)) => Ok((2, s)), // 2 is the pointer length
             Err(e) => bail!("Could not parse answer name: {}", e)
         };
     }
 
-    parse_string(data, full_packet)
+    visited_pointer_offsets.clear();
+
+    parse_string(data, full_packet, &mut visited_pointer_offsets)
 }
 
-fn parse_string(data: &[u8], full_packet: &[u8]) -> Result<(usize, String)> {
+fn parse_string(data: &[u8], full_packet: &[u8], visited_pointer_offsets: &mut Vec<u16>) -> Result<(usize, String)> {
     let mut cursor: usize = 0;
     let mut chars = Vec::new();
     let mut section_length = 0;
     let mut initial = true;
+
     for b in data {
         cursor += 1;
 
@@ -133,11 +142,22 @@ fn parse_string(data: &[u8], full_packet: &[u8]) -> Result<(usize, String)> {
         if is_pointer(*b) {
             let offset = BigEndian::read_u16(&[data[cursor-1] & 0b0011_1111, data[cursor]]);
 
+            /*
+             * We keep track of the pointers we already visited to avoid
+             * infinite recursion, especially in payloads that made it this
+             * far but are not actually valid DNS.
+             */
+            if visited_pointer_offsets.contains(&offset) {
+               bail!("Recursive DNS pointer. Skipping.");
+            }
+
+            visited_pointer_offsets.push(offset);
+
             if full_packet.len() < offset as usize {
                 bail!("Offset <{}> does not match provided full packet length <{}>.", offset as usize, full_packet.len());
             }
 
-            let (_,res) = match parse_string(&full_packet[(offset as usize)..full_packet.len()], full_packet) {
+            let (_,res) = match parse_string(&full_packet[(offset as usize)..full_packet.len()], full_packet, visited_pointer_offsets) {
                 Ok((c,s)) => (c,s),
                 Err(e) => bail!("Recursive pointer parsing failed: {}", e)
             };
@@ -171,7 +191,9 @@ fn parse_string(data: &[u8], full_packet: &[u8]) -> Result<(usize, String)> {
 fn parse_query_element(data: &[u8]) -> Result<(usize, DNSData)> {
     let mut cursor;
     let name;
-    match parse_string(&data[0..data.len()], data) {
+
+    let mut visited_pointer_offsets: Vec<u16> = vec![];
+    match parse_string(&data[0..data.len()], data, &mut visited_pointer_offsets) {
         Ok((c,s)) => {
             cursor = c;
             name = s;
@@ -188,7 +210,7 @@ fn parse_query_element(data: &[u8]) -> Result<(usize, DNSData)> {
         bail!("Unknown DNS type <{}>.", dns_type_num)
     };
     cursor += 2;
-   
+
     let class_num = BigEndian::read_u16(&data[cursor..cursor+2]);
     let Ok(class) = DNSClass::try_from(class_num) else {
         bail!("Unknown DNS class <{}>.", class_num)
@@ -242,6 +264,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
 
     // Not collapsing branches here because logic might become more specific in the future.
     let dns_type_has_entropy;
+    let mut visited_pointer_offsets: Vec<u16> = vec![];
     let value = match dns_type {
         DNSDataType::A => {
             dns_type_has_entropy = false;
@@ -254,7 +277,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
         },
         DNSDataType::CNAME => {
             dns_type_has_entropy = true;
-            match parse_string(&data[cursor..cursor+data_length], full_packet) {
+            match parse_string(&data[cursor..cursor+data_length], full_packet, &mut visited_pointer_offsets) {
                 Ok((_, cname)) => {
                     Option::Some(cname) 
                 },
@@ -272,7 +295,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
         },
         DNSDataType::NS => {
             dns_type_has_entropy = true;
-            match parse_string(&data[cursor..cursor+data_length], full_packet) {
+            match parse_string(&data[cursor..cursor+data_length], full_packet, &mut visited_pointer_offsets) {
                 Ok((_, ns)) => {
                     Option::Some(ns) 
                 },
@@ -281,7 +304,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
         },
         DNSDataType::PTR => {
             dns_type_has_entropy = true;
-            match parse_string(&data[cursor..cursor+data_length], full_packet) {
+            match parse_string(&data[cursor..cursor+data_length], full_packet, &mut visited_pointer_offsets) {
                 Ok((_, ptr)) => {
                     Option::Some(ptr) 
                 },
@@ -295,7 +318,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             }
 
             // We are skipping two bytes because we don't parse the MX priority.
-            match parse_string(&data[cursor+2..cursor+data_length], full_packet) {
+            match parse_string(&data[cursor+2..cursor+data_length], full_packet, &mut visited_pointer_offsets) {
                 Ok((_, mx)) => {
                     Option::Some(mx) 
                 },
@@ -304,7 +327,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
         },
         DNSDataType::TXT => {
             dns_type_has_entropy = true;
-            match parse_string(&data[cursor..cursor+data_length], full_packet) {
+            match parse_string(&data[cursor..cursor+data_length], full_packet, &mut visited_pointer_offsets) {
                 Ok((_, txt)) => {
                     Option::Some(txt) 
                 },
