@@ -43,6 +43,11 @@ impl Tables {
         loop {
             thread::sleep(Duration::from_secs(10));
 
+            match self.dot11.lock() {
+                Ok(dot11) => dot11.process_report(),
+                Err(e) => error!("Could not acquire 802.11 table lock for report processing: {}", e)
+            }
+
             match self.tcp.lock() {
                 Ok(tcp) => {
                     tcp.calculate_metrics();
@@ -51,9 +56,12 @@ impl Tables {
                 Err(e) => error!("Could not acquire TCP table lock for report processing: {}", e)
             }
 
-            match self.dot11.lock() {
-                Ok(dot11) => dot11.process_report(),
-                Err(e) => error!("Could not acquire 802.11 table lock for report processing: {}", e)
+            match self.udp.lock() {
+                Ok(udp) => {
+                    udp.calculate_metrics();
+                    udp.process_report();
+                },
+                Err(e) => error!("Could not acquire UDP table lock for report processing: {}", e)
             }
 
             match self.dns.lock() {
@@ -63,6 +71,8 @@ impl Tables {
                 },
                 Err(e) => error!("Could not acquire DNS table lock for report processing: {}", e)
             }
+
+
         }
     }
 

@@ -27,6 +27,8 @@ pub struct TcpTable {
 #[derive(Debug)]
 pub struct TcpSession {
     pub state: TcpSessionState,
+    pub source_mac: String,
+    pub destination_mac: String,
     pub source_address: IpAddr,
     pub source_port: u16,
     pub destination_address: IpAddr,
@@ -125,6 +127,8 @@ impl TcpTable {
                                 start_time: segment.timestamp,
                                 end_time: None,
                                 most_recent_segment_time: segment.timestamp,
+                                source_mac: segment.source_mac.clone(),
+                                destination_mac: segment.destination_mac.clone(),
                                 source_address: segment.source_address,
                                 source_port: segment.source_port,
                                 destination_address: segment.destination_address,
@@ -200,10 +204,10 @@ impl TcpTable {
                 match self.leaderlink.lock() {
                     Ok(link) => {
                         if let Err(e) = link.send_report("tcp/sessions", report) {
-                            error!("Could not submit TCP report: {}", e);
+                            error!("Could not submit TCP sessions report: {}", e);
                         }
                     },
-                    Err(e) => error!("Could not acquire TCP table lock for report submission: {}", e)
+                    Err(e) => error!("Could not acquire leader link lock for TCP report submission: {}", e)
                 }
 
                 // Delete all timed out and closedfin/closedrst sessions in table.

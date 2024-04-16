@@ -114,6 +114,11 @@ fn parse_label(data: &[u8], full_packet: &[u8]) -> Result<(usize, String)> {
         }
 
         let offset = BigEndian::read_u16(&[data[0] & 0b0011_1111, data[1]]);
+
+        if offset as usize > full_packet.len() {
+            bail!("Offset larger than packet size.");
+        }
+
         return match parse_string(&full_packet[(offset as usize)..full_packet.len()], full_packet, &mut visited_pointer_offsets) {
             Ok((_, s)) => Ok((2, s)), // 2 is the pointer length
             Err(e) => bail!("Could not parse answer name: {}", e)

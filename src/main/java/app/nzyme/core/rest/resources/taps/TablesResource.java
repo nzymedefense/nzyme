@@ -22,8 +22,8 @@ import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSTablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11TablesReport;
-import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpDatagramsReport;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -65,6 +65,18 @@ public class TablesResource {
         UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
 
         LOG.debug("Received TCP session table report from [{}]: {}", tapId, report);
+
+        // Store in combined TCP/UDP table.
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("/udp/datagrams")
+    public Response udpDatagrams(@Context SecurityContext sc, UdpDatagramsReport report) {
+        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+
+        LOG.info("Received UDP datagram table report from [{}]: {}", tapId, report);
 
         // Store in combined TCP/UDP table.
 

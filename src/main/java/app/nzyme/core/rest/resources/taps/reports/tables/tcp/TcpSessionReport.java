@@ -12,6 +12,8 @@ import java.util.List;
 public abstract class TcpSessionReport {
 
     public abstract String state();
+    public abstract String sourceMac();
+    public abstract String destinationMac();
     public abstract String sourceAddress();
     public abstract int sourcePort();
     public abstract String destinationAddress();
@@ -27,6 +29,8 @@ public abstract class TcpSessionReport {
 
     @JsonCreator
     public static TcpSessionReport create(@JsonProperty("state") String state,
+                                          @JsonProperty("source_mac") String sourceMac,
+                                          @JsonProperty("destination_mac") String destinationMac,
                                           @JsonProperty("source_address") String sourceAddress,
                                           @JsonProperty("source_port") int sourcePort,
                                           @JsonProperty("destination_address") String destinationAddress,
@@ -39,6 +43,8 @@ public abstract class TcpSessionReport {
                                           @JsonProperty("tags") List<String> tags) {
         return builder()
                 .state(state)
+                .sourceMac(sourceMac)
+                .destinationMac(destinationMac)
                 .sourceAddress(sourceAddress)
                 .sourcePort(sourcePort)
                 .destinationAddress(destinationAddress)
@@ -59,6 +65,10 @@ public abstract class TcpSessionReport {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder state(String state);
+
+        public abstract Builder sourceMac(String sourceMac);
+
+        public abstract Builder destinationMac(String destinationMac);
 
         public abstract Builder sourceAddress(String sourceAddress);
 

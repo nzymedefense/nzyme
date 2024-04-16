@@ -18,12 +18,12 @@ pub fn spawn(ethernet_bus: Arc<Bus>, dot11_bus: Arc<Bus>, tables: &Arc<Tables>, 
     spawn_base_arp(ethernet_bus.clone(), tables.clone()); // TODO borrow
     
     spawn_base_tcp(ethernet_bus.clone(), &tables.clone());
-    spawn_base_udp(ethernet_bus.clone(), &tables.clone());
+    spawn_base_udp(ethernet_bus.clone(), &tables.clone(), metrics.clone());
     
     spawn_base_dns(ethernet_bus, tables, system_state, metrics);
 }
 
-// TODO don't exit here
+// TODO don't exit here, collect timer metrics for each
 
 fn spawn_base_dot11(bus: Arc<Bus>, tables: &Arc<Tables>) {
     let processor = Dot11FrameProcessor::new(tables.dot11.clone());
@@ -63,8 +63,8 @@ fn spawn_base_tcp(bus: Arc<Bus>, tables: &Arc<Tables>) {
     });
 }
 
-fn spawn_base_udp(bus: Arc<Bus>, tables: &Arc<Tables>) {
-    let mut processor = UDPProcessor::new(bus.clone(), tables.udp.clone());
+fn spawn_base_udp(bus: Arc<Bus>, tables: &Arc<Tables>, metrics: Arc<Mutex<Metrics>>) {
+    let mut processor = UDPProcessor::new(bus.clone(), metrics.clone(), tables.udp.clone());
 
     thread::spawn(move || {
         for datagram in bus.udp_pipeline.receiver.iter() {

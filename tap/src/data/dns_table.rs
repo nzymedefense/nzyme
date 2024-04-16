@@ -174,7 +174,7 @@ impl DnsTable {
         // Raw queries.
         match self.query_log.lock() {
             Ok(mut retro) => {
-                                if let Some(queries) = &request.queries {
+                if let Some(queries) = &request.queries {
                     for query_data in queries {
                         retro.push(DNSQueryLog {
                             ip: request.source_address.clone(),

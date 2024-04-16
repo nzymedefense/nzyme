@@ -13,6 +13,8 @@ pub struct TcpSessionsReport {
 #[derive(Serialize)]
 pub struct TcpSessionReport {
     pub state: String,
+    pub source_mac: String,
+    pub destination_mac: String,
     pub source_address: String,
     pub source_port: u16,
     pub destination_address: String,
@@ -31,6 +33,8 @@ pub fn generate(s: &MutexGuard<HashMap<TcpSessionKey, TcpSession>>) -> TcpSessio
     for session in s.values() {
         sessions.push(TcpSessionReport {
             state: session.state.to_string(),
+            source_mac: session.source_mac.clone(),
+            destination_mac: session.destination_mac.clone(),
             source_address: session.source_address.to_string(),
             source_port: session.source_port,
             destination_address: session.destination_address.to_string(),

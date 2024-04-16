@@ -103,7 +103,6 @@ pub struct Datagram {
     pub tags: Mutex<Vec<L7SessionTag>>
 }
 
-
 #[derive(Debug)]
 pub struct DNSPacket {
     pub source_mac: String,
