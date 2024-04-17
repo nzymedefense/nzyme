@@ -207,7 +207,8 @@ pub enum EncryptionProtocol {
     WPA3Transition,
     WPA3Personal,
     WPA3Enterprise,
-    WPA3EnterpriseCNSA
+    WPA3EnterpriseCNSA,
+    Invalid
 }
 
 #[derive(Debug, PartialEq)]

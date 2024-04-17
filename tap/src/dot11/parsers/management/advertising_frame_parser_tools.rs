@@ -514,17 +514,23 @@ pub fn decide_wpa_identifier(suites: &CipherSuites, pmf: &PmfMode) -> Result<Enc
 
     // WPA3-Enterprise
     if (suites.key_management_modes.contains(&KeyManagementMode::DOT1X_SHA256)
-        || suites.key_management_modes.contains(&KeyManagementMode::DOT1X_B_EAP_SHA256))
-        && *pmf == PmfMode::Required {
-        return Ok(EncryptionProtocol::WPA3Enterprise)
+        || suites.key_management_modes.contains(&KeyManagementMode::DOT1X_B_EAP_SHA256)) {
+        return if *pmf == PmfMode::Required {
+            Ok(EncryptionProtocol::WPA3Enterprise)
+        } else {
+            Ok(EncryptionProtocol::Invalid)
+        }
     }
 
     // WPA3-Personal
     if (suites.key_management_modes.contains(&KeyManagementMode::SAE)
         || suites.key_management_modes.contains(&KeyManagementMode::SAE_FT)
-        || suites.key_management_modes.contains(&KeyManagementMode::AP_PEER))
-        && *pmf == PmfMode::Required {
-        return Ok(EncryptionProtocol::WPA3Personal)
+        || suites.key_management_modes.contains(&KeyManagementMode::AP_PEER)){
+        return if *pmf == PmfMode::Required {
+            Ok(EncryptionProtocol::WPA3Personal)
+        } else {
+            Ok(EncryptionProtocol::Invalid)
+        }
     }
 
     // WPA2-Enterprise
