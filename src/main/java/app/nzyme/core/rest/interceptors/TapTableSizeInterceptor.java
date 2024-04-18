@@ -29,7 +29,7 @@ public class TapTableSizeInterceptor implements ReaderInterceptor {
 
     @Override
     public Object aroundReadFrom(ReaderInterceptorContext context) throws IOException, WebApplicationException {
-        if (uriInfo.getPath().equals("api/taps/tables") || uriInfo.getPath().equals("api/taps/tables/")) {
+        if (uriInfo.getPath().contains("api/taps/tables")) {
             // We do not want to consume the InputStream because we need it later in the resource of course. Copy it.
             ByteArrayOutputStream cloner = new ByteArrayOutputStream();
             context.getInputStream().transferTo(cloner);
