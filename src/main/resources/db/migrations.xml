@@ -4505,4 +4505,12 @@
         <modifyDataType tableName="registry" columnName="value" newDataType="text" />
     </changeSet>
     
+    <changeSet id="remove_unused_indices_2022041801" author="lennartkoopmann">
+        <dropIndex tableName="context_mac_addresses" indexName="mac" />
+        <dropIndex tableName="detection_alerts" indexName="detectionalerts_cs_compare" />
+        <dropIndex tableName="dot11_bssids" indexName="bssids_bssid_lookup" />
+        <dropIndex tableName="dot11_bssids" indexName="bssids_bssid_tapuuid" />
+        <dropIndex tableName="taps" indexName="idx_taps_standard_lookup" />
+    </changeSet>
+    
 </databaseChangeLog>

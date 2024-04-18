@@ -24,6 +24,8 @@ import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.ouis.OUIManager;
 import app.nzyme.core.rest.interceptors.TapTableSizeInterceptor;
 import app.nzyme.core.security.authentication.PasswordHasher;
+import app.nzyme.core.tables.dns.DNSTable;
+import app.nzyme.core.tables.dot11.Dot11Table;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -38,5 +40,16 @@ public class MetricNames {
     public static final String TAP_TABLE_REQUEST_SIZES = name(TapTableSizeInterceptor.class, "request_size");
     public static final String CONTEXT_MAC_CACHE_SIZE = name(ContextService.class, "mac-cache-size");
     public static final String CONTEXT_MAC_LOOKUP_TIMING = name(ContextService.class, "mac-lookup-timing");
+
+    public static final String DOT11_TOTAL_REPORT_PROCESSING_TIMER = name(Dot11Table.class, "total-report-processing-timing");
+    public static final String DOT11_BSSID_REPORT_PROCESSING_TIMER = name(Dot11Table.class, "bssid-report-processing-timing");
+    public static final String DOT11_CLIENTS_REPORT_PROCESSING_TIMER = name(Dot11Table.class, "clients-report-processing-timing");
+    public static final String DOT11_DISCO_REPORT_PROCESSING_TIMER = name(Dot11Table.class, "disco-report-processing-timing");
+    public static final String DOT11_ALERT_PROCESSING_TIMER = name(Dot11Table.class, "alert-processing-timing");
+
+    public static final String DNS_TOTAL_REPORT_PROCESSING_TIMER = name(DNSTable.class, "total-report-processing-timing");
+    public static final String DNS_STATISTICS_REPORT_PROCESSING_TIMER = name(DNSTable.class, "statistics-report-processing-timing");
+    public static final String DNS_NXDOMAINS_REPORT_PROCESSING_TIMER = name(DNSTable.class, "nxdomains-report-processing-timing");
+    public static final String DNS_PAIRS_REPORT_PROCESSING_TIMER = name(DNSTable.class, "pairs-report-processing-timing");
 
 }

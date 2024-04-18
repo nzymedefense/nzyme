@@ -48,6 +48,11 @@ public class TablesResource {
     @Inject
     private NzymeNode nzyme;
 
+    /*
+     * REMEMBER: The `TapTableSizeInterceptor` will consider all requests that include `api/taps/tables` in
+     * their request URI.
+     */
+
     @POST
     @Path("/dot11/summary")
     public Response dot11Summary(@Context SecurityContext sc, Dot11TablesReport report) {
@@ -76,7 +81,7 @@ public class TablesResource {
     public Response udpDatagrams(@Context SecurityContext sc, UdpDatagramsReport report) {
         UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
 
-        LOG.info("Received UDP datagram table report from [{}]: {}", tapId, report);
+        LOG.debug("Received UDP datagram table report from [{}]: {}", tapId, report);
 
         // Store in combined TCP/UDP table.
 

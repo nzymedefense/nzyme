@@ -14,6 +14,7 @@ import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.tables.dot11.monitoring.PreLoadedMonitoredBSSID;
 import app.nzyme.core.tables.dot11.monitoring.PreLoadedMonitoredSSID;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,8 +25,13 @@ import info.debatty.java.stringsimilarity.JaroWinkler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import com.codahale.metrics.Timer;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 
 public class Dot11Table implements DataTable {
 
@@ -34,24 +40,53 @@ public class Dot11Table implements DataTable {
     private final TablesService tablesService;
     private final ObjectMapper om;
 
+    private final Timer totalReportTimer;
+    private final Timer bssidReportTimer;
+    private final Timer clientsReportTimer;
+    private final Timer discoReportTimer;
+    private final Timer alertTimer;
+
     public Dot11Table(TablesService tablesService) {
         this.tablesService = tablesService;
         this.om = new ObjectMapper();
+
+        this.totalReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DOT11_TOTAL_REPORT_PROCESSING_TIMER);
+        this.bssidReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DOT11_BSSID_REPORT_PROCESSING_TIMER);
+        this.clientsReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DOT11_CLIENTS_REPORT_PROCESSING_TIMER);
+        this.discoReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DOT11_DISCO_REPORT_PROCESSING_TIMER);
+        this.alertTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DOT11_ALERT_PROCESSING_TIMER);
     }
 
     public void handleReport(UUID tapUuid, DateTime timestamp, Dot11TablesReport report) {
-        Optional<Tap> tap = tablesService.getNzyme().getTapManager().findTap(tapUuid);
+        try (Timer.Context ignored = totalReportTimer.time()) {
+            Optional<Tap> tap = tablesService.getNzyme().getTapManager().findTap(tapUuid);
 
-        if (tap.isEmpty()) {
-            LOG.warn("Not handling report of unknown tap [{}].", tapUuid);
-            return;
+            if (tap.isEmpty()) {
+                LOG.warn("Not handling report of unknown tap [{}].", tapUuid);
+                return;
+            }
+
+            try (Timer.Context ignored2 = bssidReportTimer.time()) {
+                writeBSSIDs(tap.get(), timestamp, report.bssids(), tap.get().organizationId(), tap.get().tenantId());
+            }
+
+            try (Timer.Context ignored2 = clientsReportTimer.time()) {
+                writeClients(tap.get(), timestamp, report.clients());
+            }
+
+            try (Timer.Context ignored2 = discoReportTimer.time()) {
+                writeDisco(tap.get(), timestamp, report.disco());
+            }
+
+            try (Timer.Context ignored2 = alertTimer.time()) {
+                handleAlerts(tap.get(), report.alerts());
+            }
         }
-
-        writeBSSIDs(tap.get(), timestamp, report.bssids(), tap.get().organizationId(), tap.get().tenantId());
-        writeClients(tap.get(), timestamp, report.clients());
-        writeDisco(tap.get(), timestamp, report.disco());
-
-        handleAlerts(tap.get(), report.alerts());
     }
 
     private void writeClients(Tap tap, DateTime timestamp, Map<String, Dot11ClientReport> clients) {
@@ -157,8 +192,6 @@ public class Dot11Table implements DataTable {
             ));
         }
 
-        JaroWinkler jaroWinkler = new JaroWinkler();
-
         for (Map.Entry<String, Dot11BSSIDReport> entry : bssids.entrySet()) {
             String bssid = entry.getKey();
             Dot11BSSIDReport report = entry.getValue();
@@ -244,338 +277,372 @@ public class Dot11Table implements DataTable {
                 }
             }
 
+            CountDownLatch latch = new CountDownLatch(report.advertisedNetworks().size());
             for (Map.Entry<String, Dot11AdvertisedNetworkReport> ssidEntry : report.advertisedNetworks().entrySet()) {
-                try {
-                    // Replace all non-printable characters.
-                    String ssid = Tools.sanitizeSSID(ssidEntry.getKey());
-
-                    /*
-                     * If all characters were sanitized away, this is a hidden SSID.
-                     * (some access points build hidden SSIDs this way)
-                     */
-                    if (ssid.isEmpty()) {
-                        continue;
-                    }
-
-                    Dot11AdvertisedNetworkReport ssidReport = ssidEntry.getValue();
-
-                    Long ssidDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
-                            handle.createQuery("INSERT INTO dot11_ssids(bssid_id, tap_uuid, ssid, bssid, " +
-                                            "signal_strength_average, signal_strength_max, signal_strength_min, " +
-                                            "beacon_advertisements, proberesp_advertisements, created_at) " +
-                                            "VALUES(:bssid_id, :tap_uuid, :ssid, :bssid, :signal_strength_average, " +
-                                            ":signal_strength_max, :signal_strength_min, :beacon_advertisements, " +
-                                            ":proberesp_advertisements, :created_at) RETURNING *")
-                                    .bind("bssid_id", bssidDatabaseId)
-                                    .bind("tap_uuid", tap.uuid())
-                                    .bind("ssid", ssid)
-                                    .bind("bssid", bssid)
-                                    .bind("signal_strength_average", ssidReport.signalStrength().average())
-                                    .bind("signal_strength_max", ssidReport.signalStrength().max())
-                                    .bind("signal_strength_min", ssidReport.signalStrength().min())
-                                    .bind("beacon_advertisements", ssidReport.beaconAdvertisements())
-                                    .bind("proberesp_advertisements", ssidReport.probeResponseAdvertisements())
-                                    .bind("created_at", timestamp)
-                                    .mapTo(Long.class)
-                                    .one()
+                tablesService.getProcessorPool().submit(() -> {
+                    writeSSID(
+                            nzyme,
+                            report,
+                            bssid,
+                            ssidEntry.getKey(),
+                            ssidEntry.getValue(),
+                            bssidDatabaseId,
+                            monitoredSSIDNames,
+                            monitoredSSIDs,
+                            tap,
+                            timestamp
                     );
 
-                    // WPS settings.
-                    for (boolean hasWps : ssidReport.wps()) {
+                    latch.countDown();
+                });
+            }
+
+            // Wait for SSID processing to finish.
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                LOG.error("SSID writer process interrupted.", e);
+            }
+        }
+    }
+
+    private void writeSSID(NzymeNode nzyme,
+                           Dot11BSSIDReport report,
+                           String bssid,
+                           String rawSSID,
+                           Dot11AdvertisedNetworkReport ssidReport,
+                           long bssidDatabaseId,
+                           List<String> monitoredSSIDNames,
+                           Map<String, PreLoadedMonitoredSSID> monitoredSSIDs,
+                           Tap tap,
+                           DateTime timestamp) {
+        try {
+            // Replace all non-printable characters.
+            final String ssid = Tools.sanitizeSSID(rawSSID);
+
+            /*
+             * If all characters were sanitized away, this is a hidden SSID.
+             * (some access points build hidden SSIDs this way)
+             */
+            if (ssid.isEmpty()) {
+                return;
+            }
+
+            Long ssidDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
+                    handle.createQuery("INSERT INTO dot11_ssids(bssid_id, tap_uuid, ssid, bssid, " +
+                                    "signal_strength_average, signal_strength_max, signal_strength_min, " +
+                                    "beacon_advertisements, proberesp_advertisements, created_at) " +
+                                    "VALUES(:bssid_id, :tap_uuid, :ssid, :bssid, :signal_strength_average, " +
+                                    ":signal_strength_max, :signal_strength_min, :beacon_advertisements, " +
+                                    ":proberesp_advertisements, :created_at) RETURNING *")
+                            .bind("bssid_id", bssidDatabaseId)
+                            .bind("tap_uuid", tap.uuid())
+                            .bind("ssid", ssid)
+                            .bind("bssid", bssid)
+                            .bind("signal_strength_average", ssidReport.signalStrength().average())
+                            .bind("signal_strength_max", ssidReport.signalStrength().max())
+                            .bind("signal_strength_min", ssidReport.signalStrength().min())
+                            .bind("beacon_advertisements", ssidReport.beaconAdvertisements())
+                            .bind("proberesp_advertisements", ssidReport.probeResponseAdvertisements())
+                            .bind("created_at", timestamp)
+                            .mapTo(Long.class)
+                            .one()
+            );
+
+            // WPS settings.
+            for (boolean hasWps : ssidReport.wps()) {
+                tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                    handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
+                                    "VALUES(:ssid_id, 'has_wps', :value)")
+                            .bind("ssid_id", ssidDatabaseId)
+                            .bind("value", String.valueOf(hasWps))
+                            .execute();
+                });
+            }
+
+            // Security protocols and suites.
+            for (Dot11SecurityInformationReport sec : ssidReport.security()) {
+                if (sec.protocols().isEmpty()) {
+                    // We insert NULL to signal "NONE".
+                    tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                        handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
+                                        "VALUES(:ssid_id, 'security_protocol', NULL")
+                                .bind("ssid_id", ssidDatabaseId)
+                                .execute();
+                    });
+                } else {
+                    for (String protocol : sec.protocols()) {
                         tablesService.getNzyme().getDatabase().useHandle(handle -> {
                             handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
-                                            "VALUES(:ssid_id, 'has_wps', :value)")
+                                            "VALUES(:ssid_id, 'security_protocol', :value)")
                                     .bind("ssid_id", ssidDatabaseId)
-                                    .bind("value", String.valueOf(hasWps))
+                                    .bind("value", protocol)
                                     .execute();
                         });
                     }
+                }
 
-                    // Security protocols and suites.
-                    for (Dot11SecurityInformationReport sec : ssidReport.security()) {
-                        if (sec.protocols().isEmpty()) {
-                            // We insert NULL to signal "NONE".
-                            tablesService.getNzyme().getDatabase().useHandle(handle -> {
-                                handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
-                                                "VALUES(:ssid_id, 'security_protocol', NULL")
-                                        .bind("ssid_id", ssidDatabaseId)
-                                        .execute();
-                            });
-                        } else {
-                            for (String protocol : sec.protocols()) {
-                                tablesService.getNzyme().getDatabase().useHandle(handle -> {
-                                    handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
-                                                    "VALUES(:ssid_id, 'security_protocol', :value)")
-                                            .bind("ssid_id", ssidDatabaseId)
-                                            .bind("value", protocol)
-                                            .execute();
-                                });
-                            }
-                        }
+                Map<String, String> suiteMap = Maps.newHashMap();
+                suiteMap.put("group_cipher", sec.suites().groupCipher());
+                suiteMap.put("pairwise_ciphers",
+                        Joiner.on(",").join(sec.suites().pairwiseCiphers()));
+                suiteMap.put("key_management_modes",
+                        Joiner.on(",").join(sec.suites().keyManagementModes()));
+                suiteMap.put("pmf_mode", sec.pmf());
 
-                        Map<String, String> suiteMap = Maps.newHashMap();
-                        suiteMap.put("group_cipher", sec.suites().groupCipher());
-                        suiteMap.put("pairwise_ciphers",
-                                Joiner.on(",").join(sec.suites().pairwiseCiphers()));
-                        suiteMap.put("key_management_modes",
-                                Joiner.on(",").join(sec.suites().keyManagementModes()));
-                        suiteMap.put("pmf_mode", sec.pmf());
+                try {
+                    tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                        handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
+                                        "VALUES(:ssid_id, 'security_suite', :value)")
+                                .bind("ssid_id", ssidDatabaseId)
+                                .bind("value", this.om.writeValueAsString(suiteMap))
+                                .execute();
+                    });
+                } catch(JsonProcessingException e) {
+                    LOG.error("Could not serialize SSID <{}> security suites.", bssidDatabaseId, e);
+                }
+            }
 
-                        try {
-                            tablesService.getNzyme().getDatabase().useHandle(handle -> {
-                                handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
-                                                "VALUES(:ssid_id, 'security_suite', :value)")
-                                        .bind("ssid_id", ssidDatabaseId)
-                                        .bind("value", this.om.writeValueAsString(suiteMap))
-                                        .execute();
-                            });
-                        } catch(JsonProcessingException e) {
-                            LOG.error("Could not serialize SSID <{}> security suites.", bssidDatabaseId, e);
-                        }
-                    }
+            // SSID Fingerprints.
+            for (String fingerprint : ssidReport.fingerprints()) {
+                tablesService.getNzyme().getDatabase().useHandle(handle ->
+                        handle.createUpdate("INSERT INTO dot11_fingerprints(fingerprint, ssid_id) " +
+                                        "VALUES(:fingerprint, :ssid_id)")
+                                .bind("fingerprint", fingerprint)
+                                .bind("ssid_id", ssidDatabaseId)
+                                .execute()
+                );
+            }
 
-                    // SSID Fingerprints.
-                    for (String fingerprint : ssidReport.fingerprints()) {
-                        tablesService.getNzyme().getDatabase().useHandle(handle ->
-                                handle.createUpdate("INSERT INTO dot11_fingerprints(fingerprint, ssid_id) " +
-                                                "VALUES(:fingerprint, :ssid_id)")
-                                        .bind("fingerprint", fingerprint)
-                                        .bind("ssid_id", ssidDatabaseId)
-                                        .execute()
-                        );
-                    }
 
-                    // SSID Rates.
-                    for (Float rate : ssidReport.rates()) {
-                        tablesService.getNzyme().getDatabase().useHandle(handle ->
-                                handle.createUpdate("INSERT INTO dot11_rates(rate, ssid_id) " +
-                                                "VALUES(:rate, :ssid_id)")
-                                        .bind("rate", rate)
-                                        .bind("ssid_id", ssidDatabaseId)
-                                        .execute()
-                        );
-                    }
+            // SSID Rates.
+            for (Float rate : ssidReport.rates()) {
+                tablesService.getNzyme().getDatabase().useHandle(handle ->
+                        handle.createUpdate("INSERT INTO dot11_rates(rate, ssid_id) " +
+                                        "VALUES(:rate, :ssid_id)")
+                                .bind("rate", rate)
+                                .bind("ssid_id", ssidDatabaseId)
+                                .execute()
+                );
+            }
 
-                    // Channel Statistics.
-                    for (Map.Entry<Long, Map<String, Dot11ChannelStatisticsReport>> cs : ssidReport.channelStatistics().entrySet()) {
-                        long frequency = cs.getKey();
-                        for (Map.Entry<String, Dot11ChannelStatisticsReport> ft : cs.getValue().entrySet()) {
-                            String frameType = ft.getKey();
-                            Dot11ChannelStatisticsReport stats = ft.getValue();
+            // Channel Statistics.
+            for (Map.Entry<Long, Map<String, Dot11ChannelStatisticsReport>> cs : ssidReport.channelStatistics().entrySet()) {
+                long frequency = cs.getKey();
+                for (Map.Entry<String, Dot11ChannelStatisticsReport> ft : cs.getValue().entrySet()) {
+                    String frameType = ft.getKey();
+                    Dot11ChannelStatisticsReport stats = ft.getValue();
 
-                            tablesService.getNzyme().getDatabase().useHandle(handle ->
-                                    handle.createUpdate("INSERT INTO dot11_channels(ssid_id, frequency, " +
-                                                    "frame_type, stats_bytes, stats_frames) VALUES(:ssid_id, " +
-                                                    ":frequency, :frame_type, :stats_bytes, :stats_frames)")
-                                            .bind("ssid_id", ssidDatabaseId)
-                                            .bind("frequency", frequency)
-                                            .bind("frame_type", frameType.toLowerCase())
-                                            .bind("stats_bytes", stats.bytes())
-                                            .bind("stats_frames", stats.frames())
-                                            .execute()
+                    tablesService.getNzyme().getDatabase().useHandle(handle ->
+                            handle.createUpdate("INSERT INTO dot11_channels(ssid_id, frequency, " +
+                                            "frame_type, stats_bytes, stats_frames) VALUES(:ssid_id, " +
+                                            ":frequency, :frame_type, :stats_bytes, :stats_frames)")
+                                    .bind("ssid_id", ssidDatabaseId)
+                                    .bind("frequency", frequency)
+                                    .bind("frame_type", frameType.toLowerCase())
+                                    .bind("stats_bytes", stats.bytes())
+                                    .bind("stats_frames", stats.frames())
+                                    .execute()
+                    );
+                }
+            }
+
+            // Write channel signal histogram.
+            for (Map.Entry<Long, Map<Long, Long>> channel : ssidReport.signalHistogram().entrySet()) {
+                long frequency = channel.getKey();
+                for (Map.Entry<Long, Long> histo : channel.getValue().entrySet()) {
+                    tablesService.getNzyme().getDatabase().useHandle(handle ->
+                            handle.createUpdate("INSERT INTO dot11_channel_histograms(ssid_id, frequency, " +
+                                            "signal_strength, frame_count) VALUES(:ssid_id, :frequency, " +
+                                            ":signal_strength, :frame_count)")
+                                    .bind("ssid_id", ssidDatabaseId)
+                                    .bind("frequency", frequency)
+                                    .bind("signal_strength", histo.getKey())
+                                    .bind("frame_count", histo.getValue())
+                                    .execute()
+                    );
+                }
+            }
+
+            // Infrastructure Types.
+            for (String infrastructureType : ssidReport.infrastructureTypes()) {
+                tablesService.getNzyme().getDatabase().useHandle(handle ->
+                        handle.createUpdate("INSERT INTO dot11_infrastructure_types(infrastructure_type," +
+                                        " ssid_id) VALUES(:infrastructure_type, :ssid_id)")
+                                .bind("infrastructure_type", infrastructureType.toLowerCase())
+                                .bind("ssid_id", ssidDatabaseId)
+                                .execute()
+                );
+            }
+
+            /*
+             * Check if this SSID is similar to any monitored SSIDs or includes a monitored substring. Skip
+             * other monitored SSIDs because they are considered trusted.
+             */
+            JaroWinkler jaroWinkler = new JaroWinkler();
+            for (PreLoadedMonitoredSSID monitoredSSID : monitoredSSIDs.values()) {
+                if (!monitoredSSIDNames.contains(ssid)) {
+                    // Similar looking SSIDs.
+                    if (monitoredSSID.enabledSimilarLookingSSID()) {
+                        double similarity = jaroWinkler
+                                .similarity(monitoredSSID.ssid().toLowerCase(), ssid.toLowerCase()) * 100.0;
+
+                        if (similarity > monitoredSSID.detectionConfigSimilarLookingSSIDThreshold()) {
+                            Map<String, String> attributes = Maps.newHashMap();
+                            attributes.put("similar_ssid", ssid);
+                            attributes.put("similarity", String.valueOf(similarity));
+                            attributes.put("similarity_threshold",
+                                    String.valueOf(monitoredSSID.detectionConfigSimilarLookingSSIDThreshold()));
+
+                            nzyme.getDetectionAlertService().raiseAlert(
+                                    tap.organizationId(),
+                                    tap.tenantId(),
+                                    monitoredSSID.uuid(),
+                                    tap.uuid(),
+                                    DetectionType.DOT11_MONITOR_SIMILAR_LOOKING_SSID,
+                                    Subsystem.DOT11,
+                                    "SSID \"" + ssid + "\" looking similar to monitored network SSID " +
+                                            "\"" + monitoredSSID.ssid() + "\"",
+                                    attributes,
+                                    new String[]{"similar_ssid"},
+                                    report.signalStrength().average()
                             );
                         }
                     }
 
-                    // Write channel signal histogram.
-                    for (Map.Entry<Long, Map<Long, Long>> channel : ssidReport.signalHistogram().entrySet()) {
-                        long frequency = channel.getKey();
-                        for (Map.Entry<Long, Long> histo : channel.getValue().entrySet()) {
-                            tablesService.getNzyme().getDatabase().useHandle(handle ->
-                                    handle.createUpdate("INSERT INTO dot11_channel_histograms(ssid_id, frequency, " +
-                                                    "signal_strength, frame_count) VALUES(:ssid_id, :frequency, " +
-                                                    ":signal_strength, :frame_count)")
-                                            .bind("ssid_id", ssidDatabaseId)
-                                            .bind("frequency", frequency)
-                                            .bind("signal_strength", histo.getKey())
-                                            .bind("frame_count", histo.getValue())
-                                            .execute()
-                            );
-                        }
-                    }
-
-                    // Infrastructure Types.
-                    for (String infrastructureType : ssidReport.infrastructureTypes()) {
-                        tablesService.getNzyme().getDatabase().useHandle(handle ->
-                                handle.createUpdate("INSERT INTO dot11_infrastructure_types(infrastructure_type," +
-                                                " ssid_id) VALUES(:infrastructure_type, :ssid_id)")
-                                        .bind("infrastructure_type", infrastructureType.toLowerCase())
-                                        .bind("ssid_id", ssidDatabaseId)
-                                        .execute()
-                        );
-                    }
-
-                    /*
-                     * Check if this SSID is similar to any monitored SSIDs or includes a monitored substring. Skip
-                     * other monitored SSIDs because they are considered trusted.
-                     */
-                    for (PreLoadedMonitoredSSID monitoredSSID : monitoredSSIDs.values()) {
-                        if (!monitoredSSIDNames.contains(ssid)) {
-                            // Similar looking SSIDs.
-                            if (monitoredSSID.enabledSimilarLookingSSID()) {
-                                double similarity = jaroWinkler
-                                        .similarity(monitoredSSID.ssid().toLowerCase(), ssid.toLowerCase()) * 100.0;
-
-                                if (similarity > monitoredSSID.detectionConfigSimilarLookingSSIDThreshold()) {
-                                    Map<String, String> attributes = Maps.newHashMap();
-                                    attributes.put("similar_ssid", ssid);
-                                    attributes.put("similarity", String.valueOf(similarity));
-                                    attributes.put("similarity_threshold",
-                                            String.valueOf(monitoredSSID.detectionConfigSimilarLookingSSIDThreshold()));
-
-                                    nzyme.getDetectionAlertService().raiseAlert(
-                                            tap.organizationId(),
-                                            tap.tenantId(),
-                                            monitoredSSID.uuid(),
-                                            tap.uuid(),
-                                            DetectionType.DOT11_MONITOR_SIMILAR_LOOKING_SSID,
-                                            Subsystem.DOT11,
-                                            "SSID \"" + ssid + "\" looking similar to monitored network SSID " +
-                                                    "\"" + monitoredSSID.ssid() + "\"",
-                                            attributes,
-                                            new String[]{"similar_ssid"},
-                                            report.signalStrength().average()
-                                    );
-                                }
-                            }
-
-                            // Restricted substrings.
-                            if (monitoredSSID.enabledSSIDSubstring()) {
-                                // Pull all restricted substrings.
-                                for (RestrictedSSIDSubstring rss :
-                                        nzyme.getDot11().findAllRestrictedSSIDSubstrings(monitoredSSID.id())) {
-                                    if (ssid.toLowerCase().contains(rss.substring().toLowerCase())) {
-                                        Map<String, String> attributes = Maps.newHashMap();
-                                        attributes.put("ssid", ssid);
-                                        attributes.put("restricted_substring", rss.substring());
-
-                                        nzyme.getDetectionAlertService().raiseAlert(
-                                                tap.organizationId(),
-                                                tap.tenantId(),
-                                                monitoredSSID.uuid(),
-                                                tap.uuid(),
-                                                DetectionType.DOT11_MONITOR_SSID_SUBSTRING,
-                                                Subsystem.DOT11,
-                                                "SSID \"" + ssid + "\" contains restricted " +
-                                                        "substring \"" + rss.substring() + "\"",
-                                                attributes,
-                                                new String[]{"ssid", "restricted_substring"},
-                                                report.signalStrength().average()
-                                        );
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-
-                    // Network Monitoring / Alerting.
-                    PreLoadedMonitoredSSID monitoredSSID = monitoredSSIDs.get(ssid);
-                    if (monitoredSSID != null) {
-                        // This is a monitored SSID.
-
-                        PreLoadedMonitoredBSSID monitoredBSSID = monitoredSSID.bssids().get(bssid);
-                        if (monitoredBSSID == null) {
-                            if (monitoredSSID.enabledUnexpectedBSSID()) {
-                                // Unexpected BSSID.
+                    // Restricted substrings.
+                    if (monitoredSSID.enabledSSIDSubstring()) {
+                        // Pull all restricted substrings.
+                        for (RestrictedSSIDSubstring rss :
+                                nzyme.getDot11().findAllRestrictedSSIDSubstrings(monitoredSSID.id())) {
+                            if (ssid.toLowerCase().contains(rss.substring().toLowerCase())) {
                                 Map<String, String> attributes = Maps.newHashMap();
-                                attributes.put("bssid", bssid);
+                                attributes.put("ssid", ssid);
+                                attributes.put("restricted_substring", rss.substring());
 
                                 nzyme.getDetectionAlertService().raiseAlert(
                                         tap.organizationId(),
                                         tap.tenantId(),
                                         monitoredSSID.uuid(),
                                         tap.uuid(),
-                                        DetectionType.DOT11_MONITOR_BSSID,
+                                        DetectionType.DOT11_MONITOR_SSID_SUBSTRING,
                                         Subsystem.DOT11,
-                                        "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
-                                                "unexpected BSSID \"" + bssid + "\"",
+                                        "SSID \"" + ssid + "\" contains restricted " +
+                                                "substring \"" + rss.substring() + "\"",
                                         attributes,
-                                        new String[]{"bssid"},
+                                        new String[]{"ssid", "restricted_substring"},
                                         report.signalStrength().average()
                                 );
                             }
-                        } else {
-                            // Expected BSSID. Compare fingerprints.
-                            if (monitoredSSID.enabledUnexpectedFingerprint()) {
-                                for (String observedFingerprint : ssidReport.fingerprints()) {
-                                    if (!monitoredBSSID.fingerprints().contains(observedFingerprint)) {
-                                        // Unexpected fingerprint.
-                                        Map<String, String> attributes = Maps.newHashMap();
-                                        attributes.put("bssid", bssid);
-                                        attributes.put("fingerprint", observedFingerprint);
-
-                                        nzyme.getDetectionAlertService().raiseAlert(
-                                                tap.organizationId(),
-                                                tap.tenantId(),
-                                                monitoredSSID.uuid(),
-                                                tap.uuid(),
-                                                DetectionType.DOT11_MONITOR_FINGERPRINT,
-                                                Subsystem.DOT11,
-                                                "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
-                                                        "with unexpected fingerprint \"" + observedFingerprint + "\".",
-                                                attributes,
-                                                new String[]{"bssid", "fingerprint"},
-                                                report.signalStrength().average()
-                                        );
-                                    }
-                                }
-                            }
                         }
+                    }
+                }
+            }
 
-                        if (monitoredSSID.enabledUnexpectedChannel()) {
-                            for (Long frequency : ssidReport.channelStatistics().keySet()) {
-                                if (!monitoredSSID.channels().contains(frequency.intValue())) {
-                                    // Unexpected channel.
-                                    Map<String, String> attributes = Maps.newHashMap();
-                                    attributes.put("frequency", String.valueOf(frequency));
+            // Network Monitoring / Alerting.
+            PreLoadedMonitoredSSID monitoredSSID = monitoredSSIDs.get(ssid);
+            if (monitoredSSID != null) {
+                // This is a monitored SSID.
 
-                                    nzyme.getDetectionAlertService().raiseAlert(
-                                            tap.organizationId(),
-                                            tap.tenantId(),
-                                            monitoredSSID.uuid(),
-                                            tap.uuid(),
-                                            DetectionType.DOT11_MONITOR_CHANNEL,
-                                            Subsystem.DOT11,
-                                            "Monitored network \"" + monitoredSSID.ssid() + "\" advertised on " +
-                                                    "unexpected frequency " + frequency + "MHz",
-                                            attributes,
-                                            new String[]{"frequency"},
-                                            report.signalStrength().average()
-                                    );
-                                }
-                            }
-                        }
+                PreLoadedMonitoredBSSID monitoredBSSID = monitoredSSID.bssids().get(bssid);
+                if (monitoredBSSID == null) {
+                    if (monitoredSSID.enabledUnexpectedBSSID()) {
+                        // Unexpected BSSID.
+                        Map<String, String> attributes = Maps.newHashMap();
+                        attributes.put("bssid", bssid);
 
-                        if (monitoredSSID.enabledUnexpectedSecuritySuites()) {
-                            for (Dot11SecurityInformationReport security : ssidReport.security()) {
-                                String suite = Dot11.securitySuitesToIdentifier(security);
-                                if (!monitoredSSID.securitySuites().contains(suite)) {
-                                    Map<String, String> attributes = Maps.newHashMap();
-                                    attributes.put("suite", suite);
+                        nzyme.getDetectionAlertService().raiseAlert(
+                                tap.organizationId(),
+                                tap.tenantId(),
+                                monitoredSSID.uuid(),
+                                tap.uuid(),
+                                DetectionType.DOT11_MONITOR_BSSID,
+                                Subsystem.DOT11,
+                                "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
+                                        "unexpected BSSID \"" + bssid + "\"",
+                                attributes,
+                                new String[]{"bssid"},
+                                report.signalStrength().average()
+                        );
+                    }
+                } else {
+                    // Expected BSSID. Compare fingerprints.
+                    if (monitoredSSID.enabledUnexpectedFingerprint()) {
+                        for (String observedFingerprint : ssidReport.fingerprints()) {
+                            if (!monitoredBSSID.fingerprints().contains(observedFingerprint)) {
+                                // Unexpected fingerprint.
+                                Map<String, String> attributes = Maps.newHashMap();
+                                attributes.put("bssid", bssid);
+                                attributes.put("fingerprint", observedFingerprint);
 
-                                    nzyme.getDetectionAlertService().raiseAlert(
-                                            tap.organizationId(),
-                                            tap.tenantId(),
-                                            monitoredSSID.uuid(),
-                                            tap.uuid(),
-                                            DetectionType.DOT11_MONITOR_SECURITY_SUITE,
-                                            Subsystem.DOT11,
-                                            "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
-                                                    "unexpected security suites \"" + suite + "\"",
-                                            attributes,
-                                            new String[]{"suite"},
-                                            report.signalStrength().average()
-                                    );
-                                }
+                                nzyme.getDetectionAlertService().raiseAlert(
+                                        tap.organizationId(),
+                                        tap.tenantId(),
+                                        monitoredSSID.uuid(),
+                                        tap.uuid(),
+                                        DetectionType.DOT11_MONITOR_FINGERPRINT,
+                                        Subsystem.DOT11,
+                                        "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
+                                                "with unexpected fingerprint \"" + observedFingerprint + "\".",
+                                        attributes,
+                                        new String[]{"bssid", "fingerprint"},
+                                        report.signalStrength().average()
+                                );
                             }
                         }
                     }
-                } catch(Exception e) {
-                    LOG.error("Could not write SSID.", e);
-                    continue;
+                }
+
+                if (monitoredSSID.enabledUnexpectedChannel()) {
+                    for (Long frequency : ssidReport.channelStatistics().keySet()) {
+                        if (!monitoredSSID.channels().contains(frequency.intValue())) {
+                            // Unexpected channel.
+                            Map<String, String> attributes = Maps.newHashMap();
+                            attributes.put("frequency", String.valueOf(frequency));
+
+                            nzyme.getDetectionAlertService().raiseAlert(
+                                    tap.organizationId(),
+                                    tap.tenantId(),
+                                    monitoredSSID.uuid(),
+                                    tap.uuid(),
+                                    DetectionType.DOT11_MONITOR_CHANNEL,
+                                    Subsystem.DOT11,
+                                    "Monitored network \"" + monitoredSSID.ssid() + "\" advertised on " +
+                                            "unexpected frequency " + frequency + "MHz",
+                                    attributes,
+                                    new String[]{"frequency"},
+                                    report.signalStrength().average()
+                            );
+                        }
+                    }
+                }
+
+                if (monitoredSSID.enabledUnexpectedSecuritySuites()) {
+                    for (Dot11SecurityInformationReport security : ssidReport.security()) {
+                        String suite = Dot11.securitySuitesToIdentifier(security);
+                        if (!monitoredSSID.securitySuites().contains(suite)) {
+                            Map<String, String> attributes = Maps.newHashMap();
+                            attributes.put("suite", suite);
+
+                            nzyme.getDetectionAlertService().raiseAlert(
+                                    tap.organizationId(),
+                                    tap.tenantId(),
+                                    monitoredSSID.uuid(),
+                                    tap.uuid(),
+                                    DetectionType.DOT11_MONITOR_SECURITY_SUITE,
+                                    Subsystem.DOT11,
+                                    "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
+                                            "unexpected security suites \"" + suite + "\"",
+                                    attributes,
+                                    new String[]{"suite"},
+                                    report.signalStrength().average()
+                            );
+                        }
+                    }
                 }
             }
+        } catch(Exception e) {
+            LOG.error("Could not write SSID.", e);
         }
     }
 

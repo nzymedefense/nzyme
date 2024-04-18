@@ -37,6 +37,7 @@ public class NodeConfigurationLoader {
     private final Config root;
     private final Config general;
     private final Config interfaces;
+    private final Config performance;
 
     public NodeConfigurationLoader(File configFile, boolean skipValidation) throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
         if (!Files.isReadable(configFile.toPath())) {
@@ -48,6 +49,7 @@ public class NodeConfigurationLoader {
         try {
             this.general = root.getConfig(ConfigurationKeys.GENERAL);
             this.interfaces = root.getConfig(ConfigurationKeys.INTERFACES);
+            this.performance = root.getConfig(ConfigurationKeys.PERFORMANCE);
         } catch(ConfigException e) {
             throw new IncompleteConfigurationException("Incomplete configuration.", e);
         }
@@ -67,7 +69,8 @@ public class NodeConfigurationLoader {
                 parsePluginDirectory(),
                 parseCryptoDirectory(),
                 parseSlowQueryLogThreshold(),
-                parseNtpServer()
+                parseNtpServer(),
+                parsePerformance()
         );
     }
 
@@ -111,6 +114,10 @@ public class NodeConfigurationLoader {
         return URI.create(interfaces.getString(ConfigurationKeys.HTTP_EXTERNAL_URI));
     }
 
+    private PerformanceConfiguration parsePerformance() {
+        return PerformanceConfiguration.create(performance.getInt(ConfigurationKeys.REPORT_PROCESSOR_POOL_SIZE));
+    }
+
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         // Completeness and type validity.
         ConfigurationValidator.expect(general, ConfigurationKeys.DATABASE_PATH, ConfigurationKeys.GENERAL, String.class);
@@ -119,6 +126,7 @@ public class NodeConfigurationLoader {
         ConfigurationValidator.expect(general, ConfigurationKeys.PLUGIN_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.CRYPTO_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.NTP_SERVER, ConfigurationKeys.GENERAL, String.class);
+        ConfigurationValidator.expect(performance, ConfigurationKeys.REPORT_PROCESSOR_POOL_SIZE, ConfigurationKeys.PERFORMANCE, Integer.class);
 
         // Plugin directory exists and is readable?
         File pluginDirectory = new File(parsePluginDirectory());

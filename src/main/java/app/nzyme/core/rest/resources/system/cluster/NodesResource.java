@@ -201,6 +201,11 @@ public class NodesResource {
         timers.put("context_mac_lookup",
                 buildTimerResponse(nzyme.getMetrics().timer(MetricNames.CONTEXT_MAC_LOOKUP_TIMING), timers));
 
+        timers.put("report_processing_dot11",
+                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_TOTAL_REPORT_PROCESSING_TIMER), timers));
+        timers.put("report_processing_dns",
+                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DNS_TOTAL_REPORT_PROCESSING_TIMER), timers));
+
         Map<String, GaugeResponse> gauges = Maps.newHashMap();
         Gauge geoIpCacheSize = nzyme.getMetrics().gauge(MetricNames.GEOIP_CACHE_SIZE);
         Gauge contextMacCacheSize = nzyme.getMetrics().gauge(MetricNames.CONTEXT_MAC_CACHE_SIZE);
@@ -210,7 +215,6 @@ public class NodesResource {
         if (contextMacCacheSize != null) {
             gauges.put("context_mac_cache_size", GaugeResponse.fromGauge(contextMacCacheSize));
         }
-
 
         return NodeResponse.create(
                 node.uuid().toString(),

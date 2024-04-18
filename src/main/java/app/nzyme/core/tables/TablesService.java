@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -37,6 +38,8 @@ public class TablesService {
 
     private final Map<String, DataTable> tables;
 
+    private final ExecutorService processorPool;
+
     public TablesService(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
@@ -44,6 +47,14 @@ public class TablesService {
                 .put("dns", new DNSTable(this))
                 .put("dot11", new Dot11Table(this))
                 .build();
+
+        this.processorPool = Executors.newFixedThreadPool(
+                nzyme.getConfiguration().performance().reportProcessorPoolSize(),
+                new ThreadFactoryBuilder()
+                        .setNameFormat("dot11-report-writer-%d")
+                        .setDaemon(true)
+                        .build()
+        );
 
         Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
@@ -67,6 +78,10 @@ public class TablesService {
 
     public Dot11Table dot11() {
         return (Dot11Table) tables.get("dot11");
+    }
+
+    public ExecutorService getProcessorPool() {
+        return processorPool;
     }
 
     public NzymeNode getNzyme() {

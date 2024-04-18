@@ -25,7 +25,9 @@ public abstract class NodeConfiguration {
 
     public abstract String ntpServer();
 
-    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer) {
+    public abstract PerformanceConfiguration performance();
+
+    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, PerformanceConfiguration performance) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -36,6 +38,7 @@ public abstract class NodeConfiguration {
                 .cryptoDirectory(cryptoDirectory)
                 .slowQueryLogThreshold(slowQueryLogThreshold)
                 .ntpServer(ntpServer)
+                .performance(performance)
                 .build();
     }
 
@@ -62,6 +65,8 @@ public abstract class NodeConfiguration {
         public abstract Builder slowQueryLogThreshold(Optional<Integer> slowQueryLogThreshold);
 
         public abstract Builder ntpServer(String ntpServer);
+
+        public abstract Builder performance(PerformanceConfiguration performance);
 
         public abstract NodeConfiguration build();
     }

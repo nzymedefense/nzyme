@@ -25,7 +25,6 @@ public class ConfigurationKeys {
     public static final String CRYPTO_DIRECTORY = "crypto_directory";
     public static final String NTP_SERVER = "ntp_server";
     public static final String INTERFACES = "interfaces";
-
     public static final String NAME = "name";
     public static final String DATABASE_PATH = "database_path";
     public static final String VERSIONCHECKS = "versionchecks";
@@ -33,5 +32,7 @@ public class ConfigurationKeys {
     public static final String REST_LISTEN_URI = "rest_listen_uri";
     public static final String HTTP_EXTERNAL_URI = "http_external_uri";
     public static final String SLOW_QUERY_LOG_THRESHOLD = "slow_query_log_threshold";
+    public static final String PERFORMANCE = "performance";
+    public static final String REPORT_PROCESSOR_POOL_SIZE = "report_processor_pool_size";
 
 }

@@ -74,7 +74,6 @@ public class Main {
             System.exit(FAILURE);
         }
 
-
         NodeConfiguration nodeConfiguration = null;
         try {
             nodeConfiguration = new NodeConfigurationLoader(new File(cliArguments.getConfigFilePath()), false).get();
@@ -88,6 +87,8 @@ public class Main {
             LOG.error("Could not read configuration file.", e);
             System.exit(FAILURE);
         }
+
+        LOG.info("Performance Configuration: {}", nodeConfiguration.performance());
 
         // Database.
         DatabaseImpl database = new DatabaseImpl(nodeConfiguration);

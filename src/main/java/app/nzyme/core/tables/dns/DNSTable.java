@@ -22,6 +22,8 @@ import app.nzyme.core.rest.resources.taps.reports.tables.DNSNxDomainLogReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSTablesReport;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
+import app.nzyme.core.util.MetricNames;
+import com.codahale.metrics.Timer;
 import org.joda.time.DateTime;
 
 import java.util.Map;
@@ -31,8 +33,69 @@ public class DNSTable implements DataTable {
 
     private final TablesService tablesService;
 
+    private final Timer totalReportTimer;
+    private final Timer statisticsReportTimer;
+    private final Timer nxdomainsReportTimer;
+    private final Timer pairsReportTimer;
+
     public DNSTable(TablesService tablesService) {
         this.tablesService = tablesService;
+
+        this.totalReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DNS_TOTAL_REPORT_PROCESSING_TIMER);
+        this.statisticsReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DNS_STATISTICS_REPORT_PROCESSING_TIMER);
+        this.nxdomainsReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DNS_NXDOMAINS_REPORT_PROCESSING_TIMER);
+        this.pairsReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DNS_PAIRS_REPORT_PROCESSING_TIMER);
+    }
+
+    public void handleReport(UUID tapUuid, DateTime timestamp, DNSTablesReport report) {
+        try (Timer.Context ignored = totalReportTimer.time()) {
+            try (Timer.Context ignored2 = statisticsReportTimer.time()) {
+                for (Map.Entry<String, DNSIPStatisticsReport> x : report.ips().entrySet()) {
+                    DNSIPStatisticsReport stats = x.getValue();
+
+                    registerStatistics(
+                            tapUuid,
+                            x.getKey(),
+                            stats.requestCount(),
+                            stats.requestBytes(),
+                            stats.responseCount(),
+                            stats.responseBytes(),
+                            stats.nxDomainCount(),
+                            timestamp
+                    );
+                }
+            }
+
+            try (Timer.Context ignored2 = nxdomainsReportTimer.time()) {
+                for (DNSNxDomainLogReport nxdomain : report.nxdomains()) {
+                    if (nxdomain.dataType().equals("PTR")) {
+                        // We are not interested in reverse lookup NXDOMAINs.
+                        continue;
+                    }
+
+                    registerNxdomainLog(
+                            tapUuid,
+                            nxdomain.ip(),
+                            nxdomain.server(),
+                            nxdomain.queryValue(),
+                            nxdomain.dataType(),
+                            timestamp
+                    );
+                }
+            }
+
+            try (Timer.Context ignored2 = pairsReportTimer.time()) {
+                for (Map.Entry<String, Map<String, Long>> pair : report.pairs().entrySet()) {
+                    for (Map.Entry<String, Long> server : pair.getValue().entrySet()) {
+                        registerPair(tapUuid, pair.getKey(), server.getKey(), server.getValue(), timestamp);
+                    }
+                }
+            }
+        }
     }
 
     private void registerStatistics(UUID tapUuid,
@@ -91,46 +154,6 @@ public class DNSTable implements DataTable {
                         .bind("timestamp", timestamp)
                         .execute()
         );
-    }
-
-    public void handleReport(UUID tapUuid, DateTime timestamp, DNSTablesReport report) {
-        for (Map.Entry<String, DNSIPStatisticsReport> x : report.ips().entrySet()) {
-            DNSIPStatisticsReport stats = x.getValue();
-
-            registerStatistics(
-                    tapUuid,
-                    x.getKey(),
-                    stats.requestCount(),
-                    stats.requestBytes(),
-                    stats.responseCount(),
-                    stats.responseBytes(),
-                    stats.nxDomainCount(),
-                    timestamp
-            );
-        }
-
-        for (DNSNxDomainLogReport nxdomain : report.nxdomains()) {
-            if (nxdomain.dataType().equals("PTR")) {
-                // We are not interested in reverse lookup NXDOMAINs.
-                continue;
-            }
-
-            registerNxdomainLog(
-                    tapUuid,
-                    nxdomain.ip(),
-                    nxdomain.server(),
-                    nxdomain.queryValue(),
-                    nxdomain.dataType(),
-                    timestamp
-            );
-        }
-
-        for (Map.Entry<String, Map<String, Long>> pair : report.pairs().entrySet()) {
-            for (Map.Entry<String, Long> server : pair.getValue().entrySet()) {
-                registerPair(tapUuid, pair.getKey(), server.getKey(), server.getValue(), timestamp);
-            }
-        }
-
     }
 
     @Override

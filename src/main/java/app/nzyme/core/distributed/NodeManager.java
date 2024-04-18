@@ -316,6 +316,10 @@ public class NodeManager {
                 handle.createUpdate("DELETE FROM node_metrics_gauges WHERE created_at < :created_at")
                         .bind("created_at", DateTime.now().minusHours(24))
                         .execute());
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM node_metrics_timers WHERE created_at < :created_at")
+                        .bind("created_at", DateTime.now().minusHours(24))
+                        .execute());
     }
 
     private void writeGauge(String metricName, double metricValue) {
