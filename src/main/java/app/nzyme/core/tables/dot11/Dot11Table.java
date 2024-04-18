@@ -192,6 +192,8 @@ public class Dot11Table implements DataTable {
             ));
         }
 
+        List<SSIDProcessingTask> ssidProcessingTasks = Lists.newArrayList();
+
         for (Map.Entry<String, Dot11BSSIDReport> entry : bssids.entrySet()) {
             String bssid = entry.getKey();
             Dot11BSSIDReport report = entry.getValue();
@@ -277,48 +279,38 @@ public class Dot11Table implements DataTable {
                 }
             }
 
-            CountDownLatch latch = new CountDownLatch(report.advertisedNetworks().size());
             for (Map.Entry<String, Dot11AdvertisedNetworkReport> ssidEntry : report.advertisedNetworks().entrySet()) {
-                tablesService.getProcessorPool().submit(() -> {
-                    writeSSID(
-                            nzyme,
-                            report,
-                            bssid,
-                            ssidEntry.getKey(),
-                            ssidEntry.getValue(),
-                            bssidDatabaseId,
-                            monitoredSSIDNames,
-                            monitoredSSIDs,
-                            tap,
-                            timestamp
-                    );
-
-                    latch.countDown();
-                });
+                ssidProcessingTasks.add(SSIDProcessingTask.create(
+                        bssid, ssidEntry.getKey(), ssidEntry.getValue(), bssidDatabaseId, tap, timestamp
+                ));
             }
+        }
 
-            // Wait for SSID processing to finish.
-            try {
-                latch.await();
-            } catch (InterruptedException e) {
-                LOG.error("SSID writer process interrupted.", e);
-            }
+        // Write all SSIDs.
+        CountDownLatch latch = new CountDownLatch(ssidProcessingTasks.size());
+        for (SSIDProcessingTask ssidProcessingTask : ssidProcessingTasks) {
+            tablesService.getProcessorPool().submit(() -> {
+                writeSSID(nzyme, monitoredSSIDNames, monitoredSSIDs, ssidProcessingTask);
+
+                latch.countDown();
+            });
+        }
+
+        // Wait for SSID processing to finish.
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            LOG.error("SSID writer process interrupted.", e);
         }
     }
 
     private void writeSSID(NzymeNode nzyme,
-                           Dot11BSSIDReport report,
-                           String bssid,
-                           String rawSSID,
-                           Dot11AdvertisedNetworkReport ssidReport,
-                           long bssidDatabaseId,
                            List<String> monitoredSSIDNames,
                            Map<String, PreLoadedMonitoredSSID> monitoredSSIDs,
-                           Tap tap,
-                           DateTime timestamp) {
+                           SSIDProcessingTask task) {
         try {
             // Replace all non-printable characters.
-            final String ssid = Tools.sanitizeSSID(rawSSID);
+            final String ssid = Tools.sanitizeSSID(task.ssid());
 
             /*
              * If all characters were sanitized away, this is a hidden SSID.
@@ -335,22 +327,22 @@ public class Dot11Table implements DataTable {
                                     "VALUES(:bssid_id, :tap_uuid, :ssid, :bssid, :signal_strength_average, " +
                                     ":signal_strength_max, :signal_strength_min, :beacon_advertisements, " +
                                     ":proberesp_advertisements, :created_at) RETURNING *")
-                            .bind("bssid_id", bssidDatabaseId)
-                            .bind("tap_uuid", tap.uuid())
+                            .bind("bssid_id", task.bssidDatabaseId())
+                            .bind("tap_uuid", task.tap().uuid())
                             .bind("ssid", ssid)
-                            .bind("bssid", bssid)
-                            .bind("signal_strength_average", ssidReport.signalStrength().average())
-                            .bind("signal_strength_max", ssidReport.signalStrength().max())
-                            .bind("signal_strength_min", ssidReport.signalStrength().min())
-                            .bind("beacon_advertisements", ssidReport.beaconAdvertisements())
-                            .bind("proberesp_advertisements", ssidReport.probeResponseAdvertisements())
-                            .bind("created_at", timestamp)
+                            .bind("bssid", task.bssid())
+                            .bind("signal_strength_average", task.ssidReport().signalStrength().average())
+                            .bind("signal_strength_max", task.ssidReport().signalStrength().max())
+                            .bind("signal_strength_min", task.ssidReport().signalStrength().min())
+                            .bind("beacon_advertisements", task.ssidReport().beaconAdvertisements())
+                            .bind("proberesp_advertisements", task.ssidReport().probeResponseAdvertisements())
+                            .bind("created_at", task.timestamp())
                             .mapTo(Long.class)
                             .one()
             );
 
             // WPS settings.
-            for (boolean hasWps : ssidReport.wps()) {
+            for (boolean hasWps : task.ssidReport().wps()) {
                 tablesService.getNzyme().getDatabase().useHandle(handle -> {
                     handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
                                     "VALUES(:ssid_id, 'has_wps', :value)")
@@ -361,7 +353,7 @@ public class Dot11Table implements DataTable {
             }
 
             // Security protocols and suites.
-            for (Dot11SecurityInformationReport sec : ssidReport.security()) {
+            for (Dot11SecurityInformationReport sec : task.ssidReport().security()) {
                 if (sec.protocols().isEmpty()) {
                     // We insert NULL to signal "NONE".
                     tablesService.getNzyme().getDatabase().useHandle(handle -> {
@@ -399,12 +391,12 @@ public class Dot11Table implements DataTable {
                                 .execute();
                     });
                 } catch(JsonProcessingException e) {
-                    LOG.error("Could not serialize SSID <{}> security suites.", bssidDatabaseId, e);
+                    LOG.error("Could not serialize SSID <{}> security suites.", task.bssidDatabaseId(), e);
                 }
             }
 
             // SSID Fingerprints.
-            for (String fingerprint : ssidReport.fingerprints()) {
+            for (String fingerprint : task.ssidReport().fingerprints()) {
                 tablesService.getNzyme().getDatabase().useHandle(handle ->
                         handle.createUpdate("INSERT INTO dot11_fingerprints(fingerprint, ssid_id) " +
                                         "VALUES(:fingerprint, :ssid_id)")
@@ -416,7 +408,7 @@ public class Dot11Table implements DataTable {
 
 
             // SSID Rates.
-            for (Float rate : ssidReport.rates()) {
+            for (Float rate : task.ssidReport().rates()) {
                 tablesService.getNzyme().getDatabase().useHandle(handle ->
                         handle.createUpdate("INSERT INTO dot11_rates(rate, ssid_id) " +
                                         "VALUES(:rate, :ssid_id)")
@@ -427,7 +419,7 @@ public class Dot11Table implements DataTable {
             }
 
             // Channel Statistics.
-            for (Map.Entry<Long, Map<String, Dot11ChannelStatisticsReport>> cs : ssidReport.channelStatistics().entrySet()) {
+            for (Map.Entry<Long, Map<String, Dot11ChannelStatisticsReport>> cs : task.ssidReport().channelStatistics().entrySet()) {
                 long frequency = cs.getKey();
                 for (Map.Entry<String, Dot11ChannelStatisticsReport> ft : cs.getValue().entrySet()) {
                     String frameType = ft.getKey();
@@ -448,7 +440,7 @@ public class Dot11Table implements DataTable {
             }
 
             // Write channel signal histogram.
-            for (Map.Entry<Long, Map<Long, Long>> channel : ssidReport.signalHistogram().entrySet()) {
+            for (Map.Entry<Long, Map<Long, Long>> channel : task.ssidReport().signalHistogram().entrySet()) {
                 long frequency = channel.getKey();
                 for (Map.Entry<Long, Long> histo : channel.getValue().entrySet()) {
                     tablesService.getNzyme().getDatabase().useHandle(handle ->
@@ -465,7 +457,7 @@ public class Dot11Table implements DataTable {
             }
 
             // Infrastructure Types.
-            for (String infrastructureType : ssidReport.infrastructureTypes()) {
+            for (String infrastructureType : task.ssidReport().infrastructureTypes()) {
                 tablesService.getNzyme().getDatabase().useHandle(handle ->
                         handle.createUpdate("INSERT INTO dot11_infrastructure_types(infrastructure_type," +
                                         " ssid_id) VALUES(:infrastructure_type, :ssid_id)")
@@ -495,17 +487,17 @@ public class Dot11Table implements DataTable {
                                     String.valueOf(monitoredSSID.detectionConfigSimilarLookingSSIDThreshold()));
 
                             nzyme.getDetectionAlertService().raiseAlert(
-                                    tap.organizationId(),
-                                    tap.tenantId(),
+                                    task.tap().organizationId(),
+                                    task.tap().tenantId(),
                                     monitoredSSID.uuid(),
-                                    tap.uuid(),
+                                    task.tap().uuid(),
                                     DetectionType.DOT11_MONITOR_SIMILAR_LOOKING_SSID,
                                     Subsystem.DOT11,
                                     "SSID \"" + ssid + "\" looking similar to monitored network SSID " +
                                             "\"" + monitoredSSID.ssid() + "\"",
                                     attributes,
                                     new String[]{"similar_ssid"},
-                                    report.signalStrength().average()
+                                    task.ssidReport().signalStrength().average()
                             );
                         }
                     }
@@ -521,17 +513,17 @@ public class Dot11Table implements DataTable {
                                 attributes.put("restricted_substring", rss.substring());
 
                                 nzyme.getDetectionAlertService().raiseAlert(
-                                        tap.organizationId(),
-                                        tap.tenantId(),
+                                        task.tap().organizationId(),
+                                        task.tap().tenantId(),
                                         monitoredSSID.uuid(),
-                                        tap.uuid(),
+                                        task.tap().uuid(),
                                         DetectionType.DOT11_MONITOR_SSID_SUBSTRING,
                                         Subsystem.DOT11,
                                         "SSID \"" + ssid + "\" contains restricted " +
                                                 "substring \"" + rss.substring() + "\"",
                                         attributes,
                                         new String[]{"ssid", "restricted_substring"},
-                                        report.signalStrength().average()
+                                        task.ssidReport().signalStrength().average()
                                 );
                             }
                         }
@@ -544,49 +536,49 @@ public class Dot11Table implements DataTable {
             if (monitoredSSID != null) {
                 // This is a monitored SSID.
 
-                PreLoadedMonitoredBSSID monitoredBSSID = monitoredSSID.bssids().get(bssid);
+                PreLoadedMonitoredBSSID monitoredBSSID = monitoredSSID.bssids().get(task.bssid());
                 if (monitoredBSSID == null) {
                     if (monitoredSSID.enabledUnexpectedBSSID()) {
                         // Unexpected BSSID.
                         Map<String, String> attributes = Maps.newHashMap();
-                        attributes.put("bssid", bssid);
+                        attributes.put("bssid", task.bssid());
 
                         nzyme.getDetectionAlertService().raiseAlert(
-                                tap.organizationId(),
-                                tap.tenantId(),
+                                task.tap().organizationId(),
+                                task.tap().tenantId(),
                                 monitoredSSID.uuid(),
-                                tap.uuid(),
+                                task.tap().uuid(),
                                 DetectionType.DOT11_MONITOR_BSSID,
                                 Subsystem.DOT11,
                                 "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
-                                        "unexpected BSSID \"" + bssid + "\"",
+                                        "unexpected BSSID \"" + task.bssid() + "\"",
                                 attributes,
                                 new String[]{"bssid"},
-                                report.signalStrength().average()
+                                task.ssidReport().signalStrength().average()
                         );
                     }
                 } else {
                     // Expected BSSID. Compare fingerprints.
                     if (monitoredSSID.enabledUnexpectedFingerprint()) {
-                        for (String observedFingerprint : ssidReport.fingerprints()) {
+                        for (String observedFingerprint : task.ssidReport().fingerprints()) {
                             if (!monitoredBSSID.fingerprints().contains(observedFingerprint)) {
                                 // Unexpected fingerprint.
                                 Map<String, String> attributes = Maps.newHashMap();
-                                attributes.put("bssid", bssid);
+                                attributes.put("bssid", task.bssid());
                                 attributes.put("fingerprint", observedFingerprint);
 
                                 nzyme.getDetectionAlertService().raiseAlert(
-                                        tap.organizationId(),
-                                        tap.tenantId(),
+                                        task.tap().organizationId(),
+                                        task.tap().tenantId(),
                                         monitoredSSID.uuid(),
-                                        tap.uuid(),
+                                        task.tap().uuid(),
                                         DetectionType.DOT11_MONITOR_FINGERPRINT,
                                         Subsystem.DOT11,
                                         "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
                                                 "with unexpected fingerprint \"" + observedFingerprint + "\".",
                                         attributes,
                                         new String[]{"bssid", "fingerprint"},
-                                        report.signalStrength().average()
+                                        task.ssidReport().signalStrength().average()
                                 );
                             }
                         }
@@ -594,48 +586,48 @@ public class Dot11Table implements DataTable {
                 }
 
                 if (monitoredSSID.enabledUnexpectedChannel()) {
-                    for (Long frequency : ssidReport.channelStatistics().keySet()) {
+                    for (Long frequency : task.ssidReport().channelStatistics().keySet()) {
                         if (!monitoredSSID.channels().contains(frequency.intValue())) {
                             // Unexpected channel.
                             Map<String, String> attributes = Maps.newHashMap();
                             attributes.put("frequency", String.valueOf(frequency));
 
                             nzyme.getDetectionAlertService().raiseAlert(
-                                    tap.organizationId(),
-                                    tap.tenantId(),
+                                    task.tap().organizationId(),
+                                    task.tap().tenantId(),
                                     monitoredSSID.uuid(),
-                                    tap.uuid(),
+                                    task.tap().uuid(),
                                     DetectionType.DOT11_MONITOR_CHANNEL,
                                     Subsystem.DOT11,
                                     "Monitored network \"" + monitoredSSID.ssid() + "\" advertised on " +
                                             "unexpected frequency " + frequency + "MHz",
                                     attributes,
                                     new String[]{"frequency"},
-                                    report.signalStrength().average()
+                                    task.ssidReport().signalStrength().average()
                             );
                         }
                     }
                 }
 
                 if (monitoredSSID.enabledUnexpectedSecuritySuites()) {
-                    for (Dot11SecurityInformationReport security : ssidReport.security()) {
+                    for (Dot11SecurityInformationReport security : task.ssidReport().security()) {
                         String suite = Dot11.securitySuitesToIdentifier(security);
                         if (!monitoredSSID.securitySuites().contains(suite)) {
                             Map<String, String> attributes = Maps.newHashMap();
                             attributes.put("suite", suite);
 
                             nzyme.getDetectionAlertService().raiseAlert(
-                                    tap.organizationId(),
-                                    tap.tenantId(),
+                                    task.tap().organizationId(),
+                                    task.tap().tenantId(),
                                     monitoredSSID.uuid(),
-                                    tap.uuid(),
+                                    task.tap().uuid(),
                                     DetectionType.DOT11_MONITOR_SECURITY_SUITE,
                                     Subsystem.DOT11,
                                     "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
                                             "unexpected security suites \"" + suite + "\"",
                                     attributes,
                                     new String[]{"suite"},
-                                    report.signalStrength().average()
+                                    task.ssidReport().signalStrength().average()
                             );
                         }
                     }
