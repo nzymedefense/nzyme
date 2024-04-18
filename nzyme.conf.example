@@ -41,5 +41,5 @@ interfaces: {
 # Performance tuning.
 performance: {
   # How many threads work on processing incoming tap reports.
-  report_processor_pool_size: 5
+  report_processor_pool_size: 3
 }
