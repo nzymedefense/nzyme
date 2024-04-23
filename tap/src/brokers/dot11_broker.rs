@@ -121,6 +121,13 @@ impl Dot11Broker {
         // Channel.
         let frequency = if present_flags.channel {
             let frequency = LittleEndian::read_u16(&data.data[cursor..cursor+2]);
+            
+            if frequency == 0 {
+                trace!("Filtering out frame with bad reported frequency on [{}].",
+                    data.interface_name);
+                return
+            }
+            
             cursor += 2;
 
             // Skip the channel flags. Not parsing.
