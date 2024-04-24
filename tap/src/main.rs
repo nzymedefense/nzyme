@@ -64,7 +64,8 @@ fn main() {
                             let interface_info = nl.fetch_device_info(key);
                             match interface_info {
                                 Ok(interface_info) => {
-                                    let channels: Vec<Result<Channel, Error>> = interface_info.supported_frequencies.iter().map(|f| Channel::from_frequency(*f)).collect();
+                                    let channels: Vec<Result<Channel, Error>> = interface_info.supported_frequencies
+                                        .iter().map(|f| Channel::from_frequency(f.frequency)).collect();
 
                                     let mut iface = Map::new();
                                     iface.insert("active".to_string(), toml::Value::Boolean(true));

@@ -4,6 +4,7 @@ use anyhow::{Error, bail};
 use log::{error, info, debug};
 use systemstat::Duration;
 use crate::configuration::WifiInterface;
+use crate::dot11::supported_frequency::SupportedFrequency;
 use crate::helpers::network::{dot11_channel_to_frequency, Nl80211Band};
 
 use super::nl::Nl;
@@ -16,7 +17,7 @@ impl ChannelHopper {
 
     pub fn new(devices: HashMap<String, WifiInterface>) -> Result<Self, Error> {
         // Define adapters with their channels
-        let mut adapters: HashMap<String, Vec<u32>> = HashMap::new();
+        let mut adapters: HashMap<String, Vec<SupportedFrequency>> = HashMap::new();
 
         let mut nl = match Nl::new() {
             Ok(nl) => nl,
@@ -43,11 +44,11 @@ impl ChannelHopper {
         }
 
         let mut channels: HashMap<u32, Vec<String>> = HashMap::new();
-        for (adapter, adapter_channels) in &adapters {
-            for adapter_channel in adapter_channels {
-                match channels.get_mut(adapter_channel) {
+        for (adapter, supported_frequency) in &adapters {
+            for adapter_channel in supported_frequency {
+                match channels.get_mut(&adapter_channel.frequency) {
                     Some(channel) => { channel.push(adapter.clone()); },
-                    None => { channels.insert(*adapter_channel, vec![adapter.clone()]); }
+                    None => { channels.insert(adapter_channel.frequency, vec![adapter.clone()]); }
                 }
             }
         }
@@ -77,7 +78,7 @@ impl ChannelHopper {
                                 channel, device_name, e)
                         };
 
-                        if !adapter.contains(&(frequency as u32)) {
+                        if !Self::adapter_supports_frequency(adapter, frequency as u32) {
                             bail!("WiFi adapter [{}] does not support channel <{} / {} MHz>.",
                                 device_name, channel, frequency);
                         }
@@ -90,7 +91,7 @@ impl ChannelHopper {
                                 channel, device_name, e)
                         };
 
-                        if !adapter.contains(&(frequency as u32)) {
+                        if !Self::adapter_supports_frequency(adapter, frequency as u32) {
                             bail!("WiFi adapter [{}] does not support channel <{} / {} MHz>.",
                                 device_name, channel, frequency);
                         }
@@ -103,7 +104,7 @@ impl ChannelHopper {
                                 channel, device_name, e)
                         };
 
-                        if !adapter.contains(&(frequency as u32)) {
+                        if !Self::adapter_supports_frequency(adapter, frequency as u32) {
                             bail!("WiFi adapter [{}] does not support channel <{} / {} MHz>.",
                                 device_name, channel, frequency);
                         }
@@ -181,6 +182,16 @@ impl ChannelHopper {
                 sleep(Duration::from_millis(1000));
             }
         });
+    }
+
+    fn adapter_supports_frequency(frequencies: &Vec<SupportedFrequency>, frequency: u32) -> bool {
+        for f in frequencies {
+            if f.frequency == frequency {
+                return true
+            }
+        }
+
+        false
     }
 
 }

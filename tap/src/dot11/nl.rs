@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use anyhow::{Error, bail};
+use log::info;
 
 use neli::{consts::{
     nl::{NlmF},
@@ -14,6 +15,7 @@ use neli::genl::Nlattr;
 use neli::types::NlBuffer;
 use crate::dot11::nl_consts::{NL_80211_GENL_NAME, NL_80211_GENL_VERSION};
 use crate::dot11::nl_skinny_router::NlSkinnyRouter;
+use crate::dot11::supported_frequency::{SupportedBand, SupportedFrequency};
 
 use super::nl_consts::{Nl80211Attribute, Nl80211Command, Nl80211BandAttr, Nl80211FrequencyAttr, Nl80211MntrFlags};
 
@@ -27,14 +29,14 @@ pub struct Interface {
 #[derive(Debug)]
 struct PhyResponse {
     phy_index: u32,
-    supported_frequencies: Vec<u32>
+    supported_frequencies: Vec<SupportedFrequency>
 }
 
 #[derive(Debug, Clone)]
 pub struct InterfaceInfo {
     pub name: String,
     pub if_index: u32,
-    pub supported_frequencies: Vec<u32>
+    pub supported_frequencies: Vec<SupportedFrequency>
 }
 
 pub enum InterfaceState {
@@ -57,13 +59,13 @@ fn handle_interface_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, N
 
             for attr in payload.attrs().iter() {
                 match attr.nla_type().nla_type() {
-                    &Nl80211Attribute::WiPhy => {
+                    Nl80211Attribute::WiPhy => {
                         phy_index = Some(attr.get_payload_as()?);
                     },
-                    &Nl80211Attribute::IfIndex => {
+                    Nl80211Attribute::IfIndex => {
                         if_index = Some(attr.get_payload_as()?);
                     },
-                    &Nl80211Attribute::IfName => {
+                    Nl80211Attribute::IfName => {
                         name = Some(attr.get_payload_as_with_len::<String>()?);
                     },
                     _ => {}
@@ -111,16 +113,16 @@ fn handle_interface_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, N
 fn handle_phy_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> Result<PhyResponse, DeError> {
 
     let mut phy_index: Option<u32> = None;
-    let mut supported_frequencies: Vec<u32> = Vec::new();
+    let mut supported_frequencies: Vec<SupportedFrequency> = Vec::new();
 
     for msg in msgs {
         if let NlPayload::Payload(payload) = msg.nl_payload() {
             for attr in payload.attrs().iter() {
                 match attr.nla_type().nla_type() {
-                    &Nl80211Attribute::WiPhy => {
+                    Nl80211Attribute::WiPhy => {
                         phy_index = Some(attr.get_payload_as().map_err(|_| DeError::new("Failed to get payload as u32"))?);
                     },
-                    &Nl80211Attribute::WiPhyBands => {
+                    Nl80211Attribute::WiPhyBands => {
                         // bands is an array, get the handle for the array
                         let bands_handle = attr.get_attr_handle::<Nl80211BandAttr>().map_err(|_| DeError::new("Failed to get WiPhyBands attribute handle"))?;
                         for bands in bands_handle.iter() {
@@ -128,19 +130,62 @@ fn handle_phy_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, Nl80211
                             let band_handle = bands.get_attr_handle().map_err(|_| DeError::new("Failed to get WiPhyBands attribute handle"))?;
 
                             for band_attr in band_handle.get_attrs() {
+                                #[allow(clippy::single_match)]
                                 match band_attr.nla_type().nla_type() {
-                                    &Nl80211BandAttr::Freqs => {
-                                        // freqs is an array, get the handle for the array
+                                    Nl80211BandAttr::Freqs => {
+                                        // This is an array. Get the handle for the array.
                                         let freqs_handle = band_attr.get_attr_handle::<Nl80211FrequencyAttr>().map_err(|_| DeError::new("Failed to get WiPhyFreq attribute handle"))?;
+
                                         for freq in freqs_handle.iter() {
-                                            // for each element of the array now we get the nested attributes
+                                            // Get nested attributes of each element in the band array.
                                             let freq_handle = freq.get_attr_handle().map_err(|_| DeError::new("Failed to get WiPhyFreq attribute handle"))?;
                                             let freq_attr = freq_handle.get_attribute(Nl80211FrequencyAttr::Freq);
                                             let disabled_attr = freq_handle.get_attribute(Nl80211FrequencyAttr::Disabled);
+                                            let no20_attr = freq_handle.get_attribute(Nl80211FrequencyAttr::No20Mhz);
+                                            let noht40minus_attr = freq_handle.get_attribute(Nl80211FrequencyAttr::NoHt40Minus);
+                                            let noht40plus_attr = freq_handle.get_attribute(Nl80211FrequencyAttr::NoHt40Plus);
+                                            let no80_attr = freq_handle.get_attribute(Nl80211FrequencyAttr::No80Mhz);
+                                            let no160_attr = freq_handle.get_attribute(Nl80211FrequencyAttr::No160Mhz);
+                                            let no320_attr = freq_handle.get_attribute(Nl80211FrequencyAttr::No320Mhz);
 
-                                            if freq_attr.is_some() && disabled_attr.is_none() {
-                                                supported_frequencies.push(freq_attr.unwrap().get_payload_as()?);
+                                            // Skip disabled interfaces.
+                                            if disabled_attr.is_some() || freq_attr.is_none() {
+                                                continue;
                                             }
+
+                                            let mut bands: Vec<SupportedBand>  = Vec::new();
+
+                                            if no20_attr.is_none() {
+                                                bands.push(SupportedBand::Mhz20)
+                                            }
+
+                                            if noht40minus_attr.is_none() {
+                                                bands.push(SupportedBand::Mhz40Minus)
+                                            }
+
+                                            if noht40plus_attr.is_none() {
+                                                bands.push(SupportedBand::Mhz40Plus)
+                                            }
+
+                                            if no80_attr.is_none() {
+                                                bands.push(SupportedBand::Mhz80)
+                                            }
+
+                                            if no160_attr.is_none() {
+                                                bands.push(SupportedBand::Mhz160)
+                                            }
+
+                                            if no320_attr.is_none() {
+                                                bands.push(SupportedBand::Mhz320)
+                                            }
+
+                                            let frequency: u32 = freq_attr.unwrap().get_payload_as()?;
+                                            supported_frequencies.push(
+                                                SupportedFrequency {
+                                                    frequency,
+                                                    bands
+                                                }
+                                            );
                                         }
                                     },
                                     _ => {}
