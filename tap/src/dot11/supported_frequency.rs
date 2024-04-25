@@ -1,11 +1,11 @@
 #[derive(Debug, Clone)]
 pub struct SupportedFrequency {
     pub frequency: u32,
-    pub bands: Vec<SupportedBand>
+    pub channel_widths: Vec<SupportedChannelWidth>
 }
 
 #[derive(Debug, Clone)]
-pub enum SupportedBand {
+pub enum SupportedChannelWidth {
     Mhz20,
     Mhz40Minus,
     Mhz40Plus,

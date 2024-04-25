@@ -4,13 +4,13 @@ use anyhow::{Error, bail};
 use log::{error, info, debug};
 use systemstat::Duration;
 use crate::configuration::WifiInterface;
-use crate::dot11::supported_frequency::SupportedFrequency;
+use crate::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
 use crate::helpers::network::{dot11_channel_to_frequency, Nl80211Band};
 
 use super::nl::Nl;
 
 pub struct ChannelHopper {
-    pub device_assignments: HashMap<String, Vec<u32>>
+    pub device_assignments: HashMap<String, Vec<SupportedFrequency>>
 }
 
 impl ChannelHopper {
@@ -43,20 +43,10 @@ impl ChannelHopper {
             }
         }
 
-        let mut channels: HashMap<u32, Vec<String>> = HashMap::new();
-        for (adapter, supported_frequency) in &adapters {
-            for adapter_channel in supported_frequency {
-                match channels.get_mut(&adapter_channel.frequency) {
-                    Some(channel) => { channel.push(adapter.clone()); },
-                    None => { channels.insert(adapter_channel.frequency, vec![adapter.clone()]); }
-                }
-            }
-        }
-
         info!("Available adapters and channels: {:?}", adapters);
 
-        // Map channels to config.
-        let mut device_assignments: HashMap<String, Vec<u32>> = HashMap::new();
+        // Map to config.
+        let mut device_assignments: HashMap<String, Vec<SupportedFrequency>> = HashMap::new();
         for (device_name, device_configuration) in devices {
             if !device_configuration.active {
                 debug!("Skipping disabled WiFi interface [{}].", device_name);
@@ -68,6 +58,7 @@ impl ChannelHopper {
                 continue;
             }
 
+            // Check if selected frequencies are supported and bail if not.
             match adapters.get(&device_name) {
                 None => bail!("WiFi adapter [{}] not found.", device_name),
                 Some(adapter) => {
@@ -112,27 +103,34 @@ impl ChannelHopper {
                 }
             }
 
-            let mut frequencies: Vec<u32> = Vec::new();
+            // Build final list of device assigments, including frequencies and channel widths.
+            let mut frequencies: Vec<SupportedFrequency> = Vec::new();
             for channel in device_configuration.channels_2g {
-                frequencies.push(match dot11_channel_to_frequency(channel, Nl80211Band::Band2GHz) {
-                    Ok(frequency) => frequency as u32,
+                let (frequency, channel_widths) = match dot11_channel_to_frequency(channel, Nl80211Band::Band2GHz) {
+                    Ok(frequency) => (frequency as u32, Self::get_all_supported_channel_widths(adapters.get(&device_name).unwrap(), frequency as u32)),
                     Err(e) => bail!("Could not get frequency for 2G channel <{}> of device [{}]: {}",
                                 channel, device_name, e)
-                });
+                };
+
+                frequencies.push(SupportedFrequency { frequency, channel_widths })
             }
             for channel in device_configuration.channels_5g {
-                frequencies.push(match dot11_channel_to_frequency(channel, Nl80211Band::Band5GHz) {
-                    Ok(frequency) => frequency as u32,
+                let (frequency, channel_widths) = match dot11_channel_to_frequency(channel, Nl80211Band::Band5GHz) {
+                    Ok(frequency) => (frequency as u32, Self::get_all_supported_channel_widths(adapters.get(&device_name).unwrap(), frequency as u32)),
                     Err(e) => bail!("Could not get frequency for 5G channel <{}> of device [{}]: {}",
                                 channel, device_name, e)
-                });
+                };
+
+                frequencies.push(SupportedFrequency { frequency, channel_widths })
             }
             for channel in device_configuration.channels_6g {
-                frequencies.push(match dot11_channel_to_frequency(channel, Nl80211Band::Band6GHz) {
-                    Ok(frequency) => frequency as u32,
+                let (frequency, channel_widths) = match dot11_channel_to_frequency(channel, Nl80211Band::Band6GHz) {
+                    Ok(frequency) => (frequency as u32, Self::get_all_supported_channel_widths(adapters.get(&device_name).unwrap(), frequency as u32)),
                     Err(e) => bail!("Could not get frequency for 6G channel <{}> of device [{}]: {}",
                                 channel, device_name, e)
-                });
+                };
+
+                frequencies.push(SupportedFrequency { frequency, channel_widths })
             }
 
             device_assignments.insert(device_name, frequencies);
@@ -164,11 +162,16 @@ impl ChannelHopper {
             loop {
                 for (device, channels) in &device_assigments {
                     let position = *positions.get(&device).unwrap() as usize;
-                    let frequency = channels.get(position).unwrap();
+                    let frequency_info = channels.get(position).unwrap();
+                    let frequency = frequency_info.frequency;
 
-                    match nl.set_device_frequency(device, *frequency) {
-                        Ok(()) => debug!("Device [{}] now tuned to frequency [{} Mhz].", device, frequency),
-                        Err(e) => error!("Could not tune [{}] to frequency [{} Mhz]: {}", device, frequency, e)
+                    for width in &*frequency_info.channel_widths {
+                        match nl.set_device_frequency(device, frequency, width) { // EXTEND WITH WIDTH
+                            Ok(()) => debug!("Device [{}] now tuned to frequency [{} Mhz / {:?}].", device, frequency, width),
+                            Err(e) => error!("Could not tune [{}] to frequency [{} Mhz / {:?}]: {}", device, frequency, width, e)
+                        }
+
+                        sleep(Duration::from_millis(250));
                     }
 
                     let next_position = match position+1 == channels.len() {
@@ -178,8 +181,6 @@ impl ChannelHopper {
 
                     positions.insert(device, next_position as u16);
                 }
-
-                sleep(Duration::from_millis(1000));
             }
         });
     }
@@ -192,6 +193,17 @@ impl ChannelHopper {
         }
 
         false
+    }
+
+    fn get_all_supported_channel_widths(frequencies: &Vec<SupportedFrequency>, frequency: u32)
+        -> Vec<SupportedChannelWidth> {
+        for f in frequencies {
+            if f.frequency == frequency {
+                return f.clone().channel_widths
+            }
+        }
+
+        vec![]
     }
 
 }

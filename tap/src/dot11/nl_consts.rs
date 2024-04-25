@@ -546,7 +546,6 @@ pub enum Nl80211Attribute {
     MloLinkDisabled = 326,
 
 }
-
 impl neli::consts::genl::NlAttrType for Nl80211Attribute {}
 
 #[neli::neli_enum(serialized_type = "u16")]
@@ -566,7 +565,6 @@ pub enum Nl80211BandAttr {
     S1gMcsNssSet = 12,
     S1gCapa = 13,
 }
-
 impl neli::consts::genl::NlAttrType for Nl80211BandAttr {}
 
 #[neli::neli_enum(serialized_type = "u16")]
@@ -600,8 +598,25 @@ pub enum Nl80211FrequencyAttr {
     No320Mhz = 26,
     NoEht = 27,
 }
-
 impl neli::consts::genl::NlAttrType for Nl80211FrequencyAttr {}
+
+#[neli::neli_enum(serialized_type = "u32")]
+pub enum Nl80211ChanWidthAttr {
+    Cw20NoHt = 0,
+    Cw20 = 1,
+    Cw40 = 2,
+    Cw80 = 3,
+    Cw80P80 = 4,
+    Cw160 = 5,
+    Cw5 = 6,
+    Cw10 = 7,
+    Cw1 = 8,
+    Cw2 = 9,
+    Cw4 = 10,
+    Cw8 = 11,
+    Cw16 = 12,
+    Cw320 = 13
+}
 
 #[neli::neli_enum(serialized_type = "u16")]
 pub enum Nl80211MntrFlags {
@@ -609,3 +624,4 @@ pub enum Nl80211MntrFlags {
     OtherBss = 4
 }
 impl neli::consts::genl::NlAttrType for Nl80211MntrFlags {}
+

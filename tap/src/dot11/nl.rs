@@ -1,7 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
 use anyhow::{Error, bail};
-use log::info;
 
 use neli::{consts::{
     nl::{NlmF},
@@ -13,9 +12,9 @@ use neli::consts::nl::{GenlId};
 use neli::err::DeError;
 use neli::genl::Nlattr;
 use neli::types::NlBuffer;
-use crate::dot11::nl_consts::{NL_80211_GENL_NAME, NL_80211_GENL_VERSION};
+use crate::dot11::nl_consts::{Nl80211ChanWidthAttr, NL_80211_GENL_NAME, NL_80211_GENL_VERSION};
 use crate::dot11::nl_skinny_router::NlSkinnyRouter;
-use crate::dot11::supported_frequency::{SupportedBand, SupportedFrequency};
+use crate::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
 
 use super::nl_consts::{Nl80211Attribute, Nl80211Command, Nl80211BandAttr, Nl80211FrequencyAttr, Nl80211MntrFlags};
 
@@ -153,37 +152,37 @@ fn handle_phy_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, Nl80211
                                                 continue;
                                             }
 
-                                            let mut bands: Vec<SupportedBand>  = Vec::new();
+                                            let mut channel_widths: Vec<SupportedChannelWidth>  = Vec::new();
 
                                             if no20_attr.is_none() {
-                                                bands.push(SupportedBand::Mhz20)
+                                                channel_widths.push(SupportedChannelWidth::Mhz20)
                                             }
 
                                             if noht40minus_attr.is_none() {
-                                                bands.push(SupportedBand::Mhz40Minus)
+                                                channel_widths.push(SupportedChannelWidth::Mhz40Minus)
                                             }
 
                                             if noht40plus_attr.is_none() {
-                                                bands.push(SupportedBand::Mhz40Plus)
+                                                channel_widths.push(SupportedChannelWidth::Mhz40Plus)
                                             }
 
                                             if no80_attr.is_none() {
-                                                bands.push(SupportedBand::Mhz80)
+                                                channel_widths.push(SupportedChannelWidth::Mhz80)
                                             }
 
                                             if no160_attr.is_none() {
-                                                bands.push(SupportedBand::Mhz160)
+                                                channel_widths.push(SupportedChannelWidth::Mhz160)
                                             }
 
                                             if no320_attr.is_none() {
-                                                bands.push(SupportedBand::Mhz320)
+                                                channel_widths.push(SupportedChannelWidth::Mhz320)
                                             }
 
                                             let frequency: u32 = freq_attr.unwrap().get_payload_as()?;
                                             supported_frequencies.push(
                                                 SupportedFrequency {
                                                     frequency,
-                                                    bands
+                                                    channel_widths
                                                 }
                                             );
                                         }
@@ -245,13 +244,11 @@ impl Nl {
         })
     }
 
-    /// Fetch all available 80211 devices, with interface wiphy id and name
+    // Fetch all available 802.11 devices, with interface WiPhy id and name
     pub fn fetch_devices(&mut self) -> Result<HashMap<String, Interface>, Error> {
-
         let get_if_payload = match GenlmsghdrBuilder::<Nl80211Command, Nl80211Attribute, NoUserHeader>::default()
             .cmd(Nl80211Command::GetIf)
             .version(0)
-            //.attrs(attrs.into_iter().collect())
             .build() {
             Ok(pl) => pl,
             Err(e) => bail!("Could not build GetIf Netlink payload: {}", e)
@@ -381,7 +378,8 @@ impl Nl {
 
     }
 
-    pub fn set_device_frequency(&mut self, device_name: &String, frequency: u32) -> Result<(), Error> {
+    pub fn set_device_frequency(&mut self, device_name: &String, frequency: u32, width: &SupportedChannelWidth)
+        -> Result<(), Error> {
         let device = match self.fetch_device_info(device_name) {
             Ok(device) => device,
             Err(e) => bail!("Could not load device with name [{}] for setting frequency: {}", device_name, e)
@@ -403,16 +401,72 @@ impl Nl {
             Err(e) => bail!("Could not construct WiPhyFreq Netlink attribute type: {}", e)
         };
 
-        let attr_iwiphy_freq_index = match NlattrBuilder::default().nla_type(attr_wiphy_freq_type)
+        let attr_iwiphy_freq = match NlattrBuilder::default().nla_type(attr_wiphy_freq_type)
             .nla_payload(frequency).build() {
             Ok(attr) => attr,
             Err(e) => bail!("Could not construct WiPhyFreq Netlink attribute: {}", e)
         };
 
+        let (nl_width, center_frequency) = match width {
+            SupportedChannelWidth::Mhz20 => (Nl80211ChanWidthAttr::Cw20, frequency),
+            SupportedChannelWidth::Mhz40Minus => {
+                (
+                    Nl80211ChanWidthAttr::Cw40,
+                    (frequency+(frequency + 20)) / 2
+                )
+            },
+            SupportedChannelWidth::Mhz40Plus => {
+                (
+                    Nl80211ChanWidthAttr::Cw40,
+                    (frequency + (frequency - 20)) / 2
+                )
+            },
+            SupportedChannelWidth::Mhz80 => {
+                (
+                    Nl80211ChanWidthAttr::Cw80,
+                    (frequency+(frequency + 60)) / 2
+                )
+            },
+            SupportedChannelWidth::Mhz160 => {
+                (
+                    Nl80211ChanWidthAttr::Cw160,
+                    (frequency+(frequency + 140)) / 2
+                )
+            },
+            SupportedChannelWidth::Mhz320 => {
+                (
+                    Nl80211ChanWidthAttr::Cw320,
+                    (frequency+(frequency + 300)) / 2
+                )
+            }
+        };
+
+        let attr_channel_width_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::ChannelWidth).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct ChannelWidth Netlink attribute type: {}", e)
+        };
+
+        let attr_channel_width = match NlattrBuilder::default().nla_type(attr_channel_width_type)
+            .nla_payload(nl_width).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct ChannelWidth Netlink attribute: {}", e)
+        };
+
+        let attr_center_frequency_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::CenterFreq1).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct CenterFreq1 Netlink attribute type: {}", e)
+        };
+
+        let attr_center_frequency = match NlattrBuilder::default().nla_type(attr_center_frequency_type)
+            .nla_payload(center_frequency).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct CenterFreq1 Netlink attribute: {}", e)
+        };
+
         let payload = match GenlmsghdrBuilder::<Nl80211Command, Nl80211Attribute, NoUserHeader>::default()
             .cmd(Nl80211Command::SetChannel)
             .version(NL_80211_GENL_VERSION)
-            .attrs(vec![attr_if_index, attr_iwiphy_freq_index].into_iter().collect())
+            .attrs(vec![attr_if_index, attr_iwiphy_freq, attr_channel_width, attr_center_frequency].into_iter().collect())
             .build() {
             Ok(p) => p,
             Err(e) => bail!("Could not construct WiPhyFreq Netlink command payload: {}", e)
