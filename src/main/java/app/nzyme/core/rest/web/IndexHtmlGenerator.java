@@ -19,13 +19,16 @@ package app.nzyme.core.rest.web;
 
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import com.floreysoft.jmte.Engine;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.html.HtmlEscapers;
 import com.google.common.io.Resources;
 import app.nzyme.core.rest.RestTools;
 import jakarta.ws.rs.core.MultivaluedMap;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,14 +66,21 @@ public class IndexHtmlGenerator {
     }
 
     public String get(MultivaluedMap<String, String> headers) {
-        final Map<String, Object> model = ImmutableMap.<String, Object>builder()
-                .put("title", "nzyme - Network Defense System")
-                .put("jsFiles", jsFiles)
-                .put("cssFiles", cssFiles)
-                .put("appPrefix", RestTools.buildExternalUri(headers, configuration.httpExternalUri()))
-                .put("apiUri", RestTools.buildExternalUri(headers, configuration.httpExternalUri()))
-                .build();
-        return templateEngine.transform(template, model);
+        String title = Strings.isNullOrEmpty(configuration.misc().customTitle()) ?
+                "nzyme - Network Defense System" : configuration.misc().customTitle();
+
+        String faviconUri = Strings.isNullOrEmpty(configuration.misc().customFaviconUrl()) ?
+                null : HtmlEscapers.htmlEscaper().escape(configuration.misc().customFaviconUrl());
+
+        final Map<String, Object> variables = new HashMap<>();
+        variables.put("title", title);
+        variables.put("favicon_url", faviconUri);
+        variables.put("jsFiles", jsFiles);
+        variables.put("cssFiles", cssFiles);
+        variables.put("appPrefix", RestTools.buildExternalUri(headers, configuration.httpExternalUri()));
+        variables.put("apiUri", RestTools.buildExternalUri(headers, configuration.httpExternalUri()));
+
+        return templateEngine.transform(template, variables);
     }
 
 }

@@ -43,3 +43,12 @@ performance: {
   # How many threads work on processing incoming tap reports.
   report_processor_pool_size: 3
 }
+
+# Miscellaneous.
+misc: {
+  # Custom web interface browser title.
+  #custom_title: "nzyme - Network Defense System"
+
+  # URL to a custom favicon.
+  #custom_favicon_url: "https://example.org/favicon.png"
+}

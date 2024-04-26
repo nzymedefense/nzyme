@@ -21,6 +21,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import app.nzyme.core.configuration.*;
+import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,6 +40,9 @@ public class NodeConfigurationLoader {
     private final Config interfaces;
     private final Config performance;
 
+    @Nullable
+    private final Config misc;
+
     public NodeConfigurationLoader(File configFile, boolean skipValidation) throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
         if (!Files.isReadable(configFile.toPath())) {
             throw new FileNotFoundException("File at [" + configFile.getPath() + "] does not exist or is not readable. Check path and permissions.");
@@ -50,6 +54,8 @@ public class NodeConfigurationLoader {
             this.general = root.getConfig(ConfigurationKeys.GENERAL);
             this.interfaces = root.getConfig(ConfigurationKeys.INTERFACES);
             this.performance = root.getConfig(ConfigurationKeys.PERFORMANCE);
+
+            this.misc = root.hasPath(ConfigurationKeys.MISC) ? root.getConfig(ConfigurationKeys.MISC) : null;
         } catch(ConfigException e) {
             throw new IncompleteConfigurationException("Incomplete configuration.", e);
         }
@@ -70,7 +76,8 @@ public class NodeConfigurationLoader {
                 parseCryptoDirectory(),
                 parseSlowQueryLogThreshold(),
                 parseNtpServer(),
-                parsePerformance()
+                parsePerformance(),
+                parseMisc()
         );
     }
 
@@ -116,6 +123,20 @@ public class NodeConfigurationLoader {
 
     private PerformanceConfiguration parsePerformance() {
         return PerformanceConfiguration.create(performance.getInt(ConfigurationKeys.REPORT_PROCESSOR_POOL_SIZE));
+    }
+
+    private MiscConfiguration parseMisc() {
+        if (misc == null) {
+            return MiscConfiguration.create(null, null);
+        }
+
+        String customTitle = misc.hasPath(ConfigurationKeys.CUSTOM_TITLE) ?
+                misc.getString(ConfigurationKeys.CUSTOM_TITLE) : null;
+
+        String customFaviconUrl = misc.hasPath(ConfigurationKeys.CUSTOM_FAVICON_URL) ?
+                misc.getString(ConfigurationKeys.CUSTOM_FAVICON_URL) : null;
+
+        return MiscConfiguration.create(customTitle, customFaviconUrl);
     }
 
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {

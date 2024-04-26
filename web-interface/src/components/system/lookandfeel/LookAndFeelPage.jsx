@@ -57,6 +57,19 @@ export default function LookAndFeelPage() {
           </div>
         </div>
 
+        <div className="row mt-3">
+          <div className="col-xl-12 col-xxl-8">
+            <div className="card">
+              <div className="card-body">
+                <h3>Custom Browser Icon and Title</h3>
+
+                You can configure a custom browser icon and title in your nzyme node configuration files. These settings
+                are not modifiable via the web interface due to the way nzyme processes assets and its fundamental HTML template.
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
   )
 
