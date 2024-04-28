@@ -12,6 +12,7 @@ import TapMetrics from './metrics/TapMetrics'
 import TapMetricsChartProxy from './metrics/TapMetricsChartProxy'
 import TapClockWarning from "./TapClockWarning";
 import {byteAverageToMbit} from "../../../../util/Tools";
+import TapDot11CoverageMap from "./TapDot11CoverageMap";
 
 const tapsService = new TapsService()
 
@@ -159,6 +160,18 @@ function TapDetailsPage () {
               <h3>Buses &amp; Channels</h3>
 
               <Buses tap={tap} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <h3>802.11 / WiFi Coverage</h3>
+
+              <TapDot11CoverageMap />
             </div>
           </div>
         </div>
