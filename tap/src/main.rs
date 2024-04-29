@@ -39,6 +39,8 @@ struct Arguments {
     #[clap(short, long, required_unless_present("configuration_file"))]
     generate_channels: bool,
 
+    #[clap(long, required_unless_present("configuration_file"))]
+    accept_insecure_certs: bool
 }
 
 fn main() {
@@ -107,6 +109,9 @@ fn main() {
     }
 
     logging::initialize(&log_level);
+
+    info!("accept insecure: {}", args.accept_insecure_certs);
+
 
     info!("Starting nzyme tap version [{}].", env!("CARGO_PKG_VERSION"));
 

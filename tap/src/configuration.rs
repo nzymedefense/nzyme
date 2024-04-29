@@ -1,7 +1,10 @@
 use std::collections::HashMap;
+use std::env;
 use std::fs::read_to_string;
 
-use anyhow::{Result, bail};
+use anyhow::{Result, bail, Error};
+use log::info;
+use regex::Regex;
 use reqwest::Url;
 use serde::Deserialize;
 
@@ -61,13 +64,18 @@ pub struct ProtocolsTcp {
     pub session_timeout_seconds: i32
 }
 
-pub fn load(path: String) -> Result<Configuration, anyhow::Error> {
+pub fn load(path: String) -> Result<Configuration, Error> {
     let config_str = match read_to_string(path) {
         Ok(c) => c,
         Err(e) => bail!("Could not read configuration file. {}", e),
     };
 
-    let doc: Configuration = match toml::from_str(&config_str) {
+    let substituted_config_str = match substitute_environment_variables(&config_str) {
+        Ok(scs) => scs,
+        Err(e) => bail!("Could not substitute environment variables in configuration file: {}", e)
+    };
+
+    let doc: Configuration = match toml::from_str(&substituted_config_str) {
         Ok(d) => d,
         Err(e) => bail!("Could not parse configuration. {}", e),
     };
@@ -150,4 +158,35 @@ pub fn load(path: String) -> Result<Configuration, anyhow::Error> {
     };
 
     Ok(doc)
+}
+
+fn substitute_environment_variables(config_str: &String) -> Result<String, Error> {
+    // Extract all environment variables to substitute.
+    let regex = Regex::new(r"\$\{(.+)\}");
+    let mut requested_env_names: Vec<String> = Vec::new();
+    for (_, [id]) in regex.unwrap().captures_iter(config_str).map(|c| c. extract()) {
+        requested_env_names.push(id.to_string());
+    }
+
+    let mut substituted_string: String = config_str.clone();
+    for requested in requested_env_names {
+        // Check if requested environment variable exists.
+        let env_value = match env::var(requested.clone()) {
+            Ok(v) => v,
+            Err(e) => bail!("Cannot substitute environment variable [{}]: {}", requested, e)
+        };
+
+        // Avoid endless recursion if someone passes a ENV variable replacement string as replacement.
+        if env_value.contains('$') {
+            bail!("Invalid character [$] in value of environment variable [{}]",  requested);
+        }
+
+        let mut search_var = "${".to_string();
+        search_var.push_str(&requested);
+        search_var.push('}');
+
+        substituted_string = substituted_string.replace(search_var.as_str(), &env_value);
+    }
+
+    Ok(substituted_string.clone())
 }
