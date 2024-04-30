@@ -2,6 +2,7 @@ package app.nzyme.core.rest.responses.taps;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
 @AutoValue
@@ -25,13 +26,17 @@ public abstract class CaptureDetailsResponse {
     @JsonProperty("dropped_interface")
     public abstract Long droppedInterface();
 
+    @Nullable
+    @JsonProperty("cycle_time")
+    public abstract Integer cycleTime();
+
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
-    public static CaptureDetailsResponse create(String interfaceName, String captureType, Boolean isRunning, Long received, Long droppedBuffer, Long droppedInterface, DateTime updatedAt, DateTime createdAt) {
+    public static CaptureDetailsResponse create(String interfaceName, String captureType, Boolean isRunning, Long received, Long droppedBuffer, Long droppedInterface, Integer cycleTime, DateTime updatedAt, DateTime createdAt) {
         return builder()
                 .interfaceName(interfaceName)
                 .captureType(captureType)
@@ -39,6 +44,7 @@ public abstract class CaptureDetailsResponse {
                 .received(received)
                 .droppedBuffer(droppedBuffer)
                 .droppedInterface(droppedInterface)
+                .cycleTime(cycleTime)
                 .updatedAt(updatedAt)
                 .createdAt(createdAt)
                 .build();
@@ -62,11 +68,12 @@ public abstract class CaptureDetailsResponse {
 
         public abstract Builder droppedInterface(Long droppedInterface);
 
+        public abstract Builder cycleTime(Integer cycleTime);
+
         public abstract Builder updatedAt(DateTime updatedAt);
 
         public abstract Builder createdAt(DateTime createdAt);
 
         public abstract CaptureDetailsResponse build();
     }
-
 }

@@ -52,7 +52,8 @@ public class StatusResource {
     public Response hello(@Context SecurityContext sc, HelloReport report) {
         UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
 
-        LOG.info("Received hello from tap [{}]: {}", tapId, report);
+        LOG.debug("Received hello from tap [{}]: {}", tapId, report);
+        nzyme.getTapManager().registerTapHello(report, tapId);
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -63,7 +64,6 @@ public class StatusResource {
         UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
 
         LOG.debug("Received status from tap [{}]: {}", tapId, report);
-
         nzyme.getTapManager().registerTapStatus(report, request.getRemoteAddr(), tapId);
 
         return Response.status(Response.Status.CREATED).build();

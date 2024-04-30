@@ -9,6 +9,8 @@ use crate::helpers::network::{dot11_channel_to_frequency, Nl80211Band};
 
 use super::nl::Nl;
 
+const HOP_WELL_MS: u64 = 250;
+
 pub struct ChannelHopper {
     pub device_assignments: HashMap<String, Vec<SupportedFrequency>>
 }
@@ -171,7 +173,7 @@ impl ChannelHopper {
                             Err(e) => error!("Could not tune [{}] to frequency [{} Mhz / {:?}]: {}", device, frequency, width, e)
                         }
 
-                        sleep(Duration::from_millis(250));
+                        sleep(Duration::from_millis(HOP_WELL_MS));
                     }
 
                     let next_position = match position+1 == channels.len() {
@@ -187,6 +189,22 @@ impl ChannelHopper {
 
     pub fn get_device_assignments(&self) -> HashMap<String, Vec<SupportedFrequency>> {
         self.device_assignments.clone()
+    }
+
+    pub fn get_device_cycle_times(&self) -> HashMap<String, u64> {
+        let mut cycle_times = HashMap::new();
+
+        for (device, freqs) in &self.device_assignments {
+            let mut hop_count: u64 = 0;
+
+            for freq in freqs {
+                hop_count += freq.channel_widths.len() as u64;
+            }
+
+            cycle_times.insert(device.clone(), hop_count*HOP_WELL_MS);
+        }
+
+        cycle_times
     }
 
     fn adapter_supports_frequency(frequencies: &Vec<SupportedFrequency>, frequency: u32) -> bool {

@@ -169,9 +169,9 @@ function TapDetailsPage () {
         <div className="col-md-12">
           <div className="card">
             <div className="card-body">
-              <h3>802.11 / WiFi Coverage</h3>
+              <h3>802.11 / WiFi Channel Coverage</h3>
 
-              <TapDot11CoverageMap />
+              <TapDot11CoverageMap tap={tap} />
             </div>
           </div>
         </div>

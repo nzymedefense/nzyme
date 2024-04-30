@@ -970,3 +970,23 @@ span.applied-timerange {
 i.applied-timerange-icon {
     font-size: 11px;
 }
+
+td.channel-width-band {
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+i.channel-width-na {
+    color: #969fa6;
+}
+
+i.channel-width-supported {
+    color: #198754;
+}
+
+i.channel-width-unsupported {
+    color: #dc3545;
+}
+
+.sticky-head-table          { overflow: auto; height: 100px; }
+.sticky-head-table thead th { position: sticky; top: 0; z-index: 1; background-color: #f8f9fa; }

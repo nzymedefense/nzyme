@@ -122,7 +122,8 @@ public class Dot11Table implements DataTable {
                     batch.bind("client_id", clientDatabaseId)
                             .bind("ssid", pr.getKey())
                             .bind("frame_count", pr.getValue())
-                            .bind("tap_uuid", tap.uuid());
+                            .bind("tap_uuid", tap.uuid())
+                            .add();
                 }
 
                 batch.execute();
@@ -230,7 +231,8 @@ public class Dot11Table implements DataTable {
                 for (String fingerprint : report.fingerprints()) {
                     fingerprintBatch
                             .bind("fingerprint", fingerprint)
-                            .bind("bssid_id", bssidDatabaseId);
+                            .bind("bssid_id", bssidDatabaseId)
+                            .add();
 
                     // Is this a known bandit fingerprint?
                     for (Dot11BanditDescription bandit : bandits) {
@@ -283,7 +285,8 @@ public class Dot11Table implements DataTable {
                                 .bind("rx_bytes", stats.rxBytes())
                                 .bind("signal_strength_average", stats.signalStrength().average())
                                 .bind("signal_strength_min", stats.signalStrength().average())
-                                .bind("signal_strength_max", stats.signalStrength().average());
+                                .bind("signal_strength_max", stats.signalStrength().average())
+                                .add();
                     }
                 }
                 bssidClientsBatch.execute();
@@ -357,7 +360,7 @@ public class Dot11Table implements DataTable {
                     "INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
                             "VALUES(:ssid_id, 'has_wps', :value)");
             for (boolean hasWps : task.ssidReport().wps()) {
-                wpsBatch.bind("ssid_id", ssidDatabaseId).bind("value", String.valueOf(hasWps));
+                wpsBatch.bind("ssid_id", ssidDatabaseId).bind("value", String.valueOf(hasWps)).add();
             }
             wpsBatch.execute();
 
@@ -373,12 +376,13 @@ public class Dot11Table implements DataTable {
                             "VALUES(:ssid_id, 'security_suite', :value)");
             for (Dot11SecurityInformationReport sec : task.ssidReport().security()) {
                 if (sec.protocols().isEmpty()) {
-                    noneSettingsBatch.bind("ssid_id", ssidDatabaseId);
+                    noneSettingsBatch.bind("ssid_id", ssidDatabaseId).add();
                 } else {
                     for (String protocol : sec.protocols()) {
                         someSettingsBatch
                                 .bind("ssid_id", ssidDatabaseId)
-                                .bind("value", protocol);
+                                .bind("value", protocol)
+                                .add();
                     }
                 }
 
@@ -393,7 +397,8 @@ public class Dot11Table implements DataTable {
                 try {
                     suitesBatch
                             .bind("ssid_id", ssidDatabaseId)
-                            .bind("value", this.om.writeValueAsString(suiteMap));
+                            .bind("value", this.om.writeValueAsString(suiteMap))
+                            .add();
                 } catch(JsonProcessingException e) {
                     LOG.error("Could not serialize SSID <{}> security suites.", task.bssidDatabaseId(), e);
                 }
@@ -408,7 +413,9 @@ public class Dot11Table implements DataTable {
                     "INSERT INTO dot11_fingerprints(fingerprint, ssid_id) " +
                             "VALUES(:fingerprint, :ssid_id)");
             for (String fingerprint : task.ssidReport().fingerprints()) {
-                    fingerprintsBatch.bind("fingerprint", fingerprint).bind("ssid_id", ssidDatabaseId);
+                    fingerprintsBatch.bind("fingerprint", fingerprint)
+                            .bind("ssid_id", ssidDatabaseId)
+                            .add();
             }
             fingerprintsBatch.execute();
 
@@ -416,7 +423,7 @@ public class Dot11Table implements DataTable {
             PreparedBatch ratesBatch = handle.prepareBatch("INSERT INTO dot11_rates(rate, ssid_id) " +
                     "VALUES(:rate, :ssid_id)");
             for (Float rate : task.ssidReport().rates()) {
-                ratesBatch.bind("rate", rate).bind("ssid_id", ssidDatabaseId);
+                ratesBatch.bind("rate", rate).bind("ssid_id", ssidDatabaseId).add();
             }
             ratesBatch.execute();
 
@@ -436,7 +443,8 @@ public class Dot11Table implements DataTable {
                             .bind("frequency", frequency)
                             .bind("frame_type", frameType.toLowerCase())
                             .bind("stats_bytes", stats.bytes())
-                            .bind("stats_frames", stats.frames());
+                            .bind("stats_frames", stats.frames())
+                            .add();
                 }
             }
             statsBatch.execute();
@@ -453,7 +461,8 @@ public class Dot11Table implements DataTable {
                             .bind("ssid_id", ssidDatabaseId)
                             .bind("frequency", frequency)
                             .bind("signal_strength", histo.getKey())
-                            .bind("frame_count", histo.getValue());
+                            .bind("frame_count", histo.getValue())
+                            .add();
                 }
             }
             histoBatch.execute();
@@ -465,7 +474,8 @@ public class Dot11Table implements DataTable {
             for (String infrastructureType : task.ssidReport().infrastructureTypes()) {
                 infraBatch
                         .bind("infrastructure_type", infrastructureType.toLowerCase())
-                        .bind("ssid_id", ssidDatabaseId);
+                        .bind("ssid_id", ssidDatabaseId)
+                        .add();
             }
             infraBatch.execute();
 
@@ -673,7 +683,8 @@ public class Dot11Table implements DataTable {
         for (Map.Entry<String, Long> receiver : report.receivers().entrySet()) {
                 batch.bind("disco_activity_id", activityId)
                         .bind("bssid", receiver.getKey())
-                        .bind("received_frames", receiver.getValue());
+                        .bind("received_frames", receiver.getValue())
+                        .add();
         }
 
         batch.execute();

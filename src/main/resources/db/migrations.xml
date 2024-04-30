@@ -4512,5 +4512,47 @@
         <dropIndex tableName="dot11_bssids" indexName="bssids_bssid_tapuuid" />
         <dropIndex tableName="taps" indexName="idx_taps_standard_lookup" />
     </changeSet>
-    
+
+    <changeSet id="create_tap_captures_frequencies" author="lennartkoopmann">
+        <addColumn tableName="tap_captures">
+            <column name="uuid" type="uuid" defaultValueComputed="gen_random_uuid()">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+
+        <createTable tableName="tap_captures_frequencies">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="interface_uuid" type="uuid" >
+                <constraints nullable="false" />
+            </column>
+
+            <column name="frequency" type="integer" >
+                <constraints nullable="false" />
+            </column>
+
+            <column name="channel_widths" type="text">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_freqs2captures"
+                                 baseTableName="tap_captures_frequencies"
+                                 baseColumnNames="interface_uuid"
+                                 referencedTableName="tap_captures"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="RESTRICT" />
+    </changeSet>
+
+    <changeSet id="add_cycle_time_to_tap_captures" author="lennartkoopmann">
+        <addColumn tableName="tap_captures">
+            <column name="cycle_time" type="integer">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

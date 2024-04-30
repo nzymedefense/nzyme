@@ -6,6 +6,8 @@ import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.resources.taps.reports.*;
 import app.nzyme.core.taps.db.metrics.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -13,6 +15,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
 import java.util.*;
@@ -34,6 +37,86 @@ public class TapManager {
                         .setDaemon(true)
                         .build()
         ).scheduleAtFixedRate(this::retentionCleanMetrics, 0, 5, TimeUnit.MINUTES);
+    }
+
+    public void registerTapHello(HelloReport report, UUID tapUUID) {
+        Optional<List<Capture>> c = findCapturesOfTap(tapUUID);
+        if (c.isEmpty()) {
+            return;
+        }
+
+        Map<String, Capture> captures = Maps.newHashMap();
+        for (Capture capture : c.get()) {
+            captures.put(capture.interfaceName(), capture);
+        }
+
+        ObjectMapper om = new ObjectMapper();
+        nzyme.getDatabase().useHandle(handle -> {
+            // Remove all existing frequencies of all WiFi captures of this tap. We overwrite them.
+            PreparedBatch deleteFrequencies = handle.prepareBatch("DELETE FROM tap_captures_frequencies " +
+                    "WHERE interface_uuid = :interface_uuid");
+            for (Capture capture : captures.values()) {
+                if (capture.captureType().equals("WiFi")) {
+                    deleteFrequencies.bind("interface_uuid", capture.uuid()).add();
+                }
+            }
+
+            deleteFrequencies.execute();
+
+            PreparedBatch insertFrequencies = handle.prepareBatch("INSERT INTO " +
+                    "tap_captures_frequencies(interface_uuid, frequency, " +
+                    "channel_widths) VALUES(:interface_uuid, :frequency, :channel_widths)");
+
+            for (Map.Entry<String, List<WiFiSupportedFrequencyReport>> freq : report.wifiDeviceAssignments().entrySet()) {
+                String captureName = freq.getKey();
+                List<WiFiSupportedFrequencyReport> frequencies = freq.getValue();
+
+                Capture capture = captures.get(captureName);
+                if (capture == null) {
+                    LOG.warn("Capture [{}] referenced by supported frequencies report not found.", captureName);
+                    continue;
+                }
+
+                for (WiFiSupportedFrequencyReport frequency : frequencies) {
+                    String widthJson;
+                    try {
+                        widthJson = om.writeValueAsString(frequency.channelWidths());
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    insertFrequencies
+                            .bind("interface_uuid", capture.uuid())
+                            .bind("frequency", frequency.frequency())
+                            .bind("channel_widths", widthJson)
+                            .add();
+                }
+            }
+
+            insertFrequencies.execute();
+
+            // Capture/Device cycle times.
+            PreparedBatch insertCycleTimes = handle.prepareBatch("UPDATE tap_captures " +
+                    "SET cycle_time = :cycle_time WHERE uuid = :capture_uuid");
+
+            for (Map.Entry<String, Integer> device : report.wifiDeviceCycleTimes().entrySet()) {
+                String captureName = device.getKey();
+                Integer cycleTime = device.getValue();
+
+                Capture capture = captures.get(captureName);
+                if (capture == null) {
+                    LOG.warn("Capture [{}] referenced by cycle time report not found.", captureName);
+                    continue;
+                }
+
+                insertCycleTimes
+                        .bind("capture_uuid", capture.uuid())
+                        .bind("cycle_time", cycleTime)
+                        .add();
+            }
+
+            insertCycleTimes.execute();
+        });
     }
 
     public void registerTapStatus(StatusReport report, String remoteAddress, UUID tapUUID) {
@@ -71,11 +154,12 @@ public class TapManager {
 
             if (captureCount == 0) {
                 nzyme.getDatabase().withHandle(handle ->
-                    handle.createUpdate("INSERT INTO tap_captures(tap_uuid, interface, capture_type, is_running, " +
-                            "received, dropped_buffer, dropped_interface, updated_at, created_at) VALUES(:tap_uuid, " +
-                            ":interface, :capture_type, :is_running, :received, :dropped_buffer, :dropped_interface, " +
-                            "NOW(), NOW())")
+                    handle.createUpdate("INSERT INTO tap_captures(tap_uuid, uuid, interface, capture_type, " +
+                                    "is_running, received, dropped_buffer, dropped_interface, updated_at, created_at) " +
+                                    "VALUES(:tap_uuid, :uuid, :interface, :capture_type, :is_running, :received, " +
+                                    ":dropped_buffer, :dropped_interface, NOW(), NOW())")
                             .bind("tap_uuid", tapUUID)
+                            .bind("uuid", UUID.randomUUID())
                             .bind("interface", capture.interfaceName())
                             .bind("capture_type", capture.captureType())
                             .bind("is_running", capture.isRunning())
@@ -603,6 +687,16 @@ public class TapManager {
         );
 
         return captures == null || captures.isEmpty() ? Optional.empty() : Optional.of(captures);
+    }
+
+    public List<Dot11FrequencyAndChannelWidthEntry> findDot11FrequenciesOfTap(UUID tapUuid) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT f.id, f.interface_uuid, f.frequency, f.channel_widths FROM tap_captures_frequencies f " +
+                        "LEFT JOIN tap_captures AS c ON f.interface_uuid = c.uuid " +
+                        "WHERE c.tap_uuid = :tap_uuid AND c.capture_type = 'WiFi'")
+                .bind("tap_uuid", tapUuid)
+                .mapTo(Dot11FrequencyAndChannelWidthEntry.class)
+                .list());
     }
 
     public Optional<TenantLocationFloorEntry> guessFloorOfSignalSource(List<TapBasedSignalStrengthResult> signalStrengths) {

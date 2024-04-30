@@ -3,26 +3,32 @@ package app.nzyme.core.taps;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.UUID;
+
 @AutoValue
 public abstract class Capture {
 
+    public abstract UUID uuid();
     public abstract String interfaceName();
     public abstract String captureType();
     public abstract Boolean isRunning();
     public abstract Long received();
     public abstract Long droppedBuffer();
     public abstract Long droppedInterface();
+    public abstract Integer cycleTime();
     public abstract DateTime updatedAt();
     public abstract DateTime createdAt();
 
-    public static Capture create(String interfaceName, String captureType, Boolean isRunning, Long received, Long droppedBuffer, Long droppedInterface, DateTime updatedAt, DateTime createdAt) {
+    public static Capture create(UUID uuid, String interfaceName, String captureType, Boolean isRunning, Long received, Long droppedBuffer, Long droppedInterface, Integer cycleTime, DateTime updatedAt, DateTime createdAt) {
         return builder()
+                .uuid(uuid)
                 .interfaceName(interfaceName)
                 .captureType(captureType)
                 .isRunning(isRunning)
                 .received(received)
                 .droppedBuffer(droppedBuffer)
                 .droppedInterface(droppedInterface)
+                .cycleTime(cycleTime)
                 .updatedAt(updatedAt)
                 .createdAt(createdAt)
                 .build();
@@ -34,6 +40,8 @@ public abstract class Capture {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder uuid(UUID uuid);
+
         public abstract Builder interfaceName(String interfaceName);
 
         public abstract Builder captureType(String captureType);
@@ -46,11 +54,12 @@ public abstract class Capture {
 
         public abstract Builder droppedInterface(Long droppedInterface);
 
+        public abstract Builder cycleTime(Integer cycleTime);
+
         public abstract Builder updatedAt(DateTime updatedAt);
 
         public abstract Builder createdAt(DateTime createdAt);
 
         public abstract Capture build();
     }
-
 }

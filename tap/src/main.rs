@@ -233,6 +233,7 @@ fn main() {
     }
 
     let covered_wifi_spectrum;
+    let wifi_device_cycle_times;
     if let Some(wifi_interfaces) = configuration.clone().wifi_interfaces {
         let ch = match ChannelHopper::new(wifi_interfaces) {
             Ok(ch) => ch,
@@ -242,9 +243,11 @@ fn main() {
             }
         };
         covered_wifi_spectrum = Some(ch.get_device_assignments());
+        wifi_device_cycle_times = Some(ch.get_device_cycle_times());
         ch.spawn_loop();
     } else {
         covered_wifi_spectrum = None;
+        wifi_device_cycle_times = None;
     }
 
     // Processors. TODO follow impl method like metrics aggr/mon
@@ -281,7 +284,7 @@ fn main() {
         let success = match leaderlink.lock() {
             Ok(ll) => {
                 // Send hello.
-                match ll.send_node_hello(&covered_wifi_spectrum) {
+                match ll.send_node_hello(&covered_wifi_spectrum, &wifi_device_cycle_times) {
                     Ok(_) => {
                         info!("Node hello submitted.");
                         true

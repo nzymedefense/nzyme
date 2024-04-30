@@ -232,7 +232,8 @@ pub struct Dot11ClientStatisticsReport {
 
 #[derive(Serialize)]
 pub struct NodeHelloReport {
-    pub wifi_device_assignments: HashMap<String, Vec<WiFiSupportedFrequencyReport>>
+    pub wifi_device_assignments: HashMap<String, Vec<WiFiSupportedFrequencyReport>>,
+    pub wifi_device_cycle_times: HashMap<String, u64>
 }
 
 #[derive(Serialize)]

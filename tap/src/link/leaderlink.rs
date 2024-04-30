@@ -71,7 +71,9 @@ impl Leaderlink {
         };
     }
 
-    pub fn send_node_hello(&self, wifi_device_assignments: &Option<HashMap<String, Vec<SupportedFrequency>>>)
+    pub fn send_node_hello(&self,
+                           wifi_device_assignments: &Option<HashMap<String, Vec<SupportedFrequency>>>,
+                           wifi_device_cycle_times: &Option<HashMap<String, u64>>)
         -> Result<(), anyhow::Error>{
 
         let mut wda_report = HashMap::new();
@@ -102,8 +104,16 @@ impl Leaderlink {
             }
         }
 
+        let mut ct_report = HashMap::new();
+        if wifi_device_cycle_times.is_some() {
+            for (adapter_name, cycle_time) in wifi_device_cycle_times.as_ref().unwrap() {
+                ct_report.insert(adapter_name.clone(), *cycle_time);
+            }
+        }
+
         let report = NodeHelloReport {
-            wifi_device_assignments: wda_report
+            wifi_device_assignments: wda_report,
+            wifi_device_cycle_times: ct_report
         };
 
         let mut uri = self.uri.clone();

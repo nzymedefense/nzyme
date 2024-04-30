@@ -196,3 +196,5 @@ div.accordion-item h2 {
 div.accordion-item {
     background-color: #2B2D42;
 }
+
+.sticky-head-table thead th { background-color: #2B2D42; }

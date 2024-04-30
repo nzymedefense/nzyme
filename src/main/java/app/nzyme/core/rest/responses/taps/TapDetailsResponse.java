@@ -2,9 +2,9 @@ package app.nzyme.core.rest.responses.taps;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,7 +74,10 @@ public abstract class TapDetailsResponse {
     @JsonProperty("remote_address")
     public abstract String remoteAddress();
 
-    public static TapDetailsResponse create(UUID uuid, String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, boolean active, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures, String remoteAddress) {
+    @JsonProperty("dot11_frequencies")
+    public abstract List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies();
+
+    public static TapDetailsResponse create(UUID uuid, String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, boolean active, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures, String remoteAddress, List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -94,13 +97,14 @@ public abstract class TapDetailsResponse {
                 .buses(buses)
                 .captures(captures)
                 .remoteAddress(remoteAddress)
+                .dot11Frequencies(dot11Frequencies)
                 .build();
     }
 
     public static Builder builder() {
         return new AutoValue_TapDetailsResponse.Builder();
     }
-    
+
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder uuid(UUID uuid);
@@ -138,6 +142,8 @@ public abstract class TapDetailsResponse {
         public abstract Builder captures(List<CaptureDetailsResponse> captures);
 
         public abstract Builder remoteAddress(String remoteAddress);
+
+        public abstract Builder dot11Frequencies(List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies);
 
         public abstract TapDetailsResponse build();
     }

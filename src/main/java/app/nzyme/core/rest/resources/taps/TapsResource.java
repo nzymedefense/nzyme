@@ -260,11 +260,17 @@ public class TapsResource extends UserAuthenticatedResource {
                                 capture.received(),
                                 capture.droppedBuffer(),
                                 capture.droppedInterface(),
+                                capture.cycleTime(),
                                 capture.updatedAt(),
                                 capture.createdAt()
                         )
                 );
             }
+        }
+
+        List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies = Lists.newArrayList();
+        for (Dot11FrequencyAndChannelWidthEntry fcw : nzyme.getTapManager().findDot11FrequenciesOfTap(tap.uuid())) {
+            dot11Frequencies.add(TapFrequencyAndChannelWidthsResponse.create(fcw.frequency(), fcw.channelWidths()));
         }
 
         return TapDetailsResponse.create(
@@ -285,7 +291,8 @@ public class TapsResource extends UserAuthenticatedResource {
                 tap.description(),
                 busesResponse,
                 capturesResponse,
-                tap.remoteAddress()
+                tap.remoteAddress(),
+                dot11Frequencies
         );
     }
 
