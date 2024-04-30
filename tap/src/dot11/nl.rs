@@ -42,9 +42,11 @@ pub enum InterfaceState {
     Up, Down
 }
 
-// Parse specific attributes from an 802.11 (wireless) related Netlink message
-// and return a structured response with information about a network interface,
-// such as its name, physical layer index, and interface index
+/*
+ * Parse specific attributes from an 802.11 (wireless) related Netlink message and return a 
+ * structured response with information about a network interface, such as its name, physical layer
+ * index, and interface index
+ */
 fn handle_interface_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> Result<HashMap<String, Interface>, DeError> {
     let mut phys_found: HashSet<u32> = HashSet::new();
     let mut names_found: HashMap<u32, String> = HashMap::new();
@@ -71,7 +73,10 @@ fn handle_interface_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, N
                 }
             }
 
-            // we will always see a phy index, but we may not see the other attributes on the same message
+            /* 
+             * We will always see a PHY index, but we may not see the other attributes on the 
+             * same message
+             */
             if phy_index.is_some() {
                 phys_found.insert(phy_index.unwrap());
 
@@ -87,7 +92,7 @@ fn handle_interface_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, N
         }
     }
 
-    // now lets compile all the information we found regarding the interfaces, and if we have all attributes we will return them
+    // Compile all interfaces.
     let mut interfaces = HashMap::new();
 
     for phy_index in phys_found {
@@ -110,7 +115,6 @@ fn handle_interface_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, N
 }
 
 fn handle_phy_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> Result<PhyResponse, DeError> {
-
     let mut phy_index: Option<u32> = None;
     let mut supported_frequencies: Vec<SupportedFrequency> = Vec::new();
 
@@ -122,7 +126,7 @@ fn handle_phy_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, Nl80211
                         phy_index = Some(attr.get_payload_as().map_err(|_| DeError::new("Failed to get payload as u32"))?);
                     },
                     Nl80211Attribute::WiPhyBands => {
-                        // bands is an array, get the handle for the array
+                        // Bands is an array. Get the handle for the array.
                         let bands_handle = attr.get_attr_handle::<Nl80211BandAttr>().map_err(|_| DeError::new("Failed to get WiPhyBands attribute handle"))?;
                         for bands in bands_handle.iter() {
                             // for each element of the array now we get the nested attributes
@@ -132,7 +136,7 @@ fn handle_phy_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, Nl80211
                                 #[allow(clippy::single_match)]
                                 match band_attr.nla_type().nla_type() {
                                     Nl80211BandAttr::Freqs => {
-                                        // This is an array. Get the handle for the array.
+                                        // This is also an array. Get the handle for the array.
                                         let freqs_handle = band_attr.get_attr_handle::<Nl80211FrequencyAttr>().map_err(|_| DeError::new("Failed to get WiPhyFreq attribute handle"))?;
 
                                         for freq in freqs_handle.iter() {
@@ -283,7 +287,7 @@ impl Nl {
     }
 
     pub fn fetch_device_info(&mut self, device_name: &String) -> Result<InterfaceInfo, Error> {
-        // get the device phy index
+        // Get the device PHY index.
         if let Some(device) = self.devices.get(device_name) {
             return Ok(device.clone());
         }
@@ -298,10 +302,10 @@ impl Nl {
             None => bail!("Interface [{}] not found.", device_name)
         };
 
-        // build the Nlattr to filter the dump by phy index
+        // Build the Netlink attributes to filter the dump by PHY index.
         let mut attrs: Vec<Nlattr<Nl80211Attribute, Buffer>> = vec![];
 
-        // filter by the phy number
+        // Filter by PHY index.
         let attr_filter_wiphy_dump_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::WiPhy).build() {
             Ok(t) => t,
             Err(e) => bail!("Could not construct WiPhy Netlink attribute type: {}", e)
@@ -314,7 +318,7 @@ impl Nl {
         };
         attrs.push(attr_filter_wiphy_dump);
 
-        // inform we want a split dump
+        // Inform we want a split dump.
         let attr_filter_split_dump_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::SplitWiphyDump).build() {
             Ok(t) => t,
             Err(e) => bail!("Could not construct SplitWiphyDump Netlink attribute type: {}", e)
@@ -551,12 +555,7 @@ impl Nl {
             Some(Err(e)) => bail!("Could not set monitor mode. Netlink response: {}", e),
             None => {}
         }
-        /*let _: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> =
-            match self.dot11_socket.send(self.dot11_family_id, NlmF::REQUEST | NlmF::ACK, NlPayload::Payload(payload)){
-                Ok(recv) => recv,
-                Err(e) => bail!("Could not send WiPhyFreq Netlink command: {}", e)
-            };*/
-
+        
         Ok(())
     }
 
@@ -586,20 +585,7 @@ impl Nl {
             Rtm::Setlink,
             NlmF::ROOT | NlmF::ECHO,
             NlPayload::Payload(msg))?;
-//        match self.rt_socket.recv::<u16, Buffer>() {
-//            Some(Ok(_)) => {},
-//            Some(Err(e)) => bail!("Could not set monitor mode. Netlink response: {}", e),
-//            None => {}
-//        }
-        /*let _: NlRouterReceiverHandle<GenlId, Nlmsghdr<Rtm, Ifinfomsg>> =
-            match self.rt_socket.send(
-                Rtm::Setlink,
-                NlmF::ROOT | NlmF::ECHO,
-                NlPayload::Payload(msg)) {
-                Ok(recv) => recv,
-                Err(e) => { bail!("Could not send request: {}", e); }
-            };*/
-
+        
         Ok(())
     }
 
