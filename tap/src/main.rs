@@ -110,9 +110,6 @@ fn main() {
 
     logging::initialize(&log_level);
 
-    info!("accept insecure: {}", args.accept_insecure_certs);
-
-
     info!("Starting nzyme tap version [{}].", env!("CARGO_PKG_VERSION"));
 
     // Load configuration.
@@ -235,6 +232,7 @@ fn main() {
         }
     }
 
+    let covered_wifi_spectrum;
     if let Some(wifi_interfaces) = configuration.clone().wifi_interfaces {
         let ch = match ChannelHopper::new(wifi_interfaces) {
             Ok(ch) => ch,
@@ -243,7 +241,10 @@ fn main() {
                 exit(exit_code::EX_OSERR);
             }
         };
+        covered_wifi_spectrum = Some(ch.get_device_assignments());
         ch.spawn_loop();
+    } else {
+        covered_wifi_spectrum = None;
     }
 
     // Processors. TODO follow impl method like metrics aggr/mon
@@ -274,6 +275,35 @@ fn main() {
     });
 
     info!("Bootstrap complete.");
+
+    // Send initial status with tap configuration to node. Retry until successful.
+    loop {
+        let success = match leaderlink.lock() {
+            Ok(ll) => {
+                // Send hello.
+                match ll.send_node_hello(&covered_wifi_spectrum) {
+                    Ok(_) => {
+                        info!("Node hello submitted.");
+                        true
+                    },
+                    Err(e) => {
+                        error!("Node hello failed. Retrying. Error was: {}", e);
+                        false
+                    }
+                }
+            },
+            Err(e) => {
+                error!("Could not acquire leaderlink lock to submit node hello: {}", e);
+                false
+            }
+        };
+
+        if success {
+            break
+        } else {
+            sleep(Duration::from_secs(5))
+        }
+    }
 
     loop {
         sleep(Duration::from_secs(1));

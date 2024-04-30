@@ -10,8 +10,10 @@ use crate::{
     configuration::Configuration,
     metrics::Metrics, messagebus::bus::Bus
 };
-use crate::link::payloads::TimerReport;
+use crate::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
+use crate::link::payloads::{NodeHelloReport, TimerReport, WiFiSupportedFrequencyReport};
 use crate::messagebus::channel_names::{Dot11ChannelName, EthernetChannelName};
+use crate::metrics::CaptureType::WiFi;
 use crate::metrics::ChannelUtilization;
 
 use super::{payloads::{StatusReport, SystemMetricsReport, TotalWithAverage, ChannelReport, CaptureReport}};
@@ -67,6 +69,54 @@ impl Leaderlink {
                 error!("Could not send status to leader. {}", e);
             }
         };
+    }
+
+    pub fn send_node_hello(&self, wifi_device_assignments: &Option<HashMap<String, Vec<SupportedFrequency>>>)
+        -> Result<(), anyhow::Error>{
+
+        let mut wda_report = HashMap::new();
+        if wifi_device_assignments.is_some() {
+            for (adapter_name, freqs) in wifi_device_assignments.as_ref().unwrap() {
+                let mut frequencies: Vec<WiFiSupportedFrequencyReport> = Vec::new();
+                for freq in freqs {
+                    let mut channel_widths: Vec<String> = Vec::new();
+
+                    for width in &freq.channel_widths {
+                        channel_widths.push(match width {
+                            SupportedChannelWidth::Mhz20 => "20".to_string(),
+                            SupportedChannelWidth::Mhz40Minus => "40MINUS".to_string(),
+                            SupportedChannelWidth::Mhz40Plus => "40PLUS".to_string(),
+                            SupportedChannelWidth::Mhz80 => "80".to_string(),
+                            SupportedChannelWidth::Mhz160 => "160".to_string(),
+                            SupportedChannelWidth::Mhz320 => "320".to_string(),
+                        });
+                    }
+
+                    frequencies.push(WiFiSupportedFrequencyReport {
+                        frequency: freq.frequency,
+                        channel_widths
+                    })
+                }
+
+                wda_report.insert(adapter_name.clone(), frequencies);
+            }
+        }
+
+        let report = NodeHelloReport {
+            wifi_device_assignments: wda_report
+        };
+
+        let mut uri = self.uri.clone();
+        uri.set_path("/api/taps/hello");
+
+        match self.http_client
+            .post(uri)
+            .header("Content-Type", "application/json")
+            .json(&report)
+            .send() {
+                Ok(_) => Ok(()),
+                Err(e) => bail!("HTTP POST failed: {}", e)
+        }
     }
 
     pub fn send_report(&self, path: &str, report: String) -> Result<Response, Error> {

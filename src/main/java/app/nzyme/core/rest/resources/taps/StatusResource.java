@@ -20,6 +20,7 @@ package app.nzyme.core.rest.resources.taps;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
+import app.nzyme.core.rest.resources.taps.reports.HelloReport;
 import app.nzyme.core.rest.resources.taps.reports.StatusReport;
 import jakarta.ws.rs.POST;
 import org.apache.logging.log4j.LogManager;
@@ -36,7 +37,7 @@ import org.glassfish.grizzly.http.server.Request;
 
 import java.util.UUID;
 
-@Path("/api/taps/status")
+@Path("/api/taps")
 @TapSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class StatusResource {
@@ -46,6 +47,17 @@ public class StatusResource {
     @Inject
     private NzymeNode nzyme;
 
+    @Path("/hello")
+    @POST
+    public Response hello(@Context SecurityContext sc, HelloReport report) {
+        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+
+        LOG.info("Received hello from tap [{}]: {}", tapId, report);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @Path("/status")
     @POST
     public Response status(@Context SecurityContext sc, @Context Request request, StatusReport report) {
         UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();

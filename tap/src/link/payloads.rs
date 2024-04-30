@@ -230,6 +230,17 @@ pub struct Dot11ClientStatisticsReport {
     pub signal_strength: SignalStrengthReport
 }
 
+#[derive(Serialize)]
+pub struct NodeHelloReport {
+    pub wifi_device_assignments: HashMap<String, Vec<WiFiSupportedFrequencyReport>>
+}
+
+#[derive(Serialize)]
+pub struct WiFiSupportedFrequencyReport {
+    pub frequency: u32,
+    pub channel_widths: Vec<String>
+}
+
 impl TotalWithAverage {
 
     pub fn from_metric(m: &crate::metrics::TotalWithAverage) -> Self {

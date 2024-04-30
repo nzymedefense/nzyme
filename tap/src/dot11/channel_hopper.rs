@@ -185,6 +185,10 @@ impl ChannelHopper {
         });
     }
 
+    pub fn get_device_assignments(&self) -> HashMap<String, Vec<SupportedFrequency>> {
+        self.device_assignments.clone()
+    }
+
     fn adapter_supports_frequency(frequencies: &Vec<SupportedFrequency>, frequency: u32) -> bool {
         for f in frequencies {
             if f.frequency == frequency {
