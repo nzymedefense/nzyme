@@ -1,8 +1,8 @@
-use std::fmt::Debug;
+use std::fmt::{Debug, format};
 use std::io;
 use std::iter::once;
 use std::os::fd::AsRawFd;
-use log::trace;
+use log::{info, trace};
 use neli::consts::nl::{GenlId, NlmF, Nlmsg, NlType};
 use neli::consts::socket::{NlFamily};
 use neli::err::SocketError;
@@ -104,9 +104,9 @@ impl NlSkinnyRouter {
                                     // we should never have the kernel sending an ACK request here
                                     //continue_reading = false;
                                     return Some(Err(SocketError::new("Error: ACK received")));
-                                } else if let Some(_) = m.get_err() {
+                                } else if let Some(e) = m.get_err() {
                                     //continue_reading = false;
-                                    return Some(Err(SocketError::new("Error: Netlink sent a packet error")));
+                                    return Some(Err(SocketError::new(format!("Error: Netlink sent a packet error: {}", e))));
                                 } else if nl_type == Nlmsg::Noop {
                                     // just ignore the message
                                     continue;
@@ -129,8 +129,8 @@ impl NlSkinnyRouter {
                         }
                     }
                 }
-                Err(_) => {
-                    return Some(Err(SocketError::new("Error: Netlink socket error")));
+                Err(e) => {
+                    return Some(Err(SocketError::new(format!("Error: Netlink socket error: {}", e))));
                 }
             }
         }
