@@ -3,13 +3,15 @@ use std::{collections::HashMap, thread::{sleep, self}};
 use anyhow::{Error, bail};
 use log::{error, info, debug};
 use systemstat::Duration;
+use crate::configuration::ChannelWidthHoppingMode::limited;
 use crate::configuration::WifiInterface;
 use crate::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
+use crate::dot11::supported_frequency::SupportedChannelWidth::Mhz20;
 use crate::helpers::network::{dot11_channel_to_frequency, Nl80211Band};
 
 use super::nl::Nl;
 
-const HOP_WELL_MS: u64 = 250;
+const HOP_DWELL_MS: u64 = 250;
 
 pub struct ChannelHopper {
     pub device_assignments: HashMap<String, Vec<SupportedFrequency>>
@@ -108,29 +110,53 @@ impl ChannelHopper {
             // Build final list of device assigments, including frequencies and channel widths.
             let mut frequencies: Vec<SupportedFrequency> = Vec::new();
             for channel in device_configuration.channels_2g {
-                let (frequency, channel_widths) = match dot11_channel_to_frequency(channel, Nl80211Band::Band2GHz) {
+                let (frequency, mut channel_widths) = match dot11_channel_to_frequency(channel, Nl80211Band::Band2GHz) {
                     Ok(frequency) => (frequency as u32, Self::get_all_supported_channel_widths(adapters.get(&device_name).unwrap(), frequency as u32)),
                     Err(e) => bail!("Could not get frequency for 2G channel <{}> of device [{}]: {}",
                                 channel, device_name, e)
                 };
 
+                // Set channel widths to only 20Mhz for limited channel width hopping mode.
+                if let Some(mode) = &device_configuration.channel_width_hopping_mode {
+                    if mode.eq(&limited) {
+                        channel_widths.clear();
+                        channel_widths.push(Mhz20);
+                    }
+                }
+
                 frequencies.push(SupportedFrequency { frequency, channel_widths })
             }
             for channel in device_configuration.channels_5g {
-                let (frequency, channel_widths) = match dot11_channel_to_frequency(channel, Nl80211Band::Band5GHz) {
+                let (frequency, mut channel_widths) = match dot11_channel_to_frequency(channel, Nl80211Band::Band5GHz) {
                     Ok(frequency) => (frequency as u32, Self::get_all_supported_channel_widths(adapters.get(&device_name).unwrap(), frequency as u32)),
                     Err(e) => bail!("Could not get frequency for 5G channel <{}> of device [{}]: {}",
                                 channel, device_name, e)
                 };
 
+                // Set channel widths to only 20Mhz for limited channel width hopping mode.
+                if let Some(mode) = &device_configuration.channel_width_hopping_mode {
+                    if mode.eq(&limited) {
+                        channel_widths.clear();
+                        channel_widths.push(Mhz20);
+                    }
+                }
+
                 frequencies.push(SupportedFrequency { frequency, channel_widths })
             }
             for channel in device_configuration.channels_6g {
-                let (frequency, channel_widths) = match dot11_channel_to_frequency(channel, Nl80211Band::Band6GHz) {
+                let (frequency, mut channel_widths) = match dot11_channel_to_frequency(channel, Nl80211Band::Band6GHz) {
                     Ok(frequency) => (frequency as u32, Self::get_all_supported_channel_widths(adapters.get(&device_name).unwrap(), frequency as u32)),
                     Err(e) => bail!("Could not get frequency for 6G channel <{}> of device [{}]: {}",
                                 channel, device_name, e)
                 };
+
+                // Set channel widths to only 20Mhz for limited channel width hopping mode.
+                if let Some(mode) = &device_configuration.channel_width_hopping_mode {
+                    if mode.eq(&limited) {
+                        channel_widths.clear();
+                        channel_widths.push(Mhz20);
+                    }
+                }
 
                 frequencies.push(SupportedFrequency { frequency, channel_widths })
             }
@@ -173,7 +199,7 @@ impl ChannelHopper {
                             Err(e) => error!("Could not tune [{}] to frequency [{} Mhz / {:?}]: {}", device, frequency, width, e)
                         }
 
-                        sleep(Duration::from_millis(HOP_WELL_MS));
+                        sleep(Duration::from_millis(HOP_DWELL_MS));
                     }
 
                     let next_position = match position+1 == channels.len() {
@@ -201,7 +227,7 @@ impl ChannelHopper {
                 hop_count += freq.channel_widths.len() as u64;
             }
 
-            cycle_times.insert(device.clone(), hop_count*HOP_WELL_MS);
+            cycle_times.insert(device.clone(), hop_count* HOP_DWELL_MS);
         }
 
         cycle_times

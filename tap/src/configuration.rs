@@ -33,10 +33,17 @@ pub struct EthernetInterface {
 #[derive(Debug, Clone, Deserialize)]
 pub struct WifiInterface {
     pub active: bool,
+    pub channel_width_hopping_mode: Option<ChannelWidthHoppingMode>,
     pub disable_hopper: Option<bool>,
     pub channels_2g: Vec<u16>,
     pub channels_5g: Vec<u16>,
     pub channels_6g: Vec<u16>,
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Deserialize, Eq, PartialEq)]
+pub enum ChannelWidthHoppingMode {
+    full, limited
 }
 
 #[derive(Debug, Clone, Deserialize)]
