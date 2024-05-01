@@ -172,45 +172,33 @@ impl ChannelHopper {
 
         info!("Channel map: {:?}", device_assigments);
 
-        let mut nl = match Nl::new() {
-            Ok(nl) => nl,
-            Err(e) => {
-                error!("Could not establish Netlink connection: {}", e);
-                return
-            }
-        };
-
-        thread::spawn(move || {
-            let mut positions: HashMap<&String, u16> = HashMap::new();
-
-            for device in device_assigments.keys() {
-                positions.insert(device, 0);
-            }
-
-            loop {
-                for (device, channels) in &device_assigments {
-                    let position = *positions.get(&device).unwrap() as usize;
-                    let frequency_info = channels.get(position).unwrap();
-                    let frequency = frequency_info.frequency;
-
-                    for width in &*frequency_info.channel_widths {
-                        match nl.set_device_frequency(device, frequency, width) { // EXTEND WITH WIDTH
-                            Ok(()) => debug!("Device [{}] now tuned to frequency [{} Mhz / {:?}].", device, frequency, width),
-                            Err(e) => error!("Could not tune [{}] to frequency [{} Mhz / {:?}]: {}", device, frequency, width, e)
-                        }
-
-                        sleep(Duration::from_millis(HOP_DWELL_MS));
+        // Spawn a hopper thread for each device.
+        for (device, channels) in device_assigments {
+            thread::spawn(move || {
+                let mut nl = match Nl::new() {
+                    Ok(nl) => nl,
+                    Err(e) => {
+                        error!("Could not establish Netlink connection: {}", e);
+                        return
                     }
+                };
 
-                    let next_position = match position+1 == channels.len() {
-                        true => 0, // Reached end of assigned channels. Next iteration starts at the beginning.
-                        false => position+1
-                    };
+                loop {
+                    for channel in &channels {
+                        let frequency = channel.frequency;
 
-                    positions.insert(device, next_position as u16);
+                        for width in &channel.channel_widths {
+                            match nl.set_device_frequency(&device, frequency, width) {
+                                Ok(()) => debug!("Device [{}] now tuned to frequency [{} Mhz / {:?}].", device, frequency, width),
+                                Err(e) => error!("Could not tune [{}] to frequency [{} Mhz / {:?}]: {}", device, frequency, width, e)
+                            }
+
+                            sleep(Duration::from_millis(HOP_DWELL_MS));
+                        }
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     pub fn get_device_assignments(&self) -> HashMap<String, Vec<SupportedFrequency>> {
