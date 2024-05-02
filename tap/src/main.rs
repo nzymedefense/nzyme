@@ -38,9 +38,6 @@ struct Arguments {
 
     #[clap(short, long, required_unless_present("configuration_file"))]
     generate_channels: bool,
-
-    #[clap(long, required_unless_present("configuration_file"))]
-    accept_insecure_certs: bool
 }
 
 fn main() {
