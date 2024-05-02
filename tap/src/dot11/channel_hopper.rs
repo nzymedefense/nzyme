@@ -207,7 +207,7 @@ impl ChannelHopper {
 
     pub fn get_device_cycle_times(&self) -> HashMap<String, u64> {
         let mut cycle_times = HashMap::new();
-
+        
         for (device, freqs) in &self.device_assignments {
             let mut hop_count: u64 = 0;
 

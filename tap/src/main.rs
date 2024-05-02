@@ -265,12 +265,12 @@ fn main() {
     let leaderlink_runner = leaderlink.clone();
     thread::spawn(move || { // TODO capsule into struct
         loop {
-            sleep(Duration::from_secs(10));
-
             match leaderlink_runner.lock() {
                 Ok(mut link) => link.run(),
                 Err(e) => error!("Could not acquire Leaderlink mutex to run background jobs.")
             }
+
+            sleep(Duration::from_secs(10));
         }
     });
 
@@ -278,6 +278,8 @@ fn main() {
 
     // Send initial status with tap configuration to node. Retry until successful.
     loop {
+        sleep(Duration::from_secs(5));
+        
         let success = match leaderlink.lock() {
             Ok(ll) => {
                 // Send hello.
@@ -300,8 +302,6 @@ fn main() {
 
         if success {
             break
-        } else {
-            sleep(Duration::from_secs(5))
         }
     }
 
