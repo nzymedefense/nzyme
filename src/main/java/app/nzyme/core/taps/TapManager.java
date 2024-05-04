@@ -40,7 +40,7 @@ public class TapManager {
     }
 
     public void registerTapHello(HelloReport report, UUID tapUUID) {
-        Optional<List<Capture>> c = findCapturesOfTap(tapUUID);
+        Optional<List<Capture>> c = findCapturesOfTap(tapUUID, new DateTime(0));
         if (c.isEmpty()) {
             return;
         }
@@ -677,11 +677,15 @@ public class TapManager {
         return channels == null || channels.isEmpty() ? Optional.empty() : Optional.of(channels);
     }
 
-    public Optional<List<Capture>> findCapturesOfTap(UUID tapUUID) {
+    public Optional<List<Capture>> findActiveCapturesOfTap(UUID tapUUID) {
+        return findCapturesOfTap(tapUUID, DateTime.now().minusMinutes(1));
+    }
+
+    public Optional<List<Capture>> findCapturesOfTap(UUID tapUUID, DateTime since) {
         List<Capture> captures = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM tap_captures WHERE tap_uuid = :tap_uuid AND updated_at > :last_seen")
                         .bind("tap_uuid", tapUUID)
-                        .bind("last_seen", DateTime.now().minusMinutes(1))
+                        .bind("last_seen", since)
                         .mapTo(Capture.class)
                         .list()
         );

@@ -249,7 +249,7 @@ public class TapsResource extends UserAuthenticatedResource {
         }
 
         List<CaptureDetailsResponse> capturesResponse = Lists.newArrayList();
-        Optional<List<Capture>> captures = nzyme.getTapManager().findCapturesOfTap(tap.uuid());
+        Optional<List<Capture>> captures = nzyme.getTapManager().findActiveCapturesOfTap(tap.uuid());
         if (captures.isPresent()) {
             for (Capture capture : captures.get()) {
                 capturesResponse.add(
