@@ -1,0 +1,183 @@
+package app.nzyme.core.tables.tcp;
+
+import app.nzyme.core.NzymeNode;
+import app.nzyme.core.ethernet.EthernetRegistryKeys;
+import app.nzyme.core.ethernet.tcp.TcpSessionState;
+import app.nzyme.core.ethernet.tcp.db.TcpSessionEntry;
+import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
+import app.nzyme.core.integrations.geoip.GeoIpService;
+import app.nzyme.core.ouis.OUIManager;
+import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
+import app.nzyme.core.tables.DataTable;
+import app.nzyme.core.tables.TablesService;
+import app.nzyme.core.util.MetricNames;
+import com.codahale.metrics.Timer;
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Optional;
+import java.util.UUID;
+
+public class TCPTable implements DataTable {
+
+    private static final Logger LOG = LogManager.getLogger(TCPTable.class);
+
+    private final TablesService tablesService;
+
+    private final Timer totalReportTimer;
+    private final Timer sessionsReportTimer;
+
+    private final GeoIpService geoIp;
+
+    public TCPTable(TablesService tablesService) {
+        this.tablesService = tablesService;
+
+        this.geoIp = tablesService.getNzyme().getGeoIpService();
+
+        this.totalReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.TCP_TOTAL_REPORT_PROCESSING_TIMER);
+
+        this.sessionsReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.TCP_SESSIONS_REPORT_PROCESSING_TIMER);
+    }
+
+    public void handleReport(UUID tapUuid, DateTime timestamp, TcpSessionsReport report) {
+        try (Timer.Context ignored = totalReportTimer.time()) {
+            try (Timer.Context ignored2 = sessionsReportTimer.time()) {
+                for (TcpSessionReport session : report.sessions()) {
+                    tablesService.getProcessorPool().submit(() -> writeSession(tapUuid, timestamp, session));
+                }
+            }
+        }
+    }
+
+    private void writeSession(UUID tapUuid, DateTime timestamp, TcpSessionReport session) {
+        try {
+            String sessionKey = Hashing.sha256().hashString(
+                    session.sourceAddress() + session.destinationAddress() + session.sourcePort() + session.destinationPort(),
+                    Charsets.UTF_8
+            ).toString();
+
+            InetAddress sourceAddress;
+            InetAddress destinationAddress;
+            try {
+                sourceAddress = InetAddress.getByName(session.sourceAddress());
+                destinationAddress = InetAddress.getByName(session.destinationAddress());
+            } catch (UnknownHostException e) {
+                // This shouldn't happen because we pass IP addresses.
+                throw new RuntimeException(e);
+            }
+
+            Optional<GeoIpLookupResult> sourceGeo = geoIp.lookup(sourceAddress);
+            Optional<GeoIpLookupResult> destinationGeo = geoIp.lookup(destinationAddress);
+
+            tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                Optional<TcpSessionEntry> existingSession = handle.createQuery("SELECT * FROM l4_sessions " +
+                                "WHERE session_key = :session_key AND end_time IS NULL")
+                        .bind("session_key", sessionKey)
+                        .mapTo(TcpSessionEntry.class)
+                        .findOne();
+
+                if (existingSession.isPresent()) {
+                    // Existing session. Update.
+                    handle.createUpdate("UPDATE l4_sessions SET state = :state, " +
+                                    "bytes_count = :bytes_count, segments_count = :segments_count, " +
+                                    "end_time = :end_time, most_recent_segment_time = :most_recent_segment_time " +
+                                    "WHERE id = :id")
+                            .bind("state", TcpSessionState.valueOf(session.state().toUpperCase()))
+                            .bind("bytes_count", session.bytesCount())
+                            .bind("segments_count", session.segmentsCount())
+                            .bind("end_time", session.endTime())
+                            .bind("most_recent_segment_time", session.mostRecentSegmentTime())
+                            .bind("id", existingSession.get().id())
+                            .execute();
+                } else {
+                    // This is a new session.
+                    handle.createUpdate("INSERT INTO l4_sessions(tap_uuid, l4_type, session_key, " +
+                                    "source_mac, source_address, source_port, destination_mac, " +
+                                    "destination_address, destination_port, bytes_count, segments_count, " +
+                                    "start_time, end_time, most_recent_segment_time, state, " +
+                                    "source_address_geo_asn_number, source_address_geo_asn_name, " +
+                                    "source_address_geo_asn_domain, source_address_geo_city, " +
+                                    "source_address_geo_country_code, " +
+                                    "source_address_geo_country_latitude, source_address_geo_country_longitude, " +
+                                    "destination_address_geo_asn_number, destination_address_geo_asn_name, " +
+                                    "destination_address_geo_asn_domain, destination_address_geo_city, " +
+                                    "destination_address_geo_country_code, " +
+                                    "destination_address_geo_country_latitude, destination_address_geo_country_longitude, " +
+                                    "created_at) VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, :source_address, " +
+                                    ":source_port, :destination_mac, :destination_address, " +
+                                    ":destination_port, :bytes_count, :segments_count, :start_time, " +
+                                    ":end_time, :most_recent_segment_time, :state, " +
+                                    ":source_address_geo_asn_number, :source_address_geo_asn_name, " +
+                                    ":source_address_geo_asn_domain, :source_address_geo_city, " +
+                                    ":source_address_geo_country_code, " +
+                                    ":source_address_geo_country_latitude, :source_address_geo_country_longitude, " +
+                                    ":destination_address_geo_asn_number, :destination_address_geo_asn_name, " +
+                                    ":destination_address_geo_asn_domain, :destination_address_geo_city, " +
+                                    ":destination_address_geo_country_code, " +
+                                    ":destination_address_geo_country_latitude, :destination_address_geo_country_longitude, " +
+                                    ":created_at)")
+                            .bind("tap_uuid", tapUuid)
+                            .bind("l4_type", "TCP")
+                            .bind("session_key", sessionKey)
+                            .bind("source_mac", session.sourceMac())
+                            .bind("source_address", session.sourceAddress())
+                            .bind("source_port", session.sourcePort())
+                            .bind("destination_mac", session.destinationMac())
+                            .bind("destination_address", session.destinationAddress())
+                            .bind("destination_port", session.destinationPort())
+                            .bind("bytes_count", session.bytesCount())
+                            .bind("segments_count", session.segmentsCount())
+                            .bind("start_time", session.startTime())
+                            .bind("end_time", session.endTime())
+                            .bind("most_recent_segment_time", session.mostRecentSegmentTime())
+                            .bind("state", TcpSessionState.valueOf(session.state().toUpperCase()))
+                            .bind("source_address_geo_asn_number", sourceGeo.map(g -> g.asn().number()).orElse(null))
+                            .bind("source_address_geo_asn_name", sourceGeo.map(g -> g.asn().name()).orElse(null))
+                            .bind("source_address_geo_asn_domain", sourceGeo.map(g -> g.asn().domain()).orElse(null))
+                            .bind("source_address_geo_city", sourceGeo.map(g -> g.geo().city()).orElse(null))
+                            .bind("source_address_geo_country_code", sourceGeo.map(g -> g.geo().countryCode()).orElse(null))
+                            .bind("source_address_geo_country_latitude", sourceGeo.map(g -> g.geo().latitude()).orElse(null))
+                            .bind("source_address_geo_country_longitude", sourceGeo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("destination_address_geo_asn_number", destinationGeo.map(g -> g.asn().number()).orElse(null))
+                            .bind("destination_address_geo_asn_name", destinationGeo.map(g -> g.asn().name()).orElse(null))
+                            .bind("destination_address_geo_asn_domain", destinationGeo.map(g -> g.asn().domain()).orElse(null))
+                            .bind("destination_address_geo_city", destinationGeo.map(g -> g.geo().city()).orElse(null))
+                            .bind("destination_address_geo_country_code", destinationGeo.map(g -> g.geo().countryCode()).orElse(null))
+                            .bind("destination_address_geo_country_latitude", destinationGeo.map(g -> g.geo().latitude()).orElse(null))
+                            .bind("destination_address_geo_country_longitude", destinationGeo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("created_at", timestamp)
+                            .execute();
+                }
+            });
+        } catch(Exception e) {
+            LOG.error("Could not write TCP session.", e);
+        }
+    }
+
+    @Override
+    public void retentionClean() {
+        NzymeNode nzyme = tablesService.getNzyme();
+        int l4RetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                .getValue(EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key())
+                .orElse(EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
+        );
+        DateTime l4CutOff = DateTime.now().minusDays(l4RetentionDays);
+
+        LOG.info("Ethernet/L4 data retention: <{}> days / Delete data older than <{}>.",
+                l4RetentionDays, l4CutOff);
+
+        nzyme.getDatabase().useHandle(handle -> {
+            handle.createUpdate("DELETE FROM l4_sessions WHERE created_at < :cutoff")
+                    .bind("cutoff", l4CutOff)
+                    .execute();
+        });
+    }
+}

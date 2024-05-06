@@ -31,7 +31,7 @@ public class GeoIpService {
     public GeoIpService(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
-        this.cache = CacheBuilder.newBuilder()
+        this.cache = CacheBuilder.newBuilder() // TODO Configurable
                 .maximumSize(10000)
                 .expireAfterWrite(10, TimeUnit.MINUTES)
                 .build(new CacheLoader<>() {

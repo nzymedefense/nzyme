@@ -7,10 +7,7 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class GeoIpLookupResult {
 
-    @Nullable
     public abstract GeoIpAsnInformation asn();
-
-    @Nullable
     public abstract GeoIpGeoInformation geo();
 
     public static GeoIpLookupResult create(GeoIpAsnInformation asn, GeoIpGeoInformation geo) {

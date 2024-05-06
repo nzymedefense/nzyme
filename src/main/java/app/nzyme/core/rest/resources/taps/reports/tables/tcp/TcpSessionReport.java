@@ -22,7 +22,7 @@ public abstract class TcpSessionReport {
     @Nullable
     public abstract DateTime endTime();
     public abstract DateTime mostRecentSegmentTime();
-    public abstract long segmentCount();
+    public abstract long segmentsCount();
     public abstract long bytesCount();
     @Nullable
     public abstract List<String> tags();
@@ -38,7 +38,7 @@ public abstract class TcpSessionReport {
                                           @JsonProperty("start_time") DateTime startTime,
                                           @JsonProperty("end_time") DateTime endTime,
                                           @JsonProperty("most_recent_segment_time") DateTime mostRecentSegmentTime,
-                                          @JsonProperty("segment_count") long segmentCount,
+                                          @JsonProperty("segments_count") long segmentsCount,
                                           @JsonProperty("bytes_count") long bytesCount,
                                           @JsonProperty("tags") List<String> tags) {
         return builder()
@@ -52,7 +52,7 @@ public abstract class TcpSessionReport {
                 .startTime(startTime)
                 .endTime(endTime)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
-                .segmentCount(segmentCount)
+                .segmentsCount(segmentsCount)
                 .bytesCount(bytesCount)
                 .tags(tags)
                 .build();
@@ -84,7 +84,7 @@ public abstract class TcpSessionReport {
 
         public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
 
-        public abstract Builder segmentCount(long segmentCount);
+        public abstract Builder segmentsCount(long segmentCount);
 
         public abstract Builder bytesCount(long bytesCount);
 

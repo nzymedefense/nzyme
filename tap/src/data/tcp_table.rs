@@ -36,7 +36,7 @@ pub struct TcpSession {
     pub start_time: DateTime<Utc>,
     pub end_time: Option<DateTime<Utc>>,
     pub most_recent_segment_time: DateTime<Utc>,
-    pub segment_count: u64,
+    pub segments_count: u64,
     pub bytes_count: u64,
     pub segments_client_to_server: BTreeMap<u32, Vec<u8>>,
     pub segments_server_to_client: BTreeMap<u32, Vec<u8>>,
@@ -81,7 +81,7 @@ impl TcpTable {
 
                         session.most_recent_segment_time = segment.timestamp;
                         session.state = session_state.clone();
-                        session.segment_count += 1;
+                        session.segments_count += 1;
                         session.bytes_count += segment.size as u64;
 
                         if session.end_time.is_none() && (session_state == ClosedFin || session_state == ClosedRst) {
@@ -133,7 +133,7 @@ impl TcpTable {
                                 source_port: segment.source_port,
                                 destination_address: segment.destination_address,
                                 destination_port: segment.destination_port,
-                                segment_count: 1,
+                                segments_count: 1,
                                 bytes_count: segment.size as u64,
                                 segments_client_to_server: BTreeMap::new(),
                                 segments_server_to_client: BTreeMap::new(),

@@ -4555,4 +4555,170 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="create_l4_sessions_table" author="lennartkoopmann">
+        <createTable tableName="l4_sessions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="l4_type" type="varchar(3)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="source_mac" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="source_address" type="varchar(45)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="source_port" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="destination_mac" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="destination_address" type="varchar(45)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="destination_port" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="bytes_count" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="segments_count" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="start_time" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="end_time" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="most_recent_segment_time" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="state" type="varchar(32)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add_session_key_to_l4_sessions" author="lennartkoopmann">
+        <addColumn tableName="l4_sessions">
+            <column name="session_key" type="varchar(64)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="make_l4_end_time_nullable" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="l4_sessions" columnName="end_time" />
+    </changeSet>
+
+    <changeSet id="add_l4_oui_and_geo_info" author="lennartkoopmann">
+        <addColumn tableName="l4_sessions">
+            <column name="source_mac_oui" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="destination_mac_oui" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="source_address_geo_asn_number" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="source_address_geo_asn_name" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="source_address_geo_asn_domain" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="source_address_geo_city" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="source_address_geo_country_code" type="varchar(2)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="source_address_geo_country_name" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="source_address_geo_country_latitude" type="float">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="source_address_geo_country_longitude" type="float">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_missing_l4_oui_and_geo_info" author="lennartkoopmann">
+        <addColumn tableName="l4_sessions">
+            <column name="destination_address_geo_asn_number" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="destination_address_geo_asn_name" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="destination_address_geo_asn_domain" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="destination_address_geo_city" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="destination_address_geo_country_code" type="varchar(2)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="destination_address_geo_country_name" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="destination_address_geo_country_latitude" type="float">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="destination_address_geo_country_longitude" type="float">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="remove_redundant_l4_fields" author="lennartkoopmann">
+        <dropColumn tableName="l4_sessions" columnName="source_mac_oui" />
+        <dropColumn tableName="l4_sessions" columnName="destination_mac_oui" />
+        <dropColumn tableName="l4_sessions" columnName="source_address_geo_country_name" />
+        <dropColumn tableName="l4_sessions" columnName="destination_address_geo_country_name" />
+    </changeSet>
 </databaseChangeLog>

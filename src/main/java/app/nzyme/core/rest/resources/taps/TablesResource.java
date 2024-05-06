@@ -70,8 +70,7 @@ public class TablesResource {
         UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
 
         LOG.debug("Received TCP session table report from [{}]: {}", tapId, report);
-
-        // Store in combined TCP/UDP table.
+        nzyme.getTablesService().tcp().handleReport(tapId, DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }
