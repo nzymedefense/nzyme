@@ -48,6 +48,7 @@ import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.ConnectionException;
 import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
@@ -158,7 +159,24 @@ public class DatabaseImpl implements Database {
         }
 
         // Run migrations against underlying JDBC connection.
-        JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());
+        JdbcConnection connection;
+
+        // Try to establish connection, retry if connection fails.
+        while (true) {
+            try {
+                connection = new JdbcConnection(jdbi.open().getConnection());
+                break;
+            } catch (ConnectionException e) {
+                LOG.warn("Could not connect to PostgreSQL. Retrying.", e);
+
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+
         Liquibase liquibase = null;
         try {
             liquibase.database.Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
