@@ -265,6 +265,36 @@ public class DetectionAlertService {
         });
     }
 
+    public long countActiveAlerts(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle -> {
+            Query query;
+            if (organizationId == null && tenantId == null) {
+                // Super Admin.
+                query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts " +
+                                "WHERE is_resolved = false AND last_seen > :cutoff")
+                        .bind("cutoff", DateTime.now().minusMinutes(ACTIVE_THRESHOLD_MINUTES));
+            } else if (organizationId != null && tenantId == null) {
+                // Organization Admin.
+                query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts " +
+                                "WHERE organization_id = :organization_id " +
+                                "AND is_resolved = false AND last_seen > :cutoff")
+                        .bind("organization_id", organizationId)
+                        .bind("cutoff", DateTime.now().minusMinutes(ACTIVE_THRESHOLD_MINUTES));
+            } else {
+                // Tenant User.
+                query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND is_resolved = false AND last_seen > :cutoff")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("cutoff", DateTime.now().minusMinutes(ACTIVE_THRESHOLD_MINUTES));
+            }
+
+            return query.mapTo(Long.class).one();
+        });
+    }
+
+
     public Optional<DetectionAlertEntry> findAlert(UUID uuid,
                                                    @Nullable UUID organizationId,
                                                    @Nullable UUID tenantId) {

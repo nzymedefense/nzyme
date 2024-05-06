@@ -10,6 +10,8 @@ import AlertActionMultiSelector from "./AlertActionMultiSelector";
 import {userHasPermission} from "../../util/Tools";
 import {UserContext} from "../../App";
 
+import numeral from "numeral";
+
 const detectionAlertsService = new DetectionAlertsService();
 
 const loadData = function(setAlerts, page, perPage) {
@@ -121,16 +123,16 @@ function AlertsTable() {
                 show={userHasPermission(user, "alerts_manage")}
                 selectedRows={selectedRows}
                 onDeleteSelected={deleteSelected}
-                onResolveSelected={resolveSelected} />
+                onResolveSelected={resolveSelected}/>
           </div>
 
           <div className="float-end">
             <AutoRefreshSelector isAutoRefresh={isAutoRefresh}
                                  setIsAutoRefresh={setIsAutoRefresh}
-                                 lastUpdated={lastUpdated} />
+                                 lastUpdated={lastUpdated}/>
           </div>
 
-          <div style={{clear: "both"}} />
+          <div style={{clear: "both"}}/>
         </div>
 
         <table className="table table-sm table-hover table-striped">

@@ -78,6 +78,11 @@ public class AlertsResource extends UserAuthenticatedResource {
                 authenticatedUser.getTenantId()
         );
 
+        long totalActive = nzyme.getDetectionAlertService().countActiveAlerts(
+                authenticatedUser.getOrganizationId(),
+                authenticatedUser.getTenantId()
+        );
+
         List<DetectionAlertDetailsResponse> responsesList = Lists.newArrayList();
         for (DetectionAlertEntry alert : alerts) {
             List<DetectionAlertAttributeEntry> attributes = nzyme.getDetectionAlertService()
@@ -86,7 +91,7 @@ public class AlertsResource extends UserAuthenticatedResource {
             responsesList.add(buildDetailsResponse(alert, attributes));
         }
 
-        return Response.ok(DetectionAlertListResponse.create(total, responsesList)).build();
+        return Response.ok(DetectionAlertListResponse.create(total, totalActive, responsesList)).build();
     }
 
     @GET

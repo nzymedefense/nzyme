@@ -11,12 +11,16 @@ public abstract class DetectionAlertListResponse {
     @JsonProperty("total")
     public abstract long total();
 
+    @JsonProperty("total_active")
+    public abstract long totalActive();
+
     @JsonProperty("alerts")
     public abstract List<DetectionAlertDetailsResponse> alerts();
 
-    public static DetectionAlertListResponse create(long total, List<DetectionAlertDetailsResponse> alerts) {
+    public static DetectionAlertListResponse create(long total, long totalActive, List<DetectionAlertDetailsResponse> alerts) {
         return builder()
                 .total(total)
+                .totalActive(totalActive)
                 .alerts(alerts)
                 .build();
     }
@@ -28,6 +32,8 @@ public abstract class DetectionAlertListResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder total(long total);
+
+        public abstract Builder totalActive(long totalActive);
 
         public abstract Builder alerts(List<DetectionAlertDetailsResponse> alerts);
 
