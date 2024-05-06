@@ -18,11 +18,11 @@
 package app.nzyme.core.periodicals.versioncheck;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.distributed.NodeRegistryKeys;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.net.HttpHeaders;
-import app.nzyme.core.MemoryRegistry;
 import app.nzyme.core.Version;
 import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.util.Wall;
@@ -95,9 +95,11 @@ public class VersioncheckThread extends Periodical {
                             + version.getVersionString() + ". The currently available stable version is v"
                             + versionResponse.getFullVersionString() + " (released at " +
                             versionResponse.releasedAt + ").";
-                    LOG.info("\n" + Wall.build("WARNING! OUTDATED VERSION!", text));
+                    LOG.info("\n{}", Wall.build("WARNING! OUTDATED VERSION!", text));
 
-                    nzyme.getRegistry().setBool(MemoryRegistry.KEY.NEW_VERSION_AVAILABLE, true);
+                    nzyme.getDatabaseCoreRegistry().setValue(NodeRegistryKeys.VERSIONCHECK_STATUS.key(), "true");
+                } else {
+                    nzyme.getDatabaseCoreRegistry().setValue(NodeRegistryKeys.VERSIONCHECK_STATUS.key(), "false");
                 }
 
                 LOG.info("Successfully completed version check. Everything seems up to date.");

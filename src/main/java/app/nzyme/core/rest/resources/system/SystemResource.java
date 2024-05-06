@@ -19,6 +19,7 @@ package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.branding.BrandingRegistryKeys;
+import app.nzyme.core.distributed.NodeRegistryKeys;
 import app.nzyme.core.rest.requests.UpdateSidebarTitleRequest;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.rest.responses.system.SidebarTitleResponse;
@@ -26,7 +27,6 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraint;
 import app.nzyme.plugin.rest.configuration.ConstraintValidationResult;
 import app.nzyme.plugin.rest.configuration.ConstraintValidator;
 import app.nzyme.plugin.rest.security.PermissionLevel;
-import app.nzyme.core.MemoryRegistry;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.responses.system.VersionResponse;
 
@@ -67,9 +67,14 @@ public class SystemResource {
     @GET
     @Path("/version")
     public Response getVersion() {
+        boolean newVersionAvailable = Boolean.valueOf(nzyme.getDatabaseCoreRegistry()
+                .getValue(NodeRegistryKeys.VERSIONCHECK_STATUS.key())
+                .orElse("false")
+        );
+
         return Response.ok(VersionResponse.create(
                 nzyme.getVersion().getVersionString(),
-                nzyme.getRegistry().getBool(MemoryRegistry.KEY.NEW_VERSION_AVAILABLE),
+                newVersionAvailable,
                 nzyme.getConfiguration().versionchecksEnabled()
         )).build();
     }

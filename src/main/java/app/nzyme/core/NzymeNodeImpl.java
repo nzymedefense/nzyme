@@ -96,7 +96,6 @@ public class NzymeNodeImpl implements NzymeNode {
     private final NzymeHttpServer httpServer;
 
     private final MetricRegistry metrics;
-    private final MemoryRegistry memoryRegistry;
     private final OUIManager ouiManager;
     private final TapManager tapManager;
     private final MessageBus messageBus;
@@ -165,7 +164,6 @@ public class NzymeNodeImpl implements NzymeNode {
         this.tapManager = new TapManager(this);
 
         this.crypto = new Crypto(this);
-        this.memoryRegistry = new MemoryRegistry();
         this.objectMapper = new ObjectMapper();
 
         this.healthMonitor = new HealthMonitor(this);
@@ -385,11 +383,6 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public MetricRegistry getMetrics() {
         return metrics;
-    }
-
-    @Override
-    public MemoryRegistry getRegistry() {
-        return memoryRegistry;
     }
 
     @Override

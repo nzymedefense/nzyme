@@ -72,8 +72,6 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
 
     MetricRegistry getMetrics();
 
-    MemoryRegistry getRegistry();
-
     Database getDatabase();
 
     EventEngine getEventEngine();

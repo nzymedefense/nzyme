@@ -4721,4 +4721,8 @@
         <dropColumn tableName="l4_sessions" columnName="source_address_geo_country_name" />
         <dropColumn tableName="l4_sessions" columnName="destination_address_geo_country_name" />
     </changeSet>
+
+    <changeSet id="remove_base_configuration" author="lennartkoopmann">
+        <dropTable tableName="base_configuration" />
+    </changeSet>
 </databaseChangeLog>

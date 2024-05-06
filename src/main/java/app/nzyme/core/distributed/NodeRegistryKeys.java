@@ -17,4 +17,13 @@ public class NodeRegistryKeys {
             false
     );
 
+    public static final RegistryKey VERSIONCHECK_STATUS = RegistryKey.create(
+            "versioncheck_status",
+            Optional.of(new ArrayList<>() {{
+                ConfigurationEntryConstraint.createSimpleBooleanConstraint();
+            }}),
+            Optional.empty(),
+            false
+    );
+
 }

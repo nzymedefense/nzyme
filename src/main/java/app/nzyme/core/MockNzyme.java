@@ -85,7 +85,6 @@ public class MockNzyme implements NzymeNode {
     private final OUIManager ouiManager;
     private final MetricRegistry metricRegistry;
     private final ObjectMapper objectMapper;
-    private final MemoryRegistry memoryRegistry;
     private final Version version;
     private final Database database;
     private final Path dataDirectory;
@@ -173,7 +172,6 @@ public class MockNzyme implements NzymeNode {
 
         this.crypto = new Crypto(this);
 
-        this.memoryRegistry = new MemoryRegistry();
         this.ouiManager = new OUIManager(this);
         this.objectMapper = new ObjectMapper();
 
@@ -264,11 +262,6 @@ public class MockNzyme implements NzymeNode {
     @Override
     public MetricRegistry getMetrics() {
         return metricRegistry;
-    }
-
-    @Override
-    public MemoryRegistry getRegistry() {
-        return memoryRegistry;
     }
 
     @Override
