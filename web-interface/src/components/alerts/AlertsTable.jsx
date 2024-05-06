@@ -24,6 +24,7 @@ function AlertsTable() {
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [allRowsSelected, setAllRowsSelected] = useState(false);
 
   const perPage = 25;
   const [page, setPage] = useState(1);
@@ -31,7 +32,7 @@ function AlertsTable() {
   const [revision, setRevision] = useState(0);
 
   const onRowSelect = (uuid) => {
-    let copy = [...selectedRows];
+    const copy = [...selectedRows];
 
     if (copy.includes(uuid)) {
       // Unselect.
@@ -67,6 +68,24 @@ function AlertsTable() {
       setSelectedRows([]);
       notify.show("Selected alerts marked as resolved.", "success");
     })
+  }
+
+  const handleAllRowsSelected = () => {
+    if (allRowsSelected) {
+      // Unselect
+      setAllRowsSelected(false);
+      setSelectedRows([]);
+    } else {
+      // Select
+      setAllRowsSelected(true);
+
+      const selected = [];
+      alerts.alerts.forEach((alert) => {
+        selected.push(alert.id);
+      })
+
+      setSelectedRows(selected);
+    }
   }
 
   useEffect(() => {
@@ -117,7 +136,12 @@ function AlertsTable() {
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
-            <th>&nbsp;</th>
+            <th>
+              <input className="form-check-input"
+                     type="checkbox"
+                     checked={allRowsSelected}
+                     onChange={handleAllRowsSelected}/>
+            </th>
             <th>&nbsp;</th>
             <th>Details</th>
             <th>Type</th>
