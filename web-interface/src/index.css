@@ -756,6 +756,16 @@ span.mac-address-oui {
     font-size: 13px;
 }
 
+a.asn-number, span.asn-number {
+    font-family: 'B612 Mono', monospace;
+    font-size: 12px;
+}
+
+a.ip-address, span.ip-address {
+    font-family: 'B612 Mono', monospace;
+    font-size: 12px;
+}
+
 select.monitored-network-selector {
     width: 400px;
     display: inline-block;
