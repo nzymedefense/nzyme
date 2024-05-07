@@ -42,7 +42,7 @@ public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
             "geoipprov_ipinfo_api_key",
             Optional.empty(),
             Optional.empty(),
-            true
+            false
     );
 
     private final URL mmdbUri;
