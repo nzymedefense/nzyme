@@ -52,17 +52,20 @@ impl UDPProcessor {
         let mut tags = vec![];
 
         if let Ok(dns) = dns_parser::parse(datagram) {
-            tags.push(Dns);
-            tags.push(Unencrypted);
+            // Validity check.
+            if dns.question_count > 0 || dns.answer_count > 0 {
+                tags.push(Dns);
+                tags.push(Unencrypted);
 
-            // To DNS pipeline.
-            let size = dns.size;
-            to_pipeline!(
+                // To DNS pipeline.
+                let size = dns.size;
+                to_pipeline!(
                 EthernetChannelName::DnsPipeline,
                 self.bus.dns_pipeline.sender,
                 Arc::new(dns),
                 size
             );
+            }
         }
 
         tags

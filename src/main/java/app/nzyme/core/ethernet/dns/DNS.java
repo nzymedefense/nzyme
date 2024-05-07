@@ -61,9 +61,14 @@ public class DNS {
         }
 
         return ethernet.getNzyme().getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT server, SUM(count) AS request_count, COUNT(DISTINCT(ip)) AS client_count " +
-                                "FROM dns_pairs WHERE created_at > :created_at AND tap_uuid IN (<taps>) " +
-                                "GROUP BY server ORDER BY request_count DESC LIMIT :limit")
+                handle.createQuery("SELECT server, server_geo_asn_number, server_geo_asn_name, " +
+                                "server_geo_asn_domain, server_geo_country_code, SUM(count) AS request_count, " +
+                                "COUNT(DISTINCT(ip)) AS client_count FROM dns_pairs " +
+                                "WHERE created_at > :created_at AND tap_uuid IN (<taps>) AND server <> '224.0.0.251' " +
+                                "GROUP BY server, server_geo_asn_number, server_geo_asn_name, " +
+                                "server_geo_asn_domain, server_geo_country_code " +
+                                "ORDER BY request_count " +
+                                "DESC LIMIT :limit")
                         .bindList("taps", taps)
                         .bind("created_at", DateTime.now().minusHours(hours))
                         .bind("limit", limit)

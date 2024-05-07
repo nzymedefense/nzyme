@@ -125,11 +125,11 @@ public class TCPTable implements DataTable {
                                     "source_address_geo_asn_number, source_address_geo_asn_name, " +
                                     "source_address_geo_asn_domain, source_address_geo_city, " +
                                     "source_address_geo_country_code, " +
-                                    "source_address_geo_country_latitude, source_address_geo_country_longitude, " +
+                                    "source_address_geo_latitude, source_address_geo_longitude, " +
                                     "destination_address_geo_asn_number, destination_address_geo_asn_name, " +
                                     "destination_address_geo_asn_domain, destination_address_geo_city, " +
                                     "destination_address_geo_country_code, " +
-                                    "destination_address_geo_country_latitude, destination_address_geo_country_longitude, " +
+                                    "destination_address_geo_latitude, destination_address_geo_longitude, " +
                                     "created_at) VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, :source_address, " +
                                     ":source_address_is_private, :source_port, :destination_mac, :destination_address, " +
                                     ":destination_address_is_private, :destination_port, :bytes_count, :segments_count, :start_time, " +
@@ -137,11 +137,11 @@ public class TCPTable implements DataTable {
                                     ":source_address_geo_asn_number, :source_address_geo_asn_name, " +
                                     ":source_address_geo_asn_domain, :source_address_geo_city, " +
                                     ":source_address_geo_country_code, " +
-                                    ":source_address_geo_country_latitude, :source_address_geo_country_longitude, " +
+                                    ":source_address_geo_latitude, :source_address_geo_longitude, " +
                                     ":destination_address_geo_asn_number, :destination_address_geo_asn_name, " +
                                     ":destination_address_geo_asn_domain, :destination_address_geo_city, " +
                                     ":destination_address_geo_country_code, " +
-                                    ":destination_address_geo_country_latitude, :destination_address_geo_country_longitude, " +
+                                    ":destination_address_geo_latitude, :destination_address_geo_longitude, " +
                                     ":created_at)")
                             .bind("tap_uuid", tapUuid)
                             .bind("l4_type", "TCP")
@@ -165,15 +165,15 @@ public class TCPTable implements DataTable {
                             .bind("source_address_geo_asn_domain", sourceGeo.map(g -> g.asn().domain()).orElse(null))
                             .bind("source_address_geo_city", sourceGeo.map(g -> g.geo().city()).orElse(null))
                             .bind("source_address_geo_country_code", sourceGeo.map(g -> g.geo().countryCode()).orElse(null))
-                            .bind("source_address_geo_country_latitude", sourceGeo.map(g -> g.geo().latitude()).orElse(null))
-                            .bind("source_address_geo_country_longitude", sourceGeo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("source_address_geo_latitude", sourceGeo.map(g -> g.geo().latitude()).orElse(null))
+                            .bind("source_address_geo_longitude", sourceGeo.map(g -> g.geo().longitude()).orElse(null))
                             .bind("destination_address_geo_asn_number", destinationGeo.map(g -> g.asn().number()).orElse(null))
                             .bind("destination_address_geo_asn_name", destinationGeo.map(g -> g.asn().name()).orElse(null))
                             .bind("destination_address_geo_asn_domain", destinationGeo.map(g -> g.asn().domain()).orElse(null))
                             .bind("destination_address_geo_city", destinationGeo.map(g -> g.geo().city()).orElse(null))
                             .bind("destination_address_geo_country_code", destinationGeo.map(g -> g.geo().countryCode()).orElse(null))
-                            .bind("destination_address_geo_country_latitude", destinationGeo.map(g -> g.geo().latitude()).orElse(null))
-                            .bind("destination_address_geo_country_longitude", destinationGeo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("destination_address_geo_latitude", destinationGeo.map(g -> g.geo().latitude()).orElse(null))
+                            .bind("destination_address_geo_longitude", destinationGeo.map(g -> g.geo().longitude()).orElse(null))
                             .bind("created_at", timestamp)
                             .execute();
                 }

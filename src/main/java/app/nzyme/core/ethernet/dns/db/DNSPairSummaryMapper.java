@@ -29,6 +29,10 @@ public class DNSPairSummaryMapper implements RowMapper<DNSPairSummary> {
     public DNSPairSummary map(ResultSet rs, StatementContext ctx) throws SQLException {
         return DNSPairSummary.create(
                 rs.getString("server"),
+                rs.getInt("server_geo_asn_number"),
+                rs.getString("server_geo_asn_name"),
+                rs.getString("server_geo_asn_domain"),
+                rs.getString("server_geo_country_code"),
                 rs.getLong("request_count"),
                 rs.getLong("client_count")
         );

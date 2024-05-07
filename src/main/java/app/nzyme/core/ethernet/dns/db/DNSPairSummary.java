@@ -18,18 +18,30 @@
 package app.nzyme.core.ethernet.dns.db;
 
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 
 @AutoValue
 public abstract class DNSPairSummary {
 
     public abstract String server();
+    @Nullable
+    public abstract Integer serverGeoAsnNumber();
+    @Nullable
+    public abstract String serverGeoAsnName();
+    @Nullable
+    public abstract String serverGeoAsnDomain();
+    @Nullable
+    public abstract String serverGeoCountryCode();
     public abstract Long requestCount();
-
     public abstract Long clientCount();
 
-    public static DNSPairSummary create(String server, Long requestCount, Long clientCount) {
+    public static DNSPairSummary create(String server, Integer serverGeoAsnNumber, String serverGeoAsnName, String serverGeoAsnDomain, String serverGeoCountryCode, Long requestCount, Long clientCount) {
         return builder()
                 .server(server)
+                .serverGeoAsnNumber(serverGeoAsnNumber)
+                .serverGeoAsnName(serverGeoAsnName)
+                .serverGeoAsnDomain(serverGeoAsnDomain)
+                .serverGeoCountryCode(serverGeoCountryCode)
                 .requestCount(requestCount)
                 .clientCount(clientCount)
                 .build();
@@ -43,11 +55,18 @@ public abstract class DNSPairSummary {
     public abstract static class Builder {
         public abstract Builder server(String server);
 
+        public abstract Builder serverGeoAsnNumber(Integer serverGeoAsnNumber);
+
+        public abstract Builder serverGeoAsnName(String serverGeoAsnName);
+
+        public abstract Builder serverGeoAsnDomain(String serverGeoAsnDomain);
+
+        public abstract Builder serverGeoCountryCode(String serverGeoCountryCode);
+
         public abstract Builder requestCount(Long requestCount);
 
         public abstract Builder clientCount(Long clientCount);
 
         public abstract DNSPairSummary build();
     }
-
 }

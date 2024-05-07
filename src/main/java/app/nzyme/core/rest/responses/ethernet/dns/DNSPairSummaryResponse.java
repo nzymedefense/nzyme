@@ -17,6 +17,7 @@
 
 package app.nzyme.core.rest.responses.ethernet.dns;
 
+import app.nzyme.core.rest.responses.shared.GeoInformationResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
@@ -26,15 +27,19 @@ public abstract class DNSPairSummaryResponse {
     @JsonProperty("server")
     public abstract String server();
 
+    @JsonProperty("server_geo")
+    public abstract GeoInformationResponse geo();
+
     @JsonProperty("request_count")
     public abstract Long requestCount();
 
     @JsonProperty("client_count")
     public abstract Long clientCount();
 
-    public static DNSPairSummaryResponse create(String server, Long requestCount, Long clientCount) {
+    public static DNSPairSummaryResponse create(String server, GeoInformationResponse geo, Long requestCount, Long clientCount) {
         return builder()
                 .server(server)
+                .geo(geo)
                 .requestCount(requestCount)
                 .clientCount(clientCount)
                 .build();
@@ -48,11 +53,12 @@ public abstract class DNSPairSummaryResponse {
     public abstract static class Builder {
         public abstract Builder server(String server);
 
+        public abstract Builder geo(GeoInformationResponse geo);
+
         public abstract Builder requestCount(Long requestCount);
 
         public abstract Builder clientCount(Long clientCount);
 
         public abstract DNSPairSummaryResponse build();
     }
-
 }

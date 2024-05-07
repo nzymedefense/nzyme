@@ -2,6 +2,7 @@ package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.responses.shared.GeoInformationResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -65,7 +66,20 @@ public class DNSResource extends TapDataHandlingResource {
 
         List<DNSPairSummaryResponse> pairSummary = Lists.newArrayList();
         for (DNSPairSummary ps : nzyme.getEthernet().dns().getPairSummary(hours, 10, taps)) {
-            pairSummary.add(DNSPairSummaryResponse.create(ps.server(), ps.requestCount(), ps.clientCount()));
+            pairSummary.add(DNSPairSummaryResponse.create(
+                    ps.server(),
+                    GeoInformationResponse.create(
+                            ps.serverGeoAsnNumber(),
+                            ps.serverGeoAsnName(),
+                            ps.serverGeoAsnDomain(),
+                            null,
+                            ps.serverGeoCountryCode(),
+                            null,
+                            null
+                    ),
+                    ps.requestCount(),
+                    ps.clientCount())
+            );
         }
 
         return Response.ok(

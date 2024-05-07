@@ -9,6 +9,7 @@ import app.nzyme.core.integrations.geoip.ipinfo.mmdb.FreeCountryAsnLookupResult;
 import app.nzyme.plugin.RegistryKey;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.maxmind.db.Reader;
+import jakarta.annotation.Nullable;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -115,7 +116,11 @@ public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
     }
 
     @Override
-    public Optional<GeoIpLookupResult> lookup(InetAddress address) {
+    public Optional<GeoIpLookupResult> lookup(@Nullable InetAddress address) {
+        if (address == null) {
+            return Optional.empty();
+        }
+
         while(paused) {
             /*
              * Spin if lookups are paused. This can happen while MMDB file is replaced. A full mutex on this method

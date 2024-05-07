@@ -4737,4 +4737,43 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="add_dns_pair_geo_info" author="lennartkoopmann">
+        <addColumn tableName="dns_pairs">
+            <column name="server_geo_asn_number" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_geo_asn_name" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_geo_asn_domain" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_geo_city" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_geo_country_code" type="varchar(2)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_geo_latitude" type="float">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_geo_longitude" type="float">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+    
+    <changeSet id="rename_l4_geo_fields" author="lennartkoopmann">
+        <renameColumn tableName="l4_sessions" oldColumnName="source_address_geo_country_latitude" newColumnName="source_address_geo_latitude" />
+        <renameColumn tableName="l4_sessions" oldColumnName="source_address_geo_country_longitude" newColumnName="source_address_geo_longitude" />
+        <renameColumn tableName="l4_sessions" oldColumnName="destination_address_geo_country_latitude" newColumnName="destination_address_geo_latitude" />
+        <renameColumn tableName="l4_sessions" oldColumnName="destination_address_geo_country_longitude" newColumnName="destination_address_geo_longitude" />
+    </changeSet>
 </databaseChangeLog>

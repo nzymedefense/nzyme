@@ -17,6 +17,7 @@
 
 package app.nzyme.core.tables.dns;
 
+import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSIPStatisticsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSNxDomainLogReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSTablesReport;
@@ -24,9 +25,15 @@ import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
+import org.jdbi.v3.core.Handle;
+import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class DNSTable implements DataTable {
@@ -53,107 +60,111 @@ public class DNSTable implements DataTable {
 
     public void handleReport(UUID tapUuid, DateTime timestamp, DNSTablesReport report) {
         try (Timer.Context ignored = totalReportTimer.time()) {
-            try (Timer.Context ignored2 = statisticsReportTimer.time()) {
-                for (Map.Entry<String, DNSIPStatisticsReport> x : report.ips().entrySet()) {
-                    DNSIPStatisticsReport stats = x.getValue();
-
-                    registerStatistics(
-                            tapUuid,
-                            x.getKey(),
-                            stats.requestCount(),
-                            stats.requestBytes(),
-                            stats.responseCount(),
-                            stats.responseBytes(),
-                            stats.nxDomainCount(),
-                            timestamp
-                    );
+            tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                try (Timer.Context ignored2 = statisticsReportTimer.time()) {
+                    registerStatistics(handle, tapUuid, report.ips(), timestamp);
                 }
-            }
 
-            try (Timer.Context ignored2 = nxdomainsReportTimer.time()) {
-                for (DNSNxDomainLogReport nxdomain : report.nxdomains()) {
-                    if (nxdomain.dataType().equals("PTR")) {
-                        // We are not interested in reverse lookup NXDOMAINs.
-                        continue;
-                    }
-
-                    registerNxdomainLog(
-                            tapUuid,
-                            nxdomain.ip(),
-                            nxdomain.server(),
-                            nxdomain.queryValue(),
-                            nxdomain.dataType(),
-                            timestamp
-                    );
+                try (Timer.Context ignored2 = nxdomainsReportTimer.time()) {
+                    registerNxdomainLogs(handle, tapUuid, report.nxdomains(), timestamp);
                 }
-            }
 
-            try (Timer.Context ignored2 = pairsReportTimer.time()) {
-                for (Map.Entry<String, Map<String, Long>> pair : report.pairs().entrySet()) {
-                    for (Map.Entry<String, Long> server : pair.getValue().entrySet()) {
-                        registerPair(tapUuid, pair.getKey(), server.getKey(), server.getValue(), timestamp);
-                    }
+                try (Timer.Context ignored2 = pairsReportTimer.time()) {
+                    registerPairs(handle, tapUuid, report.pairs(), timestamp);
                 }
-            }
+            });
         }
     }
 
-    private void registerStatistics(UUID tapUuid,
-                                    String ip,
-                                    Long requestCount,
-                                    Long requestBytes,
-                                    Long responseCount,
-                                    Long responseBytes,
-                                    Long nxdomainCount,
+    private void registerStatistics(Handle handle,
+                                    UUID tapUuid,
+                                    Map<String, DNSIPStatisticsReport> m,
                                     DateTime timestamp) {
+        PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_statistics(tap_uuid, ip, request_count, " +
+                "request_bytes, response_count, response_bytes, nxdomain_count, created_at) VALUES(:tap_uuid, :ip, " +
+                ":request_count, :request_bytes, :response_count, :response_bytes, :nxdomain_count, :created_at)");
 
-        tablesService.getNzyme().getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO dns_statistics(tap_uuid, ip, request_count, request_bytes, " +
-                            "response_count, response_bytes, nxdomain_count, created_at) VALUES(:tap_uuid, :ip, :request_count, " +
-                            ":request_bytes, :response_count, :response_bytes, :nxdomain_count, :created_at)")
-                        .bind("tap_uuid", tapUuid)
-                        .bind("ip", ip)
-                        .bind("request_count", requestCount)
-                        .bind("request_bytes", requestBytes)
-                        .bind("response_count", responseCount)
-                        .bind("response_bytes", responseBytes)
-                        .bind("nxdomain_count", nxdomainCount)
-                        .bind("created_at", timestamp)
-                        .execute()
-        );
+        for (Map.Entry<String, DNSIPStatisticsReport> x : m.entrySet()) {
+            String ip = x.getKey();
+            DNSIPStatisticsReport stats = x.getValue();
 
+            batch.bind("tap_uuid", tapUuid)
+                    .bind("ip", ip)
+                    .bind("request_count", stats.requestCount())
+                    .bind("request_bytes", stats.requestBytes())
+                    .bind("response_count", stats.responseCount())
+                    .bind("response_bytes", stats.responseBytes())
+                    .bind("nxdomain_count", stats.nxDomainCount())
+                    .bind("created_at", timestamp)
+                    .add();
+        }
+
+        batch.execute();
     }
 
-    private void registerNxdomainLog(UUID tapUuid,
-                                    String ip,
-                                    String server,
-                                    String queryValue,
-                                    String dataType,
-                                    DateTime timestamp) {
-        tablesService.getNzyme().getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO dns_nxdomains_log(tap_uuid, ip, server, query_value, data_type, " +
-                                "created_at) VALUES(:tap_uuid, :ip, :server, :query_value, :data_type, :created_at)")
-                        .bind("tap_uuid", tapUuid)
-                        .bind("ip", ip)
-                        .bind("server", server)
-                        .bind("query_value", queryValue)
-                        .bind("data_type", dataType)
-                        .bind("created_at", timestamp)
-                        .execute()
-        );
+    private void registerNxdomainLogs(Handle handle,
+                                      UUID tapUuid,
+                                      List<DNSNxDomainLogReport> report,
+                                      DateTime timestamp) {
+        PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_nxdomains_log(tap_uuid, ip, server, " +
+                "query_value, data_type, created_at) VALUES(:tap_uuid, :ip, :server, :query_value, :data_type, " +
+                ":created_at)");
+
+        for (DNSNxDomainLogReport n : report) {
+            if (n.dataType().equals("PTR")) {
+                // We are not interested in reverse lookup NXDOMAINs.
+                continue;
+            }
+
+            batch.bind("tap_uuid", tapUuid)
+                    .bind("ip", n.ip())
+                    .bind("server", n.server())
+                    .bind("query_value", n.queryValue())
+                    .bind("data_type", n.dataType())
+                    .bind("created_at", timestamp)
+                    .add();
+        }
+
+        batch.execute();
     }
 
-    private void registerPair(UUID tapUuid, String ip, String server, long count, DateTime timestamp) {
-        tablesService.getNzyme().getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO dns_pairs(tap_uuid, ip, server, count, created_at) " +
-                                "VALUES(:tap_uuid, :ip, :server, :count, :timestamp)")
-                        .bind("tap_uuid", tapUuid)
-                        .bind("ip", ip)
-                        .bind("server", server)
-                        .bind("count", count)
+    private void registerPairs(Handle handle, UUID tapUuid, Map<String, Map<String, Long>> pairs, DateTime timestamp) {
+        PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_pairs(tap_uuid, ip, server, " +
+                "server_geo_asn_number, server_geo_asn_name, server_geo_asn_domain, server_geo_city, " +
+                "server_geo_country_code, server_geo_latitude, server_geo_longitude, count, created_at) " +
+                "VALUES(:tap_uuid, :ip, :server, :server_geo_asn_number, :server_geo_asn_name, " +
+                ":server_geo_asn_domain, :server_geo_city, :server_geo_country_code, :server_geo_latitude, " +
+                ":server_geo_longitude, :count, :timestamp)");
+
+        for (Map.Entry<String, Map<String, Long>> pair : pairs.entrySet()) {
+            for (Map.Entry<String, Long> server : pair.getValue().entrySet()) {
+                InetAddress serverAddress;
+                try {
+                    serverAddress = InetAddress.getByName(server.getKey());
+                } catch (UnknownHostException e) {
+                    // This shouldn't happen because we pass IP addresses.
+                    throw new RuntimeException(e);
+                }
+
+                Optional<GeoIpLookupResult> geo = tablesService.getNzyme().getGeoIpService().lookup(serverAddress);
+
+                batch.bind("tap_uuid", tapUuid)
+                        .bind("ip", pair.getKey())
+                        .bind("server", server.getKey())
+                        .bind("server_geo_asn_number", geo.map(g -> g.asn().number()).orElse(null))
+                        .bind("server_geo_asn_name", geo.map(g -> g.asn().name()).orElse(null))
+                        .bind("server_geo_asn_domain", geo.map(g -> g.asn().domain()).orElse(null))
+                        .bind("server_geo_city", geo.map(g -> g.geo().city()).orElse(null))
+                        .bind("server_geo_country_code", geo.map(g -> g.geo().countryCode()).orElse(null))
+                        .bind("server_geo_latitude", geo.map(g -> g.geo().latitude()).orElse(null))
+                        .bind("server_geo_longitude", geo.map(g -> g.geo().longitude()).orElse(null))
+                        .bind("count", server.getValue())
                         .bind("timestamp", timestamp)
-                        .execute()
-        );
+                        .add();
+            }
+        }
+
+        batch.execute();
     }
 
     @Override

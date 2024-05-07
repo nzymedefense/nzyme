@@ -51,6 +51,10 @@ pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
                 Err(e) => bail!("Could not parse DNS query data element: {}", e)
             };
         }
+
+        if query_list.len() as u16 != question_count {
+            bail!("Question count does not match number of included questions.");
+        }
         
         Option::Some(query_list)
     } else {
@@ -73,7 +77,11 @@ pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
                 Err(e) => bail!("Could not parse DNS response data element: {}", e)
             };
         }
-        
+
+        if response_list.len() as u16 != answer_count {
+            bail!("Answer count does not match number of included answers.");
+        }
+
         Option::Some(response_list)
     } else {
         Option::None
