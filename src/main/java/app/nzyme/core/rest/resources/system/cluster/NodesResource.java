@@ -203,6 +203,8 @@ public class NodesResource {
 
         timers.put("report_processing_dot11",
                 buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_TOTAL_REPORT_PROCESSING_TIMER), timers));
+        timers.put("report_processing_tcp",
+                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.TCP_TOTAL_REPORT_PROCESSING_TIMER), timers));
         timers.put("report_processing_dns",
                 buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DNS_TOTAL_REPORT_PROCESSING_TIMER), timers));
 

@@ -4725,4 +4725,16 @@
     <changeSet id="remove_base_configuration" author="lennartkoopmann">
         <dropTable tableName="base_configuration" />
     </changeSet>
+
+    <changeSet id="add_l4_private_address_identifiers" author="lennartkoopmann">
+        <addColumn tableName="l4_sessions">
+            <column name="source_address_is_private" type="boolean">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="destination_address_is_private" type="boolean">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

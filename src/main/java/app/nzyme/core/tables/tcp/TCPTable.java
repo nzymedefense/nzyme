@@ -6,7 +6,6 @@ import app.nzyme.core.ethernet.tcp.TcpSessionState;
 import app.nzyme.core.ethernet.tcp.db.TcpSessionEntry;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.integrations.geoip.GeoIpService;
-import app.nzyme.core.ouis.OUIManager;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
 import app.nzyme.core.tables.DataTable;
@@ -23,6 +22,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 
 public class TCPTable implements DataTable {
 
@@ -32,6 +32,7 @@ public class TCPTable implements DataTable {
 
     private final Timer totalReportTimer;
     private final Timer sessionsReportTimer;
+    private final Timer sessionDiscoveryTimer;
 
     private final GeoIpService geoIp;
 
@@ -45,13 +46,27 @@ public class TCPTable implements DataTable {
 
         this.sessionsReportTimer = tablesService.getNzyme().getMetrics()
                 .timer(MetricNames.TCP_SESSIONS_REPORT_PROCESSING_TIMER);
+
+        this.sessionDiscoveryTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.TCP_SESSION_DISCOVERY_QUERY_TIMER);
     }
 
     public void handleReport(UUID tapUuid, DateTime timestamp, TcpSessionsReport report) {
         try (Timer.Context ignored = totalReportTimer.time()) {
             try (Timer.Context ignored2 = sessionsReportTimer.time()) {
+                CountDownLatch latch = new CountDownLatch(report.sessions().size());
                 for (TcpSessionReport session : report.sessions()) {
-                    tablesService.getProcessorPool().submit(() -> writeSession(tapUuid, timestamp, session));
+                    tablesService.getProcessorPool().submit(() -> {
+                        writeSession(tapUuid, timestamp, session);
+
+                        latch.countDown();
+                    });
+                }
+
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    LOG.error("TCP sessions writer process interrupted.", e);
                 }
             }
         }
@@ -78,11 +93,15 @@ public class TCPTable implements DataTable {
             Optional<GeoIpLookupResult> destinationGeo = geoIp.lookup(destinationAddress);
 
             tablesService.getNzyme().getDatabase().useHandle(handle -> {
-                Optional<TcpSessionEntry> existingSession = handle.createQuery("SELECT * FROM l4_sessions " +
-                                "WHERE session_key = :session_key AND end_time IS NULL")
-                        .bind("session_key", sessionKey)
-                        .mapTo(TcpSessionEntry.class)
-                        .findOne();
+                Optional<TcpSessionEntry> existingSession;
+                try (Timer.Context ignored = totalReportTimer.time()) {
+                    existingSession = handle.createQuery("SELECT * FROM l4_sessions " +
+                                    "WHERE session_key = :session_key AND end_time IS NULL AND tap_uuid = :tap_uuid")
+                            .bind("session_key", sessionKey)
+                            .bind("tap_uuid", tapUuid)
+                            .mapTo(TcpSessionEntry.class)
+                            .findOne();
+                }
 
                 if (existingSession.isPresent()) {
                     // Existing session. Update.
@@ -100,8 +119,8 @@ public class TCPTable implements DataTable {
                 } else {
                     // This is a new session.
                     handle.createUpdate("INSERT INTO l4_sessions(tap_uuid, l4_type, session_key, " +
-                                    "source_mac, source_address, source_port, destination_mac, " +
-                                    "destination_address, destination_port, bytes_count, segments_count, " +
+                                    "source_mac, source_address, source_address_is_private, source_port, destination_mac, " +
+                                    "destination_address, destination_address_is_private, destination_port, bytes_count, segments_count, " +
                                     "start_time, end_time, most_recent_segment_time, state, " +
                                     "source_address_geo_asn_number, source_address_geo_asn_name, " +
                                     "source_address_geo_asn_domain, source_address_geo_city, " +
@@ -112,8 +131,8 @@ public class TCPTable implements DataTable {
                                     "destination_address_geo_country_code, " +
                                     "destination_address_geo_country_latitude, destination_address_geo_country_longitude, " +
                                     "created_at) VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, :source_address, " +
-                                    ":source_port, :destination_mac, :destination_address, " +
-                                    ":destination_port, :bytes_count, :segments_count, :start_time, " +
+                                    ":source_address_is_private, :source_port, :destination_mac, :destination_address, " +
+                                    ":destination_address_is_private, :destination_port, :bytes_count, :segments_count, :start_time, " +
                                     ":end_time, :most_recent_segment_time, :state, " +
                                     ":source_address_geo_asn_number, :source_address_geo_asn_name, " +
                                     ":source_address_geo_asn_domain, :source_address_geo_city, " +
@@ -129,9 +148,11 @@ public class TCPTable implements DataTable {
                             .bind("session_key", sessionKey)
                             .bind("source_mac", session.sourceMac())
                             .bind("source_address", session.sourceAddress())
+                            .bind("source_address_is_private", sourceAddress.isSiteLocalAddress())
                             .bind("source_port", session.sourcePort())
                             .bind("destination_mac", session.destinationMac())
                             .bind("destination_address", session.destinationAddress())
+                            .bind("destination_address_is_private", destinationAddress.isSiteLocalAddress())
                             .bind("destination_port", session.destinationPort())
                             .bind("bytes_count", session.bytesCount())
                             .bind("segments_count", session.segmentsCount())
