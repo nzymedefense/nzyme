@@ -302,6 +302,13 @@ pre.json {
     border-left: 2px dotted #ccc;
 }
 
+div.widget-loading-spinner {
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 a.main-help {
     margin-left: 3px;
     margin-right: 3px;
@@ -324,19 +331,13 @@ ol.breadcrumb li.active {
     font-weight: 600;
 }
 
-div.card div.card-number {
-    text-align: center;
-}
-
-div.card div.card-number span.title {
-    font-size: 17px;
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-bottom: 13px;
-}
-
-div.card div.card-number span.value {
+div.card div.card-number div.value {
     font-size: 32px;
+    margin-top: 8px;
+}
+
+div.card div.card-number div.value-loading {
+    text-align: center;
 }
 
 dl.retro-servicesummary-topmetrics dt {
@@ -955,6 +956,11 @@ button.card-title-option {
     padding: 0;
     margin: 0;
     padding-right: 7px;
+}
+
+
+button.card-title-option-disabled {
+    cursor: not-allowed;
 }
 
 a.card-title-option {

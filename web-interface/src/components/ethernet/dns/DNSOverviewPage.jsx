@@ -1,28 +1,31 @@
 import React, {useContext, useEffect, useState} from 'react'
 import DNSStatisticsChart from './DNSStatisticsChart'
-import EthernetService from '../../../services/EthernetService'
 import DNSNumbers from './DNSNumbers'
 import DNSContactAttempsSummaryTable from './DNSContactAttempsSummaryTable'
 import {TapContext} from "../../../App";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
+import {Presets} from "../../shared/timerange/TimeRange";
+import CardTitleWithControls from "../../shared/CardTitleWithControls";
+import DNSService from "../../../services/ethernet/DNSService";
 
 function byteConversion (x) {
   return x / 1024
 }
 
-const ethernetService = new EthernetService()
+const dnsService = new DNSService()
 
 function DNSOverviewPage () {
   const [statistics, setStatistics] = useState(null)
 
   const tapContext = useContext(TapContext);
-
   const selectedTaps = tapContext.taps;
+
+  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   useEffect(() => {
     setStatistics(null);
-    ethernetService.findDNSStatistics(24, selectedTaps, setStatistics);
-  }, [selectedTaps])
+    dnsService.findDNSStatistics(timeRange, selectedTaps, setStatistics);
+  }, [selectedTaps, timeRange])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -32,28 +35,34 @@ function DNSOverviewPage () {
     }
   }, [tapContext]);
 
-
   return (
     <div>
       <div className="row">
         <div className="col-md-12">
-          <h1>DNS - Last 24 hours</h1>
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="DNS Overview"
+                                     helpLink="https://go.nzyme.org/ethernet-dns"
+                                     slim={true}
+                                     timeRange={timeRange}
+                                     setTimeRange={setTimeRange} />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="alert alert-danger">
-        This is an early alpha page that should not be taken as an example of what future functionality will look like.
-      </div>
-
       <div className="row mt-3">
-        <DNSNumbers data={statistics} />
+        <DNSNumbers fixedAppliedTimeRange={timeRange} data={statistics} />
       </div>
 
       <div className="row mt-3">
         <div className="col-md-6">
           <div className="card">
             <div className="card-body">
-              <h3>Queries/Minute</h3>
+              <CardTitleWithControls title="Queries/Minute"
+                                     slim={true}
+                                     fixedAppliedTimeRange={timeRange} />
+
               <DNSStatisticsChart statistics={statistics} attribute="request_count" />
             </div>
           </div>
@@ -62,7 +71,10 @@ function DNSOverviewPage () {
         <div className="col-md-6">
           <div className="card">
             <div className="card-body">
-              <h3>NXDOMAIN/Minute</h3>
+              <CardTitleWithControls title="NXDOMAIN/Minute"
+                                     slim={true}
+                                     fixedAppliedTimeRange={timeRange} />
+
               <DNSStatisticsChart statistics={statistics} attribute="nxdomain_count" />
             </div>
           </div>
@@ -73,7 +85,10 @@ function DNSOverviewPage () {
         <div className="col-md-6">
           <div className="card">
             <div className="card-body">
-              <h3>Query Bytes/Minute</h3>
+              <CardTitleWithControls title="Query Bytes/Minute"
+                                     slim={true}
+                                     fixedAppliedTimeRange={timeRange} />
+
               <DNSStatisticsChart statistics={statistics}
                                   attribute="request_bytes"
                                   conversion={byteConversion}
@@ -85,7 +100,10 @@ function DNSOverviewPage () {
         <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>Response Bytes/Minute</h3>
+                <CardTitleWithControls title="Response Bytes/Minute"
+                                       slim={true}
+                                       fixedAppliedTimeRange={timeRange} />
+
                 <DNSStatisticsChart statistics={statistics}
                                     attribute="response_bytes"
                                     conversion={byteConversion}
@@ -99,15 +117,19 @@ function DNSOverviewPage () {
         <div className="col-md-6">
           <div className="card">
             <div className="card-body">
-              <h3>DNS Server Contact Attempts <small>(Top 10)</small></h3>
+              <CardTitleWithControls title="DNS Server Contact Attempts"
+                                     smallText="Top 10"
+                                     slim={true}
+                                     fixedAppliedTimeRange={timeRange} />
+
               <DNSContactAttempsSummaryTable data={statistics} />
             </div>
           </div>
         </div>
       </div>
 
-      </div>
-    )
-  }
+    </div>
+  )
+}
 
 export default DNSOverviewPage

@@ -1,10 +1,10 @@
 import React from 'react'
-import LoadingSpinner from '../../misc/LoadingSpinner'
 import SimpleBarChart from '../../widgets/charts/SimpleBarChart'
+import GenericWidgetLoadingSpinner from "../../widgets/GenericWidgetLoadingSpinner";
 
 function DNSStatisticsChart (props) {
   if (!props.statistics) {
-    return <LoadingSpinner />
+    return <GenericWidgetLoadingSpinner height={150} />
   }
 
   return <SimpleBarChart

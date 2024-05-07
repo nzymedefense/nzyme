@@ -3,6 +3,8 @@ package app.nzyme.core.rest.resources.ethernet;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.shared.GeoInformationResponse;
+import app.nzyme.core.util.Bucketing;
+import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -14,6 +16,7 @@ import app.nzyme.core.rest.responses.ethernet.dns.DNSPairSummaryResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSStatisticsBucketResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSStatisticsResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSTrafficSummaryResponse;
+import jakarta.validation.Valid;
 import org.joda.time.DateTime;
 
 import jakarta.inject.Inject;
@@ -40,15 +43,14 @@ public class DNSResource extends TapDataHandlingResource {
     @GET
     @Path("/statistics")
     public Response statistics(@Context SecurityContext sc,
-                               @QueryParam("hours") int hours,
+                               @QueryParam("time_range") @Valid String timeRangeParameter,
                                @QueryParam("taps") String tapIds) {
-        if (hours <= 0) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
 
-        List<DNSStatisticsBucket> statistics = nzyme.getEthernet().dns().getStatistics(hours, taps);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        List<DNSStatisticsBucket> statistics = nzyme.getEthernet().dns().getStatistics(timeRange, bucketing, taps);
 
         Map<DateTime, DNSStatisticsBucketResponse> buckets = Maps.newHashMap();
         for (DNSStatisticsBucket b : statistics) {
@@ -62,10 +64,10 @@ public class DNSResource extends TapDataHandlingResource {
             ));
         }
 
-        DNSTrafficSummary trafficSummary = nzyme.getEthernet().dns().getTrafficSummary(hours, taps);
+        DNSTrafficSummary trafficSummary = nzyme.getEthernet().dns().getTrafficSummary(timeRange, taps);
 
         List<DNSPairSummaryResponse> pairSummary = Lists.newArrayList();
-        for (DNSPairSummary ps : nzyme.getEthernet().dns().getPairSummary(hours, 10, taps)) {
+        for (DNSPairSummary ps : nzyme.getEthernet().dns().getPairSummary(timeRange, 10, taps)) {
             pairSummary.add(DNSPairSummaryResponse.create(
                     ps.server(),
                     GeoInformationResponse.create(

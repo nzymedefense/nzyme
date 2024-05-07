@@ -5,6 +5,7 @@ import AppliedTimeRange from "./timerange/AppliedTimeRange";
 function CardTitleWithControls(props) {
 
   const title = props.title;
+  const disabled = props.disabled;
 
   // Optional styling.
   const slim = props.slim;
@@ -35,6 +36,7 @@ function CardTitleWithControls(props) {
       return (
           <button className="btn card-title-option"
                   title="Toggle Time Range Selector"
+                  disabled={disabled}
                   onClick={(e) => {
                     e.preventDefault();
                     setTimeRangeDialogOpened(!timeRangeDialogOpened);
@@ -48,6 +50,19 @@ function CardTitleWithControls(props) {
   const helpLinkButton = () => {
     if (!helpLink) {
       return null;
+    }
+
+    if (disabled) {
+      return (
+          <button className="btn card-title-option"
+                  title="Help"
+                  disabled={true}
+                  onClick={(e) => {
+                    e.preventDefault();
+                  }}>
+            <i className="fa-solid fa-question"></i>
+          </button>
+      )
     }
 
     return (
@@ -84,7 +99,7 @@ function CardTitleWithControls(props) {
   }
 
   return (
-      <div className="card-title" style={slim ? {marginBottom:0} : {}}>
+      <div className="card-title" style={slim ? {marginBottom: 0} : {}}>
         <div className="row">
           <div className="col-10">
             <h3>{title} {smallText()}</h3>

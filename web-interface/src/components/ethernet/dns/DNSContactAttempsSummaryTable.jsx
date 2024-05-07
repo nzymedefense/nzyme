@@ -2,14 +2,15 @@ import React from 'react'
 import LoadingSpinner from '../../misc/LoadingSpinner'
 
 import numeral from 'numeral'
+import GenericWidgetLoadingSpinner from "../../widgets/GenericWidgetLoadingSpinner";
 
 function DNSContactAttempsSummaryTable (props) {
   if (!props.data || !props.data.pair_summary) {
-    return <LoadingSpinner />
+    return <GenericWidgetLoadingSpinner height={250} />
   }
 
   return (
-        <table className="table table-sm table-hover table-striped">
+        <table className="table table-sm table-hover table-striped mt-3">
             <thead>
             <tr>
                 <th>DNS Server</th>

@@ -20,7 +20,7 @@ function DiscoPage() {
 
   const tapContext = useContext(TapContext);
 
-  let urlQuery = useQuery();
+  const urlQuery = useQuery();
 
   const [monitoredNetwork, setMonitoredNetwork] = useState(
       urlQuery.get("monitored-network-id") ? urlQuery.get("monitored-network-id") : ""

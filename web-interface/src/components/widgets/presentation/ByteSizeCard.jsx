@@ -1,18 +1,29 @@
 import React from 'react'
 
 import numeral from 'numeral'
+import CardTitleWithControls from "../../shared/CardTitleWithControls";
+import SingleValueCardLoading from "./SingleValueCardLoading";
 
 function ByteSizeCard (props) {
+
+  const title = props.title;
+  const value = props.value;
+  const fixedAppliedTimeRange = props.fixedAppliedTimeRange;
+
+  if (!value) {
+    return <SingleValueCardLoading title={title} fixedAppliedTimeRange={fixedAppliedTimeRange} />
+  }
+
   return (
         <div className="card">
             <div className="card-body card-number">
-                <div className="card-number-title">
-                    <span className="title">{props.title}</span>
-                </div>
+              <CardTitleWithControls title={title}
+                                     slim={true}
+                                     fixedAppliedTimeRange={fixedAppliedTimeRange} />
 
-                <span className="value">
-                    {numeral(props.value).format('0.00b')}
-                </span>
+                <div className="value">
+                    {numeral(value).format('0.00b')}
+                </div>
             </div>
         </div>
   )
