@@ -11,7 +11,7 @@ function NumberCard (props) {
   const numberFormat = props.numberFormat;
   const fixedAppliedTimeRange = props.fixedAppliedTimeRange;
 
-  if (!value) {
+  if (value === null || value === undefined) {
     return <SingleValueCardLoading title={title} fixedAppliedTimeRange={fixedAppliedTimeRange} />
   }
 

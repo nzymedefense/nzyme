@@ -10,7 +10,7 @@ function ByteSizeCard (props) {
   const value = props.value;
   const fixedAppliedTimeRange = props.fixedAppliedTimeRange;
 
-  if (!value) {
+  if (value === null || value === undefined) {
     return <SingleValueCardLoading title={title} fixedAppliedTimeRange={fixedAppliedTimeRange} />
   }
 
