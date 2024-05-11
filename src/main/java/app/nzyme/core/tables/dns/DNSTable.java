@@ -200,6 +200,10 @@ public class DNSTable implements DataTable {
             handle.createUpdate("DELETE FROM dns_pairs WHERE created_at < :created_at")
                     .bind("created_at", DateTime.now().minusHours(24)) // TODO
                     .execute();
+
+            handle.createUpdate("DELETE FROM dns_logs WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .execute();
         });
     }
 }
