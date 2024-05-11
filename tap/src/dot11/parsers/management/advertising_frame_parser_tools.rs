@@ -2,7 +2,7 @@ use anyhow::{bail, Error};
 use crate::dot11::frames::{CipherSuite, CipherSuites, CountryInformation, Dot11Capabilities, EncryptionProtocol, InfraStructureType, KeyManagementMode, PmfMode, PwnagotchiData, RegulatoryEnvironment, SecurityInformation, TaggedParameters};
 use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{ByteOrder, LittleEndian};
-use log::{trace, warn};
+use log::{debug, trace, warn};
 use sha2::{Digest, Sha256};
 
 pub fn parse_capabilities(mask: &[u8]) -> Result<Dot11Capabilities, Error> {
@@ -379,7 +379,7 @@ fn parse_key_management_suite(data: &[u8]) -> Result<KeyManagementMode, Error> {
         12 => Ok(KeyManagementMode::DOT1X_B_EAP_SHA384), // CNSA
         13 => Ok(KeyManagementMode::DOT1X_FT_SHA384), // CNSA
         _ => {
-            warn!("Unknown key management mode: {}", data[3]);
+            debug!("Unknown key management mode: {}", data[3]);
             Ok(KeyManagementMode::Unknown)
         }
     }
@@ -490,6 +490,11 @@ pub fn calculate_fingerprint(bssid: &str,
 }
 
 pub fn decide_wpa_identifier(suites: &CipherSuites, pmf: &PmfMode) -> Result<EncryptionProtocol, Error> {
+    if suites.key_management_modes.len() == 1
+        && *suites.key_management_modes.get(0).unwrap() == KeyManagementMode::Unknown {
+        return Ok(EncryptionProtocol::Invalid)
+    }
+
     // WPA3-Enterprise 192?
     if suites.key_management_modes.len() == 1 && suites.pairwise_ciphers.len() == 1
         && (*suites.key_management_modes.get(0).unwrap() == KeyManagementMode::DOT1X_B_EAP_SHA384
@@ -513,8 +518,8 @@ pub fn decide_wpa_identifier(suites: &CipherSuites, pmf: &PmfMode) -> Result<Enc
     }
 
     // WPA3-Enterprise
-    if (suites.key_management_modes.contains(&KeyManagementMode::DOT1X_SHA256)
-        || suites.key_management_modes.contains(&KeyManagementMode::DOT1X_B_EAP_SHA256)) {
+    if suites.key_management_modes.contains(&KeyManagementMode::DOT1X_SHA256)
+        || suites.key_management_modes.contains(&KeyManagementMode::DOT1X_B_EAP_SHA256) {
         return if *pmf == PmfMode::Required {
             Ok(EncryptionProtocol::WPA3Enterprise)
         } else {
@@ -523,9 +528,9 @@ pub fn decide_wpa_identifier(suites: &CipherSuites, pmf: &PmfMode) -> Result<Enc
     }
 
     // WPA3-Personal
-    if (suites.key_management_modes.contains(&KeyManagementMode::SAE)
+    if suites.key_management_modes.contains(&KeyManagementMode::SAE)
         || suites.key_management_modes.contains(&KeyManagementMode::SAE_FT)
-        || suites.key_management_modes.contains(&KeyManagementMode::AP_PEER)){
+        || suites.key_management_modes.contains(&KeyManagementMode::AP_PEER) {
         return if *pmf == PmfMode::Required {
             Ok(EncryptionProtocol::WPA3Personal)
         } else {
