@@ -105,6 +105,7 @@ pub struct Datagram {
 
 #[derive(Debug)]
 pub struct DNSPacket {
+    pub transaction_id: Option<u16>,
     pub source_mac: String,
     pub destination_mac: String,
     pub source_address: IpAddr,

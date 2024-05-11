@@ -4776,4 +4776,89 @@
         <renameColumn tableName="l4_sessions" oldColumnName="destination_address_geo_country_latitude" newColumnName="destination_address_geo_latitude" />
         <renameColumn tableName="l4_sessions" oldColumnName="destination_address_geo_country_longitude" newColumnName="destination_address_geo_longitude" />
     </changeSet>
+
+    <changeSet id="remove_dns_nxdomains_log" author="lennartkoopmann">
+        <dropTable tableName="dns_nxdomains_log" />
+    </changeSet>
+
+    <changeSet id="add_dns_log" author="lennartkoopmann">
+        <createTable tableName="dns_log">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="transaction_id" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="source_address" type="varchar(45)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="source_port" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="source_mac" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="destination_address" type="varchar(45)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="destination_port" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="destination_mac" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="data_value" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="data_type" type="varchar(24)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="timestamp" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="rename_dns_log_ip_server_field_names" author="lennartkoopmann">
+        <renameColumn tableName="dns_log" oldColumnName="source_address" newColumnName="client_address" />
+        <renameColumn tableName="dns_log" oldColumnName="destination_address" newColumnName="server_address" />
+        <renameColumn tableName="dns_log" oldColumnName="source_port" newColumnName="client_port" />
+        <renameColumn tableName="dns_log" oldColumnName="destination_port" newColumnName="server_port" />
+        <renameColumn tableName="dns_log" oldColumnName="source_mac" newColumnName="client_mac" />
+        <renameColumn tableName="dns_log" oldColumnName="destination_mac" newColumnName="server_mac" />
+    </changeSet>
+
+    <changeSet id="make_dns_log_transaction_id_nullable" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="dns_log" columnName="transaction_id" />
+    </changeSet>
+
+    <changeSet id="add_dns_type_to_dns_log" author="lennartkoopmann">
+        <addColumn tableName="dns_log">
+            <column name="dns_type" type="varchar(12)">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

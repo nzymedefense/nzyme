@@ -9,22 +9,20 @@ use crate::{
     link::payloads::{
         DnsTableReport,
         DnsIpStatisticsReport,
-        NXDomainLogReport,
-        DNSEntropyLog,
-        DNSRetroQueryLogReport,
-        DNSRetroResponseLogReport
+        DNSEntropyLog
     },
     metrics::Metrics
 };
 use chrono::{DateTime, Utc};
-use log::error;
+use log::{error};
+use crate::data::table_helpers;
 use crate::data::table_helpers::{clear_mutex_hashmap, clear_mutex_vector};
 use crate::link::leaderlink::Leaderlink;
+use crate::link::payloads::{DNSLogReport};
 
 pub struct DnsTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
     ips: Mutex<HashMap<IpAddr, DnsStatistics>>,
-    nxdomains: Mutex<Vec<NXDomainLog>>,
     entropy_log: Mutex<Vec<EntropyLog>>,
     pairs: Mutex<HashMap<IpAddr, Mutex<HashMap<IpAddr, u128>>>>,
     metrics: Arc<Mutex<Metrics>>,
@@ -42,39 +40,33 @@ pub struct DnsStatistics {
 }
 
 #[derive(Debug)]
-pub struct NXDomainLog {
-    ip: IpAddr,
-    server: IpAddr,
-    query_value: String,
-    data_type: String,
-    timestamp: DateTime<Utc>
-}
-
-#[derive(Debug)]
 pub struct EntropyLog {
-    log_type: String,
+    transaction_id: u16,
     entropy: f32,
-    zscore: f32,
-    value: String,
-    timestamp: DateTime<Utc>
+    zscore: f32
 }
 
 pub struct DNSQueryLog {
-    ip: IpAddr,
-    server: IpAddr,
-    source_mac: String,
-    destination_mac: String,
-    port: u16,
+    transaction_id: Option<u16>,
+    client_address: IpAddr,
+    server_address: IpAddr,
+    client_mac: String,
+    server_mac: String,
+    client_port: u16,
+    server_port: u16,
     query_value: String,
     data_type: String,
     timestamp: DateTime<Utc>
 }
 
 pub struct DNSResponseLog {
-    ip: IpAddr,
-    server: IpAddr,
-    source_mac: String,
-    destination_mac: String,
+    transaction_id: Option<u16>,
+    client_address: IpAddr,
+    server_address: IpAddr,
+    client_mac: String,
+    server_mac: String,
+    client_port: u16,
+    server_port: u16,
     response_value: String,
     data_type: String,
     timestamp: DateTime<Utc>
@@ -86,7 +78,6 @@ impl DnsTable {
         DnsTable {
             leaderlink,
             ips: Mutex::new(HashMap::new()),
-            nxdomains: Mutex::new(Vec::new()),
             entropy_log: Mutex::new(Vec::new()),
             pairs: Mutex::new(HashMap::new()),
             query_log: Mutex::new(Vec::new()),
@@ -177,11 +168,13 @@ impl DnsTable {
                 if let Some(queries) = &request.queries {
                     for query_data in queries {
                         retro.push(DNSQueryLog {
-                            ip: request.source_address.clone(),
-                            server: request.destination_address.clone(),
-                            source_mac: request.source_mac.clone(),
-                            destination_mac: request.destination_mac.clone(),
-                            port: request.destination_port,
+                            transaction_id: request.transaction_id,
+                            client_address: request.source_address.clone(),
+                            server_address: request.destination_address.clone(),
+                            client_mac: request.source_mac.clone(),
+                            server_mac: request.destination_mac.clone(),
+                            client_port: request.source_port,
+                            server_port: request.destination_port,
                             query_value: query_data.name.clone(),
                             data_type: query_data.dns_type.to_string(),
                             timestamp: request.timestamp
@@ -249,38 +242,20 @@ impl DnsTable {
             }
         }
 
-        // Add to NXDOMAIN log if it is one.
-        if is_nxdomain {
-            match self.nxdomains.lock() {
-                Ok(mut nxdomains) => {
-                    // TODO: How to handle multiple queries/responses? That never really happens.
-                    if let Some(queries) = &response.queries {
-                        for query in queries {
-                            nxdomains.push(NXDomainLog {
-                                    ip: response.destination_address.clone(),
-                                    server: response.source_address.clone(),
-                                    query_value: query.name.clone(),
-                                    data_type: query.dns_type.to_string(),
-                                    timestamp: response.timestamp
-                            });
-                        }
-                    }
-                },
-                Err(e) => error!("Could not acquire NXDOMAIN log mutex: {}", e)
-            }
-        }
-
-        // Retro.
+        // Log.
         match self.response_log.lock() {
-            Ok(mut retro) => {
+            Ok(mut log) => {
                 if let Some(responses) = &response.responses {
                     for response_data in responses {
                         if let Some(response_value) = &response_data.value {
-                            retro.push(DNSResponseLog {
-                                ip: response.destination_address.clone(),
-                                server: response.source_address.clone(),
-                                source_mac: response.source_mac.clone(),
-                                destination_mac: response.destination_mac.clone(),
+                            log.push(DNSResponseLog {
+                                transaction_id: response.transaction_id,
+                                client_address: response.destination_address.clone(),
+                                server_address: response.source_address.clone(),
+                                client_mac: response.destination_mac.clone(),
+                                server_mac: response.source_mac.clone(),
+                                client_port: response.destination_port,
+                                server_port: response.source_port,
                                 response_value: response_value.to_string(),
                                 data_type: response_data.dns_type.to_string(),
                                 timestamp: response.timestamp
@@ -294,9 +269,9 @@ impl DnsTable {
 
     }
 
-    pub fn register_exceeded_entropy(&mut self, timestamp: DateTime<Utc>, log_type: String, entropy: f32, zscore: f32, value: String) {
+    pub fn register_exceeded_entropy(&mut self, transaction_id: u16, entropy: f32, zscore: f32) {
         match self.entropy_log.lock() {
-            Ok(mut log) => log.push(EntropyLog { log_type, entropy, zscore, value, timestamp }),
+            Ok(mut log) => log.push(EntropyLog { transaction_id, entropy, zscore }),
             Err(e) => error!("Could not acquire entropy log mutex: {}", e)
         }
     }
@@ -326,7 +301,6 @@ impl DnsTable {
         clear_mutex_hashmap(&self.pairs);
         clear_mutex_vector(&self.query_log);
         clear_mutex_vector(&self.response_log);
-        clear_mutex_vector(&self.nxdomains);
         clear_mutex_vector(&self.entropy_log);
     }
 
@@ -348,32 +322,14 @@ impl DnsTable {
             Err(e) => error!("Could not acquire DNS IPs table mutex: {}", e)
         }
 
-        let mut nxdomains = Vec::new();
-        match self.nxdomains.lock() {
-            Ok(x) => {
-                for nxdomain in &*x {
-                    nxdomains.push(NXDomainLogReport {
-                        ip: nxdomain.ip.to_string(),
-                        server: nxdomain.server.to_string(),
-                        query_value: nxdomain.query_value.clone(),
-                        data_type: nxdomain.data_type.clone(),
-                        timestamp: nxdomain.timestamp
-                    });
-                }
-            },
-            Err(e) => error!("Could not acquire DNS NXDOMAINs table mutex: {}", e)
-        }
-
         let mut entropy_log = Vec::new();
         match self.entropy_log.lock() {
             Ok(x) => {
                 for log in &*x {
                     entropy_log.push(DNSEntropyLog {
-                        log_type: log.log_type.clone(),
+                        transaction_id: log.transaction_id,
                         entropy: log.entropy,
-                        zscore: log.zscore,
-                        value: log.value.clone(),
-                        timestamp: log.timestamp
+                        zscore: log.zscore
                     });
                 }
             },
@@ -407,18 +363,20 @@ impl DnsTable {
             }
         };
 
-        let retro_queries = match self.query_log.lock() {
+        let queries = match self.query_log.lock() {
             Ok(retro) => {
                 let mut result = Vec::new();
 
                 for r in &*retro {
-                    result.push(DNSRetroQueryLogReport {
-                        ip: r.ip.to_string(),
-                        server: r.server.to_string(),
-                        source_mac: r.source_mac.clone(),
-                        destination_mac: r.destination_mac.clone(),
-                        port: r.port,
-                        query_value: r.query_value.clone(),
+                    result.push(DNSLogReport {
+                        transaction_id: r.transaction_id,
+                        client_address: r.client_address.to_string(),
+                        server_address: r.server_address.to_string(),
+                        client_mac: r.client_mac.clone(),
+                        server_mac: r.server_mac.clone(),
+                        client_port: r.client_port,
+                        server_port: r.server_port,
+                        data_value: r.query_value.clone(),
                         data_type: r.data_type.clone(),
                         timestamp: r.timestamp,
                     });
@@ -433,17 +391,20 @@ impl DnsTable {
         };
 
         
-        let retro_responses = match self.response_log.lock() {
+        let responses = match self.response_log.lock() {
             Ok(retro) => {
                 let mut result = Vec::new();
 
                 for r in &*retro {
-                    result.push(DNSRetroResponseLogReport {
-                        ip: r.ip.to_string(),
-                        server: r.server.to_string(),
-                        source_mac: r.source_mac.clone(),
-                        destination_mac: r.destination_mac.clone(),
-                        response_value: r.response_value.clone(),
+                    result.push(DNSLogReport {
+                        transaction_id: r.transaction_id,
+                        client_address: r.client_address.to_string(),
+                        server_address: r.server_address.to_string(),
+                        client_mac: r.client_mac.clone(),
+                        server_mac: r.server_mac.clone(),
+                        client_port: r.client_port,
+                        server_port: r.server_port,
+                        data_value: r.response_value.clone(),
                         data_type: r.data_type.clone(),
                         timestamp: r.timestamp,
                     });
@@ -459,47 +420,26 @@ impl DnsTable {
 
         DnsTableReport {
             ips,
-            nxdomains,
             entropy_log,
             pairs,
-            retro_queries,
-            retro_responses
+            queries,
+            responses
         }
     }
 
     pub fn calculate_metrics(&self) {
-        let ips_size: i128 = match self.ips.lock() {
-            Ok(ips) => ips.len() as i128,
-            Err(e) => {
-                error!("Could not acquire mutex to calculate DNS IPs table size: {}", e);
-
-                -1
-            }
-        };
-
-        let nxdomains_size: i128 = match self.nxdomains.lock() {
-            Ok(nxdomains) => nxdomains.len() as i128,
-            Err(e) => {
-                error!("Could not acquire mutex to calculate NXDOMAIN table size: {}", e);
-
-                -1
-            }
-        };
-
-        let entropylog_size: i128 = match self.entropy_log.lock() {
-            Ok(log) => log.len() as i128,
-            Err(e) => {
-                error!("Could not acquire mutex to calculate DNS entropy table size: {}", e);
-
-                -1
-            }
-        };
-
         match self.metrics.lock() {
             Ok(mut metrics) => {
-                metrics.set_gauge("tables.dns.ips.size", ips_size);
-                metrics.set_gauge("tables.dns.nxdomains.size", nxdomains_size);
-                metrics.set_gauge("tables.dns.entropy_log.size", entropylog_size);
+                metrics.set_gauge("tables.dns.ips.size",
+                                  table_helpers::get_mutex_hashmap_size(&self.ips));
+                metrics.set_gauge("tables.dns.entropy_log.size",
+                                  table_helpers::get_mutex_vector_size(&self.entropy_log));
+                metrics.set_gauge("tables.dns.pairs.size",
+                                  table_helpers::get_mutex_hashmap_size(&self.pairs));
+                metrics.set_gauge("tables.dns.query_log.size",
+                                  table_helpers::get_mutex_vector_size(&self.query_log));
+                metrics.set_gauge("tables.dns.response_log.size",
+                                  table_helpers::get_mutex_vector_size(&self.response_log));
             },
             Err(e) => error!("Could not acquire metrics mutex: {}", e)
         }

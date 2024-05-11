@@ -50,8 +50,8 @@ public class MetricNames {
 
     public static final String DNS_TOTAL_REPORT_PROCESSING_TIMER = name(DNSTable.class, "total-report-processing-timing");
     public static final String DNS_STATISTICS_REPORT_PROCESSING_TIMER = name(DNSTable.class, "statistics-report-processing-timing");
-    public static final String DNS_NXDOMAINS_REPORT_PROCESSING_TIMER = name(DNSTable.class, "nxdomains-report-processing-timing");
     public static final String DNS_PAIRS_REPORT_PROCESSING_TIMER = name(DNSTable.class, "pairs-report-processing-timing");
+    public static final String DNS_LOG_REPORT_PROCESSING_TIMER = name(DNSTable.class, "log-report-processing-timing");
 
     public static final String TCP_TOTAL_REPORT_PROCESSING_TIMER = name(TCPTable.class, "total-report-processing-timing");
     public static final String TCP_SESSIONS_REPORT_PROCESSING_TIMER = name(TCPTable.class, "sessions-report-processing-timing");

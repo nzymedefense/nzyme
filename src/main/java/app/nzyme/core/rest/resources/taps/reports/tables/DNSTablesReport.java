@@ -1,10 +1,9 @@
 package app.nzyme.core.rest.resources.taps.reports.tables;
 
-import app.nzyme.core.rest.resources.taps.reports.tables.dns.DNSResponseLogReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.dns.DNSLogReport;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import app.nzyme.core.rest.resources.taps.reports.tables.dns.DNSQueryLogReport;
 
 import java.util.List;
 import java.util.Map;
@@ -13,29 +12,23 @@ import java.util.Map;
 public abstract class DNSTablesReport {
 
     public abstract Map<String, DNSIPStatisticsReport> ips();
-    public abstract List<DNSNxDomainLogReport> nxdomains();
-
     public abstract List<DNSEntropyLogReport> entropyLog();
-
     public abstract Map<String, Map<String, Long>> pairs();
-    public abstract List<DNSQueryLogReport> retroQueries();
-
-    public abstract List<DNSResponseLogReport> retroResponses();
+    public abstract List<DNSLogReport> queryLog();
+    public abstract List<DNSLogReport> responseLog();
 
     @JsonCreator
     public static DNSTablesReport create(@JsonProperty("ips") Map<String, DNSIPStatisticsReport> ips,
-                                         @JsonProperty("nxdomains") List<DNSNxDomainLogReport> nxdomains,
                                          @JsonProperty("entropy_log") List<DNSEntropyLogReport> entropyLog,
                                          @JsonProperty("pairs") Map<String, Map<String, Long>> pairs,
-                                         @JsonProperty("retro_queries") List<DNSQueryLogReport> retroQueries,
-                                         @JsonProperty("retro_responses") List<DNSResponseLogReport> retroResponses) {
+                                         @JsonProperty("queries") List<DNSLogReport> queryLog,
+                                         @JsonProperty("responses") List<DNSLogReport> responseLog) {
         return builder()
                 .ips(ips)
-                .nxdomains(nxdomains)
                 .entropyLog(entropyLog)
                 .pairs(pairs)
-                .retroQueries(retroQueries)
-                .retroResponses(retroResponses)
+                .queryLog(queryLog)
+                .responseLog(responseLog)
                 .build();
     }
 
@@ -47,15 +40,13 @@ public abstract class DNSTablesReport {
     public abstract static class Builder {
         public abstract Builder ips(Map<String, DNSIPStatisticsReport> ips);
 
-        public abstract Builder nxdomains(List<DNSNxDomainLogReport> nxdomains);
-
         public abstract Builder entropyLog(List<DNSEntropyLogReport> entropyLog);
 
         public abstract Builder pairs(Map<String, Map<String, Long>> pairs);
 
-        public abstract Builder retroQueries(List<DNSQueryLogReport> retroQueries);
+        public abstract Builder queryLog(List<DNSLogReport> queryLog);
 
-        public abstract Builder retroResponses(List<DNSResponseLogReport> retroResponses);
+        public abstract Builder responseLog(List<DNSLogReport> responseLog);
 
         public abstract DNSTablesReport build();
     }

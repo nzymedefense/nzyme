@@ -19,8 +19,8 @@ package app.nzyme.core.tables.dns;
 
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSIPStatisticsReport;
-import app.nzyme.core.rest.resources.taps.reports.tables.DNSNxDomainLogReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSTablesReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.dns.DNSLogReport;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
@@ -42,8 +42,8 @@ public class DNSTable implements DataTable {
 
     private final Timer totalReportTimer;
     private final Timer statisticsReportTimer;
-    private final Timer nxdomainsReportTimer;
     private final Timer pairsReportTimer;
+    private final Timer logReportTimer;
 
     public DNSTable(TablesService tablesService) {
         this.tablesService = tablesService;
@@ -52,10 +52,10 @@ public class DNSTable implements DataTable {
                 .timer(MetricNames.DNS_TOTAL_REPORT_PROCESSING_TIMER);
         this.statisticsReportTimer = tablesService.getNzyme().getMetrics()
                 .timer(MetricNames.DNS_STATISTICS_REPORT_PROCESSING_TIMER);
-        this.nxdomainsReportTimer = tablesService.getNzyme().getMetrics()
-                .timer(MetricNames.DNS_NXDOMAINS_REPORT_PROCESSING_TIMER);
         this.pairsReportTimer = tablesService.getNzyme().getMetrics()
                 .timer(MetricNames.DNS_PAIRS_REPORT_PROCESSING_TIMER);
+        this.logReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DNS_LOG_REPORT_PROCESSING_TIMER);
     }
 
     public void handleReport(UUID tapUuid, DateTime timestamp, DNSTablesReport report) {
@@ -65,12 +65,12 @@ public class DNSTable implements DataTable {
                     registerStatistics(handle, tapUuid, report.ips(), timestamp);
                 }
 
-                try (Timer.Context ignored2 = nxdomainsReportTimer.time()) {
-                    registerNxdomainLogs(handle, tapUuid, report.nxdomains(), timestamp);
-                }
-
                 try (Timer.Context ignored2 = pairsReportTimer.time()) {
                     registerPairs(handle, tapUuid, report.pairs(), timestamp);
+                }
+
+                try (Timer.Context ignored2 = logReportTimer.time()) {
+                    registerLogs(handle, tapUuid, report.queryLog(), report.responseLog());
                 }
             });
         }
@@ -95,32 +95,6 @@ public class DNSTable implements DataTable {
                     .bind("response_count", stats.responseCount())
                     .bind("response_bytes", stats.responseBytes())
                     .bind("nxdomain_count", stats.nxDomainCount())
-                    .bind("created_at", timestamp)
-                    .add();
-        }
-
-        batch.execute();
-    }
-
-    private void registerNxdomainLogs(Handle handle,
-                                      UUID tapUuid,
-                                      List<DNSNxDomainLogReport> report,
-                                      DateTime timestamp) {
-        PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_nxdomains_log(tap_uuid, ip, server, " +
-                "query_value, data_type, created_at) VALUES(:tap_uuid, :ip, :server, :query_value, :data_type, " +
-                ":created_at)");
-
-        for (DNSNxDomainLogReport n : report) {
-            if (n.dataType().equals("PTR")) {
-                // We are not interested in reverse lookup NXDOMAINs.
-                continue;
-            }
-
-            batch.bind("tap_uuid", tapUuid)
-                    .bind("ip", n.ip())
-                    .bind("server", n.server())
-                    .bind("query_value", n.queryValue())
-                    .bind("data_type", n.dataType())
                     .bind("created_at", timestamp)
                     .add();
         }
@@ -167,14 +141,59 @@ public class DNSTable implements DataTable {
         batch.execute();
     }
 
+    private void registerLogs(Handle handle,
+                              UUID tapUuid,
+                              List<DNSLogReport> queries,
+                              List<DNSLogReport> responses) {
+        PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_log(uuid, tap_uuid, transaction_id, " +
+                "dns_type, client_address, client_port, client_mac, server_address, server_port, server_mac, " +
+                "data_value, data_type,  timestamp, created_at) VALUES(:uuid, :tap_uuid, :transaction_id, :dns_type, " +
+                ":client_address, :client_port, :client_mac, :server_address, :server_port, :server_mac, " +
+                ":data_value, :data_type, :timestamp, NOW())");
+
+        for (DNSLogReport d : queries) {
+            batch
+                    .bind("uuid", UUID.randomUUID())
+                    .bind("tap_uuid", tapUuid)
+                    .bind("transaction_id", d.transactionId())
+                    .bind("dns_type", "query")
+                    .bind("client_address", d.clientAddress())
+                    .bind("client_port", d.clientPort())
+                    .bind("client_mac", d.clientMac())
+                    .bind("server_address", d.serverAddress())
+                    .bind("server_port", d.serverPort())
+                    .bind("server_mac", d.serverMac())
+                    .bind("data_value", d.dataValue())
+                    .bind("data_type", d.dataType())
+                    .bind("timestamp", d.timestamp())
+                    .add();
+        }
+
+        for (DNSLogReport d : responses) {
+            batch
+                    .bind("uuid", UUID.randomUUID())
+                    .bind("tap_uuid", tapUuid)
+                    .bind("transaction_id", d.transactionId())
+                    .bind("dns_type", "response")
+                    .bind("client_address", d.clientAddress())
+                    .bind("client_port", d.clientPort())
+                    .bind("client_mac", d.clientMac())
+                    .bind("server_address", d.serverAddress())
+                    .bind("server_port", d.serverPort())
+                    .bind("server_mac", d.serverMac())
+                    .bind("data_value", d.dataValue())
+                    .bind("data_type", d.dataType())
+                    .bind("timestamp", d.timestamp())
+                    .add();
+        }
+
+        batch.execute();
+    }
+
     @Override
     public void retentionClean() {
         tablesService.getNzyme().getDatabase().useHandle(handle -> {
             handle.createUpdate("DELETE FROM dns_statistics WHERE created_at < :created_at")
-                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
-                    .execute();
-
-            handle.createUpdate("DELETE FROM dns_nxdomains_log WHERE created_at < :created_at")
                     .bind("created_at", DateTime.now().minusHours(24)) // TODO
                     .execute();
 

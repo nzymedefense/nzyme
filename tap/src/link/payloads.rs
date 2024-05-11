@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::net::IpAddr;
 
 use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};
@@ -71,11 +72,10 @@ pub struct TablesReport {
 #[derive(Serialize)]
 pub struct DnsTableReport {
     pub ips: HashMap<String, DnsIpStatisticsReport>,
-    pub nxdomains: Vec<NXDomainLogReport>,
     pub entropy_log: Vec<DNSEntropyLog>,
     pub pairs: HashMap<String, HashMap<String, u128>>,
-    pub retro_queries: Vec<DNSRetroQueryLogReport>,
-    pub retro_responses: Vec<DNSRetroResponseLogReport>
+    pub queries: Vec<DNSLogReport>,
+    pub responses: Vec<DNSLogReport>
 }
 
 #[derive(Serialize)]
@@ -88,42 +88,22 @@ pub struct DnsIpStatisticsReport {
 }
 
 #[derive(Serialize)]
-pub struct NXDomainLogReport {
-    pub ip: String,
-    pub server: String,
-    pub query_value: String,
-    pub data_type: String,
-    pub timestamp: DateTime<Utc>
-}
-
-#[derive(Serialize)]
 pub struct DNSEntropyLog {
-    pub log_type: String,
+    pub transaction_id: u16,
     pub entropy: f32,
-    pub zscore: f32,
-    pub value: String,
-    pub timestamp: DateTime<Utc>
+    pub zscore: f32
 }
 
 #[derive(Serialize)]
-pub struct DNSRetroQueryLogReport {
-    pub ip: String,
-    pub server: String,
-    pub source_mac: String,
-    pub destination_mac: String,
-    pub port: u16,
-    pub query_value: String,
-    pub data_type: String,
-    pub timestamp: DateTime<Utc>
-}
-
-#[derive(Serialize)]
-pub struct DNSRetroResponseLogReport {
-    pub ip: String,
-    pub server: String,
-    pub source_mac: String,
-    pub destination_mac: String,
-    pub response_value: String,
+pub struct DNSLogReport {
+    pub transaction_id: Option<u16>,
+    pub client_address: String,
+    pub server_address: String,
+    pub client_mac: String,
+    pub server_mac: String,
+    pub client_port: u16,
+    pub server_port: u16,
+    pub data_value: String,
     pub data_type: String,
     pub timestamp: DateTime<Utc>
 }

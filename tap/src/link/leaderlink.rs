@@ -62,11 +62,11 @@ impl Leaderlink {
         match self.send_status() {
             Ok(r) => {
                 if !r.status().is_success() {
-                    error!("Could not send status to leader. Received response code [HTTP {}].", r.status());
+                    error!("Could not send status. Received response code [HTTP {}].", r.status());
                 }
             },
             Err(e) => {
-                error!("Could not send status to leader. {}", e);
+                error!("Could not send status. {}", e);
             }
         };
     }
@@ -129,15 +129,24 @@ impl Leaderlink {
         }
     }
 
-    pub fn send_report(&self, path: &str, report: String) -> Result<Response, Error> {
+    pub fn send_report(&self, path: &str, report: String) -> Result<Response, anyhow::Error> {
         let mut uri = self.uri.clone();
         uri.set_path(format!("/api/taps/tables/{}", path).as_str());
 
-        self.http_client
+        match self.http_client
             .post(uri)
             .header("Content-Type", "application/json")
             .body(report.clone())
-            .send()
+            .send() {
+            Ok(r) => {
+                if !r.status().is_success() {
+                    bail!("Could not send report. Received response code [HTTP {}].", r.status())
+                } else {
+                    Ok(r)
+                }
+            },
+            Err(e) => bail!("Could not send report. {}", e)
+        }
     }
 
     fn send_status(&mut self) -> Result<Response, Error> {

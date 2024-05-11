@@ -6,12 +6,16 @@ use byteorder::{BigEndian, ByteOrder};
 use bitreader::BitReader;
 use chrono::Utc;
 use entropy::shannon_entropy;
+use log::{trace};
 
 #[allow(clippy::cast_possible_truncation)]
-pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
+pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
     if udp.payload.len() < 13 {
-        bail!("Payload too short to hold a DNS request or response.");
+        trace!("Payload too short to hold a DNS request or response.");
+        return None;
     }
+
+    let transaction_id = BigEndian::read_u16(&udp.payload[0..2]);
 
     // We are currently only looking at first bit but may parse all flags in the future.
     let mut flags = BitReader::new(&udp.payload[2..4]);
@@ -23,7 +27,10 @@ pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
                 DNSType::Query
             }
         },
-        Err(e) => bail!("Unexpected type flag: {}", e)
+        Err(e) => {
+            trace!("Unexpected type flag: {}", e);
+            return None;
+        }
     };
 
     let question_count = BigEndian::read_u16(&udp.payload[4..6]);
@@ -31,7 +38,8 @@ pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
 
     // Some UDP payloads will reach here, but have excessively large question/answer counts.
     if question_count > 512 || answer_count > 512 {
-        bail!("Too many questions or answers.");
+        trace!("Too many questions or answers.");
+        return None;
     }
 
     // Queries.
@@ -40,7 +48,8 @@ pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
         let mut query_list = Vec::new();
         for _ in 0..question_count {
             if udp.payload.len() < cursor+5 {
-                bail!("Payload too short to fit next question.");
+                trace!("Payload too short to fit next question.");
+                return None;
             }
 
             match parse_query_element(&udp.payload[cursor..udp.payload.len()]) {
@@ -48,12 +57,16 @@ pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
                     cursor += pos;
                     query_list.push(data);
                 },
-                Err(e) => bail!("Could not parse DNS query data element: {}", e)
+                Err(e) => {
+                    trace!("Could not parse DNS query data element: {}", e);
+                    return None;
+                }
             };
         }
 
         if query_list.len() as u16 != question_count {
-            bail!("Question count does not match number of included questions.");
+            trace!("Question count does not match number of included questions.");
+            return None;
         }
         
         Option::Some(query_list)
@@ -66,7 +79,8 @@ pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
         let mut response_list = Vec::new();
         for _ in 0..answer_count {
             if udp.payload.len() < cursor+5 {
-                bail!("Payload too short to fit next answer.");
+                trace!("Payload too short to fit next answer.");
+                return None;
             }
 
             match parse_answer_element(&udp.payload[cursor..udp.payload.len()], &udp.payload) {
@@ -74,12 +88,16 @@ pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
                     cursor += pos;
                     response_list.push(data);
                 },
-                Err(e) => bail!("Could not parse DNS response data element: {}", e)
+                Err(e) => {
+                    trace!("Could not parse DNS response data element: {}", e);
+                    return None;
+                }
             };
         }
 
         if response_list.len() as u16 != answer_count {
-            bail!("Answer count does not match number of included answers.");
+            trace!("Answer count does not match number of included answers.");
+            return None;
         }
 
         Option::Some(response_list)
@@ -87,9 +105,14 @@ pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
         Option::None
     };
 
+    if question_count == 0 && answer_count == 0 {
+        return None;
+    }
+
     let size = udp.payload.len() as u32;
 
-    Ok(DNSPacket {
+    Some(DNSPacket {
+        transaction_id: if transaction_id == 0 { None } else { Some(transaction_id) },
         source_mac: udp.source_mac.clone(),
         destination_mac: udp.destination_mac.clone(),
         source_address: udp.source_address.clone(),
@@ -104,7 +127,6 @@ pub fn parse(udp: &Arc<Datagram>) -> Result<DNSPacket> {
         size,
         timestamp: Utc::now()
     })
-
 }
 
 fn is_pointer(mask: u8) -> bool {

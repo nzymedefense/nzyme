@@ -85,23 +85,23 @@ impl DnsProcessor {
                         if let Some(queries) = &packet.queries {
                             for query in queries {
                                 // Entropy.
-                                if let Some(entropy) = query.entropy {
-                                    // Add entropy to table.
-                                    Self::record_entropy(&mut self.query_entropy, entropy);
+                                if let Some(transaction_id) = packet.transaction_id { // Skip MDNS.
+                                    if let Some(entropy) = query.entropy {
+                                        // Add entropy to table.
+                                        Self::record_entropy(&mut self.query_entropy, entropy);
 
-                                    // Calculate zscore of entropy.
-                                    let zscore = Self::entropy_zscore(&mut self.query_entropy, entropy);
+                                        // Calculate zscore of entropy.
+                                        let zscore = Self::entropy_zscore(&mut self.query_entropy, entropy);
 
-                                    // Handle outlier if we have a zscore, training is over and we are above threshold.
-                                    if let Some(zscore) = zscore {
-                                        if !self.system_state.is_in_training() && zscore > self.entropy_outlier_treshhold {
-                                            table.register_exceeded_entropy(
-                                                Utc::now(),
-                                                "query".to_string(),
-                                                entropy,
-                                                zscore,
-                                                query.name.clone()
-                                            );
+                                        // Handle outlier if we have a zscore, training is over, and we are above threshold.
+                                        if let Some(zscore) = zscore {
+                                            if !self.system_state.is_in_training() && zscore > self.entropy_outlier_treshhold {
+                                                table.register_exceeded_entropy(
+                                                    transaction_id,
+                                                    entropy,
+                                                    zscore,
+                                                );
+                                            }
                                         }
                                     }
                                 }
@@ -121,23 +121,23 @@ impl DnsProcessor {
                                 }
 
                                 // Entropy.
-                                if let Some(entropy) = response.entropy {
-                                    // Add entropy to table.
-                                    Self::record_entropy(&mut self.response_entropy, entropy);
+                                if let Some(transaction_id) = packet.transaction_id { // Skip MDNS.
+                                    if let Some(entropy) = response.entropy {
+                                        // Add entropy to table.
+                                        Self::record_entropy(&mut self.response_entropy, entropy);
 
-                                    // Calculate zscore of entropy if training period is over.
-                                    let zscore = Self::entropy_zscore(&mut self.response_entropy, entropy);
+                                        // Calculate zscore of entropy if training period is over.
+                                        let zscore = Self::entropy_zscore(&mut self.response_entropy, entropy);
 
-                                    // Handle outlier if we have a zscore, training is over and we are above threshold.
-                                    if let Some(zscore) = zscore {
-                                        if !self.system_state.is_in_training() && zscore > self.entropy_outlier_treshhold {
-                                            table.register_exceeded_entropy(
-                                                Utc::now(),
-                                                "response".to_string(),
-                                                entropy,
-                                                zscore,
-                                                response.value.clone().unwrap() // checked above
-                                            );
+                                        // Handle outlier if we have a zscore, training is over and we are above threshold.
+                                        if let Some(zscore) = zscore {
+                                            if !self.system_state.is_in_training() && zscore > self.entropy_outlier_treshhold {
+                                                table.register_exceeded_entropy(
+                                                    transaction_id,
+                                                    entropy,
+                                                    zscore
+                                                );
+                                            }
                                         }
                                     }
                                 }
