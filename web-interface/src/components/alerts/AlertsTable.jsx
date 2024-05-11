@@ -60,6 +60,7 @@ function AlertsTable() {
       setRevision(prevRev => prevRev + 1);
       setSelectedRows([]);
       notify.show("Selected alerts deleted.", "success");
+      setAllRowsSelected(false);
     })
   }
 
@@ -69,6 +70,7 @@ function AlertsTable() {
       setRevision(prevRev => prevRev + 1);
       setSelectedRows([]);
       notify.show("Selected alerts marked as resolved.", "success");
+      setAllRowsSelected(false);
     })
   }
 
