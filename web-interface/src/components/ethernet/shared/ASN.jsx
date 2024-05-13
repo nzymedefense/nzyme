@@ -9,9 +9,9 @@ export default function ASN(props) {
   }
 
   return (
-    <span>
-      <a className="asn-number" href="#">{geo.asn_number}</a> ({geo.asn_name ? geo.asn_name : "Unknown"})
-    </span>
+      <span>
+        <span className="asn-number">{geo.asn_number}</span> ({geo.asn_name ? geo.asn_name : "Unknown"})
+      </span>
   )
 
 }

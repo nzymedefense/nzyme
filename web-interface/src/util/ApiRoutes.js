@@ -129,6 +129,12 @@ const ApiRoutes = {
     EXECUTION_LOG_DETAILS: (name, executionId) => `/reporting/show/${name}/execution/show/${executionId}`
   },
   ETHERNET: {
+    OVERVIEW: '/ethernet/overview',
+    L4: {
+      OVERVIEW: '/ethernet/l4/overview',
+      IP: ip => `/ethernet/l4/ip/show/${ip}`,
+      ASN: asn => `/ethernet/l4/asn/show/${asn}`
+    },
     DNS: {
       INDEX: '/ethernet/dns'
     },

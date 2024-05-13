@@ -32,6 +32,10 @@ function Sidebar(props) {
                           icon={<i className="sidebar-icon fa-solid fa-network-wired"/>}
                           show={true}>
             <NavigationLink
+                href={ApiRoutes.ETHERNET.L4.OVERVIEW}
+                title="Layer 4"
+                icon={<i className="sidebar-icon fa-solid fa-road"/>}/>
+            <NavigationLink
                 href={ApiRoutes.ETHERNET.DNS.INDEX}
                 title="DNS"
                 icon={<i className="sidebar-icon fa-solid fa-signs-post"/>}/>

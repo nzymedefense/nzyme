@@ -124,6 +124,7 @@ import EditLocationPage from "./components/system/authentication/management/tena
 import CreateFloorPage from "./components/system/authentication/management/tenants/locations/floors/CreateFloorPage";
 import EditFloorPage from "./components/system/authentication/management/tenants/locations/floors/EditFloorPage";
 import LookAndFeelPage from "./components/system/lookandfeel/LookAndFeelPage";
+import IPDetailsPage from "./components/ethernet/l4/ip/IPDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -365,6 +366,9 @@ function App() {
                           { /* System/Misc. */}
                           <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
                           <Route path={ApiRoutes.SYSTEM.LOOKANDFEEL} element={<LookAndFeelPage />}/>
+
+                          { /* Ethernet/L4. */}
+                          <Route path={ApiRoutes.ETHERNET.L4.IP(':ipParam')} element={<IPDetailsPage />}/>
 
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
