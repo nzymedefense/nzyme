@@ -2,7 +2,7 @@ package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.TapDataHandlingResource;
-import app.nzyme.core.rest.responses.shared.GeoInformationResponse;
+import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -12,7 +12,6 @@ import app.nzyme.core.ethernet.dns.db.DNSPairSummary;
 import app.nzyme.core.ethernet.dns.db.DNSStatisticsBucket;
 import app.nzyme.core.ethernet.dns.db.DNSTrafficSummary;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import app.nzyme.core.rest.responses.ethernet.dns.DNSPairSummaryResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSStatisticsBucketResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSStatisticsResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSTrafficSummaryResponse;
@@ -66,23 +65,6 @@ public class DNSResource extends TapDataHandlingResource {
 
         DNSTrafficSummary trafficSummary = nzyme.getEthernet().dns().getTrafficSummary(timeRange, taps);
 
-        List<DNSPairSummaryResponse> pairSummary = Lists.newArrayList();
-        for (DNSPairSummary ps : nzyme.getEthernet().dns().getPairSummary(timeRange, 10, taps)) {
-            pairSummary.add(DNSPairSummaryResponse.create(
-                    ps.server(),
-                    GeoInformationResponse.create(
-                            ps.serverGeoAsnNumber(),
-                            ps.serverGeoAsnName(),
-                            ps.serverGeoAsnDomain(),
-                            null,
-                            ps.serverGeoCountryCode(),
-                            null,
-                            null
-                    ),
-                    ps.requestCount(),
-                    ps.clientCount())
-            );
-        }
 
         return Response.ok(
                 DNSStatisticsResponse.create(
@@ -91,10 +73,47 @@ public class DNSResource extends TapDataHandlingResource {
                                 trafficSummary.totalPackets(),
                                 trafficSummary.totalTrafficBytes(),
                                 trafficSummary.totalNxdomains()
-                        ),
-                        pairSummary
+                        )
                 )
         ).build();
+    }
+
+    @GET
+    @Path("/global/pairs")
+    public Response globalPairs(@Context SecurityContext sc,
+                                @QueryParam("time_range") @Valid String timeRangeParameter,
+                                @QueryParam("limit") int limit,
+                                @QueryParam("offset") int offset,
+                                @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        long total = nzyme.getEthernet().dns().countPairs(timeRange, taps);
+
+        List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
+        for (DNSPairSummary ps : nzyme.getEthernet().dns().getPairs(timeRange, limit, offset, taps)) {
+            values.add(ThreeColumnTableHistogramValueResponse.create(
+                    HistogramValueStructureResponse.create(
+                            ps.server(),
+                            HistogramValueType.IP_ADDRESS,
+                            null
+                    ),
+                    HistogramValueStructureResponse.create(
+                            ps.clientCount(),
+                            HistogramValueType.INTEGER,
+                            null
+                    ),
+                    HistogramValueStructureResponse.create(
+                            ps.requestCount(),
+                            HistogramValueType.INTEGER,
+                            null
+                    ),
+                    ps.server()
+            ));
+        }
+
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, values)).build();
     }
 
 }

@@ -4,6 +4,7 @@ public enum HistogramValueType {
 
     GENERIC,
     INTEGER,
-    DOT11_MAC
+    DOT11_MAC,
+    IP_ADDRESS
 
 }

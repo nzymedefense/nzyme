@@ -1,12 +1,12 @@
 import React, {useContext, useEffect, useState} from 'react'
 import DNSStatisticsChart from './DNSStatisticsChart'
 import DNSNumbers from './DNSNumbers'
-import DNSContactAttempsSummaryTable from './DNSContactAttempsSummaryTable'
 import {TapContext} from "../../../App";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import {Presets} from "../../shared/timerange/TimeRange";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import DNSService from "../../../services/ethernet/DNSService";
+import DNSContactAttemptsTable from "./DNSContactAttemptsTable";
 
 function byteConversion (x) {
   return x / 1024
@@ -15,12 +15,13 @@ function byteConversion (x) {
 const dnsService = new DNSService()
 
 function DNSOverviewPage () {
-  const [statistics, setStatistics] = useState(null)
+  const [statistics, setStatistics] = useState(null);
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [contactAttemptsTimeRange, setContactAttemptsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   useEffect(() => {
     setStatistics(null);
@@ -118,11 +119,10 @@ function DNSOverviewPage () {
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="DNS Server Contact Attempts"
-                                     smallText="Top 10"
-                                     slim={true}
-                                     fixedAppliedTimeRange={timeRange} />
+                                     timeRange={contactAttemptsTimeRange}
+                                     setTimeRange={setContactAttemptsTimeRange} />
 
-              <DNSContactAttempsSummaryTable data={statistics} />
+              <DNSContactAttemptsTable timeRange={contactAttemptsTimeRange} />
             </div>
           </div>
         </div>

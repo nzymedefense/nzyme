@@ -1,11 +1,10 @@
 import React, {useContext, useEffect, useState} from "react";
-import TwoColumnHistogram from "../../widgets/histograms/TwoColumnHistogram";
 import Dot11Service from "../../../services/Dot11Service";
 import {TapContext} from "../../../App";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {DEFAULT_LIMIT} from "../../widgets/LimitSelector";
 import ThreeColumnHistogram from "../../widgets/histograms/ThreeColumnHistogram";
-import {DiscoNetworkContext, MonitoredNetworkContext} from "./DiscoPage";
+import {MonitoredNetworkContext} from "./DiscoPage";
 
 const dot11Service = new Dot11Service();
 

@@ -16,14 +16,10 @@ public abstract class DNSStatisticsResponse {
     @JsonProperty("traffic_summary")
     public abstract DNSTrafficSummaryResponse trafficSummary();
 
-    @JsonProperty("pair_summary")
-    public abstract List<DNSPairSummaryResponse> pairSummary();
-
-    public static DNSStatisticsResponse create(Map<DateTime, DNSStatisticsBucketResponse> buckets, DNSTrafficSummaryResponse trafficSummary, List<DNSPairSummaryResponse> pairSummary) {
+    public static DNSStatisticsResponse create(Map<DateTime, DNSStatisticsBucketResponse> buckets, DNSTrafficSummaryResponse trafficSummary) {
         return builder()
                 .buckets(buckets)
                 .trafficSummary(trafficSummary)
-                .pairSummary(pairSummary)
                 .build();
     }
 
@@ -37,9 +33,6 @@ public abstract class DNSStatisticsResponse {
 
         public abstract Builder trafficSummary(DNSTrafficSummaryResponse trafficSummary);
 
-        public abstract Builder pairSummary(List<DNSPairSummaryResponse> pairSummary);
-
         public abstract DNSStatisticsResponse build();
     }
-
 }

@@ -6,9 +6,16 @@ export default class DNSService {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get('/ethernet/dns/statistics', { time_range: timeRange, taps: tapsList },
-        function (response) {
-          setStatistics(response.data)
-        })
+        (response) => setStatistics(response.data)
+    )
+  }
+
+  getGlobalPairs(timeRange, taps, limit, offset, setPairs) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get('/ethernet/dns/global/pairs', { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
+        (response) => setPairs(response.data)
+    )
   }
 
 }

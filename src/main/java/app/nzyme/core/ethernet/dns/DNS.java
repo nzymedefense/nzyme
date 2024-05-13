@@ -63,7 +63,29 @@ public class DNS {
         );
     }
 
-    public List<DNSPairSummary> getPairSummary(TimeRange timeRange, int limit, List<UUID> taps) {
+    public long countPairs(TimeRange timeRange, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
+        return ethernet.getNzyme().getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM(SELECT server, server_geo_asn_number, server_geo_asn_name, " +
+                                "server_geo_asn_domain, server_geo_country_code, SUM(count) AS request_count, " +
+                                "COUNT(DISTINCT(ip)) AS client_count FROM dns_pairs " +
+                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) AND server <> '224.0.0.251' " +
+                                "GROUP BY server, server_geo_asn_number, server_geo_asn_name, " +
+                                "server_geo_asn_domain, server_geo_country_code " +
+                                "ORDER BY request_count) AS x")
+                        .bindList("taps", taps)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<DNSPairSummary> getPairs(TimeRange timeRange, int limit, int offset, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -77,11 +99,12 @@ public class DNS {
                                 "GROUP BY server, server_geo_asn_number, server_geo_asn_name, " +
                                 "server_geo_asn_domain, server_geo_country_code " +
                                 "ORDER BY request_count " +
-                                "DESC LIMIT :limit")
+                                "DESC LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bind("limit", limit)
+                        .bind("offset", offset)
                         .mapTo(DNSPairSummary.class)
                         .list()
         );

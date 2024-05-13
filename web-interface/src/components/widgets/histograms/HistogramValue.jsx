@@ -2,6 +2,7 @@ import React from "react";
 
 import numeral from "numeral";
 import AutomaticDot11MacAddressLink from "../../shared/context/macs/AutomaticDot11MacAddressLink";
+import IPAddressLink from "../../ethernet/shared/IPAddressLink";
 
 function HistogramValue(props) {
 
@@ -19,6 +20,8 @@ function HistogramValue(props) {
       } else {
         return <span className={value.value === highlightValue ? "highlighted" : null}>{value.value}</span>
       }
+    case "IP_ADDRESS":
+      return <IPAddressLink ip={value.value} />
     case "INTEGER":
       return <span className={value.value === highlightValue ? "highlighted" : null}>{numeral(value.value).format("0,0")}</span>
     case "GENERIC":
