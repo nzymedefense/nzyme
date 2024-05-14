@@ -15,18 +15,18 @@ function byteConversion (x) {
 const dnsService = new DNSService()
 
 function DNSOverviewPage () {
-  const [statistics, setStatistics] = useState(null);
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
-  const [contactAttemptsTimeRange, setContactAttemptsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [queryStats, setQueryStats] = useState(null);
+  const [responseStats, setResponseStats] = useState(null);
+  const [nxdomainStats,setNxdomainStats] = useState(null);
 
-  useEffect(() => {
-    setStatistics(null);
-    dnsService.findDNSStatistics(timeRange, selectedTaps, setStatistics);
-  }, [selectedTaps, timeRange])
+  const [queryStatsTimeRange, setQueryStatsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [responseStatsTimeRange, setResponseStatsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [nxdomainStatsTimeRange, setNxdomainStatsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [contactAttemptsTimeRange, setContactAttemptsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -36,82 +36,76 @@ function DNSOverviewPage () {
     }
   }, [tapContext]);
 
+  useEffect(() => {
+    setQueryStats(null);
+    dnsService.getGlobalChart(queryStatsTimeRange, selectedTaps, "request_bytes", setQueryStats);
+  }, [selectedTaps, queryStatsTimeRange]);
+
+  useEffect(() => {
+    setResponseStats(null);
+    dnsService.getGlobalChart(responseStatsTimeRange, selectedTaps, "response_bytes", setResponseStats);
+  }, [selectedTaps, responseStatsTimeRange]);
+
+  useEffect(() => {
+    setNxdomainStats(null);
+    dnsService.getGlobalChart(nxdomainStatsTimeRange, selectedTaps, "nxdomain_count", setNxdomainStats);
+  }, [selectedTaps, nxdomainStatsTimeRange]);
+
   return (
     <div>
       <div className="row">
         <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="DNS Overview"
-                                     helpLink="https://go.nzyme.org/ethernet-dns"
-                                     slim={true}
-                                     timeRange={timeRange}
-                                     setTimeRange={setTimeRange} />
-            </div>
-          </div>
+          <h1>
+            DNS Overview
+          </h1>
         </div>
       </div>
 
       <div className="row mt-3">
-        <DNSNumbers fixedAppliedTimeRange={timeRange} data={statistics} />
+        <DNSNumbers/>
       </div>
 
       <div className="row mt-3">
-        <div className="col-md-6">
+        <div className="col-md-4">
           <div className="card">
             <div className="card-body">
-              <CardTitleWithControls title="Queries/Minute"
-                                     slim={true}
-                                     fixedAppliedTimeRange={timeRange} />
+            <CardTitleWithControls title="Query Traffic"
+                                     timeRange={queryStatsTimeRange}
+                                     setTimeRange={setQueryStatsTimeRange} />
 
-              <DNSStatisticsChart statistics={statistics} attribute="request_count" />
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="NXDOMAIN/Minute"
-                                     slim={true}
-                                     fixedAppliedTimeRange={timeRange} />
-
-              <DNSStatisticsChart statistics={statistics} attribute="nxdomain_count" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="row mt-3">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Query Bytes/Minute"
-                                     slim={true}
-                                     fixedAppliedTimeRange={timeRange} />
-
-              <DNSStatisticsChart statistics={statistics}
-                                  attribute="request_bytes"
+              <DNSStatisticsChart data={queryStats}
                                   conversion={byteConversion}
-                                  valueType="KB" />
+                                  valueType="KB"/>
             </div>
           </div>
         </div>
 
-        <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Response Bytes/Minute"
-                                       slim={true}
-                                       fixedAppliedTimeRange={timeRange} />
+        <div className="col-md-4">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Response Traffic"
+                                     timeRange={responseStatsTimeRange}
+                                     setTimeRange={setResponseStatsTimeRange} />
 
-                <DNSStatisticsChart statistics={statistics}
-                                    attribute="response_bytes"
-                                    conversion={byteConversion}
-                                    valueType="KB" />
-              </div>
+              <DNSStatisticsChart data={responseStats}
+                                  conversion={byteConversion}
+                                  valueType="KB"/>
+            </div>
           </div>
         </div>
+
+        <div className="col-md-4">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="NXDOMAIN Responses"
+                                     timeRange={nxdomainStatsTimeRange}
+                                     setTimeRange={setNxdomainStatsTimeRange} />
+
+              <DNSStatisticsChart data={nxdomainStats} attribute="nxdomain_count"/>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <div className="row mt-3">

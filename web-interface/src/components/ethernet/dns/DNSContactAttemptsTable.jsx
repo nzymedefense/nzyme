@@ -1,9 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react'
 
-import numeral from 'numeral'
 import GenericWidgetLoadingSpinner from "../../widgets/GenericWidgetLoadingSpinner";
-import IPAddressLink from "../shared/IPAddressLink";
-import ASNLink from "../shared/ASNLink";
 import {DEFAULT_LIMIT} from "../../widgets/LimitSelector";
 import {TapContext} from "../../../App";
 import DNSService from "../../../services/ethernet/DNSService";

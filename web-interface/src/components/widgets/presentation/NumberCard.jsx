@@ -9,10 +9,17 @@ function NumberCard (props) {
   const title = props.title;
   const value = props.value;
   const numberFormat = props.numberFormat;
+
+  const timeRange = props.timeRange;
+  const setTimeRange = props.setTimeRange;
   const fixedAppliedTimeRange = props.fixedAppliedTimeRange;
 
   if (value === null || value === undefined) {
-    return <SingleValueCardLoading title={title} fixedAppliedTimeRange={fixedAppliedTimeRange} />
+    return <SingleValueCardLoading title={title}
+                                   slim={true}
+                                   timeRange={timeRange}
+                                   setTimeRange={setTimeRange}
+                                   fixedAppliedTimeRange={fixedAppliedTimeRange} />
   }
 
   return (
@@ -20,6 +27,8 @@ function NumberCard (props) {
         <div className="card-body card-number">
           <CardTitleWithControls title={title}
                                  slim={true}
+                                 timeRange={timeRange}
+                                 setTimeRange={setTimeRange}
                                  fixedAppliedTimeRange={fixedAppliedTimeRange}/>
 
           <div className="value">

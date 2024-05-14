@@ -4,6 +4,8 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 export default function SingleValueCardLoading(props) {
 
   const title = props.title;
+  const timeRange = props.timeRange;
+  const setTimeRange = props.setTimeRange;
   const fixedAppliedTimeRange = props.fixedAppliedTimeRange;
 
   return (
@@ -12,6 +14,8 @@ export default function SingleValueCardLoading(props) {
           <CardTitleWithControls title={title}
                                  slim={true}
                                  disabled={true}
+                                 timeRange={timeRange}
+                                 setTimeRange={setTimeRange}
                                  fixedAppliedTimeRange={fixedAppliedTimeRange} />
 
           <div className="value value-loading text-muted">
