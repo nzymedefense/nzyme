@@ -37,7 +37,7 @@ export default function DNSContactAttemptsTable (props) {
   }
 
   return <ThreeColumnHistogram data={data}
-                               columnTitles={["Server", "Requests", "Unique Clients"]}
+                               columnTitles={["Server", "Unique Clients", "Requests"]}
                                limit={limit}
                                setLimit={setLimit} />
 
