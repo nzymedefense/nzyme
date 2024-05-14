@@ -35,7 +35,9 @@ public class DatabaseResource {
     public Response summary() {
         DatabaseImpl db = (DatabaseImpl) nzyme.getDatabase();
         long totalSize = db.getTotalSize();
-        long ethernetSize = db.getTableSize("dns_pairs")
+        long ethernetSize = db.getTableSize("dns_log")
+                + db.getTableSize("dns_entropy_log")
+                + db.getTableSize("dns_pairs")
                 + db.getTableSize("dns_statistics");
 
         long dot11Size = db.getTableSize("dot11_bssids")

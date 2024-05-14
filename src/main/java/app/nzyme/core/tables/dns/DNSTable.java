@@ -18,6 +18,7 @@
 package app.nzyme.core.tables.dns;
 
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
+import app.nzyme.core.rest.resources.taps.reports.tables.DNSEntropyLogReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSIPStatisticsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSTablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dns.DNSLogReport;
@@ -25,6 +26,8 @@ import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
@@ -38,12 +41,15 @@ import java.util.UUID;
 
 public class DNSTable implements DataTable {
 
+    private static final Logger LOG = LogManager.getLogger(DNSTable.class);
+
     private final TablesService tablesService;
 
     private final Timer totalReportTimer;
     private final Timer statisticsReportTimer;
     private final Timer pairsReportTimer;
     private final Timer logReportTimer;
+    private final Timer entropyReportTimer;
 
     public DNSTable(TablesService tablesService) {
         this.tablesService = tablesService;
@@ -56,6 +62,8 @@ public class DNSTable implements DataTable {
                 .timer(MetricNames.DNS_PAIRS_REPORT_PROCESSING_TIMER);
         this.logReportTimer = tablesService.getNzyme().getMetrics()
                 .timer(MetricNames.DNS_LOG_REPORT_PROCESSING_TIMER);
+        this.entropyReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DNS_ENTROPY_REPORT_PROCESSING_TIMER);
     }
 
     public void handleReport(UUID tapUuid, DateTime timestamp, DNSTablesReport report) {
@@ -71,6 +79,10 @@ public class DNSTable implements DataTable {
 
                 try (Timer.Context ignored2 = logReportTimer.time()) {
                     registerLogs(handle, tapUuid, report.queryLog(), report.responseLog());
+                }
+
+                try (Timer.Context ignored2 = entropyReportTimer.time()) {
+                    registerEntropyLogs(handle, tapUuid, report.entropyLog(), timestamp);
                 }
             });
         }
@@ -190,6 +202,28 @@ public class DNSTable implements DataTable {
         batch.execute();
     }
 
+    public void registerEntropyLogs(Handle handle,
+                                    UUID tapUuid,
+                                    List<DNSEntropyLogReport> logs,
+                                    DateTime timestamp) {
+        PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_entropy_log(tap_uuid, transaction_id, " +
+                "entropy, entropy_mean, zscore, timestamp, created_at) VALUES(:tap_uuid, :transaction_id, " +
+                ":entropy, :entropy_mean, :zscore, :timestamp, NOW())");
+
+        for (DNSEntropyLogReport log : logs) {
+            batch
+                    .bind("tap_uuid", tapUuid)
+                    .bind("transaction_id", log.transactionId())
+                    .bind("entropy", log.entropy())
+                    .bind("entropy_mean", log.entropyMean())
+                    .bind("zscore", log.zScore())
+                    .bind("timestamp", timestamp)
+                    .add();
+        }
+
+        batch.execute();
+    }
+
     @Override
     public void retentionClean() {
         tablesService.getNzyme().getDatabase().useHandle(handle -> {
@@ -201,7 +235,11 @@ public class DNSTable implements DataTable {
                     .bind("created_at", DateTime.now().minusHours(24)) // TODO
                     .execute();
 
-            handle.createUpdate("DELETE FROM dns_logs WHERE created_at < :created_at")
+            handle.createUpdate("DELETE FROM dns_log WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .execute();
+
+            handle.createUpdate("DELETE FROM dns_entropy_log WHERE created_at < :created_at")
                     .bind("created_at", DateTime.now().minusHours(24)) // TODO
                     .execute();
         });

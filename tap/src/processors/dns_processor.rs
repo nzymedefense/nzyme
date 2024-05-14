@@ -14,6 +14,11 @@ pub struct DnsProcessor {
     entropy_outlier_treshhold: f32
 }
 
+struct ZScoreResult {
+    zscore: f32,
+    mean: f32
+}
+
 impl DnsProcessor {
 
     pub fn new(system_state: Arc<SystemState>, dns_table: Arc<Mutex<DnsTable>>, metrics: Arc<Mutex<Metrics>>) -> Self {
@@ -70,7 +75,7 @@ impl DnsProcessor {
             dns_table,
             query_entropy,
             response_entropy,
-            entropy_outlier_treshhold: 2.5 // TODO
+            entropy_outlier_treshhold: 3.5 // TODO
         }
     }
 
@@ -95,11 +100,12 @@ impl DnsProcessor {
 
                                         // Handle outlier if we have a zscore, training is over, and we are above threshold.
                                         if let Some(zscore) = zscore {
-                                            if !self.system_state.is_in_training() && zscore > self.entropy_outlier_treshhold {
+                                            if !self.system_state.is_in_training() &&  zscore.zscore > self.entropy_outlier_treshhold {
                                                 table.register_exceeded_entropy(
                                                     transaction_id,
                                                     entropy,
-                                                    zscore,
+                                                    zscore.zscore,
+                                                    zscore.mean
                                                 );
                                             }
                                         }
@@ -131,11 +137,12 @@ impl DnsProcessor {
 
                                         // Handle outlier if we have a zscore, training is over and we are above threshold.
                                         if let Some(zscore) = zscore {
-                                            if !self.system_state.is_in_training() && zscore > self.entropy_outlier_treshhold {
+                                            if !self.system_state.is_in_training() && zscore.zscore > self.entropy_outlier_treshhold {
                                                 table.register_exceeded_entropy(
                                                     transaction_id,
                                                     entropy,
-                                                    zscore
+                                                    zscore.zscore,
+                                                    zscore.mean
                                                 );
                                             }
                                         }
@@ -165,7 +172,9 @@ impl DnsProcessor {
     }
 
     #[allow(clippy::needless_return)]
-    fn entropy_zscore(table: &mut Arc<Mutex<HashMap<DateTime<Utc>, f32>>>, entropy: f32) -> Option<f32> {
+    fn entropy_zscore(table: &mut Arc<Mutex<HashMap<DateTime<Utc>, f32>>>, entropy: f32)
+        -> Option<ZScoreResult> {
+
         match table.lock() {
             Ok(table) => {
                 let values: Vec<f32> = table.values().copied().collect();
@@ -176,7 +185,7 @@ impl DnsProcessor {
                 return match (mean, stddev) {
                     (Some(mean), Some(std_deviation)) => {
                         let diff = entropy - mean;
-                        Some(diff / std_deviation)
+                        Some(ZScoreResult { zscore: diff / std_deviation, mean })
                     },
                     _ => None
                 };

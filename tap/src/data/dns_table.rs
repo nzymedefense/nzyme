@@ -43,7 +43,8 @@ pub struct DnsStatistics {
 pub struct EntropyLog {
     transaction_id: u16,
     entropy: f32,
-    zscore: f32
+    entropy_mean: f32,
+    zscore: f32,
 }
 
 pub struct DNSQueryLog {
@@ -269,9 +270,13 @@ impl DnsTable {
 
     }
 
-    pub fn register_exceeded_entropy(&mut self, transaction_id: u16, entropy: f32, zscore: f32) {
+    pub fn register_exceeded_entropy(&mut self,
+                                     transaction_id: u16,
+                                     entropy: f32,
+                                     zscore: f32,
+                                     entropy_mean: f32) {
         match self.entropy_log.lock() {
-            Ok(mut log) => log.push(EntropyLog { transaction_id, entropy, zscore }),
+            Ok(mut log) => log.push(EntropyLog { transaction_id, entropy, zscore, entropy_mean }),
             Err(e) => error!("Could not acquire entropy log mutex: {}", e)
         }
     }
@@ -329,7 +334,8 @@ impl DnsTable {
                     entropy_log.push(DNSEntropyLog {
                         transaction_id: log.transaction_id,
                         entropy: log.entropy,
-                        zscore: log.zscore
+                        zscore: log.zscore,
+                        entropy_mean: log.entropy_mean
                     });
                 }
             },

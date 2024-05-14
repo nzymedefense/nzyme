@@ -4861,4 +4861,48 @@
             </column>
         </addColumn>
     </changeSet>
+    
+    <changeSet id="add_dns_entropy_log" author="lennartkoopmann">
+        <createTable tableName="dns_entropy_log">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="transaction_id" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="entropy" type="float">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="zscore" type="float">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="timestamp" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add_entropy_mean_to_dns_entropy_log" author="lennartkoopmann">
+        <addColumn tableName="dns_entropy_log">
+            <column name="entropy_mean" type="float">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_tap_uuid_to_dns_entropy_log" author="lennartkoopmann">
+        <addColumn tableName="dns_entropy_log">
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

@@ -91,7 +91,8 @@ pub struct DnsIpStatisticsReport {
 pub struct DNSEntropyLog {
     pub transaction_id: u16,
     pub entropy: f32,
-    pub zscore: f32
+    pub zscore: f32,
+    pub entropy_mean: f32
 }
 
 #[derive(Serialize)]
