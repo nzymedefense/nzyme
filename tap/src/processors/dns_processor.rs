@@ -11,7 +11,7 @@ pub struct DnsProcessor {
     dns_table: Arc<Mutex<DnsTable>>,
     query_entropy: Arc<Mutex<HashMap<DateTime<Utc>, f32>>>,
     response_entropy: Arc<Mutex<HashMap<DateTime<Utc>, f32>>>,
-    entropy_outlier_treshhold: f32
+    entropy_zscore_threshold: f32
 }
 
 struct ZScoreResult {
@@ -75,7 +75,7 @@ impl DnsProcessor {
             dns_table,
             query_entropy,
             response_entropy,
-            entropy_outlier_treshhold: 3.0 // TODO
+            entropy_zscore_threshold: 3.0 // TODO
         }
     }
 
@@ -100,7 +100,7 @@ impl DnsProcessor {
 
                                         // Handle outlier if we have a zscore, training is over, and we are above threshold.
                                         if let Some(zscore) = zscore {
-                                            if !self.system_state.is_in_training() &&  zscore.zscore > self.entropy_outlier_treshhold {
+                                            if !self.system_state.is_in_training() &&  zscore.zscore > self.entropy_zscore_threshold {
                                                 table.register_exceeded_entropy(
                                                     transaction_id,
                                                     entropy,
@@ -137,7 +137,7 @@ impl DnsProcessor {
 
                                         // Handle outlier if we have a zscore, training is over and we are above threshold.
                                         if let Some(zscore) = zscore {
-                                            if !self.system_state.is_in_training() && zscore.zscore > self.entropy_outlier_treshhold {
+                                            if !self.system_state.is_in_training() && zscore.zscore > self.entropy_zscore_threshold {
                                                 table.register_exceeded_entropy(
                                                     transaction_id,
                                                     entropy,

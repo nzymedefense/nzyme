@@ -72,14 +72,14 @@ impl<T> NzymeChannelSender<T> {
 impl Bus<> {
 
     pub fn new(metrics: Arc<Mutex<Metrics>>, name: String, configuration: Configuration) -> Self {
-        let (ethernet_broker_sender, ethernet_broker_receiver) = bounded(configuration.performance.ethernet_broker_buffer_capacity); // TODO configurable
+        let (ethernet_broker_sender, ethernet_broker_receiver) = bounded(configuration.performance.ethernet_broker_buffer_capacity);
         let (dot11_broker_sender, dot11_broker_receiver) = bounded(configuration.performance.wifi_broker_buffer_capacity);
 
         let (dot11_frames_sender, dot11_frames_receiver) = bounded(configuration.performance.wifi_broker_buffer_capacity);
 
         let (arp_pipeline_sender, arp_pipeline_receiver) = bounded(512); // TODO configurable
 
-        let (tcp_pipeline_sender, tcp_pipeline_receiver) = bounded(configuration.protocols.tcp.pipeline_size as usize); // TODO configurable
+        let (tcp_pipeline_sender, tcp_pipeline_receiver) = bounded(configuration.protocols.tcp.pipeline_size as usize);
         let (udp_pipeline_sender, udp_pipeline_receiver) = bounded(65535); // TODO configurable
 
         let (dns_pipeline_sender, dns_pipeline_receiver) = bounded(512); // TODO configurable
