@@ -75,7 +75,7 @@ impl DnsProcessor {
             dns_table,
             query_entropy,
             response_entropy,
-            entropy_outlier_treshhold: 3.5 // TODO
+            entropy_outlier_treshhold: 3.0 // TODO
         }
     }
 

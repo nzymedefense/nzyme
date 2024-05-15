@@ -80,7 +80,7 @@ impl Bus<> {
         let (arp_pipeline_sender, arp_pipeline_receiver) = bounded(512); // TODO configurable
 
         let (tcp_pipeline_sender, tcp_pipeline_receiver) = bounded(configuration.protocols.tcp.pipeline_size as usize); // TODO configurable
-        let (udp_pipeline_sender, udp_pipeline_receiver) = bounded(512); // TODO configurable
+        let (udp_pipeline_sender, udp_pipeline_receiver) = bounded(65535); // TODO configurable
 
         let (dns_pipeline_sender, dns_pipeline_receiver) = bounded(512); // TODO configurable
 
