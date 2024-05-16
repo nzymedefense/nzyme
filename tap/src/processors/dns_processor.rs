@@ -5,6 +5,7 @@ use crate::{data::dns_table::DnsTable, ethernet::{packets::DNSPacket, types::DNS
 use chrono::{DateTime, Utc, Duration};
 use clokwerk::{Scheduler, TimeUnits};
 use log::{error, debug};
+use crate::configuration::Configuration;
 
 pub struct DnsProcessor {
     system_state: Arc<SystemState>,
@@ -21,7 +22,10 @@ struct ZScoreResult {
 
 impl DnsProcessor {
 
-    pub fn new(system_state: Arc<SystemState>, dns_table: Arc<Mutex<DnsTable>>, metrics: Arc<Mutex<Metrics>>) -> Self {
+    pub fn new(system_state: Arc<SystemState>,
+               dns_table: Arc<Mutex<DnsTable>>, 
+               metrics: Arc<Mutex<Metrics>>,
+               configuration: &Configuration) -> Self {
         let query_entropy = Arc::new(Mutex::new(HashMap::new()));
         let query_entropy_ret = query_entropy.clone();
         let query_entropy_metrics = query_entropy.clone();
@@ -75,7 +79,7 @@ impl DnsProcessor {
             dns_table,
             query_entropy,
             response_entropy,
-            entropy_zscore_threshold: 3.0 // TODO
+            entropy_zscore_threshold: configuration.protocols.dns.entropy_zscore_threshold
         }
     }
 
@@ -161,7 +165,6 @@ impl DnsProcessor {
         }
     }
 
-    
     fn record_entropy(table: &mut Arc<Mutex<HashMap<DateTime<Utc>, f32>>>, entropy: f32) {
         match table.lock() {
             Ok(mut table) => {

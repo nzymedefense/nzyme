@@ -3,7 +3,6 @@ use std::env;
 use std::fs::read_to_string;
 
 use anyhow::{Result, bail, Error};
-use log::info;
 use regex::Regex;
 use reqwest::Url;
 use serde::Deserialize;
@@ -61,7 +60,10 @@ pub struct Misc {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Protocols {
-    pub tcp: ProtocolsTcp
+    pub tcp: ProtocolsTcp,
+    pub udp: ProtocolsUdp,
+    pub dns: ProtocolsDns,
+    pub arp: ProtocolsArp
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -69,6 +71,22 @@ pub struct ProtocolsTcp {
     pub pipeline_size: i32,
     pub reassembly_buffer_size: i32,
     pub session_timeout_seconds: i32
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ProtocolsUdp {
+    pub pipeline_size: i32,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ProtocolsDns {
+    pub pipeline_size: i32,
+    pub entropy_zscore_threshold: f32
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ProtocolsArp {
+    pub pipeline_size: i32,
 }
 
 pub fn load(path: String) -> Result<Configuration, Error> {
@@ -109,17 +127,36 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     if doc.performance.ethernet_broker_buffer_capacity == 0 {
         bail!("Configuration variable `ethernet_pkt_buffer_capacity` must be set to a value greater than 0.");
     }
-
+    
+    // Protocols.
+    
+    // TCP.
     if doc.protocols.tcp.pipeline_size <= 0 {
         bail!("Configuration variable `protocols.tcp.pipeline_size` must be set to a value greater than 0.");
     }
-
     if doc.protocols.tcp.session_timeout_seconds <= 0 {
         bail!("Configuration variable `protocols.tcp.session_timeout_seconds` must be set to a value greater than 0.");
     }
-
     if doc.protocols.tcp.reassembly_buffer_size <= 0 {
         bail!("Configuration variable `protocols.tcp.reassembly_buffer_size` must be set to a value greater than 0.");
+    }
+
+    // UDP.
+    if doc.protocols.udp.pipeline_size <= 0 {
+        bail!("Configuration variable `protocols.udp.pipeline_size` must be set to a value greater than 0.");
+    }
+
+    // DNS.
+    if doc.protocols.dns.pipeline_size <= 0 {
+        bail!("Configuration variable `protocols.dns.pipeline_size` must be set to a value greater than 0.");
+    }
+    if doc.protocols.dns.entropy_zscore_threshold <= 0.0 {
+        bail!("Configuration variable `protocols.dns.entropy_zscore_threshold` must be set to a value greater than 0.0.");
+    }
+
+    // ARP.
+    if doc.protocols.arp.pipeline_size <= 0 {
+        bail!("Configuration variable `protocols.arp.pipeline_size` must be set to a value greater than 0.");
     }
 
     // Validate WiFi interfaces configuration

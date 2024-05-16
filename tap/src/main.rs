@@ -247,8 +247,13 @@ fn main() {
         wifi_device_cycle_times = None;
     }
 
-    // Processors. TODO follow impl method like metrics aggr/mon
-    processors::distributor::spawn(ethernet_bus.clone(), dot11_bus.clone(), &tables, system_state, metrics.clone());
+    // Processors.
+    processors::distributor::spawn(ethernet_bus.clone(), 
+                                   dot11_bus.clone(), 
+                                   tables.clone(), 
+                                   system_state,
+                                   metrics.clone(),
+                                   &configuration);
 
     // Metrics aggregator.
     let aggregatormetrics = metrics.clone();
@@ -267,7 +272,7 @@ fn main() {
         loop {
             match leaderlink_runner.lock() {
                 Ok(mut link) => link.run(),
-                Err(e) => error!("Could not acquire Leaderlink mutex to run background jobs.")
+                Err(e) => error!("Could not acquire Leaderlink mutex to run background jobs: {}", e)
             }
 
             sleep(Duration::from_secs(10));
