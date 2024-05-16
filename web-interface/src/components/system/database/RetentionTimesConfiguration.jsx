@@ -37,17 +37,59 @@ function RetentionTimesConfiguration() {
           </thead>
           <tbody>
           <tr>
-            <td>802.11 / WiFi Data Retention</td>
+            <td>Ethernet: TCP, UDP</td>
+            <td>
+              <ConfigurationValue value={configuration.ethernet_l4_retention_time_days.value}
+                                  configKey={configuration.ethernet_l4_retention_time_days.key}
+                                  required={true}/> days
+            </td>
+            <td>
+              <ConfigurationModal config={configuration.ethernet_l4_retention_time_days}
+                                  setGlobalConfig={setConfiguration}
+                                  setLocalRevision={setLocalRevision}
+                                  dbUpdateCallback={systemService.updateRetentionTimes}/>
+            </td>
+          </tr>
+          <tr>
+            <td>Ethernet: DNS</td>
+            <td>
+              <ConfigurationValue value={configuration.ethernet_dns_retention_time_days.value}
+                                  configKey={configuration.ethernet_dns_retention_time_days.key}
+                                  required={true}/> days
+            </td>
+            <td>
+              <ConfigurationModal config={configuration.ethernet_dns_retention_time_days}
+                                  setGlobalConfig={setConfiguration}
+                                  setLocalRevision={setLocalRevision}
+                                  dbUpdateCallback={systemService.updateRetentionTimes}/>
+            </td>
+          </tr>
+          <tr>
+            <td>Ethernet: ARP</td>
+            <td>
+              <ConfigurationValue value={configuration.ethernet_arp_retention_time_days.value}
+                                  configKey={configuration.ethernet_arp_retention_time_days.key}
+                                  required={true}/> days
+            </td>
+            <td>
+              <ConfigurationModal config={configuration.ethernet_arp_retention_time_days}
+                                  setGlobalConfig={setConfiguration}
+                                  setLocalRevision={setLocalRevision}
+                                  dbUpdateCallback={systemService.updateRetentionTimes}/>
+            </td>
+          </tr>
+          <tr>
+            <td>802.11 / WiFi: All Data Types</td>
             <td>
               <ConfigurationValue value={configuration.dot11_retention_time_days.value}
                                   configKey={configuration.dot11_retention_time_days.key}
-                                  required={true} /> days
+                                  required={true}/> days
             </td>
             <td>
               <ConfigurationModal config={configuration.dot11_retention_time_days}
                                   setGlobalConfig={setConfiguration}
                                   setLocalRevision={setLocalRevision}
-                                  dbUpdateCallback={systemService.updateRetentionTimes} />
+                                  dbUpdateCallback={systemService.updateRetentionTimes}/>
             </td>
           </tr>
           </tbody>

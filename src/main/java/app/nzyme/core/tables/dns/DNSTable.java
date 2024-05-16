@@ -17,6 +17,8 @@
 
 package app.nzyme.core.tables.dns;
 
+import app.nzyme.core.dot11.Dot11RegistryKeys;
+import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSEntropyLogReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSIPStatisticsReport;
@@ -226,21 +228,26 @@ public class DNSTable implements DataTable {
 
     @Override
     public void retentionClean() {
+        int retentionTimeDays = Integer.parseInt(tablesService.getNzyme().getDatabaseCoreRegistry()
+                .getValue(EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.key())
+                .orElse(EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
+        );
+
         tablesService.getNzyme().getDatabase().useHandle(handle -> {
             handle.createUpdate("DELETE FROM dns_statistics WHERE created_at < :created_at")
-                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .bind("created_at", DateTime.now().minusDays(retentionTimeDays))
                     .execute();
 
             handle.createUpdate("DELETE FROM dns_pairs WHERE created_at < :created_at")
-                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .bind("created_at", DateTime.now().minusDays(retentionTimeDays))
                     .execute();
 
             handle.createUpdate("DELETE FROM dns_log WHERE created_at < :created_at")
-                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .bind("created_at", DateTime.now().minusDays(retentionTimeDays))
                     .execute();
 
             handle.createUpdate("DELETE FROM dns_entropy_log WHERE created_at < :created_at")
-                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .bind("created_at", DateTime.now().minusDays(retentionTimeDays))
                     .execute();
         });
     }

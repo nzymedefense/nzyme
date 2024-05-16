@@ -3,6 +3,7 @@ package app.nzyme.core.rest.resources.system;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
+import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.rest.requests.RetentionTimeConfigurationUpdateRequest;
 import app.nzyme.core.rest.responses.system.DatabaseSummaryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
@@ -53,15 +54,30 @@ public class DatabaseResource {
                 + db.getTableSize("dot11_disco_activity")
                 + db.getTableSize("dot11_disco_activity_receivers");
 
-        int retentionTime = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+        int dot11RetentionTime = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
                 .getValue(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key())
                 .orElse(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
+        );
+
+        int ethernetL4RetentionTime = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                .getValue(EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key())
+                .orElse(EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
+        );
+
+        int ethernetDnsRetentionTime = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                .getValue(EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.key())
+                .orElse(EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
+        );
+
+        int ethernetArpRetentionTime = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                .getValue(EthernetRegistryKeys.ARP_RETENTION_TIME_DAYS.key())
+                .orElse(EthernetRegistryKeys.ARP_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
         );
 
         ConfigurationEntryResponse dot11RetentionTimeConfig = ConfigurationEntryResponse.create(
                 Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key(),
                 "Retention Time (in days)",
-                retentionTime,
+                dot11RetentionTime,
                 ConfigurationEntryValueType.NUMBER,
                 Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse(null),
                 Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.requiresRestart(),
@@ -69,8 +85,47 @@ public class DatabaseResource {
                 "retention-time"
         );
 
+        ConfigurationEntryResponse ethernetL4RetentionTimeConfig = ConfigurationEntryResponse.create(
+                EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key(),
+                "Retention Time (in days)",
+                ethernetL4RetentionTime,
+                ConfigurationEntryValueType.NUMBER,
+                EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.defaultValue().orElse(null),
+                EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.requiresRestart(),
+                EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.constraints().orElse(Lists.newArrayList()),
+                "retention-time"
+        );
+
+        ConfigurationEntryResponse ethernetDnsRetentionTimeConfig = ConfigurationEntryResponse.create(
+                EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.key(),
+                "Retention Time (in days)",
+                ethernetDnsRetentionTime,
+                ConfigurationEntryValueType.NUMBER,
+                EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.defaultValue().orElse(null),
+                EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.requiresRestart(),
+                EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.constraints().orElse(Lists.newArrayList()),
+                "retention-time"
+        );
+
+        ConfigurationEntryResponse ethernetArpRetentionTimeConfig = ConfigurationEntryResponse.create(
+                EthernetRegistryKeys.ARP_RETENTION_TIME_DAYS.key(),
+                "Retention Time (in days)",
+                ethernetArpRetentionTime,
+                ConfigurationEntryValueType.NUMBER,
+                EthernetRegistryKeys.ARP_RETENTION_TIME_DAYS.defaultValue().orElse(null),
+                EthernetRegistryKeys.ARP_RETENTION_TIME_DAYS.requiresRestart(),
+                EthernetRegistryKeys.ARP_RETENTION_TIME_DAYS.constraints().orElse(Lists.newArrayList()),
+                "retention-time"
+        );
+
         return Response.ok(DatabaseSummaryResponse.create(
-                totalSize, ethernetSize, dot11Size, dot11RetentionTimeConfig
+                totalSize,
+                ethernetSize,
+                dot11Size,
+                dot11RetentionTimeConfig,
+                ethernetL4RetentionTimeConfig,
+                ethernetDnsRetentionTimeConfig,
+                ethernetArpRetentionTimeConfig
         )).build();
     }
 
@@ -81,6 +136,21 @@ public class DatabaseResource {
             switch (c.getKey()) {
                 case "dot11_retention_time_days":
                     if (!ConfigurationEntryConstraintValidator.checkConstraints(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "ethernet_l4_retention_time_days":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(EthernetRegistryKeys.L4_RETENTION_TIME_DAYS, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "ethernet_dns_retention_time_days":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "ethernet_arp_retention_time_days":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(EthernetRegistryKeys.ARP_RETENTION_TIME_DAYS, c)) {
                         return Response.status(422).build();
                     }
                     break;
