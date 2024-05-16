@@ -3,7 +3,6 @@ use chrono::{DateTime, Utc};
 use log::error;
 use serde::Serialize;
 use crate::ethernet::packets::Datagram;
-use crate::link::reports::tcp_sessions_report::{TcpSessionReport};
 
 #[derive(Serialize)]
 pub struct UdpDatagramsReport {

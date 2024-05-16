@@ -1,8 +1,8 @@
-use std::fmt::{Debug, format};
+use std::fmt::{Debug};
 use std::io;
 use std::iter::once;
 use std::os::fd::AsRawFd;
-use log::{info, trace};
+use log::{trace};
 use neli::consts::nl::{GenlId, NlmF, Nlmsg, NlType};
 use neli::consts::socket::{NlFamily};
 use neli::err::SocketError;

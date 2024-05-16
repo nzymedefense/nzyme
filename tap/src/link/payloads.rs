@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::net::IpAddr;
 
 use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};

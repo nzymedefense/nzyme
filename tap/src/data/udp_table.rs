@@ -4,7 +4,7 @@ use crate::data::table_helpers::clear_mutex_vector;
 use crate::ethernet::packets::Datagram;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
-use crate::link::reports::{tcp_sessions_report, udp_datagrams_report};
+use crate::link::reports::{udp_datagrams_report};
 use crate::metrics::Metrics;
 
 pub struct UdpTable {

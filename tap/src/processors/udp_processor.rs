@@ -2,7 +2,6 @@ use std::sync::{Arc, Mutex};
 use log::{error};
 
 use crate::{ethernet::packets::Datagram, to_pipeline};
-use crate::data::tables::Tables;
 use crate::data::udp_table::UdpTable;
 use crate::ethernet::detection::l7_tagger::L7SessionTag;
 use crate::ethernet::detection::l7_tagger::L7SessionTag::{Dns, Unencrypted};

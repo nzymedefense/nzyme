@@ -131,7 +131,7 @@ fn main() {
     let ethernet_bus = Arc::new(Bus::new(metrics.clone(), "ethernet_packets".to_string(), configuration.clone()));
     let dot11_bus = Arc::new(Bus::new(metrics.clone(), "dot11_frames".to_string(), configuration.clone()));
 
-    let mut leaderlink = match Leaderlink::new(configuration.clone(), metrics.clone(), ethernet_bus.clone(), dot11_bus.clone()) {
+    let leaderlink = match Leaderlink::new(configuration.clone(), metrics.clone(), ethernet_bus.clone(), dot11_bus.clone()) {
         Ok(leaderlink) => Arc::new(Mutex::new(leaderlink)),
         Err(e) => {
             error!("Fatal error: Could not set up conection to nzyme leader. {}", e);
@@ -248,9 +248,9 @@ fn main() {
     }
 
     // Processors.
-    processors::distributor::spawn(ethernet_bus.clone(), 
-                                   dot11_bus.clone(), 
-                                   tables.clone(), 
+    processors::distributor::spawn(ethernet_bus.clone(),
+                                   dot11_bus.clone(),
+                                   tables.clone(),
                                    system_state,
                                    metrics.clone(),
                                    &configuration);

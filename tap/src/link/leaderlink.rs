@@ -13,7 +13,6 @@ use crate::{
 use crate::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
 use crate::link::payloads::{NodeHelloReport, TimerReport, WiFiSupportedFrequencyReport};
 use crate::messagebus::channel_names::{Dot11ChannelName, EthernetChannelName};
-use crate::metrics::CaptureType::WiFi;
 use crate::metrics::ChannelUtilization;
 
 use super::{payloads::{StatusReport, SystemMetricsReport, TotalWithAverage, ChannelReport, CaptureReport}};
