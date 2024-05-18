@@ -12,17 +12,20 @@ public abstract class DNSEntropyLogReport {
     public abstract Float entropy();
     public abstract Float zScore();
     public abstract Float entropyMean();
+    public abstract DateTime timestamp();
 
     @JsonCreator
     public static DNSEntropyLogReport create(@JsonProperty("transaction_id") Integer transactionId,
                                              @JsonProperty("entropy") Float entropy,
                                              @JsonProperty("zscore") Float zScore,
-                                             @JsonProperty("entropy_mean") Float entropyMean) {
+                                             @JsonProperty("entropy_mean") Float entropyMean,
+                                             @JsonProperty("timestamp") DateTime timestamp) {
         return builder()
                 .transactionId(transactionId)
                 .entropy(entropy)
                 .zScore(zScore)
                 .entropyMean(entropyMean)
+                .timestamp(timestamp)
                 .build();
     }
 
@@ -39,6 +42,8 @@ public abstract class DNSEntropyLogReport {
         public abstract Builder zScore(Float zScore);
 
         public abstract Builder entropyMean(Float entropyMean);
+
+        public abstract Builder timestamp(DateTime timestamp);
 
         public abstract DNSEntropyLogReport build();
     }

@@ -109,7 +109,8 @@ impl DnsProcessor {
                                                     transaction_id,
                                                     entropy,
                                                     zscore.zscore,
-                                                    zscore.mean
+                                                    zscore.mean,
+                                                    packet.timestamp
                                                 );
                                             }
                                         }
@@ -146,7 +147,8 @@ impl DnsProcessor {
                                                     transaction_id,
                                                     entropy,
                                                     zscore.zscore,
-                                                    zscore.mean
+                                                    zscore.mean,
+                                                    packet.timestamp
                                                 );
                                             }
                                         }

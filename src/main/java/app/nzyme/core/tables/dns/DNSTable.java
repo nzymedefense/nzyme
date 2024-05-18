@@ -17,7 +17,6 @@
 
 package app.nzyme.core.tables.dns;
 
-import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSEntropyLogReport;
@@ -84,7 +83,7 @@ public class DNSTable implements DataTable {
                 }
 
                 try (Timer.Context ignored2 = entropyReportTimer.time()) {
-                    registerEntropyLogs(handle, tapUuid, report.entropyLog(), timestamp);
+                    registerEntropyLogs(handle, tapUuid, report.entropyLog());
                 }
             });
         }
@@ -206,8 +205,7 @@ public class DNSTable implements DataTable {
 
     public void registerEntropyLogs(Handle handle,
                                     UUID tapUuid,
-                                    List<DNSEntropyLogReport> logs,
-                                    DateTime timestamp) {
+                                    List<DNSEntropyLogReport> logs) {
         PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_entropy_log(tap_uuid, transaction_id, " +
                 "entropy, entropy_mean, zscore, timestamp, created_at) VALUES(:tap_uuid, :transaction_id, " +
                 ":entropy, :entropy_mean, :zscore, :timestamp, NOW())");
@@ -219,7 +217,7 @@ public class DNSTable implements DataTable {
                     .bind("entropy", log.entropy())
                     .bind("entropy_mean", log.entropyMean())
                     .bind("zscore", log.zScore())
-                    .bind("timestamp", timestamp)
+                    .bind("timestamp", log.timestamp())
                     .add();
         }
 

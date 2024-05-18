@@ -45,6 +45,7 @@ pub struct EntropyLog {
     entropy: f32,
     entropy_mean: f32,
     zscore: f32,
+    timestamp: DateTime<Utc>
 }
 
 pub struct DNSQueryLog {
@@ -274,9 +275,12 @@ impl DnsTable {
                                      transaction_id: u16,
                                      entropy: f32,
                                      zscore: f32,
-                                     entropy_mean: f32) {
+                                     entropy_mean: f32,
+                                     timestamp: DateTime<Utc>) {
         match self.entropy_log.lock() {
-            Ok(mut log) => log.push(EntropyLog { transaction_id, entropy, zscore, entropy_mean }),
+            Ok(mut log) => log.push(
+                EntropyLog { transaction_id, entropy, zscore, entropy_mean, timestamp }
+            ),
             Err(e) => error!("Could not acquire entropy log mutex: {}", e)
         }
     }
@@ -335,7 +339,8 @@ impl DnsTable {
                         transaction_id: log.transaction_id,
                         entropy: log.entropy,
                         zscore: log.zscore,
-                        entropy_mean: log.entropy_mean
+                        entropy_mean: log.entropy_mean,
+                        timestamp: log.timestamp
                     });
                 }
             },
