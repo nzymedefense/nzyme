@@ -1,4 +1,4 @@
-use std::net::{IpAddr, Ipv4Addr};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use anyhow::{bail, Error};
 use log::error;
 use serde::Deserialize;
@@ -165,4 +165,16 @@ pub fn dot11_channel_to_frequency(f: u16, band: Nl80211Band) -> Result<u16, Erro
     }
 
     bail!("Unsupported channel <{}>", f);
+}
+
+pub fn is_ipv4_address(s: &str) -> bool {
+    s.parse::<Ipv4Addr>().is_ok()
+}
+
+pub fn is_ipv6_address(s: &str) -> bool {
+    s.parse::<Ipv6Addr>().is_ok()
+}
+
+pub fn is_ip_address(s: &str) -> bool {
+    is_ipv4_address(s) || is_ipv6_address(s)
 }

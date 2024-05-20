@@ -7,6 +7,7 @@ import {Presets} from "../../shared/timerange/TimeRange";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import DNSService from "../../../services/ethernet/DNSService";
 import DNSContactAttemptsTable from "./DNSContactAttemptsTable";
+import DNSEntropyLogTable from "./entropy/DNSEntropyLogTable";
 
 function byteConversion (x) {
   return x / 1024
@@ -21,12 +22,13 @@ function DNSOverviewPage () {
 
   const [queryStats, setQueryStats] = useState(null);
   const [responseStats, setResponseStats] = useState(null);
-  const [nxdomainStats,setNxdomainStats] = useState(null);
+  const [nxdomainStats, setNxdomainStats] = useState(null);
 
   const [queryStatsTimeRange, setQueryStatsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [responseStatsTimeRange, setResponseStatsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [nxdomainStatsTimeRange, setNxdomainStatsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [contactAttemptsTimeRange, setContactAttemptsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [entropyLogTimeRange, setEntropyLogTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -52,77 +54,91 @@ function DNSOverviewPage () {
   }, [selectedTaps, nxdomainStatsTimeRange]);
 
   return (
-    <div>
-      <div className="row">
-        <div className="col-md-12">
-          <h1>
-            DNS Overview
-          </h1>
+      <div>
+        <div className="row">
+          <div className="col-md-12">
+            <h1>
+              DNS Overview
+            </h1>
+          </div>
         </div>
-      </div>
 
-      <div className="row mt-3">
-        <DNSNumbers/>
-      </div>
+        <div className="row mt-3">
+          <DNSNumbers/>
+        </div>
 
-      <div className="row mt-3">
-        <div className="col-md-4">
-          <div className="card">
-            <div className="card-body">
-            <CardTitleWithControls title="Query Traffic"
-                                     timeRange={queryStatsTimeRange}
-                                     setTimeRange={setQueryStatsTimeRange} />
+        <div className="row mt-3">
+          <div className="col-md-4">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Query Traffic"
+                                       timeRange={queryStatsTimeRange}
+                                       setTimeRange={setQueryStatsTimeRange}/>
 
-              <DNSStatisticsChart data={queryStats}
-                                  conversion={byteConversion}
-                                  valueType="KB"/>
+                <DNSStatisticsChart data={queryStats}
+                                    conversion={byteConversion}
+                                    valueType="KB"/>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-4">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Response Traffic"
+                                       timeRange={responseStatsTimeRange}
+                                       setTimeRange={setResponseStatsTimeRange}/>
+
+                <DNSStatisticsChart data={responseStats}
+                                    conversion={byteConversion}
+                                    valueType="KB"/>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-4">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="NXDOMAIN Responses"
+                                       timeRange={nxdomainStatsTimeRange}
+                                       setTimeRange={setNxdomainStatsTimeRange}/>
+
+                <DNSStatisticsChart data={nxdomainStats} attribute="nxdomain_count"/>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="DNS Server Contact Attempts"
+                                       timeRange={contactAttemptsTimeRange}
+                                       setTimeRange={setContactAttemptsTimeRange}/>
+
+                <DNSContactAttemptsTable timeRange={contactAttemptsTimeRange}/>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-4">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Response Traffic"
-                                     timeRange={responseStatsTimeRange}
-                                     setTimeRange={setResponseStatsTimeRange} />
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="DNS Transactions with Entropy Outliers"
+                                       timeRange={entropyLogTimeRange}
+                                       setTimeRange={setEntropyLogTimeRange}/>
 
-              <DNSStatisticsChart data={responseStats}
-                                  conversion={byteConversion}
-                                  valueType="KB"/>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-4">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="NXDOMAIN Responses"
-                                     timeRange={nxdomainStatsTimeRange}
-                                     setTimeRange={setNxdomainStatsTimeRange} />
-
-              <DNSStatisticsChart data={nxdomainStats} attribute="nxdomain_count"/>
+                <DNSEntropyLogTable timeRange={entropyLogTimeRange}/>
+              </div>
             </div>
           </div>
         </div>
 
       </div>
-
-      <div className="row mt-3">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="DNS Server Contact Attempts"
-                                     timeRange={contactAttemptsTimeRange}
-                                     setTimeRange={setContactAttemptsTimeRange} />
-
-              <DNSContactAttemptsTable timeRange={contactAttemptsTimeRange} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
   )
 }
 

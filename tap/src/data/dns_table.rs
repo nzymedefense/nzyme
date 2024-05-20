@@ -48,6 +48,7 @@ pub struct EntropyLog {
     timestamp: DateTime<Utc>
 }
 
+#[derive(Debug)]
 pub struct DNSQueryLog {
     transaction_id: Option<u16>,
     client_address: IpAddr,
@@ -57,10 +58,12 @@ pub struct DNSQueryLog {
     client_port: u16,
     server_port: u16,
     query_value: String,
+    query_value_etld: Option<String>,
     data_type: String,
     timestamp: DateTime<Utc>
 }
 
+#[derive(Debug)]
 pub struct DNSResponseLog {
     transaction_id: Option<u16>,
     client_address: IpAddr,
@@ -70,6 +73,7 @@ pub struct DNSResponseLog {
     client_port: u16,
     server_port: u16,
     response_value: String,
+    response_value_etld: Option<String>,
     data_type: String,
     timestamp: DateTime<Utc>
 }
@@ -108,7 +112,7 @@ impl DnsTable {
 
                         // Replace entire statistics field.
                         ips.insert(
-                            source_address.clone(),
+                            *source_address,
                             DnsStatistics {
                                 request_count,
                                 request_bytes,
@@ -120,7 +124,7 @@ impl DnsTable {
                     },
                     None => {
                         ips.insert(
-                            source_address.clone(),
+                            *source_address,
                             DnsStatistics {
                                 request_count: 1,
                                 request_bytes: u128::from(request.size),
@@ -140,7 +144,7 @@ impl DnsTable {
         match self.pairs.lock() {
             Ok(mut pairs) => {
                 if !pairs.contains_key(source_address) {
-                    pairs.insert(source_address.clone(), Mutex::new(HashMap::new()));
+                    pairs.insert(*source_address, Mutex::new(HashMap::new()));
                 }
 
                 let counter = pairs.get(source_address).unwrap();
@@ -149,9 +153,9 @@ impl DnsTable {
                     Ok(mut counter) => {
                         if counter.contains_key(destination_address) {
                             let new = counter.get(destination_address).unwrap()+1;
-                            counter.insert(destination_address.clone(), new);
+                            counter.insert(*destination_address, new);
                         } else {
-                            counter.insert(destination_address.clone(), 1);
+                            counter.insert(*destination_address, 1);
                         }
                     },
                     Err(e) => {
@@ -171,13 +175,14 @@ impl DnsTable {
                     for query_data in queries {
                         retro.push(DNSQueryLog {
                             transaction_id: request.transaction_id,
-                            client_address: request.source_address.clone(),
-                            server_address: request.destination_address.clone(),
+                            client_address: request.source_address,
+                            server_address: request.destination_address,
                             client_mac: request.source_mac.clone(),
                             server_mac: request.destination_mac.clone(),
                             client_port: request.source_port,
                             server_port: request.destination_port,
                             query_value: query_data.name.clone(),
+                            query_value_etld: query_data.name_etld.clone(),
                             data_type: query_data.dns_type.to_string(),
                             timestamp: request.timestamp
                         });
@@ -215,7 +220,7 @@ impl DnsTable {
 
                         // Replace entire statistics field.
                         ips.insert(
-                            destination_address.clone(),
+                            *destination_address,
                             DnsStatistics {
                                 request_count,
                                 request_bytes,
@@ -227,7 +232,7 @@ impl DnsTable {
                     },
                     None => {
                         ips.insert(
-                            destination_address.clone(),
+                            *destination_address,
                             DnsStatistics {
                                 request_count: 0,
                                 request_bytes: 0,
@@ -252,13 +257,14 @@ impl DnsTable {
                         if let Some(response_value) = &response_data.value {
                             log.push(DNSResponseLog {
                                 transaction_id: response.transaction_id,
-                                client_address: response.destination_address.clone(),
-                                server_address: response.source_address.clone(),
+                                client_address: response.destination_address,
+                                server_address: response.source_address,
                                 client_mac: response.destination_mac.clone(),
                                 server_mac: response.source_mac.clone(),
                                 client_port: response.destination_port,
                                 server_port: response.source_port,
                                 response_value: response_value.to_string(),
+                                response_value_etld: response_data.value_etld.clone(),
                                 data_type: response_data.dns_type.to_string(),
                                 timestamp: response.timestamp
                             });
@@ -388,6 +394,7 @@ impl DnsTable {
                         client_port: r.client_port,
                         server_port: r.server_port,
                         data_value: r.query_value.clone(),
+                        data_value_etld: r.query_value_etld.clone(),
                         data_type: r.data_type.clone(),
                         timestamp: r.timestamp,
                     });
@@ -400,7 +407,6 @@ impl DnsTable {
                 Vec::new()
             }
         };
-
         
         let responses = match self.response_log.lock() {
             Ok(retro) => {
@@ -416,6 +422,7 @@ impl DnsTable {
                         client_port: r.client_port,
                         server_port: r.server_port,
                         data_value: r.response_value.clone(),
+                        data_value_etld: r.response_value_etld.clone(),
                         data_type: r.data_type.clone(),
                         timestamp: r.timestamp,
                     });

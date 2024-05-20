@@ -198,3 +198,7 @@ div.accordion-item {
 }
 
 .sticky-head-table thead th { background-color: #2B2D42; }
+
+a span.port {
+    color: #71769F;
+}

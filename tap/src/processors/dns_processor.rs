@@ -104,7 +104,7 @@ impl DnsProcessor {
 
                                         // Handle outlier if we have a zscore, training is over, and we are above threshold.
                                         if let Some(zscore) = zscore {
-                                            if !self.system_state.is_in_training() &&  zscore.zscore > self.entropy_zscore_threshold {
+                                            if !self.system_state.is_in_training() && zscore.zscore > self.entropy_zscore_threshold {
                                                 table.register_exceeded_entropy(
                                                     transaction_id,
                                                     entropy,
@@ -123,7 +123,7 @@ impl DnsProcessor {
                     },
                     DNSType::QueryResponse => {
                         debug!("DNS response: {:?}", packet);
-
+                        
                         // Walk all responses.
                         if let Some(responses) = &packet.responses {
                             for response in responses {
@@ -140,7 +140,7 @@ impl DnsProcessor {
                                         // Calculate zscore of entropy if training period is over.
                                         let zscore = Self::entropy_zscore(&mut self.response_entropy, entropy);
 
-                                        // Handle outlier if we have a zscore, training is over and we are above threshold.
+                                        // Handle outlier if we have a zscore, training is over, and we are above threshold.
                                         if let Some(zscore) = zscore {
                                             if !self.system_state.is_in_training() && zscore.zscore > self.entropy_zscore_threshold {
                                                 table.register_exceeded_entropy(

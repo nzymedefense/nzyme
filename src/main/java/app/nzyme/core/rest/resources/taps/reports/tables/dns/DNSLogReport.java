@@ -35,6 +35,8 @@ public abstract class DNSLogReport {
     public abstract int clientPort();
     public abstract int serverPort();
     public abstract String dataValue();
+    @Nullable
+    public abstract String dataValueEtld();
     public abstract String dataType();
     public abstract DateTime timestamp();
 
@@ -47,6 +49,7 @@ public abstract class DNSLogReport {
                                       @JsonProperty("client_port") int clientPort,
                                       @JsonProperty("server_port") int serverPort,
                                       @JsonProperty("data_value") String dataValue,
+                                      @JsonProperty("data_value_etld") String dataValueEtld,
                                       @JsonProperty("data_type") String dataType,
                                       @JsonProperty("timestamp") DateTime timestamp) {
         return builder()
@@ -58,6 +61,7 @@ public abstract class DNSLogReport {
                 .clientPort(clientPort)
                 .serverPort(serverPort)
                 .dataValue(dataValue)
+                .dataValueEtld(dataValueEtld)
                 .dataType(dataType)
                 .timestamp(timestamp)
                 .build();
@@ -84,6 +88,8 @@ public abstract class DNSLogReport {
         public abstract DNSLogReport.Builder serverPort(int serverPort);
 
         public abstract DNSLogReport.Builder dataValue(String dataValue);
+
+        public abstract DNSLogReport.Builder dataValueEtld(String dataValueEtld);
 
         public abstract DNSLogReport.Builder dataType(String dataType);
 

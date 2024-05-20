@@ -766,6 +766,15 @@ a.ip-address, span.ip-address {
     font-size: 12px;
 }
 
+span.port {
+    font-family: 'B612 Mono', monospace;
+    font-size: 12px;
+}
+
+a span.port {
+    color: #0e42b099;
+}
+
 select.monitored-network-selector {
     width: 400px;
     display: inline-block;

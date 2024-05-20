@@ -105,6 +105,7 @@ pub struct DNSLogReport {
     pub client_port: u16,
     pub server_port: u16,
     pub data_value: String,
+    pub data_value_etld: Option<String>,
     pub data_type: String,
     pub timestamp: DateTime<Utc>
 }

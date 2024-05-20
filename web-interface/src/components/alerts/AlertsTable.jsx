@@ -10,8 +10,6 @@ import AlertActionMultiSelector from "./AlertActionMultiSelector";
 import {userHasPermission} from "../../util/Tools";
 import {UserContext} from "../../App";
 
-import numeral from "numeral";
-
 const detectionAlertsService = new DetectionAlertsService();
 
 const loadData = function(setAlerts, page, perPage) {

@@ -1,24 +1,26 @@
 package app.nzyme.core.ethernet.dns;
 
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.ethernet.dns.db.DNSPairSummary;
-import app.nzyme.core.ethernet.dns.db.DNSStatisticsBucket;
-import app.nzyme.core.ethernet.dns.db.DNSTrafficSummary;
+import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
+import com.google.common.collect.Lists;
+import org.jdbi.v3.core.Handle;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class DNS {
 
-    private final Ethernet ethernet;
+    private final NzymeNode nzyme;
 
     public DNS(Ethernet ethernet) {
-        this.ethernet = ethernet;
+        this.nzyme = ethernet.getNzyme();
     }
 
     public List<DNSStatisticsBucket> getStatistics(TimeRange timeRange,
@@ -28,7 +30,7 @@ public class DNS {
             return Collections.emptyList();
         }
 
-        return ethernet.getNzyme().getDatabase().withHandle(handle ->
+        return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, created_at) AS bucket, " +
                                 "SUM(request_count) AS request_count, SUM(request_bytes) AS request_bytes, " +
                                 "SUM(response_count) AS response_count, SUM(response_bytes) AS response_bytes, " +
@@ -49,7 +51,7 @@ public class DNS {
             return DNSTrafficSummary.create(0,0,0);
         }
 
-        return ethernet.getNzyme().getDatabase().withHandle(handle ->
+        return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT (SUM(request_count)+SUM(response_count)) AS total_dns_packets, " +
                                 "(SUM(request_bytes)+SUM(response_bytes)) AS total_dns_traffic_bytes, " +
                                 "SUM(nxdomain_count) AS nxdomain_count " +
@@ -68,7 +70,7 @@ public class DNS {
             return 0;
         }
 
-        return ethernet.getNzyme().getDatabase().withHandle(handle ->
+        return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM(SELECT server, server_geo_asn_number, server_geo_asn_name, " +
                                 "server_geo_asn_domain, server_geo_country_code, SUM(count) AS request_count, " +
                                 "COUNT(DISTINCT(ip)) AS client_count FROM dns_pairs " +
@@ -90,7 +92,7 @@ public class DNS {
             return Collections.emptyList();
         }
 
-        return ethernet.getNzyme().getDatabase().withHandle(handle ->
+        return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT server, server_geo_asn_number, server_geo_asn_name, " +
                                 "server_geo_asn_domain, server_geo_country_code, SUM(count) AS request_count, " +
                                 "COUNT(DISTINCT(ip)) AS client_count FROM dns_pairs " +
@@ -98,8 +100,8 @@ public class DNS {
                                 "AND tap_uuid IN (<taps>) AND server <> '224.0.0.251' " +
                                 "GROUP BY server, server_geo_asn_number, server_geo_asn_name, " +
                                 "server_geo_asn_domain, server_geo_country_code " +
-                                "ORDER BY request_count " +
-                                "DESC LIMIT :limit OFFSET :offset")
+                                "ORDER BY request_count DESC " +
+                                "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
@@ -108,6 +110,97 @@ public class DNS {
                         .mapTo(DNSPairSummary.class)
                         .list()
         );
+    }
+
+    public long countAllEntropyLogs(TimeRange timeRange, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM dns_entropy_log " +
+                                "WHERE timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>)")
+                        .bindList("taps", taps)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<DNSEntropyLogEntry> findAllEntropyLogs(TimeRange timeRange, int limit, int offset, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dns_entropy_log " +
+                                "WHERE timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "ORDER BY timestamp DESC " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bindList("taps", taps)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(DNSEntropyLogEntry.class)
+                        .list()
+        );
+    }
+
+    public Optional<DNSTransaction> findDNSTransaction(int transactionId,
+                                                       DateTime transactionTimestamp,
+                                                       List<UUID> taps) {
+        return findDNSTransaction(transactionId, transactionTimestamp, taps, null);
+    }
+
+    public Optional<DNSTransaction> findDNSTransaction(int transactionId,
+                                                       DateTime transactionTimestamp,
+                                                       List<UUID> taps,
+                                                       @Nullable Handle existingHandle) {
+        if (existingHandle != null) {
+            return findDNSTransactionWithHandle(transactionId, transactionTimestamp, taps, existingHandle);
+        } else {
+            return nzyme.getDatabase().withHandle(handle ->
+                    findDNSTransactionWithHandle(transactionId, transactionTimestamp, taps, handle)
+            );
+        }
+    }
+
+    private Optional<DNSTransaction> findDNSTransactionWithHandle(int transactionId,
+                                                                  DateTime transactionTimestamp,
+                                                                  List<UUID> taps,
+                                                                  Handle handle) {
+        List<DNSLogEntry> logs = handle.createQuery("SELECT * FROM dns_log " +
+                        "WHERE transaction_id = :transaction_id AND timestamp >= :tr_from " +
+                        "AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                        "ORDER BY data_type, data_value")
+                .bind("transaction_id", transactionId)
+                .bind("tr_from", transactionTimestamp.minusMinutes(1))
+                .bind("tr_to", transactionTimestamp.plusMinutes(1))
+                .bindList("taps", taps)
+                .mapTo(DNSLogEntry.class)
+                .list();
+
+        DNSLogEntry query = null;
+        List<DNSLogEntry> responses = Lists.newArrayList();
+        for (DNSLogEntry log : logs) {
+            switch (log.dnsType()) {
+                case "query":
+                    query = log;
+                    break;
+                case "response":
+                    responses.add(log);
+                    break;
+            }
+        }
+
+        if (query == null) {
+            // We may have missed the query of this transaction.
+            return Optional.empty();
+        }
+
+        return Optional.of(DNSTransaction.create(query, responses));
     }
 
 }

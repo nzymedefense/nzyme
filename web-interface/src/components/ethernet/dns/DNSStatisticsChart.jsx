@@ -1,6 +1,6 @@
 import React from 'react'
-import SimpleBarChart from '../../widgets/charts/SimpleBarChart'
 import GenericWidgetLoadingSpinner from "../../widgets/GenericWidgetLoadingSpinner";
+import SimpleLineChart from "../../widgets/charts/SimpleLineChart";
 
 export default function DNSStatisticsChart (props) {
 
@@ -28,7 +28,7 @@ export default function DNSStatisticsChart (props) {
     return <GenericWidgetLoadingSpinner height={150} />
   }
 
-  return <SimpleBarChart
+  return <SimpleLineChart
         height={150}
         lineWidth={1}
         customMarginLeft={45}

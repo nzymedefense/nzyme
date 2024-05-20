@@ -15,6 +15,7 @@ import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueEntryMap
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfigMapper;
+import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.ethernet.tcp.db.TcpSessionEntryMapper;
 import app.nzyme.core.events.db.EventActionEntryMapper;
 import app.nzyme.core.events.db.EventEntryMapper;
@@ -33,9 +34,6 @@ import app.nzyme.core.taps.db.metrics.Dot11FrequencyAndChannelWidthEntryMapper;
 import app.nzyme.core.taps.db.metrics.TapMetricsTimerMapper;
 import app.nzyme.plugin.Database;
 import app.nzyme.core.crypto.database.PGPKeyFingerprintMapper;
-import app.nzyme.core.ethernet.dns.db.DNSPairSummaryMapper;
-import app.nzyme.core.ethernet.dns.db.DNSStatisticsBucketMapper;
-import app.nzyme.core.ethernet.dns.db.DNSTrafficSummaryMapper;
 import app.nzyme.core.taps.db.*;
 import app.nzyme.core.taps.db.metrics.TapMetricsAggregationMapper;
 import app.nzyme.core.taps.db.metrics.TapMetricsGaugeMapper;
@@ -142,7 +140,9 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new TapBasedSignalStrengthResultHistogramEntryMapper())
                 .registerRowMapper(new TapMetricsTimerMapper())
                 .registerRowMapper(new Dot11FrequencyAndChannelWidthEntryMapper())
-                .registerRowMapper(new TcpSessionEntryMapper());
+                .registerRowMapper(new TcpSessionEntryMapper())
+                .registerRowMapper(new DNSEntropyLogEntryMapper())
+                .registerRowMapper(new DNSLogEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

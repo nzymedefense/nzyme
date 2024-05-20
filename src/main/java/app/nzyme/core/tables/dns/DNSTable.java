@@ -160,9 +160,9 @@ public class DNSTable implements DataTable {
                               List<DNSLogReport> responses) {
         PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_log(uuid, tap_uuid, transaction_id, " +
                 "dns_type, client_address, client_port, client_mac, server_address, server_port, server_mac, " +
-                "data_value, data_type,  timestamp, created_at) VALUES(:uuid, :tap_uuid, :transaction_id, :dns_type, " +
-                ":client_address, :client_port, :client_mac, :server_address, :server_port, :server_mac, " +
-                ":data_value, :data_type, :timestamp, NOW())");
+                "data_value, data_value_etld, data_type,  timestamp, created_at) VALUES(:uuid, :tap_uuid, " +
+                ":transaction_id, :dns_type, :client_address, :client_port, :client_mac, :server_address, " +
+                ":server_port, :server_mac, :data_value, :data_value_etld, :data_type, :timestamp, NOW())");
 
         for (DNSLogReport d : queries) {
             batch
@@ -177,6 +177,7 @@ public class DNSTable implements DataTable {
                     .bind("server_port", d.serverPort())
                     .bind("server_mac", d.serverMac())
                     .bind("data_value", d.dataValue())
+                    .bind("data_value_etld", d.dataValueEtld())
                     .bind("data_type", d.dataType())
                     .bind("timestamp", d.timestamp())
                     .add();
@@ -195,6 +196,7 @@ public class DNSTable implements DataTable {
                     .bind("server_port", d.serverPort())
                     .bind("server_mac", d.serverMac())
                     .bind("data_value", d.dataValue())
+                    .bind("data_value_etld", d.dataValueEtld())
                     .bind("data_type", d.dataType())
                     .bind("timestamp", d.timestamp())
                     .add();

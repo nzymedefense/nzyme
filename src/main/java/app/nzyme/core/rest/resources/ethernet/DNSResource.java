@@ -1,16 +1,18 @@
 package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.ethernet.dns.DNSTransaction;
+import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.responses.ethernet.dns.DNSEntropyLogDataResponse;
+import app.nzyme.core.rest.responses.ethernet.dns.DNSEntropyLogListResponse;
+import app.nzyme.core.rest.responses.ethernet.dns.DNSEntropyLogResponse;
 import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import app.nzyme.core.ethernet.dns.db.DNSPairSummary;
-import app.nzyme.core.ethernet.dns.db.DNSStatisticsBucket;
-import app.nzyme.core.ethernet.dns.db.DNSTrafficSummary;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -23,6 +25,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/ethernet/dns")
@@ -86,7 +89,7 @@ public class DNSResource extends TapDataHandlingResource {
 
         DNSTrafficSummary trafficSummary = nzyme.getEthernet().dns().getTrafficSummary(timeRange, taps);
 
-        Long value;
+        long value;
         switch (type) {
             case "packets":
                 value = trafficSummary.totalPackets();
@@ -143,6 +146,66 @@ public class DNSResource extends TapDataHandlingResource {
         }
 
         return Response.ok(ThreeColumnTableHistogramResponse.create(total, values)).build();
+    }
+
+    @GET
+    @Path("/global/entropylog")
+    public Response globalEntropyLog(@Context SecurityContext sc,
+                                     @QueryParam("time_range") @Valid String timeRangeParameter,
+                                     @QueryParam("limit") int limit,
+                                     @QueryParam("offset") int offset,
+                                     @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        long total = nzyme.getEthernet().dns().countAllEntropyLogs(timeRange, taps);
+        List<DNSEntropyLogResponse> logs = Lists.newArrayList();
+
+        // Pull all required information and build response.
+        List<DNSEntropyLogEntry> entropyLogs = nzyme.getEthernet().dns()
+                .findAllEntropyLogs(timeRange, limit, offset, taps);
+
+        nzyme.getDatabase().useHandle(handle -> {
+            for (DNSEntropyLogEntry el : entropyLogs) {
+                Optional<DNSTransaction> transaction = nzyme.getEthernet().dns()
+                        .findDNSTransaction(el.transactionId(), el.timestamp(), taps);
+
+                if (transaction.isEmpty()) {
+                    continue;
+                }
+
+                DNSEntropyLogDataResponse query = entropyLogToResponse(transaction.get().query());
+                List<DNSEntropyLogDataResponse> responses = Lists.newArrayList();
+                for (DNSLogEntry response : transaction.get().responses()) {
+                    responses.add(entropyLogToResponse(response));
+                }
+
+
+                logs.add(DNSEntropyLogResponse.create(query, responses, el.entropy(), el.entropyMean(), el.zscore()));
+            }
+        });
+
+        return Response.ok(DNSEntropyLogListResponse.create(total, logs)).build();
+    }
+
+    private DNSEntropyLogDataResponse entropyLogToResponse(DNSLogEntry log) {
+        return DNSEntropyLogDataResponse.create(
+                log.uuid(),
+                log.tapUUID(),
+                log.transactionId(),
+                log.clientAddress(),
+                log.clientPort(),
+                log.clientMac(),
+                log.serverAddress(),
+                log.serverPort(),
+                log.serverMac(),
+                log.dataValue(),
+                log.dataValueEtld(),
+                log.dataType(),
+                log.dnsType(),
+                log.timestamp(),
+                log.createdAt()
+        );
     }
 
 }

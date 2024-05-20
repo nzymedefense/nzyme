@@ -42,8 +42,15 @@ export function userHasPermission(user, permission) {
       || user.feature_permissions.includes(permission)
 }
 
-export function truncate(str, n, useWordBoundary){
-  if (str.length <= n) { return str; }
+export function truncate(str, n, useWordBoundary) {
+  if (!str) {
+    return null;
+  }
+
+  if (str.length <= n) {
+    return str;
+  }
+
   const subString = str.slice(0, n-1); // the original check
   return (useWordBoundary ? subString.slice(0, subString.lastIndexOf(" ")) : subString) + "…";
 }

@@ -7,6 +7,7 @@ use bitreader::BitReader;
 use chrono::Utc;
 use entropy::shannon_entropy;
 use log::{trace};
+use crate::helpers::network::is_ip_address;
 
 #[allow(clippy::cast_possible_truncation)]
 pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
@@ -69,9 +70,9 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
             return None;
         }
         
-        Option::Some(query_list)
+        Some(query_list)
     } else {
-        Option::None
+        None
     };
 
     // Responses.
@@ -100,9 +101,9 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
             return None;
         }
 
-        Option::Some(response_list)
+        Some(response_list)
     } else {
-        Option::None
+        None
     };
 
     if question_count == 0 && answer_count == 0 {
@@ -115,8 +116,8 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
         transaction_id: if transaction_id == 0 { None } else { Some(transaction_id) },
         source_mac: udp.source_mac.clone(),
         destination_mac: udp.destination_mac.clone(),
-        source_address: udp.source_address.clone(),
-        destination_address: udp.destination_address.clone(),
+        source_address: udp.source_address,
+        destination_address: udp.destination_address,
         source_port: udp.source_port,
         destination_port: udp.destination_port,
         dns_type,
@@ -220,20 +221,20 @@ fn parse_string(data: &[u8], full_packet: &[u8], visited_pointer_offsets: &mut V
         section_length -= 1;
     }
 
-    Ok((cursor, String::from_utf8_lossy(&chars).to_string()))
+    Ok((cursor, String::from_utf8_lossy(&chars).to_string().to_lowercase()))
 }
 
 fn parse_query_element(data: &[u8]) -> Result<(usize, DNSData)> {
-    let mut cursor;
-    let name;
-
     let mut visited_pointer_offsets: Vec<u16> = vec![];
-    match parse_string(&data[0..data.len()], data, &mut visited_pointer_offsets) {
-        Ok((c,s)) => {
-            cursor = c;
-            name = s;
-        },
+    let (mut cursor, name) = match parse_string(&data[0..data.len()], data, &mut visited_pointer_offsets) {
+        Ok((c,s)) => (c, s),
         Err(e) => bail!("Could not parse query name: {}", e)
+    };
+
+    let name_etld = if !is_ip_address(&name) {
+        psl::domain_str(&name).map(|name| name.to_string())
+    } else {
+        None
     };
 
     if data.len() < cursor+4 {
@@ -256,11 +257,13 @@ fn parse_query_element(data: &[u8]) -> Result<(usize, DNSData)> {
 
     Ok((cursor, DNSData {
        name,
+       name_etld,
        dns_type,
        class,
-       entropy: Option::Some(entropy),
-       value: Option::None,
-       ttl: Option::None
+       entropy: Some(entropy),
+       value: None,
+       value_etld: None,
+       ttl: None
     }))
 }
 
@@ -269,6 +272,12 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
     let (mut cursor, name) = match parse_label(data, full_packet) {
         Ok(x) => x,
         Err(e) => bail!("Could not parse answer name: {}", e)
+    };
+
+    let name_etld = if !is_ip_address(&name) {
+        psl::domain_str(&name).map(|name| name.to_string())
+    } else {
+        None
     };
 
     if data.len() < cursor+11 {
@@ -305,7 +314,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = false;
             match parse_ipv4(&data[cursor..cursor+data_length]) {
                 Ok(addr) => {
-                    Option::Some(addr)
+                    Some(addr.to_lowercase())
                 },
                 Err(e) => bail!("Could not parse A value: {}", e) 
             }
@@ -314,7 +323,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = true;
             match parse_string(&data[cursor..cursor+data_length], full_packet, &mut visited_pointer_offsets) {
                 Ok((_, cname)) => {
-                    Option::Some(cname) 
+                    Some(cname.to_lowercase())
                 },
                 Err(e) => bail!("Could not parse CNAME value: {}", e)
             }
@@ -323,7 +332,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = false;
             match parse_ipv6(&data[cursor..cursor+data_length]) {
                 Ok(addr) => {
-                    Option::Some(addr)
+                    Some(addr.to_lowercase())
                 },
                 Err(e) => bail!("Could not parse AAAA value: {}", e) 
             }
@@ -332,7 +341,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = true;
             match parse_string(&data[cursor..cursor+data_length], full_packet, &mut visited_pointer_offsets) {
                 Ok((_, ns)) => {
-                    Option::Some(ns) 
+                    Some(ns.to_lowercase())
                 },
                 Err(e) => bail!("Could not parse NS value: {}", e)
             }
@@ -341,7 +350,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = true;
             match parse_string(&data[cursor..cursor+data_length], full_packet, &mut visited_pointer_offsets) {
                 Ok((_, ptr)) => {
-                    Option::Some(ptr) 
+                    Some(ptr.to_lowercase())
                 },
                 Err(e) => bail!("Could not parse PTR value: {}", e)
             }
@@ -355,7 +364,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             // We are skipping two bytes because we don't parse the MX priority.
             match parse_string(&data[cursor+2..cursor+data_length], full_packet, &mut visited_pointer_offsets) {
                 Ok((_, mx)) => {
-                    Option::Some(mx) 
+                    Some(mx.to_lowercase())
                 },
                 Err(e) => bail!("Could not parse MX value: {}", e)
             }
@@ -364,37 +373,47 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = true;
             match parse_string(&data[cursor..cursor+data_length], full_packet, &mut visited_pointer_offsets) {
                 Ok((_, txt)) => {
-                    Option::Some(txt) 
+                    Some(txt.to_lowercase())
                 },
                 Err(e) => bail!("Could not parse TXT value: {}", e)
             }
         },
         _ => {
             dns_type_has_entropy = false;
-            Option::None
+            None
         }
     };
 
-    let entropy = match value.clone() {
+    let (entropy, value_etld) = match value.clone() {
         Some(v) => {
-            if dns_type_has_entropy {
-                Option::Some(shannon_entropy(v.as_bytes()))
+            let entropy = if dns_type_has_entropy {
+                Some(shannon_entropy(v.as_bytes()))
             } else {
-                Option::None
-            }
+                None
+            };
+
+            let etld = if !is_ip_address(&v) {
+                psl::domain_str(&v).map(|d| d.to_string())
+            } else {
+                None
+            };
+
+            (entropy, etld)
         },
-        None => Option::None
+        None => (None, None)
     };
 
     cursor += data_length;
-    
+
     Ok((cursor, DNSData {
         name,
+        name_etld,
         class,
         dns_type,
         value,
+        value_etld,
         entropy,
-        ttl: Option::Some(ttl)
+        ttl: Some(ttl)
     }))
 }
 

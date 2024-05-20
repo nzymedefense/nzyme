@@ -124,9 +124,11 @@ pub struct DNSPacket {
 #[derive(Debug)]
 pub struct DNSData {
     pub name: String,
+    pub name_etld: Option<String>,
     pub dns_type: DNSDataType,
     pub class: DNSClass,
     pub value: Option<String>,
+    pub value_etld: Option<String>,
     pub ttl: Option<u32>,
     pub entropy: Option<f32>
 }

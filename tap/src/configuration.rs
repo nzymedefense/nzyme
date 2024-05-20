@@ -109,8 +109,8 @@ pub fn load(path: String) -> Result<Configuration, Error> {
         bail!("Configuration variable `leader_secret` must be at least 64 characters long.");
     }
 
-    if doc.misc.training_period_minutes <= 0 {
-        bail!("Configuration variable `training_period_minutes` must be set to a value greater than 0.");
+    if doc.misc.training_period_minutes < 0 {
+        bail!("Configuration variable `training_period_minutes` must be set to a value greater or equal to 0.");
     }
     if doc.performance.ethernet_brokers <= 0 {
         bail!("Configuration variable `ethernet_brokers` must be set to a value greater than 0.");

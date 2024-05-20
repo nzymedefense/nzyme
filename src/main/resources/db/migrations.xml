@@ -4905,4 +4905,16 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="add_data_value_domain_to_dns_log" author="lennartkoopmann">
+        <addColumn tableName="dns_log">
+            <column name="data_value_domain" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="rename_dns_log_domain_to_etld" author="lennartkoopmann">
+        <renameColumn tableName="dns_log" oldColumnName="data_value_domain" newColumnName="data_value_etld" />
+    </changeSet>
 </databaseChangeLog>
