@@ -178,3 +178,17 @@ pub fn is_ipv6_address(s: &str) -> bool {
 pub fn is_ip_address(s: &str) -> bool {
     is_ipv4_address(s) || is_ipv6_address(s)
 }
+
+pub fn string_up_to_null_byte(b: &[u8]) -> Option<String> {
+    b.iter()
+        .position(|&x| x == 0x00)
+        .and_then(|index| {
+            if index == 0 { 
+                None
+            } else {
+                std::str::from_utf8(&b[..index])
+                    .map(|s| s.to_string())
+                    .ok()
+            }
+        })
+}

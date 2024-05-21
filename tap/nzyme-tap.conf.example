@@ -29,7 +29,7 @@ ethernet_broker_buffer_capacity = 65535
 [protocols.tcp]
 pipeline_size = 16384
 reassembly_buffer_size = 1048576
-session_timeout_seconds = 60
+session_timeout_seconds = 86400
 
 [protocols.udp]
 pipeline_size = 16384

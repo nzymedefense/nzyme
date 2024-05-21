@@ -40,22 +40,20 @@ pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSess
 }
 
 fn tag_all(client_to_server: Vec<u8>, server_to_client: Vec<u8>, session: &TcpSession) -> Vec<L7SessionTag> {
-    // Remove all control characters. Case insensitivity. Ignore redirects.
-    let cts = String::from_utf8_lossy(&client_to_server).to_string();
-    let stc = String::from_utf8_lossy(&server_to_client).to_string();
+    let client_to_server_string = String::from_utf8_lossy(&client_to_server).to_string();
+    let server_to_client_string = String::from_utf8_lossy(&server_to_client).to_string();
 
     let mut tags = Vec::new();
 
-    if http_tagger::tag(&cts, &stc) {
+    if http_tagger::tag(&client_to_server_string, &server_to_client_string).is_some() {
         tags.extend([Unencrypted, Http]);
     }
 
-    if socks_tagger::tag(&client_to_server, &server_to_client) {
+    // TODO match, send to socks channel/processor
+    if let Some(socks) = socks_tagger::tag(&client_to_server, &server_to_client, session) {
+        info!("SOCKS: {:?}", socks);
+        
         tags.extend([Socks]);
-    }
-
-    if tags.contains(&Socks) {
-        info!("Detected new SOCKS4 ({:?}) TCP session: {} {}:{} -> {}:{} ({} byte)", tags, session.state, session.source_address, session.source_port, session.destination_address, session.destination_port, session.bytes_count);
     }
 
     tags

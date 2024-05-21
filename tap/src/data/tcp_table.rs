@@ -26,6 +26,7 @@ pub struct TcpTable {
 
 #[derive(Debug)]
 pub struct TcpSession {
+    pub session_key: TcpSessionKey,
     pub state: TcpSessionState,
     pub source_mac: String,
     pub destination_mac: String,
@@ -123,6 +124,7 @@ impl TcpTable {
                         // We only record new sessions, not mid-session.
                         if session_state == SynSent {
                             let new_session = TcpSession {
+                                session_key: segment.session_key.clone(),
                                 state: session_state.clone(),
                                 start_time: segment.timestamp,
                                 end_time: None,
@@ -329,6 +331,7 @@ fn timeout_sweep(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>, 
         if Utc::now() - session.most_recent_segment_time
             > Duration::try_seconds(timeout).unwrap() {
             session.state = ClosedTimeout;
+            session.end_time = Some(Utc::now());
         }
     }
 }

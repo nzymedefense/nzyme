@@ -135,3 +135,45 @@ pub struct DNSData {
 
 #[derive(Debug)]
 pub struct IPv6Packet { }
+
+#[derive(Debug)]
+pub enum SocksType {
+    Socks4,
+    Socks4A,
+    Socks5
+}
+
+#[derive(Debug)]
+pub enum SocksConnectionHandshakeStatus {
+    Granted,
+    Rejected,
+    FailedIdentdUnreachable,
+    FailedIdentdAuth,
+    Invalid
+}
+
+#[derive(Debug)]
+pub enum SocksConnectionStatus {
+    Active, Inactive, InactiveTimeout
+}
+
+#[derive(Debug)]
+pub struct SocksTunnel {
+    pub socks_type: SocksType,
+    pub handshake_status: SocksConnectionHandshakeStatus,
+    pub connection_status: SocksConnectionStatus,
+    pub username: Option<String>,
+    pub tunneled_bytes: u64,
+    pub tunneled_destination_address: Option<IpAddr>,
+    pub tunneled_destination_host: Option<String>,
+    pub tunneled_destination_port: u16,
+    pub tcp_session_key: TcpSessionKey,
+    pub source_mac: String,
+    pub destination_mac: String,
+    pub source_address: IpAddr,
+    pub destination_address: IpAddr,
+    pub source_port: u16,
+    pub destination_port: u16,
+    pub established_at: DateTime<Utc>,
+    pub terminated_at: Option<DateTime<Utc>>,
+}
