@@ -52,6 +52,10 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
             _    => SocksConnectionHandshakeStatus::Invalid,
         };
 
+        if handshake_status == SocksConnectionHandshakeStatus::Invalid {
+            return None;
+        }
+
         // Overwrite connection status in case of closed TCP connection.
         let (connection_status, terminated_at) = match session.state {
             TcpSessionState::SynSent

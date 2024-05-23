@@ -148,7 +148,7 @@ pub enum SocksAuthenticationResult {
     Success, Failure, Unknown
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum SocksConnectionHandshakeStatus {
     Granted,
     Rejected,
