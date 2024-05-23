@@ -46,14 +46,14 @@ fn tag_all(client_to_server: Vec<u8>, server_to_client: Vec<u8>, session: &TcpSe
     let mut tags = Vec::new();
 
     if http_tagger::tag(&client_to_server_string, &server_to_client_string).is_some() {
-        tags.extend([Unencrypted, Http]);
+        tags.extend([Http, Unencrypted]);
     }
 
     // TODO match, send to socks channel/processor
     if let Some(socks) = socks_tagger::tag(&client_to_server, &server_to_client, session) {
         info!("SOCKS: {:?}", socks);
         
-        tags.extend([Socks]);
+        tags.extend([Socks, Unencrypted]);
     }
 
     tags

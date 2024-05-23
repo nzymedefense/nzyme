@@ -155,6 +155,14 @@ pub enum SocksConnectionHandshakeStatus {
     FailedIdentdUnreachable,
     FailedIdentdAuth,
     Invalid,
+    GeneralFailure,
+    ConnectionNotAllowedByRuleset,
+    NetworkUnreachable,
+    HostUnreachable,
+    ConnectionRefusedByDestination,
+    Ttl,
+    UnsupportedCommand,
+    UnsupportedAddressType,
     NotReached
 }
 

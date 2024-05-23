@@ -1,6 +1,7 @@
 use anyhow::{bail, Error};
 use byteorder::{BigEndian, ByteOrder};
-use chrono::Utc;
+use chrono::{DateTime, Utc};
+use libc::user;
 use log::{debug, info, warn};
 use crate::data::tcp_table::{TcpSession, TcpSessionState};
 use crate::ethernet::packets::{SocksAuthenticationMethod, SocksAuthenticationResult, SocksConnectionHandshakeStatus, SocksConnectionStatus, SocksTunnel, SocksType};
@@ -57,18 +58,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
         }
 
         // Overwrite connection status in case of closed TCP connection.
-        let (connection_status, terminated_at) = match session.state {
-            TcpSessionState::SynSent
-            | TcpSessionState::SynReceived
-            | TcpSessionState::Established
-            | TcpSessionState::FinWait1
-            | TcpSessionState::FinWait2 => (SocksConnectionStatus::Active, None),
-            TcpSessionState::ClosedFin
-            | TcpSessionState::ClosedRst
-            | TcpSessionState::Refused => (SocksConnectionStatus::Inactive, session.end_time),
-            TcpSessionState::ClosedTimeout =>
-                (SocksConnectionStatus::InactiveTimeout, session.end_time)
-        };
+        let (connection_status, terminated_at) = determine_tcp_session_state(&session);
 
         let socks_type = if tunneled_destination_address.is_some() {
             Socks4
@@ -111,7 +101,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
         let mut client_auth_methods: Vec<SocksAuthenticationMethod> = vec![];
 
         let mut cts_cursor: usize = 2;
-        let mut stc_cursor: usize = 2;
+        let mut stc_cursor: usize = 0;
         if cts.len() < client_auth_methods_count+cts_cursor {
             return None;
         }
@@ -123,9 +113,10 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
 
         // Find auth method server chose.
         let server_chosen_auth_method = resolve_authentication_method(stc.get(1).unwrap());
+        stc_cursor += 2;
 
         // Authentication.
-        let (auth_result, auth_cts_offset, auth_stc_offset) = match socks5_authentication(
+        let (auth_result, username, auth_cts_offset, auth_stc_offset) = match process_socks5_authentication(
             server_chosen_auth_method,
             cts,
             stc,
@@ -139,12 +130,16 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
                  * chosen authentication method.
                  */
                 debug!("Could not parse SOCKS5 authentication steps: {}", e);
-                return Some(build_auth_failed_result(session, SocksAuthenticationResult::Unknown))
+                return Some(build_auth_failed_result(session, 
+                                                     SocksAuthenticationResult::Unknown,
+                                                     None))
             }
         };
 
         if auth_result != SocksAuthenticationResult::Success {
-            return Some(build_auth_failed_result(session, SocksAuthenticationResult::Failure))
+            return Some(build_auth_failed_result(session,
+                                                 SocksAuthenticationResult::Failure,
+                                                 username))
         }
 
         // We have a completed, successful authentication at this point.
@@ -169,49 +164,93 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
         cts_cursor += 1;
 
         // Parse tunnel destination address according to type.
-        let (tunneled_destination_address, tunnel_destination_host, address_cts_offset) = match socks_address_type {
-            0x01 => {
-                // IPv4
-                if cts.len() < cts_cursor+4 {
-                    return None;
-                }
+        let (tunneled_destination_address, tunneled_destination_host, address_cts_offset) =
+            match socks_address_type {
+                0x01 => {
+                    // IPv4
+                    if cts.len() < cts_cursor+4 {
+                        return None;
+                    }
 
-                (Some(to_ipv4_address(&cts[cts_cursor..cts_cursor+4])), None, 4usize)
-            },
-            0x03 => {
-                // Domain name
-                if cts.len() < cts_cursor+2 {
-                    return None;
-                }
+                    (Some(to_ipv4_address(&cts[cts_cursor..cts_cursor+4])), None, 4usize)
+                },
+                0x03 => {
+                    // Domain name
+                    if cts.len() < cts_cursor+2 {
+                        return None;
+                    }
 
-                let len = cts[cts_cursor];
+                    let len = cts[cts_cursor];
 
-                if len == 0 {
-                    return None;
-                }
+                    if len == 0 {
+                        return None;
+                    }
 
-                let domain = String::from_utf8_lossy(&cts[cts_cursor+1..]).to_string();
-                (None, Some(domain), (len+1) as usize)
-            },
-            0x04 => {
-                // IPv6
-                if cts.len() < cts_cursor+16 {
-                    return None;
-                }
+                    let domain = String::from_utf8_lossy(
+                        &cts[cts_cursor+1..cts_cursor+(len as usize)+1]
+                    ).to_string();
+                    (None, Some(domain), (len+1) as usize)
+                },
+                0x04 => {
+                    // IPv6
+                    if cts.len() < cts_cursor+16 {
+                        return None;
+                    }
 
-                (Some(to_ipv6_address(&cts[cts_cursor..cts_cursor+16])), None, 16usize)
-            },
-            _ => return None
-        };
-
-        // TODO test with Ipv4, Ipv6, Hostname
-        info!("ADDR: {:?}, HOST: {:?}", tunneled_destination_address, tunnel_destination_host);
-
+                    (Some(to_ipv6_address(&cts[cts_cursor..cts_cursor+16])), None, 16usize)
+                },
+                _ => return None
+            };
         cts_cursor += address_cts_offset;
 
-        // Parse tunnel port.
+        if cts.len() < cts_cursor+2 {
+            return None;
+        }
 
-        return None
+        // Parse tunnel port.
+        let tunneled_destination_port = BigEndian::read_u16(&cts[cts_cursor..cts_cursor+2]);
+
+        // Server response to connection request.
+        if stc[stc_cursor] != 0x05 || stc.len() < stc_cursor+1 {
+            return None;
+        }
+        stc_cursor += 1;
+
+        let handshake_status = match stc[stc_cursor] {
+            0x00 => SocksConnectionHandshakeStatus::Granted,
+            0x01 => SocksConnectionHandshakeStatus::GeneralFailure,
+            0x02 => SocksConnectionHandshakeStatus::ConnectionNotAllowedByRuleset,
+            0x03 => SocksConnectionHandshakeStatus::NetworkUnreachable,
+            0x04 => SocksConnectionHandshakeStatus::HostUnreachable,
+            0x05 => SocksConnectionHandshakeStatus::ConnectionRefusedByDestination,
+            0x06 => SocksConnectionHandshakeStatus::Ttl,
+            0x07 => SocksConnectionHandshakeStatus::UnsupportedCommand,
+            0x08 => SocksConnectionHandshakeStatus::UnsupportedAddressType,
+            _    => SocksConnectionHandshakeStatus::Invalid
+        };
+
+        let (connection_status, terminated_at) = determine_tcp_session_state(session);
+
+        return Some(SocksTunnel {
+            socks_type: SocksType::Socks5,
+            authentication_status: SocksAuthenticationResult::Success,
+            handshake_status,
+            connection_status,
+            username,
+            tunneled_bytes: session.bytes_count,
+            tcp_session_key: session.session_key.clone(),
+            tunneled_destination_address,
+            tunneled_destination_host,
+            tunneled_destination_port,
+            source_mac: session.source_mac.clone(),
+            destination_mac: session.destination_mac.clone(),
+            source_address: session.source_address,
+            destination_address: session.destination_address,
+            source_port: session.source_port,
+            destination_port: session.destination_port,
+            established_at: session.start_time,
+            terminated_at
+        })
     }
 
     // Not SOCKS.
@@ -234,16 +273,95 @@ fn resolve_authentication_method(method: &u8) -> SocksAuthenticationMethod {
 }
 
 // Returns (client, server) bytes to skip.
-fn socks5_authentication(method: SocksAuthenticationMethod,
-                         cts: &[u8],
-                         stc: &[u8],
-                         cts_cursor: &usize,
-                         stc_cursor: &usize)
-    -> Result<(SocksAuthenticationResult, usize, usize), Error> {
+fn process_socks5_authentication(method: SocksAuthenticationMethod,
+                                 cts: &[u8],
+                                 stc: &[u8],
+                                 cts_cursor: &usize,
+                                 stc_cursor: &usize)
+    -> Result<(SocksAuthenticationResult, Option<String>, usize, usize), Error> {
+
+    if cts.len() < *cts_cursor || stc.len() < *stc_cursor {
+        bail!("Payload too short to hold authentication transaction.");
+    }
+
+    let cts_slice = &cts[*cts_cursor..];
+    let stc_slice = &stc[*stc_cursor..];
 
     match method {
-        SocksAuthenticationMethod::None => Ok((SocksAuthenticationResult::Success, 0, 0)),
+        SocksAuthenticationMethod::None =>
+            Ok((SocksAuthenticationResult::Success, None, 0, 0)),
+        SocksAuthenticationMethod::UsernamePassword =>
+            process_socks5_username_password_auth(cts_slice, stc_slice),
         _ => bail!("Authentication method [{:?}] not supported.", method)
+    }
+}
+
+fn process_socks5_username_password_auth(cts: &[u8], stc: &[u8])
+    -> Result<(SocksAuthenticationResult, Option<String>, usize, usize), Error> {
+
+    if cts.len() < 5 || stc.len() < 2 {
+        bail!("Payload too short to hold username/password authentication transaction.")
+    }
+
+    if *cts.first().unwrap() != 0x01 {
+        bail!("Unexpected authentication request version");
+    }
+
+    let mut cts_cursor: usize = 1;
+    let username_length = cts[cts_cursor] as usize;
+    cts_cursor += 1;
+
+    if cts.len() < cts_cursor+username_length {
+        bail!("Username does not fit into payload.");
+    }
+
+    let username = String::from_utf8_lossy(&cts[cts_cursor..cts_cursor+username_length]).to_string();
+    cts_cursor += username_length;
+
+    if cts.len() < cts_cursor {
+        bail!("Password length does not fit into payload.")
+    }
+
+    let password_length = cts[cts_cursor] as usize;
+    cts_cursor += 1;
+
+    if cts.len() < cts_cursor+password_length {
+        bail!("Password does not fit into payload.")
+    }
+    cts_cursor += password_length; // We are not recording the password. Just skip over it.
+
+    // Server response.
+    if stc.len() < 2 {
+        bail!("Authentication response doesn't fit into payload.")
+    }
+
+    if *stc.first().unwrap() != 0x01 {
+        bail!("Unexpected authentication response version");
+    }
+
+    let auth_result = match *stc.get(1).unwrap() {
+        0x00  => SocksAuthenticationResult::Success,
+        0x01  => SocksAuthenticationResult::Failure,
+        other => bail!("Unexpected authentication response status [{}].", other)
+    };
+    let stc_cursor = 2;
+
+    Ok((auth_result, Some(username), cts_cursor, stc_cursor))
+}
+
+fn determine_tcp_session_state(session: &TcpSession)
+    -> (SocksConnectionStatus, Option<DateTime<Utc>>) {
+    match session.state {
+        TcpSessionState::SynSent
+        | TcpSessionState::SynReceived
+        | TcpSessionState::Established
+        | TcpSessionState::FinWait1
+        | TcpSessionState::FinWait2 => (SocksConnectionStatus::Active, None),
+        TcpSessionState::ClosedFin
+        | TcpSessionState::ClosedRst
+        | TcpSessionState::Refused => (SocksConnectionStatus::Inactive, session.end_time),
+        TcpSessionState::ClosedTimeout =>
+            (SocksConnectionStatus::InactiveTimeout, session.end_time)
     }
 }
 
@@ -255,7 +373,9 @@ fn is_socks_4a_address(address: &[u8]) -> bool {
         && address[3] != 0x00
 }
 
-fn build_auth_failed_result(session: &TcpSession, auth_result: SocksAuthenticationResult)
+fn build_auth_failed_result(session: &TcpSession,
+                            auth_result: SocksAuthenticationResult,
+                            username: Option<String>)
     -> SocksTunnel {
 
     SocksTunnel {
@@ -263,7 +383,7 @@ fn build_auth_failed_result(session: &TcpSession, auth_result: SocksAuthenticati
         authentication_status: auth_result,
         handshake_status: SocksConnectionHandshakeStatus::NotReached,
         connection_status: SocksConnectionStatus::Inactive,
-        username: None,
+        username,
         tunneled_bytes: 0,
         tunneled_destination_address: None,
         tunneled_destination_host: None,
