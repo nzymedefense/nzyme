@@ -63,7 +63,15 @@ pub fn to_ipv4_address_string(bytes: &[u8]) -> String {
 pub fn to_ipv4_address(bytes: &[u8]) -> IpAddr {
     assert_eq!(bytes.len(), 4);
 
-    return IpAddr::from(Ipv4Addr::new(bytes[0], bytes[1], bytes[2], bytes[3]));
+    let arr: [u8; 4] = bytes.try_into().unwrap();
+    return IpAddr::from(Ipv4Addr::from(arr));
+}
+
+pub fn to_ipv6_address(bytes: &[u8]) -> IpAddr {
+    assert_eq!(bytes.len(), 16);
+
+    let arr: [u8; 16] = bytes.try_into().unwrap();
+    return IpAddr::from(Ipv6Addr::from(arr));
 }
 
 pub fn is_mac_address_multicast(mac: &String) -> bool {

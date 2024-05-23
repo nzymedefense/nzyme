@@ -143,13 +143,19 @@ pub enum SocksType {
     Socks5
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum SocksAuthenticationResult {
+    Success, Failure, Unknown
+}
+
 #[derive(Debug)]
 pub enum SocksConnectionHandshakeStatus {
     Granted,
     Rejected,
     FailedIdentdUnreachable,
     FailedIdentdAuth,
-    Invalid
+    Invalid,
+    NotReached
 }
 
 #[derive(Debug)]
@@ -158,8 +164,23 @@ pub enum SocksConnectionStatus {
 }
 
 #[derive(Debug)]
+pub enum SocksAuthenticationMethod {
+    None,
+    Gssapi,
+    UsernamePassword,
+    ChallengeHandshake,
+    ChallengeResponse,
+    Ssl,
+    Nds,
+    MultiAuthenticationFramework,
+    JsonParameterBlock,
+    Unknown
+}
+
+#[derive(Debug)]
 pub struct SocksTunnel {
     pub socks_type: SocksType,
+    pub authentication_status: SocksAuthenticationResult,
     pub handshake_status: SocksConnectionHandshakeStatus,
     pub connection_status: SocksConnectionStatus,
     pub username: Option<String>,
