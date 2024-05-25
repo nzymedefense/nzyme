@@ -63,7 +63,8 @@ pub struct Protocols {
     pub tcp: ProtocolsTcp,
     pub udp: ProtocolsUdp,
     pub dns: ProtocolsDns,
-    pub arp: ProtocolsArp
+    pub arp: ProtocolsArp,
+    pub socks: ProtocolsSocks
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -86,6 +87,11 @@ pub struct ProtocolsDns {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsArp {
+    pub pipeline_size: i32,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ProtocolsSocks {
     pub pipeline_size: i32,
 }
 
@@ -157,6 +163,11 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     // ARP.
     if doc.protocols.arp.pipeline_size <= 0 {
         bail!("Configuration variable `protocols.arp.pipeline_size` must be set to a value greater than 0.");
+    }
+
+    // SOCKS.
+    if doc.protocols.socks.pipeline_size <= 0 {
+        bail!("Configuration variable `protocols.socks.pipeline_size` must be set to a value greater than 0.");
     }
 
     // Validate WiFi interfaces configuration

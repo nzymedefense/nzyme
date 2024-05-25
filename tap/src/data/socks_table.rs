@@ -1,80 +1,79 @@
 use std::sync::{Arc, Mutex};
 use log::error;
 use crate::data::table_helpers::clear_mutex_vector;
-use crate::ethernet::packets::Datagram;
+use crate::ethernet::packets::SocksTunnel;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
-use crate::link::reports::{udp_datagrams_report};
+use crate::link::reports::socks_tunnels_report;
 use crate::metrics::Metrics;
 
-pub struct UdpTable {
+pub struct SocksTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
     metrics: Arc<Mutex<Metrics>>,
-    datagrams: Mutex<Vec<Arc<Datagram>>>
+    tunnels: Mutex<Vec<Arc<SocksTunnel>>>
 }
 
-impl UdpTable {
+impl SocksTable {
 
     pub fn new(leaderlink: Arc<Mutex<Leaderlink>>, metrics: Arc<Mutex<Metrics>>) -> Self {
         Self {
             leaderlink,
             metrics,
-            datagrams: Mutex::new(Vec::new())
+            tunnels: Mutex::new(Vec::new())
         }
     }
 
-    pub fn register_datagram(&mut self, datagram: Arc<Datagram>) {
-        match self.datagrams.lock() {
-            Ok(mut datagrams) => datagrams.push(datagram),
-            Err(e) => {
-                error!("Could not acquire datagram table mutex: {}", e);
-            }
+    pub fn register_tunnel(&mut self, tunnel: Arc<SocksTunnel>) {
+        match self.tunnels.lock() {
+            Ok(mut tunnels) => tunnels.push(tunnel.clone()),
+            Err(e) => error!("Could not acquired SOCKS tunnels table mutex: {}", e)
         }
     }
 
     pub fn process_report(&self) {
-        match self.datagrams.lock() {
-            Ok(datagrams) => {
+        match self.tunnels.lock() {
+            Ok(tunnels) => {
                 // Generate JSON.
                 let mut timer = Timer::new();
-                let report = match serde_json::to_string(&udp_datagrams_report::generate(&datagrams)) {
+                let report = match serde_json::to_string(&socks_tunnels_report::generate(&tunnels)) {
                     Ok(report) => report,
                     Err(e) => {
-                        error!("Could not serialize UDP datagrams report: {}", e);
+                        error!("Could not serialize SOCKS tunnels report: {}", e);
                         return;
                     }
                 };
                 timer.stop();
                 record_timer(
                     timer.elapsed_microseconds(),
-                    "tables.udp.timer.report_generation",
+                    "tables.socks.timer.report_generation",
                     &self.metrics
                 );
 
                 // Send report.
                 match self.leaderlink.lock() {
                     Ok(link) => {
-                        if let Err(e) = link.send_report("udp/datagrams", report) {
-                            error!("Could not submit UDP datagrams report: {}", e);
+                        if let Err(e) = link.send_report("socks/tunnels", report) {
+                            error!("Could not submit SOCKS tunnels report: {}", e);
                         }
                     },
-                    Err(e) => error!("Could not acquire leader link lock for UDP report submission: {}", e)
+                    Err(e) => error!("Could not acquire leader link lock for SOCKS tunnels \
+                                        report submission: {}", e)
                 }
             },
             Err(e) => {
-                error!("Could not acquire UDP datagrams table mutex for report generation: {}", e);
+                error!("Could not acquire SOCKS tunnels table mutex for report generation: {}", e);
             }
         }
-        
+
         // Clean up.
-        clear_mutex_vector(&self.datagrams);
+        clear_mutex_vector(&self.tunnels);
     }
 
     pub fn calculate_metrics(&self) {
-        let datagrams_size: i128 = match self.datagrams.lock() {
+        let tunnels_size: i128 = match self.tunnels.lock() {
             Ok(d) => d.len() as i128,
             Err(e) => {
-                error!("Could not acquire mutex to calculate datagram table size: {}", e);
+                error!("Could not acquire mutex to calculate SOCKS tunnels table size: {}", e);
 
                 -1
             }
@@ -82,7 +81,7 @@ impl UdpTable {
 
         match self.metrics.lock() {
             Ok(mut metrics) => {
-                metrics.set_gauge("tables.udp.datagrams.size", datagrams_size);
+                metrics.set_gauge("tables.socks.tunnels.size", tunnels_size);
             },
             Err(e) => error!("Could not acquire metrics mutex: {}", e)
         }

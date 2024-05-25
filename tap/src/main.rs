@@ -128,7 +128,7 @@ fn main() {
     ethernet::capture::print_devices();
 
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new()));
-    let ethernet_bus = Arc::new(Bus::new(metrics.clone(), "ethernet_packets".to_string(), configuration.clone()));
+    let ethernet_bus = Arc::new(Bus::new(metrics.clone(), "ethernet_data".to_string(), configuration.clone()));
     let dot11_bus = Arc::new(Bus::new(metrics.clone(), "dot11_frames".to_string(), configuration.clone()));
 
     let leaderlink = match Leaderlink::new(configuration.clone(), metrics.clone(), ethernet_bus.clone(), dot11_bus.clone()) {
@@ -139,7 +139,7 @@ fn main() {
         }
     };
 
-    let tables = Arc::new(Tables::new(metrics.clone(), leaderlink.clone(), &configuration));
+    let tables = Arc::new(Tables::new(metrics.clone(), leaderlink.clone(), ethernet_bus.clone(), &configuration));
 
     let tables_bg = tables.clone();
     thread::spawn(move || {

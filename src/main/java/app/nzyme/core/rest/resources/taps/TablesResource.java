@@ -22,6 +22,7 @@ import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
 import app.nzyme.core.rest.resources.taps.reports.tables.DNSTablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11TablesReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpDatagramsReport;
 import jakarta.inject.Inject;
@@ -94,6 +95,18 @@ public class TablesResource {
 
         LOG.debug("Received DNS summary report from [{}]: {}", tapId, report);
         nzyme.getTablesService().dns().handleReport(tapId, DateTime.now(), report);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+
+    @POST
+    @Path("/socks/tunnels")
+    public Response socksTunnels(@Context SecurityContext sc, SocksTunnelsReport report) {
+        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+
+        LOG.info("Received SOCKS tunnels report from [{}]: {}", tapId, report);
+        //nzyme.getTablesService().dns().handleReport(tapId, DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

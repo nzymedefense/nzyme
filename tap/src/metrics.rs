@@ -5,7 +5,7 @@ use strum::IntoEnumIterator;
 use strum_macros::Display;
 use statrs::statistics::{Distribution, OrderStatistics, Data};
 
-use log::{warn, error};
+use log::{warn, error, info};
 use crate::messagebus::channel_names::{Dot11ChannelName, EthernetChannelName};
 
 #[derive(Default, Clone)]
@@ -55,6 +55,7 @@ pub struct Channels {
     tcp_pipeline: ChannelUtilization,
     udp_pipeline: ChannelUtilization,
     dns_pipeline: ChannelUtilization,
+    socks_pipeline: ChannelUtilization
 }
 
 #[derive(Clone, Display)]
@@ -97,6 +98,7 @@ impl Metrics {
                 tcp_pipeline: ChannelUtilization::default(),
                 udp_pipeline: ChannelUtilization::default(),
                 dns_pipeline: ChannelUtilization::default(),
+                socks_pipeline: ChannelUtilization::default(),
             },
             captures: HashMap::new(),
             gauges_long: HashMap::new(),
@@ -184,6 +186,7 @@ impl Metrics {
             "TcpPipeline" => &mut self.channels.tcp_pipeline,
             "UdpPipeline" => &mut self.channels.udp_pipeline,
             "DnsPipeline" => &mut self.channels.dns_pipeline,
+            "SocksPipeline" => &mut self.channels.socks_pipeline,
             _ => panic!("Unknown channel {}", channel)
         }
     }
@@ -259,7 +262,7 @@ impl Metrics {
     pub fn get_gauges_long(&self) -> HashMap<String, i128> {
         let mut cloned = HashMap::new();
         cloned.clone_from(&self.gauges_long);
-
+        
         cloned
     }
 

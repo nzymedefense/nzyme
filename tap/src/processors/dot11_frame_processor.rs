@@ -21,35 +21,35 @@ impl Dot11FrameProcessor {
         }
     }
 
-    pub fn process(&self, frame: &Arc<Dot11Frame>) {
+    pub fn process(&self, frame: Arc<Dot11Frame>) {
         let result = panic::catch_unwind(|| {
             match frame.frame_type {
                 FrameSubType::Beacon => {
-                    match beacon_frame_parser::parse(frame) {
+                    match beacon_frame_parser::parse(&frame) {
                         Ok(frame) => self.handle_beacon_frame(frame),
                         Err(e) => trace!("Could not parse beacon frame: {}", e)
                     }
                 },
                 FrameSubType::ProbeResponse => {
-                    match probe_response_frame_parser::parse(frame) {
+                    match probe_response_frame_parser::parse(&frame) {
                         Ok(frame) => self.handle_probe_response_frame(frame),
                         Err(e) => trace!("Could not parse probe response frame: {}", e)
                     }
                 },
                 FrameSubType::Deauthentication => {
-                    match deauthentication_frame_parser::parse(frame) {
+                    match deauthentication_frame_parser::parse(&frame) {
                         Ok(frame) => self.handle_deauthentication_frame(frame),
                         Err(e) => trace!("Could not parse deauthentication frame: {}", e)
                     }
                 },
                 FrameSubType::Disassocation => {
-                    match disassociation_frame_parser::parse(frame) {
+                    match disassociation_frame_parser::parse(&frame) {
                         Ok(frame) => self.handle_disassociation_frame(frame),
                         Err(e) => trace!("Could not parse disassociation frame: {}", e)
                     }
                 }
                 FrameSubType::ProbeRequest => {
-                    match probe_request_frame_parser::parse(frame) {
+                    match probe_request_frame_parser::parse(&frame) {
                         Ok(frame) => self.handle_probe_request_frame(frame),
                         Err(e) => trace!("Could not parse probe response frame: {}", e)
                     }
@@ -63,7 +63,7 @@ impl Dot11FrameProcessor {
                 FrameSubType::QosDataCfAckCfPoll |
                 FrameSubType::QosCfPoll |
                 FrameSubType::QosCfAckCfPoll => {
-                    match data_frame_parser::parse(frame) {
+                    match data_frame_parser::parse(&frame) {
                         Ok(frame) => self.handle_data_frame(frame),
                         Err(e) => trace!("Could not parse data frame: {}", e)
                     }

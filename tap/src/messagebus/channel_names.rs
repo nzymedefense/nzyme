@@ -6,9 +6,9 @@ pub enum EthernetChannelName {
     ArpPipeline,
     TcpPipeline,
     UdpPipeline,
-    DnsPipeline
+    DnsPipeline,
+    SocksPipeline
 }
-
 
 #[derive(Debug, Clone, EnumIter, Display)]
 pub enum Dot11ChannelName {

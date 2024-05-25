@@ -14,10 +14,12 @@ use crate::ethernet::traffic_direction::TrafficDirection;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::tcp_sessions_report;
+use crate::messagebus::bus::Bus;
 use crate::metrics::Metrics;
 
 pub struct TcpTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
+    ethernet_bus: Arc<Bus>,
     metrics: Arc<Mutex<Metrics>>,
     sessions: Mutex<HashMap<TcpSessionKey, TcpSession>>,
     reassembly_buffer_size: i32,
@@ -60,11 +62,13 @@ pub enum TcpSessionState {
 impl TcpTable {
 
     pub fn new(leaderlink: Arc<Mutex<Leaderlink>>,
+               ethernet_bus: Arc<Bus>,
                metrics: Arc<Mutex<Metrics>>,
                reassembly_buffer_size: i32,
                session_timeout_seconds: i32) -> Self {
         Self {
             leaderlink,
+            ethernet_bus,
             metrics,
             sessions: Mutex::new(HashMap::new()),
             reassembly_buffer_size,
@@ -178,7 +182,7 @@ impl TcpTable {
 
                 // Scan session payloads and tag.
                 let mut timer = Timer::new();
-                tag_tcp_sessions(&mut sessions);
+                tag_tcp_sessions(&mut sessions, self.ethernet_bus.clone(), self.metrics.clone());
                 timer.stop();
                 record_timer(
                     timer.elapsed_microseconds(),

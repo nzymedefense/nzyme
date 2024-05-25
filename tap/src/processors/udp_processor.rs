@@ -23,9 +23,9 @@ impl UDPProcessor {
         Self { bus, metrics, udp_table }
     }
 
-    pub fn process(&mut self, datagram: &Arc<Datagram>) {
+    pub fn process(&mut self, datagram: Arc<Datagram>) {
         let mut timer = Timer::new();
-        let tags = self.tag_and_route(datagram);
+        let tags = self.tag_and_route(&datagram);
         timer.stop();
         record_timer(
             timer.elapsed_microseconds(),
@@ -40,7 +40,7 @@ impl UDPProcessor {
 
         // Register in UDP table.
         match self.udp_table.lock() {
-            Ok(mut table) => table.register_datagram(datagram),
+            Ok(mut table) => table.register_datagram(datagram.clone()),
             Err(e) => {
                 error!("Could not acquire UDP table mutex: {}", e);
             }

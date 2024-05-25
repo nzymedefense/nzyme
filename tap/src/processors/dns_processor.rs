@@ -83,7 +83,7 @@ impl DnsProcessor {
         }
     }
 
-    pub fn process(&mut self, packet: &Arc<DNSPacket>) {
+    pub fn process(&mut self, packet: Arc<DNSPacket>) {
         match self.dns_table.lock() {
             Ok(mut table) => {
                 match packet.dns_type {

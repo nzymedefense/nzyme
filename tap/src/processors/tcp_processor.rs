@@ -15,9 +15,9 @@ impl TcpProcessor {
         Self{ tcp_table }
     }
 
-    pub fn process(&mut self, segment: &Arc<TcpSegment>) {
+    pub fn process(&mut self, segment: Arc<TcpSegment>) {
         match self.tcp_table.lock() {
-            Ok(mut table) => table.register_segment(segment),
+            Ok(mut table) => table.register_segment(&segment),
             Err(e) => {
                 error!("Could not acquire TCP table mutex: {}", e);
             }

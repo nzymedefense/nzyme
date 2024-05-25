@@ -1,6 +1,7 @@
 use std::net::IpAddr;
 use std::sync::Mutex;
 use chrono::{DateTime, Utc};
+use strum_macros::Display;
 use crate::ethernet::detection::l7_tagger::L7SessionTag;
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::ethernet::traffic_direction::TrafficDirection;
@@ -136,19 +137,19 @@ pub struct DNSData {
 #[derive(Debug)]
 pub struct IPv6Packet { }
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum SocksType {
     Socks4,
     Socks4A,
     Socks5
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Display)]
 pub enum SocksAuthenticationResult {
     Success, Failure, Unknown
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Display)]
 pub enum SocksConnectionHandshakeStatus {
     Granted,
     Rejected,
@@ -166,12 +167,12 @@ pub enum SocksConnectionHandshakeStatus {
     NotReached
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum SocksConnectionStatus {
     Active, Inactive, InactiveTimeout
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum SocksAuthenticationMethod {
     None,
     Gssapi,
@@ -205,4 +206,30 @@ pub struct SocksTunnel {
     pub destination_port: u16,
     pub established_at: DateTime<Utc>,
     pub terminated_at: Option<DateTime<Utc>>,
+}
+
+impl SocksTunnel {
+
+    pub fn estimate_struct_size(&self) -> u32 {
+        let mut x: u32 = 156; // known size members
+
+        if let Some(username) = &self.username {
+            x += username.len() as u32;
+        }
+
+        if self.tunneled_destination_address.is_some() {
+            x += 16; // We'll just assume it's the largest type, IPv6. Accurate enough.
+        }
+
+        if let Some(host) = &self.tunneled_destination_host {
+            x += host.len() as u32;
+        }
+
+        if self.terminated_at.is_some() {
+            x += 8; // We'll just assume it's the largest type, IPv6. Accurate enough.
+        }
+        
+        x
+    }
+
 }

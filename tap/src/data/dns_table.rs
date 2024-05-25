@@ -92,7 +92,7 @@ impl DnsTable {
         }
     }
 
-    pub fn register_request(&mut self, request: &Arc<DNSPacket>) {
+    pub fn register_request(&mut self, request: Arc<DNSPacket>) {
         if !matches!(request.dns_type, DNSType::Query) {
             error!("Attempted to register unexpected type [{:?}] as DNS request.", request.dns_type);
             return;
@@ -193,7 +193,7 @@ impl DnsTable {
         }
     }
     
-    pub fn register_response(&mut self, response: &Arc<DNSPacket>) {
+    pub fn register_response(&mut self, response: Arc<DNSPacket>) {
         if !matches!(response.dns_type, DNSType::QueryResponse) {
             error!("Attempted to register unexpected type [{:?}] as DNS response.", response.dns_type);
             return;

@@ -1,6 +1,6 @@
 use anyhow::bail;
 use chrono::Utc;
-use log::error;
+use log::{error, info};
 use reqwest::{blocking::Client, blocking::Response, header::{HeaderMap, AUTHORIZATION}, Error, Url};
 use std::{thread::self, time::Duration, sync::{Mutex, Arc}, collections::HashMap};
 use systemstat::{System, Platform};

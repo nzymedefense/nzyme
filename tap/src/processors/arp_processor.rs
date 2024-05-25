@@ -16,7 +16,7 @@ impl ARPProcessor {
         }
     }
 
-    pub fn process(&mut self, packet: &Arc<ARPPacket>) {
+    pub fn process(&mut self, packet: Arc<ARPPacket>) {
         match packet.operation {
             ARPOpCode::Request => { self.process_request(packet) },
             ARPOpCode::Reply => { self.process_reply(packet) },
@@ -26,7 +26,7 @@ impl ARPProcessor {
         }
     }
 
-    fn process_reply(&mut self, packet: &ARPPacket) {
+    fn process_reply(&mut self, packet: Arc<ARPPacket>) {
         debug!("ARP reply: <{}/{}>, <{}> is at <{}>.",
             packet.target_protocol_address,
             packet.target_hardware_address,
@@ -57,7 +57,7 @@ impl ARPProcessor {
 
     // TODO remove linter hint when ARP is fully implemented (or fix what hint points out)
     #[allow(clippy::unused_self)]
-    fn process_request(&mut self, packet: &ARPPacket) {
+    fn process_request(&mut self, packet: Arc<ARPPacket>) {
         if packet.sender_protocol_address == "00:00:00:00:00:00" {
             // Ignore ARP probes.
             return;

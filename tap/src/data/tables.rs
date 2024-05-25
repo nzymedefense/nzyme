@@ -6,9 +6,11 @@ use std::{
 use log::{error};
 use std::time::Duration;
 use crate::configuration::Configuration;
+use crate::data::socks_table::SocksTable;
 use crate::data::tcp_table::TcpTable;
 use crate::data::udp_table::UdpTable;
 use crate::link::leaderlink::Leaderlink;
+use crate::messagebus::bus::Bus;
 
 use crate::metrics::Metrics;
 
@@ -20,22 +22,28 @@ pub struct Tables {
     pub tcp: Arc<Mutex<TcpTable>>,
     pub udp: Arc<Mutex<UdpTable>>,
     pub dns: Arc<Mutex<DnsTable>>,
+    pub socks: Arc<Mutex<SocksTable>>
 }
 
 impl Tables {
 
-    pub fn new(metrics: Arc<Mutex<Metrics>>, leaderlink: Arc<Mutex<Leaderlink>>, configuration: &Configuration) -> Self {
+    pub fn new(metrics: Arc<Mutex<Metrics>>,
+               leaderlink: Arc<Mutex<Leaderlink>>,
+               ethernet_bus: Arc<Bus>,
+               configuration: &Configuration) -> Self {
         Tables {
             arp: Arc::new(Mutex::new(HashMap::new())),
             dns: Arc::new(Mutex::new(DnsTable::new(metrics.clone(), leaderlink.clone()))),
             dot11: Arc::new(Mutex::new(Dot11Table::new(leaderlink.clone()))),
             tcp: Arc::new(Mutex::new(TcpTable::new(
                 leaderlink.clone(),
+                ethernet_bus.clone(),
                 metrics.clone(),
                 configuration.protocols.tcp.reassembly_buffer_size,
                 configuration.protocols.tcp.session_timeout_seconds
             ))),
-            udp: Arc::new(Mutex::new(UdpTable::new(leaderlink, metrics)))
+            udp: Arc::new(Mutex::new(UdpTable::new(leaderlink.clone(), metrics.clone()))),
+            socks: Arc::new(Mutex::new(SocksTable::new(leaderlink, metrics)))
         }
     }
 
@@ -72,7 +80,13 @@ impl Tables {
                 Err(e) => error!("Could not acquire DNS table lock for report processing: {}", e)
             }
 
-
+            match self.socks.lock() {
+                Ok(socks) => {
+                    socks.calculate_metrics();
+                    socks.process_report();
+                },
+                Err(e) => error!("Could not acquire SOCKS table lock for report processing: {}", e)
+            }
         }
     }
 
