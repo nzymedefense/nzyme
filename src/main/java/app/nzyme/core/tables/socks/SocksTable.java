@@ -44,21 +44,23 @@ public class SocksTable implements DataTable {
 
     private void writeTunnels(Handle handle, UUID tapUuid, DateTime timestamp, List<SocksTunnelReport> tunnels) {
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO socks_tunnels(uuid, tap_uuid, " +
-                    "tcp_session_key, socks_type, authentication_status, handshake_status, connection_status, " +
-                    "username, tunneled_bytes, tunneled_destination_address, tunneled_destination_host, " +
-                    "tunneled_destination_port, established_at, terminated_at, updated_at, created_at) " +
-                    "VALUES(:uuid, :tap_uuid, :tcp_session_key, :socks_type, :authentication_status, " +
-                    ":handshake_status, :connection_status, :username, :tunneled_bytes, " +
-                    ":tunneled_destination_address, :tunneled_destination_host, :tunneled_destination_port, " +
-                    ":established_at, :terminated_at, NOW(), NOW())");
+                "tcp_session_key, socks_type, authentication_status, handshake_status, connection_status, " +
+                "username, tunneled_bytes, tunneled_destination_address, tunneled_destination_host, " +
+                "tunneled_destination_port, established_at, terminated_at, most_recent_segment_time, " +
+                "updated_at, created_at) VALUES(:uuid, :tap_uuid, :tcp_session_key, :socks_type, " +
+                ":authentication_status, :handshake_status, :connection_status, :username, :tunneled_bytes, " +
+                ":tunneled_destination_address, :tunneled_destination_host, :tunneled_destination_port, " +
+                ":established_at, :terminated_at, :most_recent_segment_time, NOW(), NOW())");
 
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE socks_tunnels SET " +
                 "authentication_status = :authentication_status, handshake_status = :handshake_status, " +
                 "connection_status = :connection_status, tunneled_bytes = :tunneled_bytes, " +
-                "terminated_at = :terminated_at, updated_at = NOW() WHERE id = :id");
+                "terminated_at = :terminated_at, most_recent_segment_time = :most_recent_segment_time, " +
+                "updated_at = NOW() WHERE id = :id");
 
         for (SocksTunnelReport tunnel : tunnels) {
             String tcpSessionKey = Tools.buildTcpSessionKey(
+                    tunnel.establishedAt(),
                     tunnel.sourceAddress(),
                     tunnel.destinationAddress(),
                     tunnel.sourcePort(),
@@ -71,6 +73,7 @@ public class SocksTable implements DataTable {
                     .bind("established_at", tunnel.establishedAt())
                     .bind("tap_uuid", tapUuid)
                     .bind("connection_status", "Active")
+                    .bind("most_recent_segment_time", tunnel.mostRecentSegmentTime())
                     .mapTo(Long.class)
                     .findOne();
 
@@ -90,6 +93,7 @@ public class SocksTable implements DataTable {
                         .bind("tunneled_destination_port", tunnel.tunneledDestinationPort())
                         .bind("established_at", tunnel.establishedAt())
                         .bind("terminated_at", tunnel.terminatedAt())
+                        .bind("most_recent_segment_time", tunnel.mostRecentSegmentTime())
                         .add();
             } else {
                 // Update existing open tunnel.
@@ -100,6 +104,7 @@ public class SocksTable implements DataTable {
                         .bind("connection_status", tunnel.connectionStatus())
                         .bind("tunneled_bytes", tunnel.tunneledBytes())
                         .bind("terminated_at", tunnel.terminatedAt())
+                        .bind("most_recent_segment_time", tunnel.mostRecentSegmentTime())
                         .add();
             }
         }

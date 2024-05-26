@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::net::IpAddr;
 use std::sync::{Mutex, MutexGuard};
 use chrono::{DateTime, Duration, Utc};
-use log::{error, trace, warn};
+use log::{debug, error, trace, warn};
 use strum_macros::Display;
 use crate::data::tcp_table::TcpSessionState::{ClosedFin, ClosedRst, ClosedTimeout, Established, FinWait1, FinWait2, Refused, SynReceived, SynSent};
 use crate::ethernet::detection::l7_tagger::{L7SessionTag, tag_tcp_sessions};
@@ -334,6 +334,8 @@ fn timeout_sweep(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>, 
     for session in sessions.values_mut() {
         if Utc::now() - session.most_recent_segment_time
             > Duration::try_seconds(timeout).unwrap() {
+
+            debug!("Timeout sweep for TCP session: {:?}", session);
             session.state = ClosedTimeout;
             session.end_time = Some(Utc::now());
         }

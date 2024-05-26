@@ -30,6 +30,7 @@ public abstract class SocksTunnelReport {
     public abstract DateTime establishedAt();
     @Nullable
     public abstract DateTime terminatedAt();
+    public abstract DateTime mostRecentSegmentTime();
 
     @JsonCreator
     public static SocksTunnelReport create(@JsonProperty("socks_type") String socksType,
@@ -48,7 +49,8 @@ public abstract class SocksTunnelReport {
                                            @JsonProperty("destination_address") String destinationAddress,
                                            @JsonProperty("destination_port") int destinationPort,
                                            @JsonProperty("established_at") DateTime establishedAt,
-                                           @JsonProperty("terminated_at") DateTime terminatedAt) {
+                                           @JsonProperty("terminated_at") DateTime terminatedAt,
+                                           @JsonProperty("most_recent_segment_time") DateTime mostRecentSegmentTime) {
         return builder()
                 .socksType(socksType)
                 .authenticationStatus(authenticationStatus)
@@ -67,6 +69,7 @@ public abstract class SocksTunnelReport {
                 .destinationPort(destinationPort)
                 .establishedAt(establishedAt)
                 .terminatedAt(terminatedAt)
+                .mostRecentSegmentTime(mostRecentSegmentTime)
                 .build();
     }
 
@@ -109,6 +112,8 @@ public abstract class SocksTunnelReport {
         public abstract Builder establishedAt(DateTime establishedAt);
 
         public abstract Builder terminatedAt(DateTime terminatedAt);
+
+        public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
 
         public abstract SocksTunnelReport build();
     }

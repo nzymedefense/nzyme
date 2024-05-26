@@ -137,19 +137,19 @@ pub struct DNSData {
 #[derive(Debug)]
 pub struct IPv6Packet { }
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Clone)]
 pub enum SocksType {
     Socks4,
     Socks4A,
     Socks5
 }
 
-#[derive(Debug, PartialEq, Eq, Display)]
+#[derive(Debug, PartialEq, Eq, Display, Clone)]
 pub enum SocksAuthenticationResult {
     Success, Failure, Unknown
 }
 
-#[derive(Debug, PartialEq, Eq, Display)]
+#[derive(Debug, PartialEq, Eq, Display, Clone)]
 pub enum SocksConnectionHandshakeStatus {
     Granted,
     Rejected,
@@ -167,14 +167,15 @@ pub enum SocksConnectionHandshakeStatus {
     NotReached
 }
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Clone)]
 pub enum SocksConnectionStatus {
     Active, Inactive, InactiveTimeout
 }
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, PartialEq, Eq)]
 pub enum SocksAuthenticationMethod {
     None,
+    NoneAcceptable,
     Gssapi,
     UsernamePassword,
     ChallengeHandshake,
@@ -186,7 +187,7 @@ pub enum SocksAuthenticationMethod {
     Unknown
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SocksTunnel {
     pub socks_type: SocksType,
     pub authentication_status: SocksAuthenticationResult,
@@ -206,6 +207,7 @@ pub struct SocksTunnel {
     pub destination_port: u16,
     pub established_at: DateTime<Utc>,
     pub terminated_at: Option<DateTime<Utc>>,
+    pub most_recent_segment_time: DateTime<Utc>
 }
 
 impl SocksTunnel {

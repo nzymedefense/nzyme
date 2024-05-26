@@ -1,7 +1,9 @@
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use log::error;
-use crate::data::table_helpers::clear_mutex_vector;
+use crate::data::table_helpers::{clear_mutex_hashmap};
 use crate::ethernet::packets::SocksTunnel;
+use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::socks_tunnels_report;
@@ -10,7 +12,7 @@ use crate::metrics::Metrics;
 pub struct SocksTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
     metrics: Arc<Mutex<Metrics>>,
-    tunnels: Mutex<Vec<Arc<SocksTunnel>>>
+    tunnels: Mutex<HashMap<TcpSessionKey, SocksTunnel>>
 }
 
 impl SocksTable {
@@ -19,13 +21,21 @@ impl SocksTable {
         Self {
             leaderlink,
             metrics,
-            tunnels: Mutex::new(Vec::new())
+            tunnels: Mutex::new(HashMap::new())
         }
     }
 
-    pub fn register_tunnel(&mut self, tunnel: Arc<SocksTunnel>) {
+    pub fn register_tunnel(&mut self, tunnel_ref: Arc<SocksTunnel>) {
+        let tunnel = (*tunnel_ref.clone()).clone(); // Escape Arc.
+
         match self.tunnels.lock() {
-            Ok(mut tunnels) => tunnels.push(tunnel.clone()),
+            Ok(mut tunnels) => {
+                /*
+                 * We insert new tunnel or overwrite existing one. The tagger always returns a
+                 * fully up-to-date representation of the tunnel with all members accurate.
+                 */
+                tunnels.insert(tunnel.tcp_session_key.clone(), tunnel);
+            },
             Err(e) => error!("Could not acquired SOCKS tunnels table mutex: {}", e)
         }
     }
@@ -66,7 +76,7 @@ impl SocksTable {
         }
 
         // Clean up.
-        clear_mutex_vector(&self.tunnels);
+        clear_mutex_hashmap(&self.tunnels);
     }
 
     pub fn calculate_metrics(&self) {

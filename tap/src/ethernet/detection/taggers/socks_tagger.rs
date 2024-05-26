@@ -1,22 +1,21 @@
 use anyhow::{bail, Error};
 use byteorder::{BigEndian, ByteOrder};
 use chrono::{DateTime, Utc};
-use libc::user;
-use log::{debug, info, warn};
+use log::debug;
 use crate::data::tcp_table::{TcpSession, TcpSessionState};
 use crate::ethernet::packets::{SocksAuthenticationMethod, SocksAuthenticationResult, SocksConnectionHandshakeStatus, SocksConnectionStatus, SocksTunnel, SocksType};
 use crate::ethernet::packets::SocksType::{Socks4, Socks4A};
 use crate::helpers::network::{string_up_to_null_byte, to_ipv4_address, to_ipv6_address};
 
 pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> {
-
-    if cts.len() < 9 || stc.len() < 2 {
-        return None;
-    }
-
-    // SOCKS 4(a)
+    // SOCKS 4(a)?
     if *cts.first().unwrap() == 0x04
         && (*cts.get(1).unwrap() == 0x01 || *cts.get(1).unwrap() == 0x02) {
+
+        if cts.len() < 9 || stc.len() < 2 {
+            return None;
+        }
+
         // Potentially SOCKS 4(a), check if the response was SOCKS as well.
         if *stc.first().unwrap() != 0x04
             || *stc.get(1).unwrap() < 0x5A
@@ -58,7 +57,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
         }
 
         // Overwrite connection status in case of closed TCP connection.
-        let (connection_status, terminated_at) = determine_tcp_session_state(&session);
+        let (connection_status, terminated_at) = determine_tcp_session_state(session);
 
         let socks_type = if tunneled_destination_address.is_some() {
             Socks4
@@ -84,15 +83,20 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
             source_port: session.source_port,
             destination_port: session.destination_port,
             established_at: session.start_time,
-            terminated_at
+            terminated_at,
+            most_recent_segment_time: session.most_recent_segment_time
         })
     }
 
-    // SOCKS 5.
-    if *cts.first().unwrap() == 0x05 && *cts.get(1).unwrap() <= 9 
-        && *cts.get(2).unwrap() <= 9 {
+    // SOCKS 5?
+    if *cts.first().unwrap() == 0x05 && *cts.get(1).unwrap() <= 9 {
+        if cts.len() < 2 || stc.len() < 2 {
+            return None;
+        }
+
         // Potentially SOCKS5, check if the response was SOCKS as well.
-        if *stc.first().unwrap() != 0x05 || *stc.get(1).unwrap() > 9 {
+        if *stc.first().unwrap() != 0x05
+            || (*stc.get(1).unwrap() != 0xFF && *stc.get(1).unwrap() > 9) {
             return None;
         }
 
@@ -114,6 +118,13 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
         // Find auth method server chose.
         let server_chosen_auth_method = resolve_authentication_method(stc.get(1).unwrap());
         stc_cursor += 2;
+
+        if server_chosen_auth_method == SocksAuthenticationMethod::NoneAcceptable {
+            // Server did not accept any of the offered auth methods.
+            return Some(build_auth_failed_result(session,
+                                                 SocksAuthenticationResult::Failure,
+                                                 None))
+        }
 
         // Authentication.
         let (auth_result, username, auth_cts_offset, auth_stc_offset) = match process_socks5_authentication(
@@ -249,7 +260,8 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
             source_port: session.source_port,
             destination_port: session.destination_port,
             established_at: session.start_time,
-            terminated_at
+            terminated_at,
+            most_recent_segment_time: session.most_recent_segment_time
         })
     }
 
@@ -268,6 +280,7 @@ fn resolve_authentication_method(method: &u8) -> SocksAuthenticationMethod {
         0x07 => SocksAuthenticationMethod::Nds,
         0x08 => SocksAuthenticationMethod::MultiAuthenticationFramework,
         0x09 => SocksAuthenticationMethod::JsonParameterBlock,
+        0xFF => SocksAuthenticationMethod::NoneAcceptable,
         _ => SocksAuthenticationMethod::Unknown
     }
 }
@@ -396,6 +409,7 @@ fn build_auth_failed_result(session: &TcpSession,
         source_port: session.source_port,
         destination_port: session.destination_port,
         established_at: session.start_time,
-        terminated_at: Some(Utc::now())
+        terminated_at: session.end_time,
+        most_recent_segment_time: session.most_recent_segment_time
     }
 }

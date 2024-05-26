@@ -76,6 +76,7 @@ public class TCPTable implements DataTable {
     private void writeSession(UUID tapUuid, DateTime timestamp, TcpSessionReport session) {
         try {
             String sessionKey = Tools.buildTcpSessionKey(
+                    session.startTime(),
                     session.sourceAddress(),
                     session.destinationAddress(),
                     session.sourcePort(),

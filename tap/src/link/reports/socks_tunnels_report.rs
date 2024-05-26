@@ -1,7 +1,9 @@
-use std::sync::{Arc, MutexGuard};
+use std::collections::HashMap;
+use std::sync::MutexGuard;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use crate::ethernet::packets::SocksTunnel;
+use crate::ethernet::tcp_session_key::TcpSessionKey;
 
 #[derive(Serialize)]
 pub struct SocksTunnelsReport {
@@ -27,12 +29,13 @@ pub struct SocksTunnelReport {
     pub destination_port: u16,
     pub established_at: DateTime<Utc>,
     pub terminated_at: Option<DateTime<Utc>>,
+    pub most_recent_segment_time: DateTime<Utc>
 }
 
-pub fn generate(t: &MutexGuard<Vec<Arc<SocksTunnel>>>) -> SocksTunnelsReport {
+pub fn generate(t: &MutexGuard<HashMap<TcpSessionKey, SocksTunnel>>) -> SocksTunnelsReport {
     let mut tunnels: Vec<SocksTunnelReport> = Vec::new();
 
-    for tunnel in t.iter() {
+    for tunnel in t.values() {
         tunnels.push(SocksTunnelReport {
             socks_type: tunnel.socks_type.to_string(),
             authentication_status: tunnel.authentication_status.to_string(),
@@ -50,7 +53,8 @@ pub fn generate(t: &MutexGuard<Vec<Arc<SocksTunnel>>>) -> SocksTunnelsReport {
             destination_address: tunnel.destination_address.to_string(),
             destination_port: tunnel.destination_port,
             established_at: tunnel.established_at,
-            terminated_at: tunnel.terminated_at
+            terminated_at: tunnel.terminated_at,
+            most_recent_segment_time: tunnel.most_recent_segment_time
         })
     }
 

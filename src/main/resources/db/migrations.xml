@@ -4989,4 +4989,12 @@
             </column>
         </createTable>
     </changeSet>
+
+    <changeSet id="add_most_recent_segment_time_to_socks_tunnels" author="lennart koopmann">
+        <addColumn tableName="socks_tunnels">
+            <column name="most_recent_segment_time" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
