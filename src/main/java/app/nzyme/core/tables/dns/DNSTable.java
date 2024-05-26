@@ -242,11 +242,11 @@ public class DNSTable implements DataTable {
                     .bind("created_at", DateTime.now().minusDays(retentionTimeDays))
                     .execute();
 
-            handle.createUpdate("DELETE FROM dns_log WHERE created_at < :created_at")
+            handle.createUpdate("DELETE FROM dns_log WHERE timestamp < :created_at")
                     .bind("created_at", DateTime.now().minusDays(retentionTimeDays))
                     .execute();
 
-            handle.createUpdate("DELETE FROM dns_entropy_log WHERE created_at < :created_at")
+            handle.createUpdate("DELETE FROM dns_entropy_log WHERE timestamp < :created_at")
                     .bind("created_at", DateTime.now().minusDays(retentionTimeDays))
                     .execute();
         });

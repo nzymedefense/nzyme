@@ -18,7 +18,9 @@
 package app.nzyme.core.util;
 
 import app.nzyme.core.taps.Tap;
+import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import com.google.common.hash.Hashing;
 import jakarta.validation.constraints.NotNull;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -92,6 +94,12 @@ public class Tools {
         BigDecimal bd = new BigDecimal(Float.toString(f));
         bd = bd.setScale(decimalPlaces, RoundingMode.HALF_UP);
         return bd.floatValue();
+    }
+
+    public static String buildTcpSessionKey(String sourceAddress, String destinationAddress, int sourcePort, int destinationPort) {
+        return Hashing.sha256()
+                .hashString(sourceAddress + destinationAddress + sourcePort + destinationPort, Charsets.UTF_8)
+                .toString();
     }
 
 }

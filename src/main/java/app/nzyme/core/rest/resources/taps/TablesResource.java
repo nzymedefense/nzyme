@@ -105,8 +105,8 @@ public class TablesResource {
     public Response socksTunnels(@Context SecurityContext sc, SocksTunnelsReport report) {
         UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
 
-        LOG.info("Received SOCKS tunnels report from [{}]: {}", tapId, report);
-        //nzyme.getTablesService().dns().handleReport(tapId, DateTime.now(), report);
+        LOG.debug("Received SOCKS tunnels report from [{}]: {}", tapId, report);
+        nzyme.getTablesService().socks().handleReport(tapId, DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

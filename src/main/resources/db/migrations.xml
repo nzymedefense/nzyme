@@ -4917,4 +4917,76 @@
     <changeSet id="rename_dns_log_domain_to_etld" author="lennartkoopmann">
         <renameColumn tableName="dns_log" oldColumnName="data_value_domain" newColumnName="data_value_etld" />
     </changeSet>
+
+    <changeSet id="add_socks_tunnels" author="lennartkoopmann">
+        <createTable tableName="socks_tunnels">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tcp_session_key" type="varchar(64)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="socks_type" type="varchar(10)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="authentication_status" type="varchar(24)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="handshake_status" type="varchar(24)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="connection_status" type="varchar(24)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="username" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tunneled_bytes" type="varchar(24)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tunneled_destination_address" type="varchar(45)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tunneled_destination_host" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tunneled_destination_port" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="established_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="terminated_at" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

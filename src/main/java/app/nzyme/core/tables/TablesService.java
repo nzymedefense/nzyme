@@ -18,6 +18,7 @@
 package app.nzyme.core.tables;
 
 import app.nzyme.core.tables.dot11.Dot11Table;
+import app.nzyme.core.tables.socks.SocksTable;
 import app.nzyme.core.tables.tcp.TCPTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -48,6 +49,7 @@ public class TablesService {
                 .put("dns", new DNSTable(this))
                 .put("dot11", new Dot11Table(this))
                 .put("tcp", new TCPTable(this))
+                .put("socks", new SocksTable(this))
                 .build();
 
         this.processorPool = Executors.newFixedThreadPool(
@@ -84,6 +86,10 @@ public class TablesService {
 
     public TCPTable tcp() {
         return (TCPTable) tables.get("tcp");
+    }
+
+    public SocksTable socks() {
+        return (SocksTable) tables.get("socks");
     }
 
     public ExecutorService getProcessorPool() {

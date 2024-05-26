@@ -11,6 +11,7 @@ import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
+import app.nzyme.core.util.Tools;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
@@ -74,10 +75,12 @@ public class TCPTable implements DataTable {
 
     private void writeSession(UUID tapUuid, DateTime timestamp, TcpSessionReport session) {
         try {
-            String sessionKey = Hashing.sha256().hashString(
-                    session.sourceAddress() + session.destinationAddress() + session.sourcePort() + session.destinationPort(),
-                    Charsets.UTF_8
-            ).toString();
+            String sessionKey = Tools.buildTcpSessionKey(
+                    session.sourceAddress(),
+                    session.destinationAddress(),
+                    session.sourcePort(),
+                    session.destinationPort()
+            );
 
             InetAddress sourceAddress;
             InetAddress destinationAddress;
@@ -94,7 +97,7 @@ public class TCPTable implements DataTable {
 
             tablesService.getNzyme().getDatabase().useHandle(handle -> {
                 Optional<TcpSessionEntry> existingSession;
-                try (Timer.Context ignored = totalReportTimer.time()) {
+                try (Timer.Context ignored = sessionDiscoveryTimer.time()) {
                     existingSession = handle.createQuery("SELECT * FROM l4_sessions " +
                                     "WHERE session_key = :session_key AND end_time IS NULL AND tap_uuid = :tap_uuid")
                             .bind("session_key", sessionKey)
@@ -196,7 +199,7 @@ public class TCPTable implements DataTable {
                 l4RetentionDays, l4CutOff);
 
         nzyme.getDatabase().useHandle(handle -> {
-            handle.createUpdate("DELETE FROM l4_sessions WHERE created_at < :cutoff")
+            handle.createUpdate("DELETE FROM l4_sessions WHERE most_recent_segment_time < :cutoff")
                     .bind("cutoff", l4CutOff)
                     .execute();
         });
