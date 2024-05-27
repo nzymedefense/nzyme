@@ -761,7 +761,7 @@ a.asn-number, span.asn-number {
     font-size: 12px;
 }
 
-a.ip-address, span.ip-address {
+a.ip-address, span.ip-address, a.hostname, span.hostname {
     font-family: 'B612 Mono', monospace;
     font-size: 12px;
 }

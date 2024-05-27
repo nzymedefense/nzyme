@@ -1,5 +1,6 @@
 package app.nzyme.core.ethernet.tcp.db;
 
+import app.nzyme.core.ethernet.L4MapperTools;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.tcp.TcpSessionState;
 import org.jdbi.v3.core.mapper.RowMapper;
@@ -16,14 +17,11 @@ public class TcpSessionEntryMapper implements RowMapper<TcpSessionEntry> {
     public TcpSessionEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return TcpSessionEntry.create(
                 rs.getLong("id"),
+                rs.getString("session_key"),
                 UUID.fromString(rs.getString("tap_uuid")),
                 L4Type.TCP,
-                rs.getString("source_mac"),
-                rs.getString("source_address"),
-                rs.getInt("source_port"),
-                rs.getString("destination_mac"),
-                rs.getString("destination_address"),
-                rs.getInt("destination_port"),
+                L4MapperTools.fieldsToAddressData("source", rs),
+                L4MapperTools.fieldsToAddressData("destination", rs),
                 rs.getLong("bytes_count"),
                 rs.getLong("segments_count"),
                 new DateTime(rs.getTimestamp("start_time")),

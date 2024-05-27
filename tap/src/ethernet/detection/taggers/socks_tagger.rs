@@ -8,17 +8,20 @@ use crate::ethernet::packets::SocksType::{Socks4, Socks4A};
 use crate::helpers::network::{string_up_to_null_byte, to_ipv4_address, to_ipv6_address};
 
 pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> {
+    if cts.len() < 2 {
+        return None;
+    }
+
     // SOCKS 4(a)?
     if *cts.first().unwrap() == 0x04
         && (*cts.get(1).unwrap() == 0x01 || *cts.get(1).unwrap() == 0x02) {
-
+        
         if cts.len() < 9 || stc.len() < 2 {
             return None;
         }
 
         // Potentially SOCKS 4(a), check if the response was SOCKS as well.
-        if *stc.first().unwrap() != 0x04
-            || *stc.get(1).unwrap() < 0x5A
+        if *stc.get(1).unwrap() < 0x5A
             || *stc.get(1).unwrap() > 0x5D {
             return None
         }
@@ -90,7 +93,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
 
     // SOCKS 5?
     if *cts.first().unwrap() == 0x05 && *cts.get(1).unwrap() <= 9 {
-        if cts.len() < 2 || stc.len() < 2 {
+        if stc.len() < 2 {
             return None;
         }
 

@@ -125,6 +125,7 @@ import CreateFloorPage from "./components/system/authentication/management/tenan
 import EditFloorPage from "./components/system/authentication/management/tenants/locations/floors/EditFloorPage";
 import LookAndFeelPage from "./components/system/lookandfeel/LookAndFeelPage";
 import IPDetailsPage from "./components/ethernet/l4/ip/IPDetailsPage";
+import TunnelsPage from "./components/ethernet/tunnels/TunnelsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -372,6 +373,9 @@ function App() {
 
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
+
+                          { /* Ethernet/Tunnels. */}
+                          <Route path={ApiRoutes.ETHERNET.TUNNELS.INDEX} element={<TunnelsPage />}/>
 
                           { /* Ethernet/Beacons. */}
                           <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>

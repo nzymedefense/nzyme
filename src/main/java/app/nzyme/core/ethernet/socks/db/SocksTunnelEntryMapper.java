@@ -27,7 +27,7 @@ public class SocksTunnelEntryMapper implements RowMapper<SocksTunnelEntry> {
                 rs.getString("tunneled_destination_host"),
                 rs.getInt("tunneled_destination_port"),
                 new DateTime(rs.getTimestamp("established_at")),
-                new DateTime(rs.getTimestamp("terminated_at")),
+                rs.getTimestamp("terminated_at") == null ? null : new DateTime(rs.getTimestamp("terminated_at")),
                 new DateTime(rs.getTimestamp("most_recent_segment_time")),
                 new DateTime(rs.getTimestamp("updated_at")),
                 new DateTime(rs.getTimestamp("created_at"))

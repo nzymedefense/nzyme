@@ -1,5 +1,6 @@
 package app.nzyme.core.ethernet.tcp.db;
 
+import app.nzyme.core.ethernet.L4AddressData;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.tcp.TcpSessionState;
 import com.google.auto.value.AutoValue;
@@ -12,14 +13,11 @@ import java.util.UUID;
 public abstract class TcpSessionEntry {
 
     public abstract long id();
+    public abstract String sessionKey();
     public abstract UUID tapUuid();
     public abstract L4Type l4Type();
-    public abstract String sourceMac();
-    public abstract String sourceAddress();
-    public abstract int sourcePort();
-    public abstract String destinationMac();
-    public abstract String destinationAddress();
-    public abstract int destinationPort();
+    public abstract L4AddressData source();
+    public abstract L4AddressData destination();
     public abstract long bytesCount();
     public abstract long segmentsCount();
     public abstract DateTime startTime();
@@ -29,17 +27,14 @@ public abstract class TcpSessionEntry {
     public abstract TcpSessionState state();
     public abstract DateTime createdAt();
 
-    public static TcpSessionEntry create(long id, UUID tapUuid, L4Type l4Type, String sourceMac, String sourceAddress, int sourcePort, String destinationMac, String destinationAddress, int destinationPort, long bytesCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, TcpSessionState state, DateTime createdAt) {
+    public static TcpSessionEntry create(long id, String sessionKey, UUID tapUuid, L4Type l4Type, L4AddressData source, L4AddressData destination, long bytesCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, TcpSessionState state, DateTime createdAt) {
         return builder()
                 .id(id)
+                .sessionKey(sessionKey)
                 .tapUuid(tapUuid)
                 .l4Type(l4Type)
-                .sourceMac(sourceMac)
-                .sourceAddress(sourceAddress)
-                .sourcePort(sourcePort)
-                .destinationMac(destinationMac)
-                .destinationAddress(destinationAddress)
-                .destinationPort(destinationPort)
+                .source(source)
+                .destination(destination)
                 .bytesCount(bytesCount)
                 .segmentsCount(segmentsCount)
                 .startTime(startTime)
@@ -53,26 +48,20 @@ public abstract class TcpSessionEntry {
     public static Builder builder() {
         return new AutoValue_TcpSessionEntry.Builder();
     }
-    
+
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder id(long id);
+
+        public abstract Builder sessionKey(String sessionKey);
 
         public abstract Builder tapUuid(UUID tapUuid);
 
         public abstract Builder l4Type(L4Type l4Type);
 
-        public abstract Builder sourceMac(String sourceMac);
+        public abstract Builder source(L4AddressData source);
 
-        public abstract Builder sourceAddress(String sourceAddress);
-
-        public abstract Builder sourcePort(int sourcePort);
-
-        public abstract Builder destinationMac(String destinationMac);
-
-        public abstract Builder destinationAddress(String destinationAddress);
-
-        public abstract Builder destinationPort(int destinationPort);
+        public abstract Builder destination(L4AddressData destination);
 
         public abstract Builder bytesCount(long bytesCount);
 

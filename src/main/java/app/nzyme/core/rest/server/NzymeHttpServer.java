@@ -21,6 +21,7 @@ import app.nzyme.core.rest.resources.dot11.BanditsResource;
 import app.nzyme.core.rest.resources.dot11.Dot11ClientsResource;
 import app.nzyme.core.rest.resources.dot11.Dot11MonitoredNetworksResource;
 import app.nzyme.core.rest.resources.dot11.Dot11NetworksResource;
+import app.nzyme.core.rest.resources.ethernet.SocksResource;
 import app.nzyme.core.rest.resources.system.authentication.AuthenticationResource;
 import app.nzyme.core.rest.resources.system.authentication.mgmt.InitialUserResource;
 import app.nzyme.core.rest.resources.system.authentication.mgmt.OrganizationsResource;
@@ -154,6 +155,7 @@ public class NzymeHttpServer {
         resourceConfig.register(Dot11DiscoResource.class);
         resourceConfig.register(AssetContextResource.class);
         resourceConfig.register(Dot11LocationsResource.class);
+        resourceConfig.register(SocksResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

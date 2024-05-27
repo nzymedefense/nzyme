@@ -28,7 +28,7 @@ export default function DNSEntropyLogTable(props) {
   }
 
   if (data.logs.length === 0) {
-    return <div className="mb-0 alert alert-info">No outliers in selected time range.</div>
+    return <div className="mb-0 alert alert-info">No outliers during selected time range.</div>
   }
 
   return (

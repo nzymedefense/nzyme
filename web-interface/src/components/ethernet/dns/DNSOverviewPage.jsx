@@ -54,7 +54,7 @@ function DNSOverviewPage () {
   }, [selectedTaps, nxdomainStatsTimeRange]);
 
   return (
-      <div>
+      <React.Fragment>
         <div className="row">
           <div className="col-md-12">
             <h1>
@@ -138,7 +138,7 @@ function DNSOverviewPage () {
           </div>
         </div>
 
-      </div>
+      </React.Fragment>
   )
 }
 

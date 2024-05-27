@@ -40,6 +40,10 @@ function Sidebar(props) {
                 title="DNS"
                 icon={<i className="sidebar-icon fa-solid fa-signs-post"/>}/>
             <NavigationLink
+                href={ApiRoutes.ETHERNET.TUNNELS.INDEX}
+                title="Tunnels"
+                icon={<i className="sidebar-icon fa-solid fa-car-tunnel"/>}/>
+            <NavigationLink
                 href={ApiRoutes.ETHERNET.BEACONS.INDEX}
                 title="Beacons"
                 icon={<i className="sidebar-icon fa-solid fa-location-arrow"/>}/>
