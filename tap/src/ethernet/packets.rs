@@ -210,6 +210,28 @@ pub struct SocksTunnel {
     pub most_recent_segment_time: DateTime<Utc>
 }
 
+#[derive(Debug)]
+pub struct SshVersion {
+    pub version: String,
+    pub software: String,
+    pub comments: Option<String>
+}
+
+#[derive(Debug)]
+pub struct SshSession {
+    pub version: SshVersion,
+    pub tunneled_bytes: u64,
+    pub source_mac: String,
+    pub destination_mac: String,
+    pub source_address: IpAddr,
+    pub destination_address: IpAddr,
+    pub source_port: u16,
+    pub destination_port: u16,
+    pub established_at: DateTime<Utc>,
+    pub terminated_at: Option<DateTime<Utc>>,
+    pub most_recent_segment_time: DateTime<Utc>
+}
+
 impl SocksTunnel {
 
     pub fn estimate_struct_size(&self) -> u32 {

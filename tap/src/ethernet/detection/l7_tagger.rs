@@ -4,7 +4,7 @@ use log::error;
 use strum_macros::Display;
 use crate::data::tcp_table::TcpSession;
 use crate::ethernet::detection::l7_tagger::L7SessionTag::{Http, Socks, Unencrypted};
-use crate::ethernet::detection::taggers::{http_tagger, socks_tagger};
+use crate::ethernet::detection::taggers::{http_tagger, socks_tagger, ssh_tagger};
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::messagebus::bus::Bus;
@@ -62,6 +62,7 @@ fn tag_all(client_to_server: Vec<u8>,
 
     let mut tags = Vec::new();
 
+    // HTTP.
     let mut http_timer_untagged = Timer::new();
     let mut http_timer_tagged = Timer::new();
     if http_tagger::tag(&client_to_server_string, &server_to_client_string).is_some() {
@@ -82,6 +83,7 @@ fn tag_all(client_to_server: Vec<u8>,
         );
     }
 
+    // SOCKS.
     let mut socks_timer_untagged = Timer::new();
     let mut socks_timer_tagged = Timer::new();
     if let Some(socks) = socks_tagger::tag(&client_to_server, &server_to_client, session) {
@@ -108,6 +110,10 @@ fn tag_all(client_to_server: Vec<u8>,
             "tables.tcp.timer.sessions.tagging.socks.untagged",
             metrics
         );
+    }
+    
+    // SSH.
+    if let Some(socks) = ssh_tagger::tag(&client_to_server, &server_to_client, session) {
     }
 
     tags
