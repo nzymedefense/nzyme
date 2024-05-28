@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.ethernet.dns;
 
+import app.nzyme.core.rest.responses.ethernet.L4AddressResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
@@ -19,23 +20,11 @@ public abstract class DNSEntropyLogDataResponse {
     @JsonProperty("transaction_id")
     public abstract int transactionId();
 
-    @JsonProperty("client_address")
-    public abstract String clientAddress();
+    @JsonProperty("client")
+    public abstract L4AddressResponse clientAddress();
 
-    @JsonProperty("client_port")
-    public abstract int clientPort();
-
-    @JsonProperty("client_mac")
-    public abstract String clientMac();
-
-    @JsonProperty("server_address")
-    public abstract String serverAddress();
-
-    @JsonProperty("server_port")
-    public abstract int serverPort();
-
-    @JsonProperty("server_mac")
-    public abstract String serverMac();
+    @JsonProperty("server")
+    public abstract L4AddressResponse serverAddress();
 
     @JsonProperty("data_value")
     public abstract String dataValue();
@@ -56,17 +45,13 @@ public abstract class DNSEntropyLogDataResponse {
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
-    public static DNSEntropyLogDataResponse create(UUID uuid, UUID tapUUID, int transactionId, String clientAddress, int clientPort, String clientMac, String serverAddress, int serverPort, String serverMac, String dataValue, String dataValueEtld, String dataType, String dnsType, DateTime timestamp, DateTime createdAt) {
+    public static DNSEntropyLogDataResponse create(UUID uuid, UUID tapUUID, int transactionId, L4AddressResponse clientAddress, L4AddressResponse serverAddress, String dataValue, String dataValueEtld, String dataType, String dnsType, DateTime timestamp, DateTime createdAt) {
         return builder()
                 .uuid(uuid)
                 .tapUUID(tapUUID)
                 .transactionId(transactionId)
                 .clientAddress(clientAddress)
-                .clientPort(clientPort)
-                .clientMac(clientMac)
                 .serverAddress(serverAddress)
-                .serverPort(serverPort)
-                .serverMac(serverMac)
                 .dataValue(dataValue)
                 .dataValueEtld(dataValueEtld)
                 .dataType(dataType)
@@ -88,17 +73,9 @@ public abstract class DNSEntropyLogDataResponse {
 
         public abstract Builder transactionId(int transactionId);
 
-        public abstract Builder clientAddress(String clientAddress);
+        public abstract Builder clientAddress(L4AddressResponse clientAddress);
 
-        public abstract Builder clientPort(int clientPort);
-
-        public abstract Builder clientMac(String clientMac);
-
-        public abstract Builder serverAddress(String serverAddress);
-
-        public abstract Builder serverPort(int serverPort);
-
-        public abstract Builder serverMac(String serverMac);
+        public abstract Builder serverAddress(L4AddressResponse serverAddress);
 
         public abstract Builder dataValue(String dataValue);
 

@@ -6,6 +6,7 @@ import numeral from "numeral";
 import DNSData from "../DNSData";
 import ETLD from "../../shared/ETLD";
 import DNSEntropyLogResponseTable from "../DNSEntropyLogResponseTable";
+import L4Address from "../../shared/L4Address";
 
 export default function DNSEntropyLogTableRow(props) {
 
@@ -33,8 +34,8 @@ export default function DNSEntropyLogTableRow(props) {
           <td>{log.query.data_type}</td>
           <td title={log.query.timestamp}>{moment(log.query.timestamp).format()}</td>
           <td title={log.query.data_value_etld}><ETLD etld={log.query.data_value_etld}/></td>
-          <td><IPAddressLink ip={log.query.client_address}/></td>
-          <td><IPAddressLink ip={log.query.server_address} port={log.query.server_port}/></td>
+          <td><L4Address address={log.query.client} hidePort={true} /></td>
+          <td><L4Address address={log.query.server} /></td>
           <td title={log.entropy + " / " + log.entropy_mean}>
             {numeral(log.entropy).format("0,0.00")} / {numeral(log.entropy_mean).format("0,0.00")}
           </td>

@@ -23,4 +23,22 @@ public class L4MapperTools {
         );
     }
 
+    public static L4AddressData fieldsToAddressDataNoGeoNo1918(String prefix, ResultSet rs) throws SQLException  {
+        return L4AddressData.create(
+                rs.getString(prefix + "_mac"),
+                rs.getString(prefix + "_address"),
+                rs.getInt(prefix + "_port"),
+                GeoData.create(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                ),
+                null
+        );
+    }
+
 }

@@ -1,5 +1,6 @@
 package app.nzyme.core.ethernet.dns.db;
 
+import app.nzyme.core.ethernet.L4AddressData;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
@@ -13,12 +14,8 @@ public abstract class DNSLogEntry {
     public abstract UUID uuid();
     public abstract UUID tapUUID();
     public abstract int transactionId();
-    public abstract String clientAddress();
-    public abstract int clientPort();
-    public abstract String clientMac();
-    public abstract String serverAddress();
-    public abstract int serverPort();
-    public abstract String serverMac();
+    public abstract L4AddressData client();
+    public abstract L4AddressData server();
     public abstract String dataValue();
     @Nullable
     public abstract String dataValueEtld();
@@ -27,18 +24,14 @@ public abstract class DNSLogEntry {
     public abstract DateTime timestamp();
     public abstract DateTime createdAt();
 
-    public static DNSLogEntry create(long id, UUID uuid, UUID tapUUID, int transactionId, String clientAddress, int clientPort, String clientMac, String serverAddress, int serverPort, String serverMac, String dataValue, String dataValueEtld, String dataType, String dnsType, DateTime timestamp, DateTime createdAt) {
+    public static DNSLogEntry create(long id, UUID uuid, UUID tapUUID, int transactionId, L4AddressData client, L4AddressData server, String dataValue, String dataValueEtld, String dataType, String dnsType, DateTime timestamp, DateTime createdAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
                 .tapUUID(tapUUID)
                 .transactionId(transactionId)
-                .clientAddress(clientAddress)
-                .clientPort(clientPort)
-                .clientMac(clientMac)
-                .serverAddress(serverAddress)
-                .serverPort(serverPort)
-                .serverMac(serverMac)
+                .client(client)
+                .server(server)
                 .dataValue(dataValue)
                 .dataValueEtld(dataValueEtld)
                 .dataType(dataType)
@@ -62,17 +55,9 @@ public abstract class DNSLogEntry {
 
         public abstract Builder transactionId(int transactionId);
 
-        public abstract Builder clientAddress(String clientAddress);
+        public abstract Builder client(L4AddressData client);
 
-        public abstract Builder clientPort(int clientPort);
-
-        public abstract Builder clientMac(String clientMac);
-
-        public abstract Builder serverAddress(String serverAddress);
-
-        public abstract Builder serverPort(int serverPort);
-
-        public abstract Builder serverMac(String serverMac);
+        public abstract Builder server(L4AddressData server);
 
         public abstract Builder dataValue(String dataValue);
 

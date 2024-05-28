@@ -1,8 +1,10 @@
 package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.dns.DNSTransaction;
 import app.nzyme.core.ethernet.dns.db.*;
+import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSEntropyLogDataResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSEntropyLogListResponse;
@@ -193,12 +195,8 @@ public class DNSResource extends TapDataHandlingResource {
                 log.uuid(),
                 log.tapUUID(),
                 log.transactionId(),
-                log.clientAddress(),
-                log.clientPort(),
-                log.clientMac(),
-                log.serverAddress(),
-                log.serverPort(),
-                log.serverMac(),
+                RestHelpers.L4AddressDataToResponse(L4Type.UDP, log.client()),
+                RestHelpers.L4AddressDataToResponse(L4Type.UDP, log.server()),
                 log.dataValue(),
                 log.dataValueEtld(),
                 log.dataType(),

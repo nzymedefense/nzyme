@@ -1,6 +1,7 @@
 package app.nzyme.core.ethernet;
 
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 
 @AutoValue
 public abstract class L4AddressData {
@@ -9,9 +10,11 @@ public abstract class L4AddressData {
     public abstract String address();
     public abstract int port();
     public abstract GeoData geo();
-    public abstract boolean isPrivate();
 
-    public static L4AddressData create(String mac, String address, int port, GeoData geo, boolean isPrivate) {
+    @Nullable
+    public abstract Boolean isPrivate();
+
+    public static L4AddressData create(String mac, String address, int port, GeoData geo, Boolean isPrivate) {
         return builder()
                 .mac(mac)
                 .address(address)
@@ -35,7 +38,7 @@ public abstract class L4AddressData {
 
         public abstract Builder geo(GeoData geo);
 
-        public abstract Builder isPrivate(boolean isPrivate);
+        public abstract Builder isPrivate(Boolean isPrivate);
 
         public abstract L4AddressData build();
     }
