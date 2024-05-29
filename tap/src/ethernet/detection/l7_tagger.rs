@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard};
-use log::error;
+use log::{error, info};
 use strum_macros::Display;
 use crate::data::tcp_table::TcpSession;
-use crate::ethernet::detection::l7_tagger::L7SessionTag::{Http, Socks, Unencrypted};
+use crate::ethernet::detection::l7_tagger::L7SessionTag::{Http, Socks, Ssh, Unencrypted};
 use crate::ethernet::detection::taggers::{http_tagger, socks_tagger, ssh_tagger};
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::helpers::timer::{record_timer, Timer};
@@ -23,6 +23,7 @@ pub enum L7SessionTag {
     Telnet,
     Tls,
     Dns,
+    Ssh,
     Socks
 }
 
@@ -113,7 +114,26 @@ fn tag_all(client_to_server: Vec<u8>,
     }
     
     // SSH.
-    if let Some(socks) = ssh_tagger::tag(&client_to_server, &server_to_client, session) {
+    let mut ssh_timer_untagged = Timer::new();
+    let mut ssh_timer_tagged = Timer::new();
+    if let Some(ssh) = ssh_tagger::tag(&client_to_server, &server_to_client, session) {
+        ssh_timer_tagged.stop();
+        record_timer(
+            ssh_timer_tagged.elapsed_microseconds(),
+            "tables.tcp.timer.sessions.tagging.ssh.tagged",
+            metrics
+        );
+
+        info!("SSH: {:?}", ssh);
+        
+        tags.extend([Ssh]);
+    } else {
+        ssh_timer_untagged.stop();
+        record_timer(
+            ssh_timer_untagged.elapsed_microseconds(),
+            "tables.tcp.timer.sessions.tagging.ssh.untagged",
+            metrics
+        );
     }
 
     tags

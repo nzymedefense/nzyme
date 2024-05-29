@@ -1,11 +1,12 @@
 use anyhow::{bail, Error};
 use byteorder::{BigEndian, ByteOrder};
 use chrono::{DateTime, Utc};
-use log::debug;
+use log::{debug};
 use crate::data::tcp_table::{TcpSession, TcpSessionState};
 use crate::ethernet::packets::{SocksAuthenticationMethod, SocksAuthenticationResult, SocksConnectionHandshakeStatus, SocksConnectionStatus, SocksTunnel, SocksType};
 use crate::ethernet::packets::SocksType::{Socks4, Socks4A};
 use crate::helpers::network::{string_up_to_null_byte, to_ipv4_address, to_ipv6_address};
+use crate::tracemark;
 
 pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> {
     if cts.len() < 2 {
@@ -17,12 +18,14 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
         && (*cts.get(1).unwrap() == 0x01 || *cts.get(1).unwrap() == 0x02) {
         
         if cts.len() < 9 || stc.len() < 2 {
+            tracemark!("SOCKS");
             return None;
         }
 
         // Potentially SOCKS 4(a), check if the response was SOCKS as well.
         if *stc.get(1).unwrap() < 0x5A
             || *stc.get(1).unwrap() > 0x5D {
+            tracemark!("SOCKS");
             return None
         }
 
@@ -56,6 +59,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
         };
 
         if handshake_status == SocksConnectionHandshakeStatus::Invalid {
+            tracemark!("SOCKS");
             return None;
         }
 
@@ -94,12 +98,14 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
     // SOCKS 5?
     if *cts.first().unwrap() == 0x05 && *cts.get(1).unwrap() <= 9 {
         if stc.len() < 2 {
+            tracemark!("SOCKS");
             return None;
         }
 
         // Potentially SOCKS5, check if the response was SOCKS as well.
         if *stc.first().unwrap() != 0x05
             || (*stc.get(1).unwrap() != 0xFF && *stc.get(1).unwrap() > 9) {
+            tracemark!("SOCKS");
             return None;
         }
 
@@ -110,6 +116,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
         let mut cts_cursor: usize = 2;
         let mut stc_cursor: usize = 0;
         if cts.len() < client_auth_methods_count+cts_cursor {
+            tracemark!("SOCKS");
             return None;
         }
 
@@ -161,6 +168,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
         stc_cursor += auth_stc_offset;
 
         if cts[cts_cursor] != 0x05 || cts.len() < cts_cursor+4 || stc.len() < stc_cursor+4 {
+            tracemark!("SOCKS");
             return None;
         }
 
@@ -169,6 +177,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
 
         // Reserved field. Must be 0x00.
         if cts[cts_cursor] != 0x00 {
+            tracemark!("SOCKS");
             return None;
         }
 
@@ -183,6 +192,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
                 0x01 => {
                     // IPv4
                     if cts.len() < cts_cursor+4 {
+                        tracemark!("SOCKS");
                         return None;
                     }
 
@@ -191,12 +201,14 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
                 0x03 => {
                     // Domain name
                     if cts.len() < cts_cursor+2 {
+                        tracemark!("SOCKS");
                         return None;
                     }
 
                     let len = cts[cts_cursor];
 
                     if len == 0 {
+                        tracemark!("SOCKS");
                         return None;
                     }
 
@@ -208,16 +220,21 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
                 0x04 => {
                     // IPv6
                     if cts.len() < cts_cursor+16 {
+                        tracemark!("SOCKS");
                         return None;
                     }
 
                     (Some(to_ipv6_address(&cts[cts_cursor..cts_cursor+16])), None, 16usize)
                 },
-                _ => return None
+                _ => {
+                    tracemark!("SOCKS");
+                    return None;
+                }
             };
         cts_cursor += address_cts_offset;
 
         if cts.len() < cts_cursor+2 {
+            tracemark!("SOCKS");
             return None;
         }
 
@@ -226,6 +243,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
 
         // Server response to connection request.
         if stc[stc_cursor] != 0x05 || stc.len() < stc_cursor+1 {
+            tracemark!("SOCKS");
             return None;
         }
         stc_cursor += 1;
@@ -269,6 +287,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
     }
 
     // Not SOCKS.
+    tracemark!("SOCKS");
     None
 }
 

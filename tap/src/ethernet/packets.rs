@@ -219,7 +219,8 @@ pub struct SshVersion {
 
 #[derive(Debug)]
 pub struct SshSession {
-    pub version: SshVersion,
+    pub client_version: SshVersion,
+    pub server_version: SshVersion,
     pub tunneled_bytes: u64,
     pub source_mac: String,
     pub destination_mac: String,
