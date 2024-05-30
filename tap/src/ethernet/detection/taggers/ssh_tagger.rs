@@ -1,8 +1,9 @@
 use anyhow::{bail, Error};
 use byteorder::{BigEndian, ByteOrder};
-use log::{info, trace};
+use log::{trace};
 use crate::data::tcp_table::TcpSession;
 use crate::ethernet::packets::{SocksTunnel, SshSession, SshVersion};
+use crate::ethernet::tcp_tools::determine_tcp_session_state;
 use crate::tracemark;
 
 const SSH_GREETING: &[u8] = b"SSH-2.0-";
@@ -61,9 +62,12 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SshSession> {
             return None;
         }
 
+        let (connection_status, terminated_at) = determine_tcp_session_state(session);
+
         return Some(SshSession {
             client_version,
             server_version,
+            connection_status,
             tunneled_bytes: session.bytes_count,
             source_mac: session.source_mac.clone(),
             destination_mac: session.destination_mac.clone(),
@@ -72,7 +76,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SshSession> {
             source_port: session.source_port,
             destination_port: session.destination_port,
             established_at: session.start_time,
-            terminated_at: session.end_time,
+            terminated_at,
             most_recent_segment_time: session.most_recent_segment_time
         });
     }
@@ -147,6 +151,7 @@ fn parse_version_string(data: &[u8]) -> Result<(usize, SshVersion), Error> {
     }))
 }
 
+// Only identifies if the slice contains a KEXI and does not attempt to parse it.
 fn identify_kex_init(data: &[u8], kexi_len: usize) -> Result<(), Error> {
     if data.len() < kexi_len || data.len() < 2{
         bail!("Payload too short.");
@@ -159,7 +164,16 @@ fn identify_kex_init(data: &[u8], kexi_len: usize) -> Result<(), Error> {
         bail!("Invalid key exchange init message code. Expected <20>, got <{}>.", message_code);
     }
 
-    // skip over entire data (as kexi_len) and confirm padding == padding and seq == 0
+    let trailing_count: usize = (padding as usize)+1;
 
-    bail!("Not implemented.")
+    if data.len() < trailing_count {
+        bail!("Payload too short for padding and sequence number.");
+    }
+
+    // Skip over entire KEXI length and confirm trailing bytes are padding + sequence number 0.
+    if !data[data.len() - trailing_count..].iter().all(|&x| x == 0x00) {
+        bail!("Invalid trailing bytes.")
+    }
+
+    Ok(())
 }

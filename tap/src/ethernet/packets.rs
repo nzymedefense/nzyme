@@ -168,7 +168,7 @@ pub enum SocksConnectionHandshakeStatus {
 }
 
 #[derive(Debug, Display, Clone)]
-pub enum SocksConnectionStatus {
+pub enum GenericConnectionStatus {
     Active, Inactive, InactiveTimeout
 }
 
@@ -192,7 +192,7 @@ pub struct SocksTunnel {
     pub socks_type: SocksType,
     pub authentication_status: SocksAuthenticationResult,
     pub handshake_status: SocksConnectionHandshakeStatus,
-    pub connection_status: SocksConnectionStatus,
+    pub connection_status: GenericConnectionStatus,
     pub username: Option<String>,
     pub tunneled_bytes: u64,
     pub tunneled_destination_address: Option<IpAddr>,
@@ -221,6 +221,7 @@ pub struct SshVersion {
 pub struct SshSession {
     pub client_version: SshVersion,
     pub server_version: SshVersion,
+    pub connection_status: GenericConnectionStatus,
     pub tunneled_bytes: u64,
     pub source_mac: String,
     pub destination_mac: String,

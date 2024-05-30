@@ -3,8 +3,9 @@ use byteorder::{BigEndian, ByteOrder};
 use chrono::{DateTime, Utc};
 use log::{debug};
 use crate::data::tcp_table::{TcpSession, TcpSessionState};
-use crate::ethernet::packets::{SocksAuthenticationMethod, SocksAuthenticationResult, SocksConnectionHandshakeStatus, SocksConnectionStatus, SocksTunnel, SocksType};
+use crate::ethernet::packets::{GenericConnectionStatus, SocksAuthenticationMethod, SocksAuthenticationResult, SocksConnectionHandshakeStatus, SocksTunnel, SocksType};
 use crate::ethernet::packets::SocksType::{Socks4, Socks4A};
+use crate::ethernet::tcp_tools::determine_tcp_session_state;
 use crate::helpers::network::{string_up_to_null_byte, to_ipv4_address, to_ipv6_address};
 use crate::tracemark;
 
@@ -43,6 +44,10 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
             Some(username) => username.len() + 1,
             None => 1
         };
+
+        if cursor > cts.len() {
+            return None;
+        }
 
         let tunneled_destination_host = if tunneled_destination_address.is_none() {
            string_up_to_null_byte(&cts[cursor..])
@@ -384,22 +389,6 @@ fn process_socks5_username_password_auth(cts: &[u8], stc: &[u8])
     Ok((auth_result, Some(username), cts_cursor, stc_cursor))
 }
 
-fn determine_tcp_session_state(session: &TcpSession)
-    -> (SocksConnectionStatus, Option<DateTime<Utc>>) {
-    match session.state {
-        TcpSessionState::SynSent
-        | TcpSessionState::SynReceived
-        | TcpSessionState::Established
-        | TcpSessionState::FinWait1
-        | TcpSessionState::FinWait2 => (SocksConnectionStatus::Active, None),
-        TcpSessionState::ClosedFin
-        | TcpSessionState::ClosedRst
-        | TcpSessionState::Refused => (SocksConnectionStatus::Inactive, session.end_time),
-        TcpSessionState::ClosedTimeout =>
-            (SocksConnectionStatus::InactiveTimeout, session.end_time)
-    }
-}
-
 fn is_socks_4a_address(address: &[u8]) -> bool {
     address.len() == 4
         && address[0] == 0x00
@@ -417,7 +406,7 @@ fn build_auth_failed_result(session: &TcpSession,
         socks_type: SocksType::Socks5,
         authentication_status: auth_result,
         handshake_status: SocksConnectionHandshakeStatus::NotReached,
-        connection_status: SocksConnectionStatus::Inactive,
+        connection_status: GenericConnectionStatus::Inactive,
         username,
         tunneled_bytes: 0,
         tunneled_destination_address: None,
