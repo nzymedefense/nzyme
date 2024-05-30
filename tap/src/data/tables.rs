@@ -7,6 +7,7 @@ use log::{error};
 use std::time::Duration;
 use crate::configuration::Configuration;
 use crate::data::socks_table::SocksTable;
+use crate::data::ssh_table::SshTable;
 use crate::data::tcp_table::TcpTable;
 use crate::data::udp_table::UdpTable;
 use crate::link::leaderlink::Leaderlink;
@@ -22,6 +23,7 @@ pub struct Tables {
     pub tcp: Arc<Mutex<TcpTable>>,
     pub udp: Arc<Mutex<UdpTable>>,
     pub dns: Arc<Mutex<DnsTable>>,
+    pub ssh: Arc<Mutex<SshTable>>,
     pub socks: Arc<Mutex<SocksTable>>
 }
 
@@ -43,6 +45,7 @@ impl Tables {
                 configuration.protocols.tcp.session_timeout_seconds
             ))),
             udp: Arc::new(Mutex::new(UdpTable::new(leaderlink.clone(), metrics.clone()))),
+            ssh: Arc::new(Mutex::new(SshTable::new(leaderlink.clone(), metrics.clone()))),
             socks: Arc::new(Mutex::new(SocksTable::new(leaderlink, metrics)))
         }
     }
@@ -78,6 +81,14 @@ impl Tables {
                     dns.process_report();
                 },
                 Err(e) => error!("Could not acquire DNS table lock for report processing: {}", e)
+            }
+
+            match self.ssh.lock() {
+                Ok(ssh) => {
+                    ssh.calculate_metrics();
+                    ssh.process_report();
+                },
+                Err(e) => error!("Could not acquire SSH table lock for report processing: {}", e)
             }
 
             match self.socks.lock() {

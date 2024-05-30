@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::panic;
 use std::sync::{Arc, Mutex, MutexGuard};
 use log::{error, info};
 use strum_macros::Display;
@@ -42,14 +43,35 @@ pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSess
             server_to_client_data.extend(segment_data);
         }
 
-        // We overwrite the tags because they may have changed with more segments coming in.
-        session.tags = tag_all(
+        /*
+         * The taggers should always be written extremely defensively and never throw any panics.
+         * However, to increase reliability, we catch and log any panics that may still occur
+         * because nobody is perfect.
+         */
+        let result = panic::catch_unwind(|| tag_all(
             client_to_server_data,
             server_to_client_data,
             session,
             &bus,
             &metrics
-        );
+        ));
+
+        match result {
+            Ok(tags) => {
+                // We overwrite the tags because they may have changed with more segments coming in.
+                session.tags = tags
+            },
+            Err(e) => {
+                if let Some(s) = e.downcast_ref::<&str>() {
+                    error!("Could not tag TCP session {:?}: {}", session.session_key, s);
+                } else if let Some(s) = e.downcast_ref::<String>() {
+                    error!("Could not tag TCP session {:?}: {}", session.session_key, s);
+                } else {
+                    error!("Could not tag TCP session {:?}. Panicked with an unknown type.",
+                        session.session_key);
+                }
+            }
+        }
     }
 }
 
@@ -124,7 +146,13 @@ fn tag_all(client_to_server: Vec<u8>,
             metrics
         );
 
-        info!("SSH: {:?}", ssh);
+        let len = ssh.estimate_struct_size();
+        to_pipeline!(
+            EthernetChannelName::SshPipeline,
+            bus.ssh_pipeline.sender,
+            Arc::new(ssh),
+            len
+        );
         
         tags.extend([Ssh]);
     } else {

@@ -20,9 +20,10 @@ package app.nzyme.core.rest.resources.taps;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
-import app.nzyme.core.rest.resources.taps.reports.tables.DNSTablesReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsTablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11TablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.ssh.SshSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpDatagramsReport;
 import jakarta.inject.Inject;
@@ -90,7 +91,7 @@ public class TablesResource {
 
     @POST
     @Path("/dns/summary")
-    public Response dnsSummary(@Context SecurityContext sc, DNSTablesReport report) {
+    public Response dnsSummary(@Context SecurityContext sc, DnsTablesReport report) {
         UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
 
         LOG.debug("Received DNS summary report from [{}]: {}", tapId, report);
@@ -99,6 +100,16 @@ public class TablesResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @POST
+    @Path("/ssh/sessions")
+    public Response sshSessions(@Context SecurityContext sc, SshSessionsReport report) {
+        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+
+        LOG.debug("Received SSH sessions report from [{}]: {}", tapId, report);
+        nzyme.getTablesService().ssh().handleReport(tapId, DateTime.now(), report);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
 
     @POST
     @Path("/socks/tunnels")

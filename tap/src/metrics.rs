@@ -55,7 +55,8 @@ pub struct Channels {
     tcp_pipeline: ChannelUtilization,
     udp_pipeline: ChannelUtilization,
     dns_pipeline: ChannelUtilization,
-    socks_pipeline: ChannelUtilization
+    socks_pipeline: ChannelUtilization,
+    ssh_pipeline: ChannelUtilization
 }
 
 #[derive(Clone, Display)]
@@ -99,6 +100,7 @@ impl Metrics {
                 udp_pipeline: ChannelUtilization::default(),
                 dns_pipeline: ChannelUtilization::default(),
                 socks_pipeline: ChannelUtilization::default(),
+                ssh_pipeline: ChannelUtilization::default()
             },
             captures: HashMap::new(),
             gauges_long: HashMap::new(),
@@ -187,6 +189,7 @@ impl Metrics {
             "UdpPipeline" => &mut self.channels.udp_pipeline,
             "DnsPipeline" => &mut self.channels.dns_pipeline,
             "SocksPipeline" => &mut self.channels.socks_pipeline,
+            "SshPipeline" => &mut self.channels.ssh_pipeline,
             _ => panic!("Unknown channel {}", channel)
         }
     }

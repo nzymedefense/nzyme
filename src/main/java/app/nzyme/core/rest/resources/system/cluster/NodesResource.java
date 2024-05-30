@@ -207,6 +207,8 @@ public class NodesResource {
                 buildTimerResponse(nzyme.getMetrics().timer(MetricNames.TCP_TOTAL_REPORT_PROCESSING_TIMER), timers));
         timers.put("report_processing_dns",
                 buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DNS_TOTAL_REPORT_PROCESSING_TIMER), timers));
+        timers.put("report_processing_ssh",
+                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.SSH_TOTAL_REPORT_PROCESSING_TIMER), timers));
         timers.put("report_processing_socks",
                 buildTimerResponse(nzyme.getMetrics().timer(MetricNames.SOCKS_TOTAL_REPORT_PROCESSING_TIMER), timers));
 

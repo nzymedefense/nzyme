@@ -210,30 +210,6 @@ pub struct SocksTunnel {
     pub most_recent_segment_time: DateTime<Utc>
 }
 
-#[derive(Debug)]
-pub struct SshVersion {
-    pub version: String,
-    pub software: String,
-    pub comments: Option<String>
-}
-
-#[derive(Debug)]
-pub struct SshSession {
-    pub client_version: SshVersion,
-    pub server_version: SshVersion,
-    pub connection_status: GenericConnectionStatus,
-    pub tunneled_bytes: u64,
-    pub source_mac: String,
-    pub destination_mac: String,
-    pub source_address: IpAddr,
-    pub destination_address: IpAddr,
-    pub source_port: u16,
-    pub destination_port: u16,
-    pub established_at: DateTime<Utc>,
-    pub terminated_at: Option<DateTime<Utc>>,
-    pub most_recent_segment_time: DateTime<Utc>
-}
-
 impl SocksTunnel {
 
     pub fn estimate_struct_size(&self) -> u32 {
@@ -254,7 +230,53 @@ impl SocksTunnel {
         if self.terminated_at.is_some() {
             x += 8; // We'll just assume it's the largest type, IPv6. Accurate enough.
         }
-        
+
+        x
+    }
+
+}
+
+#[derive(Debug, Clone)]
+pub struct SshVersion {
+    pub version: String,
+    pub software: String,
+    pub comments: Option<String>
+}
+
+#[derive(Debug, Clone)]
+pub struct SshSession {
+    pub client_version: SshVersion,
+    pub server_version: SshVersion,
+    pub connection_status: GenericConnectionStatus,
+    pub tunneled_bytes: u64,
+    pub tcp_session_key: TcpSessionKey,
+    pub source_mac: String,
+    pub destination_mac: String,
+    pub source_address: IpAddr,
+    pub destination_address: IpAddr,
+    pub source_port: u16,
+    pub destination_port: u16,
+    pub established_at: DateTime<Utc>,
+    pub terminated_at: Option<DateTime<Utc>>,
+    pub most_recent_segment_time: DateTime<Utc>
+}
+
+impl SshSession {
+
+    pub fn estimate_struct_size(&self) -> u32 {
+        let mut x: u32 = 103; // known size members
+
+        x += (self.client_version.version.len() + self.client_version.software.len()) as u32;
+        x += (self.server_version.version.len() + self.server_version.software.len()) as u32;
+
+        if let Some(c) = &self.client_version.comments {
+            x += c.len() as u32;
+        }
+
+        if let Some(c) = &self.server_version.comments {
+            x += c.len() as u32;
+        }
+
         x
     }
 

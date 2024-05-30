@@ -1,4 +1,4 @@
-package app.nzyme.core.rest.resources.taps.reports.tables;
+package app.nzyme.core.rest.resources.taps.reports.tables.dns;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,7 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 @AutoValue
-public abstract class DNSEntropyLogReport {
+public abstract class DnsEntropyLogReport {
 
     public abstract Integer transactionId();
     public abstract Float entropy();
@@ -15,7 +15,7 @@ public abstract class DNSEntropyLogReport {
     public abstract DateTime timestamp();
 
     @JsonCreator
-    public static DNSEntropyLogReport create(@JsonProperty("transaction_id") Integer transactionId,
+    public static DnsEntropyLogReport create(@JsonProperty("transaction_id") Integer transactionId,
                                              @JsonProperty("entropy") Float entropy,
                                              @JsonProperty("zscore") Float zScore,
                                              @JsonProperty("entropy_mean") Float entropyMean,
@@ -30,7 +30,7 @@ public abstract class DNSEntropyLogReport {
     }
 
     public static Builder builder() {
-        return new AutoValue_DNSEntropyLogReport.Builder();
+        return new AutoValue_DnsEntropyLogReport.Builder();
     }
 
     @AutoValue.Builder
@@ -45,7 +45,7 @@ public abstract class DNSEntropyLogReport {
 
         public abstract Builder timestamp(DateTime timestamp);
 
-        public abstract DNSEntropyLogReport build();
+        public abstract DnsEntropyLogReport build();
     }
 
 }

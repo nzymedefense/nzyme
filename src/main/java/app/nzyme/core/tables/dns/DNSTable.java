@@ -19,10 +19,10 @@ package app.nzyme.core.tables.dns;
 
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
-import app.nzyme.core.rest.resources.taps.reports.tables.DNSEntropyLogReport;
-import app.nzyme.core.rest.resources.taps.reports.tables.DNSIPStatisticsReport;
-import app.nzyme.core.rest.resources.taps.reports.tables.DNSTablesReport;
-import app.nzyme.core.rest.resources.taps.reports.tables.dns.DNSLogReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsEntropyLogReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsIpStatisticsReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsLogReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsTablesReport;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
@@ -67,7 +67,7 @@ public class DNSTable implements DataTable {
                 .timer(MetricNames.DNS_ENTROPY_REPORT_PROCESSING_TIMER);
     }
 
-    public void handleReport(UUID tapUuid, DateTime timestamp, DNSTablesReport report) {
+    public void handleReport(UUID tapUuid, DateTime timestamp, DnsTablesReport report) {
         try (Timer.Context ignored = totalReportTimer.time()) {
             tablesService.getNzyme().getDatabase().useHandle(handle -> {
                 try (Timer.Context ignored2 = statisticsReportTimer.time()) {
@@ -91,15 +91,15 @@ public class DNSTable implements DataTable {
 
     private void registerStatistics(Handle handle,
                                     UUID tapUuid,
-                                    Map<String, DNSIPStatisticsReport> m,
+                                    Map<String, DnsIpStatisticsReport> m,
                                     DateTime timestamp) {
         PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_statistics(tap_uuid, ip, request_count, " +
                 "request_bytes, response_count, response_bytes, nxdomain_count, created_at) VALUES(:tap_uuid, :ip, " +
                 ":request_count, :request_bytes, :response_count, :response_bytes, :nxdomain_count, :created_at)");
 
-        for (Map.Entry<String, DNSIPStatisticsReport> x : m.entrySet()) {
+        for (Map.Entry<String, DnsIpStatisticsReport> x : m.entrySet()) {
             String ip = x.getKey();
-            DNSIPStatisticsReport stats = x.getValue();
+            DnsIpStatisticsReport stats = x.getValue();
 
             batch.bind("tap_uuid", tapUuid)
                     .bind("ip", ip)
@@ -156,15 +156,15 @@ public class DNSTable implements DataTable {
 
     private void registerLogs(Handle handle,
                               UUID tapUuid,
-                              List<DNSLogReport> queries,
-                              List<DNSLogReport> responses) {
+                              List<DnsLogReport> queries,
+                              List<DnsLogReport> responses) {
         PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_log(uuid, tap_uuid, transaction_id, " +
                 "dns_type, client_address, client_port, client_mac, server_address, server_port, server_mac, " +
                 "data_value, data_value_etld, data_type,  timestamp, created_at) VALUES(:uuid, :tap_uuid, " +
                 ":transaction_id, :dns_type, :client_address, :client_port, :client_mac, :server_address, " +
                 ":server_port, :server_mac, :data_value, :data_value_etld, :data_type, :timestamp, NOW())");
 
-        for (DNSLogReport d : queries) {
+        for (DnsLogReport d : queries) {
             batch
                     .bind("uuid", UUID.randomUUID())
                     .bind("tap_uuid", tapUuid)
@@ -183,7 +183,7 @@ public class DNSTable implements DataTable {
                     .add();
         }
 
-        for (DNSLogReport d : responses) {
+        for (DnsLogReport d : responses) {
             batch
                     .bind("uuid", UUID.randomUUID())
                     .bind("tap_uuid", tapUuid)
@@ -207,12 +207,12 @@ public class DNSTable implements DataTable {
 
     public void registerEntropyLogs(Handle handle,
                                     UUID tapUuid,
-                                    List<DNSEntropyLogReport> logs) {
+                                    List<DnsEntropyLogReport> logs) {
         PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_entropy_log(tap_uuid, transaction_id, " +
                 "entropy, entropy_mean, zscore, timestamp, created_at) VALUES(:tap_uuid, :transaction_id, " +
                 ":entropy, :entropy_mean, :zscore, :timestamp, NOW())");
 
-        for (DNSEntropyLogReport log : logs) {
+        for (DnsEntropyLogReport log : logs) {
             batch
                     .bind("tap_uuid", tapUuid)
                     .bind("transaction_id", log.transactionId())

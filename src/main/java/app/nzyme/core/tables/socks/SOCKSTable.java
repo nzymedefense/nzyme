@@ -19,15 +19,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class SocksTable implements DataTable {
+public class SOCKSTable implements DataTable {
 
-    private static final Logger LOG = LogManager.getLogger(SocksTable.class);
+    private static final Logger LOG = LogManager.getLogger(SOCKSTable.class);
 
     private final TablesService tablesService;
 
     private final Timer totalReportTimer;
 
-    public SocksTable(TablesService tablesService) {
+    public SOCKSTable(TablesService tablesService) {
         this.tablesService = tablesService;
 
         this.totalReportTimer = tablesService.getNzyme().getMetrics()
@@ -37,12 +37,12 @@ public class SocksTable implements DataTable {
     public void handleReport(UUID tapUuid, DateTime timestamp, SocksTunnelsReport report) {
         tablesService.getNzyme().getDatabase().useHandle(handle -> {
             try(Timer.Context ignored = totalReportTimer.time()) {
-                writeTunnels(handle, tapUuid, timestamp, report.tunnels());
+                writeTunnels(handle, tapUuid, report.tunnels());
             }
         });
     }
 
-    private void writeTunnels(Handle handle, UUID tapUuid, DateTime timestamp, List<SocksTunnelReport> tunnels) {
+    private void writeTunnels(Handle handle, UUID tapUuid, List<SocksTunnelReport> tunnels) {
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO socks_tunnels(uuid, tap_uuid, " +
                 "tcp_session_key, socks_type, authentication_status, handshake_status, connection_status, " +
                 "username, tunneled_bytes, tunneled_destination_address, tunneled_destination_host, " +

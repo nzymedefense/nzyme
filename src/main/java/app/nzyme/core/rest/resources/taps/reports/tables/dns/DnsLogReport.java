@@ -24,7 +24,7 @@ import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
 @AutoValue
-public abstract class DNSLogReport {
+public abstract class DnsLogReport {
 
     @Nullable
     public abstract Integer transactionId();
@@ -41,7 +41,7 @@ public abstract class DNSLogReport {
     public abstract DateTime timestamp();
 
     @JsonCreator
-    public static DNSLogReport create(@JsonProperty("transaction_id") Integer transactionId,
+    public static DnsLogReport create(@JsonProperty("transaction_id") Integer transactionId,
                                       @JsonProperty("client_address") String clientAddress,
                                       @JsonProperty("server_address") String serverAddress,
                                       @JsonProperty("client_mac") String clientMac,
@@ -67,34 +67,34 @@ public abstract class DNSLogReport {
                 .build();
     }
 
-    public static DNSLogReport.Builder builder() {
-        return new AutoValue_DNSLogReport.Builder();
+    public static DnsLogReport.Builder builder() {
+        return new AutoValue_DnsLogReport.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract DNSLogReport.Builder transactionId(Integer transactionId);
+        public abstract Builder transactionId(Integer transactionId);
 
-        public abstract DNSLogReport.Builder clientAddress(String clientAddress);
+        public abstract Builder clientAddress(String clientAddress);
 
-        public abstract DNSLogReport.Builder serverAddress(String serverAddress);
+        public abstract Builder serverAddress(String serverAddress);
 
-        public abstract DNSLogReport.Builder clientMac(String clientMac);
+        public abstract Builder clientMac(String clientMac);
 
-        public abstract DNSLogReport.Builder serverMac(String serverMac);
+        public abstract Builder serverMac(String serverMac);
 
-        public abstract DNSLogReport.Builder clientPort(int clientPort);
+        public abstract Builder clientPort(int clientPort);
 
-        public abstract DNSLogReport.Builder serverPort(int serverPort);
+        public abstract Builder serverPort(int serverPort);
 
-        public abstract DNSLogReport.Builder dataValue(String dataValue);
+        public abstract Builder dataValue(String dataValue);
 
-        public abstract DNSLogReport.Builder dataValueEtld(String dataValueEtld);
+        public abstract Builder dataValueEtld(String dataValueEtld);
 
-        public abstract DNSLogReport.Builder dataType(String dataType);
+        public abstract Builder dataType(String dataType);
 
-        public abstract DNSLogReport.Builder timestamp(DateTime timestamp);
+        public abstract Builder timestamp(DateTime timestamp);
 
-        public abstract DNSLogReport build();
+        public abstract DnsLogReport build();
     }
 }

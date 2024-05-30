@@ -1,11 +1,11 @@
-package app.nzyme.core.rest.resources.taps.reports.tables;
+package app.nzyme.core.rest.resources.taps.reports.tables.dns;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
 @AutoValue
-public abstract class DNSIPStatisticsReport {
+public abstract class DnsIpStatisticsReport {
 
     public abstract Long requestCount();
     public abstract Long requestBytes();
@@ -14,7 +14,7 @@ public abstract class DNSIPStatisticsReport {
     public abstract Long nxDomainCount();
 
     @JsonCreator
-    public static DNSIPStatisticsReport create(@JsonProperty("request_count") Long requestCount,
+    public static DnsIpStatisticsReport create(@JsonProperty("request_count") Long requestCount,
                                                @JsonProperty("request_bytes") Long requestBytes,
                                                @JsonProperty("response_count") Long responseCount,
                                                @JsonProperty("response_bytes") Long responseBytes,
@@ -29,7 +29,7 @@ public abstract class DNSIPStatisticsReport {
     }
 
     public static Builder builder() {
-        return new AutoValue_DNSIPStatisticsReport.Builder();
+        return new AutoValue_DnsIpStatisticsReport.Builder();
     }
 
     @AutoValue.Builder
@@ -44,7 +44,7 @@ public abstract class DNSIPStatisticsReport {
 
         public abstract Builder nxDomainCount(Long nxDomainCount);
 
-        public abstract DNSIPStatisticsReport build();
+        public abstract DnsIpStatisticsReport build();
     }
 
 }

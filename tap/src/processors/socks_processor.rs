@@ -18,7 +18,7 @@ impl SocksProcessor {
     pub fn process(&mut self, tunnel: Arc<SocksTunnel>) {
         match self.table.lock() {
             Ok(mut table) => table.register_tunnel(tunnel),
-            Err(e) => error!("Could not acquire SOCKS table mutex: {}", e)
+            Err(e) => error!("Could not acquire SOCKS tunnel table mutex: {}", e)
         }
     }
 

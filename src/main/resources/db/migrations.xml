@@ -4997,4 +4997,81 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="make_socks_sesion_key_not_nullable" author="lennart koopmann">
+        <dropNotNullConstraint tableName="socks_tunnels" columnName="tcp_session_key" />
+    </changeSet>
+
+    <changeSet id="add_ssh_sessions" author="lennartkoopmann">
+        <createTable tableName="ssh_sessions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tcp_session_key" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="client_version_version" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="client_version_software" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="client_version_comments" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_version_version" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="server_version_software" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="server_version_comments" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="connection_status" type="varchar(24)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tunneled_bytes" type="varchar(24)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="established_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="terminated_at" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="most_recent_segment_time" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

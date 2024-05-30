@@ -7,7 +7,8 @@ pub enum EthernetChannelName {
     TcpPipeline,
     UdpPipeline,
     DnsPipeline,
-    SocksPipeline
+    SocksPipeline,
+    SshPipeline
 }
 
 #[derive(Debug, Clone, EnumIter, Display)]

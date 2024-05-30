@@ -14,7 +14,7 @@ use crate::{
     metrics::Metrics, dot11::frames::{Dot11RawFrame, Dot11Frame}
 };
 use crate::configuration::Configuration;
-use crate::ethernet::packets::SocksTunnel;
+use crate::ethernet::packets::{SocksTunnel, SshSession};
 use crate::messagebus::channel_names::{Dot11ChannelName, EthernetChannelName};
 
 pub struct Bus {
@@ -29,6 +29,7 @@ pub struct Bus {
     pub tcp_pipeline: NzymeChannel<TcpSegment>,
     pub udp_pipeline: NzymeChannel<Datagram>,
     pub dns_pipeline: NzymeChannel<DNSPacket>,
+    pub ssh_pipeline: NzymeChannel<SshSession>,
     pub socks_pipeline: NzymeChannel<SocksTunnel>
 }
 
@@ -92,7 +93,8 @@ impl Bus<> {
             bounded(configuration.protocols.dns.pipeline_size as usize);
         let (socks_pipeline_sender, socks_pipeline_receiver) =
             bounded(configuration.protocols.socks.pipeline_size as usize);
-
+        let (ssh_pipeline_sender, ssh_pipeline_receiver) =
+            bounded(configuration.protocols.ssh.pipeline_size as usize);
         Self {
             name,
             ethernet_broker: NzymeChannel {
@@ -153,12 +155,20 @@ impl Bus<> {
             },
             socks_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {
-                    metrics,
+                    metrics: metrics.clone(),
                     sender: socks_pipeline_sender,
                     name: EthernetChannelName::SocksPipeline.to_string()
                 }),
                 receiver: Arc::new(socks_pipeline_receiver),
             },
+            ssh_pipeline: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics,
+                    sender: ssh_pipeline_sender,
+                    name: EthernetChannelName::SshPipeline.to_string()
+                }),
+                receiver: Arc::new(ssh_pipeline_receiver),
+            }
         }
     }
 

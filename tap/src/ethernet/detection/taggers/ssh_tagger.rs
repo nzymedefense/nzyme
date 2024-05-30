@@ -1,6 +1,5 @@
 use anyhow::{bail, Error};
 use byteorder::{BigEndian, ByteOrder};
-use log::{trace};
 use crate::data::tcp_table::TcpSession;
 use crate::ethernet::packets::{SocksTunnel, SshSession, SshVersion};
 use crate::ethernet::tcp_tools::determine_tcp_session_state;
@@ -68,6 +67,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SshSession> {
             client_version,
             server_version,
             connection_status,
+            tcp_session_key: session.session_key.clone(),
             tunneled_bytes: session.bytes_count,
             source_mac: session.source_mac.clone(),
             destination_mac: session.destination_mac.clone(),

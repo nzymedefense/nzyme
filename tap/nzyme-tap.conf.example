@@ -38,6 +38,9 @@ pipeline_size = 16384
 pipeline_size = 4096
 entropy_zscore_threshold = 3.0
 
+[protocols.ssh]
+pipeline_size = 1024
+
 [protocols.socks]
 pipeline_size = 1024
 

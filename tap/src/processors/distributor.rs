@@ -5,6 +5,7 @@ use log::error;
 use crate::{messagebus::bus::Bus, exit_code, data::tables::Tables, system_state::SystemState, metrics::Metrics};
 use crate::configuration::Configuration;
 use crate::processors::socks_processor::SocksProcessor;
+use crate::processors::ssh_processor::SshProcessor;
 use crate::processors::tcp_processor::TcpProcessor;
 use crate::processors::udp_processor::UDPProcessor;
 
@@ -25,6 +26,7 @@ pub fn spawn(ethernet_bus: Arc<Bus>,
     spawn_base_tcp(ethernet_bus.clone(), tables.clone());
     spawn_base_udp(ethernet_bus.clone(), tables.clone(), metrics.clone());
     spawn_base_dns(ethernet_bus.clone(), tables.clone(), system_state, metrics.clone(), configuration);
+    spawn_base_ssh(ethernet_bus.clone(), tables.clone(), metrics.clone());
     spawn_base_socks(ethernet_bus.clone(), tables.clone(), metrics.clone());
     spawn_base_arp(ethernet_bus, tables);
 }
@@ -95,6 +97,21 @@ fn spawn_base_dns(bus: Arc<Bus>,
         }
 
         error!("DNS receiver disconnected.");
+        exit(exit_code::EX_UNAVAILABLE);
+    });
+}
+
+fn spawn_base_ssh(bus: Arc<Bus>,
+                  tables: Arc<Tables>,
+                  metrics: Arc<Mutex<Metrics>>) {
+    let mut processor = SshProcessor::new(metrics.clone(), tables.ssh.clone());
+
+    thread::spawn(move || {
+        for packet in bus.ssh_pipeline.receiver.iter() {
+            processor.process(packet);
+        }
+
+        error!("SSH receiver disconnected.");
         exit(exit_code::EX_UNAVAILABLE);
     });
 }

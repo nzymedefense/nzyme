@@ -64,6 +64,7 @@ pub struct Protocols {
     pub udp: ProtocolsUdp,
     pub dns: ProtocolsDns,
     pub arp: ProtocolsArp,
+    pub ssh: ProtocolsSsh,
     pub socks: ProtocolsSocks
 }
 
@@ -87,6 +88,11 @@ pub struct ProtocolsDns {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsArp {
+    pub pipeline_size: i32,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ProtocolsSsh {
     pub pipeline_size: i32,
 }
 
@@ -163,6 +169,11 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     // ARP.
     if doc.protocols.arp.pipeline_size <= 0 {
         bail!("Configuration variable `protocols.arp.pipeline_size` must be set to a value greater than 0.");
+    }
+
+    // SSH.
+    if doc.protocols.ssh.pipeline_size <= 0 {
+        bail!("Configuration variable `protocols.ssh.pipeline_size` must be set to a value greater than 0.");
     }
 
     // SOCKS.
