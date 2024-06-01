@@ -55,7 +55,7 @@ public class SSHTable implements DataTable {
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE ssh_sessions " +
                 "SET connection_status = :connection_status, tunneled_bytes = :tunneled_bytes, " +
                 "terminated_at = :terminated_at, most_recent_segment_time = :most_recent_segment_time, " +
-                "updated_at = NOW()");
+                "updated_at = NOW() WHERE id = :id");
 
         for (SshSessionReport session : sessions) {
             String tcpSessionKey = Tools.buildTcpSessionKey(
@@ -100,6 +100,7 @@ public class SSHTable implements DataTable {
                         .bind("tunneled_bytes", session.tunneledBytes())
                         .bind("terminated_at", session.terminatedAt())
                         .bind("most_recent_segment_time", session.mostRecentSegmentTime())
+                        .bind("id", existingSession)
                         .add();
             }
         }
