@@ -36,7 +36,11 @@ pub fn parse(packet: IPv4Packet) -> Result<TcpSegment> {
         bail!("Payload shorter than header length.");
     }
 
-    let payload = packet.payload[(header_length)..packet.payload.len()].to_vec();
+    if packet.total_length < packet.header_length + header_length {
+        bail!("Total length less than combined header lengths.");
+    }
+
+    let payload = packet.payload[header_length..packet.total_length-packet.header_length].to_vec();
 
     // This payload + this header + IPv4 (20) + ethernet (14)
     let size = (payload.len() + header_length + 34) as u32;

@@ -1,5 +1,6 @@
 use anyhow::{bail, Error};
 use byteorder::{BigEndian, ByteOrder};
+use log::info;
 use crate::data::tcp_table::TcpSession;
 use crate::ethernet::packets::{SocksTunnel, SshSession, SshVersion};
 use crate::ethernet::tcp_tools::determine_tcp_session_state;
@@ -44,6 +45,16 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SshSession> {
         let server_kexi_len = BigEndian::read_u32(&stc[stc_cursor..stc_cursor+4]) as usize;
         cts_cursor += 4;
         stc_cursor += 4;
+
+        if cts.len() < cts_cursor+client_kexi_len {
+            tracemark!("SSH");
+            return None;
+        }
+
+        if stc.len() < stc_cursor+server_kexi_len {
+            tracemark!("SSH");
+            return None;
+        }
 
         if let Err(e) = identify_kex_init(
             &cts[cts_cursor..cts_cursor+client_kexi_len],
@@ -153,7 +164,7 @@ fn parse_version_string(data: &[u8]) -> Result<(usize, SshVersion), Error> {
 
 // Only identifies if the slice contains a KEXI and does not attempt to parse it.
 fn identify_kex_init(data: &[u8], kexi_len: usize) -> Result<(), Error> {
-    if data.len() < kexi_len || data.len() < 2{
+    if data.len() < kexi_len || data.len() < 2 {
         bail!("Payload too short.");
     }
 

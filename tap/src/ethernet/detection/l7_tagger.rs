@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::panic;
 use std::sync::{Arc, Mutex, MutexGuard};
-use log::{error, info};
+use log::error;
 use strum_macros::Display;
 use crate::data::tcp_table::TcpSession;
 use crate::ethernet::detection::l7_tagger::L7SessionTag::{Http, Socks, Ssh, Unencrypted};

@@ -44,7 +44,8 @@ pub struct ARPPacket {
 pub struct IPv4Packet {
     pub source_mac: String,
     pub destination_mac: String,
-    pub header_length: u8,
+    pub header_length: usize,
+    pub total_length: usize,
     pub source_address: IpAddr,
     pub destination_address: IpAddr,
     pub ttl: u8,
