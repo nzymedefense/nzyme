@@ -46,10 +46,10 @@ public class SocksResource extends TapDataHandlingResource {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
-        long total = nzyme.getEthernet().socks().countAllSocksTunnels(timeRange, taps);
+        long total = nzyme.getEthernet().socks().countAllTunnels(timeRange, taps);
 
         List<SocksTunnelDetailsResponse> tunnels = Lists.newArrayList();
-        for (SocksTunnelEntry t : nzyme.getEthernet().socks().findAllSocksTunnels(timeRange, limit, offset, taps)) {
+        for (SocksTunnelEntry t : nzyme.getEthernet().socks().findAllTunnels(timeRange, limit, offset, taps)) {
             // Get underlying TCP session. (Can be NULL)
             Optional<TcpSessionEntry> tcpSession = nzyme.getEthernet().tcp()
                     .findSessionBySessionKey(t.tcpSessionKey(), t.establishedAt(), taps);

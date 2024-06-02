@@ -64,6 +64,11 @@ img.loading-miller-layer2 {
     animation: blinker 1s linear infinite;
 }
 
+.badge {
+    position: relative;
+    top: -2px;
+}
+
 .navbar {
     background-color: #fff;
     padding: 8px 12px;

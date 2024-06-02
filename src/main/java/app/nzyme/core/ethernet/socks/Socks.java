@@ -17,7 +17,7 @@ public class Socks {
         this.nzyme = ethernet.getNzyme();
     }
 
-    public long countAllSocksTunnels(TimeRange timeRange, List<UUID> taps) {
+    public long countAllTunnels(TimeRange timeRange, List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
@@ -34,7 +34,7 @@ public class Socks {
         );
     }
 
-    public List<SocksTunnelEntry> findAllSocksTunnels(TimeRange timeRange, int limit, int offset, List<UUID> taps) {
+    public List<SocksTunnelEntry> findAllTunnels(TimeRange timeRange, int limit, int offset, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }

@@ -126,6 +126,7 @@ import EditFloorPage from "./components/system/authentication/management/tenants
 import LookAndFeelPage from "./components/system/lookandfeel/LookAndFeelPage";
 import IPDetailsPage from "./components/ethernet/l4/ip/IPDetailsPage";
 import TunnelsPage from "./components/ethernet/tunnels/TunnelsPage";
+import RemoteAccessPage from "./components/ethernet/remote/RemoteAccessPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -373,6 +374,9 @@ function App() {
 
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
+
+                          { /* Ethernet/Remote. */}
+                          <Route path={ApiRoutes.ETHERNET.REMOTE.INDEX} element={<RemoteAccessPage />}/>
 
                           { /* Ethernet/Tunnels. */}
                           <Route path={ApiRoutes.ETHERNET.TUNNELS.INDEX} element={<TunnelsPage />}/>

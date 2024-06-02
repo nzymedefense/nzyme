@@ -141,6 +141,9 @@ const ApiRoutes = {
     TUNNELS: {
       INDEX: '/ethernet/tunnels'
     },
+    REMOTE: {
+      INDEX: '/ethernet/remoteaccess'
+    },
     BEACONS: {
       INDEX: '/ethernet/beacons'
     }

@@ -1,4 +1,5 @@
 import numeral from 'numeral'
+import moment from "moment/moment";
 
 export function byteAverageToMbit (byte) {
   const mbit = byte * 8 / 10 / 1024 / 1024
@@ -87,4 +88,25 @@ export function arraysAreEqual(a, b) {
   }
 
   return true
+}
+
+export function calculateConnectionDuration(connectionStatus, establishedAt, terminatedAt) {
+  let endTime;
+  if (connectionStatus === "Inactive") {
+    endTime = moment(terminatedAt);
+  } else {
+    endTime = moment(new Date());
+  }
+
+  const duration = moment.duration(endTime.diff(establishedAt));
+
+  if (duration.asSeconds() > 60) {
+    if (duration.asMinutes() > 60) {
+      return numeral(duration.asHours()).format("0,0.0") + " Hours";
+    } else {
+      return numeral(duration.asMinutes()).format("0,0.0") + " Minutes";
+    }
+  } else {
+    return numeral(duration.asSeconds()).format("0,0.0") + " Seconds";
+  }
 }
