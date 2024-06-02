@@ -17,6 +17,7 @@ import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfigMapper;
 import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.ethernet.socks.db.SocksTunnelEntryMapper;
+import app.nzyme.core.ethernet.ssh.db.SSHSessionEntryMapper;
 import app.nzyme.core.ethernet.tcp.db.TcpSessionEntryMapper;
 import app.nzyme.core.events.db.EventActionEntryMapper;
 import app.nzyme.core.events.db.EventEntryMapper;
@@ -144,7 +145,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new TcpSessionEntryMapper())
                 .registerRowMapper(new DNSEntropyLogEntryMapper())
                 .registerRowMapper(new DNSLogEntryMapper())
-                .registerRowMapper(new SocksTunnelEntryMapper());
+                .registerRowMapper(new SocksTunnelEntryMapper())
+                .registerRowMapper(new SSHSessionEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());
