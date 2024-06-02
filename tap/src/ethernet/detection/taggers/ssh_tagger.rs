@@ -142,7 +142,7 @@ fn parse_version_string(data: &[u8]) -> Result<(usize, SshVersion), Error> {
     let version = String::from_utf8_lossy(&data[cursor..cursor+dash2_pos]).trim().to_string();
     cursor += dash2_pos+1;
 
-    let space_pos = data[cursor..].iter()
+    let space_pos = data[cursor..eol_pos].iter()
         .position(|&b| b == 0x20)
         .unwrap_or(0);
 
