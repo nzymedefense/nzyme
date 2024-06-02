@@ -6,13 +6,13 @@ use byteorder::{BigEndian, ByteOrder};
 use bitreader::BitReader;
 use chrono::Utc;
 use entropy::shannon_entropy;
-use log::{trace};
 use crate::helpers::network::is_ip_address;
+use crate::tracemark;
 
 #[allow(clippy::cast_possible_truncation)]
 pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
     if udp.payload.len() < 13 {
-        trace!("Payload too short to hold a DNS request or response.");
+        tracemark!("Payload too short to hold a DNS request or response.");
         return None;
     }
 
@@ -29,7 +29,7 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
             }
         },
         Err(e) => {
-            trace!("Unexpected type flag: {}", e);
+            tracemark!("Unexpected type flag: {}", e);
             return None;
         }
     };
@@ -39,7 +39,7 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
 
     // Some UDP payloads will reach here, but have excessively large question/answer counts.
     if question_count > 512 || answer_count > 512 {
-        trace!("Too many questions or answers.");
+        tracemark!("Too many questions or answers.");
         return None;
     }
 
@@ -49,7 +49,7 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
         let mut query_list = Vec::new();
         for _ in 0..question_count {
             if udp.payload.len() < cursor+5 {
-                trace!("Payload too short to fit next question.");
+                tracemark!("Payload too short to fit next question.");
                 return None;
             }
 
@@ -59,14 +59,14 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
                     query_list.push(data);
                 },
                 Err(e) => {
-                    trace!("Could not parse DNS query data element: {}", e);
+                    tracemark!("Could not parse DNS query data element: {}", e);
                     return None;
                 }
             };
         }
 
         if query_list.len() as u16 != question_count {
-            trace!("Question count does not match number of included questions.");
+            tracemark!("Question count does not match number of included questions.");
             return None;
         }
         
@@ -80,7 +80,7 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
         let mut response_list = Vec::new();
         for _ in 0..answer_count {
             if udp.payload.len() < cursor+5 {
-                trace!("Payload too short to fit next answer.");
+                tracemark!("Payload too short to fit next answer.");
                 return None;
             }
 
@@ -90,14 +90,14 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DNSPacket> {
                     response_list.push(data);
                 },
                 Err(e) => {
-                    trace!("Could not parse DNS response data element: {}", e);
+                    tracemark!("Could not parse DNS response data element: {}", e);
                     return None;
                 }
             };
         }
 
         if response_list.len() as u16 != answer_count {
-            trace!("Answer count does not match number of included answers.");
+            tracemark!("Answer count does not match number of included answers.");
             return None;
         }
 
