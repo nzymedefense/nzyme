@@ -127,10 +127,14 @@ public class DNSResource extends TapDataHandlingResource {
 
         List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
         for (DNSPairSummary ps : nzyme.getEthernet().dns().getPairs(timeRange, limit, offset, taps)) {
+            Map<String, Object> server = Maps.newHashMap();
+            server.put("ip_address", ps.serverAddress());
+            server.put("port", ps.serverPort());
+
             values.add(ThreeColumnTableHistogramValueResponse.create(
                     HistogramValueStructureResponse.create(
-                            ps.server(),
-                            HistogramValueType.IP_ADDRESS,
+                            server,
+                            HistogramValueType.IP_ADDRESS_WITH_PORT,
                             null
                     ),
                     HistogramValueStructureResponse.create(
@@ -143,7 +147,7 @@ public class DNSResource extends TapDataHandlingResource {
                             HistogramValueType.INTEGER,
                             null
                     ),
-                    ps.server()
+                    ps.serverAddress() + ":" + ps.serverPort()
             ));
         }
 

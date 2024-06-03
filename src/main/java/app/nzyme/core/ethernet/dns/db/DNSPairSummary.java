@@ -23,7 +23,8 @@ import jakarta.annotation.Nullable;
 @AutoValue
 public abstract class DNSPairSummary {
 
-    public abstract String server();
+    public abstract String serverAddress();
+    public abstract int serverPort();
     @Nullable
     public abstract Integer serverGeoAsnNumber();
     @Nullable
@@ -35,9 +36,10 @@ public abstract class DNSPairSummary {
     public abstract Long requestCount();
     public abstract Long clientCount();
 
-    public static DNSPairSummary create(String server, Integer serverGeoAsnNumber, String serverGeoAsnName, String serverGeoAsnDomain, String serverGeoCountryCode, Long requestCount, Long clientCount) {
+    public static DNSPairSummary create(String serverAddress, int serverPort, Integer serverGeoAsnNumber, String serverGeoAsnName, String serverGeoAsnDomain, String serverGeoCountryCode, Long requestCount, Long clientCount) {
         return builder()
-                .server(server)
+                .serverAddress(serverAddress)
+                .serverPort(serverPort)
                 .serverGeoAsnNumber(serverGeoAsnNumber)
                 .serverGeoAsnName(serverGeoAsnName)
                 .serverGeoAsnDomain(serverGeoAsnDomain)
@@ -53,7 +55,9 @@ public abstract class DNSPairSummary {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder server(String server);
+        public abstract Builder serverAddress(String serverAddress);
+
+        public abstract Builder serverPort(int serverPort);
 
         public abstract Builder serverGeoAsnNumber(Integer serverGeoAsnNumber);
 

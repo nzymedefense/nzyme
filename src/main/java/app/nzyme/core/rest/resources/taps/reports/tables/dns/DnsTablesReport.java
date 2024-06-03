@@ -12,20 +12,17 @@ public abstract class DnsTablesReport {
 
     public abstract Map<String, DnsIpStatisticsReport> ips();
     public abstract List<DnsEntropyLogReport> entropyLog();
-    public abstract Map<String, Map<String, Long>> pairs();
     public abstract List<DnsLogReport> queryLog();
     public abstract List<DnsLogReport> responseLog();
 
     @JsonCreator
     public static DnsTablesReport create(@JsonProperty("ips") Map<String, DnsIpStatisticsReport> ips,
                                          @JsonProperty("entropy_log") List<DnsEntropyLogReport> entropyLog,
-                                         @JsonProperty("pairs") Map<String, Map<String, Long>> pairs,
                                          @JsonProperty("queries") List<DnsLogReport> queryLog,
                                          @JsonProperty("responses") List<DnsLogReport> responseLog) {
         return builder()
                 .ips(ips)
                 .entropyLog(entropyLog)
-                .pairs(pairs)
                 .queryLog(queryLog)
                 .responseLog(responseLog)
                 .build();
@@ -40,8 +37,6 @@ public abstract class DnsTablesReport {
         public abstract Builder ips(Map<String, DnsIpStatisticsReport> ips);
 
         public abstract Builder entropyLog(List<DnsEntropyLogReport> entropyLog);
-
-        public abstract Builder pairs(Map<String, Map<String, Long>> pairs);
 
         public abstract Builder queryLog(List<DnsLogReport> queryLog);
 

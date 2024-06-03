@@ -27,6 +27,7 @@ import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
+import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
@@ -75,7 +76,7 @@ public class DNSTable implements DataTable {
                 }
 
                 try (Timer.Context ignored2 = pairsReportTimer.time()) {
-                    registerPairs(handle, tapUuid, report.pairs(), timestamp);
+                    registerPairs(handle, tapUuid, report.queryLog(), timestamp);
                 }
 
                 try (Timer.Context ignored2 = logReportTimer.time()) {
@@ -115,39 +116,62 @@ public class DNSTable implements DataTable {
         batch.execute();
     }
 
-    private void registerPairs(Handle handle, UUID tapUuid, Map<String, Map<String, Long>> pairs, DateTime timestamp) {
-        PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_pairs(tap_uuid, ip, server, " +
-                "server_geo_asn_number, server_geo_asn_name, server_geo_asn_domain, server_geo_city, " +
-                "server_geo_country_code, server_geo_latitude, server_geo_longitude, count, created_at) " +
-                "VALUES(:tap_uuid, :ip, :server, :server_geo_asn_number, :server_geo_asn_name, " +
-                ":server_geo_asn_domain, :server_geo_city, :server_geo_country_code, :server_geo_latitude, " +
-                ":server_geo_longitude, :count, :timestamp)");
+    private void registerPairs(Handle handle, UUID tapUuid, List<DnsLogReport> logs, DateTime timestamp) {
+        // Build pairs.
+        Map<String, Map<Integer, Map<String, Long>>> pairs = Maps.newHashMap();
+        for (DnsLogReport log : logs) {
+            if (!pairs.containsKey(log.clientAddress())) {
+                pairs.put(log.clientAddress(), Maps.newHashMap());
+            }
 
-        for (Map.Entry<String, Map<String, Long>> pair : pairs.entrySet()) {
-            for (Map.Entry<String, Long> server : pair.getValue().entrySet()) {
-                InetAddress serverAddress;
-                try {
-                    serverAddress = InetAddress.getByName(server.getKey());
-                } catch (UnknownHostException e) {
-                    // This shouldn't happen because we pass IP addresses.
-                    throw new RuntimeException(e);
+            Map<Integer, Map<String, Long>> server = pairs.get(log.clientAddress());
+            if (!server.containsKey(log.serverPort())) {
+                server.put(log.serverPort(), Maps.newHashMap());
+            }
+
+            Map<String, Long> port = server.get(log.serverPort());
+            if (!port.containsKey(log.serverAddress())) {
+                port.put(log.serverAddress(), 1L);
+            } else {
+                port.compute(log.serverAddress(), (k, oldCount) -> oldCount + 1);
+            }
+        }
+
+        PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_pairs(tap_uuid, client_address, " +
+                "server_address, server_port, server_geo_asn_number, server_geo_asn_name, server_geo_asn_domain, " +
+                "server_geo_city, server_geo_country_code, server_geo_latitude, server_geo_longitude, count, " +
+                "created_at) VALUES(:tap_uuid, :client_address, :server_address, :server_port, " +
+                ":server_geo_asn_number, :server_geo_asn_name, :server_geo_asn_domain, :server_geo_city, " +
+                ":server_geo_country_code, :server_geo_latitude, :server_geo_longitude, :count, :timestamp)");
+
+        for (Map.Entry<String, Map<Integer, Map<String, Long>>> pair : pairs.entrySet()) {
+            for (Map.Entry<Integer, Map<String, Long>> server : pair.getValue().entrySet()) {
+                for (Map.Entry<String, Long> port : server.getValue().entrySet()) {
+                    InetAddress serverAddress;
+                    try {
+                        serverAddress = InetAddress.getByName(port.getKey());
+                    } catch (UnknownHostException e) {
+                        // This shouldn't happen because we pass IP addresses.
+                        throw new RuntimeException(e);
+                    }
+
+                    Optional<GeoIpLookupResult> geo = tablesService.getNzyme().getGeoIpService().lookup(serverAddress);
+
+                    batch.bind("tap_uuid", tapUuid)
+                            .bind("client_address", pair.getKey())
+                            .bind("server_address", port.getKey())
+                            .bind("server_port", server.getKey())
+                            .bind("server_geo_asn_number", geo.map(g -> g.asn().number()).orElse(null))
+                            .bind("server_geo_asn_name", geo.map(g -> g.asn().name()).orElse(null))
+                            .bind("server_geo_asn_domain", geo.map(g -> g.asn().domain()).orElse(null))
+                            .bind("server_geo_city", geo.map(g -> g.geo().city()).orElse(null))
+                            .bind("server_geo_country_code", geo.map(g -> g.geo().countryCode()).orElse(null))
+                            .bind("server_geo_latitude", geo.map(g -> g.geo().latitude()).orElse(null))
+                            .bind("server_geo_longitude", geo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("count", port.getValue())
+                            .bind("timestamp", timestamp)
+                            .add();
                 }
-
-                Optional<GeoIpLookupResult> geo = tablesService.getNzyme().getGeoIpService().lookup(serverAddress);
-
-                batch.bind("tap_uuid", tapUuid)
-                        .bind("ip", pair.getKey())
-                        .bind("server", server.getKey())
-                        .bind("server_geo_asn_number", geo.map(g -> g.asn().number()).orElse(null))
-                        .bind("server_geo_asn_name", geo.map(g -> g.asn().name()).orElse(null))
-                        .bind("server_geo_asn_domain", geo.map(g -> g.asn().domain()).orElse(null))
-                        .bind("server_geo_city", geo.map(g -> g.geo().city()).orElse(null))
-                        .bind("server_geo_country_code", geo.map(g -> g.geo().countryCode()).orElse(null))
-                        .bind("server_geo_latitude", geo.map(g -> g.geo().latitude()).orElse(null))
-                        .bind("server_geo_longitude", geo.map(g -> g.geo().longitude()).orElse(null))
-                        .bind("count", server.getValue())
-                        .bind("timestamp", timestamp)
-                        .add();
             }
         }
 

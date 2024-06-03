@@ -72,7 +72,6 @@ pub struct TablesReport {
 pub struct DnsTableReport {
     pub ips: HashMap<String, DnsIpStatisticsReport>,
     pub entropy_log: Vec<DNSEntropyLog>,
-    pub pairs: HashMap<String, HashMap<String, u128>>,
     pub queries: Vec<DNSLogReport>,
     pub responses: Vec<DNSLogReport>
 }

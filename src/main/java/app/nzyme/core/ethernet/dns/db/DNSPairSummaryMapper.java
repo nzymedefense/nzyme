@@ -28,7 +28,8 @@ public class DNSPairSummaryMapper implements RowMapper<DNSPairSummary> {
     @Override
     public DNSPairSummary map(ResultSet rs, StatementContext ctx) throws SQLException {
         return DNSPairSummary.create(
-                rs.getString("server"),
+                rs.getString("server_address"),
+                rs.getInt("server_port"),
                 rs.getInt("server_geo_asn_number"),
                 rs.getString("server_geo_asn_name"),
                 rs.getString("server_geo_asn_domain"),

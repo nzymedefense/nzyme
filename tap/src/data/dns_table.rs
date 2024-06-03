@@ -24,7 +24,6 @@ pub struct DnsTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
     ips: Mutex<HashMap<IpAddr, DnsStatistics>>,
     entropy_log: Mutex<Vec<EntropyLog>>,
-    pairs: Mutex<HashMap<IpAddr, Mutex<HashMap<IpAddr, u128>>>>,
     metrics: Arc<Mutex<Metrics>>,
     query_log: Mutex<Vec<DNSQueryLog>>,
     response_log: Mutex<Vec<DNSResponseLog>>
@@ -85,7 +84,6 @@ impl DnsTable {
             leaderlink,
             ips: Mutex::new(HashMap::new()),
             entropy_log: Mutex::new(Vec::new()),
-            pairs: Mutex::new(HashMap::new()),
             query_log: Mutex::new(Vec::new()),
             response_log: Mutex::new(Vec::new()),
             metrics
@@ -140,33 +138,6 @@ impl DnsTable {
                 error!("Could not acquire DNS IP table mutex: {}", e);
             }
         }
-
-        match self.pairs.lock() {
-            Ok(mut pairs) => {
-                if !pairs.contains_key(source_address) {
-                    pairs.insert(*source_address, Mutex::new(HashMap::new()));
-                }
-
-                let counter = pairs.get(source_address).unwrap();
-
-                match counter.lock() {
-                    Ok(mut counter) => {
-                        if counter.contains_key(destination_address) {
-                            let new = counter.get(destination_address).unwrap()+1;
-                            counter.insert(*destination_address, new);
-                        } else {
-                            counter.insert(*destination_address, 1);
-                        }
-                    },
-                    Err(e) => {
-                        error!("Could not acquire DNS pair counter table mutex: {}", e);
-                    }
-                }
-            },
-            Err(e) => {
-                error!("Could not acquire DNS pairs table mutex: {}", e);
-            }
-        };
 
         // Raw queries.
         match self.query_log.lock() {
@@ -313,7 +284,6 @@ impl DnsTable {
 
         // Clean up.
         clear_mutex_hashmap(&self.ips);
-        clear_mutex_hashmap(&self.pairs);
         clear_mutex_vector(&self.query_log);
         clear_mutex_vector(&self.response_log);
         clear_mutex_vector(&self.entropy_log);
@@ -352,33 +322,6 @@ impl DnsTable {
             },
             Err(e) => error!("Could not acquire DNS entropy table mutex: {}", e)
         }
-
-        let pairs = match self.pairs.lock() {
-            Ok(pairs) => {
-                let mut result = HashMap::new();
-
-                for (source, counter) in &*pairs {
-                    let mut counter_result = HashMap::new();
-
-                    match counter.lock() {
-                        Ok(counter) => {
-                            for (destination, count) in &*counter {
-                                counter_result.insert(destination.to_string(), *count);
-                            } 
-                        },
-                        Err(e) => error!("Could not acquire DNS pairs counter table mutex: {}", e)
-                    }
-
-                    result.insert(source.to_string(), counter_result);
-                }
-
-                result
-            }
-            Err(e) => {
-                error!("Could not acquire DNS pairs table mutex: {}", e);
-                HashMap::new()
-            }
-        };
 
         let queries = match self.query_log.lock() {
             Ok(retro) => {
@@ -439,7 +382,6 @@ impl DnsTable {
         DnsTableReport {
             ips,
             entropy_log,
-            pairs,
             queries,
             responses
         }
@@ -452,8 +394,6 @@ impl DnsTable {
                                   table_helpers::get_mutex_hashmap_size(&self.ips));
                 metrics.set_gauge("tables.dns.entropy_log.size",
                                   table_helpers::get_mutex_vector_size(&self.entropy_log));
-                metrics.set_gauge("tables.dns.pairs.size",
-                                  table_helpers::get_mutex_hashmap_size(&self.pairs));
                 metrics.set_gauge("tables.dns.query_log.size",
                                   table_helpers::get_mutex_vector_size(&self.query_log));
                 metrics.set_gauge("tables.dns.response_log.size",
