@@ -18,8 +18,8 @@ dependency-reduced-pom.xml
 .DS_Store
 hs_err_*.log
 
-logs/
-target/
+/logs/
+/target/
 /banditfile
 /anonfile
 
