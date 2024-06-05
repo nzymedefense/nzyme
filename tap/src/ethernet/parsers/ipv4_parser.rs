@@ -10,7 +10,12 @@ pub fn parse(packet: &Arc<EthernetPacket>) -> Result<IPv4Packet> {
         bail!("Empty payload.")
     }
 
-    let header_length = ((&packet.data[0] & 0x0F)*32/8) as usize;
+    let header_length = match ((&packet.data[0] & 0x0F) as usize)
+        .checked_mul(32)
+        .and_then(|result| result.checked_div(8)) {
+        Some(hl) => hl,
+        None => { bail!("Header length calculation failed with too large numbers.") }
+    };
 
     if packet.data.len() < header_length || packet.data.len() < 20  {
         bail!("Payload too short.");
