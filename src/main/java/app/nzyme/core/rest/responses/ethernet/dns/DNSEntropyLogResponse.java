@@ -9,10 +9,10 @@ import java.util.List;
 public abstract class DNSEntropyLogResponse {
 
     @JsonProperty("query")
-    public abstract DNSEntropyLogDataResponse query();
+    public abstract DNSLogDataResponse query();
 
     @JsonProperty("responses")
-    public abstract List<DNSEntropyLogDataResponse> responses();
+    public abstract List<DNSLogDataResponse> responses();
 
     @JsonProperty("entropy")
     public abstract float entropy();
@@ -23,7 +23,7 @@ public abstract class DNSEntropyLogResponse {
     @JsonProperty("zscore")
     public abstract float zscore();
 
-    public static DNSEntropyLogResponse create(DNSEntropyLogDataResponse query, List<DNSEntropyLogDataResponse> responses, float entropy, float entropyMean, float zscore) {
+    public static DNSEntropyLogResponse create(DNSLogDataResponse query, List<DNSLogDataResponse> responses, float entropy, float entropyMean, float zscore) {
         return builder()
                 .query(query)
                 .responses(responses)
@@ -39,9 +39,9 @@ public abstract class DNSEntropyLogResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder query(DNSEntropyLogDataResponse query);
+        public abstract Builder query(DNSLogDataResponse query);
 
-        public abstract Builder responses(List<DNSEntropyLogDataResponse> responses);
+        public abstract Builder responses(List<DNSLogDataResponse> responses);
 
         public abstract Builder entropy(float entropy);
 

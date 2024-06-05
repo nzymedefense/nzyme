@@ -136,7 +136,8 @@ const ApiRoutes = {
       ASN: asn => `/ethernet/l4/asn/show/${asn}`
     },
     DNS: {
-      INDEX: '/ethernet/dns'
+      INDEX: '/ethernet/dns',
+      TRANSACTION_LOGS: '/ethernet/dns/logs'
     },
     TUNNELS: {
       INDEX: '/ethernet/tunnels'

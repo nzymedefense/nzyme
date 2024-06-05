@@ -1,11 +1,10 @@
 import React, {useState} from "react";
 import moment from "moment/moment";
-import IPAddressLink from "../../shared/IPAddressLink";
 
 import numeral from "numeral";
 import DNSData from "../DNSData";
 import ETLD from "../../shared/ETLD";
-import DNSEntropyLogResponseTable from "../DNSEntropyLogResponseTable";
+import DNSEntropyLogResponseTable from "./DNSEntropyLogResponseTable";
 import L4Address from "../../shared/L4Address";
 
 export default function DNSEntropyLogTableRow(props) {

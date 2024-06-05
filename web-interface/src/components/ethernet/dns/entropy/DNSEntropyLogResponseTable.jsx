@@ -1,6 +1,6 @@
 import React from "react";
-import DNSData from "./DNSData";
-import ETLD from "../shared/ETLD";
+import DNSData from "../DNSData";
+import ETLD from "../../shared/ETLD";
 
 const COLSPAN = 8;
 

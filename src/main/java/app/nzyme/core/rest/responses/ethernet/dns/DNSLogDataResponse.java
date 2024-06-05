@@ -9,7 +9,7 @@ import org.joda.time.DateTime;
 import java.util.UUID;
 
 @AutoValue
-public abstract class DNSEntropyLogDataResponse {
+public abstract class DNSLogDataResponse {
 
     @JsonProperty("uuid")
     public abstract UUID uuid();
@@ -45,7 +45,7 @@ public abstract class DNSEntropyLogDataResponse {
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
-    public static DNSEntropyLogDataResponse create(UUID uuid, UUID tapUUID, int transactionId, L4AddressResponse clientAddress, L4AddressResponse serverAddress, String dataValue, String dataValueEtld, String dataType, String dnsType, DateTime timestamp, DateTime createdAt) {
+    public static DNSLogDataResponse create(UUID uuid, UUID tapUUID, int transactionId, L4AddressResponse clientAddress, L4AddressResponse serverAddress, String dataValue, String dataValueEtld, String dataType, String dnsType, DateTime timestamp, DateTime createdAt) {
         return builder()
                 .uuid(uuid)
                 .tapUUID(tapUUID)
@@ -62,7 +62,7 @@ public abstract class DNSEntropyLogDataResponse {
     }
 
     public static Builder builder() {
-        return new AutoValue_DNSEntropyLogDataResponse.Builder();
+        return new AutoValue_DNSLogDataResponse.Builder();
     }
 
     @AutoValue.Builder
@@ -89,6 +89,6 @@ public abstract class DNSEntropyLogDataResponse {
 
         public abstract Builder createdAt(DateTime createdAt);
 
-        public abstract DNSEntropyLogDataResponse build();
+        public abstract DNSLogDataResponse build();
     }
 }

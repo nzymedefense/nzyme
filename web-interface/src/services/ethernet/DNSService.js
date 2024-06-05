@@ -34,4 +34,12 @@ export default class DNSService {
     )
   }
 
+  findAllTransactions(timeRange, taps, limit, offset, setTransactions) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/ethernet/dns/transactions/log", { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
+        (response) => setTransactions(response.data)
+    )
+  }
+
 }

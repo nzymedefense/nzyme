@@ -127,6 +127,7 @@ import LookAndFeelPage from "./components/system/lookandfeel/LookAndFeelPage";
 import IPDetailsPage from "./components/ethernet/l4/ip/IPDetailsPage";
 import TunnelsPage from "./components/ethernet/tunnels/TunnelsPage";
 import RemoteAccessPage from "./components/ethernet/remote/RemoteAccessPage";
+import DNSTransactionLogsPage from "./components/ethernet/dns/logs/DNSTransactionLogsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -374,6 +375,7 @@ function App() {
 
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
+                          <Route path={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS} element={<DNSTransactionLogsPage />}/>
 
                           { /* Ethernet/Remote. */}
                           <Route path={ApiRoutes.ETHERNET.REMOTE.INDEX} element={<RemoteAccessPage />}/>

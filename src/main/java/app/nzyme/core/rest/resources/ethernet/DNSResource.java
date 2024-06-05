@@ -6,9 +6,7 @@ import app.nzyme.core.ethernet.dns.DNSTransaction;
 import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
-import app.nzyme.core.rest.responses.ethernet.dns.DNSEntropyLogDataResponse;
-import app.nzyme.core.rest.responses.ethernet.dns.DNSEntropyLogListResponse;
-import app.nzyme.core.rest.responses.ethernet.dns.DNSEntropyLogResponse;
+import app.nzyme.core.rest.responses.ethernet.dns.*;
 import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
@@ -25,10 +23,8 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+
+import java.util.*;
 
 @Path("/api/ethernet/dns")
 @Produces(MediaType.APPLICATION_JSON)
@@ -131,6 +127,9 @@ public class DNSResource extends TapDataHandlingResource {
             server.put("ip_address", ps.serverAddress());
             server.put("port", ps.serverPort());
 
+            Map<String, Object> requestCount = Maps.newHashMap();
+            requestCount.put("title", ps.requestCount());
+
             values.add(ThreeColumnTableHistogramValueResponse.create(
                     HistogramValueStructureResponse.create(
                             server,
@@ -143,8 +142,8 @@ public class DNSResource extends TapDataHandlingResource {
                             null
                     ),
                     HistogramValueStructureResponse.create(
-                            ps.requestCount(),
-                            HistogramValueType.INTEGER,
+                            requestCount,
+                            HistogramValueType.DNS_TRANSACTION_LOG_LINK,
                             null
                     ),
                     ps.serverAddress() + ":" + ps.serverPort()
@@ -174,16 +173,16 @@ public class DNSResource extends TapDataHandlingResource {
         nzyme.getDatabase().useHandle(handle -> {
             for (DNSEntropyLogEntry el : entropyLogs) {
                 Optional<DNSTransaction> transaction = nzyme.getEthernet().dns()
-                        .findDNSTransaction(el.transactionId(), el.timestamp(), taps);
+                        .findTransaction(el.transactionId(), el.timestamp(), taps, handle);
 
                 if (transaction.isEmpty()) {
                     continue;
                 }
 
-                DNSEntropyLogDataResponse query = entropyLogToResponse(transaction.get().query());
-                List<DNSEntropyLogDataResponse> responses = Lists.newArrayList();
+                DNSLogDataResponse query = logToResponse(transaction.get().query());
+                List<DNSLogDataResponse> responses = Lists.newArrayList();
                 for (DNSLogEntry response : transaction.get().responses()) {
-                    responses.add(entropyLogToResponse(response));
+                    responses.add(logToResponse(response));
                 }
 
 
@@ -194,8 +193,37 @@ public class DNSResource extends TapDataHandlingResource {
         return Response.ok(DNSEntropyLogListResponse.create(total, logs)).build();
     }
 
-    private DNSEntropyLogDataResponse entropyLogToResponse(DNSLogEntry log) {
-        return DNSEntropyLogDataResponse.create(
+    @GET
+    @Path("/transactions/log")
+    public Response transactionLog(@Context SecurityContext sc,
+                                   @QueryParam("time_range") @Valid String timeRangeParameter,
+                                   @QueryParam("limit") int limit,
+                                   @QueryParam("offset") int offset,
+                                   @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        long total = nzyme.getEthernet().dns().countAllTransactions(timeRange, taps);
+
+        List<DNSLogEntryResponse> transactions = Lists.newArrayList();
+        for (DNSTransaction transaction : nzyme.getEthernet().dns()
+                .findAllTransactions(timeRange, limit, offset, taps)) {
+            DNSLogDataResponse query = logToResponse(transaction.query());
+            List<DNSLogDataResponse> responses = Lists.newArrayList();
+            for (DNSLogEntry response : transaction.responses()) {
+                responses.add(logToResponse(response));
+            }
+
+            transactions.add(DNSLogEntryResponse.create(query, responses));
+        }
+
+        transactions.sort((o1, o2) -> o2.query().timestamp().compareTo(o1.query().timestamp()));
+
+        return Response.ok(DNSLogListResponse.create(total, transactions)).build();
+    }
+
+    private DNSLogDataResponse logToResponse(DNSLogEntry log) {
+        return DNSLogDataResponse.create(
                 log.uuid(),
                 log.tapUUID(),
                 log.transactionId(),

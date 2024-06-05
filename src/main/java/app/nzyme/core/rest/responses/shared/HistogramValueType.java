@@ -6,6 +6,7 @@ public enum HistogramValueType {
     INTEGER,
     DOT11_MAC,
     IP_ADDRESS,
-    IP_ADDRESS_WITH_PORT
+    IP_ADDRESS_WITH_PORT,
+    DNS_TRANSACTION_LOG_LINK
 
 }
