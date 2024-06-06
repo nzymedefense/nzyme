@@ -225,6 +225,29 @@ public class DNSResource extends TapDataHandlingResource {
         return Response.ok(DNSLogListResponse.create(total, transactions)).build();
     }
 
+    @GET
+    @Path("/transactions/charts/charts")
+    public Response transactionCharts(@Context SecurityContext sc,
+                                      @QueryParam("time_range") @Valid String timeRangeParameter,
+                                      @QueryParam("limit") int limit,
+                                      @QueryParam("offset") int offset,
+                                      @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        // for query, response, both
+        // create GenericNumberBucket
+
+        /*
+        SELECT date_trunc('hour', timestamp) AS bucket,
+COUNT(*) AS count FROM dns_log
+GROUP BY bucket ORDER BY bucket DESC
+         */
+
+    }
+
     private DNSLogDataResponse logToResponse(DNSLogEntry log) {
         return DNSLogDataResponse.create(
                 log.uuid(),

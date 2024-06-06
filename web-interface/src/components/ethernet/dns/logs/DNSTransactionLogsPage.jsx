@@ -35,10 +35,16 @@ export default function DNSTransactionLogsPage() {
             </nav>
           </div>
 
-          <div className="col-md-12">
-            <h1>
-              DNS Transaction Logs
-            </h1>
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="DNS Transaction Logs"
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange}
+                                       slim={true} />
+
+              </div>
+            </div>
           </div>
         </div>
 
@@ -47,8 +53,7 @@ export default function DNSTransactionLogsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Transactions"
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange} />
+                                       fixedAppliedTimeRange={timeRange} />
 
                 <Filters filters={filters} setFilters={setFilters} />
 

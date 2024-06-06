@@ -2,9 +2,10 @@ import React, {useContext, useEffect, useState} from "react";
 import {TapContext} from "../../../../App";
 import DNSService from "../../../../services/ethernet/DNSService";
 import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSpinner";
-import DNSEntropyLogTableRow from "../entropy/DNSEntropyLogTableRow";
 import Paginator from "../../../misc/Paginator";
 import DNSTransactionLogTableRow from "./DNSTransactionLogTableRow";
+
+import numeral from "numeral";
 
 const dnsService = new DNSService();
 
@@ -36,7 +37,11 @@ export default function DNSTransactionsTable(props) {
 
   return (
       <React.Fragment>
-        <table className="table table-sm table-hover table-striped mb-4 mt-3">
+        <p className="mb-2 mt-2">
+          <strong>Total:</strong> {numeral(data.total).format("0,0")}
+        </p>
+
+        <table className="table table-sm table-hover table-striped mb-4">
           <thead>
           <tr>
             <th>Query</th>

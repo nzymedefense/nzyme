@@ -4,7 +4,7 @@ import ETLD from "../../shared/ETLD";
 
 const COLSPAN = 8;
 
-export default function DNSEntropyLogResponseTable(props) {
+export default function DNSLogResponseTable(props) {
 
   const responses = props.responses;
   const show = props.show;

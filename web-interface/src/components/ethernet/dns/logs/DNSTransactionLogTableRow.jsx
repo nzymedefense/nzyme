@@ -3,7 +3,7 @@ import DNSData from "../DNSData";
 import moment from "moment";
 import ETLD from "../../shared/ETLD";
 import L4Address from "../../shared/L4Address";
-import DNSEntropyLogResponseTable from "../entropy/DNSEntropyLogResponseTable";
+import DNSLogResponseTable from "../shared/DNSLogResponseTable";
 
 export default function DNSTransactionLogTableRow(props) {
 
@@ -36,9 +36,8 @@ export default function DNSTransactionLogTableRow(props) {
           <td><L4Address address={log.query.server} /></td>
         </tr>
 
-        <DNSEntropyLogResponseTable responses={log.responses} show={showResponses}/>
+        <DNSLogResponseTable responses={log.responses} show={showResponses}/>
       </React.Fragment>
   )
-
 
 }

@@ -4,8 +4,8 @@ import moment from "moment/moment";
 import numeral from "numeral";
 import DNSData from "../DNSData";
 import ETLD from "../../shared/ETLD";
-import DNSEntropyLogResponseTable from "./DNSEntropyLogResponseTable";
 import L4Address from "../../shared/L4Address";
+import DNSLogResponseTable from "../shared/DNSLogResponseTable";
 
 export default function DNSEntropyLogTableRow(props) {
 
@@ -41,7 +41,7 @@ export default function DNSEntropyLogTableRow(props) {
           <td title={log.zscore}>{numeral(log.zscore).format("0,0.0")}</td>
         </tr>
 
-        <DNSEntropyLogResponseTable responses={log.responses} show={showResponses}/>
+        <DNSLogResponseTable responses={log.responses} show={showResponses}/>
       </React.Fragment>
   )
 
