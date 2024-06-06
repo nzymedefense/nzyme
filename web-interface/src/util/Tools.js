@@ -110,3 +110,14 @@ export function calculateConnectionDuration(connectionStatus, establishedAt, ter
     return numeral(duration.asSeconds()).format("0,0.0") + " Seconds";
   }
 }
+
+export function convertGenericChartData(data) {
+  const result = {}
+
+  Object.keys(data).sort().forEach(function(key) {
+    result[key] = data[key];
+  })
+
+  return result
+}
+

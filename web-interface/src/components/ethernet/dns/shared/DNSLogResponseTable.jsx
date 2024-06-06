@@ -27,9 +27,9 @@ export default function DNSLogResponseTable(props) {
           <table className="table table-sm table-hover table-striped mb-1 mt-0">
             <thead>
             <tr>
-              <th>Type</th>
-              <th>Response</th>
-              <th>eTLD</th>
+              <th>Response Type</th>
+              <th>Response Value</th>
+              <th>Response eTLD</th>
             </tr>
             </thead>
             <tbody>

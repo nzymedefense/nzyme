@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.generic.NumberBucketAggregationResult;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.dns.DNSTransaction;
 import app.nzyme.core.ethernet.dns.db.*;
@@ -226,26 +227,25 @@ public class DNSResource extends TapDataHandlingResource {
     }
 
     @GET
-    @Path("/transactions/charts/charts")
-    public Response transactionCharts(@Context SecurityContext sc,
-                                      @QueryParam("time_range") @Valid String timeRangeParameter,
-                                      @QueryParam("limit") int limit,
-                                      @QueryParam("offset") int offset,
-                                      @QueryParam("taps") String tapIds) {
+    @Path("/transactions/charts/count")
+    public Response transactionChart(@Context SecurityContext sc,
+                                     @QueryParam("time_range") @Valid String timeRangeParameter,
+                                     @QueryParam("limit") int limit,
+                                     @QueryParam("offset") int offset,
+                                     @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
-        // for query, response, both
-        // create GenericNumberBucket
+        Map<DateTime, Long> response = Maps.newHashMap();
+        for (NumberBucketAggregationResult r : nzyme.getEthernet().dns()
+                .getTransactionCountHistogram("query", timeRange, bucketing, taps)) {
 
-        /*
-        SELECT date_trunc('hour', timestamp) AS bucket,
-COUNT(*) AS count FROM dns_log
-GROUP BY bucket ORDER BY bucket DESC
-         */
+            response.put(r.bucket(), r.count());
+        }
 
+        return Response.ok(response).build();
     }
 
     private DNSLogDataResponse logToResponse(DNSLogEntry log) {

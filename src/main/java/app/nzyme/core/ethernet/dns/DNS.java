@@ -1,6 +1,7 @@
 package app.nzyme.core.ethernet.dns;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.generic.NumberBucketAggregationResult;
 import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.util.Bucketing;
@@ -164,6 +165,26 @@ public class DNS {
                     findTransactionWithHandle(transactionId, transactionTimestamp, taps, handle)
             );
         }
+    }
+
+    public List<NumberBucketAggregationResult> getTransactionCountHistogram(String dnsType,
+                                                                            TimeRange timeRange,
+                                                                            Bucketing.BucketingConfiguration bucketing,
+                                                                            List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, COUNT(*) AS value " +
+                                "FROM dns_log " +
+                                "WHERE dns_type = :dns_type AND timestamp >= :tr_from AND timestamp <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bindList("taps", taps)
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("dns_type", dnsType)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .mapTo(NumberBucketAggregationResult.class)
+                        .list()
+        );
     }
 
     private Optional<DNSTransaction> findTransactionWithHandle(int transactionId,

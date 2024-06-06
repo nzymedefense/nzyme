@@ -4,6 +4,7 @@ import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.context.db.MacAddressContextEntryMapper;
 import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntryMapper;
 import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntryMapper;
+import app.nzyme.core.database.generic.NumberBucketAggregationResultMapper;
 import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntryMapper;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntryMapper;
 import app.nzyme.core.detection.alerts.db.DetectionAlertTimelineEntryMapper;
@@ -146,7 +147,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new DNSEntropyLogEntryMapper())
                 .registerRowMapper(new DNSLogEntryMapper())
                 .registerRowMapper(new SocksTunnelEntryMapper())
-                .registerRowMapper(new SSHSessionEntryMapper());
+                .registerRowMapper(new SSHSessionEntryMapper())
+                .registerRowMapper(new NumberBucketAggregationResultMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

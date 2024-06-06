@@ -19,6 +19,7 @@ function CardTitleWithControls(props) {
 
   // Optional.
   const smallTextParam = props.smallText;
+  const hideTimeRange = props.hideTimeRange;
   const fixedAppliedTimeRange = props.fixedAppliedTimeRange;
 
   const [timeRangeDialogOpened, setTimeRangeDialogOpened] = useState(false);
@@ -85,7 +86,7 @@ function CardTitleWithControls(props) {
   }
 
   const appliedTimeRange = () => {
-    if (!timeRange && !fixedAppliedTimeRange) {
+    if (hideTimeRange || (!timeRange && !fixedAppliedTimeRange)) {
       return null;
     }
 

@@ -42,4 +42,12 @@ export default class DNSService {
     )
   }
 
+  getTransactionCountChart(timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/ethernet/dns/transactions/charts/count", { time_range: timeRange, taps: tapsList },
+        (response) => setHistogram(response.data)
+    )
+  }
+
 }

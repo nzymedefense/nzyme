@@ -1020,3 +1020,7 @@ i.channel-width-unsupported {
 
 .sticky-head-table          { overflow: auto; height: 100px; }
 .sticky-head-table thead th { position: sticky; top: 0; z-index: 1; background-color: #f8f9fa; }
+
+div.filters {
+    max-width: 600px;
+}
