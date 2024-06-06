@@ -245,10 +245,6 @@ public class DNS {
         for (DNSLogEntry log : logs) {
             switch (log.dnsType()) {
                 case "query":
-                    if (query != null) {
-                        throw new IllegalArgumentException("Passed transaction includes multiple queries.");
-                    }
-
                     query = log;
                     break;
                 case "response":

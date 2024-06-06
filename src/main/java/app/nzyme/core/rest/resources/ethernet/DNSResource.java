@@ -16,6 +16,8 @@ import com.google.common.collect.Maps;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import jakarta.inject.Inject;
@@ -30,6 +32,8 @@ import java.util.*;
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
 public class DNSResource extends TapDataHandlingResource {
+
+    private static final Logger LOG = LogManager.getLogger(TapDataHandlingResource.class);
 
     @Inject
     private NzymeNode nzyme;
@@ -184,7 +188,6 @@ public class DNSResource extends TapDataHandlingResource {
                 for (DNSLogEntry response : transaction.get().responses()) {
                     responses.add(logToResponse(response));
                 }
-
 
                 logs.add(DNSEntropyLogResponse.create(query, responses, el.entropy(), el.entropyMean(), el.zscore()));
             }
