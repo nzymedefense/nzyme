@@ -26,7 +26,7 @@ function HistogramValue(props) {
     case "IP_ADDRESS_WITH_PORT":
       return <IPAddressLink ip={value.value.ip_address} port={value.value.port} />
     case "DNS_TRANSACTION_LOG_LINK":
-      return <a href={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS}>{value.value.title}</a>
+      return <a href={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS}>{numeral(value.value.title).format("0,0")}</a>
     case "INTEGER":
       return <span className={value.value === highlightValue ? "highlighted" : null}>{numeral(value.value).format("0,0")}</span>
     case "GENERIC":

@@ -10,7 +10,9 @@ export default function AppliedFilterList(props) {
 
   return (
       <ul className="applied-filters">
-        <li>FILTAS</li>
+        {filters.map((filter, i) => {
+          return <li key={i}>{filter.name} {filter.operator} {filter.value}</li>;
+        })}
       </ul>
   )
 
