@@ -5,7 +5,7 @@ import {Presets} from "../../../shared/timerange/TimeRange";
 import DNSTransactionsTable from "./DNSTransactionsTable";
 import {TapContext} from "../../../../App";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
-import Filters from "../../../shared/filtering/Filters";
+import Filters, {FILTER_TYPE} from "../../../shared/filtering/Filters";
 import DNSTransactionCountChart from "./widgets/DNSTransactionCountChart";
 
 export default function DNSTransactionLogsPage() {
@@ -45,17 +45,17 @@ export default function DNSTransactionLogsPage() {
                                        setTimeRange={setTimeRange}
                                        slim={true}/>
 
-                <Filters filters={filters} setFilters={setFilters} fields={[
-                  {name: "query_value", title: "Query Value", help: ""},
-                  {name: "query_type", title: "Query Type", help: ""},
-                  {name: "query_etld", title: "Query eTLD", help: ""},
-                  {name: "response_value", title: "Response Value", help: ""},
-                  {name: "response_type", title: "Response Type", help: ""},
-                  {name: "response_etld", title: "Response eTLD", help: ""},
-                  {name: "client_address", title: "Client Address", help: ""},
-                  {name: "server_address", title: "Server Address", help: ""},
-                  {name: "server_port", title: "Server Port", help: ""}
-                ]}/>
+                <Filters filters={filters} setFilters={setFilters} fields={{
+                  query_value: {title: "Query Value", type: FILTER_TYPE.STRING},
+                  query_type: { title: "Query Type", type: FILTER_TYPE.STRING},
+                  query_etld: { title: "Query eTLD", type: FILTER_TYPE.STRING},
+                  response_value: { title: "Response Value", type: FILTER_TYPE.STRING},
+                  response_type: { title: "Response Type", type: FILTER_TYPE.STRING},
+                  response_etld: { title: "Response eTLD", type: FILTER_TYPE.STRING},
+                  client_address: { title: "Client Address", type: FILTER_TYPE.IP_ADDRESS},
+                  server_address: { title: "Server Address", type: FILTER_TYPE.IP_ADDRESS},
+                  server_port: {title: "Server Port", type: FILTER_TYPE.NUMERIC}
+                }} />
               </div>
             </div>
           </div>
