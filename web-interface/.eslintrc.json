@@ -37,7 +37,8 @@
                 "react/jsx-no-target-blank": "off",
                 "multiline-ternary": "off",
                 "dot-notation": "off",
-                "space-infix-ops": "off"
+                "space-infix-ops": "off",
+                "key-spacing": "off"
             }
         }
    ],
