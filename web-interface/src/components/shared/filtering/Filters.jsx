@@ -3,24 +3,36 @@ import AppliedFilterList from "./AppliedFilterList";
 import FilterValueInput from "./FilterValueInput";
 import validateStringNotEmpty from "./validators/StringNotEmptyValidator";
 import validateNumberNotNegative from "./validators/NumberNotNegativeValidator";
+import validateIPAddressValid from "./validators/IPAddressValidator";
+import validatePortNumberValid from "./validators/PortNumberValidator";
+import validateDNSDataTypeValid from "./validators/DNSTypeValidator";
+import validateCIDRValid from "./validators/CIDRValidator";
 
 export const FILTER_TYPE = {
   STRING: {
     name: "string",
-    validators: [validateStringNotEmpty]
+    validators: [validateStringNotEmpty],
+    placeholder: null
   },
   NUMERIC: {
     name: "numeric",
-    validators: [validateNumberNotNegative]
+    validators: [validateNumberNotNegative],
+    placeholder: null
   },
   IP_ADDRESS: {
-    name: "ip_address"
+    name: "ip_address",
+    validators: [validateIPAddressValid],
+    placeholder: "172.16.0.1"
   },
   PORT_NUMBER: {
-    name: "port_number"
+    name: "port_number",
+    validators: [validatePortNumberValid],
+    placeholder: null
   },
   DNS_TYPE: {
-    name: "dns_type"
+    name: "dns_type",
+    validators: [validateDNSDataTypeValid],
+    placeholder: "CNAME"
   }
 }
 
@@ -33,18 +45,102 @@ export const FIELD_TYPE = {
 }
 
 export const OPERATORS = {
-  EQUALS:             { name: "equals", sign: "==", placeholder: "", no_value: false, field_type: FIELD_TYPE.ANY_TEXT },
-  NOT_EQUALS:         { name: "not_equals", sign: "!=", placeholder: "", no_value: false, field_type: FIELD_TYPE.ANY_TEXT },
-  EQUALS_NUMERIC:     { name: "equals_numeric", sign: "==", placeholder: "", no_value: false, field_type: FIELD_TYPE.NUMBER },
-  NOT_EQUALS_NUMERIC: { name: "not_equals_numeric", sign: "!=", placeholder: "", no_value: false, field_type: FIELD_TYPE.NUMBER },
-  REGEX_MATCH:        { name: "regex_match", sign: "~=", placeholder: "", no_value: false, field_type: FIELD_TYPE.REGEX_TEXT },
-  NOT_REGEX_MATCH:    { name: "not_regex_match", sign: "!~=", placeholder: "", no_value: false, field_type: FIELD_TYPE.REGEX_TEXT },
-  GREATER_THAN:       { name: "greater_than", sign: ">", placeholder: "", no_value: false, field_type: FIELD_TYPE.NUMBER },
-  SMALLER_THAN:       { name: "smaller_than", sign: "<", placeholder: "", no_value: false, field_type: FIELD_TYPE.NUMBER },
-  IN_CIDR:            { name: "in_cidr", sign: "IN CIDR:", placeholder: "172.16.0.0/24", no_value: false, field_type: FIELD_TYPE.CIDR },
-  NOT_IN_CIDR:        { name: "not_in_cidr", sign: "NOT IN CIDR:", placeholder: "172.16.0.0/24", no_value: false, field_type: FIELD_TYPE.CIDR },
-  IS_PRIVATE:         { name: "is_private", sign: "IS PRIVATE", placeholder: "", no_value: true, field_type: FIELD_TYPE.NO_VALUE },
-  IS_NOT_PRIVATE:     { name: "is_not_private", sign: "IS NOT PRIVATE", placeholder: "", no_value: true, field_type: FIELD_TYPE.NO_VALUE }
+  EQUALS: {
+    name: "equals",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    field_type: FIELD_TYPE.ANY_TEXT
+  },
+  NOT_EQUALS: {
+    name: "not_equals",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    field_type: FIELD_TYPE.ANY_TEXT
+  },
+  EQUALS_NUMERIC: {
+    name: "equals_numeric",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    field_type: FIELD_TYPE.NUMBER
+  },
+  NOT_EQUALS_NUMERIC: {
+    name: "not_equals_numeric",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    field_type: FIELD_TYPE.NUMBER
+  },
+  REGEX_MATCH: {
+    name: "regex_match",
+    sign: "~=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    field_type: FIELD_TYPE.REGEX_TEXT
+  },
+  NOT_REGEX_MATCH: {
+    name: "not_regex_match",
+    sign: "!~=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    field_type: FIELD_TYPE.REGEX_TEXT
+  },
+  GREATER_THAN: {
+    name: "greater_than",
+    sign: ">",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    field_type: FIELD_TYPE.NUMBER
+  },
+  SMALLER_THAN: {
+    name: "smaller_than",
+    sign: "<",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    field_type: FIELD_TYPE.NUMBER
+  },
+  IN_CIDR: {
+    name: "in_cidr",
+    sign: "IN CIDR:",
+    placeholder: "172.16.0.0/24",
+    no_value: false,
+    validators: [validateCIDRValid],
+    field_type: FIELD_TYPE.CIDR
+  },
+  NOT_IN_CIDR: {
+    name: "not_in_cidr",
+    sign: "NOT IN CIDR:",
+    placeholder: "172.16.0.0/24",
+    no_value: false,
+    validators: [validateCIDRValid],
+    field_type: FIELD_TYPE.CIDR
+  },
+  IS_PRIVATE: {
+    name: "is_private",
+    sign: "IS PRIVATE",
+    placeholder: null,
+    no_value: true,
+    validators: [],
+    field_type: FIELD_TYPE.NO_VALUE
+  },
+  IS_NOT_PRIVATE: {
+    name: "is_not_private",
+    sign: "IS NOT PRIVATE",
+    placeholder: null,
+    no_value: true,
+    validators: [],
+    field_type: FIELD_TYPE.NO_VALUE
+  }
 }
 
 export default function Filters(props) {
@@ -54,12 +150,14 @@ export default function Filters(props) {
   const setFilters = props.setFilters;
 
   const defaultOperator = OPERATORS.EQUALS;
+  const defaultFilter = { name: "", field: "0", type: FILTER_TYPE.STRING };
 
   const [selectionMade, setSelectionMade] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState({ name: "", field: "0", type: FILTER_TYPE.STRING });
+  const [selectedFilter, setSelectedFilter] = useState(defaultFilter);
   const [allowedOperators, setAllowedOperators] = useState([defaultOperator]);
   const [selectedOperator, setSelectedOperator] = useState(defaultOperator);
   const [filterValue, setFilterValue] = useState("");
+  const [validatorsFailed, setValidatorsFailed] = useState(false);
 
   const onFilterSelected = (e) => {
     e.preventDefault();
@@ -67,7 +165,13 @@ export default function Filters(props) {
     setFilterValue("");
 
     const selectedOption = e.target.options[e.target.selectedIndex];
-    setSelectedFilter({ name: selectedOption.text, field: selectedOption.value, type: selectedOption.type });
+    const filterOption = fields[selectedOption.value];
+
+    if (filterOption) {
+      setSelectedFilter({ name: filterOption.title, field: selectedOption.value, type: filterOption.type });
+    } else {
+      setSelectedFilter(defaultFilter);
+    }
 
     if (selectedOption.value === "0") {
       // Reset.
@@ -112,6 +216,8 @@ export default function Filters(props) {
           break;
       }
     }
+
+    validate();
   }
 
   useEffect(() => {
@@ -135,8 +241,33 @@ export default function Filters(props) {
 
   const onFilterValueChanged = (e) => {
     e.preventDefault();
-
     setFilterValue(e.target.value);
+  }
+
+  useEffect(() => {
+    validate();
+  }, [filterValue]);
+
+  const validate = () => {
+    // Potential operator validators have priority over filter validators.
+    let validators;
+    if (selectedOperator.validators.length > 0) {
+      validators = selectedOperator.validators;
+    } else if (selectedFilter.type.validators.length > 0) {
+      validators = selectedFilter.type.validators;
+    } else {
+      validators = null;
+    }
+
+    let failed = false;
+    for (const validator of validators) {
+      if (!validator(filterValue)) {
+        failed = true;
+        break;
+      }
+    }
+
+    setValidatorsFailed(failed);
   }
 
   const onFilterAdded = (e) => {
@@ -174,12 +305,14 @@ export default function Filters(props) {
           </select>
 
           <FilterValueInput filterValue={filterValue}
-                            fieldType={selectedOperator.field_type}
+                            operator={selectedOperator}
                             filterType={selectedFilter.type}
                             onChange={onFilterValueChanged}
                             disabled={!selectionMade || (selectionMade && selectedOperator.no_value)} />
 
-          <button className="btn btn-primary" type="button" disabled={selectedFilter.field === "0"} onClick={onFilterAdded}>
+          <button className="btn btn-primary" type="button"
+                  disabled={validatorsFailed || selectedFilter.field === "0"}
+                  onClick={onFilterAdded}>
             Add Filter
           </button>
         </div>
