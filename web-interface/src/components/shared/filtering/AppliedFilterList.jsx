@@ -4,6 +4,11 @@ export default function AppliedFilterList(props) {
 
   const filters = props.filters;
 
+  if (filters === null || filters === undefined) {
+    // Modals don't provide existing filters.
+    return null
+  }
+
   if (!filters || filters.length === 0) {
     return <i>No Filters defined.</i>
   }

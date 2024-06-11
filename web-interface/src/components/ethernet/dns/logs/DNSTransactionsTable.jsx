@@ -13,6 +13,7 @@ export default function DNSTransactionsTable(props) {
 
   const timeRange = props.timeRange;
   const filters = props.filters;
+  const setFilters = props.setFilters;
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -54,7 +55,7 @@ export default function DNSTransactionsTable(props) {
           </thead>
           <tbody>
           {data.logs.map((log, i) => {
-            return <DNSTransactionLogTableRow log={log} key={i} />
+            return <DNSTransactionLogTableRow key={i} log={log} setFilters={setFilters} />
           })}
           </tbody>
         </table>

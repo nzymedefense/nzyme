@@ -149,6 +149,10 @@ export default function Filters(props) {
   const filters = props.filters;
   const setFilters = props.setFilters;
 
+  const hideTitle = props.hideTitle;
+  const preSelectedField = props.preSelectedField;
+  const preSelectedValue = props.preSelectedValue;
+
   const defaultOperator = OPERATORS.EQUALS;
   const defaultFilter = { name: "", field: "0", type: FILTER_TYPE.STRING };
 
@@ -162,18 +166,22 @@ export default function Filters(props) {
   const onFilterSelected = (e) => {
     e.preventDefault();
 
-    setFilterValue("");
-
     const selectedOption = e.target.options[e.target.selectedIndex];
     const filterOption = fields[selectedOption.value];
 
     if (filterOption) {
-      setSelectedFilter({ name: filterOption.title, field: selectedOption.value, type: filterOption.type });
+      changeFilter(filterOption.title, selectedOption.value, filterOption.type);
     } else {
-      setSelectedFilter(defaultFilter);
+      // The option dialog placeholder was selected again.
+      changeFilter(defaultFilter.name, defaultFilter.field, defaultFilter.type);
     }
+  }
 
-    if (selectedOption.value === "0") {
+  const changeFilter = (name, field, type) => {
+    setFilterValue("");
+    setSelectedFilter({ name: name, field: field, type: type });
+
+    if (field === "0") {
       // Reset.
       setSelectionMade(false);
       setSelectedOperator(defaultOperator);
@@ -182,8 +190,8 @@ export default function Filters(props) {
     }
 
     // Set options allowed by filter.
-    if (fields[selectedOption.value]) {
-      switch (fields[selectedOption.value].type) {
+    if (fields[field]) {
+      switch (fields[field].type) {
         case FILTER_TYPE.STRING:
         case FILTER_TYPE.DNS_TYPE:
           setAllowedOperators([
@@ -248,6 +256,14 @@ export default function Filters(props) {
     validate();
   }, [filterValue]);
 
+  useEffect(() => {
+    if (preSelectedField && preSelectedValue) {
+      changeFilter(fields[preSelectedField].title, preSelectedField, fields[preSelectedField].type);
+      setFilterValue(preSelectedValue);
+    }
+  }, [preSelectedField, preSelectedValue]);
+
+
   const validate = () => {
     // Potential operator validators have priority over filter validators.
     let validators;
@@ -284,10 +300,10 @@ export default function Filters(props) {
   }
 
   return (
-      <div className="filters mt-3">
-        <h4>Filters</h4>
+      <div className="filters">
+        {hideTitle ? null : <h4>Filters</h4> }
 
-        <div className="input-group mb-3">
+        <div className="input-group">
           <select className="form-select form-select-sm" value={selectedFilter.field}
                   onChange={onFilterSelected}>
             <option value="0">Select a Field</option>

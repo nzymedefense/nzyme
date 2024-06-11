@@ -1024,3 +1024,8 @@ i.channel-width-unsupported {
 div.filters {
     max-width: 700px;
 }
+
+i.filter-value {
+    margin-left: 5px;
+    cursor: pointer;
+}

@@ -7,6 +7,7 @@ import {TapContext} from "../../../../App";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import Filters, {FILTER_TYPE} from "../../../shared/filtering/Filters";
 import DNSTransactionCountChart from "./widgets/DNSTransactionCountChart";
+import {DNS_FILTER_FIELDS} from "../DNSFilterFields";
 
 export default function DNSTransactionLogsPage() {
 
@@ -45,17 +46,7 @@ export default function DNSTransactionLogsPage() {
                                        setTimeRange={setTimeRange}
                                        slim={true}/>
 
-                <Filters filters={filters} setFilters={setFilters} fields={{
-                  query_value: { title: "Query Value", type: FILTER_TYPE.STRING },
-                  query_type: { title: "Query Type", type: FILTER_TYPE.DNS_TYPE },
-                  query_etld: { title: "Query eTLD", type: FILTER_TYPE.STRING },
-                  response_value: { title: "Response Value", type: FILTER_TYPE.STRING },
-                  response_type: { title: "Response Type", type: FILTER_TYPE.DNS_TYPE },
-                  response_etld: { title: "Response eTLD", type: FILTER_TYPE.STRING },
-                  client_address: { title: "Client Address", type: FILTER_TYPE.IP_ADDRESS },
-                  server_address: { title: "Server Address", type: FILTER_TYPE.IP_ADDRESS },
-                  server_port: { title: "Server Port", type: FILTER_TYPE.PORT_NUMBER }
-                }} />
+                <Filters filters={filters} setFilters={setFilters} fields={DNS_FILTER_FIELDS} />
               </div>
             </div>
           </div>
@@ -68,7 +59,7 @@ export default function DNSTransactionLogsPage() {
                 <CardTitleWithControls title="Transaction Count"
                                        fixedAppliedTimeRange={timeRange}/>
 
-                <DNSTransactionCountChart timeRange={timeRange} filters={filters} />
+                <DNSTransactionCountChart timeRange={timeRange} filters={filters} setFilters={setFilters} />
               </div>
             </div>
           </div>
@@ -81,7 +72,7 @@ export default function DNSTransactionLogsPage() {
                 <CardTitleWithControls title="Transactions"
                                        fixedAppliedTimeRange={timeRange}/>
 
-                <DNSTransactionsTable timeRange={timeRange} filters={filters} />
+                <DNSTransactionsTable timeRange={timeRange} filters={filters} setFilters={setFilters} />
               </div>
             </div>
           </div>
