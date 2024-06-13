@@ -12,6 +12,7 @@ mod system_state;
 mod logging;
 mod dot11;
 mod alerting;
+mod bluetooth;
 
 use std::{time, thread::{self, sleep}, time::Duration, sync::{Arc, Mutex}, process::exit};
 use anyhow::Error;
@@ -246,6 +247,28 @@ fn main() {
         covered_wifi_spectrum = None;
         wifi_device_cycle_times = None;
     }
+
+    // Bluetooth capture. // TODO per device (DO WE NEED MULTIPLE DEVICES? LOOK UP BT CHANNELS ETC)
+    let bt_metrics = metrics.clone();
+    let bt_bus = dot11_bus.clone(); // TODO create BT bus
+    thread::spawn(move || {
+        let mut bt_capture = bluetooth::capture::Capture {
+            metrics: bt_metrics,
+            bus: bt_bus, // TODO create BT bus
+        };
+
+        let interface_name = "org.bluez.Adapter1"; // TOOD
+        loop {
+            bt_capture.run(interface_name).unwrap(); // TODO
+
+            error!("Bluetooth capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
+            /*match capture_metrics.lock() {
+                Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+            }*/ // TODO
+            thread::sleep(time::Duration::from_secs(5));
+        }
+    });
 
     // Processors.
     processors::distributor::spawn(ethernet_bus.clone(),
