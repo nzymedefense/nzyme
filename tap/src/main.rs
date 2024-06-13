@@ -259,7 +259,7 @@ fn main() {
 
         let interface_name = "org.bluez.Adapter1"; // TOOD
         loop {
-            bt_capture.run(interface_name).unwrap(); // TODO
+            bt_capture.run(interface_name);
 
             error!("Bluetooth capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
             /*match capture_metrics.lock() {
