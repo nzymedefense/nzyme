@@ -9,12 +9,13 @@ pub struct BluetoothDeviceAdvertisement {
     pub alias: String,
     pub class: Option<u32>,
     pub appearance: Option<u32>,
-    pub legacy_pairing: Option<bool>,
-    pub uuids: Option<Vec<String>>,
     pub modalias: Option<String>,
-    pub manufacturer_data: Vec<u8>,
-    pub service_data: Vec<String>,
     pub tx_power: Option<i16>,
-    pub adapter: String,
+
+    pub uuids: Option<Vec<String>>,
+    pub manufacturer_data: Option<Vec<u8>>,
+    pub service_data: Option<Vec<String>>,
+    
+    pub device: String,
     pub timestamp: DateTime<Utc>
 }

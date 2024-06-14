@@ -24,8 +24,13 @@ impl Capture {
             let bredr_devices = Self::discover_devices(device_name, "bredr");
             let le_devices = Self::discover_devices(device_name, "le");
 
-            info!("{:?}", bredr_devices.unwrap());
-            info!("{:?}", le_devices.unwrap());
+            for dev in bredr_devices.unwrap().values() {
+                info!("{:?}", dev);
+            }
+
+            for dev in le_devices.unwrap().values() {
+                info!("{:?}", dev);
+            }
 
             // TODO submit to Bluetooth bus for processing.
         }
@@ -81,7 +86,6 @@ impl Capture {
                     // Mandatory fields.
                     let mac = Self::parse_mandatory_string_prop(props, "Address");
                     let alias = Self::parse_mandatory_string_prop(props, "Alias");
-                    let adapter = Self::parse_mandatory_string_prop(props, "Adapter");
 
                     let company_id = if let Some(v) = props.get("ManufacturerData") {
                         Self::parse_company_identifier(v)
@@ -89,26 +93,30 @@ impl Capture {
                         None
                     };
 
-
                     // Optional fields.
                     let rssi = Self::parse_optional_i16_prop(props, "RSSI");
                     let tx_power = Self::parse_optional_i16_prop(props, "TxPower");
+                    let name = Self::parse_optional_string_prop(props, "Name");
+                    let class = Self::parse_optional_u32_prop(props, "Class");
+                    let appearance = Self::parse_optional_u32_prop(props, "Appearance");
+                    let modalias = Self::parse_optional_string_prop(props, "Modalias");
 
                     let advertisement = BluetoothDeviceAdvertisement {
                         mac: mac.clone(),
-                        name: None,
+                        name,
                         rssi,
                         company_id,
                         alias,
-                        class: None,
-                        appearance: None,
-                        legacy_pairing: None,
-                        uuids: None,
-                        modalias: None,
-                        manufacturer_data: vec![],
-                        service_data: vec![],
+                        class,
+                        appearance,
+                        modalias,
                         tx_power,
-                        adapter,
+
+                        uuids: None,
+                        manufacturer_data: None,
+                        service_data: None,
+
+                        device: device_name.to_string(),
                         timestamp: Utc::now(),
                     };
 
@@ -126,7 +134,7 @@ impl Capture {
     fn parse_mandatory_string_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
         -> String {
 
-        if let Some(v) = props.get("Address") {
+        if let Some(v) = props.get(name) {
             match v.as_str() {
                 Some(s) => s.to_string(),
                 None => {
@@ -140,6 +148,22 @@ impl Capture {
         }
     }
 
+    fn parse_optional_string_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
+                                  -> Option<String> {
+
+        if let Some(v) = props.get(name) {
+            match v.as_str() {
+                Some(s) => Some(s.to_string()),
+                None => {
+                    warn!("Invalid Bluetooth advertisement, [{}] not a string: {:?}", name, props);
+                    None
+                }
+            }
+        } else {
+            None
+        }
+    }
+
     fn parse_optional_i16_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
         -> Option<i16> {
 
@@ -148,6 +172,38 @@ impl Capture {
                 Some(x) => Some(x as i16),
                 None => {
                     warn!("Invalid Bluetooth advertisement, [{}] not i64: {:?}", name, props);
+                    None
+                }
+            }
+        } else {
+            None
+        }
+    }
+
+    fn parse_optional_u16_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
+                               -> Option<u16> {
+
+        if let Some(v) = props.get(name) {
+            match v.as_u64() {
+                Some(x) => Some(x as u16),
+                None => {
+                    warn!("Invalid Bluetooth advertisement, [{}] not u64: {:?}", name, props);
+                    None
+                }
+            }
+        } else {
+            None
+        }
+    }
+
+    fn parse_optional_u32_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
+        -> Option<u32> {
+
+        if let Some(v) = props.get(name) {
+            match v.as_u64() {
+                Some(x) => Some(x as u32),
+                None => {
+                    warn!("Invalid Bluetooth advertisement, [{}] not u64: {:?}", name, props);
                     None
                 }
             }
