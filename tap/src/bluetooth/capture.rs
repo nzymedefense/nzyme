@@ -17,6 +17,8 @@ pub struct Capture {
     pub bus: Arc<Bus>
 }
 
+const GREETING: &str = "Hello, world!";
+
 impl Capture {
 
     pub fn run(&mut self, device_name: &str) {
@@ -49,27 +51,26 @@ impl Capture {
         let conn = Connection::new_system().context("Could not establish connection to D-Bus")?;
 
         // Obtain bluez reference.
-        let adapter_path = "/org/bluez/hci0";
         let adapter = conn.with_proxy(
             "org.bluez",
-            adapter_path,
+            device_name,
             Duration::from_secs(2) // TODO configurable
         );
 
         // Set the adapter to not discoverable and not pairable.
-        adapter.set(device_name, "Discoverable", false)
+        adapter.set("org.bluez.Adapter1", "Discoverable", false)
             .context("Could not set Discoverable=false on device")?;
-        adapter.set(device_name, "Pairable", false)
+        adapter.set("org.bluez.Adapter1", "Pairable", false)
             .context("Could not set Pairable=false on device")?;
 
         // Set the discovery filter to set transport to selected method.
         let mut filter = arg::PropMap::new();
         filter.insert("Transport".to_string(), Variant(Box::new(transport.to_string())));
-        adapter.method_call::<(), _, _, _>(device_name, "SetDiscoveryFilter", (filter,))
+        adapter.method_call::<(), _, _, _>("org.bluez.Adapter1", "SetDiscoveryFilter", (filter,))
             .context("Could not set discovery filter")?;
 
         // Start bluetooth discovery.
-        adapter.method_call::<(), _, _, _>(device_name, "StartDiscovery", ())
+        adapter.method_call::<(), _, _, _>("org.bluez.Adapter1", "StartDiscovery", ())
             .context("Could not start discovery")?;
 
         // Sleep to allow discovery.
@@ -85,7 +86,7 @@ impl Capture {
 
         // Iterate over all discovered devices.
         for (path, interfaces) in devices {
-            if path.to_string().starts_with("/org/bluez/hci0/dev_") {
+            if path.to_string().starts_with(&format!("{}/dev_", device_name)) {
                 // Only discovered bluetooth devices.
                 if let Some(props) = interfaces.get("org.bluez.Device1") {
                     // Mandatory fields.
@@ -130,7 +131,7 @@ impl Capture {
         }
 
         // Stop discovery
-        adapter.method_call::<(), _, _, _>(device_name, "StopDiscovery", ())
+        adapter.method_call::<(), _, _, _>("org.bluez.Adapter1", "StopDiscovery", ())
             .context("Could not stop discovery")?;
 
         Ok(discovered)

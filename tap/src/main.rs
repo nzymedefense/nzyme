@@ -248,7 +248,7 @@ fn main() {
         wifi_device_cycle_times = None;
     }
 
-    // Bluetooth capture. // TODO per device (DO WE NEED MULTIPLE DEVICES? LOOK UP BT CHANNELS ETC)
+    // Bluetooth capture. // TODO per device, WORKS WITHOUT ANY/EMPTY CONF
     let bt_metrics = metrics.clone();
     let bt_bus = dot11_bus.clone(); // TODO create BT bus
     thread::spawn(move || {
@@ -257,7 +257,7 @@ fn main() {
             bus: bt_bus, // TODO create BT bus
         };
 
-        let interface_name = "org.bluez.Adapter1"; // TOOD
+        let interface_name = "/org/bluez/hci0"; // TOOD (must not end with /)
         loop {
             bt_capture.run(interface_name);
 
