@@ -11,9 +11,10 @@ pub struct BluetoothDeviceAdvertisement {
     pub appearance: Option<u32>,
     pub modalias: Option<String>,
     pub tx_power: Option<i16>,
-
-    pub uuids: Option<Vec<String>>,
     pub manufacturer_data: Option<Vec<u8>>,
+
+    
+    pub uuids: Option<Vec<String>>,
     pub service_data: Option<Vec<String>>,
     
     pub device: String,

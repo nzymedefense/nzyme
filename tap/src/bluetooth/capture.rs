@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use anyhow::Error;
+use anyhow::{bail, Context, Error};
 use chrono::Utc;
 use dbus::arg;
 use dbus::arg::{RefArg, Variant};
@@ -45,38 +45,43 @@ impl Capture {
          */
         let mut discovered: HashMap<String, BluetoothDeviceAdvertisement> = HashMap::new();
 
-        // Connect do DBUS.
-        let conn = Connection::new_system().unwrap(); // TODO unwrap
+        // Connect do D-Bus.
+        let conn = Connection::new_system().context("Could not establish connection to D-Bus")?;
 
         // Obtain bluez reference.
         let adapter_path = "/org/bluez/hci0";
         let adapter = conn.with_proxy(
             "org.bluez",
             adapter_path,
-            Duration::from_millis(2500)
+            Duration::from_secs(2) // TODO configurable
         );
 
         // Set the adapter to not discoverable and not pairable.
-        adapter.set(device_name, "Discoverable", false).unwrap(); // TODO unwrap
-        adapter.set(device_name, "Pairable", false).unwrap(); // TODO unwrap
+        adapter.set(device_name, "Discoverable", false)
+            .context("Could not set Discoverable=false on device")?;
+        adapter.set(device_name, "Pairable", false)
+            .context("Could not set Pairable=false on device")?;
 
-        // Set the discovery filter to enable transport for LE
+        // Set the discovery filter to set transport to selected method.
         let mut filter = arg::PropMap::new();
         filter.insert("Transport".to_string(), Variant(Box::new(transport.to_string())));
-        adapter.method_call::<(), _, _, _>(device_name, "SetDiscoveryFilter", (filter,)).unwrap();
+        adapter.method_call::<(), _, _, _>(device_name, "SetDiscoveryFilter", (filter,))
+            .context("Could not set discovery filter")?;
 
         // Start bluetooth discovery.
-        adapter.method_call::<(), _, _, _>(device_name, "StartDiscovery", ()).unwrap(); // TODO unwrap
+        adapter.method_call::<(), _, _, _>(device_name, "StartDiscovery", ())
+            .context("Could not start discovery")?;
 
         // Sleep to allow discovery.
         std::thread::sleep(Duration::from_secs(30)); // TODO configurable (default: 30)
+
         // Access the object manager to list all devices
         let obj_manager_path = "/";
-        let obj_manager = conn.with_proxy("org.bluez", obj_manager_path, Duration::from_millis(2500));
+        let obj_manager = conn.with_proxy("org.bluez", obj_manager_path, Duration::from_secs(2)); // TODO configurable
         #[allow(clippy::complexity)]
-            let (devices, ): (HashMap<dbus::Path<'static>, HashMap<String, HashMap<String, Variant<Box<dyn RefArg>>>>>, ) =
-            obj_manager.method_call("org.freedesktop.DBus.ObjectManager", "GetManagedObjects", ()).unwrap(); // TODO unwrap
-
+        let (devices, ): (HashMap<dbus::Path<'static>, HashMap<String, HashMap<String, Variant<Box<dyn RefArg>>>>>, ) =
+            obj_manager.method_call("org.freedesktop.DBus.ObjectManager", "GetManagedObjects", ())
+                .context("Could not fetch devices from object manager")?;
 
         // Iterate over all discovered devices.
         for (path, interfaces) in devices {
@@ -87,12 +92,6 @@ impl Capture {
                     let mac = Self::parse_mandatory_string_prop(props, "Address");
                     let alias = Self::parse_mandatory_string_prop(props, "Alias");
 
-                    let company_id = if let Some(v) = props.get("ManufacturerData") {
-                        Self::parse_company_identifier(v)
-                    } else {
-                        None
-                    };
-
                     // Optional fields.
                     let rssi = Self::parse_optional_i16_prop(props, "RSSI");
                     let tx_power = Self::parse_optional_i16_prop(props, "TxPower");
@@ -100,9 +99,18 @@ impl Capture {
                     let class = Self::parse_optional_u32_prop(props, "Class");
                     let appearance = Self::parse_optional_u32_prop(props, "Appearance");
                     let modalias = Self::parse_optional_string_prop(props, "Modalias");
+                    let uuids = Self::parse_optional_string_vector(props, "UUIDs");
+                    let service_data = Self::parse_optional_string_vector(props, "ServiceData");
 
-                    let advertisement = BluetoothDeviceAdvertisement {
-                        mac: mac.clone(),
+                    // Manufacturer data incl. company ID.
+                    let (company_id, manufacturer_data) = if let Some(v) = props.get("ManufacturerData") {
+                        Self::parse_manufacturer_data(v)
+                    } else {
+                        (None, None)
+                    };
+
+                    discovered.insert(mac.clone(), BluetoothDeviceAdvertisement {
+                        mac,
                         name,
                         rssi,
                         company_id,
@@ -111,22 +119,19 @@ impl Capture {
                         appearance,
                         modalias,
                         tx_power,
-
-                        uuids: None,
-                        manufacturer_data: None,
-                        service_data: None,
-
+                        manufacturer_data,
+                        uuids,
+                        service_data,
                         device: device_name.to_string(),
                         timestamp: Utc::now(),
-                    };
-
-                    discovered.insert(mac, advertisement);
+                    });
                 }
             }
         }
 
         // Stop discovery
-        adapter.method_call::<(), _, _, _>(device_name, "StopDiscovery", ()).unwrap(); // TODO unwrap
+        adapter.method_call::<(), _, _, _>(device_name, "StopDiscovery", ())
+            .context("Could not stop discovery")?;
 
         Ok(discovered)
     }
@@ -180,22 +185,6 @@ impl Capture {
         }
     }
 
-    fn parse_optional_u16_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
-                               -> Option<u16> {
-
-        if let Some(v) = props.get(name) {
-            match v.as_u64() {
-                Some(x) => Some(x as u16),
-                None => {
-                    warn!("Invalid Bluetooth advertisement, [{}] not u64: {:?}", name, props);
-                    None
-                }
-            }
-        } else {
-            None
-        }
-    }
-
     fn parse_optional_u32_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
         -> Option<u32> {
 
@@ -212,15 +201,61 @@ impl Capture {
         }
     }
 
-    fn parse_company_identifier(manufacturer_data_var: &Variant<Box<dyn RefArg>>) -> Option<u16> {
-        if let Some(mut iter) = manufacturer_data_var.0.as_iter() {
+    fn parse_optional_string_vector(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
+        -> Option<Vec<String>> {
+
+        if let Some(v) = props.get(name) {
+            match v.0.as_iter() {
+                Some(iter) => {
+                    let mut data = Vec::new();
+                    for val in iter {
+                        match val.as_str() {
+                            Some(str) => {
+                                data.push(str.to_string())
+                            },
+                            None => {
+                                warn!("Invalid Bluetooth advertisement, [{}] includes element that \
+                                is not a string: {:?}", name, props);
+
+                                return None
+                            }
+                        }
+                    }
+
+                    if data.is_empty() {
+                        None
+                    } else {
+                        Some(data)
+                    }
+                },
+                None => None
+            }
+        } else {
+            None
+        }
+    }
+
+    fn parse_manufacturer_data(manufacturer_data_var: &Variant<Box<dyn RefArg>>)
+        -> (Option<u16>, Option<Vec<u8>>) {
+
+        let company_id = if let Some(mut iter) = manufacturer_data_var.0.as_iter() {
             match iter.nth(0) {
                 Some(key) => key.as_u64().map(|val| val as u16),
                 None => None
             }
         } else {
             None
-        }
+        };
+
+        let data = manufacturer_data_var.0.as_iter().and_then(|mut iter| {
+            iter.nth(1)?.as_iter().and_then(|mut iter| {
+                iter.nth(0)?.as_iter().map(|iter| {
+                    iter.filter_map(|val| val.as_u64().map(|v| v as u8)).collect::<Vec<u8>>()
+                })
+            })
+        });
+
+        (company_id, data)
     }
 
 }
