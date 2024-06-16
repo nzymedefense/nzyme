@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use anyhow::{bail, Context, Error};
+use anyhow::{Context, Error};
 use chrono::Utc;
 use dbus::arg;
 use dbus::arg::{RefArg, Variant};
@@ -17,7 +17,7 @@ pub struct Capture {
     pub bus: Arc<Bus>
 }
 
-const GREETING: &str = "Hello, world!";
+const DBUS_INTERFACE: &str = "org.bluez.Adapter1";
 
 impl Capture {
 
@@ -58,19 +58,19 @@ impl Capture {
         );
 
         // Set the adapter to not discoverable and not pairable.
-        adapter.set("org.bluez.Adapter1", "Discoverable", false)
+        adapter.set(DBUS_INTERFACE, "Discoverable", false)
             .context("Could not set Discoverable=false on device")?;
-        adapter.set("org.bluez.Adapter1", "Pairable", false)
+        adapter.set(DBUS_INTERFACE, "Pairable", false)
             .context("Could not set Pairable=false on device")?;
 
         // Set the discovery filter to set transport to selected method.
         let mut filter = arg::PropMap::new();
         filter.insert("Transport".to_string(), Variant(Box::new(transport.to_string())));
-        adapter.method_call::<(), _, _, _>("org.bluez.Adapter1", "SetDiscoveryFilter", (filter,))
+        adapter.method_call::<(), _, _, _>(DBUS_INTERFACE, "SetDiscoveryFilter", (filter,))
             .context("Could not set discovery filter")?;
 
         // Start bluetooth discovery.
-        adapter.method_call::<(), _, _, _>("org.bluez.Adapter1", "StartDiscovery", ())
+        adapter.method_call::<(), _, _, _>(DBUS_INTERFACE, "StartDiscovery", ())
             .context("Could not start discovery")?;
 
         // Sleep to allow discovery.
@@ -131,7 +131,7 @@ impl Capture {
         }
 
         // Stop discovery
-        adapter.method_call::<(), _, _, _>("org.bluez.Adapter1", "StopDiscovery", ())
+        adapter.method_call::<(), _, _, _>(DBUS_INTERFACE, "StopDiscovery", ())
             .context("Could not stop discovery")?;
 
         Ok(discovered)

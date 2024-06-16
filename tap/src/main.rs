@@ -257,7 +257,7 @@ fn main() {
             bus: bt_bus, // TODO create BT bus
         };
 
-        let interface_name = "/org/bluez/hci0"; // TOOD (must not end with /)
+        let interface_name = "/org/bluez/hci1"; // TOOD (must not end with /)
         loop {
             bt_capture.run(interface_name);
 
