@@ -12,6 +12,7 @@ pub struct Configuration {
     pub general: General,
     pub wifi_interfaces: Option<HashMap<String, WifiInterface>>,
     pub ethernet_interfaces: Option<HashMap<String, EthernetInterface>>,
+    pub bluetooth_interfaces: Option<HashMap<String, BluetoothInterface>>,
     pub performance: Performance,
     pub protocols: Protocols,
     pub misc: Misc
@@ -43,6 +44,15 @@ pub struct WifiInterface {
 #[derive(Debug, Clone, Deserialize, Eq, PartialEq)]
 pub enum ChannelWidthHoppingMode {
     full, limited
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct BluetoothInterface {
+    pub active: bool,
+    pub bt_classic_enabled: bool,
+    pub bt_le_enabled: bool,
+    pub discovery_period_seconds: i32,
+    pub dbus_method_call_timeout_seconds: i32
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -182,7 +192,7 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     }
 
     // Validate WiFi interfaces configuration
-    if let Some(wifi_interfaces) = doc.clone().wifi_interfaces {
+    if let Some(wifi_interfaces) = &doc.wifi_interfaces {
         let mut assigned_channels_2g: Vec<u16> = Vec::new();
         let mut assigned_channels_5g: Vec<u16> = Vec::new();
         let mut assigned_channels_6g: Vec<u16> = Vec::new();
@@ -211,6 +221,23 @@ pub fn load(path: String) -> Result<Configuration, Error> {
                 } else {
                     assigned_channels_6g.push(*channel);
                 }
+            }
+        }
+    }
+
+    // Validate Bluetooth interfaces configuration.
+    if let Some(bluetooth_interfaces) = &doc.bluetooth_interfaces {
+        for interface in bluetooth_interfaces.values() {
+            if interface.discovery_period_seconds <= 0 {
+                bail!("Configuration variable `bluetooth_interfaces.*.discovery_period_seconds` must be set to a value greater than 0.");
+            }
+
+            if interface.dbus_method_call_timeout_seconds <= 0 {
+                bail!("Configuration variable `bluetooth_interfaces.*.dbus_method_call_timeout_seconds` must be set to a value greater than 0.");
+            }
+
+            if !interface.bt_classic_enabled && !interface.bt_le_enabled {
+                bail!("Bluetooth interface cannot have both bluetooth classic and LE disabled.")
             }
         }
     }

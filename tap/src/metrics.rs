@@ -62,7 +62,8 @@ pub struct Channels {
 #[derive(Clone, Display)]
 pub enum CaptureType {
     Ethernet,
-    WiFi
+    WiFi,
+    Bluetooth
 }
 
 #[derive(Clone)]

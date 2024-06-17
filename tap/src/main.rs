@@ -131,6 +131,7 @@ fn main() {
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new()));
     let ethernet_bus = Arc::new(Bus::new(metrics.clone(), "ethernet_data".to_string(), configuration.clone()));
     let dot11_bus = Arc::new(Bus::new(metrics.clone(), "dot11_frames".to_string(), configuration.clone()));
+    let bluetooth_bus = Arc::new(Bus::new(metrics.clone(), "bluetooth_data".to_string(), configuration.clone()));
 
     let leaderlink = match Leaderlink::new(configuration.clone(), metrics.clone(), ethernet_bus.clone(), dot11_bus.clone()) {
         Ok(leaderlink) => Arc::new(Mutex::new(leaderlink)),
@@ -160,8 +161,7 @@ fn main() {
     });
 
     // Ethernet Capture.
-    let ethernet_capture_conf = configuration.clone();
-    if let Some(ethernet_interfaces) = ethernet_capture_conf.ethernet_interfaces {
+    if let Some(ethernet_interfaces) = &configuration.ethernet_interfaces {
         for (interface_name, interface_config) in ethernet_interfaces {
             if !interface_config.active {
                 info!("Skipping disabled Ethernet interface [{}].", interface_name);
@@ -169,6 +169,7 @@ fn main() {
             }
             let capture_metrics = metrics.clone();
             let capture_bus = ethernet_bus.clone();
+            let interface_name = interface_name.clone();
             thread::spawn(move || {
                 let mut ethernet_capture = ethernet::capture::Capture {
                     metrics: capture_metrics.clone(),
@@ -195,8 +196,7 @@ fn main() {
     }
 
     // WiFi capture.
-    let wifi_capture_conf = configuration.clone();
-    if let Some(wifi_interfaces) = wifi_capture_conf.wifi_interfaces {
+    if let Some(wifi_interfaces) = &configuration.wifi_interfaces {
         for (interface_name, interface_config) in wifi_interfaces {
             if !interface_config.active {
                 info!("Skipping disabled WiFi interface [{}].", interface_name);
@@ -205,6 +205,7 @@ fn main() {
 
             let capture_metrics = metrics.clone();
             let capture_bus = dot11_bus.clone();
+            let interface_name = interface_name.clone();
             thread::spawn(move || {
                 let mut dot11_capture = dot11::capture::Capture {
                     metrics: capture_metrics.clone(),
@@ -248,27 +249,43 @@ fn main() {
         wifi_device_cycle_times = None;
     }
 
-    // Bluetooth capture. // TODO per device, WORKS WITHOUT ANY/EMPTY CONF
-    let bt_metrics = metrics.clone();
-    let bt_bus = dot11_bus.clone(); // TODO create BT bus
-    thread::spawn(move || {
-        let mut bt_capture = bluetooth::capture::Capture {
-            metrics: bt_metrics,
-            bus: bt_bus, // TODO create BT bus
-        };
+    // Bluetooth capture.
+    if let Some(bluetooth_interfaces) = &configuration.bluetooth_interfaces {
+        for (interface_name, interface_config) in bluetooth_interfaces {
+            if !interface_config.active {
+                info!("Skipping disabled Bluetooth interface [{}].", interface_name);
+                continue;
+            }
 
-        let interface_name = "/org/bluez/hci1"; // TOOD (must not end with /)
-        loop {
-            bt_capture.run(interface_name);
+            let capture_metrics = metrics.clone();
+            let capture_bus = bluetooth_bus.clone();
+            let interface_config = interface_config.clone();
+            let interface_name = interface_name.clone();
+            thread::spawn(move || {
+                let mut bt_capture = bluetooth::capture::Capture {
+                    configuration: interface_config,
+                    metrics: capture_metrics.clone(),
+                    bus: capture_bus
+                };
 
-            error!("Bluetooth capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
-            /*match capture_metrics.lock() {
-                Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
-                Err(e) => error!("Could not acquire mutex of metrics: {}", e)
-            }*/ // TODO
-            thread::sleep(time::Duration::from_secs(5));
+                match capture_metrics.lock() {
+                    Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::Bluetooth),
+                    Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                }
+
+                loop {
+                    bt_capture.run(&interface_name);
+
+                    error!("Bluetooth capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
+                    match capture_metrics.lock() {
+                        Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                        Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                    }
+                    sleep(Duration::from_secs(5));
+                }
+            });
         }
-    });
+    }
 
     // Processors.
     processors::distributor::spawn(ethernet_bus.clone(),

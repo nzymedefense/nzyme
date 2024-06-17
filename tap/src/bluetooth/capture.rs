@@ -9,12 +9,14 @@ use dbus::blocking::Connection;
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use log::{info, warn};
 use crate::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
+use crate::configuration::BluetoothInterface;
 use crate::messagebus::bus::Bus;
 use crate::metrics::Metrics;
 
 pub struct Capture {
     pub metrics: Arc<Mutex<Metrics>>,
-    pub bus: Arc<Bus>
+    pub bus: Arc<Bus>,
+    pub configuration: BluetoothInterface
 }
 
 const DBUS_INTERFACE: &str = "org.bluez.Adapter1";
@@ -23,22 +25,27 @@ impl Capture {
 
     pub fn run(&mut self, device_name: &str) {
         loop {
-            let bredr_devices = Self::discover_devices(device_name, "bredr");
-            let le_devices = Self::discover_devices(device_name, "le");
+            if self.configuration.bt_classic_enabled {
+                let bredr_devices = self.discover_devices(device_name, "bredr");
 
-            for dev in bredr_devices.unwrap().values() {
-                info!("{:?}", dev);
+                for dev in bredr_devices.unwrap().values() {
+                    info!("{:?}", dev);
+                }
             }
 
-            for dev in le_devices.unwrap().values() {
-                info!("{:?}", dev);
+            if self.configuration.bt_le_enabled {
+                let le_devices = self.discover_devices(device_name, "le");
+
+                for dev in le_devices.unwrap().values() {
+                    info!("{:?}", dev);
+                }
             }
 
             // TODO submit to Bluetooth bus for processing.
         }
     }
 
-    pub fn discover_devices(device_name: &str, transport: &str)
+    pub fn discover_devices(&self, device_name: &str, transport: &str)
         -> Result<HashMap<String, BluetoothDeviceAdvertisement>, Error> {
 
         /*
@@ -53,8 +60,8 @@ impl Capture {
         // Obtain bluez reference.
         let adapter = conn.with_proxy(
             "org.bluez",
-            device_name,
-            Duration::from_secs(2) // TODO configurable
+            format!("/org/bluez/{}", device_name),
+            Duration::from_secs(self.configuration.dbus_method_call_timeout_seconds as u64)
         );
 
         // Set the adapter to not discoverable and not pairable.
@@ -74,11 +81,15 @@ impl Capture {
             .context("Could not start discovery")?;
 
         // Sleep to allow discovery.
-        std::thread::sleep(Duration::from_secs(30)); // TODO configurable (default: 30)
+        std::thread::sleep(Duration::from_secs(self.configuration.discovery_period_seconds as u64));
 
         // Access the object manager to list all devices
         let obj_manager_path = "/";
-        let obj_manager = conn.with_proxy("org.bluez", obj_manager_path, Duration::from_secs(2)); // TODO configurable
+        let obj_manager = conn.with_proxy(
+            "org.bluez",
+            obj_manager_path,
+            Duration::from_secs(self.configuration.dbus_method_call_timeout_seconds as u64)
+        );
         #[allow(clippy::complexity)]
         let (devices, ): (HashMap<dbus::Path<'static>, HashMap<String, HashMap<String, Variant<Box<dyn RefArg>>>>>, ) =
             obj_manager.method_call("org.freedesktop.DBus.ObjectManager", "GetManagedObjects", ())
@@ -86,7 +97,7 @@ impl Capture {
 
         // Iterate over all discovered devices.
         for (path, interfaces) in devices {
-            if path.to_string().starts_with(&format!("{}/dev_", device_name)) {
+            if path.to_string().starts_with(&format!("/org/bluez/{}/dev_", device_name)) {
                 // Only discovered bluetooth devices.
                 if let Some(props) = interfaces.get("org.bluez.Device1") {
                     // Mandatory fields.
