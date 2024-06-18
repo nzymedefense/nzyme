@@ -40,7 +40,6 @@ impl Capture {
                     info!("{:?}", dev);
                 }
             }
-
             // TODO submit to Bluetooth bus for processing.
         }
     }
@@ -100,6 +99,19 @@ impl Capture {
             if path.to_string().starts_with(&format!("/org/bluez/{}/dev_", device_name)) {
                 // Only discovered bluetooth devices.
                 if let Some(props) = interfaces.get("org.bluez.Device1") {
+                    /*
+                     * Is this device connected to the Bluetooth adapter we are listening on?
+                     * Notify in log because this will negatively impact discovery. This is most
+                     * like a bluetooth device connected to the machine this tap runs on. The user
+                     * should either disconnect (and forget) the device or use another bluetooth
+                     * adapter that has no devices connected.
+                     */
+                    if let Some(true) = Self::parse_optional_bool_prop(props, "Connected") {
+                        warn!("Bluetooth adapter [{}] has a connected device. This will \
+                        negatively impact discovery. Disconnected and un-pair all bluetooth \
+                        devices from this machine. Device: {:?}", device_name, props)
+                    }
+
                     // Mandatory fields.
                     let mac = Self::parse_mandatory_string_prop(props, "Address");
                     let alias = Self::parse_mandatory_string_prop(props, "Alias");
@@ -151,66 +163,67 @@ impl Capture {
     fn parse_mandatory_string_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
         -> String {
 
-        if let Some(v) = props.get(name) {
-            match v.as_str() {
-                Some(s) => s.to_string(),
-                None => {
-                    warn!("Invalid Bluetooth advertisement, [{}] not a string: {:?}", name, props);
-                    "Invalid".to_string()
-                }
-            }
-        } else {
+        Self::parse_optional_string_prop(props, name).unwrap_or_else(|| {
             warn!("Invalid Bluetooth advertisement, not containing [{}]: {:?}", name, props);
             "Invalid".to_string()
-        }
+        })
     }
 
     fn parse_optional_string_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
                                   -> Option<String> {
-
-        if let Some(v) = props.get(name) {
-            match v.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => {
-                    warn!("Invalid Bluetooth advertisement, [{}] not a string: {:?}", name, props);
-                    None
-                }
-            }
-        } else {
-            None
-        }
+        props.get(name).and_then(|v|
+        v.as_str()
+            .map(|val| val.to_string())
+            .or_else(|| {
+                warn!("Invalid Bluetooth advertisement, [{}] not a string: {:?}", name, props);
+                None
+            })
+        )
     }
 
     fn parse_optional_i16_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
         -> Option<i16> {
-
-        if let Some(v) = props.get(name) {
+        props.get(name).and_then(|v| {
             match v.as_i64() {
-                Some(x) => Some(x as i16),
+                Some(val) if val <= i16::MAX as i64 => Some(val as i16),
+                Some(_) => {
+                    warn!("Invalid Bluetooth advertisement, [{}] value out of range for i64: {:?}", name, props);
+                    None
+                },
                 None => {
-                    warn!("Invalid Bluetooth advertisement, [{}] not i64: {:?}", name, props);
+                    warn!("Invalid Bluetooth advertisement, [{}] not u64 or not present: {:?}", name, props);
                     None
                 }
             }
-        } else {
-            None
-        }
+        })
     }
 
     fn parse_optional_u32_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
         -> Option<u32> {
-
-        if let Some(v) = props.get(name) {
+        props.get(name).and_then(|v| {
             match v.as_u64() {
-                Some(x) => Some(x as u32),
+                Some(val) if val <= u32::MAX as u64 => Some(val as u32),
+                Some(_) => {
+                    warn!("Invalid Bluetooth advertisement, [{}] value out of range for u32: {:?}", name, props);
+                    None
+                },
                 None => {
-                    warn!("Invalid Bluetooth advertisement, [{}] not u64: {:?}", name, props);
+                    warn!("Invalid Bluetooth advertisement, [{}] not u64 or not present: {:?}", name, props);
                     None
                 }
             }
-        } else {
-            None
-        }
+        })
+    }
+
+    fn parse_optional_bool_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
+        -> Option<bool> {
+
+        props.get(name).and_then(|v| {
+            v.0.as_any().downcast_ref::<bool>().copied().or_else(|| {
+                warn!("Invalid Bluetooth advertisement, [{}] not bool: {:?}", name, props);
+                None
+            })
+        })
     }
 
     fn parse_optional_string_vector(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)
