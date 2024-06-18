@@ -16,3 +16,8 @@ pub enum Dot11ChannelName {
     Dot11Broker,
     Dot11FramesPipeline,
 }
+
+#[derive(Debug, Clone, EnumIter, Display)]
+pub enum BluetoothChannelName {
+    BluetoothDevicesPipeline,
+}

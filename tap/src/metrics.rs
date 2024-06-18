@@ -6,7 +6,7 @@ use strum_macros::Display;
 use statrs::statistics::{Distribution, OrderStatistics, Data};
 
 use log::{warn, error, info};
-use crate::messagebus::channel_names::{Dot11ChannelName, EthernetChannelName};
+use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, EthernetChannelName};
 
 #[derive(Default, Clone)]
 pub struct TotalWithAverage {
@@ -49,6 +49,8 @@ pub struct Channels {
     dot11_broker: ChannelUtilization,
 
     dot11_frames_pipeline: ChannelUtilization,
+
+    bluetooth_devices_pipeline: ChannelUtilization,
 
     ethernet_pipeline: ChannelUtilization,
     arp_pipeline: ChannelUtilization,
@@ -95,6 +97,7 @@ impl Metrics {
                 ethernet_broker: ChannelUtilization::default(),
                 dot11_broker: ChannelUtilization::default(),
                 dot11_frames_pipeline: ChannelUtilization::default(),
+                bluetooth_devices_pipeline: ChannelUtilization::default(),
                 ethernet_pipeline: ChannelUtilization::default(),
                 arp_pipeline: ChannelUtilization::default(),
                 tcp_pipeline: ChannelUtilization::default(),
@@ -120,6 +123,13 @@ impl Metrics {
         }
 
         for channel in Dot11ChannelName::iter() {
+            let c = self.select_channel(&channel.to_string());
+            c.throughput_bytes.calculate_averages();
+            c.throughput_messages.calculate_averages();
+            c.errors.calculate_averages();
+        }
+
+        for channel in BluetoothChannelName::iter() {
             let c = self.select_channel(&channel.to_string());
             c.throughput_bytes.calculate_averages();
             c.throughput_messages.calculate_averages();
@@ -184,6 +194,7 @@ impl Metrics {
             "EthernetBroker" => &mut self.channels.ethernet_broker,
             "Dot11Broker" => &mut self.channels.dot11_broker,
             "Dot11FramesPipeline" => &mut self.channels.dot11_frames_pipeline,
+            "BluetoothDevicesPipeline" => &mut self.channels.bluetooth_devices_pipeline,
             "EthernetPipeline" => &mut self.channels.ethernet_pipeline,
             "ArpPipeline" => &mut self.channels.arp_pipeline,
             "TcpPipeline" => &mut self.channels.tcp_pipeline,
@@ -334,6 +345,7 @@ impl MetricsMonitor {
 
             match self.metrics.lock() {
                 Ok(mut metrics) => {
+                    // TODO de-duplicate here.
                     for channel in EthernetChannelName::iter() {
                         let errors = metrics.get_channel_errors(&channel.to_string()).avg;
 
@@ -344,6 +356,15 @@ impl MetricsMonitor {
                     }
 
                     for channel in Dot11ChannelName::iter() {
+                        let errors = metrics.get_channel_errors(&channel.to_string()).avg;
+
+                        if errors > 0 {
+                            error!("Channel [{:?}] had <{}> submit errors in last <{}> seconds. You are losing packets.",
+                                channel, errors, AVERAGE_INTERVAL);
+                        }
+                    }
+
+                    for channel in BluetoothChannelName::iter() {
                         let errors = metrics.get_channel_errors(&channel.to_string()).avg;
 
                         if errors > 0 {

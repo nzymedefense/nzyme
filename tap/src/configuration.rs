@@ -60,7 +60,8 @@ pub struct Performance {
     pub ethernet_brokers: i32,
     pub wifi_brokers: i32,
     pub wifi_broker_buffer_capacity: usize,
-    pub ethernet_broker_buffer_capacity: usize
+    pub ethernet_broker_buffer_capacity: usize,
+    pub bluetooth_devices_pipeline_size: Option<i32>
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -143,11 +144,17 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     }
 
     if doc.performance.wifi_broker_buffer_capacity == 0 {
-        bail!("Configuration variable `wifi_pkt_buffer_capacity` must be set to a value greater than 0.");
+        bail!("Configuration variable `wifi_broker_buffer_capacity` must be set to a value greater than 0.");
     }
 
     if doc.performance.ethernet_broker_buffer_capacity == 0 {
-        bail!("Configuration variable `ethernet_pkt_buffer_capacity` must be set to a value greater than 0.");
+        bail!("Configuration variable `ethernet_broker_buffer_capacity` must be set to a value greater than 0.");
+    }
+
+    if let Some(size) = doc.performance.bluetooth_devices_pipeline_size {
+        if size <= 0 {
+            bail!("Configuration variable `bluetooth_devices_pipeline_size` must be set to a value greater than 0.");
+        }
     }
     
     // Protocols.

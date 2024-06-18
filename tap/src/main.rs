@@ -129,11 +129,19 @@ fn main() {
     ethernet::capture::print_devices();
 
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new()));
+
+    // TODO: Unify into single Bug struct? We may be over-allocating channels here.
     let ethernet_bus = Arc::new(Bus::new(metrics.clone(), "ethernet_data".to_string(), configuration.clone()));
     let dot11_bus = Arc::new(Bus::new(metrics.clone(), "dot11_frames".to_string(), configuration.clone()));
     let bluetooth_bus = Arc::new(Bus::new(metrics.clone(), "bluetooth_data".to_string(), configuration.clone()));
 
-    let leaderlink = match Leaderlink::new(configuration.clone(), metrics.clone(), ethernet_bus.clone(), dot11_bus.clone()) {
+    let leaderlink = match Leaderlink::new(
+        configuration.clone(),
+        metrics.clone(),
+        ethernet_bus.clone(),
+        dot11_bus.clone(),
+        bluetooth_bus.clone()
+    ) {
         Ok(leaderlink) => Arc::new(Mutex::new(leaderlink)),
         Err(e) => {
             error!("Fatal error: Could not set up conection to nzyme leader. {}", e);

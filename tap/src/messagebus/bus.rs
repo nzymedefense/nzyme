@@ -13,9 +13,10 @@ use crate::{
     },
     metrics::Metrics, dot11::frames::{Dot11RawFrame, Dot11Frame}
 };
+use crate::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
 use crate::configuration::Configuration;
 use crate::ethernet::packets::{SocksTunnel, SshSession};
-use crate::messagebus::channel_names::{Dot11ChannelName, EthernetChannelName};
+use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, EthernetChannelName};
 
 pub struct Bus {
     pub name: String,
@@ -24,6 +25,8 @@ pub struct Bus {
     pub dot11_broker: NzymeChannel<Dot11RawFrame>,
 
     pub dot11_frames_pipeline: NzymeChannel<Dot11Frame>,
+
+    pub bluetooth_device_pipeline: NzymeChannel<BluetoothDeviceAdvertisement>,
 
     pub arp_pipeline: NzymeChannel<ARPPacket>,
     pub tcp_pipeline: NzymeChannel<TcpSegment>,
@@ -83,6 +86,10 @@ impl Bus<> {
         let (dot11_frames_sender, dot11_frames_receiver) = 
             bounded(configuration.performance.wifi_broker_buffer_capacity);
 
+        let (bluetooth_devices_sender, bluetooth_devices_receiver) =
+            bounded(configuration.performance.bluetooth_devices_pipeline_size
+                .unwrap_or(1024) as usize);
+
         let (arp_pipeline_sender, arp_pipeline_receiver) = 
             bounded(configuration.protocols.arp.pipeline_size as usize);
         let (tcp_pipeline_sender, tcp_pipeline_receiver) = 
@@ -120,6 +127,14 @@ impl Bus<> {
                     name: Dot11ChannelName::Dot11FramesPipeline.to_string()
                 }),
                 receiver: Arc::new(dot11_frames_receiver),
+            },
+            bluetooth_device_pipeline: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics: metrics.clone(),
+                    sender: bluetooth_devices_sender,
+                    name: BluetoothChannelName::BluetoothDevicesPipeline.to_string()
+                }),
+                receiver: Arc::new(bluetooth_devices_receiver),
             },
             arp_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {

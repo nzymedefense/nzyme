@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use std::thread::sleep;
 use std::time::Duration;
 use anyhow::{Context, Error};
 use chrono::Utc;
@@ -7,11 +8,13 @@ use dbus::arg;
 use dbus::arg::{RefArg, Variant};
 use dbus::blocking::Connection;
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
-use log::{info, warn};
+use log::{error, warn};
 use crate::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
 use crate::configuration::BluetoothInterface;
 use crate::messagebus::bus::Bus;
+use crate::messagebus::channel_names::BluetoothChannelName;
 use crate::metrics::Metrics;
+use crate::to_pipeline;
 
 pub struct Capture {
     pub metrics: Arc<Mutex<Metrics>>,
@@ -26,21 +29,28 @@ impl Capture {
     pub fn run(&mut self, device_name: &str) {
         loop {
             if self.configuration.bt_classic_enabled {
-                let bredr_devices = self.discover_devices(device_name, "bredr");
-
-                for dev in bredr_devices.unwrap().values() {
-                    info!("{:?}", dev);
+                match self.discover_devices(device_name, "bredr") {
+                    Ok(devices) => self.discovered_devices_to_pipeline(device_name, devices),
+                    Err(e) => {
+                        error!("Could not discover Bluetooth Classic devices: {}", e);
+                    }
                 }
             }
 
             if self.configuration.bt_le_enabled {
-                let le_devices = self.discover_devices(device_name, "le");
-
-                for dev in le_devices.unwrap().values() {
-                    info!("{:?}", dev);
+                match self.discover_devices(device_name, "le") {
+                    Ok(devices) => self.discovered_devices_to_pipeline(device_name, devices),
+                    Err(e) => {
+                        error!("Could not discover Bluetooth LE devices: {}", e);
+                    }
                 }
             }
-            // TODO submit to Bluetooth bus for processing.
+
+            /*
+             * The discovery methods sleep during discovery, but we add another sleep to make sure
+             * we don't empty spin in case of errors early in the discovery methods.
+             */
+            sleep(Duration::from_secs(1))
         }
     }
 
@@ -147,6 +157,7 @@ impl Capture {
                         uuids,
                         service_data,
                         device: device_name.to_string(),
+                        transport: transport.to_string(),
                         timestamp: Utc::now(),
                     });
                 }
@@ -158,6 +169,27 @@ impl Capture {
             .context("Could not stop discovery")?;
 
         Ok(discovered)
+    }
+
+    fn discovered_devices_to_pipeline(&self,
+                                      device_name: &str,
+                                      devices: HashMap<String, BluetoothDeviceAdvertisement>) {
+        for device in devices.values() {
+            to_pipeline!(
+                BluetoothChannelName::BluetoothDevicesPipeline,
+                self.bus.bluetooth_device_pipeline.sender,
+                Arc::new(device.clone()),
+                1024
+            );
+
+            match self.metrics.lock() {
+                Ok(mut metrics) => {
+                    metrics.increment_processed_bytes_total(device.estimate_struct_size());
+                    metrics.update_capture(device_name, true, 0, 0);
+                },
+                Err(e) => error!("Could not acquire metrics mutex: {}", e)
+            }
+        }
     }
 
     fn parse_mandatory_string_prop(props: &HashMap<String, Variant<Box<dyn RefArg>>>, name: &str)

@@ -12,7 +12,7 @@ use crate::{
 };
 use crate::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
 use crate::link::payloads::{NodeHelloReport, TimerReport, WiFiSupportedFrequencyReport};
-use crate::messagebus::channel_names::{Dot11ChannelName, EthernetChannelName};
+use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, EthernetChannelName};
 use crate::metrics::ChannelUtilization;
 
 use super::{payloads::{StatusReport, SystemMetricsReport, TotalWithAverage, ChannelReport, CaptureReport}};
@@ -24,11 +24,18 @@ pub struct Leaderlink {
     system: System,
     metrics: Arc<Mutex<Metrics>>,
     ethernet_bus: Arc<Bus>,
-    dot11_bus: Arc<Bus>
+    dot11_bus: Arc<Bus>,
+    bluetooth_bus: Arc<Bus>
 }
 
 impl Leaderlink {
-    pub fn new(configuration: Configuration, metrics: Arc<Mutex<Metrics>>, ethernet_bus: Arc<Bus>, dot11_bus: Arc<Bus>) -> anyhow::Result<Self, anyhow::Error> {
+    pub fn new(configuration: Configuration,
+               metrics: Arc<Mutex<Metrics>>,
+               ethernet_bus: Arc<Bus>,
+               dot11_bus: Arc<Bus>,
+               bluetooth_bus: Arc<Bus>)
+        -> anyhow::Result<Self, anyhow::Error> {
+
         let uri = match Url::parse(&configuration.general.leader_uri) {
             Ok(uri) => uri,
             Err(err) => bail!("Could not parse leader URI. {}", err)
@@ -52,7 +59,8 @@ impl Leaderlink {
             system: System::new(),
             metrics,
             ethernet_bus,
-            dot11_bus
+            dot11_bus,
+            bluetooth_bus
         })
     }
 
@@ -153,6 +161,7 @@ impl Leaderlink {
         let mut processed_bytes_avg = 0;
         let mut ethernet_channels: Vec<ChannelReport> = Vec::new();
         let mut dot11_channels: Vec<ChannelReport> = Vec::new();
+        let mut bluetooth_channels: Vec<ChannelReport> = Vec::new();
         let mut captures: Vec<CaptureReport> = Vec::new();
         let mut gauges_long: HashMap<String, i128> = HashMap::new();
         let mut timers: HashMap<String, TimerReport> = HashMap::new();
@@ -162,6 +171,7 @@ impl Leaderlink {
                 processed_bytes_total = metrics.get_processed_bytes().total;
                 processed_bytes_avg = metrics.get_processed_bytes().avg;
 
+                // TODO de-duplicate here.
                 for c in EthernetChannelName::iter() {
                     ethernet_channels.push(
                         Self::build_channel_report(metrics.select_channel(&c.to_string()), c.to_string())
@@ -170,6 +180,12 @@ impl Leaderlink {
 
                 for c in Dot11ChannelName::iter() {
                     dot11_channels.push(
+                        Self::build_channel_report(metrics.select_channel(&c.to_string()), c.to_string())
+                    );
+                }
+
+                for c in BluetoothChannelName::iter() {
+                    bluetooth_channels.push(
                         Self::build_channel_report(metrics.select_channel(&c.to_string()), c.to_string())
                     );
                 }
@@ -208,7 +224,20 @@ impl Leaderlink {
                 total: processed_bytes_total,
                 average: processed_bytes_avg
             },
-            buses: vec![super::payloads::BusReport { channels: ethernet_channels, name: self.ethernet_bus.name.clone() }, super::payloads::BusReport { channels: dot11_channels, name: self.dot11_bus.name.clone() }],
+            buses: vec![
+                super::payloads::BusReport {
+                    channels: ethernet_channels,
+                    name: self.ethernet_bus.name.clone()
+                },
+                super::payloads::BusReport {
+                    channels: dot11_channels,
+                    name: self.dot11_bus.name.clone()
+                },
+                super::payloads::BusReport {
+                    channels: bluetooth_channels,
+                    name: self.bluetooth_bus.name.clone()
+                },
+            ],
             system_metrics,
             captures,
             gauges_long,
