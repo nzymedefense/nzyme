@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::panic::catch_unwind;
 use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::Duration;
@@ -8,7 +9,7 @@ use dbus::arg;
 use dbus::arg::{RefArg, Variant};
 use dbus::blocking::Connection;
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
-use log::{error, warn};
+use log::{debug, error, info, warn};
 use crate::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
 use crate::configuration::BluetoothInterface;
 use crate::messagebus::bus::Bus;
@@ -28,21 +29,33 @@ impl Capture {
 
     pub fn run(&mut self, device_name: &str) {
         loop {
-            if self.configuration.bt_classic_enabled {
-                match self.discover_devices(device_name, "bredr") {
-                    Ok(devices) => self.discovered_devices_to_pipeline(device_name, devices),
-                    Err(e) => {
-                        error!("Could not discover Bluetooth Classic devices: {}", e);
+            let result = catch_unwind(|| {
+                if self.configuration.bt_classic_enabled {
+                    match self.discover_devices(device_name, "bredr") {
+                        Ok(devices) => self.discovered_devices_to_pipeline(device_name, devices),
+                        Err(e) => {
+                            error!("Could not discover Bluetooth Classic devices: {}", e);
+                        }
                     }
                 }
-            }
 
-            if self.configuration.bt_le_enabled {
-                match self.discover_devices(device_name, "le") {
-                    Ok(devices) => self.discovered_devices_to_pipeline(device_name, devices),
-                    Err(e) => {
-                        error!("Could not discover Bluetooth LE devices: {}", e);
+                if self.configuration.bt_le_enabled {
+                    match self.discover_devices(device_name, "le") {
+                        Ok(devices) => self.discovered_devices_to_pipeline(device_name, devices),
+                        Err(e) => {
+                            error!("Could not discover Bluetooth LE devices: {}", e);
+                        }
                     }
+                }
+            });
+
+            if let Err(e) = result {
+                if let Some(s) = e.downcast_ref::<&str>() {
+                    error!("Could not discover Bluetooth devices: {}", s);
+                } else if let Some(s) = e.downcast_ref::<String>() {
+                    error!("Could not discover Bluetooth devices: {}", s);
+                } else {
+                    error!("Could not discover Bluetooth devices. Panicked with an unknown type.");
                 }
             }
 
@@ -271,10 +284,9 @@ impl Capture {
                                 data.push(str.to_string())
                             },
                             None => {
-                                warn!("Invalid Bluetooth advertisement, [{}] includes element that \
-                                is not a string: {:?}", name, props);
-
-                                return None
+                                // Ignore non-string elements.
+                                debug!("Invalid Bluetooth advertisement, [{}] includes \
+                                element that is not a string: {:?}", name, props);
                             }
                         }
                     }
