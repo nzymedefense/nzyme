@@ -2,7 +2,7 @@ use std::{sync::Arc, collections::HashMap};
 
 use log::{debug, error};
 
-use crate::{ethernet::{packets::ARPPacket, types::ARPOpCode}, data::tables::Tables};
+use crate::{ethernet::{packets::ARPPacket, types::ARPOpCode}, tables::tables::Tables};
 
 pub struct ARPProcessor {
    tables: Arc<Tables>

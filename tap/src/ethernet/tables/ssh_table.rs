@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use log::error;
-use crate::data::table_helpers::clear_mutex_hashmap;
 use crate::ethernet::packets::SshSession;
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::{socks_tunnels_report, ssh_sessions_report};
 use crate::metrics::Metrics;
+use crate::tables::table_helpers::clear_mutex_hashmap;
 
 pub struct SshTable {
     leaderlink: Arc<Mutex<Leaderlink>>,

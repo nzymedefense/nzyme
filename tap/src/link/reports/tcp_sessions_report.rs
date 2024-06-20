@@ -2,7 +2,7 @@ use std::collections::{HashMap};
 use std::sync::MutexGuard;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use crate::data::tcp_table::{TcpSession};
+use crate::ethernet::tables::tcp_table::TcpSession;
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 
 #[derive(Serialize)]

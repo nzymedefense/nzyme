@@ -15,10 +15,10 @@ use crate::{
 };
 use chrono::{DateTime, Utc};
 use log::{error};
-use crate::data::table_helpers;
-use crate::data::table_helpers::{clear_mutex_hashmap, clear_mutex_vector};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::payloads::{DNSLogReport};
+use crate::tables::table_helpers;
+use crate::tables::table_helpers::{clear_mutex_hashmap, clear_mutex_vector};
 
 pub struct DnsTable {
     leaderlink: Arc<Mutex<Leaderlink>>,

@@ -2,10 +2,10 @@ use std::sync::{Arc, Mutex};
 use log::{error};
 
 use crate::{ethernet::packets::Datagram, to_pipeline};
-use crate::data::udp_table::UdpTable;
 use crate::ethernet::detection::l7_tagger::L7SessionTag;
 use crate::ethernet::detection::l7_tagger::L7SessionTag::{Dns, Unencrypted};
 use crate::ethernet::parsers::dns_parser;
+use crate::ethernet::tables::udp_table::UdpTable;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::EthernetChannelName;

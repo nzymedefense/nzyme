@@ -6,16 +6,16 @@ use std::{
 use log::{error};
 use std::time::Duration;
 use crate::configuration::Configuration;
-use crate::data::socks_table::SocksTable;
-use crate::data::ssh_table::SshTable;
-use crate::data::tcp_table::TcpTable;
-use crate::data::udp_table::UdpTable;
+use crate::dot11::tables::dot11_table::Dot11Table;
+use crate::ethernet::tables::dns_table::DnsTable;
+use crate::ethernet::tables::socks_table::SocksTable;
+use crate::ethernet::tables::ssh_table::SshTable;
+use crate::ethernet::tables::tcp_table::TcpTable;
+use crate::ethernet::tables::udp_table::UdpTable;
 use crate::link::leaderlink::Leaderlink;
 use crate::messagebus::bus::Bus;
 
 use crate::metrics::Metrics;
-
-use super::{dns_table::DnsTable, dot11_table::Dot11Table};
 
 pub struct Tables {
     pub dot11: Arc<Mutex<Dot11Table>>,

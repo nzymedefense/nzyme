@@ -2,18 +2,15 @@ use std::{sync::{Arc, Mutex}, thread, process::exit};
 
 use log::error;
 
-use crate::{messagebus::bus::Bus, exit_code, data::tables::Tables, system_state::SystemState, metrics::Metrics};
+use crate::{messagebus::bus::Bus, exit_code, tables::tables::Tables, system_state::SystemState, metrics::Metrics};
 use crate::configuration::Configuration;
-use crate::processors::socks_processor::SocksProcessor;
-use crate::processors::ssh_processor::SshProcessor;
-use crate::processors::tcp_processor::TcpProcessor;
-use crate::processors::udp_processor::UDPProcessor;
-
-use super::{
-    arp_processor::ARPProcessor,
-    dns_processor::DnsProcessor,
-    dot11_frame_processor::Dot11FrameProcessor,
-};
+use crate::dot11::processors::dot11_frame_processor::Dot11FrameProcessor;
+use crate::ethernet::processors::arp_processor::ARPProcessor;
+use crate::ethernet::processors::dns_processor::DnsProcessor;
+use crate::ethernet::processors::socks_processor::SocksProcessor;
+use crate::ethernet::processors::ssh_processor::SshProcessor;
+use crate::ethernet::processors::tcp_processor::TcpProcessor;
+use crate::ethernet::processors::udp_processor::UDPProcessor;
 
 pub fn spawn(ethernet_bus: Arc<Bus>,
              dot11_bus: Arc<Bus>,

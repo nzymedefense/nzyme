@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
-use crate::data::tcp_table::{TcpSession, TcpSessionState};
 use crate::ethernet::packets::GenericConnectionStatus;
+use crate::ethernet::tables::tcp_table::{TcpSession, TcpSessionState};
 
 pub fn determine_tcp_session_state(session: &TcpSession) 
     -> (GenericConnectionStatus, Option<DateTime<Utc>>) {

@@ -1,11 +1,12 @@
 use std::{sync::{Mutex, Arc}, collections::HashMap, thread};
 
-use crate::{data::dns_table::DnsTable, ethernet::{packets::DNSPacket, types::DNSType}, helpers::math, system_state::SystemState, metrics::Metrics};
+use crate::{ethernet::{packets::DNSPacket, types::DNSType}, helpers::math, system_state::SystemState, metrics::Metrics};
 
 use chrono::{DateTime, Utc, Duration};
 use clokwerk::{Scheduler, TimeUnits};
 use log::{error, debug};
 use crate::configuration::Configuration;
+use crate::ethernet::tables::dns_table::DnsTable;
 
 pub struct DnsProcessor {
     system_state: Arc<SystemState>,

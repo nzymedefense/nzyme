@@ -1,11 +1,11 @@
 use std::sync::{Arc, Mutex};
 use log::error;
-use crate::data::table_helpers::clear_mutex_vector;
 use crate::ethernet::packets::Datagram;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::{udp_datagrams_report};
 use crate::metrics::Metrics;
+use crate::tables::table_helpers::clear_mutex_vector;
 
 pub struct UdpTable {
     leaderlink: Arc<Mutex<Leaderlink>>,

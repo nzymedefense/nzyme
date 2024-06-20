@@ -1,25 +1,24 @@
 mod ethernet;
 mod helpers;
-mod brokers;
 mod messagebus;
 mod link;
 mod configuration;
 mod exit_code;
 mod metrics;
-mod processors;
-mod data;
+mod tables;
 mod system_state;
 mod logging;
 mod dot11;
 mod alerting;
 mod bluetooth;
+pub mod distributor;
 
 use std::{time, thread::{self, sleep}, time::Duration, sync::{Arc, Mutex}, process::exit};
 use anyhow::Error;
 
 use clap::Parser;
 use configuration::Configuration;
-use data::tables::Tables;
+use tables::tables::Tables;
 use link::leaderlink::Leaderlink;
 use log::{error, info};
 use toml::map::Map;
@@ -27,6 +26,8 @@ use messagebus::bus::Bus;
 use system_state::SystemState;
 
 use crate::dot11::{channel_hopper::ChannelHopper};
+use crate::dot11::dot11_broker::Dot11Broker;
+use crate::ethernet::ethernet_broker::EthernetBroker;
 use crate::helpers::network::Channel;
 
 #[derive(Parser,Debug)]
@@ -159,13 +160,13 @@ fn main() {
     // Ethernet handler.
     let ethernet_handlerbus = ethernet_bus.clone();
     thread::spawn(move || {
-        brokers::ethernet_broker::EthernetBroker::new(ethernet_handlerbus, configuration.performance.ethernet_brokers as usize).run();
+        EthernetBroker::new(ethernet_handlerbus, configuration.performance.ethernet_brokers as usize).run();
     });
 
     // WiFi handler.
     let wifi_handlerbus = dot11_bus.clone();
     thread::spawn(move || {
-        brokers::dot11_broker::Dot11Broker::new(wifi_handlerbus, configuration.performance.wifi_brokers as usize).run();
+        Dot11Broker::new(wifi_handlerbus, configuration.performance.wifi_brokers as usize).run();
     });
 
     // Ethernet Capture.
@@ -296,12 +297,12 @@ fn main() {
     }
 
     // Processors.
-    processors::distributor::spawn(ethernet_bus.clone(),
-                                   dot11_bus.clone(),
-                                   tables.clone(),
-                                   system_state,
-                                   metrics.clone(),
-                                   &configuration);
+    distributor::spawn(ethernet_bus.clone(),
+                       dot11_bus.clone(),
+                       tables.clone(),
+                       system_state,
+                       metrics.clone(),
+                       &configuration);
 
     // Metrics aggregator.
     let aggregatormetrics = metrics.clone();

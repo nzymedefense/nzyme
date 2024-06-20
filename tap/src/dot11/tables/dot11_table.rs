@@ -11,7 +11,7 @@ use crate::{
     }, helpers::network::is_mac_address_multicast,
 };
 use crate::alerting::alert_types::Dot11Alert;
-use crate::data::table_helpers::{clear_mutex_hashmap, clear_mutex_vector};
+use crate::tables::table_helpers::{clear_mutex_hashmap, clear_mutex_vector};
 use crate::dot11::frames::{Dot11Capabilities, Dot11DeauthenticationFrame, Dot11DisassociationFrame, Dot11ProbeResponseFrame, PmfMode, RadiotapHeader, TaggedParameters};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::payloads::{DiscoTransmitterReport, Dot11AlertReport, Dot11DiscoReport, PmfReport};

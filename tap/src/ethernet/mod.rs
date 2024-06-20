@@ -6,3 +6,6 @@ pub mod tcp_session_key;
 pub mod detection;
 pub mod traffic_direction;
 pub mod tcp_tools;
+pub mod ethernet_broker;
+pub mod tables;
+pub mod processors;

@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 use log::error;
-use crate::data::socks_table::SocksTable;
 use crate::ethernet::packets::SocksTunnel;
+use crate::ethernet::tables::socks_table::SocksTable;
 use crate::metrics::Metrics;
 
 pub struct SocksProcessor {

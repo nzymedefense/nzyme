@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use log::error;
 
 use crate::{ethernet::packets::TcpSegment};
-use crate::data::tcp_table::TcpTable;
+use crate::ethernet::tables::tcp_table::TcpTable;
 
 pub struct TcpProcessor {
     pub tcp_table: Arc<Mutex<TcpTable>>

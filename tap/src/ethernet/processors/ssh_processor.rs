@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 use log::error;
-use crate::data::ssh_table::SshTable;
 use crate::ethernet::packets::SshSession;
+use crate::ethernet::tables::ssh_table::SshTable;
 use crate::metrics::Metrics;
 
 pub struct SshProcessor {

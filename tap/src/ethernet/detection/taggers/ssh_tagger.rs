@@ -1,8 +1,8 @@
 use anyhow::{bail, Error};
 use byteorder::{BigEndian, ByteOrder};
 use log::info;
-use crate::data::tcp_table::TcpSession;
 use crate::ethernet::packets::{SocksTunnel, SshSession, SshVersion};
+use crate::ethernet::tables::tcp_table::TcpSession;
 use crate::ethernet::tcp_tools::determine_tcp_session_state;
 use crate::tracemark;
 
