@@ -5085,4 +5085,84 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_bluetooth_devices" author="lennartkoopmann">
+        <createTable tableName="bluetooth_devices">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="mac" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="alias" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="device" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="transport" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="rssi" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="company_id" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="class_number" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="appearance" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="modalias" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tx_power" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="manufacturer_data" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="uuids" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="service_data" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

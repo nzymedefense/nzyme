@@ -5,9 +5,7 @@ use crate::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertiseme
 use crate::bluetooth::tables::bluetooth_device::BluetoothDevice;
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::bluetooth_devices_report;
-use crate::link::reports::bluetooth_devices_report::{BluetoothDeviceReport, BluetoothDevicesReport};
 use crate::metrics::Metrics;
-use crate::tables::table_helpers::clear_mutex_hashmap;
 
 pub struct BluetoothTable {
     metrics: Arc<Mutex<Metrics>>,

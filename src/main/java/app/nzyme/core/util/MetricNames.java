@@ -24,6 +24,7 @@ import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.ouis.OUIManager;
 import app.nzyme.core.rest.interceptors.TapTableSizeInterceptor;
 import app.nzyme.core.security.authentication.PasswordHasher;
+import app.nzyme.core.tables.bluetooth.BluetoothTable;
 import app.nzyme.core.tables.dns.DNSTable;
 import app.nzyme.core.tables.dot11.Dot11Table;
 import app.nzyme.core.tables.socks.SOCKSTable;
@@ -49,6 +50,8 @@ public class MetricNames {
     public static final String DOT11_CLIENTS_REPORT_PROCESSING_TIMER = name(Dot11Table.class, "clients-report-processing-timing");
     public static final String DOT11_DISCO_REPORT_PROCESSING_TIMER = name(Dot11Table.class, "disco-report-processing-timing");
     public static final String DOT11_ALERT_PROCESSING_TIMER = name(Dot11Table.class, "alert-processing-timing");
+
+    public static final String BLUETOOTH_TOTAL_REPORT_PROCESSING_TIMER = name(BluetoothTable.class, "total-report-processing-timing");
 
     public static final String DNS_TOTAL_REPORT_PROCESSING_TIMER = name(DNSTable.class, "total-report-processing-timing");
     public static final String DNS_STATISTICS_REPORT_PROCESSING_TIMER = name(DNSTable.class, "statistics-report-processing-timing");

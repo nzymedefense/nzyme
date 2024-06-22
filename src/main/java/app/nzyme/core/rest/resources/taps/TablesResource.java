@@ -20,6 +20,7 @@ package app.nzyme.core.rest.resources.taps;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
+import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDevicesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsTablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11TablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsReport;
@@ -62,6 +63,17 @@ public class TablesResource {
 
         LOG.debug("Received 802.11 summary report from [{}]: {}", tapId, report);
         nzyme.getTablesService().dot11().handleReport(tapId, DateTime.now(), report);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("/bluetooth/devices")
+    public Response bluetoothDevices(@Context SecurityContext sc, BluetoothDevicesReport report) {
+        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+
+        LOG.debug("Received Bluetooth devices report from [{}]: {}", tapId, report);
+        nzyme.getTablesService().bluetooth().handleReport(tapId, DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

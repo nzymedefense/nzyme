@@ -17,6 +17,7 @@
 
 package app.nzyme.core.tables;
 
+import app.nzyme.core.tables.bluetooth.BluetoothTable;
 import app.nzyme.core.tables.dot11.Dot11Table;
 import app.nzyme.core.tables.socks.SOCKSTable;
 import app.nzyme.core.tables.ssh.SSHTable;
@@ -47,8 +48,9 @@ public class TablesService {
         this.nzyme = nzyme;
 
         this.tables = new ImmutableMap.Builder<String, DataTable>()
-                .put("dns", new DNSTable(this))
                 .put("dot11", new Dot11Table(this))
+                .put("bluetooth", new BluetoothTable(this))
+                .put("dns", new DNSTable(this))
                 .put("tcp", new TCPTable(this))
                 .put("ssh", new SSHTable(this))
                 .put("socks", new SOCKSTable(this))
@@ -78,12 +80,16 @@ public class TablesService {
 
     }
 
-    public DNSTable dns() {
-        return (DNSTable) tables.get("dns");
-    }
-
     public Dot11Table dot11() {
         return (Dot11Table) tables.get("dot11");
+    }
+
+    public BluetoothTable bluetooth() {
+        return (BluetoothTable) tables.get("bluetooth");
+    }
+
+    public DNSTable dns() {
+        return (DNSTable) tables.get("dns");
     }
 
     public TCPTable tcp() {
