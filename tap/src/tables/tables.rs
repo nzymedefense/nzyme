@@ -3,8 +3,9 @@ use std::{
     sync::{Arc, Mutex}, thread
 };
 
-use log::{error};
+use log::error;
 use std::time::Duration;
+use crate::bluetooth::tables::bluetooth_table::BluetoothTable;
 use crate::configuration::Configuration;
 use crate::dot11::tables::dot11_table::Dot11Table;
 use crate::ethernet::tables::dns_table::DnsTable;
@@ -19,6 +20,7 @@ use crate::metrics::Metrics;
 
 pub struct Tables {
     pub dot11: Arc<Mutex<Dot11Table>>,
+    pub bluetooth: Arc<Mutex<BluetoothTable>>,
     pub arp: Arc<Mutex<HashMap<String, HashMap<String, u128>>>>,
     pub tcp: Arc<Mutex<TcpTable>>,
     pub udp: Arc<Mutex<UdpTable>>,
@@ -34,9 +36,10 @@ impl Tables {
                ethernet_bus: Arc<Bus>,
                configuration: &Configuration) -> Self {
         Tables {
+            dot11: Arc::new(Mutex::new(Dot11Table::new(leaderlink.clone()))),
+            bluetooth: Arc::new(Mutex::new(BluetoothTable::new(metrics.clone(), leaderlink.clone()))),
             arp: Arc::new(Mutex::new(HashMap::new())),
             dns: Arc::new(Mutex::new(DnsTable::new(metrics.clone(), leaderlink.clone()))),
-            dot11: Arc::new(Mutex::new(Dot11Table::new(leaderlink.clone()))),
             tcp: Arc::new(Mutex::new(TcpTable::new(
                 leaderlink.clone(),
                 ethernet_bus.clone(),
@@ -57,6 +60,14 @@ impl Tables {
             match self.dot11.lock() {
                 Ok(dot11) => dot11.process_report(),
                 Err(e) => error!("Could not acquire 802.11 table lock for report processing: {}", e)
+            }
+            
+            match self.bluetooth.lock() {
+                Ok(bluetooth) => {
+                    bluetooth.calculate_metrics();
+                    bluetooth.process_report();
+                },
+                Err(e) => error!("Could not acquire Bluetooth table lock for report processing: {}", e)
             }
 
             match self.tcp.lock() {

@@ -3,6 +3,7 @@ use std::{sync::{Arc, Mutex}, thread, process::exit};
 use log::error;
 
 use crate::{messagebus::bus::Bus, exit_code, tables::tables::Tables, system_state::SystemState, metrics::Metrics};
+use crate::bluetooth::processors::bluetooth_device_processor::BluetoothDeviceProcessor;
 use crate::configuration::Configuration;
 use crate::dot11::processors::dot11_frame_processor::Dot11FrameProcessor;
 use crate::ethernet::processors::arp_processor::ARPProcessor;
@@ -14,11 +15,14 @@ use crate::ethernet::processors::udp_processor::UDPProcessor;
 
 pub fn spawn(ethernet_bus: Arc<Bus>,
              dot11_bus: Arc<Bus>,
+             bluetooth_bus: Arc<Bus>,
              tables: Arc<Tables>,
              system_state: Arc<SystemState>,
              metrics: Arc<Mutex<Metrics>>,
              configuration: &Configuration) {
     spawn_base_dot11(dot11_bus.clone(), tables.clone());
+
+    spawn_base_bluetooth(bluetooth_bus.clone(), tables.clone());
 
     spawn_base_tcp(ethernet_bus.clone(), tables.clone());
     spawn_base_udp(ethernet_bus.clone(), tables.clone(), metrics.clone());
@@ -39,6 +43,19 @@ fn spawn_base_dot11(bus: Arc<Bus>, tables: Arc<Tables>) {
         }
 
         error!("802.11 frames receiver disconnected.");
+        exit(exit_code::EX_UNAVAILABLE);
+    });
+}
+
+fn spawn_base_bluetooth(bus: Arc<Bus>, tables: Arc<Tables>) {
+    let processor = BluetoothDeviceProcessor::new(tables.bluetooth.clone());
+
+    thread::spawn(move || {
+        for device in bus.bluetooth_device_pipeline.receiver.iter() {
+            processor.process(device);
+        }
+
+        error!("Bluetooth receiver disconnected.");
         exit(exit_code::EX_UNAVAILABLE);
     });
 }

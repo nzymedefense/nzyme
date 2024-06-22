@@ -650,7 +650,7 @@ impl Dot11Table {
                             proberesp_advertisements: netinfo.proberesp_advertisements,
                             rates: netinfo.rates.clone(),
                             wps: netinfo.wps.clone(),
-                            signal_strength: calculate_signal_strengh_report(
+                            signal_strength: calculate_signal_strength_report(
                                 &netinfo.signal_strengths,
                             ),
                             signal_histogram: calculate_signal_histogram(&netinfo.signal_strengths),
@@ -761,7 +761,7 @@ impl Dot11Table {
 
 // yo this all below here needs some serious refactoring and dedup lmao
 
-fn calculate_signal_strengh_report(signal_strengths: &HashMap<u16, Vec<i8>>) -> SignalStrengthReport {
+fn calculate_signal_strength_report(signal_strengths: &HashMap<u16, Vec<i8>>) -> SignalStrengthReport {
     let mut sum: i128 = 0;
     let mut min = 0;
     let mut max = -100;

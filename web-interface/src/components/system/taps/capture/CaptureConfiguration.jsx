@@ -13,7 +13,7 @@ function CaptureConfiguration (props) {
                 <th>Interface</th>
                 <th>Status</th>
                 <th>Type</th>
-                <th>Received Frames / Packets</th>
+                <th>Received Frames / Packets / Blocks</th>
                 <th>Dropped (Interface)</th>
                 <th>Dropped (Buffer)</th>
             </tr>

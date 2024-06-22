@@ -299,6 +299,7 @@ fn main() {
     // Processors.
     distributor::spawn(ethernet_bus.clone(),
                        dot11_bus.clone(),
+                       bluetooth_bus.clone(),
                        tables.clone(),
                        system_state,
                        metrics.clone(),
