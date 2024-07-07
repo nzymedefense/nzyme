@@ -164,6 +164,11 @@ function Sidebar(props) {
                 icon={<i className="sidebar-icon fa-solid fa-server"/>}/>
             <NavigationLink
                 show={user.is_superadmin}
+                href={ApiRoutes.SYSTEM.CONNECT}
+                title="nzyme Connect"
+                icon={<i className="fa-solid fa-plug-circle-bolt"></i>}/>
+            <NavigationLink
+                show={user.is_superadmin}
                 href={ApiRoutes.SYSTEM.EVENTS.INDEX}
                 title="Events &amp; Actions"
                 icon={<i className="sidebar-icon fa-solid fa-bolt"/>}/>

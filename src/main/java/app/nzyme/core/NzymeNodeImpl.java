@@ -18,6 +18,7 @@
 package app.nzyme.core;
 
 import app.nzyme.core.cache.CacheManager;
+import app.nzyme.core.connect.ConnectService;
 import app.nzyme.core.context.ContextService;
 import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.distributed.ClusterManager;
@@ -31,6 +32,7 @@ import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
+import app.nzyme.core.periodicals.connect.ConnectStatusReporter;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.registry.RegistryChangeMonitorImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
@@ -61,6 +63,7 @@ import app.nzyme.core.taps.TapManager;
 import app.nzyme.core.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.units.qual.C;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -114,6 +117,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final DetectionAlertService detectionAlertService;
     private final EventEngine eventEngine;
 
+    private final ConnectService connect;
     private final HealthMonitor healthMonitor;
 
     private List<String> plugins;
@@ -166,6 +170,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.crypto = new Crypto(this);
         this.objectMapper = new ObjectMapper();
 
+        this.connect = new ConnectService(this);
         this.healthMonitor = new HealthMonitor(this);
 
         // Register JVM metrics.
@@ -226,10 +231,11 @@ public class NzymeNodeImpl implements NzymeNode {
         // Periodicals. (TODO: Replace with scheduler service)
         PeriodicalManager periodicalManager = new PeriodicalManager();
         periodicalManager.scheduleAtFixedRate(new NodeUpdater(this), 0, 5, TimeUnit.SECONDS);
+        periodicalManager.scheduleAtFixedRate(new ConnectStatusReporter(this), 0, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new Dot11SignalTrackMonitor(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new Dot11DiscoMonitor(this), 1, 1, TimeUnit.MINUTES);
-        if(configuration.versionchecksEnabled()) {
+        if (configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {
             LOG.info("Versionchecks are disabled.");
@@ -432,6 +438,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public DetectionAlertService getDetectionAlertService() {
         return detectionAlertService;
+    }
+
+    @Override
+    public ConnectService getConnect() {
+        return connect;
     }
 
     @Override

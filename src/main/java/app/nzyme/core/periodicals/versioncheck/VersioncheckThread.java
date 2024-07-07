@@ -81,8 +81,8 @@ public class VersioncheckThread extends Periodical {
             Response response = httpClient.newCall(request).execute();
 
             if (!response.isSuccessful()) {
-               LOG.error("Could not check for newest nzyme version. Expected HTTP <200> but received HTTP <{}>. " +
-                               "Please consult the README.", response.code());
+               LOG.error("Could not check for newest nzyme version. Expected HTTP <200> but " +
+                       "received HTTP <{}>.", response.code());
                return;
             }
 

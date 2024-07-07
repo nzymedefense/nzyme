@@ -128,6 +128,7 @@ import IPDetailsPage from "./components/ethernet/l4/ip/IPDetailsPage";
 import TunnelsPage from "./components/ethernet/tunnels/TunnelsPage";
 import RemoteAccessPage from "./components/ethernet/remote/RemoteAccessPage";
 import DNSTransactionLogsPage from "./components/ethernet/dns/logs/DNSTransactionLogsPage";
+import ConnectPage from "./components/system/connect/ConnectPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -369,6 +370,7 @@ function App() {
                           { /* System/Misc. */}
                           <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
                           <Route path={ApiRoutes.SYSTEM.LOOKANDFEEL} element={<LookAndFeelPage />}/>
+                          <Route path={ApiRoutes.SYSTEM.CONNECT} element={<ConnectPage />}/>
 
                           { /* Ethernet/L4. */}
                           <Route path={ApiRoutes.ETHERNET.L4.IP(':ipParam')} element={<IPDetailsPage />}/>

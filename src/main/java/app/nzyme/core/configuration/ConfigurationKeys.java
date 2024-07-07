@@ -37,5 +37,7 @@ public class ConfigurationKeys {
     public static final String MISC = "misc";
     public static final String CUSTOM_TITLE = "custom_title";
     public static final String CUSTOM_FAVICON_URL = "custom_favicon_url";
+    public static final String CONNECT_SERVER = "connect_server";
+
 
 }

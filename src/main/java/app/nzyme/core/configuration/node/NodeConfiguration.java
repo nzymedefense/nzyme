@@ -1,6 +1,7 @@
 package app.nzyme.core.configuration.node;
 
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 
 import java.net.URI;
 import java.util.Optional;
@@ -25,10 +26,13 @@ public abstract class NodeConfiguration {
 
     public abstract String ntpServer();
 
+    @Nullable
+    public abstract String connectApiUri();
+
     public abstract PerformanceConfiguration performance();
     public abstract MiscConfiguration misc();
 
-    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, PerformanceConfiguration performance, MiscConfiguration misc) {
+    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, String connectApiUri, PerformanceConfiguration performance, MiscConfiguration misc) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -39,6 +43,7 @@ public abstract class NodeConfiguration {
                 .cryptoDirectory(cryptoDirectory)
                 .slowQueryLogThreshold(slowQueryLogThreshold)
                 .ntpServer(ntpServer)
+                .connectApiUri(connectApiUri)
                 .performance(performance)
                 .misc(misc)
                 .build();
@@ -67,6 +72,8 @@ public abstract class NodeConfiguration {
         public abstract Builder slowQueryLogThreshold(Optional<Integer> slowQueryLogThreshold);
 
         public abstract Builder ntpServer(String ntpServer);
+
+        public abstract Builder connectApiUri(String connectApiUri);
 
         public abstract Builder performance(PerformanceConfiguration performance);
 

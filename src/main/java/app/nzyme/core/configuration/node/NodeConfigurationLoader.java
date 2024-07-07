@@ -76,6 +76,7 @@ public class NodeConfigurationLoader {
                 parseCryptoDirectory(),
                 parseSlowQueryLogThreshold(),
                 parseNtpServer(),
+                parseConnectUri(),
                 parsePerformance(),
                 parseMisc()
         );
@@ -107,6 +108,15 @@ public class NodeConfigurationLoader {
 
     private String parseCryptoDirectory() {
         return general.getString(ConfigurationKeys.CRYPTO_DIRECTORY);
+    }
+
+    @Nullable
+    private String parseConnectUri() {
+        if (general.hasPath(ConfigurationKeys.CONNECT_SERVER)) {
+            return general.getString(ConfigurationKeys.CONNECT_SERVER);
+        } else {
+            return null;
+        }
     }
 
     private String parseNtpServer() {
