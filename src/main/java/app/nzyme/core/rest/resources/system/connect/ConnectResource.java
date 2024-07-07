@@ -4,6 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.connect.ConnectRegistryKeys;
 import app.nzyme.core.rest.requests.ConnectConfigurationUpdateRequest;
 import app.nzyme.core.rest.responses.connect.ConnectConfigurationResponse;
+import app.nzyme.core.rest.responses.connect.ConnectStatusResponse;
 import app.nzyme.plugin.RegistryCryptoException;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
@@ -20,9 +21,11 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/api/system/connect")
@@ -32,6 +35,42 @@ public class ConnectResource {
 
     @Inject
     private NzymeNode nzyme;
+
+    @GET
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
+    @Path("/status")
+    public Response status() {
+        Optional<String> lastReport = nzyme.getDatabaseCoreRegistry()
+                .getValue(ConnectRegistryKeys.LAST_SUCCESSFUL_REPORT_SUBMISSION.key());
+
+        ConnectStatusResponse status;
+        if (nzyme.getConnect().isEnabled()) {
+            if (lastReport.isEmpty()) {
+                status = ConnectStatusResponse.create(
+                        "never_connected",
+                        null
+                );
+            } else {
+                DateTime ts = DateTime.parse(lastReport.get());
+
+                String summary;
+                if (ts.isBefore(DateTime.now().minusMinutes(2))) {
+                    summary = "fail";
+                } else {
+                    summary = "ok";
+                }
+
+                status = ConnectStatusResponse.create(summary, ts);
+            }
+        } else {
+            status = ConnectStatusResponse.create(
+                    "disabled",
+                    null
+            );
+        }
+
+        return Response.ok(status).build();
+    }
 
     @GET
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)

@@ -7,6 +7,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -22,8 +23,14 @@ public class RegistryChangeMonitorImpl implements RegistryChangeMonitor {
 
     private Map<String, String> snapshot = null;
 
+    private final List<String> ignoredKeys;
+
     public RegistryChangeMonitorImpl(NzymeNode nzyme) {
         this.nzyme = nzyme;
+
+        this.ignoredKeys = new ArrayList<>(){{
+            add("core.connect_last_successful_report");
+        }};
 
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                         .setNameFormat("registry-change-processor-%d")
@@ -50,6 +57,10 @@ public class RegistryChangeMonitorImpl implements RegistryChangeMonitor {
         Map<String, String> current = takeSnapshot();
 
         for (Map.Entry<String, String> entry : current.entrySet()) {
+            if (ignoredKeys.contains(entry.getKey())) {
+                continue;
+            }
+
             if (!previous.containsKey(entry.getKey())) {
                 // New entry.
                 LOG.info("Registry key [{}] now has a value. Notifying subscribers.", entry.getKey());
@@ -65,6 +76,9 @@ public class RegistryChangeMonitorImpl implements RegistryChangeMonitor {
         }
 
         for (Map.Entry<String, String> entry : previous.entrySet()) {
+            if (ignoredKeys.contains(entry.getKey())) {
+                continue;
+            }
             // Did a value disappear?
             if (!current.containsKey(entry.getKey())) {
                 LOG.info("Registry key [{}] has disappeared. Notifying subscribers.", entry.getKey());

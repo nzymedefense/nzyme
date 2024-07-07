@@ -4,6 +4,7 @@ import ConfigurationModal from "../../configuration/modal/ConfigurationModal";
 import EncryptedConfigurationValue from "../../configuration/EncryptedConfigurationValue";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import ConnectService from "../../../services/ConnectService";
+import ConnectStatus from "./ConnectStatus";
 
 const connectService = new ConnectService();
 
@@ -12,11 +13,14 @@ export default function ConnectPage() {
   const [configuration, setConfiguration] = useState(null)
   const [localRevision, setLocalRevision] = useState(0)
 
+  const [status, setStatus] = useState(null);
+
   useEffect(() => {
     connectService.getConfiguration(setConfiguration)
+    connectService.getStatus(setStatus);
   }, [localRevision])
 
-  if (!configuration) {
+  if (!configuration || !status) {
     return <LoadingSpinner />
   }
 
@@ -29,7 +33,10 @@ export default function ConnectPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-md-3">
+            <ConnectStatus status={status}/>
+          </div>
+          <div className="col-md-9">
             <div className="card">
               <div className="card-body">
                 <p className="mb-3">

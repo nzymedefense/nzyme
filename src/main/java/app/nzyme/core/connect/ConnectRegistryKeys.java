@@ -26,4 +26,11 @@ public class ConnectRegistryKeys {
             false
     );
 
+    public static final RegistryKey LAST_SUCCESSFUL_REPORT_SUBMISSION = RegistryKey.create(
+            "connect_last_successful_report",
+            Optional.empty(),
+            Optional.empty(),
+            false
+    );
+
 }

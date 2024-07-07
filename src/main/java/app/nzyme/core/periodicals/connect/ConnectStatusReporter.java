@@ -2,6 +2,7 @@ package app.nzyme.core.periodicals.connect;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.connect.ConnectHealthIndicatorReport;
+import app.nzyme.core.connect.ConnectRegistryKeys;
 import app.nzyme.core.connect.ConnectStatusReport;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.periodicals.Periodical;
@@ -15,6 +16,7 @@ import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.util.List;
 import java.util.Optional;
@@ -88,7 +90,11 @@ public class ConnectStatusReporter extends Periodical {
                             "received HTTP <{}>.", nzyme.getConnect().getApiUri(), response.code());
                 } else {
                     // Successful report submission.
-
+                    LOG.debug("Successfully submitted Connect status report.");
+                    nzyme.getDatabaseCoreRegistry().setValue(
+                            ConnectRegistryKeys.LAST_SUCCESSFUL_REPORT_SUBMISSION.key(),
+                            DateTime.now(DateTimeZone.UTC).toString()
+                    );
                 }
             }
         } catch (Exception e) {

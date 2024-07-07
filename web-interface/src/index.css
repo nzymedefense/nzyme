@@ -1029,3 +1029,31 @@ i.filter-value {
     margin-left: 5px;
     cursor: pointer;
 }
+
+div.connect-status {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+}
+
+div.connect-status div.connect-status-summary {
+    font-size: 26px;
+    font-weight: bold;
+}
+
+div.connect-status-ok {
+    color: #fff;
+    background-color: #198754;
+}
+
+div.connect-status-disabled {
+    color: #000;
+    background-color: #969fa6;
+}
+
+div.connect-status-fail {
+    color: #fff;
+    background-color: #dc3545;
+}
