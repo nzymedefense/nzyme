@@ -58,6 +58,8 @@ public class ConnectStatusReporter extends Periodical {
         try {
             ConnectStatusReport report = ConnectStatusReport.create(
                     nzyme.getVersion().getShortVersionString(),
+                    nzyme.getNodeInformation().id().toString(),
+                    nzyme.getNodeInformation().name(),
                     DateTime.now(),
                     getSystemProperty("java.vendor"),
                     getSystemProperty("java.version"),

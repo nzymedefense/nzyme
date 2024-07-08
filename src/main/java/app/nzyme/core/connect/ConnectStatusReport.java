@@ -12,6 +12,12 @@ public abstract class ConnectStatusReport {
     @JsonProperty("version")
     public abstract String version();
 
+    @JsonProperty("node_id")
+    public abstract String nodeId();
+
+    @JsonProperty("node_name")
+    public abstract String nodeName();
+
     @JsonProperty("local_time")
     public abstract DateTime localTime();
 
@@ -33,9 +39,11 @@ public abstract class ConnectStatusReport {
     @JsonProperty("health_indicators")
     public abstract List<ConnectHealthIndicatorReport> healthIndicators();
 
-    public static ConnectStatusReport create(String version, DateTime localTime, String javaVendor, String javaVersion, String osName, String osArchitecture, String osVersion, List<ConnectHealthIndicatorReport> healthIndicators) {
+    public static ConnectStatusReport create(String version, String nodeId, String nodeName, DateTime localTime, String javaVendor, String javaVersion, String osName, String osArchitecture, String osVersion, List<ConnectHealthIndicatorReport> healthIndicators) {
         return builder()
                 .version(version)
+                .nodeId(nodeId)
+                .nodeName(nodeName)
                 .localTime(localTime)
                 .javaVendor(javaVendor)
                 .javaVersion(javaVersion)
@@ -53,6 +61,10 @@ public abstract class ConnectStatusReport {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder version(String version);
+
+        public abstract Builder nodeId(String nodeId);
+
+        public abstract Builder nodeName(String nodeName);
 
         public abstract Builder localTime(DateTime localTime);
 
