@@ -39,7 +39,10 @@ public abstract class ConnectStatusReport {
     @JsonProperty("health_indicators")
     public abstract List<ConnectHealthIndicatorReport> healthIndicators();
 
-    public static ConnectStatusReport create(String version, String nodeId, String nodeName, DateTime localTime, String javaVendor, String javaVersion, String osName, String osArchitecture, String osVersion, List<ConnectHealthIndicatorReport> healthIndicators) {
+    @JsonProperty("throughput")
+    public abstract List<ConnectThroughputReport> throughput();
+
+    public static ConnectStatusReport create(String version, String nodeId, String nodeName, DateTime localTime, String javaVendor, String javaVersion, String osName, String osArchitecture, String osVersion, List<ConnectHealthIndicatorReport> healthIndicators, List<ConnectThroughputReport> throughput) {
         return builder()
                 .version(version)
                 .nodeId(nodeId)
@@ -51,6 +54,7 @@ public abstract class ConnectStatusReport {
                 .osArchitecture(osArchitecture)
                 .osVersion(osVersion)
                 .healthIndicators(healthIndicators)
+                .throughput(throughput)
                 .build();
     }
 
@@ -79,6 +83,8 @@ public abstract class ConnectStatusReport {
         public abstract Builder osVersion(String osVersion);
 
         public abstract Builder healthIndicators(List<ConnectHealthIndicatorReport> healthIndicators);
+
+        public abstract Builder throughput(List<ConnectThroughputReport> throughput);
 
         public abstract ConnectStatusReport build();
     }

@@ -4,8 +4,11 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.connect.ConnectHealthIndicatorReport;
 import app.nzyme.core.connect.ConnectRegistryKeys;
 import app.nzyme.core.connect.ConnectStatusReport;
+import app.nzyme.core.connect.ConnectThroughputReport;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.periodicals.Periodical;
+import app.nzyme.core.taps.db.metrics.BucketSize;
+import app.nzyme.core.taps.db.metrics.TapMetricsAggregation;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -19,6 +22,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -66,7 +70,8 @@ public class ConnectStatusReporter extends Periodical {
                     getSystemProperty("os.name"),
                     getSystemProperty("os.arch"),
                     getSystemProperty("os.version"),
-                    buildHealthIndicatorsReport()
+                    buildHealthIndicatorsReport(),
+                    buildThroughputReport()
             );
 
             byte[] body = om.writeValueAsBytes(report);
@@ -134,6 +139,31 @@ public class ConnectStatusReporter extends Periodical {
                     status.resultLevel(),
                     status.active()
             ));
+        }
+
+        return report;
+    }
+
+    private List<ConnectThroughputReport> buildThroughputReport() {
+        Optional<Map<DateTime, TapMetricsAggregation>> histo = nzyme.getTapManager().findMetricsGaugeHistogram(
+                null,
+                "system.captures.throughput_bit_sec",
+                1,
+                BucketSize.MINUTE
+        );
+
+        List<ConnectThroughputReport> report = Lists.newArrayList();
+        if (histo.isEmpty()) {
+            return report;
+        } else {
+            for (TapMetricsAggregation e : histo.get().values()) {
+                report.add(ConnectThroughputReport.create(
+                        e.bucket(),
+                        e.average(),
+                        e.maximum(),
+                        e.minimum()
+                ));
+            }
         }
 
         return report;
