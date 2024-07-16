@@ -1,6 +1,7 @@
 package app.nzyme.core.integrations.geoip;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.connect.ConnectRegistryKeys;
 import app.nzyme.core.integrations.geoip.ipinfo.IpInfoFreeGeoIpAdapter;
 import app.nzyme.core.integrations.geoip.noop.NoOpGeoIpAdapter;
 import app.nzyme.core.util.MetricNames;
@@ -23,8 +24,6 @@ public class GeoIpService {
 
     private final NzymeNode nzyme;
 
-    private GeoIpAdapter adapter;
-
     private final LoadingCache<InetAddress, Optional<GeoIpLookupResult>> cache;
     private boolean useCaching = true;
 
@@ -37,7 +36,7 @@ public class GeoIpService {
                 .build(new CacheLoader<>() {
                     @Override
                     public Optional<GeoIpLookupResult> load(@NotNull InetAddress address) {
-                        return adapter.lookup(address);
+                        return lookup(address);
                     }
                 });
 
@@ -50,9 +49,7 @@ public class GeoIpService {
 
         // Reload on configuration change.
         nzyme.getRegistryChangeMonitor()
-                .onChange("core", GeoIpRegistryKeys.GEOIP_PROVIDER_NAME.key(), this::reload);
-        nzyme.getRegistryChangeMonitor()
-                .onChange("core", IpInfoFreeGeoIpAdapter.REGISTRY_KEY_TOKEN.key(), this::reload);
+                .onChange("core", ConnectRegistryKeys.CONNECT_API_KEY.key(), this::reload);
     }
 
     private void reload() {
