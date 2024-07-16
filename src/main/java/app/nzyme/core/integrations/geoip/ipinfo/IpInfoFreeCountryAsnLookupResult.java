@@ -1,9 +1,9 @@
-package app.nzyme.core.integrations.geoip.ipinfo.mmdb;
+package app.nzyme.core.integrations.geoip.ipinfo;
 
 import com.maxmind.db.MaxMindDbConstructor;
 import com.maxmind.db.MaxMindDbParameter;
 
-public class FreeCountryAsnLookupResult {
+public class IpInfoFreeCountryAsnLookupResult {
 
     private final String countryCode;
     private final String countryName;
@@ -12,11 +12,11 @@ public class FreeCountryAsnLookupResult {
     private final String asDomain;
 
     @MaxMindDbConstructor
-    public FreeCountryAsnLookupResult(@MaxMindDbParameter(name="country") String countryCode,
-                                      @MaxMindDbParameter(name="country_name") String countryName,
-                                      @MaxMindDbParameter(name="as_name") String asName,
-                                      @MaxMindDbParameter(name="asn") String asNumber,
-                                      @MaxMindDbParameter(name="as_domain") String asDomain) {
+    public IpInfoFreeCountryAsnLookupResult(@MaxMindDbParameter(name="country") String countryCode,
+                                            @MaxMindDbParameter(name="country_name") String countryName,
+                                            @MaxMindDbParameter(name="as_name") String asName,
+                                            @MaxMindDbParameter(name="asn") String asNumber,
+                                            @MaxMindDbParameter(name="as_domain") String asDomain) {
         this.countryCode = countryCode;
         this.countryName = countryName;
         this.asName = asName;

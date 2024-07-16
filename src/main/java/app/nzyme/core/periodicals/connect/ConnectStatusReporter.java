@@ -7,6 +7,7 @@ import app.nzyme.core.connect.ConnectStatusReport;
 import app.nzyme.core.connect.ConnectThroughputReport;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.periodicals.Periodical;
+import app.nzyme.core.rest.resources.system.connect.api.ConnectApiStatusResponse;
 import app.nzyme.core.taps.db.metrics.BucketSize;
 import app.nzyme.core.taps.db.metrics.TapMetricsAggregation;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -102,6 +103,23 @@ public class ConnectStatusReporter extends Periodical {
                             ConnectRegistryKeys.LAST_SUCCESSFUL_REPORT_SUBMISSION.key(),
                             DateTime.now(DateTimeZone.UTC).toString()
                     );
+
+                    // The response contains all enabled services. Store it.
+                    if (response.body() != null) {
+                        ObjectMapper om = new ObjectMapper();
+                        om.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+                        om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                        ConnectApiStatusResponse responseData = om.readValue(
+                                response.body().bytes(), ConnectApiStatusResponse.class
+                        );
+
+                        nzyme.getDatabaseCoreRegistry().setValue(
+                                ConnectRegistryKeys.PROVIDED_SERVICES.key(),
+                                om.writeValueAsString(responseData.providedData())
+                        );
+                    } else {
+                        LOG.error("Connect API status report response had an empty body.");
+                    }
                 }
             }
         } catch (Exception e) {

@@ -34,7 +34,6 @@ import app.nzyme.core.rest.resources.system.cluster.MessageBusResource;
 import app.nzyme.core.rest.resources.system.cluster.NodesResource;
 import app.nzyme.core.rest.resources.system.cluster.TasksQueueResource;
 import app.nzyme.core.rest.resources.system.connect.ConnectResource;
-import app.nzyme.core.rest.resources.system.integrations.GeoIpIntegrationsResource;
 import app.nzyme.core.rest.resources.system.integrations.SmtpIntegrationResource;
 import app.nzyme.core.rest.resources.taps.StatusResource;
 import app.nzyme.core.rest.resources.taps.TablesResource;
@@ -143,7 +142,6 @@ public class NzymeHttpServer {
         resourceConfig.register(TasksQueueResource.class);
         resourceConfig.register(OrganizationsResource.class);
         resourceConfig.register(InitialUserResource.class);
-        resourceConfig.register(GeoIpIntegrationsResource.class);
         resourceConfig.register(UserProfileResource.class);
         resourceConfig.register(EventsResource.class);
         resourceConfig.register(SmtpIntegrationResource.class);

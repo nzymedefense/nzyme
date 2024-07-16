@@ -33,4 +33,11 @@ public class ConnectRegistryKeys {
             false
     );
 
+    public static final RegistryKey PROVIDED_SERVICES = RegistryKey.create(
+            "connect_provided_services",
+            Optional.empty(),
+            Optional.empty(),
+            false
+    );
+
 }

@@ -12,6 +12,9 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.configuration.EncryptedConfigurationEntryResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PUT;
@@ -23,9 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/api/system/connect")
@@ -43,12 +44,29 @@ public class ConnectResource {
         Optional<String> lastReport = nzyme.getDatabaseCoreRegistry()
                 .getValue(ConnectRegistryKeys.LAST_SUCCESSFUL_REPORT_SUBMISSION.key());
 
+        Optional<String> providedServicesInfo = nzyme.getDatabaseCoreRegistry()
+                .getValue(ConnectRegistryKeys.PROVIDED_SERVICES.key());
+
+        List<String> providedServices;
+        if (providedServicesInfo.isPresent()) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                providedServices = objectMapper.readValue(providedServicesInfo.get(), new TypeReference<>() {});
+            } catch (JsonProcessingException e) {
+                LOG.error("Could not parse Connect provided services info.", e);
+                providedServices = Collections.emptyList();
+            }
+        } else {
+            providedServices = Collections.emptyList();
+        }
+
         ConnectStatusResponse status;
         if (nzyme.getConnect().isEnabled()) {
             if (lastReport.isEmpty()) {
                 status = ConnectStatusResponse.create(
                         "never_connected",
-                        null
+                        null,
+                        providedServices
                 );
             } else {
                 DateTime ts = DateTime.parse(lastReport.get());
@@ -60,12 +78,13 @@ public class ConnectResource {
                     summary = "ok";
                 }
 
-                status = ConnectStatusResponse.create(summary, ts);
+                status = ConnectStatusResponse.create(summary, ts, providedServices);
             }
         } else {
             status = ConnectStatusResponse.create(
                     "disabled",
-                    null
+                    null,
+                    providedServices
             );
         }
 

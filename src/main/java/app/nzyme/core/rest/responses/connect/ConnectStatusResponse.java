@@ -5,6 +5,8 @@ import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
+import java.util.List;
+
 @AutoValue
 public abstract class ConnectStatusResponse {
 
@@ -15,10 +17,14 @@ public abstract class ConnectStatusResponse {
     @Nullable
     public abstract DateTime lastSuccessfulReportSubmission();
 
-    public static ConnectStatusResponse create(String connectionSummary, DateTime lastSuccessfulReportSubmission) {
+    @JsonProperty("provided_services")
+    public abstract List<String> providedServices();
+
+    public static ConnectStatusResponse create(String connectionSummary, DateTime lastSuccessfulReportSubmission, List<String> providedServices) {
         return builder()
                 .connectionSummary(connectionSummary)
                 .lastSuccessfulReportSubmission(lastSuccessfulReportSubmission)
+                .providedServices(providedServices)
                 .build();
     }
 
@@ -31,6 +37,8 @@ public abstract class ConnectStatusResponse {
         public abstract Builder connectionSummary(String connectionSummary);
 
         public abstract Builder lastSuccessfulReportSubmission(DateTime lastSuccessfulReportSubmission);
+
+        public abstract Builder providedServices(List<String> providedServices);
 
         public abstract ConnectStatusResponse build();
     }
