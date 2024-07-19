@@ -75,7 +75,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
             bssids.add(BSSIDSummaryDetailsResponse.create(
                     Dot11MacAddressResponse.create(
                             bssid.bssid(),
-                            nzyme.getOUIManager().lookupMac(bssid.bssid()),
+                            nzyme.getOuiService().lookup(bssid.bssid()).orElse(null),
                             bssidContext.map(macAddressContextEntry ->
                                     Dot11MacAddressContextResponse.create(
                                             macAddressContextEntry.name(),
@@ -123,7 +123,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         BSSIDSummaryDetailsResponse summary = BSSIDSummaryDetailsResponse.create(
                 Dot11MacAddressResponse.create(
                         bssid.bssid(),
-                        nzyme.getOUIManager().lookupMac(bssid.bssid()),
+                        nzyme.getOuiService().lookup(bssid.bssid()).orElse(null),
                         bssidContext.map(macAddressContextEntry ->
                                         Dot11MacAddressContextResponse.create(
                                                 macAddressContextEntry.name(),
@@ -152,7 +152,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
             clients.add(BSSIDClientDetails.create(Dot11MacAddressResponse.create(
                     client.clientMac(),
-                    nzyme.getOUIManager().lookupMac(client.clientMac()),
+                    nzyme.getOuiService().lookup(client.clientMac()).orElse(null),
                     clientContext.map(macAddressContextEntry ->
                                     Dot11MacAddressContextResponse.create(
                                             macAddressContextEntry.name(),
@@ -407,7 +407,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
                 accessPointClients.add(BSSIDClientDetails.create(Dot11MacAddressResponse.create(
                         mac,
-                        nzyme.getOUIManager().lookupMac(mac),
+                        nzyme.getOuiService().lookup(mac).orElse(null),
                         clientContext.map(macAddressContextEntry ->
                                         Dot11MacAddressContextResponse.create(
                                                 macAddressContextEntry.name(),
@@ -433,7 +433,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         SSIDDetailsResponse response = SSIDDetailsResponse.create(
                 Dot11MacAddressResponse.create(
                         bssid,
-                        nzyme.getOUIManager().lookupMac(bssid),
+                        nzyme.getOuiService().lookup(bssid).orElse(null),
                         bssidContext.map(macAddressContextEntry ->
                                         Dot11MacAddressContextResponse.create(
                                                 macAddressContextEntry.name(),

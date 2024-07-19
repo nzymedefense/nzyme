@@ -192,7 +192,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                             nzyme.getDot11().getMacAddressMetadata(s.mac(), tapUuids).type(),
                                             Dot11MacAddressResponse.create(
                                                     s.mac(),
-                                                    nzyme.getOUIManager().lookupMac(s.mac()),
+                                                    nzyme.getOuiService().lookup(s.mac()).orElse(null),
                                                     macContext.map(macAddressContextEntry ->
                                                                     Dot11MacAddressContextResponse.create(
                                                                             macAddressContextEntry.name(),
@@ -228,7 +228,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                             nzyme.getDot11().getMacAddressMetadata(s.mac(), tapUuids).type(),
                                             Dot11MacAddressResponse.create(
                                                     s.mac(),
-                                                    nzyme.getOUIManager().lookupMac(s.mac()),
+                                                    nzyme.getOuiService().lookup(s.mac()).orElse(null),
                                                     macContext.map(macAddressContextEntry ->
                                                                     Dot11MacAddressContextResponse.create(
                                                                             macAddressContextEntry.name(),
@@ -270,7 +270,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                             nzyme.getDot11().getMacAddressMetadata(s.sender(), tapUuids).type(),
                                             Dot11MacAddressResponse.create(
                                                     s.sender(),
-                                                    nzyme.getOUIManager().lookupMac(s.sender()),
+                                                    nzyme.getOuiService().lookup(s.sender()).orElse(null),
                                                     senderMacContext.map(macAddressContextEntry ->
                                                                     Dot11MacAddressContextResponse.create(
                                                                             macAddressContextEntry.name(),
@@ -287,7 +287,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                             nzyme.getDot11().getMacAddressMetadata(s.receiver(), tapUuids).type(),
                                             Dot11MacAddressResponse.create(
                                                     s.receiver(),
-                                                    nzyme.getOUIManager().lookupMac(s.receiver()),
+                                                    nzyme.getOuiService().lookup(s.receiver()).orElse(null),
                                                     receiverMacContext.map(macAddressContextEntry ->
                                                                     Dot11MacAddressContextResponse.create(
                                                                             macAddressContextEntry.name(),

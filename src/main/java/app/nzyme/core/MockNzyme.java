@@ -30,6 +30,7 @@ import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
+import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.registry.RegistryChangeMonitorImpl;
 import app.nzyme.core.registry.RegistryImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
@@ -44,7 +45,6 @@ import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jvm.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import app.nzyme.core.configuration.IncompleteConfigurationException;
 import app.nzyme.core.configuration.InvalidConfigurationException;
 import app.nzyme.core.configuration.node.NodeConfiguration;
@@ -52,7 +52,6 @@ import app.nzyme.core.configuration.node.NodeConfigurationLoader;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.ouis.OUIManager;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.TapManager;
 import liquibase.exception.LiquibaseException;
@@ -61,7 +60,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -83,7 +81,7 @@ public class MockNzyme implements NzymeNode {
     private final NodeIdentification nodeIdentification;
 
     private final NodeConfiguration configuration;
-    private final OUIManager ouiManager;
+    private final OuiService ouiService;
     private final MetricRegistry metricRegistry;
     private final ObjectMapper objectMapper;
     private final Version version;
@@ -173,7 +171,7 @@ public class MockNzyme implements NzymeNode {
 
         this.crypto = new Crypto(this);
 
-        this.ouiManager = new OUIManager(this);
+        this.ouiService = new OuiService(this);
         this.objectMapper = new ObjectMapper();
 
     }
@@ -281,8 +279,8 @@ public class MockNzyme implements NzymeNode {
     }
 
     @Override
-    public OUIManager getOUIManager() {
-        return ouiManager;
+    public OuiService getOuiService() {
+        return ouiService;
     }
 
     @Override

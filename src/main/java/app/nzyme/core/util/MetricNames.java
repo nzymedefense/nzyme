@@ -21,7 +21,7 @@ import app.nzyme.core.context.ContextService;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
-import app.nzyme.core.ouis.OUIManager;
+import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.rest.interceptors.TapTableSizeInterceptor;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.tables.bluetooth.BluetoothTable;
@@ -35,9 +35,10 @@ import static com.codahale.metrics.MetricRegistry.name;
 
 public class MetricNames {
 
-    public static final String OUI_LOOKUP_TIMING = name(OUIManager.class, "lookup-timing");
+    public static final String OUI_LOOKUP_TIMING = name(OuiService.class, "lookup-timing");
     public static final String DATABASE_SIZE = name(DatabaseImpl.class, "size");
     public static final String GEOIP_CACHE_SIZE = name(GeoIpService.class, "cache-size");
+    public static final String GEOIP_LOOKUP_TIMING_UNCACHED = name(GeoIpService.class, "lookup-timing-uncached");
     public static final String PGP_ENCRYPTION_TIMING = name(Crypto.class, "encryption-timing");
     public static final String PGP_DECRYPTION_TIMING = name(Crypto.class, "decryption-timing");
     public static final String PASSWORD_HASHING_TIMER = name(PasswordHasher.class, "hashing-timer");

@@ -32,6 +32,7 @@ import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
+import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.periodicals.connect.ConnectStatusReporter;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.registry.RegistryChangeMonitorImpl;
@@ -52,8 +53,6 @@ import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.ouis.OUIManager;
-import app.nzyme.core.ouis.OUIUpdater;
 import app.nzyme.core.periodicals.PeriodicalManager;
 import app.nzyme.core.periodicals.versioncheck.VersioncheckThread;
 import app.nzyme.core.plugin.loading.PluginLoader;
@@ -63,11 +62,9 @@ import app.nzyme.core.taps.TapManager;
 import app.nzyme.core.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.checkerframework.checker.units.qual.C;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -99,7 +96,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final NzymeHttpServer httpServer;
 
     private final MetricRegistry metrics;
-    private final OUIManager ouiManager;
+    private final OuiService ouiService;
     private final TapManager tapManager;
     private final MessageBus messageBus;
     private final TasksQueue tasksQueue;
@@ -181,7 +178,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.metrics.register("mem", new MemoryUsageGaugeSet());
         this.metrics.register("threadstates", new ThreadStatesGaugeSet());
 
-        this.ouiManager = new OUIManager(this);
+        this.ouiService = new OuiService(this);
 
         this.detectionAlertService = new DetectionAlertService(this);
         this.eventEngine = new EventEngineImpl(this);
@@ -211,15 +208,11 @@ public class NzymeNodeImpl implements NzymeNode {
         LOG.info("Initializing Geo IP service.");
         this.geoIpService.initialize();
 
+        LOG.info("Initializing OUI service.");
+        this.ouiService.initialize();
+
         LOG.info("Initializing authentication service.");
         this.authenticationService.initialize();
-
-        // Initial OUI fetch. Not in periodical because this needs to be blocking.
-        try {
-            this.ouiManager.fetchAndUpdate();
-        } catch (IOException e) {
-            LOG.error("Could not initialize OUIs.", e);
-        }
 
         // Metrics JMX reporter.
         final JmxReporter reporter = JmxReporter.forRegistry(metrics).build();
@@ -232,7 +225,6 @@ public class NzymeNodeImpl implements NzymeNode {
         PeriodicalManager periodicalManager = new PeriodicalManager();
         periodicalManager.scheduleAtFixedRate(new NodeUpdater(this), 0, 5, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new ConnectStatusReporter(this), 0, 1, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new Dot11SignalTrackMonitor(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new Dot11DiscoMonitor(this), 1, 1, TimeUnit.MINUTES);
         if (configuration.versionchecksEnabled()) {
@@ -346,8 +338,8 @@ public class NzymeNodeImpl implements NzymeNode {
     }
 
     @Override
-    public OUIManager getOUIManager() {
-        return ouiManager;
+    public OuiService getOuiService() {
+        return ouiService;
     }
 
     @Override

@@ -27,6 +27,7 @@ import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
+import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.plugin.*;
@@ -38,7 +39,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.ouis.OUIManager;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.TapManager;
 
@@ -81,7 +81,7 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
 
     TablesService getTablesService();
 
-    OUIManager getOUIManager();
+    OuiService getOuiService();
 
     List<String> getInitializedPlugins();
 

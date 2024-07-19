@@ -899,7 +899,7 @@ public class Dot11 {
                 connectedBSSIDs.add(ConnectedBSSID.create(
                         Dot11MacAddressResponse.create(
                                 bssid,
-                                nzyme.getOUIManager().lookupMac(bssid),
+                                nzyme.getOuiService().lookup(bssid).orElse(null),
                                 bssidContext.map(macAddressContextEntry ->
                                                 Dot11MacAddressContextResponse.create(
                                                         macAddressContextEntry.name(),
@@ -1011,7 +1011,7 @@ public class Dot11 {
             currentlyConnectedBssidResponse = ConnectedBSSID.create(
                     Dot11MacAddressResponse.create(
                             currentlyConnectedBSSID.get(),
-                            nzyme.getOUIManager().lookupMac(currentlyConnectedBSSID.get()),
+                            nzyme.getOuiService().lookup(currentlyConnectedBSSID.get()).orElse(null),
                             bssidContext.map(macAddressContextEntry ->
                                             Dot11MacAddressContextResponse.create(
                                                     macAddressContextEntry.name(),
@@ -1023,7 +1023,7 @@ public class Dot11 {
 
         return Optional.of(ClientDetails.create(
                 clientMac,
-                nzyme.getOUIManager().lookupMac(clientMac),
+                nzyme.getOuiService().lookup(clientMac).orElse(null),
                 currentlyConnectedBssidResponse,
                 connectedBSSIDs,
                 firstSeen,

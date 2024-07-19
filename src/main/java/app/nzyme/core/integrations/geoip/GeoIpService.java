@@ -5,6 +5,8 @@ import app.nzyme.core.connect.ConnectRegistryKeys;
 import app.nzyme.core.integrations.geoip.ipinfo.IpInfoFreeCountryAsnLookupResult;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -33,6 +35,7 @@ public class GeoIpService {
     private static final Logger LOG = LogManager.getLogger(GeoIpService.class);
 
     private final NzymeNode nzyme;
+    private final Timer lookupTimerUncached;
 
     private final LoadingCache<InetAddress, Optional<GeoIpLookupResult>> cache;
 
@@ -56,6 +59,10 @@ public class GeoIpService {
                         return mmdbLookup(address);
                     }
                 });
+
+        this.lookupTimerUncached = nzyme.getMetrics().timer(
+                MetricRegistry.name(MetricNames.GEOIP_LOOKUP_TIMING_UNCACHED)
+        );
 
         nzyme.getMetrics().register(MetricNames.GEOIP_CACHE_SIZE, new Gauge<Long>() {
             @Override
@@ -137,47 +144,49 @@ public class GeoIpService {
     }
 
     private Optional<GeoIpLookupResult> mmdbLookup(InetAddress address) {
-        lock.lock();
+        try (Timer.Context ignored = lookupTimerUncached.time()) {
+            lock.lock();
 
-        try {
-            IpInfoFreeCountryAsnLookupResult lookup = mmdb.get(address, IpInfoFreeCountryAsnLookupResult.class);
+            try {
+                IpInfoFreeCountryAsnLookupResult lookup = mmdb.get(address, IpInfoFreeCountryAsnLookupResult.class);
 
-            if (lookup == null) {
-                return Optional.empty();
-            }
+                if (lookup == null) {
+                    return Optional.empty();
+                }
 
-            GeoIpGeoInformation geo = GeoIpGeoInformation.create(
-                    null,
-                    lookup.getCountryCode(),
-                    lookup.getCountryName(),
-                    null,
-                    null
-            );
+                GeoIpGeoInformation geo = GeoIpGeoInformation.create(
+                        null,
+                        lookup.getCountryCode(),
+                        lookup.getCountryName(),
+                        null,
+                        null
+                );
 
-            Long asNumber;
-            if (lookup.getAsNumber() != null) {
-                String[] parts = lookup.getAsNumber().split("^AS");
-                if (parts.length > 1) {
-                    asNumber = Long.parseLong(parts[1]);
+                Long asNumber;
+                if (lookup.getAsNumber() != null) {
+                    String[] parts = lookup.getAsNumber().split("^AS");
+                    if (parts.length > 1) {
+                        asNumber = Long.parseLong(parts[1]);
+                    } else {
+                        asNumber = null;
+                    }
                 } else {
                     asNumber = null;
                 }
-            } else {
-                asNumber = null;
+
+                GeoIpAsnInformation asn = GeoIpAsnInformation.create(
+                        asNumber,
+                        lookup.getAsName(),
+                        lookup.getAsDomain()
+                );
+
+                return Optional.of(GeoIpLookupResult.create(asn, geo));
+            } catch (Exception e) {
+                LOG.info("Could not look up IP address [{}].", address, e);
+                return Optional.empty();
+            } finally {
+                lock.unlock();
             }
-
-            GeoIpAsnInformation asn = GeoIpAsnInformation.create(
-                    asNumber,
-                    lookup.getAsName(),
-                    lookup.getAsDomain()
-            );
-
-            return Optional.of(GeoIpLookupResult.create(asn, geo));
-        } catch (Exception e) {
-            LOG.info("Could not look up IP address [{}].", address, e);
-            return Optional.empty();
-        } finally {
-            lock.unlock();
         }
     }
 

@@ -79,7 +79,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
             connectedClients.add(ConnectedClientDetailsResponse.create(
                     Dot11MacAddressResponse.create(
                             client.clientMac(),
-                            nzyme.getOUIManager().lookupMac(client.clientMac()),
+                            nzyme.getOuiService().lookup(client.clientMac()).orElse(null),
                             clientContext.map(macAddressContextEntry ->
                                             Dot11MacAddressContextResponse.create(
                                                     macAddressContextEntry.name(),
@@ -90,7 +90,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                     client.lastSeen(),
                     Dot11MacAddressResponse.create(
                             client.bssid(),
-                            nzyme.getOUIManager().lookupMac(client.bssid()),
+                            nzyme.getOuiService().lookup(client.bssid()).orElse(null),
                             clientBssidContext.map(macAddressContextEntry ->
                                             Dot11MacAddressContextResponse.create(
                                                     macAddressContextEntry.name(),
@@ -135,7 +135,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
             disconnectedClients.add(DisconnectedClientDetailsResponse.create(
                     Dot11MacAddressResponse.create(
                             client.clientMac(),
-                            nzyme.getOUIManager().lookupMac(client.clientMac()),
+                            nzyme.getOuiService().lookup(client.clientMac()).orElse(null),
                             clientContext.map(macAddressContextEntry ->
                                             Dot11MacAddressContextResponse.create(
                                                     macAddressContextEntry.name(),
@@ -328,7 +328,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         return Response.ok(ClientDetailsResponse.create(
                 Dot11MacAddressResponse.create(
                         c.mac(),
-                        nzyme.getOUIManager().lookupMac(c.mac()),
+                        nzyme.getOuiService().lookup(c.mac()).orElse(null),
                         macContext.map(macAddressContextEntry ->
                                         Dot11MacAddressContextResponse.create(
                                                 macAddressContextEntry.name(),
