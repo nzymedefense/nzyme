@@ -23,6 +23,8 @@ function NodeTimers(props) {
           <TimerRow title="Mac Address Context Lookup" timer={timers.context_mac_lookup} />
           <TimerRow title="Report Processing: TCP" timer={timers.report_processing_tcp} />
           <TimerRow title="Report Processing: DNS" timer={timers.report_processing_dns} />
+          <TimerRow title="Report Processing: SSH" timer={timers.report_processing_ssh} />
+          <TimerRow title="Report Processing: SOCKS" timer={timers.report_processing_socks} />
           <TimerRow title="Report Processing: 802.11 / WiFi" timer={timers.report_processing_dot11} />
         </tbody>
       </table>

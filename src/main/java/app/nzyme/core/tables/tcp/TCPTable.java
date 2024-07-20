@@ -13,8 +13,6 @@ import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
 import com.codahale.metrics.Timer;
-import com.google.common.base.Charsets;
-import com.google.common.hash.Hashing;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;

@@ -4,6 +4,8 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.pgp.PGPKeys;
 import app.nzyme.core.distributed.database.NodeEntry;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
+import app.nzyme.core.logging.CountingAppender;
+import app.nzyme.core.monitoring.TimerEntry;
 import app.nzyme.core.taps.db.metrics.BucketSize;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.MetricRegistry;
@@ -19,6 +21,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Handle;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -128,7 +131,7 @@ public class NodeManager {
                         .setNameFormat("node-metrics-updater-%d")
                         .setDaemon(true)
                         .build()
-        ).scheduleAtFixedRate(this::runMetrics, 1, 1, TimeUnit.MINUTES);
+        ).scheduleAtFixedRate(this::runMetrics, 0, 1, TimeUnit.MINUTES);
 
         LOG.info("Node ID: [{}]", localNodeId);
     }
@@ -292,6 +295,7 @@ public class NodeManager {
             MetricRegistry metrics = nzyme.getMetrics();
             long tapReportSize = this.tapReportSize.getAndSet(0);
             NodeInformation.Info ni = new NodeInformation().collect();
+            Map<String, Long> logCounts = CountingAppender.getCounts();
 
             writeGauge(MetricExternalName.MEMORY_BYTES_TOTAL.database_label, ni.memoryTotal());
             writeGauge(MetricExternalName.MEMORY_BYTES_AVAILABLE.database_label, ni.memoryAvailable());
@@ -302,13 +306,38 @@ public class NodeManager {
             writeGauge(MetricExternalName.CPU_SYSTEM_LOAD.database_label, ni.cpuSystemLoad());
             writeGauge(MetricExternalName.PROCESS_VIRTUAL_SIZE.database_label, ni.processVirtualSize());
             writeGauge(MetricExternalName.TAP_REPORT_SIZE.database_label, tapReportSize);
+            writeGauge(MetricExternalName.LOG_COUNTS_TRACE.database_label, logCounts.getOrDefault("TRACE", 0L));
+            writeGauge(MetricExternalName.LOG_COUNTS_DEBUG.database_label, logCounts.getOrDefault("DEBUG", 0L));
+            writeGauge(MetricExternalName.LOG_COUNTS_INFO.database_label, logCounts.getOrDefault("INFO", 0L));
+            writeGauge(MetricExternalName.LOG_COUNTS_WARN.database_label, logCounts.getOrDefault("WARN", 0L));
+            writeGauge(MetricExternalName.LOG_COUNTS_ERROR.database_label, logCounts.getOrDefault("ERROR", 0L));
+            writeGauge(MetricExternalName.LOG_COUNTS_FATAL.database_label, logCounts.getOrDefault("FATAL", 0L));
+            writeGauge(MetricExternalName.GEOIP_CACHE_SIZE.database_label, getLocalMetricsGaugeValue(metrics, MetricNames.GEOIP_CACHE_SIZE));
+            writeGauge(MetricExternalName.CONTEXT_MAC_CACHE_SIZE.database_label, getLocalMetricsGaugeValue(metrics, MetricNames.CONTEXT_MAC_CACHE_SIZE));
 
             writeTimer(MetricExternalName.PGP_ENCRYPTION_TIMER.database_label,
                     metrics.getTimers().get(MetricNames.PGP_ENCRYPTION_TIMING));
             writeTimer(MetricExternalName.PGP_DECRYPTION_TIMER.database_label,
                     metrics.getTimers().get(MetricNames.PGP_DECRYPTION_TIMING));
+            writeTimer(MetricExternalName.PASSWORD_HASHING_TIMER.database_label,
+                    metrics.getTimers().get(MetricNames.PASSWORD_HASHING_TIMER));
+            writeTimer(MetricExternalName.CONTEXT_MAC_LOOKUP_TIMER.database_label,
+                    metrics.getTimers().get(MetricNames.CONTEXT_MAC_LOOKUP_TIMING));
+
+            writeTimer(MetricExternalName.REPORT_PROCESSING_DOT11_TIMER.database_label,
+                    metrics.getTimers().get(MetricNames.DOT11_TOTAL_REPORT_PROCESSING_TIMER));
+            writeTimer(MetricExternalName.REPORT_PROCESSING_TCP_TIMER.database_label,
+                    metrics.getTimers().get(MetricNames.TCP_TOTAL_REPORT_PROCESSING_TIMER));
+            writeTimer(MetricExternalName.REPORT_PROCESSING_DNS_TIMER.database_label,
+                    metrics.getTimers().get(MetricNames.DNS_TOTAL_REPORT_PROCESSING_TIMER));
+            writeTimer(MetricExternalName.REPORT_PROCESSING_SSH_TIMER.database_label,
+                    metrics.getTimers().get(MetricNames.SSH_TOTAL_REPORT_PROCESSING_TIMER));
+            writeTimer(MetricExternalName.REPORT_PROCESSING_SOCKS_TIMER.database_label,
+                    metrics.getTimers().get(MetricNames.SOCKS_TOTAL_REPORT_PROCESSING_TIMER));
         } catch(Exception e) {
             LOG.error("Could not write node metrics.", e);
+        } finally {
+            CountingAppender.resetCounts();
         }
 
         // Retention clean old metrics.
@@ -320,6 +349,24 @@ public class NodeManager {
                 handle.createUpdate("DELETE FROM node_metrics_timers WHERE created_at < :created_at")
                         .bind("created_at", DateTime.now().minusHours(24))
                         .execute());
+    }
+
+    private double getLocalMetricsGaugeValue(MetricRegistry metrics, String metricName) {
+        Object value = metrics.getGauges().get(metricName).getValue();
+
+        if (value == null) {
+            return 0;
+        }
+
+        if (value instanceof Long) {
+            return ((Long) value).doubleValue();
+        } else if (value instanceof Double) {
+            return (double) value;
+        } else {
+            LOG.error("Unknown value type [{}] in gauge [{}]",
+                    value.getClass().getCanonicalName(), metricName);
+            return 0;
+        }
     }
 
     private void writeGauge(String metricName, double metricValue) {
@@ -395,6 +442,35 @@ public class NodeManager {
         }
 
         return Optional.of(result);
+    }
+
+    public Optional<TimerEntry> findLatestActiveMetricsTimerValue(UUID nodeId,
+                                                                  String metricName,
+                                                                  Handle handle) {
+        return handle.createQuery("SELECT * FROM node_metrics_timers " +
+                        "WHERE node_id = :node_id AND metric_name = :metric_name AND created_at > :created_at " +
+                        "ORDER BY created_at DESC " +
+                        "LIMIT 1")
+                .bind("node_id", nodeId)
+                .bind("metric_name", metricName)
+                .bind("created_at", DateTime.now().minusMinutes(2))
+                .mapTo(TimerEntry.class)
+                .findOne();
+    }
+
+    public Optional<Double> findLatestActiveMetricsGaugeValue(UUID nodeId,
+                                                            String metricName,
+                                                            Handle handle) {
+        return handle.createQuery("SELECT metric_value FROM node_metrics_gauges " +
+                        "WHERE node_id = :node_id AND metric_name = :metric_name " +
+                        "AND created_at > :created_at " +
+                        "ORDER BY created_at DESC " +
+                        "LIMIT 1")
+                .bind("node_id", nodeId)
+                .bind("metric_name", metricName)
+                .bind("created_at", DateTime.now().minusMinutes(2))
+                .mapTo(Double.class)
+                .findOne();
     }
 
     private boolean isNodeEphemeral(NodeEntry node) {

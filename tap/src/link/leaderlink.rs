@@ -17,7 +17,6 @@ use crate::metrics::ChannelUtilization;
 
 use super::{payloads::{StatusReport, SystemMetricsReport, TotalWithAverage, ChannelReport, CaptureReport}};
 
-
 pub struct Leaderlink {
     http_client: Client,
     uri: Url,
@@ -165,6 +164,7 @@ impl Leaderlink {
         let mut captures: Vec<CaptureReport> = Vec::new();
         let mut gauges_long: HashMap<String, i128> = HashMap::new();
         let mut timers: HashMap<String, TimerReport> = HashMap::new();
+        let mut log_counts: HashMap<String, u128> = HashMap::new();
 
         match self.metrics.lock() {
             Ok(mut metrics) => {
@@ -209,6 +209,22 @@ impl Leaderlink {
                         p99: timer.p99
                     });
                 }
+
+                // Log counts.
+                match metrics.get_log_counts() {
+                    Ok(lc) => {
+                        log_counts.insert("error".to_string(), lc.error);
+                        log_counts.insert("warn".to_string(), lc.warn);
+                        log_counts.insert("info".to_string(), lc.info);
+                        log_counts.insert("debug".to_string(), lc.debug);
+                        log_counts.insert("trace".to_string(), lc.trace);
+                    },
+                    Err(e) => error!("Could not get log counts: {}", e)
+                }
+
+                if let Err(e) = metrics.reset_log_counts() {
+                    error!("Could not reset log counts: {}", e);
+                }
             },
             Err(e) => {
                 error!("Could not acquire metrics mutex. {}", e);
@@ -241,7 +257,8 @@ impl Leaderlink {
             system_metrics,
             captures,
             gauges_long,
-            timers
+            timers,
+            log_counts
         };
         
         let mut uri = self.uri.clone();

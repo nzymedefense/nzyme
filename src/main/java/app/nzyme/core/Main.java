@@ -18,6 +18,7 @@
 package app.nzyme.core;
 
 import app.nzyme.core.configuration.node.NodeConfiguration;
+import app.nzyme.core.logging.Logging;
 import com.beust.jcommander.JCommander;
 import com.typesafe.config.ConfigException;
 import app.nzyme.core.configuration.CLIArguments;
@@ -42,6 +43,8 @@ public class Main {
     private static final int FAILURE = 1;
 
     public static void main(String[] argv) {
+        Logging.appendCounter();
+
         final CLIArguments cliArguments = new CLIArguments();
 
         // Parse CLI arguments.

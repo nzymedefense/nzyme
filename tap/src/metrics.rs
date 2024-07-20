@@ -1,11 +1,13 @@
 use std::{thread, time::Duration, sync::{Mutex, Arc}, collections::HashMap};
 use std::collections::BTreeMap;
+use anyhow::Error;
 use chrono::{DateTime, Utc};
 use strum::IntoEnumIterator;
 use strum_macros::Display;
 use statrs::statistics::{Distribution, OrderStatistics, Data};
 
 use log::{warn, error, info};
+use crate::log_monitor::{LogCounts, LogMonitor};
 use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, EthernetChannelName};
 
 #[derive(Default, Clone)]
@@ -44,6 +46,7 @@ pub struct ChannelUtilization {
     pub capacity: u128
 }
 
+#[derive(Default)]
 pub struct Channels {
     ethernet_broker: ChannelUtilization,
     dot11_broker: ChannelUtilization,
@@ -85,30 +88,20 @@ pub struct Metrics {
     processed_bytes: TotalWithAverage,
     channels: Channels,
     gauges_long: HashMap<String, i128>,
-    timers: Mutex<HashMap<String, BTreeMap<DateTime<Utc>, i64>>>
+    timers: Mutex<HashMap<String, BTreeMap<DateTime<Utc>, i64>>>,
+    log_monitor: Arc<LogMonitor>
 }
 
 impl Metrics {
 
-    pub fn new() -> Self {
+    pub fn new(log_monitor: Arc<LogMonitor>) -> Self {
         Metrics {
             processed_bytes: TotalWithAverage::default(),
-            channels: Channels {
-                ethernet_broker: ChannelUtilization::default(),
-                dot11_broker: ChannelUtilization::default(),
-                dot11_frames_pipeline: ChannelUtilization::default(),
-                bluetooth_devices_pipeline: ChannelUtilization::default(),
-                ethernet_pipeline: ChannelUtilization::default(),
-                arp_pipeline: ChannelUtilization::default(),
-                tcp_pipeline: ChannelUtilization::default(),
-                udp_pipeline: ChannelUtilization::default(),
-                dns_pipeline: ChannelUtilization::default(),
-                socks_pipeline: ChannelUtilization::default(),
-                ssh_pipeline: ChannelUtilization::default()
-            },
+            channels: Channels::default(),
             captures: HashMap::new(),
             gauges_long: HashMap::new(),
-            timers: Mutex::new(HashMap::new())
+            timers: Mutex::new(HashMap::new()),
+            log_monitor
         }
     }
 
@@ -307,6 +300,14 @@ impl Metrics {
         }
 
         snapshots
+    }
+
+    pub fn get_log_counts(&self) -> Result<LogCounts, Error> {
+        self.log_monitor.get_counts()
+    }
+
+    pub fn reset_log_counts(&self) -> Result<(), Error> {
+        self.log_monitor.reset_counts()
     }
 
     pub fn run_timer_maintenance(&self) {

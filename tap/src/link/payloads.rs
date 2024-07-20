@@ -13,7 +13,8 @@ pub struct StatusReport {
     pub captures: Vec<CaptureReport>,
     pub system_metrics: SystemMetricsReport,
     pub gauges_long: HashMap<String, i128>,
-    pub timers: HashMap<String, TimerReport>
+    pub timers: HashMap<String, TimerReport>,
+    pub log_counts: HashMap<String, u128>
 }
 
 #[derive(Serialize)]

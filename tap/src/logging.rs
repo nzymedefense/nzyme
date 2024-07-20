@@ -1,9 +1,10 @@
 use core::panic;
-
+use std::sync::Arc;
 use fern::colors::{ColoredLevelConfig, Color};
 use log::{info, LevelFilter, warn};
+use crate::log_monitor::LogMonitor;
 
-pub fn initialize(config_level: &str) {
+pub fn initialize(config_level: &str, log_monitor: &Arc<LogMonitor>) {
 
     let mut unknown_filter = false;
     let filter = match config_level.to_uppercase().as_str() {
@@ -27,8 +28,11 @@ pub fn initialize(config_level: &str) {
         .debug(Color::Blue)
         .trace(Color::BrightBlack);
 
+    let monitor = log_monitor.clone();
     let result = fern::Dispatch::new()
         .format(move |out, message, record| {
+            monitor.mark(&record.level());
+
             out.finish(format_args!(
                 "{color_line}[{level}][{date}][{target}]{color_line} {message}\x1B[0m",
                 color_line = format_args!(

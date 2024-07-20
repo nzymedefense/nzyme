@@ -6,6 +6,7 @@ import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.NodeRegistryKeys;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
 import app.nzyme.core.distributed.MetricExternalName;
+import app.nzyme.core.monitoring.TimerEntry;
 import app.nzyme.core.rest.requests.NodesConfigurationUpdateRequest;
 import app.nzyme.core.rest.responses.metrics.GaugeResponse;
 import app.nzyme.core.rest.responses.metrics.TimerResponse;
@@ -17,7 +18,6 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.Lists;
@@ -194,33 +194,57 @@ public class NodesResource {
     }
 
     private NodeResponse buildNodeResponse(Node node, TLSKeyAndCertificate tls) {
+        Map<String, GaugeResponse> gauges = Maps.newHashMap();
         Map<String, TimerResponse> timers = Maps.newHashMap();
 
-        timers.put("password_hashing",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.PASSWORD_HASHING_TIMER), timers));
-        timers.put("context_mac_lookup",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.CONTEXT_MAC_LOOKUP_TIMING), timers));
+        nzyme.getDatabase().useHandle(handle -> {
+            // Timers.
+            timers.put("password_hashing", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
+                    node.uuid(), MetricExternalName.PASSWORD_HASHING_TIMER.database_label, handle)));
+            timers.put("context_mac_lookup", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
+                    node.uuid(), MetricExternalName.CONTEXT_MAC_LOOKUP_TIMER.database_label, handle)));
 
-        timers.put("report_processing_dot11",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_TOTAL_REPORT_PROCESSING_TIMER), timers));
-        timers.put("report_processing_tcp",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.TCP_TOTAL_REPORT_PROCESSING_TIMER), timers));
-        timers.put("report_processing_dns",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DNS_TOTAL_REPORT_PROCESSING_TIMER), timers));
-        timers.put("report_processing_ssh",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.SSH_TOTAL_REPORT_PROCESSING_TIMER), timers));
-        timers.put("report_processing_socks",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.SOCKS_TOTAL_REPORT_PROCESSING_TIMER), timers));
+            // Report processing timers.
+            timers.put("report_processing_dot11", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
+                    node.uuid(), MetricExternalName.REPORT_PROCESSING_DOT11_TIMER.database_label, handle)));
+            timers.put("report_processing_tcp", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
+                    node.uuid(), MetricExternalName.REPORT_PROCESSING_TCP_TIMER.database_label, handle)));
+            timers.put("report_processing_dns", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
+                    node.uuid(), MetricExternalName.REPORT_PROCESSING_DNS_TIMER.database_label, handle)));
+            timers.put("report_processing_ssh", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
+                    node.uuid(), MetricExternalName.REPORT_PROCESSING_SSH_TIMER.database_label, handle)));
+            timers.put("report_processing_socks", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
+                    node.uuid(), MetricExternalName.REPORT_PROCESSING_SOCKS_TIMER.database_label, handle)));
 
-        Map<String, GaugeResponse> gauges = Maps.newHashMap();
-        Gauge geoIpCacheSize = nzyme.getMetrics().gauge(MetricNames.GEOIP_CACHE_SIZE);
-        Gauge contextMacCacheSize = nzyme.getMetrics().gauge(MetricNames.CONTEXT_MAC_CACHE_SIZE);
-        if (geoIpCacheSize != null) {
-            gauges.put("geoip_cache_size", GaugeResponse.fromGauge(geoIpCacheSize));
-        }
-        if (contextMacCacheSize != null) {
-            gauges.put("context_mac_cache_size", GaugeResponse.fromGauge(contextMacCacheSize));
-        }
+            // Gauges.
+            gauges.put("geoip_cache_size", GaugeResponse.create(nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    node.uuid(), MetricExternalName.GEOIP_CACHE_SIZE.database_label, handle
+            ).orElse(0D)));
+            gauges.put("context_mac_cache_size", GaugeResponse.create(nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    node.uuid(), MetricExternalName.CONTEXT_MAC_CACHE_SIZE.database_label, handle
+            ).orElse(0D)));
+
+            // Log counts.
+            gauges.put("log_counts_trace", GaugeResponse.create( nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    node.uuid(), MetricExternalName.LOG_COUNTS_TRACE.database_label, handle
+            ).orElse(0D)));
+
+            gauges.put("log_counts_debug", GaugeResponse.create(nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    node.uuid(), MetricExternalName.LOG_COUNTS_DEBUG.database_label, handle
+            ).orElse(0D)));
+            gauges.put("log_counts_info", GaugeResponse.create(nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    node.uuid(), MetricExternalName.LOG_COUNTS_INFO.database_label, handle
+            ).orElse(0D)));
+            gauges.put("log_counts_warn", GaugeResponse.create(nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    node.uuid(), MetricExternalName.LOG_COUNTS_WARN.database_label, handle
+            ).orElse(0D)));
+            gauges.put("log_counts_error", GaugeResponse.create( nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    node.uuid(), MetricExternalName.LOG_COUNTS_ERROR.database_label, handle
+            ).orElse(0D)));
+            gauges.put("log_counts_fatal", GaugeResponse.create(nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    node.uuid(), MetricExternalName.LOG_COUNTS_FATAL.database_label, handle
+            ).orElse(0D)));
+        });
 
         return NodeResponse.create(
                 node.uuid().toString(),
@@ -254,20 +278,19 @@ public class NodesResource {
         );
     }
 
-    private static TimerResponse buildTimerResponse(Timer pwHashing, Map<String, TimerResponse> timers) {
-        if (pwHashing != null) {
-            Snapshot s = pwHashing.getSnapshot();
-            return TimerResponse.create(
-                    s.getMean(),
-                    s.getMax(),
-                    s.getMin(),
-                    s.getStdDev(),
-                    s.get99thPercentile(),
-                    pwHashing.getCount()
-            );
+    private static TimerResponse buildTimerResponse(Optional<TimerEntry> t) {
+        if (t.isEmpty()) {
+            return TimerResponse.create(0, 0, 0, 0, 0, 0);
         }
 
-        return TimerResponse.create(0, 0, 0, 0, 0, 0);
+        return TimerResponse.create(
+                t.get().mean(),
+                t.get().max(),
+                t.get().min(),
+                t.get().stddev(),
+                t.get().p99(),
+                t.get().counter()
+        );
     }
 
 }

@@ -25,6 +25,7 @@ import app.nzyme.core.events.db.EventEntryMapper;
 import app.nzyme.core.events.db.SubscriptionEntryMapper;
 import app.nzyme.core.floorplans.db.TenantLocationEntryMapper;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntryMapper;
+import app.nzyme.core.monitoring.TimerEntryMapper;
 import app.nzyme.core.monitoring.health.db.IndicatorStatusMapper;
 import app.nzyme.core.registry.RegistryEntryMapper;
 import app.nzyme.core.security.authentication.db.OrganizationEntryMapper;
@@ -148,7 +149,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new DNSLogEntryMapper())
                 .registerRowMapper(new SocksTunnelEntryMapper())
                 .registerRowMapper(new SSHSessionEntryMapper())
-                .registerRowMapper(new NumberBucketAggregationResultMapper());
+                .registerRowMapper(new NumberBucketAggregationResultMapper())
+                .registerRowMapper(new TimerEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

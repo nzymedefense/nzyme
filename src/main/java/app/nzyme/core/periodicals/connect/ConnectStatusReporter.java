@@ -1,10 +1,8 @@
 package app.nzyme.core.periodicals.connect;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.connect.ConnectHealthIndicatorReport;
-import app.nzyme.core.connect.ConnectRegistryKeys;
-import app.nzyme.core.connect.ConnectStatusReport;
-import app.nzyme.core.connect.ConnectThroughputReport;
+import app.nzyme.core.connect.*;
+import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.rest.resources.system.connect.api.ConnectApiStatusResponse;
@@ -25,6 +23,7 @@ import org.joda.time.DateTimeZone;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class ConnectStatusReporter extends Periodical {
@@ -72,7 +71,8 @@ public class ConnectStatusReporter extends Periodical {
                     getSystemProperty("os.arch"),
                     getSystemProperty("os.version"),
                     buildHealthIndicatorsReport(),
-                    buildThroughputReport()
+                    buildThroughputReport(),
+                    buildLogCountReport()
             );
 
             byte[] body = om.writeValueAsBytes(report);
@@ -185,6 +185,33 @@ public class ConnectStatusReporter extends Periodical {
         }
 
         return report;
+    }
+
+    private ConnectLogCountReport buildLogCountReport() {
+        UUID nodeId = nzyme.getNodeManager().getLocalNodeId();
+
+        return nzyme.getDatabase().withHandle(handle -> {
+            long trace = nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    nodeId, MetricExternalName.LOG_COUNTS_TRACE.database_label, handle
+            ).orElse(0D).longValue();
+            long debug = nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    nodeId, MetricExternalName.LOG_COUNTS_DEBUG.database_label, handle
+            ).orElse(0D).longValue();
+            long info = nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    nodeId, MetricExternalName.LOG_COUNTS_INFO.database_label, handle
+            ).orElse(0D).longValue();
+            long warn = nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    nodeId, MetricExternalName.LOG_COUNTS_WARN.database_label, handle
+            ).orElse(0D).longValue();
+            long error = nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    nodeId, MetricExternalName.LOG_COUNTS_ERROR.database_label, handle
+            ).orElse(0D).longValue();
+            long fatal = nzyme.getNodeManager().findLatestActiveMetricsGaugeValue(
+                    nodeId, MetricExternalName.LOG_COUNTS_FATAL.database_label, handle
+            ).orElse(0D).longValue();
+
+            return ConnectLogCountReport.create(trace, debug, info, warn, error, fatal);
+        });
     }
 
     @Override

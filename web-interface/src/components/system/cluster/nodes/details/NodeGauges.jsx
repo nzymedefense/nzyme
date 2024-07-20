@@ -1,5 +1,6 @@
 import React from "react";
 import GaugeRow from "../../../../misc/metrics/GaugeRow";
+import numeral from "numeral"
 
 function NodeGauges(props) {
 
@@ -16,6 +17,17 @@ function NodeGauges(props) {
         <tbody>
           <GaugeRow title="GeoIP Cache Size" numberFormat="0,0" gauge={gauges.geoip_cache_size} />
           <GaugeRow title="Mac Address Context Cache Size" numberFormat="0,0" gauge={gauges.context_mac_cache_size} />
+          <tr>
+            <td>
+              Internal logs written in last minute (Warning/Error/Fatal)
+            </td>
+            <td>
+              {numeral(gauges.log_counts_warn.value).format("0,0")}/
+              {numeral(gauges.log_counts_error.value).format("0,0")}/
+              {numeral(gauges.log_counts_fatal.value).format("0,0")}
+            </td>
+          </tr>
+
         </tbody>
       </table>
   )

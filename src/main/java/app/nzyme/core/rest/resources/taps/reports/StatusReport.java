@@ -36,6 +36,7 @@ public abstract class StatusReport {
     public abstract List<CapturesReport> captures();
     public abstract Map<String, Long> gaugesLong();
     public abstract Map<String, TimersReport> timers();
+    public abstract Map<String, Long> logCounts();
 
     @JsonCreator
     public static StatusReport create(@JsonProperty("version") String version,
@@ -45,7 +46,8 @@ public abstract class StatusReport {
                                       @JsonProperty("system_metrics") SystemMetrics systemMetrics,
                                       @JsonProperty("captures") List<CapturesReport> captures,
                                       @JsonProperty("gauges_long") Map<String, Long> gaugesLong,
-                                      @JsonProperty("timers") Map<String, TimersReport> timers) {
+                                      @JsonProperty("timers") Map<String, TimersReport> timers,
+                                      @JsonProperty("log_counts") Map<String, Long> logCounts) {
         return builder()
                 .version(version)
                 .timestamp(timestamp)
@@ -55,6 +57,7 @@ public abstract class StatusReport {
                 .captures(captures)
                 .gaugesLong(gaugesLong)
                 .timers(timers)
+                .logCounts(logCounts)
                 .build();
     }
 
@@ -79,6 +82,8 @@ public abstract class StatusReport {
         public abstract Builder gaugesLong(Map<String, Long> gaugesLong);
 
         public abstract Builder timers(Map<String, TimersReport> timers);
+
+        public abstract Builder logCounts(Map<String, Long> logCounts);
 
         public abstract StatusReport build();
     }

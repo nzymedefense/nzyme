@@ -15,13 +15,15 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package app.nzyme.core;
+package app.nzyme.core.logging;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 
 public class Logging {
 
@@ -31,6 +33,22 @@ public class Logging {
         LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
         loggerConfig.setLevel(level);
         ctx.updateLoggers();
+    }
+
+    public static void appendCounter() {
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+
+        CountingAppender countingAppender = CountingAppender.createAppender("CountingAppender", PatternLayout.createDefaultLayout());
+        countingAppender.start();
+
+        config.addAppender(countingAppender);
+
+        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        loggerConfig.addAppender(countingAppender, null, null);
+
+
+        context.updateLoggers();
     }
 
 }

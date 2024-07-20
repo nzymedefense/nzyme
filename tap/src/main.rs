@@ -12,6 +12,7 @@ mod dot11;
 mod alerting;
 mod bluetooth;
 pub mod distributor;
+mod log_monitor;
 
 use std::{time, thread::{self, sleep}, time::Duration, sync::{Arc, Mutex}, process::exit};
 use anyhow::Error;
@@ -29,6 +30,7 @@ use crate::dot11::{channel_hopper::ChannelHopper};
 use crate::dot11::dot11_broker::Dot11Broker;
 use crate::ethernet::ethernet_broker::EthernetBroker;
 use crate::helpers::network::Channel;
+use crate::log_monitor::LogMonitor;
 
 #[derive(Parser,Debug)]
 struct Arguments {
@@ -47,9 +49,12 @@ fn main() {
     let log_level = args.log_level.unwrap_or_else(|| "info".to_string());
 
     if args.generate_channels {
-        // we only initialize logging for the channel toml generation if it is not info, so we don't pollute the output
+        /*
+         * To avoid log output in the generated TOML, we only initialize logging
+         * if it is not set to info
+         */
         if log_level != "info" {
-            logging::initialize(&log_level);
+            logging::initialize(&log_level, &Arc::new(LogMonitor::default()));
         }
 
         let nl = dot11::nl::Nl::new();
@@ -107,7 +112,8 @@ fn main() {
         exit(exit_code::EX_OK);
     }
 
-    logging::initialize(&log_level);
+    let log_monitor = Arc::new(LogMonitor::default());
+    logging::initialize(&log_level, &log_monitor);
 
     info!("Starting nzyme tap version [{}].", env!("CARGO_PKG_VERSION"));
 
@@ -129,7 +135,7 @@ fn main() {
 
     ethernet::capture::print_devices();
 
-    let metrics = Arc::new(Mutex::new(metrics::Metrics::new()));
+    let metrics = Arc::new(Mutex::new(metrics::Metrics::new(log_monitor)));
 
     // TODO: Unify into single Bug struct? We may be over-allocating channels here.
     let ethernet_bus = Arc::new(Bus::new(metrics.clone(), "ethernet_data".to_string(), configuration.clone()));

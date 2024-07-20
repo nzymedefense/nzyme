@@ -352,6 +352,21 @@ public class TapManager {
         writeGauge(tapUUID, "system.captures.throughput_bit_sec", report.processedBytes().average()*8/10, report.timestamp());
         writeGauge(tapUUID, "os.memory.bytes_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(), report.timestamp());
         writeGauge(tapUUID, "os.cpu.load.percent", report.systemMetrics().cpuLoad(), report.timestamp());
+
+        // Log counts.
+        for (Map.Entry<String, Long> lc : report.logCounts().entrySet()) {
+            if (lc.getKey().equals("error")
+                    || lc.getKey().equals("warn")
+                    || lc.getKey().equals("info")
+                    || lc.getKey().equals("debug")
+                    || lc.getKey().equals("trace")) {
+
+                writeGauge(tapUUID, "logs.counts." + lc.getKey(), lc.getValue(), report.timestamp());
+            } else {
+                LOG.error("Unexpected log level in tap [{}] log counts report: {}", tapUUID, lc.getKey());
+            }
+        }
+
     }
 
     private void writeGauge(UUID tapUUID, String metricName, Long metricValue, DateTime timestamp) {
