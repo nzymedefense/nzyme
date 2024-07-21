@@ -45,7 +45,16 @@ public abstract class ConnectStatusReport {
     @JsonProperty("log_counts")
     public abstract ConnectLogCountReport logCounts();
 
-    public static ConnectStatusReport create(String version, String nodeId, String nodeName, DateTime localTime, String javaVendor, String javaVersion, String osName, String osArchitecture, String osVersion, List<ConnectHealthIndicatorReport> healthIndicators, List<ConnectThroughputReport> throughput, ConnectLogCountReport logCounts) {
+    @JsonProperty("cpu_utilization")
+    public abstract double cpuUtilization();
+
+    @JsonProperty("memory_utilization")
+    public abstract double memoryUtilization();
+
+    @JsonProperty("heap_utilization")
+    public abstract double heapUtilization();
+
+    public static ConnectStatusReport create(String version, String nodeId, String nodeName, DateTime localTime, String javaVendor, String javaVersion, String osName, String osArchitecture, String osVersion, List<ConnectHealthIndicatorReport> healthIndicators, List<ConnectThroughputReport> throughput, ConnectLogCountReport logCounts, double cpuUtilization, double memoryUtilization, double heapUtilization) {
         return builder()
                 .version(version)
                 .nodeId(nodeId)
@@ -59,6 +68,9 @@ public abstract class ConnectStatusReport {
                 .healthIndicators(healthIndicators)
                 .throughput(throughput)
                 .logCounts(logCounts)
+                .cpuUtilization(cpuUtilization)
+                .memoryUtilization(memoryUtilization)
+                .heapUtilization(heapUtilization)
                 .build();
     }
 
@@ -91,6 +103,12 @@ public abstract class ConnectStatusReport {
         public abstract Builder throughput(List<ConnectThroughputReport> throughput);
 
         public abstract Builder logCounts(ConnectLogCountReport logCounts);
+
+        public abstract Builder cpuUtilization(double cpuUtilization);
+
+        public abstract Builder memoryUtilization(double memoryUtilization);
+
+        public abstract Builder heapUtilization(double heapUtilization);
 
         public abstract ConnectStatusReport build();
     }

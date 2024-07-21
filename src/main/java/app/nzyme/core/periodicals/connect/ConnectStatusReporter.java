@@ -3,6 +3,7 @@ package app.nzyme.core.periodicals.connect;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.connect.*;
 import app.nzyme.core.distributed.MetricExternalName;
+import app.nzyme.core.distributed.NodeInformation;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.rest.resources.system.connect.api.ConnectApiStatusResponse;
@@ -60,6 +61,8 @@ public class ConnectStatusReporter extends Periodical {
         LOG.debug("Running Connect status reporter.");
 
         try {
+            NodeInformation.Info ni = new NodeInformation().collect();
+
             ConnectStatusReport report = ConnectStatusReport.create(
                     nzyme.getVersion().getShortVersionString(),
                     nzyme.getNodeInformation().id().toString(),
@@ -72,7 +75,10 @@ public class ConnectStatusReporter extends Periodical {
                     getSystemProperty("os.version"),
                     buildHealthIndicatorsReport(),
                     buildThroughputReport(),
-                    buildLogCountReport()
+                    buildLogCountReport(),
+                    ni.cpuSystemLoad(),
+                    (ni.memoryUsed()*100.0)/ni.memoryTotal(),
+                    (ni.heapUsed()*100.0)/ni.heapTotal()
             );
 
             byte[] body = om.writeValueAsBytes(report);
