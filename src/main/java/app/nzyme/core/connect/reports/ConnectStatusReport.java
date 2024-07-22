@@ -1,4 +1,4 @@
-package app.nzyme.core.connect;
+package app.nzyme.core.connect.reports;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
@@ -43,7 +43,7 @@ public abstract class ConnectStatusReport {
     public abstract List<ConnectThroughputReport> throughput();
 
     @JsonProperty("log_counts")
-    public abstract ConnectLogCountReport logCounts();
+    public abstract ConnectNodeLogCountReport logCounts();
 
     @JsonProperty("cpu_utilization")
     public abstract double cpuUtilization();
@@ -54,7 +54,7 @@ public abstract class ConnectStatusReport {
     @JsonProperty("heap_utilization")
     public abstract double heapUtilization();
 
-    public static ConnectStatusReport create(String version, String nodeId, String nodeName, DateTime localTime, String javaVendor, String javaVersion, String osName, String osArchitecture, String osVersion, List<ConnectHealthIndicatorReport> healthIndicators, List<ConnectThroughputReport> throughput, ConnectLogCountReport logCounts, double cpuUtilization, double memoryUtilization, double heapUtilization) {
+    public static ConnectStatusReport create(String version, String nodeId, String nodeName, DateTime localTime, String javaVendor, String javaVersion, String osName, String osArchitecture, String osVersion, List<ConnectHealthIndicatorReport> healthIndicators, List<ConnectThroughputReport> throughput, ConnectNodeLogCountReport logCounts, double cpuUtilization, double memoryUtilization, double heapUtilization) {
         return builder()
                 .version(version)
                 .nodeId(nodeId)
@@ -102,7 +102,7 @@ public abstract class ConnectStatusReport {
 
         public abstract Builder throughput(List<ConnectThroughputReport> throughput);
 
-        public abstract Builder logCounts(ConnectLogCountReport logCounts);
+        public abstract Builder logCounts(ConnectNodeLogCountReport logCounts);
 
         public abstract Builder cpuUtilization(double cpuUtilization);
 

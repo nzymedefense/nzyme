@@ -1,10 +1,10 @@
-package app.nzyme.core.connect;
+package app.nzyme.core.connect.reports;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
 @AutoValue
-public abstract class ConnectLogCountReport {
+public abstract class ConnectTapLogCountReport {
 
     @JsonProperty("trace")
     public abstract long trace();
@@ -21,22 +21,18 @@ public abstract class ConnectLogCountReport {
     @JsonProperty("error")
     public abstract long error();
 
-    @JsonProperty("fatal")
-    public abstract long fatal();
-
-    public static ConnectLogCountReport create(long trace, long debug, long info, long warn, long error, long fatal) {
+    public static ConnectTapLogCountReport create(long trace, long debug, long info, long warn, long error) {
         return builder()
                 .trace(trace)
                 .debug(debug)
                 .info(info)
                 .warn(warn)
                 .error(error)
-                .fatal(fatal)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_ConnectLogCountReport.Builder();
+        return new AutoValue_ConnectTapLogCountReport.Builder();
     }
 
     @AutoValue.Builder
@@ -51,8 +47,6 @@ public abstract class ConnectLogCountReport {
 
         public abstract Builder error(long error);
 
-        public abstract Builder fatal(long fatal);
-
-        public abstract ConnectLogCountReport build();
+        public abstract ConnectTapLogCountReport build();
     }
 }

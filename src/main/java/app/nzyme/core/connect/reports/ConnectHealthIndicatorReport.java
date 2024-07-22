@@ -1,4 +1,4 @@
-package app.nzyme.core.connect;
+package app.nzyme.core.connect.reports;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;

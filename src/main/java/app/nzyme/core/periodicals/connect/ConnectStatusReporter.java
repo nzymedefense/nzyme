@@ -2,6 +2,10 @@ package app.nzyme.core.periodicals.connect;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.connect.*;
+import app.nzyme.core.connect.reports.ConnectHealthIndicatorReport;
+import app.nzyme.core.connect.reports.ConnectNodeLogCountReport;
+import app.nzyme.core.connect.reports.ConnectStatusReport;
+import app.nzyme.core.connect.reports.ConnectThroughputReport;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.NodeInformation;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
@@ -193,7 +197,7 @@ public class ConnectStatusReporter extends Periodical {
         return report;
     }
 
-    private ConnectLogCountReport buildLogCountReport() {
+    private ConnectNodeLogCountReport buildLogCountReport() {
         UUID nodeId = nzyme.getNodeManager().getLocalNodeId();
 
         return nzyme.getDatabase().withHandle(handle -> {
@@ -216,7 +220,7 @@ public class ConnectStatusReporter extends Periodical {
                     nodeId, MetricExternalName.LOG_COUNTS_FATAL.database_label, handle
             ).orElse(0D).longValue();
 
-            return ConnectLogCountReport.create(trace, debug, info, warn, error, fatal);
+            return ConnectNodeLogCountReport.create(trace, debug, info, warn, error, fatal);
         });
     }
 
