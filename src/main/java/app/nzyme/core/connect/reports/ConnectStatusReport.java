@@ -42,6 +42,9 @@ public abstract class ConnectStatusReport {
     @JsonProperty("throughput")
     public abstract List<ConnectThroughputReport> throughput();
 
+    @JsonProperty("taps")
+    public abstract List<ConnectTapStatusReport> taps();
+
     @JsonProperty("log_counts")
     public abstract ConnectNodeLogCountReport logCounts();
 
@@ -54,7 +57,7 @@ public abstract class ConnectStatusReport {
     @JsonProperty("heap_utilization")
     public abstract double heapUtilization();
 
-    public static ConnectStatusReport create(String version, String nodeId, String nodeName, DateTime localTime, String javaVendor, String javaVersion, String osName, String osArchitecture, String osVersion, List<ConnectHealthIndicatorReport> healthIndicators, List<ConnectThroughputReport> throughput, ConnectNodeLogCountReport logCounts, double cpuUtilization, double memoryUtilization, double heapUtilization) {
+    public static ConnectStatusReport create(String version, String nodeId, String nodeName, DateTime localTime, String javaVendor, String javaVersion, String osName, String osArchitecture, String osVersion, List<ConnectHealthIndicatorReport> healthIndicators, List<ConnectThroughputReport> throughput, List<ConnectTapStatusReport> taps, ConnectNodeLogCountReport logCounts, double cpuUtilization, double memoryUtilization, double heapUtilization) {
         return builder()
                 .version(version)
                 .nodeId(nodeId)
@@ -67,6 +70,7 @@ public abstract class ConnectStatusReport {
                 .osVersion(osVersion)
                 .healthIndicators(healthIndicators)
                 .throughput(throughput)
+                .taps(taps)
                 .logCounts(logCounts)
                 .cpuUtilization(cpuUtilization)
                 .memoryUtilization(memoryUtilization)
@@ -101,6 +105,8 @@ public abstract class ConnectStatusReport {
         public abstract Builder healthIndicators(List<ConnectHealthIndicatorReport> healthIndicators);
 
         public abstract Builder throughput(List<ConnectThroughputReport> throughput);
+
+        public abstract Builder taps(List<ConnectTapStatusReport> taps);
 
         public abstract Builder logCounts(ConnectNodeLogCountReport logCounts);
 

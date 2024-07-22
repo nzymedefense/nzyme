@@ -4,10 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class ConnectTapStatusReport {
 
     @JsonProperty("version")
+    @Nullable
     public abstract String version();
 
     @JsonProperty("uuid")
@@ -20,9 +23,11 @@ public abstract class ConnectTapStatusReport {
     public abstract long throughput();
 
     @JsonProperty("local_time")
+    @Nullable
     public abstract DateTime localTime();
 
     @JsonProperty("remote_address")
+    @Nullable
     public abstract String remoteAddress();
 
     @JsonProperty("cpu_utilization")
@@ -41,6 +46,7 @@ public abstract class ConnectTapStatusReport {
     public abstract ConnectTapLogCountReport logCounts();
 
     @JsonProperty("last_report")
+    @Nullable
     public abstract DateTime lastReport();
 
     public static ConnectTapStatusReport create(String version, String uuid, String name, long throughput, DateTime localTime, String remoteAddress, double cpuUtilization, double memoryUtilization, String organizationName, String tenantName, ConnectTapLogCountReport logCounts, DateTime lastReport) {

@@ -15,6 +15,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
@@ -643,6 +644,21 @@ public class TapManager {
         }
 
         return Optional.of(result);
+    }
+
+    public Optional<Double> findLatestActiveMetricsGaugeValue(UUID tapUuid,
+                                                              String metricName,
+                                                              Handle handle) {
+        return handle.createQuery("SELECT metric_value FROM tap_metrics_gauges " +
+                        "WHERE tap_uuid = :tap_uuid AND metric_name = :metric_name " +
+                        "AND created_at > :created_at " +
+                        "ORDER BY created_at DESC " +
+                        "LIMIT 1")
+                .bind("tap_uuid", tapUuid)
+                .bind("metric_name", metricName)
+                .bind("created_at", DateTime.now().minusMinutes(2))
+                .mapTo(Double.class)
+                .findOne();
     }
 
     public Optional<Map<DateTime, TapMetricsAggregation>> findMetricsTimerHistogram(UUID tapUUID,

@@ -2,15 +2,15 @@ package app.nzyme.core.periodicals.connect;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.connect.*;
-import app.nzyme.core.connect.reports.ConnectHealthIndicatorReport;
-import app.nzyme.core.connect.reports.ConnectNodeLogCountReport;
-import app.nzyme.core.connect.reports.ConnectStatusReport;
-import app.nzyme.core.connect.reports.ConnectThroughputReport;
+import app.nzyme.core.connect.reports.*;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.NodeInformation;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.rest.resources.system.connect.api.ConnectApiStatusResponse;
+import app.nzyme.core.security.authentication.db.OrganizationEntry;
+import app.nzyme.core.security.authentication.db.TenantEntry;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.core.taps.db.metrics.BucketSize;
 import app.nzyme.core.taps.db.metrics.TapMetricsAggregation;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -79,6 +79,7 @@ public class ConnectStatusReporter extends Periodical {
                     getSystemProperty("os.version"),
                     buildHealthIndicatorsReport(),
                     buildThroughputReport(),
+                    buildTapsReport(),
                     buildLogCountReport(),
                     ni.cpuSystemLoad(),
                     (ni.memoryUsed()*100.0)/ni.memoryTotal(),
@@ -195,6 +196,56 @@ public class ConnectStatusReporter extends Periodical {
         }
 
         return report;
+    }
+
+    private List<ConnectTapStatusReport> buildTapsReport() {
+        List<ConnectTapStatusReport> taps = Lists.newArrayList();
+
+        nzyme.getDatabase().useHandle(handle -> {
+            for (Tap tap : nzyme.getTapManager().findAllTapsOfAllUsers()) {
+                double memoryUsed = tap.memoryUsed() == null ? 0 : tap.memoryUsed();
+                double memoryTotal = tap.memoryTotal() == null ? 0 : tap.memoryTotal();
+
+                Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(tap.organizationId());
+                Optional<TenantEntry> tenant = nzyme.getAuthenticationService().findTenant(tap.tenantId());
+
+                // The org and tenant should always exist, but just to make sure.
+                String organizationName = org.isPresent() ? org.get().name() : "Unknown Organization";
+                String tenantName = tenant.isPresent() ? tenant.get().name() : "Unknown Tenant";
+
+                long trace = nzyme.getTapManager().findLatestActiveMetricsGaugeValue(
+                        tap.uuid(), MetricExternalName.LOG_COUNTS_TRACE.database_label, handle
+                ).orElse(0D).longValue();
+                long debug = nzyme.getTapManager().findLatestActiveMetricsGaugeValue(
+                        tap.uuid(), MetricExternalName.LOG_COUNTS_DEBUG.database_label, handle
+                ).orElse(0D).longValue();
+                long info = nzyme.getTapManager().findLatestActiveMetricsGaugeValue(
+                        tap.uuid(), MetricExternalName.LOG_COUNTS_INFO.database_label, handle
+                ).orElse(0D).longValue();
+                long warn = nzyme.getTapManager().findLatestActiveMetricsGaugeValue(
+                        tap.uuid(), MetricExternalName.LOG_COUNTS_WARN.database_label, handle
+                ).orElse(0D).longValue();
+                long error = nzyme.getTapManager().findLatestActiveMetricsGaugeValue(
+                        tap.uuid(), MetricExternalName.LOG_COUNTS_ERROR.database_label, handle
+                ).orElse(0D).longValue();
+                taps.add(ConnectTapStatusReport.create(
+                        tap.version(),
+                        tap.uuid().toString(),
+                        tap.name(),
+                        tap.processedBytes() == null ? 0 : tap.processedBytes().average(),
+                        tap.clock(),
+                        tap.remoteAddress(),
+                        tap.cpuLoad() == null ? 0 : tap.cpuLoad(),
+                        (memoryUsed*100.0)/memoryTotal,
+                        organizationName,
+                        tenantName,
+                        ConnectTapLogCountReport.create(trace, debug, info, warn, error),
+                        tap.lastReport()
+                ));
+            }
+        });
+
+        return taps;
     }
 
     private ConnectNodeLogCountReport buildLogCountReport() {
