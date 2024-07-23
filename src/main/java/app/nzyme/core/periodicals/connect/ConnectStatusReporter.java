@@ -236,7 +236,7 @@ public class ConnectStatusReporter extends Periodical {
                         tap.clock(),
                         tap.remoteAddress(),
                         tap.cpuLoad() == null ? 0 : tap.cpuLoad(),
-                        (memoryUsed*100.0)/memoryTotal,
+                        (memoryUsed == 0 && memoryTotal == 0) ? 0 : (memoryUsed*100.0)/memoryTotal,
                         organizationName,
                         tenantName,
                         ConnectTapLogCountReport.create(trace, debug, info, warn, error),
