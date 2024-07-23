@@ -20,7 +20,8 @@ public abstract class ConnectTapStatusReport {
     public abstract String name();
 
     @JsonProperty("throughput")
-    public abstract long throughput();
+    @Nullable
+    public abstract Long throughput();
 
     @JsonProperty("local_time")
     @Nullable
@@ -31,10 +32,12 @@ public abstract class ConnectTapStatusReport {
     public abstract String remoteAddress();
 
     @JsonProperty("cpu_utilization")
-    public abstract double cpuUtilization();
+    @Nullable
+    public abstract Double cpuUtilization();
 
     @JsonProperty("memory_utilization")
-    public abstract double memoryUtilization();
+    @Nullable
+    public abstract Double memoryUtilization();
 
     @JsonProperty("organization_name")
     public abstract String organizationName();
@@ -49,7 +52,7 @@ public abstract class ConnectTapStatusReport {
     @Nullable
     public abstract DateTime lastReport();
 
-    public static ConnectTapStatusReport create(String version, String uuid, String name, long throughput, DateTime localTime, String remoteAddress, double cpuUtilization, double memoryUtilization, String organizationName, String tenantName, ConnectTapLogCountReport logCounts, DateTime lastReport) {
+    public static ConnectTapStatusReport create(String version, String uuid, String name, Long throughput, DateTime localTime, String remoteAddress, Double cpuUtilization, Double memoryUtilization, String organizationName, String tenantName, ConnectTapLogCountReport logCounts, DateTime lastReport) {
         return builder()
                 .version(version)
                 .uuid(uuid)
@@ -78,15 +81,15 @@ public abstract class ConnectTapStatusReport {
 
         public abstract Builder name(String name);
 
-        public abstract Builder throughput(long throughput);
+        public abstract Builder throughput(Long throughput);
 
         public abstract Builder localTime(DateTime localTime);
 
         public abstract Builder remoteAddress(String remoteAddress);
 
-        public abstract Builder cpuUtilization(double cpuUtilization);
+        public abstract Builder cpuUtilization(Double cpuUtilization);
 
-        public abstract Builder memoryUtilization(double memoryUtilization);
+        public abstract Builder memoryUtilization(Double memoryUtilization);
 
         public abstract Builder organizationName(String organizationName);
 

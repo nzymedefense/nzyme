@@ -228,15 +228,16 @@ public class ConnectStatusReporter extends Periodical {
                 long error = nzyme.getTapManager().findLatestActiveMetricsGaugeValue(
                         tap.uuid(), MetricExternalName.LOG_COUNTS_ERROR.database_label, handle
                 ).orElse(0D).longValue();
+
                 taps.add(ConnectTapStatusReport.create(
                         tap.version(),
                         tap.uuid().toString(),
                         tap.name(),
-                        tap.processedBytes() == null ? 0 : tap.processedBytes().average(),
+                        tap.processedBytes() == null ? null : tap.processedBytes().average(),
                         tap.clock(),
                         tap.remoteAddress(),
-                        tap.cpuLoad() == null ? 0 : tap.cpuLoad(),
-                        (memoryUsed == 0 && memoryTotal == 0) ? 0 : (memoryUsed*100.0)/memoryTotal,
+                        tap.cpuLoad() == null ? null : tap.cpuLoad(),
+                        (memoryUsed == 0 && memoryTotal == 0) ? null : (memoryUsed*100.0)/memoryTotal,
                         organizationName,
                         tenantName,
                         ConnectTapLogCountReport.create(trace, debug, info, warn, error),

@@ -17,7 +17,8 @@ public class TapMapper implements RowMapper<Tap>  {
     @Override
     public Tap map(ResultSet rs, StatementContext ctx) throws SQLException {
         DateTime updatedAt = new DateTime(rs.getTimestamp("updated_at"));
-        DateTime clock = new DateTime(rs.getTimestamp("clock"));
+        DateTime clock = rs.getTimestamp("clock") == null
+                ? null : new DateTime(rs.getTimestamp("clock"));
         DateTime lastReport = rs.getTimestamp("last_report") == null
                 ? null : new DateTime(rs.getTimestamp("last_report"));
 
