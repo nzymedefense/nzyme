@@ -214,19 +214,19 @@ public class ConnectStatusReporter extends Periodical {
                 String tenantName = tenant.isPresent() ? tenant.get().name() : "Unknown Tenant";
 
                 long trace = nzyme.getTapManager().findLatestActiveMetricsGaugeValue(
-                        tap.uuid(), MetricExternalName.LOG_COUNTS_TRACE.database_label, handle
+                        tap.uuid(), "logs.counts.trace", handle
                 ).orElse(0D).longValue();
                 long debug = nzyme.getTapManager().findLatestActiveMetricsGaugeValue(
-                        tap.uuid(), MetricExternalName.LOG_COUNTS_DEBUG.database_label, handle
+                        tap.uuid(), "logs.counts.debug", handle
                 ).orElse(0D).longValue();
                 long info = nzyme.getTapManager().findLatestActiveMetricsGaugeValue(
-                        tap.uuid(), MetricExternalName.LOG_COUNTS_INFO.database_label, handle
+                        tap.uuid(), "logs.counts.info", handle
                 ).orElse(0D).longValue();
                 long warn = nzyme.getTapManager().findLatestActiveMetricsGaugeValue(
-                        tap.uuid(), MetricExternalName.LOG_COUNTS_WARN.database_label, handle
+                        tap.uuid(), "logs.counts.warn", handle
                 ).orElse(0D).longValue();
                 long error = nzyme.getTapManager().findLatestActiveMetricsGaugeValue(
-                        tap.uuid(), MetricExternalName.LOG_COUNTS_ERROR.database_label, handle
+                        tap.uuid(), "logs.counts.error", handle
                 ).orElse(0D).longValue();
 
                 taps.add(ConnectTapStatusReport.create(
