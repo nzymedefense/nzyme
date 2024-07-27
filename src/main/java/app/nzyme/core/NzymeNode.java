@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.bluetooth.Bluetooth;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.connect.ConnectService;
 import app.nzyme.core.context.ContextService;
@@ -62,6 +63,7 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
 
     Ethernet getEthernet();
     Dot11 getDot11();
+    Bluetooth getBluetooth();
 
     GeoIpService getGeoIpService();
     ContextService getContextService();

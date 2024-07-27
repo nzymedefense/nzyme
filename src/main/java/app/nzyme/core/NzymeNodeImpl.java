@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.bluetooth.Bluetooth;
 import app.nzyme.core.cache.CacheManager;
 import app.nzyme.core.connect.ConnectService;
 import app.nzyme.core.context.ContextService;
@@ -106,6 +107,7 @@ public class NzymeNodeImpl implements NzymeNode {
 
     private final Ethernet ethernet;
     private final Dot11 dot11;
+    private final Bluetooth bluetooth;
 
     private final TablesService tablesService;
 
@@ -161,6 +163,7 @@ public class NzymeNodeImpl implements NzymeNode {
 
         this.ethernet = new Ethernet(this);
         this.dot11 = new Dot11(this);
+        this.bluetooth = new Bluetooth(this);
 
         this.tapManager = new TapManager(this);
 
@@ -310,6 +313,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public Dot11 getDot11() {
         return dot11;
+    }
+
+    @Override
+    public Bluetooth getBluetooth() {
+        return bluetooth;
     }
 
     @Override

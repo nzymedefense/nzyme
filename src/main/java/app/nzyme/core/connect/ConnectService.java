@@ -12,7 +12,7 @@ public class ConnectService {
 
     private final NzymeNode nzyme;
 
-    private static final String DEFAULT_API_URI = "https://connect.nzyme.org/";
+    private static final String DEFAULT_API_URI = "https://api.connect.nzyme.org/";
 
     public ConnectService(NzymeNode nzyme) {
         this.nzyme = nzyme;

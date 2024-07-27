@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.bluetooth.Bluetooth;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.connect.ConnectService;
 import app.nzyme.core.context.ContextService;
@@ -230,6 +231,11 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public Dot11 getDot11() {
+        return null;
+    }
+
+    @Override
+    public Bluetooth getBluetooth() {
         return null;
     }
 

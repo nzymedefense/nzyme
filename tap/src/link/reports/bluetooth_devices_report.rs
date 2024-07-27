@@ -44,7 +44,7 @@ pub fn generate_report(d: &MutexGuard<HashMap<String, BluetoothDevice>>) -> Blue
             modalias: device.modalias.clone(),
             tx_power: device.tx_power,
             manufacturer_data: device.manufacturer_data.clone().map(|m|
-            base64::engine::general_purpose::STANDARD.encode(m)
+                base64::engine::general_purpose::STANDARD.encode(m)
             ),
             uuids: device.uuids.clone(),
             service_data: device.service_data.clone(),
