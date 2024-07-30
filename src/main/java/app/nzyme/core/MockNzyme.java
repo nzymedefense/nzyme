@@ -18,6 +18,7 @@
 package app.nzyme.core;
 
 import app.nzyme.core.bluetooth.Bluetooth;
+import app.nzyme.core.bluetooth.sig.BluetoothSigService;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.connect.ConnectService;
 import app.nzyme.core.context.ContextService;
@@ -287,6 +288,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public OuiService getOuiService() {
         return ouiService;
+    }
+
+    @Override
+    public BluetoothSigService getBluetoothSigService() {
+        return null;
     }
 
     @Override

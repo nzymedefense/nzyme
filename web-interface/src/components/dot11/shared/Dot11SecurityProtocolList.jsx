@@ -21,7 +21,6 @@ function Dot11SecurityProtocolList(props) {
       </React.Fragment>
   )
 
-
 }
 
 export default Dot11SecurityProtocolList;

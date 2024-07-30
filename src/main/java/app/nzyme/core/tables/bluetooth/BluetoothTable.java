@@ -60,6 +60,15 @@ public class BluetoothTable implements DataTable {
                 LOG.warn("Could not serialize Bluetooth device data. Skipping attributes.", e);
             }
 
+            if (device.rssi() == null || device.rssi() == 0) {
+                /*
+                 * Sometimes devices are reported as a 0 RSSI. This appears to be related to previously paired
+                 * devices not in range or powered off still being reported.
+                 */
+
+                continue;
+            }
+
             batch
                     .bind("uuid", UUID.randomUUID())
                     .bind("tap_uuid", tapUuid)

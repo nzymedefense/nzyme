@@ -129,6 +129,7 @@ import TunnelsPage from "./components/ethernet/tunnels/TunnelsPage";
 import RemoteAccessPage from "./components/ethernet/remote/RemoteAccessPage";
 import DNSTransactionLogsPage from "./components/ethernet/dns/logs/DNSTransactionLogsPage";
 import ConnectPage from "./components/system/connect/ConnectPage";
+import BluetoothDevicesPage from "./components/bluetooth/devices/BluetoothDevicesPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -413,6 +414,9 @@ function App() {
 
                           { /* 802.11/Disco. */}
                           <Route path={ApiRoutes.DOT11.DISCO.INDEX} element={<DiscoPage />}/>
+
+                          { /* Bluetooth. */}
+                          <Route path={ApiRoutes.BLUETOOTH.DEVICES} element={<BluetoothDevicesPage />}/>
 
                           { /* Context. */ }
                           <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>

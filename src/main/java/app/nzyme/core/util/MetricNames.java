@@ -17,6 +17,7 @@
 
 package app.nzyme.core.util;
 
+import app.nzyme.core.bluetooth.sig.BluetoothSigService;
 import app.nzyme.core.context.ContextService;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.database.DatabaseImpl;
@@ -36,6 +37,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 public class MetricNames {
 
     public static final String OUI_LOOKUP_TIMING = name(OuiService.class, "lookup-timing");
+    public static final String BTSIG_CID_LOOKUP_TIMING = name(BluetoothSigService.class, "company-id-lookup-timing");
     public static final String DATABASE_SIZE = name(DatabaseImpl.class, "size");
     public static final String GEOIP_CACHE_SIZE = name(GeoIpService.class, "cache-size");
     public static final String GEOIP_LOOKUP_TIMING_UNCACHED = name(GeoIpService.class, "lookup-timing-uncached");

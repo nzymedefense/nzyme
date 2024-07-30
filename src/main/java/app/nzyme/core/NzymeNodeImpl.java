@@ -18,6 +18,7 @@
 package app.nzyme.core;
 
 import app.nzyme.core.bluetooth.Bluetooth;
+import app.nzyme.core.bluetooth.sig.BluetoothSigService;
 import app.nzyme.core.cache.CacheManager;
 import app.nzyme.core.connect.ConnectService;
 import app.nzyme.core.context.ContextService;
@@ -97,12 +98,14 @@ public class NzymeNodeImpl implements NzymeNode {
     private final NzymeHttpServer httpServer;
 
     private final MetricRegistry metrics;
-    private final OuiService ouiService;
     private final TapManager tapManager;
     private final MessageBus messageBus;
     private final TasksQueue tasksQueue;
 
     private final GeoIpService geoIpService;
+    private final OuiService ouiService;
+    private final BluetoothSigService bluetoothSigService;
+
     private final ContextService contextService;
 
     private final Ethernet ethernet;
@@ -154,6 +157,9 @@ public class NzymeNodeImpl implements NzymeNode {
         this.tasksQueue = new PostgresTasksQueueImpl(this);
 
         this.geoIpService = new GeoIpService(this);
+        this.ouiService = new OuiService(this);
+        this.bluetoothSigService = new BluetoothSigService(this);
+
         this.contextService = new ContextService(this);
 
         this.pluginRestResources = Lists.newArrayList();
@@ -180,8 +186,6 @@ public class NzymeNodeImpl implements NzymeNode {
         this.metrics.register("jvm", new JvmAttributeGaugeSet());
         this.metrics.register("mem", new MemoryUsageGaugeSet());
         this.metrics.register("threadstates", new ThreadStatesGaugeSet());
-
-        this.ouiService = new OuiService(this);
 
         this.detectionAlertService = new DetectionAlertService(this);
         this.eventEngine = new EventEngineImpl(this);
@@ -213,6 +217,9 @@ public class NzymeNodeImpl implements NzymeNode {
 
         LOG.info("Initializing OUI service.");
         this.ouiService.initialize();
+
+        LOG.info("Initializing Bluetooth SIG service.");
+        this.bluetoothSigService.initialize();
 
         LOG.info("Initializing authentication service.");
         this.authenticationService.initialize();
@@ -326,6 +333,16 @@ public class NzymeNodeImpl implements NzymeNode {
     }
 
     @Override
+    public OuiService getOuiService() {
+        return ouiService;
+    }
+
+    @Override
+    public BluetoothSigService getBluetoothSigService() {
+        return bluetoothSigService;
+    }
+
+    @Override
     public ContextService getContextService() {
         return contextService;
     }
@@ -343,11 +360,6 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public TablesService getTablesService() {
         return tablesService;
-    }
-
-    @Override
-    public OuiService getOuiService() {
-        return ouiService;
     }
 
     @Override

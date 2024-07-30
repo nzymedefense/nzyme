@@ -3,7 +3,11 @@ import CaptureRow from './CaptureRow'
 
 function CaptureConfiguration (props) {
   if (!props.tap.active) {
-    return <div className="alert alert-warning">No recent data.</div>
+    return <div className="alert alert-warning mb-0">No recent data.</div>
+  }
+
+  if (props.tap.captures.length === 0) {
+    return <div className="alert alert-info mb-0">No captures are active on this tap.</div>
   }
 
   return (

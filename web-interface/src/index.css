@@ -262,6 +262,11 @@ div.tap-selector ul li a {
     width: 13px;
 }
 
+#nav-side i.fa-bluetooth {
+    position: relative;
+    left: 1px;
+}
+
 #footer {
     color: #aaa;
 }

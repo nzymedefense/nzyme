@@ -28,6 +28,8 @@ const DBUS_INTERFACE: &str = "org.bluez.Adapter1";
 impl Capture {
 
     pub fn run(&mut self, device_name: &str) {
+        info!("Starting Bluetooth capture on [{}]", device_name);
+
         loop {
             let result = catch_unwind(|| {
                 if self.configuration.bt_classic_enabled {

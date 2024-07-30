@@ -1,4 +1,4 @@
-package app.nzyme.core.ouis;
+package app.nzyme.core.bluetooth.sig;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.connect.ConnectRegistryKeys;
@@ -7,6 +7,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import okhttp3.HttpUrl;
@@ -23,9 +24,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class OuiService {
+public class BluetoothSigService {
 
-    private static final Logger LOG = LogManager.getLogger(OuiService.class);
+    private static final Logger LOG = LogManager.getLogger(BluetoothSigService.class);
 
     private final NzymeNode nzyme;
     private final Timer lookupTimer;
@@ -33,14 +34,14 @@ public class OuiService {
     private final ScheduledExecutorService refresher;
 
     private final ReentrantLock lock = new ReentrantLock();
-    private Map<String, String> ouis;
+    private Map<Integer, String> companyIds;
 
-    // Can be disabled if Connect is not set up or OUI data source is not enabled in Connect.
+    // Can be disabled if Connect is not set up or BT SIG data source is not enabled in Connect.
     private boolean isEnabled = false;
 
-    public OuiService(NzymeNode nzyme) {
+    public BluetoothSigService(NzymeNode nzyme) {
         this.nzyme = nzyme;
-        this.lookupTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.OUI_LOOKUP_TIMING));
+        this.lookupTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.BTSIG_CID_LOOKUP_TIMING));
 
         // Reload on configuration change.
         nzyme.getRegistryChangeMonitor()
@@ -55,7 +56,7 @@ public class OuiService {
         refresher = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
                         .setDaemon(true)
-                        .setNameFormat("oui-refresher-%d")
+                        .setNameFormat("btsig-refresher-%d")
                         .build()
         );
 
@@ -78,21 +79,21 @@ public class OuiService {
         lock.lock();
 
         try {
-            Optional<Map<String, String>> data = fetchOuisFromConnect();
+            Optional<Map<Integer, String>> data = fetchCompanyIdsFromConnect();
 
-            // Check if OUI data was disabled in Connect for this cluster.
+            // Check if BT SIG data was disabled in Connect for this cluster.
             if (data.isEmpty()) {
                 this.isEnabled = false;
                 return;
             }
 
-            this.ouis = data.get();
+            this.companyIds = data.get();
         } finally {
             lock.unlock();
         }
     }
 
-    public Optional<String> lookup(String mac) {
+    public Optional<String> lookupCompanyId(int companyId) {
         if (!isEnabled) {
             return Optional.empty();
         }
@@ -101,16 +102,17 @@ public class OuiService {
             lock.lock();
 
             try {
-                String oui = ouis.get(mac);
-                return oui == null ? Optional.empty() : Optional.of(oui);
+                String cid = companyIds.get(companyId);
+                return cid == null ? Optional.empty() : Optional.of(cid);
             } finally {
                 lock.unlock();
             }
         }
     }
 
-    private Optional<Map<String, String>> fetchOuisFromConnect() {
-        LOG.debug("Loading new OUIs from Connect.");
+
+    private Optional<Map<Integer, String>> fetchCompanyIdsFromConnect() {
+        LOG.debug("Loading new Bluetooth SIG Company IDs from Connect.");
 
         try {
             OkHttpClient c = new OkHttpClient.Builder()
@@ -123,8 +125,8 @@ public class OuiService {
             HttpUrl url = HttpUrl.get(nzyme.getConnect().getApiUri())
                     .newBuilder()
                     .addPathSegment("data")
-                    .addPathSegment("oui")
-                    .addPathSegment("all")
+                    .addPathSegment("bluetooth")
+                    .addPathSegment("companyids")
                     .build();
 
             Response response = c.newCall(new Request.Builder()
@@ -140,7 +142,7 @@ public class OuiService {
             try (response) {
                 if (!response.isSuccessful()) {
                     if (response.code() == 403) {
-                        // OUI data disabled in Connect for this cluster.
+                        // BG SIG data disabled in Connect for this cluster.
                         return Optional.empty();
                     }
 
@@ -152,14 +154,20 @@ public class OuiService {
                     throw new RuntimeException("Empty response.");
                 }
 
-                LOG.info("OUI data download from Connect complete.");
+                LOG.info("Bluetooth SIG Company ID data download from Connect complete.");
 
                 ObjectMapper om = new ObjectMapper();
                 om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 om.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
 
-                ConnectOuiResponse data = om.readValue(response.body().bytes(), ConnectOuiResponse.class);
-                return Optional.of(data.ouis());
+                ConnectCompanyIdListResponse ids = om.readValue(response.body().bytes(), ConnectCompanyIdListResponse.class);
+
+                Map<Integer, String> table = Maps.newHashMap();
+                for (ConnectCompanyIdResponse id : ids.companyIds()) {
+                    table.put(id.companyId(), id.name());
+                }
+
+                return Optional.of(table);
             }
         } catch (Exception e) {
             LOG.error("Could not download OUI data from Connect.", e);

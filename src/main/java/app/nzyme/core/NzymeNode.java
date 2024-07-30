@@ -18,6 +18,7 @@
 package app.nzyme.core;
 
 import app.nzyme.core.bluetooth.Bluetooth;
+import app.nzyme.core.bluetooth.sig.BluetoothSigService;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.connect.ConnectService;
 import app.nzyme.core.context.ContextService;
@@ -65,7 +66,6 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
     Dot11 getDot11();
     Bluetooth getBluetooth();
 
-    GeoIpService getGeoIpService();
     ContextService getContextService();
 
     NodeConfiguration getConfiguration();
@@ -83,7 +83,9 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
 
     TablesService getTablesService();
 
+    GeoIpService getGeoIpService();
     OuiService getOuiService();
+    BluetoothSigService getBluetoothSigService();
 
     List<String> getInitializedPlugins();
 

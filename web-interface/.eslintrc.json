@@ -38,7 +38,8 @@
                 "multiline-ternary": "off",
                 "dot-notation": "off",
                 "space-infix-ops": "off",
-                "key-spacing": "off"
+                "key-spacing": "off",
+                "operator-linebreak": "off"
             }
         }
    ],

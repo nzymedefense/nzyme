@@ -88,6 +88,17 @@ function Sidebar(props) {
                 show={userHasPermission(user, "dot11_monitoring_manage")}/>
           </SidebarSubmenu>
 
+          <SidebarSubmenu title="Bluetooth"
+                          subhref="/bluetooth"
+                          icon={<i className="sidebar-icon fa-brands fa-bluetooth"/>}
+                          show={true}>
+            <NavigationLink
+                href={ApiRoutes.BLUETOOTH.DEVICES}
+                title="Devices"
+                icon={<i className="sidebar-icon fa-solid fa-mobile-screen-button"/>}/>
+
+          </SidebarSubmenu>
+
           <SidebarSubmenu title="Context"
                           subhref="/context"
                           icon={<i className="sidebar-icon fa-solid fa-circle-info"></i>}

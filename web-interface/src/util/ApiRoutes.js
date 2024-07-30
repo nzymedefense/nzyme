@@ -182,6 +182,9 @@ const ApiRoutes = {
       INDEX: '/dot11/disco'
     }
   },
+  BLUETOOTH: {
+    DEVICES: '/bluetooth/devices'
+  },
   CONTEXT: {
     MAC_ADDRESSES: {
       INDEX: '/context/macs',

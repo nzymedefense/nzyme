@@ -1,13 +1,12 @@
 import React, {useState} from "react";
 import MacAddressContextOverlay from "./details/MacAddressContextOverlay";
 import ContextOverlayVisibilityWrapper from "../ContextOverlayVisibilityWrapper";
-import {span} from "plotly.js/src/traces/violin/attributes";
 import Dot11MacAddressType from "./Dot11MacAddressType";
 
 function MacAddress(props) {
 
-  const address =  props.addressWithContext ? props.addressWithContext.address : props.address;
-  const context = props.addressWithContext ?  props.addressWithContext.context : null;
+  const address = props.addressWithContext ? props.addressWithContext.address : props.address;
+  const context = props.addressWithContext ? props.addressWithContext.context : null;
   const oui = props.addressWithContext ? props.addressWithContext.oui : null;
 
   const href = props.href;

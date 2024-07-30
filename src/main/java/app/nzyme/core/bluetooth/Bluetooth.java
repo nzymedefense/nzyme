@@ -20,7 +20,23 @@ public class Bluetooth {
         this.nzyme = nzyme;
     }
 
-    public List<BluetoothDeviceSummary> findAllDevices(TimeRange timeRange, List<UUID> taps) {
+    public long countAllDevices(TimeRange timeRange, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(DISTINCT(d.mac)) FROM bluetooth_devices AS d " +
+                                "WHERE d.last_seen >= :tr_from AND d.last_seen <= :tr_to AND d.tap_uuid IN (<taps>)")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(Long.class)
+                        .first()
+        );
+    }
+
+    public List<BluetoothDeviceSummary> findAllDevices(TimeRange timeRange, int limit, int offset, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -36,9 +52,13 @@ public class Bluetooth {
                                 "MAX(d.last_seen) AS first_seen, MAX(d.last_seen) AS last_seen " +
                                 "FROM bluetooth_devices AS d " +
                                 "WHERE d.last_seen >= :tr_from AND d.last_seen <= :tr_to AND d.tap_uuid IN (<taps>) " +
-                                "GROUP BY d.mac ORDER BY average_rssi DESC")
+                                "GROUP BY d.mac " +
+                                "ORDER BY average_rssi DESC " +
+                                "LIMIT :limit OFFSET :offset")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
+                        .bind("limit", limit)
+                        .bind("offset", offset)
                         .bindList("taps", taps)
                         .mapTo(BluetoothDeviceSummary.class)
                         .list()
