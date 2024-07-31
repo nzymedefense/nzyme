@@ -176,6 +176,9 @@ fn parse_string(data: &[u8], full_packet: &[u8], visited_pointer_offsets: &mut V
         }
     
         if is_pointer(*b) {
+            if cursor >= data.len() {
+                bail!("Data too short to fit offset.")
+            }
             let offset = BigEndian::read_u16(&[data[cursor-1] & 0b0011_1111, data[cursor]]);
 
             /*
