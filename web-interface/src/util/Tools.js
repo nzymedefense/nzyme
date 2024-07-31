@@ -78,6 +78,14 @@ export function sanitizeHtml(string) {
 }
 
 export function arraysAreEqual(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b)) {
+    return false;
+  }
+  
+  if (a == null || b == null) {
+    return a == null && b == null // Both NULL.
+  }
+
   if (a.length !== b.length) return false
 
   a.sort()
@@ -120,4 +128,3 @@ export function convertGenericChartData(data) {
 
   return result
 }
-
