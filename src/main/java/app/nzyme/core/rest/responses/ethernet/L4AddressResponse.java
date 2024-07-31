@@ -2,6 +2,7 @@ package app.nzyme.core.rest.responses.ethernet;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 
 @AutoValue
 public abstract class L4AddressResponse {
@@ -18,12 +19,17 @@ public abstract class L4AddressResponse {
     @JsonProperty("port")
     public abstract int port();
 
-    public static L4AddressResponse create(L4AddressTypeResponse l4Type, String mac, String address, int port) {
+    @Nullable
+    @JsonProperty("context")
+    public abstract L4AddressContextResponse context();
+
+    public static L4AddressResponse create(L4AddressTypeResponse l4Type, String mac, String address, int port, L4AddressContextResponse context) {
         return builder()
                 .l4Type(l4Type)
                 .mac(mac)
                 .address(address)
                 .port(port)
+                .context(context)
                 .build();
     }
 
@@ -40,6 +46,8 @@ public abstract class L4AddressResponse {
         public abstract Builder address(String address);
 
         public abstract Builder port(int port);
+
+        public abstract Builder context(L4AddressContextResponse context);
 
         public abstract L4AddressResponse build();
     }
