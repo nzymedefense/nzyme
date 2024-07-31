@@ -1640,8 +1640,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             ).build();
         }
 
+        String name = Strings.isNullOrEmpty(req.name()) ? null : req.name();
         nzyme.getAuthenticationService().updateFloorOfTenantLocation(
-                floor.id(), req.number(), req.name(), Tools.round(req.pathLossExponent(), 1)
+                floor.id(), req.number(), name, Tools.round(req.pathLossExponent(), 1)
         );
         nzyme.getAuthenticationService().updateUpdatedAtOfTenantLocation(location.get().id());
 
