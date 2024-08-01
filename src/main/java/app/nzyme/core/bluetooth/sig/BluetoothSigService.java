@@ -88,6 +88,10 @@ public class BluetoothSigService {
             }
 
             this.companyIds = data.get();
+            this.isEnabled = true;
+        } catch (Exception e) {
+            LOG.error("Could not download SIG Company ID data from Connect.", e);
+            this.isEnabled = false;
         } finally {
             lock.unlock();
         }
@@ -170,7 +174,7 @@ public class BluetoothSigService {
                 return Optional.of(table);
             }
         } catch (Exception e) {
-            LOG.error("Could not download OUI data from Connect.", e);
+            LOG.error("Could not download SIG Company ID data from Connect.", e);
             return Optional.empty();
         }
     }

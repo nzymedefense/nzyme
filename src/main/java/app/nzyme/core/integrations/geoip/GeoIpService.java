@@ -127,8 +127,10 @@ public class GeoIpService {
 
             // Create new reader with (new) data.
             this.mmdb = new Reader(new ByteArrayInputStream(bytes.get()));
-        } catch (IOException e) {
+            this.isEnabled = true;
+        } catch (Exception e) {
             LOG.error("Could not create MMDB reader.", e);
+            this.isEnabled = false;
             throw new RuntimeException(e);
         } finally {
             lock.unlock();

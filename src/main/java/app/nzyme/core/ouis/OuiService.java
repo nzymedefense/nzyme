@@ -87,6 +87,10 @@ public class OuiService {
             }
 
             this.ouis = data.get();
+            this.isEnabled = true;
+        } catch (Exception e) {
+            LOG.error("Could not download OUI data from Connect.", e);
+            this.isEnabled = false;
         } finally {
             lock.unlock();
         }
