@@ -9,18 +9,20 @@ public abstract class L4AddressData {
     public abstract String mac();
     public abstract String address();
     public abstract int port();
+
+    @Nullable
     public abstract GeoData geo();
 
     @Nullable
-    public abstract Boolean isPrivate();
+    public abstract L4AddressAttributes attributes();
 
-    public static L4AddressData create(String mac, String address, int port, GeoData geo, Boolean isPrivate) {
+    public static L4AddressData create(String mac, String address, int port, GeoData geo, L4AddressAttributes attributes) {
         return builder()
                 .mac(mac)
                 .address(address)
                 .port(port)
                 .geo(geo)
-                .isPrivate(isPrivate)
+                .attributes(attributes)
                 .build();
     }
 
@@ -38,7 +40,7 @@ public abstract class L4AddressData {
 
         public abstract Builder geo(GeoData geo);
 
-        public abstract Builder isPrivate(Boolean isPrivate);
+        public abstract Builder attributes(L4AddressAttributes attributes);
 
         public abstract L4AddressData build();
     }

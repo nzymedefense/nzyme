@@ -5165,4 +5165,27 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="add_l4_session_attributes_20240731" author="lennartkoopmann">
+        <renameColumn tableName="l4_sessions" oldColumnName="source_address_is_private" newColumnName="source_address_is_site_local" />
+        <renameColumn tableName="l4_sessions" oldColumnName="destination_address_is_private" newColumnName="destination_address_is_site_local" />
+
+        <addColumn tableName="l4_sessions">
+            <column name="source_address_is_multicast" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="destination_address_is_multicast" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="source_address_is_loopback" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="destination_address_is_loopback" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

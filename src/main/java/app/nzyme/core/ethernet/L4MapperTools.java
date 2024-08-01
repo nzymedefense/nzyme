@@ -19,24 +19,20 @@ public class L4MapperTools {
                         rs.getFloat(prefix + "_address_geo_latitude"),
                         rs.getFloat(prefix + "_address_geo_longitude")
                 ),
-                rs.getBoolean(prefix + "_address_is_private")
+                L4AddressAttributes.create(
+                        rs.getBoolean(prefix + "_address_is_site_local"),
+                        rs.getBoolean(prefix + "_address_is_loopback"),
+                        rs.getBoolean(prefix + "_address_is_multicast")
+                )
         );
     }
 
-    public static L4AddressData fieldsToAddressDataNoGeoNo1918(String prefix, ResultSet rs) throws SQLException  {
+    public static L4AddressData fieldsToAddressDataNoGeoNoAttributes(String prefix, ResultSet rs) throws SQLException  {
         return L4AddressData.create(
                 rs.getString(prefix + "_mac"),
                 rs.getString(prefix + "_address"),
                 rs.getInt(prefix + "_port"),
-                GeoData.create(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null
-                ),
+                null,
                 null
         );
     }

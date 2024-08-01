@@ -121,8 +121,11 @@ public class TCPTable implements DataTable {
                 } else {
                     // This is a new session.
                     handle.createUpdate("INSERT INTO l4_sessions(tap_uuid, l4_type, session_key, " +
-                                    "source_mac, source_address, source_address_is_private, source_port, destination_mac, " +
-                                    "destination_address, destination_address_is_private, destination_port, bytes_count, segments_count, " +
+                                    "source_mac, source_address, source_address_is_site_local, " +
+                                    "source_address_is_loopback, source_address_is_multicast, source_port, " +
+                                    "destination_mac, destination_address, destination_address_is_site_local, " +
+                                    "destination_address_is_loopback, destination_address_is_multicast," +
+                                    " destination_port, bytes_count, segments_count, " +
                                     "start_time, end_time, most_recent_segment_time, state, " +
                                     "source_address_geo_asn_number, source_address_geo_asn_name, " +
                                     "source_address_geo_asn_domain, source_address_geo_city, " +
@@ -132,9 +135,13 @@ public class TCPTable implements DataTable {
                                     "destination_address_geo_asn_domain, destination_address_geo_city, " +
                                     "destination_address_geo_country_code, " +
                                     "destination_address_geo_latitude, destination_address_geo_longitude, " +
-                                    "created_at) VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, :source_address, " +
-                                    ":source_address_is_private, :source_port, :destination_mac, :destination_address, " +
-                                    ":destination_address_is_private, :destination_port, :bytes_count, :segments_count, :start_time, " +
+                                    "created_at) VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, " +
+                                    ":source_address, " +
+                                    ":source_address_is_site_local, :source_address_is_loopback, " +
+                                    ":source_address_is_multicast, :source_port, :destination_mac, " +
+                                    ":destination_address, :destination_address_is_site_local, " +
+                                    ":destination_address_is_loopback, :destination_address_is_multicast, " +
+                                    ":destination_port, :bytes_count, :segments_count, :start_time, " +
                                     ":end_time, :most_recent_segment_time, :state, " +
                                     ":source_address_geo_asn_number, :source_address_geo_asn_name, " +
                                     ":source_address_geo_asn_domain, :source_address_geo_city, " +
@@ -150,11 +157,15 @@ public class TCPTable implements DataTable {
                             .bind("session_key", sessionKey)
                             .bind("source_mac", session.sourceMac())
                             .bind("source_address", session.sourceAddress())
-                            .bind("source_address_is_private", sourceAddress.isSiteLocalAddress())
+                            .bind("source_address_is_site_local", sourceAddress.isSiteLocalAddress())
+                            .bind("source_address_is_loopback", sourceAddress.isLoopbackAddress())
+                            .bind("source_address_is_multicast", sourceAddress.isMulticastAddress())
                             .bind("source_port", session.sourcePort())
                             .bind("destination_mac", session.destinationMac())
                             .bind("destination_address", session.destinationAddress())
-                            .bind("destination_address_is_private", destinationAddress.isSiteLocalAddress())
+                            .bind("destination_address_is_site_local", destinationAddress.isSiteLocalAddress())
+                            .bind("destination_address_is_loopback", destinationAddress.isLoopbackAddress())
+                            .bind("destination_address_is_multicast", destinationAddress.isMulticastAddress())
                             .bind("destination_port", session.destinationPort())
                             .bind("bytes_count", session.bytesCount())
                             .bind("segments_count", session.segmentsCount())
