@@ -54,14 +54,16 @@ public class SocksResource extends TapDataHandlingResource {
             Optional<TcpSessionEntry> tcpSession = nzyme.getEthernet().tcp()
                     .findSessionBySessionKey(t.tcpSessionKey(), t.establishedAt(), taps);
 
+            L4AddressResponse client = null;
             L4AddressResponse socksServer = null;
-
             if (tcpSession.isPresent()) {
+                client = RestHelpers.L4AddressDataToResponse(L4Type.TCP, tcpSession.get().source());
                 socksServer = RestHelpers.L4AddressDataToResponse(L4Type.TCP, tcpSession.get().destination());
             }
 
             tunnels.add(SocksTunnelDetailsResponse.create(
                     t.uuid(),
+                    client,
                     socksServer,
                     t.tcpSessionKey(),
                     t.socksType(),

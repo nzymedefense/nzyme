@@ -154,7 +154,7 @@ public class BluetoothSigService {
                     throw new RuntimeException("Empty response.");
                 }
 
-                LOG.info("Bluetooth SIG Company ID data download from Connect complete.");
+                LOG.debug("Bluetooth SIG Company ID data download from Connect complete.");
 
                 ObjectMapper om = new ObjectMapper();
                 om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

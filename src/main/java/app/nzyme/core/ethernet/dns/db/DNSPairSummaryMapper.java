@@ -17,6 +17,7 @@
 
 package app.nzyme.core.ethernet.dns.db;
 
+import app.nzyme.core.ethernet.L4MapperTools;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 
@@ -28,12 +29,7 @@ public class DNSPairSummaryMapper implements RowMapper<DNSPairSummary> {
     @Override
     public DNSPairSummary map(ResultSet rs, StatementContext ctx) throws SQLException {
         return DNSPairSummary.create(
-                rs.getString("server_address"),
-                rs.getInt("server_port"),
-                rs.getInt("server_geo_asn_number"),
-                rs.getString("server_geo_asn_name"),
-                rs.getString("server_geo_asn_domain"),
-                rs.getString("server_geo_country_code"),
+                L4MapperTools.fieldsToAddressDataNoMac("server", rs),
                 rs.getLong("request_count"),
                 rs.getLong("client_count")
         );

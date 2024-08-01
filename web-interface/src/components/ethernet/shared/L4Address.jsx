@@ -1,10 +1,19 @@
 import React from "react";
 import IPAddressLink from "./IPAddressLink";
+import Flag from "../../misc/Flag";
 
 export default function L4Address(props) {
 
   const address = props.address;
   const hidePort = props.hidePort;
+
+  const geoCountryCode = () => {
+    if (!address.geo || !address.geo.country_code) {
+      return "NONE"
+    } else {
+      return address.geo.country_code;
+    }
+  }
 
   if (!address) {
     return (
@@ -16,7 +25,10 @@ export default function L4Address(props) {
   }
 
   return (
-      <IPAddressLink ip={address.address} port={hidePort ? null : address.port} />
+      <span>
+        <Flag code={geoCountryCode() }/>{' '}
+        <IPAddressLink ip={address.address} port={hidePort ? null : address.port} />
+      </span>
   )
 
 }

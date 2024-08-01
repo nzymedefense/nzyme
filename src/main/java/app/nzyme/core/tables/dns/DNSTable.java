@@ -138,11 +138,15 @@ public class DNSTable implements DataTable {
         }
 
         PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_pairs(tap_uuid, client_address, " +
-                "server_address, server_port, server_geo_asn_number, server_geo_asn_name, server_geo_asn_domain, " +
-                "server_geo_city, server_geo_country_code, server_geo_latitude, server_geo_longitude, count, " +
+                "server_address, server_port, server_address_geo_asn_number, server_address_geo_asn_name, " +
+                "server_address_geo_asn_domain, server_address_geo_city, server_address_geo_country_code, " +
+                "server_address_geo_latitude, server_address_geo_longitude, server_address_is_site_local, " +
+                "server_address_is_multicast, server_address_is_loopback, count, " +
                 "created_at) VALUES(:tap_uuid, :client_address, :server_address, :server_port, " +
-                ":server_geo_asn_number, :server_geo_asn_name, :server_geo_asn_domain, :server_geo_city, " +
-                ":server_geo_country_code, :server_geo_latitude, :server_geo_longitude, :count, :timestamp)");
+                ":server_address_geo_asn_number, :server_address_geo_asn_name, :server_address_geo_asn_domain, " +
+                ":server_address_geo_city, :server_address_geo_country_code, :server_address_geo_latitude, " +
+                ":server_address_geo_longitude, :server_address_is_site_local, :server_address_is_multicast, " +
+                ":server_address_is_loopback, :count, :timestamp)");
 
         for (Map.Entry<String, Map<Integer, Map<String, Long>>> pair : pairs.entrySet()) {
             for (Map.Entry<Integer, Map<String, Long>> server : pair.getValue().entrySet()) {
@@ -161,13 +165,16 @@ public class DNSTable implements DataTable {
                             .bind("client_address", pair.getKey())
                             .bind("server_address", port.getKey())
                             .bind("server_port", server.getKey())
-                            .bind("server_geo_asn_number", geo.map(g -> g.asn().number()).orElse(null))
-                            .bind("server_geo_asn_name", geo.map(g -> g.asn().name()).orElse(null))
-                            .bind("server_geo_asn_domain", geo.map(g -> g.asn().domain()).orElse(null))
-                            .bind("server_geo_city", geo.map(g -> g.geo().city()).orElse(null))
-                            .bind("server_geo_country_code", geo.map(g -> g.geo().countryCode()).orElse(null))
-                            .bind("server_geo_latitude", geo.map(g -> g.geo().latitude()).orElse(null))
-                            .bind("server_geo_longitude", geo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("server_address_geo_asn_number", geo.map(g -> g.asn().number()).orElse(null))
+                            .bind("server_address_geo_asn_name", geo.map(g -> g.asn().name()).orElse(null))
+                            .bind("server_address_geo_asn_domain", geo.map(g -> g.asn().domain()).orElse(null))
+                            .bind("server_address_geo_city", geo.map(g -> g.geo().city()).orElse(null))
+                            .bind("server_address_geo_country_code", geo.map(g -> g.geo().countryCode()).orElse(null))
+                            .bind("server_address_geo_latitude", geo.map(g -> g.geo().latitude()).orElse(null))
+                            .bind("server_address_geo_longitude", geo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("server_address_is_site_local", serverAddress.isSiteLocalAddress())
+                            .bind("server_address_is_multicast", serverAddress.isMulticastAddress())
+                            .bind("server_address_is_loopback", serverAddress.isLoopbackAddress())
                             .bind("count", port.getValue())
                             .bind("timestamp", timestamp)
                             .add();

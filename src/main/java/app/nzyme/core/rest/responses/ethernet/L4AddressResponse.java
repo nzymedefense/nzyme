@@ -9,6 +9,8 @@ public abstract class L4AddressResponse {
 
     @JsonProperty("l4_type")
     public abstract L4AddressTypeResponse l4Type();
+
+    @Nullable
     @JsonProperty("mac")
     public abstract String mac();
 
@@ -18,6 +20,7 @@ public abstract class L4AddressResponse {
     @JsonProperty("port")
     public abstract int port();
 
+    @Nullable
     @JsonProperty("geo")
     public abstract L4AddressGeoResponse geo();
 

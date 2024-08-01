@@ -37,6 +37,7 @@ export default function SocksTunnelsTable(props) {
           <thead>
           <tr>
             <th>Tunnel ID</th>
+            <th>Client</th>
             <th>Tunnel Server</th>
             <th>Tunnel Destination</th>
             <th>Type</th>

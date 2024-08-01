@@ -6,7 +6,9 @@ import jakarta.annotation.Nullable;
 @AutoValue
 public abstract class L4AddressData {
 
+    @Nullable // Some higher-level protocols don't record a MAC.
     public abstract String mac();
+
     public abstract String address();
     public abstract int port();
 

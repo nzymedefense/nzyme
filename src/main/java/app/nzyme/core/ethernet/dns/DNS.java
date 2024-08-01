@@ -71,13 +71,15 @@ public class DNS {
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM(SELECT server_address, server_geo_asn_number, " +
-                                "server_geo_asn_name, server_geo_asn_domain, server_geo_country_code, " +
-                                "SUM(count) AS request_count, COUNT(DISTINCT(client_address)) AS client_count " +
-                                "FROM dns_pairs WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                handle.createQuery("SELECT COUNT(*) FROM(SELECT server_address, server_address_geo_asn_number, " +
+                                "server_address_geo_asn_name, server_address_geo_asn_domain, " +
+                                "server_address_geo_country_code, SUM(count) AS request_count, " +
+                                "COUNT(DISTINCT(client_address)) AS client_count FROM dns_pairs " +
+                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) AND server_address <> '224.0.0.251' " +
-                                "GROUP BY server_address, server_port, server_geo_asn_number, server_geo_asn_name, " +
-                                "server_geo_asn_domain, server_geo_country_code " +
+                                "GROUP BY server_address, server_port, server_address_geo_asn_number, " +
+                                "server_address_geo_asn_name, server_address_geo_asn_domain, " +
+                                "server_address_geo_country_code " +
                                 "ORDER BY request_count) AS x")
                         .bindList("taps", taps)
                         .bind("tr_from", timeRange.from())
@@ -93,13 +95,21 @@ public class DNS {
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT server_address, server_port, server_geo_asn_number, " +
-                                "server_geo_asn_name, server_geo_asn_domain, server_geo_country_code, " +
-                                "SUM(count) AS request_count, COUNT(DISTINCT(client_address)) AS client_count " +
+                handle.createQuery("SELECT server_address, server_port, server_address_geo_asn_number, " +
+                                "server_address_geo_asn_name, server_address_geo_asn_domain, " +
+                                "server_address_geo_city, server_address_geo_latitude, " +
+                                "server_address_geo_longitude, server_address_is_site_local, " +
+                                "server_address_is_multicast, server_address_is_loopback, " +
+                                "server_address_geo_country_code, SUM(count) AS request_count, " +
+                                "COUNT(DISTINCT(client_address)) AS client_count " +
                                 "FROM dns_pairs WHERE created_at >= :tr_from AND created_at <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) AND server_address <> '224.0.0.251' " +
-                                "GROUP BY server_address, server_port, server_geo_asn_number, server_geo_asn_name, " +
-                                "server_geo_asn_domain, server_geo_country_code " +
+                                "GROUP BY server_address, server_port, server_address_geo_asn_number, " +
+                                "server_address_geo_asn_name, server_address_geo_asn_domain, " +
+                                "server_address_geo_city, server_address_geo_country_code, " +
+                                "server_address_geo_latitude, server_address_geo_longitude, " +
+                                "server_address_is_site_local, server_address_is_multicast, " +
+                                "server_address_is_loopback " +
                                 "ORDER BY request_count DESC " +
                                 "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)

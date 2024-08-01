@@ -15,6 +15,10 @@ public abstract class SocksTunnelDetailsResponse {
     public abstract UUID uuid();
 
     @Nullable
+    @JsonProperty("client")
+    public abstract L4AddressResponse client();
+
+    @Nullable
     @JsonProperty("socks_server")
     public abstract L4AddressResponse socksServer();
 
@@ -67,9 +71,10 @@ public abstract class SocksTunnelDetailsResponse {
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
-    public static SocksTunnelDetailsResponse create(UUID uuid, L4AddressResponse socksServer, String tcpSessionKey, String socksType, String authenticationStatus, String handshakeStatus, String connectionStatus, String username, int tunneledBytes, String tunneledDestinationAddress, String tunneledDestinationHost, int tunneledDestinationPort, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime, DateTime updatedAt, DateTime createdAt) {
+    public static SocksTunnelDetailsResponse create(UUID uuid, L4AddressResponse client, L4AddressResponse socksServer, String tcpSessionKey, String socksType, String authenticationStatus, String handshakeStatus, String connectionStatus, String username, int tunneledBytes, String tunneledDestinationAddress, String tunneledDestinationHost, int tunneledDestinationPort, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime, DateTime updatedAt, DateTime createdAt) {
         return builder()
                 .uuid(uuid)
+                .client(client)
                 .socksServer(socksServer)
                 .tcpSessionKey(tcpSessionKey)
                 .socksType(socksType)
@@ -96,6 +101,8 @@ public abstract class SocksTunnelDetailsResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder uuid(UUID uuid);
+
+        public abstract Builder client(L4AddressResponse client);
 
         public abstract Builder socksServer(L4AddressResponse socksServer);
 

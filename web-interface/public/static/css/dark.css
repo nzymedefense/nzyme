@@ -202,3 +202,7 @@ div.accordion-item {
 a span.port {
     color: #71769F;
 }
+
+span.fi-none {
+    background-color: #71769F;
+}

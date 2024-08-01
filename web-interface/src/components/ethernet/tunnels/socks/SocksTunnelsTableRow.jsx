@@ -36,7 +36,8 @@ export default function SocksTunnelsTableRow(props) {
   return (
       <tr>
         <td><a href="#">{tunnel.uuid.substring(0, 6).toUpperCase()}</a></td>
-        <td><L4Address address={tunnel.socks_server} /></td>
+        <td><L4Address address={tunnel.client}/></td>
+        <td><L4Address address={tunnel.socks_server}/></td>
         <td>{destination()}</td>
         <td>{socksType()}</td>
         <td><GenericConnectionStatus status={tunnel.connection_status} /></td>

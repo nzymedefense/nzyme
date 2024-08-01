@@ -7,6 +7,10 @@ import app.nzyme.core.ethernet.dns.DNSTransaction;
 import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.responses.ethernet.L4AddressAttributesResponse;
+import app.nzyme.core.rest.responses.ethernet.L4AddressGeoResponse;
+import app.nzyme.core.rest.responses.ethernet.L4AddressResponse;
+import app.nzyme.core.rest.responses.ethernet.L4AddressTypeResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.*;
 import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.util.Bucketing;
@@ -128,17 +132,13 @@ public class DNSResource extends TapDataHandlingResource {
 
         List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
         for (DNSPairSummary ps : nzyme.getEthernet().dns().getPairs(timeRange, limit, offset, taps)) {
-            Map<String, Object> server = Maps.newHashMap();
-            server.put("ip_address", ps.serverAddress());
-            server.put("port", ps.serverPort());
-
             Map<String, Object> requestCount = Maps.newHashMap();
             requestCount.put("title", ps.requestCount());
 
             values.add(ThreeColumnTableHistogramValueResponse.create(
                     HistogramValueStructureResponse.create(
-                            server,
-                            HistogramValueType.IP_ADDRESS_WITH_PORT,
+                            RestHelpers.L4AddressDataToResponse(L4Type.UDP, ps.server()),
+                            HistogramValueType.L4_ADDRESS,
                             null
                     ),
                     HistogramValueStructureResponse.create(
@@ -151,7 +151,7 @@ public class DNSResource extends TapDataHandlingResource {
                             HistogramValueType.DNS_TRANSACTION_LOG_LINK,
                             null
                     ),
-                    ps.serverAddress() + ":" + ps.serverPort()
+                    ps.server().address() + ":" + ps.server().port()
             ));
         }
 

@@ -4,6 +4,7 @@ import numeral from "numeral";
 import AutomaticDot11MacAddressLink from "../../shared/context/macs/AutomaticDot11MacAddressLink";
 import IPAddressLink from "../../ethernet/shared/IPAddressLink";
 import ApiRoutes from "../../../util/ApiRoutes";
+import L4Address from "../../ethernet/shared/L4Address";
 
 function HistogramValue(props) {
 
@@ -21,10 +22,8 @@ function HistogramValue(props) {
       } else {
         return <span className={value.value === highlightValue ? "highlighted" : null}>{value.value}</span>
       }
-    case "IP_ADDRESS":
-      return <IPAddressLink ip={value.value} />
-    case "IP_ADDRESS_WITH_PORT":
-      return <IPAddressLink ip={value.value.ip_address} port={value.value.port} />
+    case "L4_ADDRESS":
+      return <L4Address address={value.value} />
     case "DNS_TRANSACTION_LOG_LINK":
       return <a href={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS}>{numeral(value.value.title).format("0,0")}</a>
     case "INTEGER":

@@ -665,6 +665,10 @@ span.flag-inline {
     width: 15px;
 }
 
+span.fi-none {
+    background-color: #ccc;
+}
+
 i.signal-strength-good {
     color: #198754;
 }
@@ -1062,3 +1066,4 @@ div.connect-status-fail {
     color: #fff;
     background-color: #dc3545;
 }
+

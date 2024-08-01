@@ -5188,4 +5188,37 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_additional_dns_server_attributes_to_pairs_20240731" author="lennartkoopmann">
+        <addColumn tableName="dns_pairs">
+            <column name="server_is_private" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="server_is_multicast" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="server_is_loopback" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="rename_dns_server_attributes_in_pairs_20240731" author="lennartkoopmann">
+        <renameColumn tableName="dns_pairs" oldColumnName="server_geo_asn_number" newColumnName="server_address_geo_asn_number" />
+        <renameColumn tableName="dns_pairs" oldColumnName="server_geo_asn_name" newColumnName="server_address_geo_asn_name" />
+        <renameColumn tableName="dns_pairs" oldColumnName="server_geo_asn_domain" newColumnName="server_address_geo_asn_domain" />
+        <renameColumn tableName="dns_pairs" oldColumnName="server_geo_city" newColumnName="server_address_geo_city" />
+        <renameColumn tableName="dns_pairs" oldColumnName="server_geo_country_code" newColumnName="server_address_geo_country_code" />
+        <renameColumn tableName="dns_pairs" oldColumnName="server_geo_latitude" newColumnName="server_address_geo_latitude" />
+        <renameColumn tableName="dns_pairs" oldColumnName="server_geo_longitude" newColumnName="server_address_geo_longitude" />
+
+        <renameColumn tableName="dns_pairs" oldColumnName="server_is_private" newColumnName="server_address_is_private" />
+        <renameColumn tableName="dns_pairs" oldColumnName="server_is_multicast" newColumnName="server_address_is_multicast" />
+        <renameColumn tableName="dns_pairs" oldColumnName="server_is_loopback" newColumnName="server_address_is_loopback" />
+    </changeSet>
+
+    <changeSet id="rename_dns_server_pairs_private_address" author="lennartkoopmann">
+        <renameColumn tableName="dns_pairs" oldColumnName="server_address_is_private" newColumnName="server_address_is_site_local" />
+    </changeSet>
 </databaseChangeLog>

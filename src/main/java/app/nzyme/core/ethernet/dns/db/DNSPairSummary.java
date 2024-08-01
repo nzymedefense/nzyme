@@ -17,33 +17,21 @@
 
 package app.nzyme.core.ethernet.dns.db;
 
+import app.nzyme.core.ethernet.L4AddressData;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 
 @AutoValue
 public abstract class DNSPairSummary {
 
-    public abstract String serverAddress();
-    public abstract int serverPort();
-    @Nullable
-    public abstract Integer serverGeoAsnNumber();
-    @Nullable
-    public abstract String serverGeoAsnName();
-    @Nullable
-    public abstract String serverGeoAsnDomain();
-    @Nullable
-    public abstract String serverGeoCountryCode();
+    public abstract L4AddressData server();
     public abstract Long requestCount();
     public abstract Long clientCount();
 
-    public static DNSPairSummary create(String serverAddress, int serverPort, Integer serverGeoAsnNumber, String serverGeoAsnName, String serverGeoAsnDomain, String serverGeoCountryCode, Long requestCount, Long clientCount) {
+    public static DNSPairSummary create(L4AddressData server, Long requestCount, Long clientCount) {
         return builder()
-                .serverAddress(serverAddress)
-                .serverPort(serverPort)
-                .serverGeoAsnNumber(serverGeoAsnNumber)
-                .serverGeoAsnName(serverGeoAsnName)
-                .serverGeoAsnDomain(serverGeoAsnDomain)
-                .serverGeoCountryCode(serverGeoCountryCode)
+                .server(server)
                 .requestCount(requestCount)
                 .clientCount(clientCount)
                 .build();
@@ -55,17 +43,7 @@ public abstract class DNSPairSummary {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder serverAddress(String serverAddress);
-
-        public abstract Builder serverPort(int serverPort);
-
-        public abstract Builder serverGeoAsnNumber(Integer serverGeoAsnNumber);
-
-        public abstract Builder serverGeoAsnName(String serverGeoAsnName);
-
-        public abstract Builder serverGeoAsnDomain(String serverGeoAsnDomain);
-
-        public abstract Builder serverGeoCountryCode(String serverGeoCountryCode);
+        public abstract Builder server(L4AddressData server);
 
         public abstract Builder requestCount(Long requestCount);
 
