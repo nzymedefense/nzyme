@@ -34,18 +34,18 @@ export default class DNSService {
     )
   }
 
-  findAllTransactions(timeRange, taps, limit, offset, setTransactions) {
+  findAllTransactions(timeRange, filters, taps, limit, offset, setTransactions) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
-    RESTClient.get("/ethernet/dns/transactions/log", { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
+    RESTClient.get("/ethernet/dns/transactions/log", { time_range: timeRange, filters: filters, taps: tapsList, limit: limit, offset: offset },
         (response) => setTransactions(response.data)
     )
   }
 
-  getTransactionCountChart(timeRange, taps, setHistogram) {
+  getTransactionCountChart(timeRange, filters, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
-    RESTClient.get("/ethernet/dns/transactions/charts/count", { time_range: timeRange, taps: tapsList },
+    RESTClient.get("/ethernet/dns/transactions/charts/count", { time_range: timeRange, filters: filters, taps: tapsList },
         (response) => setHistogram(response.data)
     )
   }

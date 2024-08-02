@@ -7,18 +7,16 @@ import app.nzyme.core.ethernet.dns.DNSTransaction;
 import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
-import app.nzyme.core.rest.responses.ethernet.L4AddressAttributesResponse;
-import app.nzyme.core.rest.responses.ethernet.L4AddressGeoResponse;
-import app.nzyme.core.rest.responses.ethernet.L4AddressResponse;
-import app.nzyme.core.rest.responses.ethernet.L4AddressTypeResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.*;
 import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.util.Bucketing;
+import app.nzyme.core.util.filters.Filters;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import org.apache.logging.log4j.LogManager;
@@ -37,8 +35,6 @@ import java.util.*;
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
 public class DNSResource extends TapDataHandlingResource {
-
-    private static final Logger LOG = LogManager.getLogger(TapDataHandlingResource.class);
 
     @Inject
     private NzymeNode nzyme;
@@ -200,18 +196,20 @@ public class DNSResource extends TapDataHandlingResource {
     @GET
     @Path("/transactions/log")
     public Response transactionLog(@Context SecurityContext sc,
-                                   @QueryParam("time_range") @Valid String timeRangeParameter,
+                                   @QueryParam("time_range") String timeRangeParameter,
+                                   @QueryParam("filters") String filtersParameter,
                                    @QueryParam("limit") int limit,
                                    @QueryParam("offset") int offset,
                                    @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         long total = nzyme.getEthernet().dns().countAllTransactions(timeRange, taps);
 
         List<DNSLogEntryResponse> transactions = Lists.newArrayList();
         for (DNSTransaction transaction : nzyme.getEthernet().dns()
-                .findAllTransactions(timeRange, limit, offset, taps)) {
+                .findAllTransactions(timeRange, filters, limit, offset, taps)) {
             DNSLogDataResponse query = logToResponse(transaction.query());
             List<DNSLogDataResponse> responses = Lists.newArrayList();
             for (DNSLogEntry response : transaction.responses()) {
@@ -230,11 +228,14 @@ public class DNSResource extends TapDataHandlingResource {
     @Path("/transactions/charts/count")
     public Response transactionChart(@Context SecurityContext sc,
                                      @QueryParam("time_range") @Valid String timeRangeParameter,
+                                     @QueryParam("filters") String filtersParameter,
                                      @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         Map<DateTime, Long> response = Maps.newHashMap();
         for (NumberBucketAggregationResult r : nzyme.getEthernet().dns()

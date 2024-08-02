@@ -310,7 +310,7 @@ export default function Filters(props) {
       }
     }
 
-    const newFilters = filters;
+    const newFilters = JSON.parse(JSON.stringify(filters)); // TODO wft (this is a way to make sure we create a completely new object so useState notices the change. Refactor all of this goddamn)
     if (filters[selectedFilter.field]) {
       // We already have a filter for this field. Add to list of filter values. (Will be OR-connected in backend)
       newFilters[selectedFilter.field].push(addedFilter);

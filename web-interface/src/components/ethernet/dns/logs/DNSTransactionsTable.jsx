@@ -25,7 +25,7 @@ export default function DNSTransactionsTable(props) {
 
   useEffect(() => {
     setData(null);
-    dnsService.findAllTransactions(timeRange, selectedTaps, perPage, (page-1)*perPage, setData);
+    dnsService.findAllTransactions(timeRange, filters, selectedTaps, perPage, (page-1)*perPage, setData);
   }, [selectedTaps, timeRange, filters, page]);
 
   if (!data) {

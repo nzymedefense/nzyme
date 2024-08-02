@@ -19,7 +19,7 @@ export default function DNSTransactionCountChart(props) {
 
   useEffect(() => {
     setHistogram(null);
-    dnsService.getTransactionCountChart(timeRange, selectedTaps, setHistogram);
+    dnsService.getTransactionCountChart(timeRange, filters, selectedTaps, setHistogram);
   }, [selectedTaps, timeRange, filters])
 
   if (!histogram) {

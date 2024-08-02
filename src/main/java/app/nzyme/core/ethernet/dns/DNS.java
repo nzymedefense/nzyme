@@ -6,6 +6,8 @@ import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.filters.Filter;
+import app.nzyme.core.util.filters.Filters;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -240,18 +242,44 @@ public class DNS {
         );
     }
 
-    public List<DNSTransaction> findAllTransactions(TimeRange timeRange, int limit, int offset, List<UUID> taps) {
+    public List<DNSTransaction> findAllTransactions(TimeRange timeRange, Filters filters, int limit, int offset, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
+        }
+
+        // TODO extract, support all operators, map field names, test with AND/OR combos
+        String fq;
+        Map<String, Object> binds = Maps.newHashMap();
+        if (filters.filters().isEmpty()) {
+            fq = "";
+        } else {
+            StringBuilder fqb = new StringBuilder(" AND ");
+
+            for (Map.Entry<String, List<Filter>> filteredField : filters.filters().entrySet()) {
+                String fieldName = filteredField.getKey();
+
+                fqb.append("(1=2");
+                for (Filter filter : filteredField.getValue()) {
+                    String bindId = UUID.randomUUID().toString().replace("-", "_");
+                    binds.put(bindId, filter.value());
+                    fqb.append(" OR ").append(fieldName).append(" = :").append(bindId);
+                }
+                fqb.append(") ");
+            }
+
+            fqb.append(" ");
+
+            fq = fqb.toString();
         }
 
         List<DNSLogEntry> logs = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM dns_log " +
                                 "WHERE timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
-                                "AND server_address <> '224.0.0.251' " +
+                                "AND server_address <> '224.0.0.251' " + fq +
                                 "ORDER BY timestamp DESC " +
                                 "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)
+                        .bindMap(binds)
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bind("limit", limit)
