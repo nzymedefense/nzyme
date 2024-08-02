@@ -230,8 +230,6 @@ public class DNSResource extends TapDataHandlingResource {
     @Path("/transactions/charts/count")
     public Response transactionChart(@Context SecurityContext sc,
                                      @QueryParam("time_range") @Valid String timeRangeParameter,
-                                     @QueryParam("limit") int limit,
-                                     @QueryParam("offset") int offset,
                                      @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
 

@@ -130,7 +130,7 @@ export const OPERATORS = {
     sign: "IS PRIVATE",
     placeholder: null,
     no_value: true,
-    validators: [],
+    validators: [() => { return true; }],
     field_type: FIELD_TYPE.NO_VALUE
   },
   IS_NOT_PRIVATE: {
@@ -138,7 +138,7 @@ export const OPERATORS = {
     sign: "IS NOT PRIVATE",
     placeholder: null,
     no_value: true,
-    validators: [],
+    validators: [() => { return true; }],
     field_type: FIELD_TYPE.NO_VALUE
   }
 }
@@ -146,10 +146,11 @@ export const OPERATORS = {
 export default function Filters(props) {
 
   const fields = props.fields;
-  const filters = props.filters;
+  const filters = props.filters ? props.filters : {};
   const setFilters = props.setFilters;
 
   const hideTitle = props.hideTitle;
+  const hideAppliedFilters = props.hideAppliedFilters === undefined || props.hideAppliedFilters === null ? false : props.hideAppliedFilters;
   const preSelectedField = props.preSelectedField;
   const preSelectedValue = props.preSelectedValue;
 
@@ -254,7 +255,7 @@ export default function Filters(props) {
 
   useEffect(() => {
     validate();
-  }, [filterValue]);
+  }, [filterValue, selectedOperator]);
 
   useEffect(() => {
     if (preSelectedField && preSelectedValue) {
@@ -262,7 +263,6 @@ export default function Filters(props) {
       setFilterValue(preSelectedValue);
     }
   }, [preSelectedField, preSelectedValue]);
-
 
   const validate = () => {
     // Potential operator validators have priority over filter validators.
@@ -289,14 +289,37 @@ export default function Filters(props) {
   const onFilterAdded = (e) => {
     e.preventDefault();
 
-    const f = {
+    const addedFilter = {
       name: selectedFilter.name,
       field: selectedFilter.field,
       operator: selectedOperator.name,
+      sign: selectedOperator.sign,
       value: filterValue
     }
 
-    setFilters(prev => [...prev, f]);
+    // Check if this filter already exists and do not add again if so.
+    for (const filterName of Object.keys(filters)) {
+      const filterList = filters[filterName];
+
+      for (const existingFilter of filterList) {
+        if (existingFilter.field === addedFilter.field
+            && existingFilter.operator === addedFilter.operator
+            && existingFilter.value === addedFilter.value) {
+          return;
+        }
+      }
+    }
+
+    const newFilters = filters;
+    if (filters[selectedFilter.field]) {
+      // We already have a filter for this field. Add to list of filter values. (Will be OR-connected in backend)
+      newFilters[selectedFilter.field].push(addedFilter);
+    } else {
+      // First filter for this field.
+      newFilters[selectedFilter.field] = [addedFilter];
+    }
+
+    setFilters(newFilters);
   }
 
   return (
@@ -333,7 +356,7 @@ export default function Filters(props) {
           </button>
         </div>
 
-        <AppliedFilterList filters={filters} />
+        {!hideAppliedFilters && <AppliedFilterList filters={filters} />}
       </div>
   )
 

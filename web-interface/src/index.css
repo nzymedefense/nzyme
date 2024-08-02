@@ -1039,6 +1039,29 @@ i.filter-value {
     cursor: pointer;
 }
 
+ul.applied-filters, ul.applied-filters ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+ul.applied-filters {
+    border-left: 1px solid #969fa6;
+    padding-left: 8px;
+}
+
+ul.applied-filters span.applied-filter-value {
+    font-style: italic;
+}
+
+ul.applied-filters span.applied-filter-connector {
+    font-size: 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 600;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
 div.connect-status {
     height: 100%;
     display: flex;

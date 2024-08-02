@@ -36,6 +36,7 @@ export default function FilterValueIcon(props) {
                   <Filters fields={fields}
                            setFilters={setFilters}
                            hideTitle={true}
+                           hideAppliedFilters={true}
                            preSelectedField={field}
                            preSelectedValue={value} />
                 </div>

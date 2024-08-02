@@ -5,7 +5,7 @@ import {Presets} from "../../../shared/timerange/TimeRange";
 import DNSTransactionsTable from "./DNSTransactionsTable";
 import {TapContext} from "../../../../App";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
-import Filters, {FILTER_TYPE} from "../../../shared/filtering/Filters";
+import Filters from "../../../shared/filtering/Filters";
 import DNSTransactionCountChart from "./widgets/DNSTransactionCountChart";
 import {DNS_FILTER_FIELDS} from "../DNSFilterFields";
 
@@ -14,7 +14,7 @@ export default function DNSTransactionLogsPage() {
   const tapContext = useContext(TapContext);
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
-  const [filters, setFilters] = useState([]);
+  const [filters, setFilters] = useState(null);
 
   useEffect(() => {
     enableTapSelector(tapContext);

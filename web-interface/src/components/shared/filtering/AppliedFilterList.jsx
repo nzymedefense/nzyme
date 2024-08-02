@@ -4,21 +4,40 @@ export default function AppliedFilterList(props) {
 
   const filters = props.filters;
 
-  if (filters === null || filters === undefined) {
-    // Modals don't provide existing filters.
-    return null
-  }
-
-  if (!filters || filters.length === 0) {
-    return <i>No Filters defined.</i>
+  if (!filters || Object.keys(filters).length === 0) {
+    return <ul className="applied-filters mt-3"><li>No filters defined.</li></ul>
   }
 
   return (
-      <ul className="applied-filters">
-        {filters.map((filter, i) => {
-          return <li key={i}>{filter.name} {filter.operator} {filter.value}</li>;
-        })}
-      </ul>
+      <React.Fragment>
+        <h5 className="mt-3">Active Filters</h5>
+
+        <ul className="applied-filters mt-1">
+          {Object.keys(filters).map((filterGroup, i) => {
+            return (
+                <ul className="applied-filters-filtergroup" key={i}>
+                  <li>
+                    {filters[filterGroup].map((filter, x) => {
+                      return (
+                          <React.Fragment key={i + "-" + x}>
+                            <span className="applied-filter-name">{filter.name}</span>{' '}
+                            <span title={filter.operator} className="applied-filter-operator">{filter.sign}</span>{' '}
+                            <span className="applied-filter-value">{filter.value}</span>{' '}
+                            {filters[filterGroup].length === x + 1 ? null :
+                                <span className="applied-filter-connector">OR</span>}
+                            {' '}
+                          </React.Fragment>
+                      )
+                    })}
+                  </li>
+                  {Object.keys(filters).length === i + 1 ? null :
+                      <li><span className="applied-filter-connector">AND</span></li>
+                  }
+                </ul>
+            )
+          })}
+        </ul>
+      </React.Fragment>
   )
 
 }
