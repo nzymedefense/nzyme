@@ -322,10 +322,30 @@ export default function Filters(props) {
     setFilters(newFilters);
   }
 
-  const onFilterRemoved = (e, filter) => {
+  const onFilterRemoved = (e, deleteFilter) => {
     e.preventDefault();
 
-    console.log(filter);
+    const newFilters = {};
+
+    // Add all existing filters except the one to be removed.
+    for (const filterName of Object.keys(filters)) {
+      const filterList = filters[filterName];
+
+      for (const existingFilter of filterList) {
+        if (existingFilter.field !== deleteFilter.field
+            || existingFilter.operator !== deleteFilter.operator
+            || existingFilter.value !== deleteFilter.value) {
+
+          if (newFilters[filterName]) {
+            newFilters[filterName].push(existingFilter);
+          } else {
+            newFilters[filterName] = [existingFilter];
+          }
+        }
+      }
+    }
+
+    setFilters(newFilters);
   }
 
   return (

@@ -1062,6 +1062,12 @@ ul.applied-filters span.applied-filter-connector {
     padding-right: 3px;
 }
 
+ul.applied-filters a.applied-filter-remove {
+    cursor: pointer;
+    position: relative;
+    top: 1px;
+}
+
 div.filters-modal div.modal-dialog {
     max-width: 800px !important;
 }

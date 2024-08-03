@@ -24,7 +24,9 @@ export default function AppliedFilterList(props) {
                             <span className="applied-filter-name">{filter.name}</span>{' '}
                             <span title={filter.operator} className="applied-filter-operator">{filter.sign}</span>{' '}
                             <span className="applied-filter-value">{filter.value}</span>{' '}
-                            <a className="applied-filter-remove" onClick={(e) => onFilterRemoved(e, filter)}>x</a>{' '}
+                            <a className="applied-filter-remove" onClick={(e) => onFilterRemoved(e, filter)}>
+                              <i className="fa-solid fa-xmark" />
+                            </a>{' '}
                             {filters[filterGroup].length === x + 1 ? null :
                                 <span className="applied-filter-connector">OR</span>}
                             {' '}
