@@ -1,18 +1,21 @@
+use std::cmp::min;
 use crate::ethernet::detection::taggers::tagger_utils;
 
-pub fn tag(cts: &String, stc: &String) -> Option<()> {
-    let methods = &vec!["get", "post", "put", "delete", "head", "options", "patch"];
-    let versions = &vec!["HTTP/1.0", "HTTP/1.1", "HTTP/2", "HTTP/3"];
+static METHODS: &[&str] = &["get", "post", "put", "delete", "head", "options", "patch"];
+static VERSIONS: &[&str] = &["HTTP/1.0", "HTTP/1.1", "HTTP/2", "HTTP/3"];
 
-    let lowercase_cts = &cts.to_lowercase();
-    let lowercase_stc = &stc.to_lowercase();
+pub fn tag(cts: &[u8], stc: &[u8]) -> Option<()> {
+    // Convert up to the first 255 bytes to lowercase string.
+    let client_to_server_string = String::from_utf8_lossy(&cts[..min(cts.len(), 255)]).to_string().to_lowercase();
+    let server_to_client_string = String::from_utf8_lossy(&stc[..min(stc.len(), 255)]).to_string().to_lowercase();
 
-    if tagger_utils::scan_body_substrings_or(lowercase_cts, methods)
-        && tagger_utils::scan_body_substrings_or(lowercase_cts, versions)
-        && tagger_utils::scan_body_substring(lowercase_cts, "\r\n")
-        && tagger_utils::scan_body_substrings_or(lowercase_stc, versions)
-        && tagger_utils::scan_body_substring(lowercase_stc, "\r\n") {
-        return Some(())
+    if tagger_utils::scan_body_substrings_or(&client_to_server_string, METHODS)
+        && tagger_utils::scan_body_substrings_or(&client_to_server_string, VERSIONS)
+        && tagger_utils::scan_body_substring(&client_to_server_string, "\r\n")
+        && tagger_utils::scan_body_substrings_or(&server_to_client_string, VERSIONS)
+        && tagger_utils::scan_body_substring(&server_to_client_string, "\r\n") {
+
+        Some(())
     } else {
         None
     }

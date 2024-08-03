@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::panic;
 use std::sync::{Arc, Mutex, MutexGuard};
-use log::error;
+use log::{error};
 use strum_macros::Display;
 use crate::ethernet::detection::l7_tagger::L7SessionTag::{Http, Socks, Ssh, Unencrypted};
 use crate::ethernet::detection::taggers::{http_tagger, socks_tagger, ssh_tagger};
@@ -49,8 +49,8 @@ pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSess
          * because nobody is perfect.
          */
         let result = panic::catch_unwind(|| tag_all(
-            client_to_server_data,
-            server_to_client_data,
+            &client_to_server_data,
+            &server_to_client_data,
             session,
             &bus,
             &metrics
@@ -75,20 +75,17 @@ pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSess
     }
 }
 
-fn tag_all(client_to_server: Vec<u8>,
-           server_to_client: Vec<u8>,
+fn tag_all(client_to_server: &[u8],
+           server_to_client: &[u8],
            session: &TcpSession,
            bus: &Arc<Bus>,
            metrics: &Arc<Mutex<Metrics>>) -> Vec<L7SessionTag> {
-    let client_to_server_string = String::from_utf8_lossy(&client_to_server).to_string();
-    let server_to_client_string = String::from_utf8_lossy(&server_to_client).to_string();
-
     let mut tags = Vec::new();
 
     // HTTP.
     let mut http_timer_untagged = Timer::new();
     let mut http_timer_tagged = Timer::new();
-    if http_tagger::tag(&client_to_server_string, &server_to_client_string).is_some() {
+    if http_tagger::tag(client_to_server, server_to_client).is_some() {
         http_timer_tagged.stop();
         record_timer(
             http_timer_tagged.elapsed_microseconds(),
@@ -109,7 +106,7 @@ fn tag_all(client_to_server: Vec<u8>,
     // SOCKS.
     let mut socks_timer_untagged = Timer::new();
     let mut socks_timer_tagged = Timer::new();
-    if let Some(socks) = socks_tagger::tag(&client_to_server, &server_to_client, session) {
+    if let Some(socks) = socks_tagger::tag(client_to_server, server_to_client, session) {
         socks_timer_tagged.stop();
         record_timer(
             socks_timer_tagged.elapsed_microseconds(),
@@ -138,7 +135,7 @@ fn tag_all(client_to_server: Vec<u8>,
     // SSH.
     let mut ssh_timer_untagged = Timer::new();
     let mut ssh_timer_tagged = Timer::new();
-    if let Some(ssh) = ssh_tagger::tag(&client_to_server, &server_to_client, session) {
+    if let Some(ssh) = ssh_tagger::tag(client_to_server, server_to_client, session) {
         ssh_timer_tagged.stop();
         record_timer(
             ssh_timer_tagged.elapsed_microseconds(),
