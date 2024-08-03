@@ -26,7 +26,12 @@ export default function DNSTransactionLogTableRow(props) {
           <td>
             <a href="#">
               <DNSData value={log.query.data_value}/>
-            </a>&nbsp;&nbsp;
+            </a>
+
+            <FilterValueIcon setFilters={setFilters}
+                             fields={DNS_FILTER_FIELDS}
+                             field="query_value"
+                             value={log.query.data_value} />&nbsp;&nbsp;
 
             <a href="#" title="Show Responses" onClick={toggleVisibility}>
               <i className="fa-solid fa-chevron-down"></i>
@@ -34,19 +39,36 @@ export default function DNSTransactionLogTableRow(props) {
           </td>
           <td>
             {log.query.data_type}
-
             <FilterValueIcon setFilters={setFilters}
                              fields={DNS_FILTER_FIELDS}
                              field="query_type"
                              value={log.query.data_type} />
           </td>
           <td title={log.query.timestamp}>{moment(log.query.timestamp).format()}</td>
-          <td title={log.query.data_value_etld}><ETLD etld={log.query.data_value_etld}/></td>
-          <td><L4Address address={log.query.client} hidePort={true} /></td>
-          <td><L4Address address={log.query.server} /></td>
+          <td title={log.query.data_value_etld}>
+            <ETLD etld={log.query.data_value_etld}/>
+            <FilterValueIcon setFilters={setFilters}
+                             fields={DNS_FILTER_FIELDS}
+                             field="query_etld"
+                             value={log.query.data_value_etld} />
+          </td>
+          <td>
+            <L4Address address={log.query.client} hidePort={true} />
+            <FilterValueIcon setFilters={setFilters}
+                             fields={DNS_FILTER_FIELDS}
+                             field="client_address"
+                             value={log.query.client.address} />
+          </td>
+          <td>
+            <L4Address address={log.query.server} />
+            <FilterValueIcon setFilters={setFilters}
+                             fields={DNS_FILTER_FIELDS}
+                             field="server_address"
+                             value={log.query.server.address} />
+          </td>
         </tr>
 
-        <DNSLogResponseTable responses={log.responses} show={showResponses}/>
+        <DNSLogResponseTable responses={[]} show={showResponses}/>
       </React.Fragment>
   )
 

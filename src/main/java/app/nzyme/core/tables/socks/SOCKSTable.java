@@ -49,7 +49,7 @@ public class SOCKSTable implements DataTable {
                 "tunneled_destination_port, established_at, terminated_at, most_recent_segment_time, " +
                 "updated_at, created_at) VALUES(:uuid, :tap_uuid, :tcp_session_key, :socks_type, " +
                 ":authentication_status, :handshake_status, :connection_status, :username, :tunneled_bytes, " +
-                ":tunneled_destination_address, :tunneled_destination_host, :tunneled_destination_port, " +
+                ":tunneled_destination_address::inet, :tunneled_destination_host, :tunneled_destination_port, " +
                 ":established_at, :terminated_at, :most_recent_segment_time, NOW(), NOW())");
 
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE socks_tunnels SET " +

@@ -25,7 +25,7 @@ export default function FilterValueIcon(props) {
     return (
         <React.Fragment>
           <div className="modal-backdrop fade show"></div>
-          <div className="modal fade show" style={{display: "block"}}>
+          <div className="modal filters-modal fade show" style={{display: "block"}}>
             <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
               <div className="modal-content">
                 <div className="modal-header">

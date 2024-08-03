@@ -3,6 +3,7 @@ import React from "react";
 export default function AppliedFilterList(props) {
 
   const filters = props.filters;
+  const onFilterRemoved = props.onFilterRemoved;
 
   if (!filters || Object.keys(filters).length === 0) {
     return <ul className="applied-filters mt-3"><li>No filters defined.</li></ul>
@@ -23,6 +24,7 @@ export default function AppliedFilterList(props) {
                             <span className="applied-filter-name">{filter.name}</span>{' '}
                             <span title={filter.operator} className="applied-filter-operator">{filter.sign}</span>{' '}
                             <span className="applied-filter-value">{filter.value}</span>{' '}
+                            <a className="applied-filter-remove" onClick={(e) => onFilterRemoved(e, filter)}>x</a>{' '}
                             {filters[filterGroup].length === x + 1 ? null :
                                 <span className="applied-filter-connector">OR</span>}
                             {' '}

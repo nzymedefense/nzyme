@@ -205,18 +205,14 @@ public class DNSResource extends TapDataHandlingResource {
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Filters filters = parseFiltersQueryParameter(filtersParameter);
 
-        long total = nzyme.getEthernet().dns().countAllTransactions(timeRange, taps);
+        long total = nzyme.getEthernet().dns().countAllQueries(timeRange, filters, taps);
 
         List<DNSLogEntryResponse> transactions = Lists.newArrayList();
-        for (DNSTransaction transaction : nzyme.getEthernet().dns()
-                .findAllTransactions(timeRange, filters, limit, offset, taps)) {
-            DNSLogDataResponse query = logToResponse(transaction.query());
-            List<DNSLogDataResponse> responses = Lists.newArrayList();
-            for (DNSLogEntry response : transaction.responses()) {
-                responses.add(logToResponse(response));
-            }
+        for (DNSLogEntry q : nzyme.getEthernet().dns()
+                .findAllQueries(timeRange, filters, limit, offset, taps)) {
+            DNSLogDataResponse query = logToResponse(q);
 
-            transactions.add(DNSLogEntryResponse.create(query, responses));
+            transactions.add(DNSLogEntryResponse.create(query));
         }
 
         transactions.sort((o1, o2) -> o2.query().timestamp().compareTo(o1.query().timestamp()));
@@ -239,7 +235,7 @@ public class DNSResource extends TapDataHandlingResource {
 
         Map<DateTime, Long> response = Maps.newHashMap();
         for (NumberBucketAggregationResult r : nzyme.getEthernet().dns()
-                .getTransactionCountHistogram("query", timeRange, bucketing, taps)) {
+                .getTransactionCountHistogram("query", timeRange, filters, bucketing, taps)) {
 
             response.put(r.bucket(), r.count());
         }

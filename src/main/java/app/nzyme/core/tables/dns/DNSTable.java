@@ -95,8 +95,9 @@ public class DNSTable implements DataTable {
                                     Map<String, DnsIpStatisticsReport> m,
                                     DateTime timestamp) {
         PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_statistics(tap_uuid, ip, request_count, " +
-                "request_bytes, response_count, response_bytes, nxdomain_count, created_at) VALUES(:tap_uuid, :ip, " +
-                ":request_count, :request_bytes, :response_count, :response_bytes, :nxdomain_count, :created_at)");
+                "request_bytes, response_count, response_bytes, nxdomain_count, created_at) VALUES(:tap_uuid, " +
+                ":ip::inet, :request_count, :request_bytes, :response_count, :response_bytes, :nxdomain_count, " +
+                ":created_at)");
 
         for (Map.Entry<String, DnsIpStatisticsReport> x : m.entrySet()) {
             String ip = x.getKey();
@@ -142,7 +143,7 @@ public class DNSTable implements DataTable {
                 "server_address_geo_asn_domain, server_address_geo_city, server_address_geo_country_code, " +
                 "server_address_geo_latitude, server_address_geo_longitude, server_address_is_site_local, " +
                 "server_address_is_multicast, server_address_is_loopback, count, " +
-                "created_at) VALUES(:tap_uuid, :client_address, :server_address, :server_port, " +
+                "created_at) VALUES(:tap_uuid, :client_address::inet, :server_address::inet, :server_port, " +
                 ":server_address_geo_asn_number, :server_address_geo_asn_name, :server_address_geo_asn_domain, " +
                 ":server_address_geo_city, :server_address_geo_country_code, :server_address_geo_latitude, " +
                 ":server_address_geo_longitude, :server_address_is_site_local, :server_address_is_multicast, " +
@@ -192,8 +193,9 @@ public class DNSTable implements DataTable {
         PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_log(uuid, tap_uuid, transaction_id, " +
                 "dns_type, client_address, client_port, client_mac, server_address, server_port, server_mac, " +
                 "data_value, data_value_etld, data_type,  timestamp, created_at) VALUES(:uuid, :tap_uuid, " +
-                ":transaction_id, :dns_type, :client_address, :client_port, :client_mac, :server_address, " +
-                ":server_port, :server_mac, :data_value, :data_value_etld, :data_type, :timestamp, NOW())");
+                ":transaction_id, :dns_type, :client_address::inet, :client_port, :client_mac, " +
+                ":server_address::inet, :server_port, :server_mac, :data_value, :data_value_etld, :data_type, " +
+                ":timestamp, NOW())");
 
         for (DnsLogReport d : queries) {
             batch

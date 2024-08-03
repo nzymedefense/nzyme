@@ -136,10 +136,10 @@ public class TCPTable implements DataTable {
                                     "destination_address_geo_country_code, " +
                                     "destination_address_geo_latitude, destination_address_geo_longitude, " +
                                     "created_at) VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, " +
-                                    ":source_address, " +
+                                    ":source_address::inet, " +
                                     ":source_address_is_site_local, :source_address_is_loopback, " +
                                     ":source_address_is_multicast, :source_port, :destination_mac, " +
-                                    ":destination_address, :destination_address_is_site_local, " +
+                                    ":destination_address::inet, :destination_address_is_site_local, " +
                                     ":destination_address_is_loopback, :destination_address_is_multicast, " +
                                     ":destination_port, :bytes_count, :segments_count, :start_time, " +
                                     ":end_time, :most_recent_segment_time, :state, " +

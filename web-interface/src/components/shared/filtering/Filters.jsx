@@ -82,7 +82,7 @@ export const OPERATORS = {
     sign: "~=",
     placeholder: null,
     no_value: false,
-    validators: [],
+    validators: [validateStringNotEmpty],
     field_type: FIELD_TYPE.REGEX_TEXT
   },
   NOT_REGEX_MATCH: {
@@ -90,7 +90,7 @@ export const OPERATORS = {
     sign: "!~=",
     placeholder: null,
     no_value: false,
-    validators: [],
+    validators: [validateStringNotEmpty],
     field_type: FIELD_TYPE.REGEX_TEXT
   },
   GREATER_THAN: {
@@ -322,6 +322,12 @@ export default function Filters(props) {
     setFilters(newFilters);
   }
 
+  const onFilterRemoved = (e, filter) => {
+    e.preventDefault();
+
+    console.log(filter);
+  }
+
   return (
       <div className="filters">
         {hideTitle ? null : <h4>Filters</h4> }
@@ -356,7 +362,7 @@ export default function Filters(props) {
           </button>
         </div>
 
-        {!hideAppliedFilters && <AppliedFilterList filters={filters} />}
+        {!hideAppliedFilters && <AppliedFilterList filters={filters} onFilterRemoved={onFilterRemoved} />}
       </div>
   )
 

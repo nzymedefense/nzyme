@@ -5221,4 +5221,22 @@
     <changeSet id="rename_dns_server_pairs_private_address" author="lennartkoopmann">
         <renameColumn tableName="dns_pairs" oldColumnName="server_address_is_private" newColumnName="server_address_is_site_local" />
     </changeSet>
+
+    <changeSet id="make_dns_log_fields_inet" author="lennartkoopmann">
+        <modifyDataType tableName="dns_log" columnName="client_address" newDataType="inet" />
+        <modifyDataType tableName="dns_log" columnName="server_address" newDataType="inet" />
+    </changeSet>
+
+    <changeSet id="make_more_ip_address_fields_inet" author="lennartkoopmann">
+        <modifyDataType tableName="dns_pairs" columnName="client_address" newDataType="inet" />
+        <modifyDataType tableName="dns_pairs" columnName="server_address" newDataType="inet" />
+
+        <modifyDataType tableName="dns_statistics" columnName="ip" newDataType="inet" />
+
+        <modifyDataType tableName="socks_tunnels" columnName="tunneled_destination_address" newDataType="inet" />
+
+        <modifyDataType tableName="l4_sessions" columnName="source_address" newDataType="inet" />
+        <modifyDataType tableName="l4_sessions" columnName="destination_address" newDataType="inet" />
+    </changeSet>
+
 </databaseChangeLog>

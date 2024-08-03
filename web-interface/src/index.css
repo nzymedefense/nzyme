@@ -1062,6 +1062,10 @@ ul.applied-filters span.applied-filter-connector {
     padding-right: 3px;
 }
 
+div.filters-modal div.modal-dialog {
+    max-width: 800px !important;
+}
+
 div.connect-status {
     height: 100%;
     display: flex;

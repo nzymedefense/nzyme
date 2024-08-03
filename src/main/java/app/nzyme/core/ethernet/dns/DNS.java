@@ -4,9 +4,11 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.generic.NumberBucketAggregationResult;
 import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.dns.db.*;
+import app.nzyme.core.ethernet.dns.filters.DnsFilters;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
-import app.nzyme.core.util.filters.Filter;
+import app.nzyme.core.util.filters.FilterSqlFragment;
+import app.nzyme.core.util.filters.FilterSql;
 import app.nzyme.core.util.filters.Filters;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
@@ -160,36 +162,21 @@ public class DNS {
         );
     }
 
-    public Optional<DNSTransaction> findTransaction(int transactionId,
-                                                    DateTime transactionTimestamp,
-                                                    List<UUID> taps) {
-        return findTransaction(transactionId, transactionTimestamp, taps, null);
-    }
-
-    public Optional<DNSTransaction> findTransaction(int transactionId,
-                                                    DateTime transactionTimestamp,
-                                                    List<UUID> taps,
-                                                    @Nullable Handle existingHandle) {
-        if (existingHandle != null) {
-            return findTransactionWithHandle(transactionId, transactionTimestamp, taps, existingHandle);
-        } else {
-            return nzyme.getDatabase().withHandle(handle ->
-                    findTransactionWithHandle(transactionId, transactionTimestamp, taps, handle)
-            );
-        }
-    }
-
     public List<NumberBucketAggregationResult> getTransactionCountHistogram(String dnsType,
                                                                             TimeRange timeRange,
+                                                                            Filters filters,
                                                                             Bucketing.BucketingConfiguration bucketing,
                                                                             List<UUID> taps) {
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new DnsFilters());
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, COUNT(*) AS value " +
                                 "FROM dns_log " +
                                 "WHERE dns_type = :dns_type AND timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.sql() +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bindList("taps", taps)
+                        .bindMap(filterFragment.bindings())
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("dns_type", dnsType)
                         .bind("tr_from", timeRange.from())
@@ -199,10 +186,10 @@ public class DNS {
         );
     }
 
-    private Optional<DNSTransaction> findTransactionWithHandle(int transactionId,
-                                                               DateTime transactionTimestamp,
-                                                               List<UUID> taps,
-                                                               Handle handle) {
+    public Optional<DNSTransaction> findTransaction(int transactionId,
+                                                    DateTime transactionTimestamp,
+                                                    List<UUID> taps,
+                                                    Handle handle) {
         List<DNSLogEntry> logs = handle.createQuery("SELECT * FROM dns_log " +
                         "WHERE transaction_id = :transaction_id AND timestamp >= :tr_from " +
                         "AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
@@ -224,17 +211,20 @@ public class DNS {
         return Optional.of(DNSTransaction.create(transaction.query(), transaction.responses()));
     }
 
-    public long countAllTransactions(TimeRange timeRange, List<UUID> taps) {
+    public long countAllQueries(TimeRange timeRange, Filters filters, List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new DnsFilters());
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM dns_log " +
                                 "WHERE dns_type = 'query' AND server_address <> '224.0.0.251' " +
                                 "AND timestamp >= :tr_from AND timestamp <= :tr_to AND " +
-                                "tap_uuid IN (<taps>)")
+                                "tap_uuid IN (<taps>) " + filterFragment.sql())
                         .bindList("taps", taps)
+                        .bindMap(filterFragment.bindings())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .mapTo(Long.class)
@@ -242,44 +232,21 @@ public class DNS {
         );
     }
 
-    public List<DNSTransaction> findAllTransactions(TimeRange timeRange, Filters filters, int limit, int offset, List<UUID> taps) {
+    public List<DNSLogEntry> findAllQueries(TimeRange timeRange, Filters filters, int limit, int offset, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
 
-        // TODO extract, support all operators, map field names, test with AND/OR combos
-        String fq;
-        Map<String, Object> binds = Maps.newHashMap();
-        if (filters.filters().isEmpty()) {
-            fq = "";
-        } else {
-            StringBuilder fqb = new StringBuilder(" AND ");
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new DnsFilters());
 
-            for (Map.Entry<String, List<Filter>> filteredField : filters.filters().entrySet()) {
-                String fieldName = filteredField.getKey();
-
-                fqb.append("(1=2");
-                for (Filter filter : filteredField.getValue()) {
-                    String bindId = UUID.randomUUID().toString().replace("-", "_");
-                    binds.put(bindId, filter.value());
-                    fqb.append(" OR ").append(fieldName).append(" = :").append(bindId);
-                }
-                fqb.append(") ");
-            }
-
-            fqb.append(" ");
-
-            fq = fqb.toString();
-        }
-
-        List<DNSLogEntry> logs = nzyme.getDatabase().withHandle(handle ->
+        return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM dns_log " +
-                                "WHERE timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
-                                "AND server_address <> '224.0.0.251' " + fq +
+                                "WHERE dns_type = 'query' AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "AND server_address <> '224.0.0.251' " + filterFragment.sql() +
                                 "ORDER BY timestamp DESC " +
                                 "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)
-                        .bindMap(binds)
+                        .bindMap(filterFragment.bindings())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bind("limit", limit)
@@ -287,13 +254,6 @@ public class DNS {
                         .mapTo(DNSLogEntry.class)
                         .list()
         );
-
-        List<DNSTransaction> transactions = Lists.newArrayList();
-        for (DNSTransactionProcessingResult transaction : buildTransactionFromManyTransactionLogs(logs)) {
-            transactions.add(DNSTransaction.create(transaction.query(), transaction.responses()));
-        }
-
-        return transactions;
     }
 
     private DNSTransactionProcessingResult buildTransactionFromSingleTransactionLogs(List<DNSLogEntry> logs)
