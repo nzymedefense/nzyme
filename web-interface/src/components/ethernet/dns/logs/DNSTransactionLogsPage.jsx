@@ -8,13 +8,19 @@ import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import Filters from "../../../shared/filtering/Filters";
 import DNSTransactionCountChart from "./widgets/DNSTransactionCountChart";
 import {DNS_FILTER_FIELDS} from "../DNSFilterFields";
+import {useLocation} from "react-router-dom";
+
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+}
 
 export default function DNSTransactionLogsPage() {
 
   const tapContext = useContext(TapContext);
+  const urlQuery = useQuery();
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
-  const [filters, setFilters] = useState(null);
+  const [filters, setFilters] = useState(urlQuery.get("filters") ? JSON.parse(urlQuery.get("filters")) : null);
 
   useEffect(() => {
     enableTapSelector(tapContext);

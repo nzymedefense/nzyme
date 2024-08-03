@@ -16,10 +16,6 @@ public class FilterSql {
         } else {
             StringBuilder fqb = new StringBuilder(" AND (");
 
-
-
-
-
             int i = 0;
             for (Map.Entry<String, List<Filter>> filteredField : filters.filters().entrySet()) {
                 String fieldName = filteredField.getKey();
@@ -50,15 +46,9 @@ public class FilterSql {
                 i++;
             }
 
-
-
-
-
             fqb.append(") ");
             sql = fqb.toString();
         }
-
-        System.out.println(sql);
 
         return FilterSqlFragment.create(sql, bindings);
     }

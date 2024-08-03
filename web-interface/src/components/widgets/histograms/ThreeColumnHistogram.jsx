@@ -17,6 +17,8 @@ function ThreeColumnHistogram(props) {
   const limit = props.limit;
   const setLimit = props.setLimit;
   const highlightValue = props.highlightValue;
+  const chartColumnValue = props.customChartColumnValue ? props.customChartColumnValue : "column_three";
+  const chartColumnValueField = props.customChartColumnValueField;
 
   const [mode, setMode] = useState(MODE_TABLE);
 
@@ -29,7 +31,7 @@ function ThreeColumnHistogram(props) {
 
     data.values.toReversed().forEach((d) => {
       y.push(d.key_summary);
-      x.push(d.column_three.value);
+      x.push(chartColumnValueField ? d[chartColumnValue].value[chartColumnValueField] : d[chartColumnValue].value);
     });
 
     return [

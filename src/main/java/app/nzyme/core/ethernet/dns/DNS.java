@@ -188,6 +188,14 @@ public class DNS {
 
     public Optional<DNSTransaction> findTransaction(int transactionId,
                                                     DateTime transactionTimestamp,
+                                                    List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                findTransaction(transactionId, transactionTimestamp, taps, handle)
+        );
+    }
+
+    public Optional<DNSTransaction> findTransaction(int transactionId,
+                                                    DateTime transactionTimestamp,
                                                     List<UUID> taps,
                                                     Handle handle) {
         List<DNSLogEntry> logs = handle.createQuery("SELECT * FROM dns_log " +

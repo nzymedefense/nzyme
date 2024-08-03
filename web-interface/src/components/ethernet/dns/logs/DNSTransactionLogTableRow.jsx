@@ -68,7 +68,9 @@ export default function DNSTransactionLogTableRow(props) {
           </td>
         </tr>
 
-        <DNSLogResponseTable responses={[]} show={showResponses}/>
+        <DNSLogResponseTable show={showResponses}
+                             transactionId={log.query.transaction_id}
+                             transactionTimestamp={log.query.timestamp} />
       </React.Fragment>
   )
 

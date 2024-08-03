@@ -42,6 +42,15 @@ export default class DNSService {
     )
   }
 
+  findResponsesOfTransaction(transactionId, transactionTimestamp, taps, setResponses) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get(`/ethernet/dns/transactions/log/${transactionId}/responses`,
+        { taps: tapsList, transaction_timestamp: transactionTimestamp},
+        (response) => setResponses(response.data)
+    )
+  }
+
   getTransactionCountChart(timeRange, filters, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 

@@ -1,19 +1,46 @@
-import React from "react";
+import React, {useContext, useEffect, useState} from "react";
 import DNSData from "../DNSData";
 import ETLD from "../../shared/ETLD";
+import LoadingSpinner from "../../../misc/LoadingSpinner";
+import DNSService from "../../../../services/ethernet/DNSService";
+import {TapContext} from "../../../../App";
 
 const COLSPAN = 8;
 
+const dnsService = new DNSService();
+
 export default function DNSLogResponseTable(props) {
 
-  const responses = props.responses;
+  const transactionId = props.transactionId;
+  const transactionTimestamp = props.transactionTimestamp;
   const show = props.show;
+
+  const tapContext = useContext(TapContext);
+  const selectedTaps = tapContext.taps;
+
+  const [responses, setResponses] = useState(null);
+
+  useEffect(() => {
+    if (show && !responses) {
+      dnsService.findResponsesOfTransaction(transactionId, transactionTimestamp, selectedTaps, setResponses);
+    }
+  }, [show]);
 
   if (!show) {
     return null;
   }
 
-  if (!responses || responses.length === 0) {
+  if (responses == null) {
+    return (
+      <tr>
+        <td colSpan={COLSPAN} style={{paddingLeft: 20, paddingRight: 20}}>
+          <LoadingSpinner />
+        </td>
+      </tr>
+    )
+  }
+
+  if (responses.length === 0) {
     return (
         <tr>
           <td colSpan={COLSPAN}>No responses recorded.</td>

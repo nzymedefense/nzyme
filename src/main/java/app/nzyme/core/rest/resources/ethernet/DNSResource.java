@@ -10,6 +10,8 @@ import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.ethernet.dns.*;
 import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.util.Bucketing;
+import app.nzyme.core.util.filters.FilterFrontendParameter;
+import app.nzyme.core.util.filters.FilterFrontendParametersBuilder;
 import app.nzyme.core.util.filters.Filters;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -131,6 +133,15 @@ public class DNSResource extends TapDataHandlingResource {
             Map<String, Object> requestCount = Maps.newHashMap();
             requestCount.put("title", ps.requestCount());
 
+            String requestCountFilterParameters = new FilterFrontendParametersBuilder()
+                    .addFilter("server_address", FilterFrontendParameter.create(
+                            "server_address",
+                            "Server Address",
+                            "equals",
+                            "==",
+                            ps.server().address())
+                    ).build();
+
             values.add(ThreeColumnTableHistogramValueResponse.create(
                     HistogramValueStructureResponse.create(
                             RestHelpers.L4AddressDataToResponse(L4Type.UDP, ps.server()),
@@ -145,7 +156,7 @@ public class DNSResource extends TapDataHandlingResource {
                     HistogramValueStructureResponse.create(
                             requestCount,
                             HistogramValueType.DNS_TRANSACTION_LOG_LINK,
-                            null
+                            Map.of("filter_parameters", requestCountFilterParameters)
                     ),
                     ps.server().address() + ":" + ps.server().port()
             ));
@@ -218,6 +229,37 @@ public class DNSResource extends TapDataHandlingResource {
         transactions.sort((o1, o2) -> o2.query().timestamp().compareTo(o1.query().timestamp()));
 
         return Response.ok(DNSLogListResponse.create(total, transactions)).build();
+    }
+
+    @GET
+    @Path("/transactions/log/{transactionId}/responses")
+    public Response findTransactionResponses(@Context SecurityContext sc,
+                                             @PathParam("transactionId") int transactionId,
+                                             @QueryParam("transaction_timestamp") String transactionTimestamp,
+                                             @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        DateTime timestamp;
+
+        try {
+            timestamp = DateTime.parse(transactionTimestamp);
+        } catch(Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Optional<DNSTransaction> result = nzyme.getEthernet().dns()
+                .findTransaction(transactionId, timestamp, taps);
+
+        if (result.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<DNSLogDataResponse> responses = Lists.newArrayList();
+        for (DNSLogEntry response : result.get().responses()) {
+            responses.add(logToResponse(response));
+        }
+
+        return Response.ok(responses).build();
     }
 
     @GET
