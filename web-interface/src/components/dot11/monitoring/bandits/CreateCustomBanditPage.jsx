@@ -50,7 +50,7 @@ function CreateCustomBanditPage(props) {
         <div className="row">
           <div className="col-md-12">
             <h1>
-              Create new Built-In Bandit
+              Create new Custom Bandit
             </h1>
           </div>
         </div>
@@ -59,7 +59,7 @@ function CreateCustomBanditPage(props) {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>New Built-In Bandit</h3>
+                <h3>New Custom Bandit</h3>
 
                 <p className="text-muted">
                   You can add fingerprints to the bandit after creating it.
