@@ -5323,4 +5323,9 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="rename_dns_log_site_local_fields" author="lennart koopmann">
+        <renameColumn tableName="dns_log" oldColumnName="server_address_is_private" newColumnName="server_address_is_site_local" />
+        <renameColumn tableName="dns_log" oldColumnName="client_address_is_private" newColumnName="client_address_is_site_local" />
+    </changeSet>
+
 </databaseChangeLog>

@@ -18,10 +18,11 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+
+import static app.nzyme.core.util.Tools.stringtoInetAddress;
 
 public class TCPTable implements DataTable {
 
@@ -81,16 +82,8 @@ public class TCPTable implements DataTable {
                     session.destinationPort()
             );
 
-            InetAddress sourceAddress;
-            InetAddress destinationAddress;
-            try {
-                sourceAddress = InetAddress.getByName(session.sourceAddress());
-                destinationAddress = InetAddress.getByName(session.destinationAddress());
-            } catch (UnknownHostException e) {
-                // This shouldn't happen because we pass IP addresses.
-                throw new RuntimeException(e);
-            }
-
+            InetAddress sourceAddress = stringtoInetAddress(session.sourceAddress());
+            InetAddress destinationAddress = stringtoInetAddress(session.destinationAddress());
             Optional<GeoIpLookupResult> sourceGeo = geoIp.lookup(sourceAddress);
             Optional<GeoIpLookupResult> destinationGeo = geoIp.lookup(destinationAddress);
 

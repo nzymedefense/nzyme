@@ -27,6 +27,8 @@ import org.joda.time.Duration;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,6 +110,15 @@ public class Tools {
                         + sourcePort
                         + destinationPort, Charsets.UTF_8)
                 .toString();
+    }
+
+    public static InetAddress stringtoInetAddress(String address) {
+        try {
+            return InetAddress.getByName(address);
+        } catch (UnknownHostException e) {
+            // This shouldn't happen because we pass IP addresses.
+            throw new RuntimeException(e);
+        }
     }
 
 }

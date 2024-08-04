@@ -35,11 +35,12 @@ import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import static app.nzyme.core.util.Tools.stringtoInetAddress;
 
 public class DNSTable implements DataTable {
 
@@ -152,14 +153,7 @@ public class DNSTable implements DataTable {
         for (Map.Entry<String, Map<Integer, Map<String, Long>>> pair : pairs.entrySet()) {
             for (Map.Entry<Integer, Map<String, Long>> server : pair.getValue().entrySet()) {
                 for (Map.Entry<String, Long> port : server.getValue().entrySet()) {
-                    InetAddress serverAddress;
-                    try {
-                        serverAddress = InetAddress.getByName(port.getKey());
-                    } catch (UnknownHostException e) {
-                        // This shouldn't happen because we pass IP addresses.
-                        throw new RuntimeException(e);
-                    }
-
+                    InetAddress serverAddress = stringtoInetAddress(port.getKey());
                     Optional<GeoIpLookupResult> geo = tablesService.getNzyme().getGeoIpService().lookup(serverAddress);
 
                     batch.bind("tap_uuid", tapUuid)
@@ -186,18 +180,40 @@ public class DNSTable implements DataTable {
         batch.execute();
     }
 
+    /*
+     */
+
     private void registerLogs(Handle handle,
                               UUID tapUuid,
                               List<DnsLogReport> queries,
                               List<DnsLogReport> responses) {
         PreparedBatch batch = handle.prepareBatch("INSERT INTO dns_log(uuid, tap_uuid, transaction_id, " +
-                "dns_type, client_address, client_port, client_mac, server_address, server_port, server_mac, " +
-                "data_value, data_value_etld, data_type,  timestamp, created_at) VALUES(:uuid, :tap_uuid, " +
+                "dns_type, client_address, client_port, client_mac, client_address_geo_asn_number, " +
+                "client_address_geo_asn_name, client_address_geo_asn_domain, client_address_geo_city, " +
+                "client_address_geo_country_code, client_address_geo_latitude, client_address_geo_longitude, " +
+                "client_address_is_site_local, client_address_is_multicast, client_address_is_loopback, " +
+                "server_address, server_port, server_mac, server_address_geo_asn_number, " +
+                "server_address_geo_asn_name, server_address_geo_asn_domain, server_address_geo_city, " +
+                "server_address_geo_country_code, server_address_geo_latitude, server_address_geo_longitude, " +
+                "server_address_is_site_local, server_address_is_multicast, server_address_is_loopback, " +
+                "data_value, data_value_etld, data_type, timestamp, created_at) VALUES(:uuid, :tap_uuid, " +
                 ":transaction_id, :dns_type, :client_address::inet, :client_port, :client_mac, " +
-                ":server_address::inet, :server_port, :server_mac, :data_value, :data_value_etld, :data_type, " +
-                ":timestamp, NOW())");
+                ":client_address_geo_asn_number, :client_address_geo_asn_name, :client_address_geo_asn_domain, " +
+                ":client_address_geo_city, :client_address_geo_country_code, :client_address_geo_latitude, " +
+                ":client_address_geo_longitude, :client_address_is_site_local, :client_address_is_multicast, " +
+                ":client_address_is_loopback, :server_address::inet, :server_port, :server_mac, " +
+                ":server_address_geo_asn_number, :server_address_geo_asn_name, :server_address_geo_asn_domain, " +
+                ":server_address_geo_city, :server_address_geo_country_code, :server_address_geo_latitude, " +
+                ":server_address_geo_longitude, :server_address_is_site_local, :server_address_is_multicast, " +
+                ":server_address_is_loopback, :data_value, :data_value_etld, :data_type, :timestamp, NOW())");
 
         for (DnsLogReport d : queries) {
+            InetAddress serverAddress = stringtoInetAddress(d.serverAddress());
+            Optional<GeoIpLookupResult> serverGeo = tablesService.getNzyme().getGeoIpService().lookup(serverAddress);
+
+            InetAddress clientAddress = stringtoInetAddress(d.clientAddress());
+            Optional<GeoIpLookupResult> clientGeo = tablesService.getNzyme().getGeoIpService().lookup(clientAddress);
+
             batch
                     .bind("uuid", UUID.randomUUID())
                     .bind("tap_uuid", tapUuid)
@@ -206,9 +222,29 @@ public class DNSTable implements DataTable {
                     .bind("client_address", d.clientAddress())
                     .bind("client_port", d.clientPort())
                     .bind("client_mac", d.clientMac())
+                    .bind("client_address_geo_asn_number", clientGeo.map(g -> g.asn().number()).orElse(null))
+                    .bind("client_address_geo_asn_name", clientGeo.map(g -> g.asn().name()).orElse(null))
+                    .bind("client_address_geo_asn_domain", clientGeo.map(g -> g.asn().domain()).orElse(null))
+                    .bind("client_address_geo_city", clientGeo.map(g -> g.geo().city()).orElse(null))
+                    .bind("client_address_geo_country_code", clientGeo.map(g -> g.geo().countryCode()).orElse(null))
+                    .bind("client_address_geo_latitude", clientGeo.map(g -> g.geo().latitude()).orElse(null))
+                    .bind("client_address_geo_longitude", clientGeo.map(g -> g.geo().longitude()).orElse(null))
+                    .bind("client_address_is_site_local", clientAddress.isSiteLocalAddress())
+                    .bind("client_address_is_multicast", clientAddress.isMulticastAddress())
+                    .bind("client_address_is_loopback", clientAddress.isLoopbackAddress())
                     .bind("server_address", d.serverAddress())
                     .bind("server_port", d.serverPort())
                     .bind("server_mac", d.serverMac())
+                    .bind("server_address_geo_asn_number", serverGeo.map(g -> g.asn().number()).orElse(null))
+                    .bind("server_address_geo_asn_name", serverGeo.map(g -> g.asn().name()).orElse(null))
+                    .bind("server_address_geo_asn_domain", serverGeo.map(g -> g.asn().domain()).orElse(null))
+                    .bind("server_address_geo_city", serverGeo.map(g -> g.geo().city()).orElse(null))
+                    .bind("server_address_geo_country_code", serverGeo.map(g -> g.geo().countryCode()).orElse(null))
+                    .bind("server_address_geo_latitude", serverGeo.map(g -> g.geo().latitude()).orElse(null))
+                    .bind("server_address_geo_longitude", serverGeo.map(g -> g.geo().longitude()).orElse(null))
+                    .bind("server_address_is_site_local", serverAddress.isSiteLocalAddress())
+                    .bind("server_address_is_multicast", serverAddress.isMulticastAddress())
+                    .bind("server_address_is_loopback", serverAddress.isLoopbackAddress())
                     .bind("data_value", d.dataValue())
                     .bind("data_value_etld", d.dataValueEtld())
                     .bind("data_type", d.dataType())
@@ -217,6 +253,12 @@ public class DNSTable implements DataTable {
         }
 
         for (DnsLogReport d : responses) {
+            InetAddress serverAddress = stringtoInetAddress(d.serverAddress());
+            Optional<GeoIpLookupResult> serverGeo = tablesService.getNzyme().getGeoIpService().lookup(serverAddress);
+
+            InetAddress clientAddress = stringtoInetAddress(d.clientAddress());
+            Optional<GeoIpLookupResult> clientGeo = tablesService.getNzyme().getGeoIpService().lookup(clientAddress);
+
             batch
                     .bind("uuid", UUID.randomUUID())
                     .bind("tap_uuid", tapUuid)
@@ -225,9 +267,29 @@ public class DNSTable implements DataTable {
                     .bind("client_address", d.clientAddress())
                     .bind("client_port", d.clientPort())
                     .bind("client_mac", d.clientMac())
+                    .bind("client_address_geo_asn_number", clientGeo.map(g -> g.asn().number()).orElse(null))
+                    .bind("client_address_geo_asn_name", clientGeo.map(g -> g.asn().name()).orElse(null))
+                    .bind("client_address_geo_asn_domain", clientGeo.map(g -> g.asn().domain()).orElse(null))
+                    .bind("client_address_geo_city", clientGeo.map(g -> g.geo().city()).orElse(null))
+                    .bind("client_address_geo_country_code", clientGeo.map(g -> g.geo().countryCode()).orElse(null))
+                    .bind("client_address_geo_latitude", clientGeo.map(g -> g.geo().latitude()).orElse(null))
+                    .bind("client_address_geo_longitude", clientGeo.map(g -> g.geo().longitude()).orElse(null))
+                    .bind("client_address_is_site_local", clientAddress.isSiteLocalAddress())
+                    .bind("client_address_is_multicast", clientAddress.isMulticastAddress())
+                    .bind("client_address_is_loopback", clientAddress.isLoopbackAddress())
                     .bind("server_address", d.serverAddress())
                     .bind("server_port", d.serverPort())
                     .bind("server_mac", d.serverMac())
+                    .bind("server_address_geo_asn_number", serverGeo.map(g -> g.asn().number()).orElse(null))
+                    .bind("server_address_geo_asn_name", serverGeo.map(g -> g.asn().name()).orElse(null))
+                    .bind("server_address_geo_asn_domain", serverGeo.map(g -> g.asn().domain()).orElse(null))
+                    .bind("server_address_geo_city", serverGeo.map(g -> g.geo().city()).orElse(null))
+                    .bind("server_address_geo_country_code", serverGeo.map(g -> g.geo().countryCode()).orElse(null))
+                    .bind("server_address_geo_latitude", serverGeo.map(g -> g.geo().latitude()).orElse(null))
+                    .bind("server_address_geo_longitude", serverGeo.map(g -> g.geo().longitude()).orElse(null))
+                    .bind("server_address_is_site_local", serverAddress.isSiteLocalAddress())
+                    .bind("server_address_is_multicast", serverAddress.isMulticastAddress())
+                    .bind("server_address_is_loopback", serverAddress.isLoopbackAddress())
                     .bind("data_value", d.dataValue())
                     .bind("data_value_etld", d.dataValueEtld())
                     .bind("data_type", d.dataType())
