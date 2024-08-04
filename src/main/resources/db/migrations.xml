@@ -5239,4 +5239,88 @@
         <modifyDataType tableName="l4_sessions" columnName="destination_address" newDataType="inet" />
     </changeSet>
 
+    <changeSet id="add_geo_fields_to_dns_log" author="lennartkoopmann">
+        <addColumn tableName="dns_log">
+            <column name="client_address_geo_asn_number" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_address_geo_asn_name" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_address_geo_asn_domain" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_address_geo_city" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_address_geo_country_code" type="varchar(2)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_address_geo_latitude" type="float">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_address_geo_longitude" type="float">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_address_is_private" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="client_address_is_multicast" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="client_address_is_loopback" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="server_address_geo_asn_number" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_address_geo_asn_name" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_address_geo_asn_domain" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_address_geo_city" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_address_geo_country_code" type="varchar(2)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_address_geo_latitude" type="float">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_address_geo_longitude" type="float">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_address_is_private" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="server_address_is_multicast" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="server_address_is_loopback" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
