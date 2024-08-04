@@ -9,6 +9,7 @@ import Filters from "../../../shared/filtering/Filters";
 import DNSTransactionCountChart from "./widgets/DNSTransactionCountChart";
 import {DNS_FILTER_FIELDS} from "../DNSFilterFields";
 import {useLocation} from "react-router-dom";
+import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -32,6 +33,8 @@ export default function DNSTransactionLogsPage() {
 
   return (
       <React.Fragment>
+        <AlphaFeatureAlert />
+
         <div className="row">
           <div className="col-12">
             <nav aria-label="breadcrumb">

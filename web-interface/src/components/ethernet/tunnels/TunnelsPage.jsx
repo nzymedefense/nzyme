@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
 import SocksTunnelsTable from "./socks/SocksTunnelsTable";
+import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 
 export default function TunnelsPage() {
 
@@ -9,6 +10,8 @@ export default function TunnelsPage() {
 
   return (
       <React.Fragment>
+        <AlphaFeatureAlert />
+
         <div className="row">
           <div className="col-md-12">
             <h1>Tunnels</h1>

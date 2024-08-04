@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
 import SSHSessionsTable from "./ssh/SSHSessionsTable";
+import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 
 export default function RemoteAccessPage() {
 
@@ -9,12 +10,13 @@ export default function RemoteAccessPage() {
 
   return (
       <React.Fragment>
+        <AlphaFeatureAlert />
+
         <div className="row">
           <div className="col-md-12">
             <h1>Remote Access Connections</h1>
           </div>
         </div>
-
 
         <div className="row mt-3">
           <div className="col-md-12">

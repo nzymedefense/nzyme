@@ -8,6 +8,7 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import DNSService from "../../../services/ethernet/DNSService";
 import DNSContactAttemptsTable from "./DNSContactAttemptsTable";
 import DNSEntropyLogTable from "./entropy/DNSEntropyLogTable";
+import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 
 function byteConversion (x) {
   return x / 1024
@@ -55,6 +56,8 @@ function DNSOverviewPage () {
 
   return (
       <React.Fragment>
+        <AlphaFeatureAlert />
+
         <div className="row">
           <div className="col-md-12">
             <h1>

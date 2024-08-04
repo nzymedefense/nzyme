@@ -5,6 +5,7 @@ import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import BluetoothService from "../../../services/BluetoothService";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import BluetoothDevicesTable from "./BluetoothDevicesTable";
+import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 
 const btService = new BluetoothService();
 
@@ -35,6 +36,8 @@ export default function BluetoothDevicesPage() {
 
   return (
       <React.Fragment>
+        <AlphaFeatureAlert />
+
         <div className="row">
           <div className="col-md-12">
             <h1>Bluetooth Devices</h1>
