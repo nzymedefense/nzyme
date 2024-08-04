@@ -50,14 +50,16 @@ export default function ConnectStatus(props) {
       )
     case "never_connected":
       return (
-          <div className="connect-status connect-status-fail">
+          <div className="connect-status connect-status-pending">
             <div>
               <div className="connect-status-summary">
-                <i className="fa-solid fa-triangle-exclamation"></i> Error
+                <i className="fa-solid fa-triangle-exclamation"></i> Pending
               </div>
               <div className="connect-status-meta">
-                This setup was never able to successfully connect to Connect. Please ensure your API key is
-                correct.
+                This setup has never successfully connect to Connect.{' '}
+                <strong>Note that it can take up to 60 seconds until the first connection attempt after updating the
+                  configuration.</strong> Please ensure your API key is correct if no connection has been established
+                after that time has passed.
               </div>
             </div>
           </div>

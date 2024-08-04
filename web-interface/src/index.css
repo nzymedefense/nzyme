@@ -1100,3 +1100,7 @@ div.connect-status-fail {
     background-color: #dc3545;
 }
 
+div.connect-status-pending {
+    color: #fff;
+    background-color: #F57328;
+}
