@@ -131,6 +131,9 @@ import DNSTransactionLogsPage from "./components/ethernet/dns/logs/DNSTransactio
 import ConnectPage from "./components/system/connect/ConnectPage";
 import BluetoothDevicesPage from "./components/bluetooth/devices/BluetoothDevicesPage";
 import HostnameDetailsPage from "./components/ethernet/hostnames/HostnameDetailsPage";
+import SocksTunnelDetailsPage from "./components/ethernet/tunnels/socks/SocksTunnelDetailsPage";
+import SSHSessionDetailsPage from "./components/ethernet/remote/ssh/SSHSessionDetailsPage";
+import L4OverviewPage from "./components/ethernet/l4/L4OverviewPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -375,6 +378,7 @@ function App() {
                           <Route path={ApiRoutes.SYSTEM.CONNECT} element={<ConnectPage />}/>
 
                           { /* Ethernet/L4. */}
+                          <Route path={ApiRoutes.ETHERNET.L4.OVERVIEW} element={<L4OverviewPage />}/>
                           <Route path={ApiRoutes.ETHERNET.L4.IP(':ipParam')} element={<IPDetailsPage />}/>
 
                           { /* Ethernet/Hostnames. */}
@@ -386,9 +390,11 @@ function App() {
 
                           { /* Ethernet/Remote. */}
                           <Route path={ApiRoutes.ETHERNET.REMOTE.INDEX} element={<RemoteAccessPage />}/>
+                          <Route path={ApiRoutes.ETHERNET.REMOTE.SSH.SESSION_DETAILS(':sessionId')} element={<SSHSessionDetailsPage />}/>
 
                           { /* Ethernet/Tunnels. */}
                           <Route path={ApiRoutes.ETHERNET.TUNNELS.INDEX} element={<TunnelsPage />}/>
+                          <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.TUNNEL_DETAILS(':tunnelId')} element={<SocksTunnelDetailsPage />}/>
 
                           { /* Ethernet/Beacons. */}
                           <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>

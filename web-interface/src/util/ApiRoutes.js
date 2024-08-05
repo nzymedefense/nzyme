@@ -132,7 +132,7 @@ const ApiRoutes = {
   ETHERNET: {
     OVERVIEW: '/ethernet/overview',
     L4: {
-      OVERVIEW: '/ethernet/l4/overview',
+      OVERVIEW: '/ethernet/l4',
       IP: ip => `/ethernet/l4/ip/show/${ip}`,
       ASN: asn => `/ethernet/l4/asn/show/${asn}`
     },
@@ -144,10 +144,16 @@ const ApiRoutes = {
       TRANSACTION_LOGS: '/ethernet/dns/logs'
     },
     TUNNELS: {
-      INDEX: '/ethernet/tunnels'
+      INDEX: '/ethernet/tunnels',
+      SOCKS: {
+        TUNNEL_DETAILS: tunnelId => `/ethernet/tunnels/socks/tunnels/show/${tunnelId}`
+      }
     },
     REMOTE: {
-      INDEX: '/ethernet/remoteaccess'
+      INDEX: '/ethernet/remoteaccess',
+      SSH: {
+        SESSION_DETAILS: sessionId => `/ethernet/remoteaccess/ssh/sessions/show/${sessionId}`
+      }
     },
     BEACONS: {
       INDEX: '/ethernet/beacons'

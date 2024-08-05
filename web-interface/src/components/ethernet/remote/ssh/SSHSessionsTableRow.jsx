@@ -5,6 +5,7 @@ import numeral from "numeral";
 import {calculateConnectionDuration} from "../../../../util/Tools";
 import moment from "moment/moment";
 import SSHVersion from "./SSHVersion";
+import SSHSessionKeyLink from "../../shared/SSHSessionKeyLink";
 
 export default function SSHSessionsTableRow(props) {
 
@@ -12,7 +13,7 @@ export default function SSHSessionsTableRow(props) {
 
   return (
       <tr>
-        <td><a href="#">{session.uuid.substring(0, 6).toUpperCase()}</a></td>
+        <td><SSHSessionKeyLink sessionKey={session.uuid} /></td>
         <td>
           <L4Address address={session.client} hidePort={true} />{' '}
           <span className="text-muted"><SSHVersion version={session.client_version} /></span>

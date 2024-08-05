@@ -7,6 +7,7 @@ import HostnameLink from "../../shared/HostnameLink";
 import L4Address from "../../shared/L4Address";
 import {calculateConnectionDuration} from "../../../../util/Tools";
 import GenericConnectionStatus from "../../shared/GenericConnectionStatus";
+import SocksTunnelIdLink from "../../shared/SocksTunnelIdLink";
 
 export default function SocksTunnelsTableRow(props) {
 
@@ -35,7 +36,7 @@ export default function SocksTunnelsTableRow(props) {
 
   return (
       <tr>
-        <td><a href="#">{tunnel.uuid.substring(0, 6).toUpperCase()}</a></td>
+        <td><SocksTunnelIdLink tunnelId={tunnel.uuid} /></td>
         <td><L4Address address={tunnel.client}/></td>
         <td><L4Address address={tunnel.socks_server}/></td>
         <td>{destination()}</td>
