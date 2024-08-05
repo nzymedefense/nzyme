@@ -5327,5 +5327,51 @@
         <renameColumn tableName="dns_log" oldColumnName="server_address_is_private" newColumnName="server_address_is_site_local" />
         <renameColumn tableName="dns_log" oldColumnName="client_address_is_private" newColumnName="client_address_is_site_local" />
     </changeSet>
+    
+    <changeSet id="add_new_indices_20240804" author="lennartkoopmann">
+        <createIndex tableName="dns_log" indexName="dns_log_lookup_timestamp">
+            <column name="timestamp" />
+        </createIndex>
+        <createIndex tableName="dns_log" indexName="dns_log_filter_tap">
+            <column name="tap_uuid" />
+        </createIndex>
+        <createIndex tableName="dns_log" indexName="dns_log_lookup_transaction">
+            <column name="transaction_id" />
+        </createIndex>
+        
+        <createIndex tableName="l4_sessions" indexName="l4_sessions_lookup_timestamp">
+            <column name="most_recent_segment_time" />
+        </createIndex>
+        <createIndex tableName="l4_sessions" indexName="l4_sessions_lookup_session_key">
+            <column name="session_key" />
+        </createIndex>
+        <createIndex tableName="l4_sessions" indexName="l4_sessions_filter_type">
+            <column name="l4_type" />
+        </createIndex>
+        <createIndex tableName="l4_sessions" indexName="l4_sessions_filter_tap">
+            <column name="tap_uuid" />
+        </createIndex>
+
+        <createIndex tableName="socks_tunnels" indexName="socks_tunnels_lookup_timestamp">
+            <column name="most_recent_segment_time" />
+        </createIndex>
+        <createIndex tableName="socks_tunnels" indexName="socks_tunnels_filter_tap">
+            <column name="tap_uuid" />
+        </createIndex>
+
+        <createIndex tableName="ssh_sessions" indexName="ssh_sessions_lookup_timestamp">
+            <column name="most_recent_segment_time" />
+        </createIndex>
+        <createIndex tableName="ssh_sessions" indexName="ssh_sessions_filter_tap">
+            <column name="tap_uuid" />
+        </createIndex>
+
+        <createIndex tableName="bluetooth_devices" indexName="bluetooth_devices_lookup_timestamp">
+            <column name="last_seen" />
+        </createIndex>
+        <createIndex tableName="bluetooth_devices" indexName="bluetooth_devices_filter_tap">
+            <column name="tap_uuid" />
+        </createIndex>
+    </changeSet>
 
 </databaseChangeLog>
