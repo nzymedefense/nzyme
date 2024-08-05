@@ -136,6 +136,9 @@ const ApiRoutes = {
       IP: ip => `/ethernet/l4/ip/show/${ip}`,
       ASN: asn => `/ethernet/l4/asn/show/${asn}`
     },
+    HOSTNAMES: {
+      HOSTNAME: hostname => `/ethernet/hostnames/show/${hostname}`
+    },
     DNS: {
       INDEX: '/ethernet/dns',
       TRANSACTION_LOGS: '/ethernet/dns/logs'

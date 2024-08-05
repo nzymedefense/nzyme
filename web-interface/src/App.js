@@ -130,6 +130,7 @@ import RemoteAccessPage from "./components/ethernet/remote/RemoteAccessPage";
 import DNSTransactionLogsPage from "./components/ethernet/dns/logs/DNSTransactionLogsPage";
 import ConnectPage from "./components/system/connect/ConnectPage";
 import BluetoothDevicesPage from "./components/bluetooth/devices/BluetoothDevicesPage";
+import HostnameDetailsPage from "./components/ethernet/hostnames/HostnameDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -375,6 +376,9 @@ function App() {
 
                           { /* Ethernet/L4. */}
                           <Route path={ApiRoutes.ETHERNET.L4.IP(':ipParam')} element={<IPDetailsPage />}/>
+
+                          { /* Ethernet/Hostnames. */}
+                          <Route path={ApiRoutes.ETHERNET.HOSTNAMES.HOSTNAME(':hostnameParam')} element={<HostnameDetailsPage />}/>
 
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
