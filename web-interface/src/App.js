@@ -200,14 +200,6 @@ function App() {
 
   useEffect(() => {
     backgroundChecks();
-
-    const x = setInterval(function () {
-      backgroundChecks();
-    }, 1000);
-
-    return () => {
-      clearInterval(x);
-    }
   }, []);
 
   useEffect(() => {
