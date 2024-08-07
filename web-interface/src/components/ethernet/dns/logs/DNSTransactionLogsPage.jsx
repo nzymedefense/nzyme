@@ -10,6 +10,8 @@ import DNSTransactionCountChart from "./widgets/DNSTransactionCountChart";
 import {DNS_FILTER_FIELDS} from "../DNSFilterFields";
 import {useLocation} from "react-router-dom";
 import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
+import HeadlineMenu from "../../../shared/HeadlineMenu";
+import {DNS_HEADLINE_MENU_ITEMS} from "../DNSHeadlineMenuItems";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -33,7 +35,7 @@ export default function DNSTransactionLogsPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
+        <AlphaFeatureAlert/>
 
         <div className="row">
           <div className="col-12">
@@ -46,16 +48,24 @@ export default function DNSTransactionLogsPage() {
             </nav>
           </div>
 
+          <div className="row mb-3">
+            <div className="col-md-12">
+              <HeadlineMenu headline={"DNS Transaction Logs"}
+                            items={DNS_HEADLINE_MENU_ITEMS}
+                            activeRoute={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS}/>
+            </div>
+          </div>
+
           <div className="col-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="DNS Transaction Logs"
+                <CardTitleWithControls title="Filters"
                                        hideTimeRange={true}
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange}
                                        slim={true}/>
 
-                <Filters filters={filters} setFilters={setFilters} fields={DNS_FILTER_FIELDS} />
+                <Filters filters={filters} setFilters={setFilters} fields={DNS_FILTER_FIELDS}/>
               </div>
             </div>
           </div>
@@ -68,7 +78,7 @@ export default function DNSTransactionLogsPage() {
                 <CardTitleWithControls title="Transaction Count"
                                        fixedAppliedTimeRange={timeRange}/>
 
-                <DNSTransactionCountChart timeRange={timeRange} filters={filters} setFilters={setFilters} />
+                <DNSTransactionCountChart timeRange={timeRange} filters={filters} setFilters={setFilters}/>
               </div>
             </div>
           </div>
@@ -81,12 +91,12 @@ export default function DNSTransactionLogsPage() {
                 <CardTitleWithControls title="Transactions"
                                        fixedAppliedTimeRange={timeRange}/>
 
-                <DNSTransactionsTable timeRange={timeRange} filters={filters} setFilters={setFilters} />
+                <DNSTransactionsTable timeRange={timeRange} filters={filters} setFilters={setFilters}/>
               </div>
             </div>
           </div>
         </div>
       </React.Fragment>
-)
+  )
 
 }

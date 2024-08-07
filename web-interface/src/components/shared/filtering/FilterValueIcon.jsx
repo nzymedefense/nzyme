@@ -35,7 +35,6 @@ export default function FilterValueIcon(props) {
                 <div className="modal-body">
                   <Filters fields={fields}
                            setFilters={setFilters}
-                           hideTitle={true}
                            hideAppliedFilters={true}
                            preSelectedField={field}
                            preSelectedValue={value} />

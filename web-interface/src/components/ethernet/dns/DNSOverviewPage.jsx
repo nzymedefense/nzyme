@@ -9,6 +9,9 @@ import DNSService from "../../../services/ethernet/DNSService";
 import DNSContactAttemptsTable from "./DNSContactAttemptsTable";
 import DNSEntropyLogTable from "./entropy/DNSEntropyLogTable";
 import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
+import ApiRoutes from "../../../util/ApiRoutes";
+import HeadlineMenu from "../../shared/HeadlineMenu";
+import {DNS_HEADLINE_MENU_ITEMS} from "./DNSHeadlineMenuItems";
 
 function byteConversion (x) {
   return x / 1024
@@ -60,9 +63,9 @@ function DNSOverviewPage () {
 
         <div className="row">
           <div className="col-md-12">
-            <h1>
-              DNS Overview
-            </h1>
+            <HeadlineMenu headline={"DNS Overview"}
+                          items={DNS_HEADLINE_MENU_ITEMS}
+                          activeRoute={ApiRoutes.ETHERNET.DNS.INDEX} />
           </div>
         </div>
 

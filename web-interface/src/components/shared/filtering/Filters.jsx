@@ -149,7 +149,6 @@ export default function Filters(props) {
   const filters = props.filters ? props.filters : {};
   const setFilters = props.setFilters;
 
-  const hideTitle = props.hideTitle;
   const hideAppliedFilters = props.hideAppliedFilters === undefined || props.hideAppliedFilters === null ? false : props.hideAppliedFilters;
   const preSelectedField = props.preSelectedField;
   const preSelectedValue = props.preSelectedValue;
@@ -350,8 +349,6 @@ export default function Filters(props) {
 
   return (
       <div className="filters">
-        {hideTitle ? null : <h4>Filters</h4> }
-
         <div className="input-group">
           <select className="form-select form-select-sm" value={selectedFilter.field}
                   onChange={onFilterSelected}>

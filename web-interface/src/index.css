@@ -1107,3 +1107,7 @@ div.connect-status-pending {
     color: #fff;
     background-color: #F57328;
 }
+
+div.dropdown-headline ul.dropdown-menu {
+    font-size: 18px;
+}
