@@ -11,7 +11,6 @@ import java.util.Optional;
 public abstract class NodeConfiguration {
 
     public abstract boolean versionchecksEnabled();
-    public abstract boolean fetchOuis();
 
     public abstract String databasePath();
 
@@ -32,10 +31,9 @@ public abstract class NodeConfiguration {
     public abstract PerformanceConfiguration performance();
     public abstract MiscConfiguration misc();
 
-    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, String connectApiUri, PerformanceConfiguration performance, MiscConfiguration misc) {
+    public static NodeConfiguration create(boolean versionchecksEnabled, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, String connectApiUri, PerformanceConfiguration performance, MiscConfiguration misc) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
-                .fetchOuis(fetchOuis)
                 .databasePath(databasePath)
                 .restListenUri(restListenUri)
                 .httpExternalUri(httpExternalUri)
@@ -56,8 +54,6 @@ public abstract class NodeConfiguration {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder versionchecksEnabled(boolean versionchecksEnabled);
-
-        public abstract Builder fetchOuis(boolean fetchOuis);
 
         public abstract Builder databasePath(String databasePath);
 

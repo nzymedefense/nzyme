@@ -8,9 +8,6 @@ general: {
   # Path to postgreSQL database. Make sure to change username, password and database name. (This is described in the documentation)
   database_path: "postgresql://localhost:5432/nzyme?user=nzyme&password=YOUR_PASSWORD"
 
-  # Download current list of manufacturers and enable MAC address to manufacturer lookup?
-  fetch_ouis: true
-
   # Path to directory that nzyme will use to store some temporary information. (must be writable)
   data_directory: /usr/share/nzyme
 

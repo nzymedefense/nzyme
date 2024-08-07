@@ -28,7 +28,6 @@ public class ConfigurationKeys {
     public static final String NAME = "name";
     public static final String DATABASE_PATH = "database_path";
     public static final String VERSIONCHECKS = "versionchecks";
-    public static final String FETCH_OUIS = "fetch_ouis";
     public static final String REST_LISTEN_URI = "rest_listen_uri";
     public static final String HTTP_EXTERNAL_URI = "http_external_uri";
     public static final String SLOW_QUERY_LOG_THRESHOLD = "slow_query_log_threshold";

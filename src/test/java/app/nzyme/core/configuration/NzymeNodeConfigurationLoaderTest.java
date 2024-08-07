@@ -46,7 +46,6 @@ public class NzymeNodeConfigurationLoaderTest extends ResourcesAccessingTest {
         NodeConfiguration c = new NodeConfigurationLoader(loadFromResourceFile(configFile), false).get();
 
         assertFalse(c.databasePath().isEmpty()); // This one is different based on ENV vars
-        assertTrue(c.fetchOuis());
         assertTrue(c.versionchecksEnabled());
         assertEquals(c.restListenUri(), URI.create("https://127.0.0.1:23900/"));
     }

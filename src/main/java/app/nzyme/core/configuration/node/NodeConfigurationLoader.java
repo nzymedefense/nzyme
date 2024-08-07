@@ -68,7 +68,6 @@ public class NodeConfigurationLoader {
     public NodeConfiguration get() {
         return NodeConfiguration.create(
                 parseVersionchecksEnabled(),
-                parseFetchOUIsEnabled(),
                 parseDatabasePath(),
                 parseRestListenUri(),
                 parseHttpExternalUri(),
@@ -96,10 +95,6 @@ public class NodeConfigurationLoader {
 
     private boolean parseVersionchecksEnabled() {
         return general.getBoolean(ConfigurationKeys.VERSIONCHECKS);
-    }
-
-    private boolean parseFetchOUIsEnabled() {
-        return general.getBoolean(ConfigurationKeys.FETCH_OUIS);
     }
 
     private String parsePluginDirectory() {
@@ -153,7 +148,6 @@ public class NodeConfigurationLoader {
         // Completeness and type validity.
         ConfigurationValidator.expect(general, ConfigurationKeys.DATABASE_PATH, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.VERSIONCHECKS, ConfigurationKeys.GENERAL, Boolean.class);
-        ConfigurationValidator.expect(general, ConfigurationKeys.FETCH_OUIS, ConfigurationKeys.GENERAL, Boolean.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.PLUGIN_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.CRYPTO_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.NTP_SERVER, ConfigurationKeys.GENERAL, String.class);
