@@ -36,8 +36,8 @@ class AuthenticationService {
     });
   }
 
-  finishMFASetup() {
-    RESTClient.post('/system/authentication/mfa/setup/complete', {}, function(){});
+  finishMFASetup(successCallback) {
+    RESTClient.post('/system/authentication/mfa/setup/complete', {}, successCallback);
   }
 
   verifyMFA(code, successCallback, errorCallback) {

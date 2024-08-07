@@ -136,7 +136,6 @@ import SSHSessionDetailsPage from "./components/ethernet/remote/ssh/SSHSessionDe
 import L4OverviewPage from "./components/ethernet/l4/L4OverviewPage";
 
 const pingService = new PingService();
-const pluginsService = new PluginsService();
 const authenticationService = new AuthenticationService();
 
 const isAuthenticated = function() {
@@ -152,6 +151,7 @@ export const TapContext = createContext(null);
 
 function App() {
 
+  const [revision, setRevision] = useState(new Date());
   const [apiConnected, setApiConnected] = useState(true);
   const [authenticated, setAuthenticated] = useState(isAuthenticated());
   const [darkModeEnabled, setDarkModeEnabled] = useState(isDarkMode());
@@ -166,18 +166,6 @@ function App() {
   const [tapSelectorEnabled, setTapSelectorEnabled] = useState(false);
 
   const [fullyLoaded, setFullyLoaded] = useState(false);
-
-  const backgroundChecks = function() {
-    pingService.ping(setApiConnected, setNzymeInformation, function() {
-      fetchSessionInfo(function() {
-        setAuthenticated(isAuthenticated());
-        setDarkModeEnabled(isDarkMode());
-        setFullyLoaded(true);
-      });
-    }, function () {
-      setFullyLoaded(true);
-    });
-  }
 
   const fetchSessionInfo = function(callback) {
     if (isAuthenticated()) {
@@ -199,12 +187,29 @@ function App() {
   }
 
   useEffect(() => {
-    backgroundChecks();
-  }, []);
+    pingService.ping(setApiConnected, setNzymeInformation, function() {
+      fetchSessionInfo(function() {
+        setAuthenticated(isAuthenticated());
+        setDarkModeEnabled(isDarkMode());
+        setFullyLoaded(true);
+      });
+    }, function () {
+      setFullyLoaded(true);
+    });
+  }, [revision]);
 
   useEffect(() => {
     Store.set("dark_mode", darkModeEnabled);
   }, [darkModeEnabled]);
+
+  const onLogout = function(e) {
+    e.preventDefault()
+
+    authenticationService.deleteSession(function() {
+      Store.delete('sessionid');
+      setRevision(new Date());
+    });
+  }
 
   if (!apiConnected) {
     // API not connected. Show error page.
@@ -242,7 +247,7 @@ function App() {
           <DarkMode enabled={false} />
 
           <Notifications/>
-          <LoginPage customImage={nzymeInformation.login_image} />
+          <LoginPage customImage={nzymeInformation.login_image} onActionCompleted={() => setRevision(new Date())}/>
         </div>
     )
   } else {
@@ -254,7 +259,9 @@ function App() {
             <div className="nzyme">
               <Notifications/>
 
-              <MFAEntryPage mfaEntryExpiresAt={mfaEntryExpiresAt} customImage={nzymeInformation.login_image} />
+              <MFAEntryPage mfaEntryExpiresAt={mfaEntryExpiresAt}
+                            customImage={nzymeInformation.login_image}
+                            onActionCompleted={() => setRevision(new Date())}/>
             </div>
         )
       } else {
@@ -263,7 +270,8 @@ function App() {
           <div className="nzyme">
             <Notifications/>
 
-            <MFASetupPage customImage={nzymeInformation.login_image} />
+            <MFASetupPage customImage={nzymeInformation.login_image}
+                          onActionCompleted={() => setRevision(new Date())} />
           </div>
         )
       }
@@ -280,7 +288,9 @@ function App() {
 
                   <div id="main" className="flex-fill">
                     <Notifications/>
-                    <NavigationBar darkModeEnabled={darkModeEnabled} setDarkModeEnabled={setDarkModeEnabled} />
+                    <NavigationBar darkModeEnabled={darkModeEnabled}
+                                   setDarkModeEnabled={setDarkModeEnabled}
+                                   onLogout={onLogout} />
 
                     <div className="container-fluid">
                       <div className="content">
@@ -288,7 +298,7 @@ function App() {
                           <Route path={ApiRoutes.DASHBOARD} element={<OverviewPage />}/>
 
                           { /* User Profile / Own User */}
-                          <Route path={ApiRoutes.USERPROFILE.PROFILE} element={<UserProfilePage />}/>
+                          <Route path={ApiRoutes.USERPROFILE.PROFILE} element={<UserProfilePage onMfaReset={() => setRevision(new Date())} />}/>
                           <Route path={ApiRoutes.USERPROFILE.PASSWORD} element={<ChangeOwnPasswordPage />}/>
 
                           { /* Search. */}

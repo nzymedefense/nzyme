@@ -7,6 +7,7 @@ const authenticationService = new AuthenticationService();
 function MFARecoveryCodeStep(props) {
 
   const show = props.show;
+  const onActionCompleted = props.onActionCompleted;
   const onAbort = props.onAbort;
 
   const DEFAULT_TEXT = "Enter Code";
@@ -34,6 +35,7 @@ function MFARecoveryCodeStep(props) {
     authenticationService.useMFARecoveryCode(recoveryCode, function() {
       setSuccess(true);
       setSubmitText("Success! Please wait...");
+      onActionCompleted();
     }, function() {
       // Artificially wait 1 second so the user sees something happening. (The REST call is extremely fast)
       setTimeout(function(){

@@ -1,24 +1,13 @@
-import React, {useState} from 'react'
-import Store from '../../util/Store'
+import React from 'react'
 import DarkModeButton from './DarkModeButton'
-import AuthenticationService from "../../services/AuthenticationService";
 import TapSelector from "../misc/TapSelector";
 import ApiRoutes from "../../util/ApiRoutes";
 
-const authService = new AuthenticationService();
-
 function NavigationBar(props) {
 
+  const onLogout = props.onLogout;
   const darkModeEnabled = props.darkModeEnabled;
   const setDarkModeEnabled = props.setDarkModeEnabled;
-
-  const handleLogout = function(e) {
-    e.preventDefault()
-
-    authService.deleteSession(function() {
-      Store.delete('sessionid')
-    });
-  }
 
   const onSearchSubmit = function() {
     setSearchSubmitted(true);
@@ -48,7 +37,7 @@ function NavigationBar(props) {
           <a href="https://go.nzyme.org/help" className="btn btn-outline-dark main-help" title="Help" target="_blank" rel="noreferrer">
             Help
           </a>
-          <button className="btn btn-outline-primary" title="Sign out" onClick={handleLogout} >
+          <button className="btn btn-outline-primary" title="Sign out" onClick={onLogout} >
             Sign Out &nbsp;<i className="fa-solid fa-arrow-right-from-bracket" />
           </button>
         </div>

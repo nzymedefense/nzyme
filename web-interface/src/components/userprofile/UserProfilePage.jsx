@@ -7,8 +7,9 @@ import ApiRoutes from "../../util/ApiRoutes";
 
 const userProfileService = new UserProfileService();
 
-function UserProfilePage() {
+function UserProfilePage(props) {
 
+  const onMfaReset = props.onMfaReset;
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
 
   const resetMfa = function() {
@@ -19,6 +20,7 @@ function UserProfilePage() {
 
     userProfileService.resetOwnMfa(function () {
       notify.show('MFA successfully reset.', 'success');
+      onMfaReset();
     })
   }
 

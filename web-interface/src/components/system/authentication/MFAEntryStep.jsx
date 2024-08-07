@@ -8,6 +8,7 @@ const authenticationService = new AuthenticationService();
 function MFAEntryStep(props) {
 
   const show = props.show;
+  const onActionCompleted = props.onActionCompleted;
   const mfaEntryExpiresAt = props.mfaEntryExpiresAt;
   const onEnableRecovery = props.onEnableRecovery;
 
@@ -100,7 +101,7 @@ function MFAEntryStep(props) {
         continue;
       }
 
-      switch(pos) {
+      switch (pos) {
         case "0":
           setCode1(value);
           controlCursor(39, 1);
@@ -139,9 +140,10 @@ function MFAEntryStep(props) {
     authenticationService.verifyMFA(code, function() {
       setSuccess(true);
       setSubmitText("Success! Please wait...");
+      onActionCompleted();
     }, function() {
       // Artificially wait 1 second so the user sees something happening. (The REST call is extremely fast)
-      setTimeout(function(){
+      setTimeout(function() {
         setFormSubmitting(false);
         setSubmitText(DEFAULT_TEXT);
         setSuccess(false);
@@ -152,6 +154,7 @@ function MFAEntryStep(props) {
 
   const cancel = function() {
     Store.delete("sessionid");
+    onActionCompleted();
   }
 
   const formReady = function() {

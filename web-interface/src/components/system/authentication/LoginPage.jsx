@@ -9,6 +9,7 @@ const authenticationService = new AuthenticationService();
 
 function LoginPage(props) {
 
+  const onActionCompleted = props.onActionCompleted;
   const customImage = props.customImage;
 
   const mask = useRef();
@@ -47,6 +48,7 @@ function LoginPage(props) {
       setSubmitText("Success! Please wait...");
 
       Store.set('sessionid', sessionId)
+      onActionCompleted();
     }, function(message) {
       setSubmitText(DEFAULT_TEXT)
       setLoginFailed(true);

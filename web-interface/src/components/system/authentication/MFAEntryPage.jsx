@@ -6,6 +6,7 @@ import LoginImage from "./LoginImage";
 
 function MFASetupPage(props) {
 
+  const onActionCompleted = props.onActionCompleted;
   const customImage = props.customImage;
   const mfaEntryExpiresAt = props.mfaEntryExpiresAt;
 
@@ -35,9 +36,12 @@ function MFASetupPage(props) {
 
                         <MFAEntryStep show={!recoveryEnabled}
                                       mfaEntryExpiresAt={mfaEntryExpiresAt}
-                                      onEnableRecovery={onEnableRecovery} />
+                                      onEnableRecovery={onEnableRecovery}
+                                      onActionCompleted={onActionCompleted} />
 
-                        <MFARecoveryCodeStep show={recoveryEnabled} onAbort={onAbortRecovery} />
+                        <MFARecoveryCodeStep show={recoveryEnabled}
+                                             onAbort={onAbortRecovery}
+                                             onActionCompleted={onActionCompleted} />
                       </div>
                     </div>
 

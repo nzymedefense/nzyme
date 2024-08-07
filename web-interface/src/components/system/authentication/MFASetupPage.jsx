@@ -10,6 +10,7 @@ const authenticationService = new AuthenticationService();
 
 function MFASetupPage(props) {
 
+  const onActionCompleted = props.onActionCompleted;
   const customImage = props.customImage;
 
   const [userSecret, setUserSecret] = useState(null);
@@ -34,7 +35,7 @@ function MFASetupPage(props) {
 
   const finishSetup = function() {
     setCompletionInProgress(true); // This will never go back to false. App lifecycle takes over to prompt login.
-    authenticationService.finishMFASetup();
+    authenticationService.finishMFASetup(onActionCompleted);
   }
 
   if (!userSecret || !userEmail || !recoveryCodes) {
