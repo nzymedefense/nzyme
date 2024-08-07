@@ -5374,4 +5374,15 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="fix_tap_freq_cascade_delete" author="lennartkoopmann">
+        <dropForeignKeyConstraint baseTableName="tap_captures_frequencies" constraintName="link_freqs2captures" />
+        <addForeignKeyConstraint constraintName="link_freqs2captures"
+                                 baseTableName="tap_captures_frequencies"
+                                 baseColumnNames="interface_uuid"
+                                 referencedTableName="tap_captures"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
 </databaseChangeLog>
