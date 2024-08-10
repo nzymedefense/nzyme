@@ -14,14 +14,18 @@ public abstract class Dot11MacAddressResponse {
     @Nullable
     public abstract String oui();
 
+    @JsonProperty("is_randomized")
+    public abstract boolean isRandomized();
+
     @JsonProperty("context")
     @Nullable
     public abstract Dot11MacAddressContextResponse context();
 
-    public static Dot11MacAddressResponse create(String address, String oui, Dot11MacAddressContextResponse context) {
+    public static Dot11MacAddressResponse create(String address, String oui, boolean isRandomized, Dot11MacAddressContextResponse context) {
         return builder()
                 .address(address)
                 .oui(oui)
+                .isRandomized(isRandomized)
                 .context(context)
                 .build();
     }
@@ -35,6 +39,8 @@ public abstract class Dot11MacAddressResponse {
         public abstract Builder address(String address);
 
         public abstract Builder oui(String oui);
+
+        public abstract Builder isRandomized(boolean isRandomized);
 
         public abstract Builder context(Dot11MacAddressContextResponse context);
 

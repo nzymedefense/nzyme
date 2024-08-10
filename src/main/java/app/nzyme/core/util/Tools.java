@@ -17,11 +17,12 @@
 
 package app.nzyme.core.util;
 
-import app.nzyme.core.taps.Tap;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.hash.Hashing;
 import jakarta.validation.constraints.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
@@ -33,6 +34,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Tools {
+
+    private static final Logger LOG = LogManager.getLogger(Tools.class);
 
     private static final Pattern SAFE_ID = Pattern.compile("^[a-zA-Z0-9-_]+$");
     private static final Pattern VALID_MAC = Pattern.compile("^[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}$");
@@ -119,6 +122,21 @@ public class Tools {
             // This shouldn't happen because we pass IP addresses.
             throw new RuntimeException(e);
         }
+    }
+
+    public static boolean macAddressIsRandomized(String mac) {
+        if (mac == null || mac.trim().isEmpty()) {
+            return false;
+        }
+
+        if (mac.length() != 17) {
+            LOG.warn("Passed invalid MAC address [{}]", mac);
+            return false;
+        }
+
+        char c = mac.toUpperCase().charAt(1);
+
+        return c == '2' || c == '6' || c == 'A' || c == 'E';
     }
 
 }

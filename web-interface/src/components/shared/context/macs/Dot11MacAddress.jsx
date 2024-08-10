@@ -1,5 +1,4 @@
 import React from "react";
-import Dot11MacAddressType from "./Dot11MacAddressType";
 import MacAddress from "./MacAddress";
 
 function Dot11MacAddress(props) {

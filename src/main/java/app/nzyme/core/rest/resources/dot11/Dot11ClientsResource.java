@@ -15,6 +15,7 @@ import app.nzyme.core.rest.responses.dot11.clients.*;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.TimeRangeFactory;
+import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -80,6 +81,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                     Dot11MacAddressResponse.create(
                             client.clientMac(),
                             nzyme.getOuiService().lookup(client.clientMac()).orElse(null),
+                            Tools.macAddressIsRandomized(client.clientMac()),
                             clientContext.map(macAddressContextEntry ->
                                             Dot11MacAddressContextResponse.create(
                                                     macAddressContextEntry.name(),
@@ -91,6 +93,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                     Dot11MacAddressResponse.create(
                             client.bssid(),
                             nzyme.getOuiService().lookup(client.bssid()).orElse(null),
+                            Tools.macAddressIsRandomized(client.clientMac()),
                             clientBssidContext.map(macAddressContextEntry ->
                                             Dot11MacAddressContextResponse.create(
                                                     macAddressContextEntry.name(),
@@ -136,6 +139,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                     Dot11MacAddressResponse.create(
                             client.clientMac(),
                             nzyme.getOuiService().lookup(client.clientMac()).orElse(null),
+                            Tools.macAddressIsRandomized(client.clientMac()),
                             clientContext.map(macAddressContextEntry ->
                                             Dot11MacAddressContextResponse.create(
                                                     macAddressContextEntry.name(),
@@ -329,6 +333,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 Dot11MacAddressResponse.create(
                         c.mac(),
                         nzyme.getOuiService().lookup(c.mac()).orElse(null),
+                        Tools.macAddressIsRandomized(c.mac()),
                         macContext.map(macAddressContextEntry ->
                                         Dot11MacAddressContextResponse.create(
                                                 macAddressContextEntry.name(),

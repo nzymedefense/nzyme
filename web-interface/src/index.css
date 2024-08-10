@@ -770,6 +770,11 @@ span.mac-address-oui {
     font-size: 13px;
 }
 
+i.mac-address-randomized {
+    margin-left: 4px;
+    color: #707070;
+}
+
 a.asn-number, span.asn-number {
     font-family: 'B612 Mono', monospace;
     font-size: 12px;
@@ -828,9 +833,9 @@ div.context-overlay {
     position: relative;
     top: -16px;
     left: -2px;
-    height: 177px;
+    height: 195px;
     width: 300px;
-    margin-top: -177px;
+    margin-top: -195px;
     margin-right: -300px;
     overflow: hidden;
     padding: 10px;
@@ -882,7 +887,7 @@ div.context-overlay dt {
 }
 
 div.context-overlay dd {
-    margin-left: 78px;
+    margin-left: 90px;
     margin-bottom: 1px;
 }
 

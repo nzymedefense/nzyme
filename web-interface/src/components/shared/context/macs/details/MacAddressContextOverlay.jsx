@@ -11,6 +11,7 @@ const contextService = new ContextService();
 function MacAddressContextOverlay(props) {
 
   const address = props.address;
+  const isRandomized = props.isRandomized;
 
   const [ctx, setCtx] = useState(null);
 
@@ -99,6 +100,8 @@ function MacAddressContextOverlay(props) {
             <dd>{contextType(ctx.context_type)}</dd>
             <dt>Is Monitored:</dt>
             <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
+            <dt>Is Randomized:</dt>
+            <dd>{isRandomized ? "Yes" : "No"}</dd>
           </dl>
 
           <div className="context-overlay-no-context-controls">

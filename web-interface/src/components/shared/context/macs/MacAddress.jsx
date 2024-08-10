@@ -8,6 +8,7 @@ function MacAddress(props) {
   const address = props.addressWithContext ? props.addressWithContext.address : props.address;
   const context = props.addressWithContext ? props.addressWithContext.context : null;
   const oui = props.addressWithContext ? props.addressWithContext.oui : null;
+  const isRandomized = props.addressWithContext ? props.addressWithContext.is_randomized : props.address.is_randomized;
 
   const href = props.href;
   const onClick = props.onClick;
@@ -53,6 +54,14 @@ function MacAddress(props) {
     }
   }
 
+  const randomizedIcon = () => {
+    if (!isRandomized) {
+      return null;
+    }
+
+    return <i className="fa-solid fa-shuffle mac-address-randomized" title="Randomized MAC Address" />
+  }
+
   const mouseOver = () => {
     setOverlayVisible(false);
     setOverlayTimeout(setTimeout(() => setOverlayVisible(true), 1000));
@@ -67,11 +76,11 @@ function MacAddress(props) {
 
   return (
       <div onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
-        {typeElement()}{addressElement()}{contextElement()} {ouiElement()}
+        {typeElement()}{addressElement()}{randomizedIcon()}{contextElement()} {ouiElement()}
 
         <ContextOverlayVisibilityWrapper
             visible={overlayVisible}
-            overlay={<MacAddressContextOverlay address={address} />} />
+            overlay={<MacAddressContextOverlay address={address} isRandomized={isRandomized} />} />
       </div>
   )
 
