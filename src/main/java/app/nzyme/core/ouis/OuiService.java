@@ -97,7 +97,12 @@ public class OuiService {
     }
 
     public Optional<String> lookup(String mac) {
-        if (!isEnabled) {
+        if (!isEnabled || mac == null || mac.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
+        if (mac.length() != 17) {
+            LOG.warn("Passed invalid MAC address [{}]", mac);
             return Optional.empty();
         }
 
@@ -105,7 +110,7 @@ public class OuiService {
             lock.lock();
 
             try {
-                String oui = ouis.get(mac);
+                String oui = ouis.get(mac.toUpperCase().substring(0, 8).replace(":", ""));
                 return oui == null ? Optional.empty() : Optional.of(oui);
             } finally {
                 lock.unlock();
