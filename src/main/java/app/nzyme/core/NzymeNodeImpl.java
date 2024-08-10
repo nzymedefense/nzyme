@@ -197,14 +197,17 @@ public class NzymeNodeImpl implements NzymeNode {
     public void initialize() {
         LOG.info("Initializing nzyme version: {}.", version.getVersionString());
 
-        LOG.info("Initializing cluster manager.");
+        LOG.info("Initializing cluster manager...");
         this.clusterManager.initialize();
+        LOG.info("Done.");
 
-        LOG.info("Initializing message bus [{}].", this.messageBus.getClass().getCanonicalName());
+        LOG.info("Initializing message bus [{}] ...", this.messageBus.getClass().getCanonicalName());
         this.messageBus.initialize();
+        LOG.info("Done.");
 
-        LOG.info("Initializing tasks queue [{}].", this.tasksQueue.getClass().getCanonicalName());
+        LOG.info("Initializing tasks queue [{}] ...", this.tasksQueue.getClass().getCanonicalName());
         this.tasksQueue.initialize();
+        LOG.info("Done.");
 
         try {
             this.crypto.initialize();
@@ -212,17 +215,21 @@ public class NzymeNodeImpl implements NzymeNode {
             throw new RuntimeException("Could not load cryptographic subsystem.", e);
         }
 
-        LOG.info("Initializing Geo IP service.");
+        LOG.info("Initializing Geo IP service...");
         this.geoIpService.initialize();
+        LOG.info("Done.");
 
-        LOG.info("Initializing OUI service.");
+        LOG.info("Initializing OUI service...");
         this.ouiService.initialize();
+        LOG.info("Done.");
 
-        LOG.info("Initializing Bluetooth SIG service.");
+        LOG.info("Initializing Bluetooth SIG service...");
         this.bluetoothSigService.initialize();
+        LOG.info("Done.");
 
-        LOG.info("Initializing authentication service.");
+        LOG.info("Initializing authentication service...");
         this.authenticationService.initialize();
+        LOG.info("Done.");
 
         // Metrics JMX reporter.
         final JmxReporter reporter = JmxReporter.forRegistry(metrics).build();
@@ -249,7 +256,7 @@ public class NzymeNodeImpl implements NzymeNode {
         PluginLoader pl = new PluginLoader(new File(configuration.pluginDirectory())); // TODO make path configurable
         for (Plugin plugin : pl.loadPlugins()) {
             // Initialize plugin
-            LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
+            LOG.info("Initializing plugin of type [{}]: [{}] ...", plugin.getClass().getCanonicalName(), plugin.getName());
 
             try {
                 plugin.initialize(this, getDatabaseRegistry(plugin.getId()), this, this);
@@ -259,6 +266,8 @@ public class NzymeNodeImpl implements NzymeNode {
             }
 
             this.plugins.add(plugin.getId());
+
+            LOG.info("Done.");
         }
 
         CacheManager cacheManager = new CacheManager(this);
