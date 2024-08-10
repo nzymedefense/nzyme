@@ -120,7 +120,7 @@ public class Dot11Table implements DataTable {
 
                 for (Map.Entry<String, Long> pr : report.probeRequestSSIDs().entrySet()) {
                     batch.bind("client_id", clientDatabaseId)
-                            .bind("ssid", pr.getKey())
+                            .bind("ssid", Tools.sanitizeSSID(pr.getKey()))
                             .bind("frame_count", pr.getValue())
                             .bind("tap_uuid", tap.uuid())
                             .add();
