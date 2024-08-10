@@ -19,6 +19,10 @@ public class ConnectService {
     }
 
     public boolean isEnabled() {
+        if (nzyme.getConfiguration().connectSkip()) {
+            return false;
+        }
+
         Optional<String> enabled = nzyme.getDatabaseCoreRegistry().getValue(ConnectRegistryKeys.CONNECT_ENABLED.key());
 
         return enabled.isPresent() && enabled.get().equals("true") && getApiKey() != null;

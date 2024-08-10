@@ -27,11 +27,12 @@ public abstract class NodeConfiguration {
 
     @Nullable
     public abstract String connectApiUri();
+    public abstract boolean connectSkip();
 
     public abstract PerformanceConfiguration performance();
     public abstract MiscConfiguration misc();
 
-    public static NodeConfiguration create(boolean versionchecksEnabled, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, String connectApiUri, PerformanceConfiguration performance, MiscConfiguration misc) {
+    public static NodeConfiguration create(boolean versionchecksEnabled, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, String connectApiUri, boolean connectSkip, PerformanceConfiguration performance, MiscConfiguration misc) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .databasePath(databasePath)
@@ -42,6 +43,7 @@ public abstract class NodeConfiguration {
                 .slowQueryLogThreshold(slowQueryLogThreshold)
                 .ntpServer(ntpServer)
                 .connectApiUri(connectApiUri)
+                .connectSkip(connectSkip)
                 .performance(performance)
                 .misc(misc)
                 .build();
@@ -70,6 +72,8 @@ public abstract class NodeConfiguration {
         public abstract Builder ntpServer(String ntpServer);
 
         public abstract Builder connectApiUri(String connectApiUri);
+
+        public abstract Builder connectSkip(boolean connectSkip);
 
         public abstract Builder performance(PerformanceConfiguration performance);
 

@@ -215,6 +215,11 @@ public class NzymeNodeImpl implements NzymeNode {
             throw new RuntimeException("Could not load cryptographic subsystem.", e);
         }
 
+        if (configuration.connectSkip()) {
+            // Connect is disabled in config file. None of the Connect tasks will run. (checked in ConnectService)
+            LOG.warn("Connect has been disabled in configuration file. Not connecting.");
+        }
+
         LOG.info("Initializing Geo IP service...");
         this.geoIpService.initialize();
         LOG.info("Done.");

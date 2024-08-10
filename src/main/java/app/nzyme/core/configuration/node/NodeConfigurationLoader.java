@@ -76,6 +76,7 @@ public class NodeConfigurationLoader {
                 parseSlowQueryLogThreshold(),
                 parseNtpServer(),
                 parseConnectUri(),
+                parseConnectSkip(),
                 parsePerformance(),
                 parseMisc()
         );
@@ -111,6 +112,14 @@ public class NodeConfigurationLoader {
             return general.getString(ConfigurationKeys.CONNECT_SERVER);
         } else {
             return null;
+        }
+    }
+
+    private boolean parseConnectSkip() {
+        if (general.hasPath(ConfigurationKeys.CONNECT_SKIP)) {
+            return general.getBoolean(ConfigurationKeys.CONNECT_SKIP);
+        } else {
+            return false;
         }
     }
 
