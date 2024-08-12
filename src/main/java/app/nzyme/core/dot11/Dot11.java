@@ -669,7 +669,11 @@ public class Dot11 {
         );
     }
 
-    public long countClients(TimeRange timeRange, List<UUID> taps) {
+    private String skipRandomizedQueryFragment(boolean skipRandomized) {
+        return skipRandomized ? " AND client_mac_is_randomized = false " : "";
+    }
+
+    public long countClients(TimeRange timeRange, boolean skipRandomized, List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
@@ -679,7 +683,7 @@ public class Dot11 {
                                 "FROM dot11_clients AS c " +
                                 "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
                                 "WHERE c.created_at >= :tr_from AND c.created_at <= :tr_to " +
-                                "AND c.tap_uuid IN (<taps>)")
+                                "AND c.tap_uuid IN (<taps>)" + skipRandomizedQueryFragment(skipRandomized))
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
@@ -691,6 +695,7 @@ public class Dot11 {
     public List<DisconnectedClientDetails> findClients(TimeRange timeRange,
                                                        List<UUID> taps,
                                                        List<String> excludeClientMacs,
+                                                       boolean skipRandomized,
                                                        int limit,
                                                        int offset,
                                                        ClientOrderColumn orderColumn,
@@ -705,7 +710,7 @@ public class Dot11 {
                                 "FROM dot11_clients AS c " +
                                 "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
                                 "WHERE c.created_at >= :tr_from AND c.created_at <= :tr_to " +
-                                "AND c.tap_uuid IN (<taps>) " +
+                                "AND c.tap_uuid IN (<taps>) " + skipRandomizedQueryFragment(skipRandomized) +
                                 "AND NOT c.client_mac IN (<exclude_client_macs>) " +
                                 "GROUP BY c.client_mac " +
                                 "ORDER BY <order_column> <order_direction> " +
@@ -747,6 +752,7 @@ public class Dot11 {
     }
 
     public List<ClientHistogramEntry> getDisconnectedClientHistogram(TimeRange timeRange,
+                                                                     boolean skipRandomized,
                                                                      Bucketing.BucketingConfiguration bc,
                                                                      List<UUID> taps,
                                                                      List<String> excludeClientMacs) {
@@ -759,7 +765,7 @@ public class Dot11 {
                                 "DATE_TRUNC(:date_trunc, c.created_at) as bucket " +
                                 "FROM dot11_clients AS c " +
                                 "WHERE c.created_at >= :tr_from AND c.created_at <= :tr_to " +
-                                "AND c.tap_uuid IN (<taps>) " +
+                                "AND c.tap_uuid IN (<taps>) " + skipRandomizedQueryFragment(skipRandomized) +
                                 "AND NOT c.client_mac IN (<exclude_client_macs>) " +
                                 "GROUP BY bucket " +
                                 "ORDER BY bucket DESC")

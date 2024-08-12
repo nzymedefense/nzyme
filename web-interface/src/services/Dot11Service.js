@@ -117,11 +117,11 @@ class Dot11Service {
         })
   }
 
-  findDisconnectedClients(timeRange, taps, setClients, limit, offset) {
+  findDisconnectedClients(timeRange, skipRandomized, taps, setClients, limit, offset) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get("/dot11/clients/disconnected",
-        { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
+        { skip_randomized: skipRandomized, time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
         function (response) {
           setClients(response.data);
         })
@@ -134,10 +134,11 @@ class Dot11Service {
         function (response) { setHistogram(response.data); })
   }
 
-  getDisconnectedClientsHistogram(timeRange, taps, setHistogram) {
+  getDisconnectedClientsHistogram(timeRange, skipRandomized, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
-    RESTClient.get("/dot11/clients/disconnected/histogram", { time_range: timeRange, taps: tapsList },
+    RESTClient.get("/dot11/clients/disconnected/histogram",
+        { skip_randomized: skipRandomized, time_range: timeRange, taps: tapsList },
         function (response) { setHistogram(response.data); })
   }
 

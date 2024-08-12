@@ -5384,5 +5384,13 @@
                                  onUpdate="NO ACTION"
                                  onDelete="CASCADE" />
     </changeSet>
+    
+    <changeSet id="add_mac_address_randomized_field_to_clients" author="lennartkoopmann">
+        <addColumn tableName="dot11_clients">
+            <column name="client_mac_is_randomized" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

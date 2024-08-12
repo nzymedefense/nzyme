@@ -7,6 +7,7 @@ import ClientHistogram from "./ClientHistogram";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import {Presets} from "../../shared/timerange/TimeRange";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
+import moment from "moment";
 
 const dot11Service = new Dot11Service();
 const MINUTES = 15;
@@ -29,6 +30,8 @@ function ClientsPage() {
   const [disconnectedClientsTimeRange, setDisconnectedClientsTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
   const [disconnectedClientsPage, setDisconnectedClientsPage] = useState(1);
 
+  const [disconnectedClientsSkipRandomized, setDisconnectedClientsSkipRandomized] = useState(true);
+
   const perPage = 25;
 
   useEffect(() => {
@@ -43,9 +46,9 @@ function ClientsPage() {
     setDisconnectedClientsHistogram(null);
 
     dot11Service.getDisconnectedClientsHistogram(
-        disconnectedClientsHistogramTimeRange, selectedTaps, setDisconnectedClientsHistogram
+        disconnectedClientsHistogramTimeRange, disconnectedClientsSkipRandomized, selectedTaps, setDisconnectedClientsHistogram
     );
-  }, [disconnectedClientsHistogramTimeRange, selectedTaps])
+  }, [disconnectedClientsHistogramTimeRange, disconnectedClientsSkipRandomized, selectedTaps])
 
   useEffect(() => {
     setConnectedClients(null);
@@ -57,9 +60,10 @@ function ClientsPage() {
   useEffect(() => {
     setDisconnectedClients(null);
 
-    dot11Service.findDisconnectedClients(disconnectedClientsTimeRange, selectedTaps, setDisconnectedClients,
+    dot11Service.findDisconnectedClients(
+        disconnectedClientsTimeRange, disconnectedClientsSkipRandomized, selectedTaps, setDisconnectedClients,
         perPage, (disconnectedClientsPage-1)*perPage);
-  }, [disconnectedClientsPage, disconnectedClientsTimeRange, selectedTaps])
+  }, [disconnectedClientsPage, disconnectedClientsTimeRange, disconnectedClientsSkipRandomized, selectedTaps])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -68,6 +72,18 @@ function ClientsPage() {
       disableTapSelector(tapContext);
     }
   }, [tapContext]);
+
+  const disconnectedTitle = () => {
+    if (disconnectedClientsSkipRandomized) {
+      return "Disconnected Clients (Excluding Randomized)"
+    } else {
+      return "Disconnected Clients"
+    }
+  }
+
+  const onDisconnectedClientsSkipRandomizedChange = () => {
+    setDisconnectedClientsSkipRandomized((!disconnectedClientsSkipRandomized));
+  }
 
   return (
       <React.Fragment>
@@ -93,7 +109,7 @@ function ClientsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Disconnected Clients" slim={true}
+                <CardTitleWithControls title={disconnectedTitle()} slim={true}
                                        timeRange={disconnectedClientsHistogramTimeRange}
                                        setTimeRange={setDisconnectedClientsHistogramTimeRange} />
 
@@ -130,9 +146,9 @@ function ClientsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Disconnected Clients"
+                <CardTitleWithControls title={disconnectedTitle()}
                                        timeRange={disconnectedClientsTimeRange}
-                                       setTimeRange={setDisconnectedClientsTimeRange} />
+                                       setTimeRange={setDisconnectedClientsTimeRange}/>
 
                 <p className="text-muted">
                   It should be noted that many modern WiFi devices utilize MAC address randomization when they are not
@@ -141,11 +157,24 @@ function ClientsPage() {
                   compiled from the most recent three days of available data.
                 </p>
 
+                <div className="form-check form-switch mb-3">
+                  <input className="form-check-input"
+                         type="checkbox"
+                         role="switch"
+                         id="skipRandomized"
+                         onChange={onDisconnectedClientsSkipRandomizedChange}
+                         checked={disconnectedClientsSkipRandomized}/>
+                  <label className="form-check-label"
+                         htmlFor="skipRandomized">
+                    Exclude Clients with Randomized MAC Address
+                  </label>
+                </div>
+
                 <DisconnectedClientsTable clients={disconnectedClients}
                                           minutes={MINUTES}
                                           perPage={perPage}
                                           page={disconnectedClientsPage}
-                                          setPage={setDisconnectedClientsPage} />
+                                          setPage={setDisconnectedClientsPage}/>
               </div>
             </div>
           </div>

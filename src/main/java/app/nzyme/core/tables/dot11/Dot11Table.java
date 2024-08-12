@@ -97,12 +97,14 @@ public class Dot11Table implements DataTable {
             Dot11ClientReport report = entry.getValue();
 
             long clientDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
-                    handle.createQuery("INSERT INTO dot11_clients(tap_uuid, client_mac, wildcard_probe_requests, " +
-                                    "signal_strength_average, signal_strength_max, signal_strength_min, created_at) " +
-                                    "VALUES(:tap_uuid, :client_mac, :wildcard_probe_requests, :signal_strength_average, " +
+                    handle.createQuery("INSERT INTO dot11_clients(tap_uuid, client_mac, client_mac_is_randomized, " +
+                                    "wildcard_probe_requests, signal_strength_average, signal_strength_max, " +
+                                    "signal_strength_min, created_at) VALUES(:tap_uuid, :client_mac, " +
+                                    ":client_mac_is_randomized, :wildcard_probe_requests, :signal_strength_average, " +
                                     ":signal_strength_max, :signal_strength_min, :created_at) RETURNING id")
                             .bind("tap_uuid", tap.uuid())
                             .bind("client_mac", clientMac)
+                            .bind("client_mac_is_randomized", Tools.macAddressIsRandomized(clientMac))
                             .bind("wildcard_probe_requests", report.wildcardProbeRequests())
                             .bind("signal_strength_average", report.signalStrength().average())
                             .bind("signal_strength_min", report.signalStrength().min())

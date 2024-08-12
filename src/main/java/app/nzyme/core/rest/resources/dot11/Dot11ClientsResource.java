@@ -111,6 +111,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
     @GET
     @Path("/disconnected")
     public Response disconnectedClients(@Context SecurityContext sc,
+                                        @QueryParam("skip_randomized") boolean skipRandomized,
                                         @QueryParam("time_range") @Valid String timeRangeParameter,
                                         @QueryParam("taps") String taps,
                                         @QueryParam("limit") int limit,
@@ -123,11 +124,11 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 .findMacAddressesOfAllBSSIDClients(timeRange, tapUuids);
 
         // Disconnected clients.
-        long disconnectedCount = nzyme.getDot11().countClients(timeRange, tapUuids);
+        long disconnectedCount = nzyme.getDot11().countClients(timeRange, skipRandomized, tapUuids);
         List<DisconnectedClientDetailsResponse> disconnectedClients = Lists.newArrayList();
 
         for (DisconnectedClientDetails client : nzyme.getDot11().findClients(
-                timeRange, tapUuids, macAddressesOfAllConnectedClients, limit, offset,
+                timeRange, tapUuids, macAddressesOfAllConnectedClients, skipRandomized, limit, offset,
                 Dot11.ClientOrderColumn.LAST_SEEN, OrderDirection.DESC)) {
             Optional<MacAddressContextEntry> clientContext = nzyme.getContextService().findMacAddressContext(
                     client.clientMac(),
@@ -179,6 +180,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
     @GET
     @Path("/disconnected/histogram")
     public Response disconnectedHistogram(@Context SecurityContext sc,
+                                          @QueryParam("skip_randomized") boolean skipRandomized,
                                           @QueryParam("time_range") @Valid String timeRangeParameter,
                                           @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
@@ -192,7 +194,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
 
         Map<DateTime, ClientHistogramValueResponse> disconnected = Maps.newTreeMap();
         for (ClientHistogramEntry entry : nzyme.getDot11().getDisconnectedClientHistogram(
-                timeRange, bucketing, tapUuids, macAddressesOfAllConnectedClients)) {
+                timeRange, skipRandomized, bucketing, tapUuids, macAddressesOfAllConnectedClients)) {
             disconnected.put(entry.bucket(), ClientHistogramValueResponse.create(
                     entry.bucket(), entry.clientCount()
             ));;
