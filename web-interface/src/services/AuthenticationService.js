@@ -1,4 +1,5 @@
 import RESTClient from '../util/RESTClient'
+import axios from "axios";
 
 class AuthenticationService {
   createSession (username, password, successCallback, errorCallback) {
@@ -20,6 +21,15 @@ class AuthenticationService {
       // We also call the callback in case of an error because we delete the local session ID and the session will expire.
       callback();
     })
+  }
+
+  touchSession() {
+    // NOT USING RESTClient wrapper here because it's kind of a special call with special error handler etc and we
+    // can keep things simple this way.
+
+    axios.post(RESTClient.buildUri('/system/authentication/session/touch'), {}, { headers: RESTClient.getAuthHeaders() })
+        .then(() => {})
+        .catch(() => { console.log("Could not touch session."); })
   }
 
   fetchSessionInfo(successCallback, errorCallback) {

@@ -186,6 +186,17 @@ function App() {
     }
   }
 
+  // Background ping to keep session alive.
+  useEffect(() => {
+    const x = setInterval(() => {
+      authenticationService.touchSession();
+    }, 15000);
+
+    return () => {
+      clearInterval(x);
+    }
+  }, []);
+
   useEffect(() => {
     pingService.ping(setApiConnected, setNzymeInformation, function() {
       fetchSessionInfo(function() {

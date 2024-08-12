@@ -239,6 +239,16 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         )).build();
     }
 
+    @POST
+    @PreMFASecured
+    @Path("/session/touch")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response touchSession(@Context SecurityContext sc) {
+        // The filter updates last user activity. We may add more actions here in the future.
+
+        return Response.ok().build();
+    }
+
     @GET
     @PreMFASecured
     @Path("/mfa/setup/initialize")
