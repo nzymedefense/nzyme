@@ -8,6 +8,7 @@ import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import {Presets} from "../../shared/timerange/TimeRange";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import moment from "moment";
+import HelpBubble from "../../misc/HelpBubble";
 
 const dot11Service = new Dot11Service();
 const MINUTES = 15;
@@ -154,7 +155,9 @@ function ClientsPage() {
                   It should be noted that many modern WiFi devices utilize MAC address randomization when they are not
                   connected to a network. This practice improves privacy by complicating tracking efforts, resulting in
                   a wide range of distinct MAC addresses being captured by nzyme. The advertised SSIDs of BSSIDs are
-                  compiled from the most recent three days of available data.
+                  compiled from the most recent three days of available data.{' '}
+                  
+                  <HelpBubble link="https://go.nzyme.org/kb-mac-randomization" />
                 </p>
 
                 <div className="form-check form-switch mb-3">
