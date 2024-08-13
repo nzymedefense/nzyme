@@ -90,6 +90,7 @@ function TimeRangeSelector(props) {
                 <div className="col-4">
                   <h3>Relative</h3>
                   <ul>
+                    <li>{presetOption(Relative(1, "Last Minute"), "Last Minute")}</li>
                     <li>{presetOption(Relative(5, "Last 5 Minutes"), "Last 5 Minutes")}</li>
                     <li>{presetOption(Relative(15, "Last 15 Minutes"), "Last 15 Minutes")}</li>
                     <li>{presetOption(Relative(30, "Last 30 Minutes"), "Last 30 Minutes")}</li>
