@@ -24,9 +24,7 @@ export default function DNSTransactionLogTableRow(props) {
       <React.Fragment>
         <tr>
           <td>
-            <a href="#">
-              <DNSData value={log.query.data_value}/>
-            </a>
+            <DNSData value={log.query.data_value}/>
 
             <FilterValueIcon setFilters={setFilters}
                              fields={DNS_FILTER_FIELDS}
