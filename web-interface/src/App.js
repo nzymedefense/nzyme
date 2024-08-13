@@ -211,6 +211,7 @@ function App() {
 
   useEffect(() => {
     Store.set("dark_mode", darkModeEnabled);
+    setRevision(new Date());
   }, [darkModeEnabled]);
 
   const onLogout = function(e) {
