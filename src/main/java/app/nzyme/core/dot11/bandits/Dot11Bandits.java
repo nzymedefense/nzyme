@@ -127,7 +127,7 @@ public class Dot11Bandits {
         add(Dot11BanditDescription.create(
                 "omg_cable_plug",
                 false,
-                "O.MG Cable or Plug",
+                "O.MG Cable or Plug (Experimental Bandit)",
                 "The access point of the popular \"O.MG\" cable or plug USB implant.",
                 new ArrayList<>() {{
                     add("4b58f00646b7ab9bf84ac14640784ddfde70a269d2b1a068bbc06c08c01460de");
