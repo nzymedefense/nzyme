@@ -11,6 +11,7 @@ export default function DNSTransactionCountChart(props) {
 
   const timeRange = props.timeRange;
   const filters = props.filters;
+  const revision = props.revision;
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -20,7 +21,7 @@ export default function DNSTransactionCountChart(props) {
   useEffect(() => {
     setHistogram(null);
     dnsService.getTransactionCountChart(timeRange, filters, selectedTaps, setHistogram);
-  }, [selectedTaps, timeRange, filters])
+  }, [selectedTaps, timeRange, filters, revision])
 
   if (!histogram) {
     return <LoadingSpinner />

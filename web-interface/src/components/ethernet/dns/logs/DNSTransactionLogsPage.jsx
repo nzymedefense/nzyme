@@ -24,6 +24,7 @@ export default function DNSTransactionLogsPage() {
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [filters, setFilters] = useState(urlQuery.get("filters") ? JSON.parse(urlQuery.get("filters")) : null);
+  const [revision, setRevision] = useState(new Date());
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -65,7 +66,7 @@ export default function DNSTransactionLogsPage() {
                                        setTimeRange={setTimeRange}
                                        slim={true}/>
 
-                <Filters filters={filters} setFilters={setFilters} fields={DNS_FILTER_FIELDS}/>
+                <Filters filters={filters} setFilters={setFilters} fields={DNS_FILTER_FIELDS} />
               </div>
             </div>
           </div>
@@ -76,9 +77,10 @@ export default function DNSTransactionLogsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Transaction Count"
-                                       fixedAppliedTimeRange={timeRange}/>
+                                       fixedAppliedTimeRange={timeRange}
+                                       refreshAction={() => { setRevision(new Date()) }} />
 
-                <DNSTransactionCountChart timeRange={timeRange} filters={filters} setFilters={setFilters}/>
+                <DNSTransactionCountChart timeRange={timeRange} filters={filters} setFilters={setFilters} revision={revision} />
               </div>
             </div>
           </div>
@@ -89,9 +91,10 @@ export default function DNSTransactionLogsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Transactions"
-                                       fixedAppliedTimeRange={timeRange}/>
+                                       fixedAppliedTimeRange={timeRange}
+                                       refreshAction={() => { setRevision(new Date()) }} />
 
-                <DNSTransactionsTable timeRange={timeRange} filters={filters} setFilters={setFilters}/>
+                <DNSTransactionsTable timeRange={timeRange} filters={filters} setFilters={setFilters} revision={revision}/>
               </div>
             </div>
           </div>

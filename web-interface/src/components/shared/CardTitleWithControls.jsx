@@ -17,6 +17,9 @@ function CardTitleWithControls(props) {
   // Required if using help link.
   const helpLink = props.helpLink;
 
+  // Required if using a refresh button.
+  const refreshAction = props.refreshAction;
+
   // Optional.
   const smallTextParam = props.smallText;
   const hideTimeRange = props.hideTimeRange;
@@ -73,6 +76,22 @@ function CardTitleWithControls(props) {
     )
   }
 
+  const refreshButton = () => {
+    if (refreshAction) {
+      return (
+          <button className="btn card-title-option"
+                  title="Refresh"
+                  disabled={disabled}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    refreshAction();
+                  }}>
+            <i className="fa-solid fa-rotate"></i>
+          </button>
+      )
+    }
+  }
+
   const timeRangeDialog = () => {
     if (!timeRangeDialogOpened) {
       return null;
@@ -109,6 +128,7 @@ function CardTitleWithControls(props) {
           <div className="col-2 text-end">
             {timeRangeButton()}
             {helpLinkButton()}
+            {refreshButton()}
           </div>
 
           {timeRangeDialog()}

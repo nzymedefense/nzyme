@@ -14,6 +14,7 @@ export default function DNSTransactionsTable(props) {
   const timeRange = props.timeRange;
   const filters = props.filters;
   const setFilters = props.setFilters;
+  const revision = props.revision;
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -26,7 +27,7 @@ export default function DNSTransactionsTable(props) {
   useEffect(() => {
     setData(null);
     dnsService.findAllTransactions(timeRange, filters, selectedTaps, perPage, (page-1)*perPage, setData);
-  }, [selectedTaps, timeRange, filters, page]);
+  }, [selectedTaps, timeRange, filters, revision, page]);
 
   if (!data) {
     return <GenericWidgetLoadingSpinner height={500} />
