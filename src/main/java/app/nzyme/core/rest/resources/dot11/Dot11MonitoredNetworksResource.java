@@ -15,7 +15,6 @@ import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.SSIDSimilarityResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.*;
 import app.nzyme.core.rest.responses.dot11.monitoring.configimport.*;
-import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -185,7 +184,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     Dot11MacAddressResponse.create(
                             bssid.bssid(),
                             nzyme.getOuiService().lookup(bssid.bssid()).orElse(null),
-                            Tools.macAddressIsRandomized(bssid.bssid()),
+                            null,
                             bssidContext.map(macAddressContextEntry ->
                                             Dot11MacAddressContextResponse.create(
                                                     macAddressContextEntry.name(),
@@ -779,7 +778,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     Dot11MacAddressResponse.create(
                             bssid,
                             nzyme.getOuiService().lookup(bssid).orElse(null),
-                            Tools.macAddressIsRandomized(bssid),
+                            null,
                             ctx.map(c -> Dot11MacAddressContextResponse.create(c.name(), c.description()))
                                     .orElse(null)
                     ),

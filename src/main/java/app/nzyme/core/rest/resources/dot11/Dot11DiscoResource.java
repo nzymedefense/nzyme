@@ -26,7 +26,6 @@ import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
-import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -194,7 +193,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                             Dot11MacAddressResponse.create(
                                                     s.mac(),
                                                     nzyme.getOuiService().lookup(s.mac()).orElse(null),
-                                                    Tools.macAddressIsRandomized(s.mac()),
+                                                    null,
                                                     macContext.map(macAddressContextEntry ->
                                                                     Dot11MacAddressContextResponse.create(
                                                                             macAddressContextEntry.name(),
@@ -231,7 +230,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                             Dot11MacAddressResponse.create(
                                                     s.mac(),
                                                     nzyme.getOuiService().lookup(s.mac()).orElse(null),
-                                                    Tools.macAddressIsRandomized(s.mac()),
+                                                    null,
                                                     macContext.map(macAddressContextEntry ->
                                                                     Dot11MacAddressContextResponse.create(
                                                                             macAddressContextEntry.name(),
@@ -274,7 +273,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                             Dot11MacAddressResponse.create(
                                                     s.sender(),
                                                     nzyme.getOuiService().lookup(s.sender()).orElse(null),
-                                                    Tools.macAddressIsRandomized(s.sender()),
+                                                    null,
                                                     senderMacContext.map(macAddressContextEntry ->
                                                                     Dot11MacAddressContextResponse.create(
                                                                             macAddressContextEntry.name(),
@@ -292,7 +291,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                             Dot11MacAddressResponse.create(
                                                     s.receiver(),
                                                     nzyme.getOuiService().lookup(s.receiver()).orElse(null),
-                                                    Tools.macAddressIsRandomized(s.receiver()),
+                                                    null,
                                                     receiverMacContext.map(macAddressContextEntry ->
                                                                     Dot11MacAddressContextResponse.create(
                                                                             macAddressContextEntry.name(),

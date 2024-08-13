@@ -93,7 +93,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                     Dot11MacAddressResponse.create(
                             client.bssid(),
                             nzyme.getOuiService().lookup(client.bssid()).orElse(null),
-                            Tools.macAddressIsRandomized(client.clientMac()),
+                            null,
                             clientBssidContext.map(macAddressContextEntry ->
                                             Dot11MacAddressContextResponse.create(
                                                     macAddressContextEntry.name(),

@@ -77,7 +77,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                     Dot11MacAddressResponse.create(
                             bssid.bssid(),
                             nzyme.getOuiService().lookup(bssid.bssid()).orElse(null),
-                            Tools.macAddressIsRandomized(bssid.bssid()),
+                            null,
                             bssidContext.map(macAddressContextEntry ->
                                     Dot11MacAddressContextResponse.create(
                                             macAddressContextEntry.name(),
@@ -126,7 +126,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 Dot11MacAddressResponse.create(
                         bssid.bssid(),
                         nzyme.getOuiService().lookup(bssid.bssid()).orElse(null),
-                        Tools.macAddressIsRandomized(bssid.bssid()),
+                        null,
                         bssidContext.map(macAddressContextEntry ->
                                         Dot11MacAddressContextResponse.create(
                                                 macAddressContextEntry.name(),
@@ -439,7 +439,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 Dot11MacAddressResponse.create(
                         bssid,
                         nzyme.getOuiService().lookup(bssid).orElse(null),
-                        Tools.macAddressIsRandomized(bssid),
+                        null,
                         bssidContext.map(macAddressContextEntry ->
                                         Dot11MacAddressContextResponse.create(
                                                 macAddressContextEntry.name(),

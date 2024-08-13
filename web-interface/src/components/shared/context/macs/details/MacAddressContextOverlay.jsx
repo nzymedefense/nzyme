@@ -101,7 +101,7 @@ function MacAddressContextOverlay(props) {
             <dt>Is Monitored:</dt>
             <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
             <dt>Is Randomized:</dt>
-            <dd>{isRandomized ? "Yes" : "No"}</dd>
+            <dd>{isRandomized === null ? "n/a" : (isRandomized ? "Yes" : "No")}</dd>
           </dl>
 
           <div className="context-overlay-no-context-controls">
@@ -135,6 +135,8 @@ function MacAddressContextOverlay(props) {
           <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
           <dt>Has Notes:</dt>
           <dd>{ctx.context.notes ? "Yes" : "No"}</dd>
+          <dt>Is Randomized:</dt>
+          <dd>{isRandomized === null ? "n/a" : (isRandomized ? "Yes" : "No")}</dd>
         </dl>
 
         <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid, ctx.context.organization_id, ctx.context.tenant_id)}

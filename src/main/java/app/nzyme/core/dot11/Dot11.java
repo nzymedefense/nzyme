@@ -906,7 +906,7 @@ public class Dot11 {
                         Dot11MacAddressResponse.create(
                                 bssid,
                                 nzyme.getOuiService().lookup(bssid).orElse(null),
-                                Tools.macAddressIsRandomized(bssid),
+                                null,
                                 bssidContext.map(macAddressContextEntry ->
                                                 Dot11MacAddressContextResponse.create(
                                                         macAddressContextEntry.name(),
@@ -1019,7 +1019,7 @@ public class Dot11 {
                     Dot11MacAddressResponse.create(
                             currentlyConnectedBSSID.get(),
                             nzyme.getOuiService().lookup(currentlyConnectedBSSID.get()).orElse(null),
-                            Tools.macAddressIsRandomized(currentlyConnectedBSSID.get()),
+                            null,
                             bssidContext.map(macAddressContextEntry ->
                                             Dot11MacAddressContextResponse.create(
                                                     macAddressContextEntry.name(),
