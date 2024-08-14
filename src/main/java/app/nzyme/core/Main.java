@@ -90,7 +90,7 @@ public class Main {
             LOG.error("Could not read configuration file.", e);
             System.exit(FAILURE);
         }
-
+        
         LOG.info("Performance Configuration: {}", nodeConfiguration.performance());
 
         // Database.

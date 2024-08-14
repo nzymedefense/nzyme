@@ -75,6 +75,7 @@ public class NodeConfigurationLoader {
                 parseCryptoDirectory(),
                 parseSlowQueryLogThreshold(),
                 parseNtpServer(),
+                parseProtocolsConfiguration(),
                 parseConnectUri(),
                 parseConnectSkip(),
                 parsePerformance(),
@@ -107,11 +108,11 @@ public class NodeConfigurationLoader {
     }
 
     @Nullable
-    private String parseConnectUri() {
+    private Optional<String> parseConnectUri() {
         if (general.hasPath(ConfigurationKeys.CONNECT_SERVER)) {
-            return general.getString(ConfigurationKeys.CONNECT_SERVER);
+            return Optional.of(general.getString(ConfigurationKeys.CONNECT_SERVER));
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -125,6 +126,29 @@ public class NodeConfigurationLoader {
 
     private String parseNtpServer() {
         return general.getString(ConfigurationKeys.NTP_SERVER);
+    }
+
+    private Optional<ProtocolsConfiguration> parseProtocolsConfiguration() {
+        if (root.hasPath(ConfigurationKeys.PROTOCOLS)) {
+            Optional<TcpConfiguration> tcp;
+            Config protocols = root.getConfig(ConfigurationKeys.PROTOCOLS);
+
+            if (protocols.hasPath(ConfigurationKeys.TCP)) {
+                Config tcpConfig = protocols.getConfig(ConfigurationKeys.TCP);
+
+                tcp = Optional.of(TcpConfiguration.create(
+                        tcpConfig.hasPath(ConfigurationKeys.TCP_SESSION_TIMEOUT_SECONDS) ?
+                                Optional.of(tcpConfig.getInt(ConfigurationKeys.TCP_SESSION_TIMEOUT_SECONDS))
+                                : Optional.empty()
+                ));
+            } else {
+                tcp = Optional.empty();
+            }
+
+            return Optional.of(ProtocolsConfiguration.create(tcp));
+        } else {
+            return Optional.empty();
+        }
     }
 
     private URI parseRestListenUri() {

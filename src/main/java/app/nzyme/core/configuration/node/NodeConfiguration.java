@@ -1,11 +1,9 @@
 package app.nzyme.core.configuration.node;
 
 import com.google.auto.value.AutoValue;
-import jakarta.annotation.Nullable;
 
 import java.net.URI;
 import java.util.Optional;
-
 
 @AutoValue
 public abstract class NodeConfiguration {
@@ -25,14 +23,15 @@ public abstract class NodeConfiguration {
 
     public abstract String ntpServer();
 
-    @Nullable
-    public abstract String connectApiUri();
+    public abstract Optional<ProtocolsConfiguration> protocols();
+
+    public abstract Optional<String> connectApiUri();
     public abstract boolean connectSkip();
 
     public abstract PerformanceConfiguration performance();
     public abstract MiscConfiguration misc();
 
-    public static NodeConfiguration create(boolean versionchecksEnabled, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, String connectApiUri, boolean connectSkip, PerformanceConfiguration performance, MiscConfiguration misc) {
+    public static NodeConfiguration create(boolean versionchecksEnabled, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, Optional<ProtocolsConfiguration> protocols, Optional<String> connectApiUri, boolean connectSkip, PerformanceConfiguration performance, MiscConfiguration misc) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .databasePath(databasePath)
@@ -42,6 +41,7 @@ public abstract class NodeConfiguration {
                 .cryptoDirectory(cryptoDirectory)
                 .slowQueryLogThreshold(slowQueryLogThreshold)
                 .ntpServer(ntpServer)
+                .protocols(protocols)
                 .connectApiUri(connectApiUri)
                 .connectSkip(connectSkip)
                 .performance(performance)
@@ -71,7 +71,9 @@ public abstract class NodeConfiguration {
 
         public abstract Builder ntpServer(String ntpServer);
 
-        public abstract Builder connectApiUri(String connectApiUri);
+        public abstract Builder protocols(Optional<ProtocolsConfiguration> protocols);
+
+        public abstract Builder connectApiUri(Optional<String> connectApiUri);
 
         public abstract Builder connectSkip(boolean connectSkip);
 

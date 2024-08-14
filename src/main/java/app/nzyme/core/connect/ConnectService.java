@@ -29,10 +29,10 @@ public class ConnectService {
     }
 
     public URI getApiUri() {
-        if (Strings.isNullOrEmpty(nzyme.getConfiguration().connectApiUri())) {
-            return URI.create(DEFAULT_API_URI);
+        if (nzyme.getConfiguration().connectApiUri().isPresent()) {
+            return URI.create(nzyme.getConfiguration().connectApiUri().get());
         } else {
-            return URI.create(nzyme.getConfiguration().connectApiUri());
+            return URI.create(DEFAULT_API_URI);
         }
     }
 

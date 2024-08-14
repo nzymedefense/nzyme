@@ -38,6 +38,9 @@ public class ConfigurationKeys {
     public static final String CUSTOM_FAVICON_URL = "custom_favicon_url";
     public static final String CONNECT_SERVER = "connect_server";
     public static final String CONNECT_SKIP = "connect_skip";
+    public static final String PROTOCOLS = "protocols";
+    public static final String TCP = "tcp";
+    public static final String TCP_SESSION_TIMEOUT_SECONDS = "session_timeout_seconds";
 
 
 }

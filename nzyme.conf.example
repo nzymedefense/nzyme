@@ -41,6 +41,12 @@ performance: {
   report_processor_pool_size: 3
 }
 
+protocols: {
+    tcp: {
+      session_timeout_seconds: 43200
+    }
+}
+
 # Miscellaneous.
 misc: {
   # Custom web interface browser title.
