@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import AppliedFilterList from "./AppliedFilterList";
 import FilterValueInput from "./FilterValueInput";
 import validateStringNotEmpty from "./validators/StringNotEmptyValidator";
@@ -7,6 +7,7 @@ import validateIPAddressValid from "./validators/IPAddressValidator";
 import validatePortNumberValid from "./validators/PortNumberValidator";
 import validateDNSDataTypeValid from "./validators/DNSTypeValidator";
 import validateCIDRValid from "./validators/CIDRValidator";
+import {useNavigate} from "react-router-dom";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -145,9 +146,13 @@ export const OPERATORS = {
 
 export default function Filters(props) {
 
+  const navigate = useNavigate();
+
   const fields = props.fields;
   const filters = props.filters ? props.filters : {};
   const setFilters = props.setFilters;
+
+  const previousFiltersRef = useRef(null);
 
   const hideAppliedFilters = props.hideAppliedFilters === undefined || props.hideAppliedFilters === null ? false : props.hideAppliedFilters;
   const preSelectedField = props.preSelectedField;
@@ -262,6 +267,22 @@ export default function Filters(props) {
       setFilterValue(preSelectedValue);
     }
   }, [preSelectedField, preSelectedValue]);
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const currentFilters = queryParams.get('filters');
+
+    // Stringify the filters object for comparison
+    const filtersString = JSON.stringify(filters);
+
+    if (previousFiltersRef.current !== filtersString) {
+      previousFiltersRef.current = filtersString;
+      if (currentFilters !== filtersString) {
+        queryParams.set("filters", filtersString);
+        navigate({ search: queryParams.toString() });
+      }
+    }
+  }, [filters, navigate]);
 
   const validate = () => {
     // Potential operator validators have priority over filter validators.

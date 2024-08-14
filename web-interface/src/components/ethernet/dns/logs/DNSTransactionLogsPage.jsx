@@ -22,8 +22,20 @@ export default function DNSTransactionLogsPage() {
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
 
+  let filtersJson;
+  try {
+    if (urlQuery.get("filters")) {
+      filtersJson = JSON.parse(urlQuery.get("filters"));
+    } else {
+      filtersJson = null;
+    }
+  } catch (error) {
+    console.error("Failed to parse filter URL parameter JSON.");
+    filtersJson = null;
+  }
+
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
-  const [filters, setFilters] = useState(urlQuery.get("filters") ? JSON.parse(urlQuery.get("filters")) : null);
+  const [filters, setFilters] = useState(filtersJson);
   const [revision, setRevision] = useState(new Date());
 
   useEffect(() => {
