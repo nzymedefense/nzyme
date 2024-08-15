@@ -53,7 +53,9 @@ export default function ConnectPage() {
 
                 <p className="mb-0">
                   You can get your free API key
-                  at <a href="https://connect.nzyme.org/" target="_blank">https://connect.nzyme.org/</a>.
+                  at <a href="https://connect.nzyme.org/" target="_blank">https://connect.nzyme.org/</a>. Please refer
+                  to the <a href="https://connect.nzyme.org/faq" target="_blank">frequently asked questions</a> to
+                  learn more.
                 </p>
               </div>
             </div>
