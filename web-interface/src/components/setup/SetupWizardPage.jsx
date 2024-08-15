@@ -6,8 +6,9 @@ import AuthenticationManagementService from "../../services/AuthenticationManage
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
-function SetupWizardPage() {
+function SetupWizardPage(props) {
 
+  const onActionCompleted = props.onActionCompleted;
   const [errorMessage, setErrorMessage] = useState(null);
 
   const onCreateUserClick = function (email, password, name, callback) {
@@ -15,6 +16,7 @@ function SetupWizardPage() {
       // Success.
       notify.show('First Super Administrator created. Please log in.', 'success');
       callback();
+      onActionCompleted();
     }, function (error) {
       // Error.
       setErrorMessage(error.response.data.message);

@@ -247,7 +247,7 @@ function App() {
 
           <Notifications/>
 
-          <SetupWizardPage />
+          <SetupWizardPage onActionCompleted={() => setRevision(new Date())} />
         </div>
     )
   }
@@ -259,7 +259,7 @@ function App() {
           <DarkMode enabled={false} />
 
           <Notifications/>
-          <LoginPage customImage={nzymeInformation.login_image} onActionCompleted={() => setRevision(new Date())}/>
+          <LoginPage customImage={nzymeInformation.login_image} onActionCompleted={() => setRevision(new Date())} />
         </div>
     )
   } else {
