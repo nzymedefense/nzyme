@@ -98,9 +98,14 @@ export function arraysAreEqual(a, b) {
   return true
 }
 
-export function calculateConnectionDuration(connectionStatus, establishedAt, terminatedAt) {
+export function calculateConnectionDuration(connectionStatus, establishedAt, terminatedAt, mostRecentSegmentTime) {
   let endTime;
   if (connectionStatus === "Inactive") {
+    if (!terminatedAt) {
+      // Timed out. Never recorded a termination time.
+      return "n/a (Last Segment: " + moment(mostRecentSegmentTime).format() + ")";
+    }
+
     endTime = moment(terminatedAt);
   } else {
     endTime = moment(new Date());

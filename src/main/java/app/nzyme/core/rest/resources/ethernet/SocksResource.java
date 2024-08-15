@@ -69,7 +69,8 @@ public class SocksResource extends TapDataHandlingResource {
                     t.socksType(),
                     t.authenticationStatus(),
                     t.handshakeStatus(),
-                    t.connectionStatus(),
+                    tcpSession.map(tcpSessionEntry -> RestHelpers.tcpSessionStateToGeneric(tcpSessionEntry.state()))
+                            .orElse("Invalid"),
                     t.username(),
                     t.tunneledBytes(),
                     t.tunneledDestinationAddress(),

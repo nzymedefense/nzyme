@@ -2,6 +2,7 @@ package app.nzyme.core.rest;
 
 import app.nzyme.core.ethernet.L4AddressData;
 import app.nzyme.core.ethernet.L4Type;
+import app.nzyme.core.ethernet.tcp.TcpSessionState;
 import app.nzyme.core.rest.responses.ethernet.L4AddressAttributesResponse;
 import app.nzyme.core.rest.responses.ethernet.L4AddressGeoResponse;
 import app.nzyme.core.rest.responses.ethernet.L4AddressResponse;
@@ -64,4 +65,22 @@ public class RestHelpers {
         );
     }
 
+    public static String tcpSessionStateToGeneric(TcpSessionState state) {
+        switch (state) {
+            case SYNSENT:
+            case SYNRECEIVED:
+            case ESTABLISHED:
+            case FINWAIT1:
+            case FINWAIT2:
+                return "Active";
+            case CLOSEDFIN:
+            case CLOSEDRST:
+            case REFUSED:
+            case CLOSEDTIMEOUT:
+            case CLOSEDTIMEOUTNODE:
+                return "Inactive";
+        }
+
+        return "Invalid";
+    }
 }

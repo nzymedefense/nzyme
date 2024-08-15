@@ -24,7 +24,7 @@ export default function SSHSessionsTableRow(props) {
         </td>
         <td><GenericConnectionStatus status={session.connection_status}/></td>
         <td>{numeral(session.tunneled_bytes).format("0,0b")}</td>
-        <td>{calculateConnectionDuration(session.connection_status, session.established_at, session.terminated_at)}</td>
+        <td>{calculateConnectionDuration(session.connection_status, session.established_at, session.terminated_at, session.most_recent_segment_time)}</td>
         <td>{moment(session.established_at).format()}</td>
         <td>{session.terminated_at ? moment(session.terminated_at).format() :
             <span className="text-muted">n/a</span>}</td>

@@ -76,7 +76,8 @@ public class SSHResource extends TapDataHandlingResource {
                             s.serverVersionSoftware(),
                             s.serverVersionComments()
                     ),
-                    s.connectionStatus(),
+                    tcpSession.map(tcpSessionEntry -> RestHelpers.tcpSessionStateToGeneric(tcpSessionEntry.state()))
+                            .orElse("Invalid"),
                     s.tunneledBytes(),
                     s.establishedAt(),
                     s.terminatedAt(),
