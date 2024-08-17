@@ -22,9 +22,8 @@ export default function DNSEntropyLogTableRow(props) {
       <React.Fragment>
         <tr>
           <td>
-            <a href="#">
-              <DNSData value={log.query.data_value}/>
-            </a>&nbsp;&nbsp;
+            <DNSData value={log.query.data_value}/>
+            &nbsp;&nbsp;
 
             <a href="#" title="Show Responses" onClick={toggleVisibility}>
               <i className="fa-solid fa-chevron-down"></i>
@@ -41,7 +40,9 @@ export default function DNSEntropyLogTableRow(props) {
           <td title={log.zscore}>{numeral(log.zscore).format("0,0.0")}</td>
         </tr>
 
-        <DNSLogResponseTable responses={log.responses} show={showResponses}/>
+        <DNSLogResponseTable transactionId={log.query.transaction_id}
+                             transactionTimestamp={log.query.timestamp}
+                             show={showResponses}/>
       </React.Fragment>
   )
 

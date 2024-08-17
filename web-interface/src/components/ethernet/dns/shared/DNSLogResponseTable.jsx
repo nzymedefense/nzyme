@@ -64,7 +64,7 @@ export default function DNSLogResponseTable(props) {
               return (
                   <tr key={i}>
                     <td>{response.data_type}</td>
-                    <td title={response.data_value}><a href="#"><DNSData value={response.data_value}/></a></td>
+                    <td title={response.data_value}><DNSData value={response.data_value}/></td>
                     <td title={response.data_value_etld}><ETLD etld={response.data_value_etld}/></td>
                   </tr>
               )

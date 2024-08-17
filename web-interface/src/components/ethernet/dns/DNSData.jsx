@@ -1,5 +1,4 @@
 import React from "react";
-import {truncate} from "../../../util/Tools";
 import HostnameLink from "../shared/HostnameLink";
 
 export default function DNSData(props) {
