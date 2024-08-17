@@ -1798,8 +1798,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         try {
             /*
              * Set the limit to 5MB plus 1 byte. If it fills this entirely, a file too large was uploaded.
-             * This will also be handled in the HTTP server itself and this additional method here only adds to it in
-             * case a configuration change is made to the server.
+             * Another, larger limit is handled by our HTTP server itself.
              */
             planBytes = ByteStreams.limit(planFile, 5242881).readAllBytes();
         } catch (IOException e) {

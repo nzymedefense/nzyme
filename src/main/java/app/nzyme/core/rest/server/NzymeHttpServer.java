@@ -206,8 +206,13 @@ public class NzymeHttpServer {
         compressionConfig.setCompressionMinSize(1);
         compressionConfig.setCompressibleMimeTypes();
 
-        final NetworkListener listener = server.getListener("grizzly");
-        server.getServerConfiguration().setMaxPostSize(10485760); // 10 MB.
+        // Max POST size. This is important for tap reports. A too low value will lead to HTTP 413 Payload Too Large.
+        int maxPostSize = nzyme.getConfiguration().httpMaxPostSize().orElse(52428800); // Default: 50 MB
+        if (maxPostSize < 5242880) { // Must be at least 5MB (for floor plan upload);
+            maxPostSize = 5242880;
+        }
+        server.getServerConfiguration().setMaxPostSize(maxPostSize);
+        LOG.info("Configuring web server with a max POST size of <{} byte>.", maxPostSize);
 
         // Start server.
         try {

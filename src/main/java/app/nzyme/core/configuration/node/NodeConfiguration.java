@@ -14,6 +14,7 @@ public abstract class NodeConfiguration {
 
     public abstract URI restListenUri();
     public abstract URI httpExternalUri();
+    public abstract Optional<Integer> httpMaxPostSize();
 
     public abstract String pluginDirectory();
 
@@ -31,12 +32,13 @@ public abstract class NodeConfiguration {
     public abstract PerformanceConfiguration performance();
     public abstract MiscConfiguration misc();
 
-    public static NodeConfiguration create(boolean versionchecksEnabled, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, Optional<ProtocolsConfiguration> protocols, Optional<String> connectApiUri, boolean connectSkip, PerformanceConfiguration performance, MiscConfiguration misc) {
+    public static NodeConfiguration create(boolean versionchecksEnabled, String databasePath, URI restListenUri, URI httpExternalUri, Optional<Integer> httpMaxPostSize, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, Optional<ProtocolsConfiguration> protocols, Optional<String> connectApiUri, boolean connectSkip, PerformanceConfiguration performance, MiscConfiguration misc) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .databasePath(databasePath)
                 .restListenUri(restListenUri)
                 .httpExternalUri(httpExternalUri)
+                .httpMaxPostSize(httpMaxPostSize)
                 .pluginDirectory(pluginDirectory)
                 .cryptoDirectory(cryptoDirectory)
                 .slowQueryLogThreshold(slowQueryLogThreshold)
@@ -62,6 +64,8 @@ public abstract class NodeConfiguration {
         public abstract Builder restListenUri(URI restListenUri);
 
         public abstract Builder httpExternalUri(URI httpExternalUri);
+
+        public abstract Builder httpMaxPostSize(Optional<Integer> httpMaxPostSize);
 
         public abstract Builder pluginDirectory(String pluginDirectory);
 

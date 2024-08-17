@@ -71,6 +71,7 @@ public class NodeConfigurationLoader {
                 parseDatabasePath(),
                 parseRestListenUri(),
                 parseHttpExternalUri(),
+                parseHttpMaxPostSize(),
                 parsePluginDirectory(),
                 parseCryptoDirectory(),
                 parseSlowQueryLogThreshold(),
@@ -157,6 +158,14 @@ public class NodeConfigurationLoader {
 
     private URI parseHttpExternalUri() {
         return URI.create(interfaces.getString(ConfigurationKeys.HTTP_EXTERNAL_URI));
+    }
+
+    private Optional<Integer> parseHttpMaxPostSize() {
+        if (interfaces.hasPath(ConfigurationKeys.HTTP_MAX_POST_SIZE)) {
+            return Optional.of(interfaces.getInt(ConfigurationKeys.HTTP_MAX_POST_SIZE));
+        } else {
+            return Optional.empty();
+        }
     }
 
     private PerformanceConfiguration parsePerformance() {

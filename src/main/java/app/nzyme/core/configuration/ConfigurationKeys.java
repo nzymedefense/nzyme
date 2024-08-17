@@ -30,6 +30,7 @@ public class ConfigurationKeys {
     public static final String VERSIONCHECKS = "versionchecks";
     public static final String REST_LISTEN_URI = "rest_listen_uri";
     public static final String HTTP_EXTERNAL_URI = "http_external_uri";
+    public static final String HTTP_MAX_POST_SIZE = "http_max_post_size";
     public static final String SLOW_QUERY_LOG_THRESHOLD = "slow_query_log_threshold";
     public static final String PERFORMANCE = "performance";
     public static final String REPORT_PROCESSOR_POOL_SIZE = "report_processor_pool_size";
@@ -41,6 +42,5 @@ public class ConfigurationKeys {
     public static final String PROTOCOLS = "protocols";
     public static final String TCP = "tcp";
     public static final String TCP_SESSION_TIMEOUT_SECONDS = "session_timeout_seconds";
-
 
 }
