@@ -70,7 +70,7 @@ function DNSOverviewPage () {
         </div>
 
         <div className="row mt-3">
-          <DNSNumbers/>
+          <DNSNumbers />
         </div>
 
         <div className="row mt-3">
@@ -106,6 +106,7 @@ function DNSOverviewPage () {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="NXDOMAIN Responses"
+                                       helpLink="https://go.nzyme.org/ethernet-dns-nxdomain"
                                        timeRange={nxdomainStatsTimeRange}
                                        setTimeRange={setNxdomainStatsTimeRange}/>
 
@@ -135,6 +136,7 @@ function DNSOverviewPage () {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="DNS Transactions with Entropy Outliers"
+                                       helpLink="https://go.nzyme.org/ethernet-dns-entropy"
                                        timeRange={entropyLogTimeRange}
                                        setTimeRange={setEntropyLogTimeRange}/>
 

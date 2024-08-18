@@ -53,6 +53,7 @@ export default function DNSNumbers() {
 
             <div className="col-md-4">
                 <NumberCard title="NXDOMAIN Answers"
+                            helpLink="https://go.nzyme.org/ethernet-dns-nxdomain"
                             setTimeRange={setNxdomainsTimeRange}
                             timeRange={nxdomainsTimeRange}
                             value={nxdomains} />

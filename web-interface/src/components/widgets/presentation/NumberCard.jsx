@@ -9,6 +9,7 @@ function NumberCard (props) {
   const title = props.title;
   const value = props.value;
   const numberFormat = props.numberFormat;
+  const helpLink = props.helpLink;
 
   const timeRange = props.timeRange;
   const setTimeRange = props.setTimeRange;
@@ -26,6 +27,7 @@ function NumberCard (props) {
       <div className="card">
         <div className="card-body card-number">
           <CardTitleWithControls title={title}
+                                 helpLink={helpLink}
                                  slim={true}
                                  timeRange={timeRange}
                                  setTimeRange={setTimeRange}

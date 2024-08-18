@@ -23,6 +23,7 @@ export default function TunnelsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="SOCKS Tunnels"
+                                       helpLink="https://go.nzyme.org/ethernet-socks"
                                        timeRange={socksTunnelsTimeRange}
                                        setTimeRange={setSocksTunnelsTimeRange}/>
 

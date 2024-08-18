@@ -23,6 +23,7 @@ export default function RemoteAccessPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="SSH Sessions"
+                                       helpLink="https://go.nzyme.org/ethernet-ssh"
                                        timeRange={sshSessionsTimeRange}
                                        setTimeRange={setSshSessionsTimeRange}/>
 
