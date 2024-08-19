@@ -34,8 +34,6 @@ import java.util.UUID;
 @RESTSecured(PermissionLevel.ANY)
 public class BluetoothDevicesResource extends TapDataHandlingResource {
 
-    private static final Logger LOG = LogManager.getLogger(BluetoothDevicesResource.class);
-
     @Inject
     private NzymeNode nzyme;
 
@@ -70,6 +68,7 @@ public class BluetoothDevicesResource extends TapDataHandlingResource {
                     dev.averageRssi(),
                     companies,
                     deviceClasses,
+                    dev.discoveredServices(),
                     dev.firstSeen(),
                     dev.lastSeen()
             ));

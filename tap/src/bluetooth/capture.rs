@@ -7,7 +7,7 @@ use anyhow::{Context, Error};
 use chrono::Utc;
 use dbus::arg;
 use dbus::arg::{RefArg, Variant};
-use dbus::blocking::Connection;
+use dbus::blocking::{Connection};
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use log::{debug, error, info, warn};
 use crate::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
@@ -105,7 +105,7 @@ impl Capture {
             .context("Could not start discovery")?;
 
         // Sleep to allow discovery.
-        std::thread::sleep(Duration::from_secs(self.configuration.discovery_period_seconds as u64));
+        sleep(Duration::from_secs(self.configuration.discovery_period_seconds as u64));
 
         // Access the object manager to list all devices
         let obj_manager_path = "/";
@@ -157,7 +157,7 @@ impl Capture {
                     } else {
                         (None, None)
                     };
-
+                    
                     discovered.insert(mac.clone(), BluetoothDeviceAdvertisement {
                         mac,
                         name,

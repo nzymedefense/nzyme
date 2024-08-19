@@ -26,12 +26,14 @@ public abstract class BluetoothDeviceSummaryDetailsResponse {
 
     @JsonProperty("average_rssi")
     public abstract double averageRssi();
-
     @JsonProperty("companies")
     public abstract List<String> companies();
 
     @JsonProperty("device_classes")
     public abstract List<String> classes();
+
+    @JsonProperty("discovered_services")
+    public abstract List<String> discoveredServices();
 
     @JsonProperty("first_seen")
     public abstract DateTime firstSeen();
@@ -39,7 +41,7 @@ public abstract class BluetoothDeviceSummaryDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static BluetoothDeviceSummaryDetailsResponse create(String mac, List<String> aliases, List<String> devices, List<String> transports, List<String> names, double averageRssi, List<String> companies, List<String> classes, DateTime firstSeen, DateTime lastSeen) {
+    public static BluetoothDeviceSummaryDetailsResponse create(String mac, List<String> aliases, List<String> devices, List<String> transports, List<String> names, double averageRssi, List<String> companies, List<String> classes, List<String> discoveredServices, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .mac(mac)
                 .aliases(aliases)
@@ -49,6 +51,7 @@ public abstract class BluetoothDeviceSummaryDetailsResponse {
                 .averageRssi(averageRssi)
                 .companies(companies)
                 .classes(classes)
+                .discoveredServices(discoveredServices)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .build();
@@ -75,6 +78,8 @@ public abstract class BluetoothDeviceSummaryDetailsResponse {
         public abstract Builder companies(List<String> companies);
 
         public abstract Builder classes(List<String> classes);
+
+        public abstract Builder discoveredServices(List<String> discoveredServices);
 
         public abstract Builder firstSeen(DateTime firstSeen);
 

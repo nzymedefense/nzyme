@@ -1,5 +1,6 @@
 package app.nzyme.core.tables.bluetooth;
 
+import app.nzyme.core.bluetooth.db.BluetoothServiceUuidJson;
 import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDeviceReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDevicesReport;
 import app.nzyme.core.tables.DataTable;
@@ -9,6 +10,7 @@ import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
@@ -16,6 +18,7 @@ import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class BluetoothTable implements DataTable {
@@ -50,11 +53,32 @@ public class BluetoothTable implements DataTable {
                 ":alias, :device, :transport, :name, :rssi, :company_id, :class_number, :appearance, :modalias, " +
                 ":tx_power, :manufacturer_data, :uuids, :service_data, :last_seen, NOW())");
 
+
         for (BluetoothDeviceReport device : devices) {
+            List<BluetoothServiceUuidJson> serviceUuids = Lists.newArrayList();
+            if (device.uuids() != null) {
+                for (String uuid : device.uuids()) {
+                    try {
+                        serviceUuids.add(BluetoothServiceUuidJson.create(
+                                uuid,
+                                tablesService.getNzyme().getBluetoothSigService()
+                                        .lookupServiceUuid(extract16BitUuid(uuid))
+                                        .orElse(null)
+                        ));
+                    } catch(InvalidBluetoothUuidException e) {
+                        LOG.debug("Could not build Bluetooth Service UUID from UUID [{}] for MAC [{}]. " +
+                                "Skipping.", uuid, device.mac(), e);
+                    }
+                }
+            }
+
             String uuids = null;
             String serviceData = null;
             try {
-                uuids = om.writeValueAsString(device.uuids());
+                // Service UUIDs.
+                if (!serviceUuids.isEmpty()) {
+                    uuids = om.writeValueAsString(serviceUuids);
+                }
                 serviceData = om.writeValueAsString(device.serviceData());
             } catch (JsonProcessingException e) {
                 LOG.warn("Could not serialize Bluetooth device data. Skipping attributes.", e);
@@ -62,10 +86,8 @@ public class BluetoothTable implements DataTable {
 
             if (device.rssi() == null || device.rssi() == 0) {
                 /*
-                 * Sometimes devices are reported as a 0 RSSI. This appears to be related to previously paired
-                 * devices not in range or powered off still being reported.
+                 * Sometimes devices are reported as a 0 RSSI. Those are usually currently paired devices.
                  */
-
                 continue;
             }
 
@@ -93,9 +115,33 @@ public class BluetoothTable implements DataTable {
         batch.execute();
     }
 
+    private static String extract16BitUuid(String uuidStr) throws InvalidBluetoothUuidException {
+        if (uuidStr == null || uuidStr.isEmpty()) {
+            throw new InvalidBluetoothUuidException("UUID is null or empty");
+        }
+
+        uuidStr = uuidStr.toUpperCase();
+
+        // Confirm it's a valid UUID
+        try {
+            UUID.fromString(uuidStr);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidBluetoothUuidException("Not a valid UUID");
+        }
+
+        // Extract the first 4 characters from the UUID string (the 16-bit UUID part)
+        return uuidStr.substring(0, 8).replace("0000", "0x");
+    }
+
     @Override
     public void retentionClean() {
         throw new RuntimeException("Not Implemented.");
+    }
+
+    public static final class InvalidBluetoothUuidException extends Exception {
+        public InvalidBluetoothUuidException(String msg) {
+            super(msg);
+        }
     }
 
 }

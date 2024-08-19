@@ -48,6 +48,7 @@ public class Bluetooth {
                                 "ARRAY_AGG(DISTINCT(COALESCE(d.name, 'None'))) AS names, " +
                                 "AVG(d.rssi) AS average_rssi, " +
                                 "ARRAY_AGG(DISTINCT(COALESCE(d.company_id, 0))) AS company_ids, " +
+                                "ARRAY_AGG(DISTINCT(COALESCE(d.uuids, '[]'))) AS service_uuids, " +
                                 "ARRAY_AGG(DISTINCT(COALESCE(d.class_number, 0))) AS class_numbers, " +
                                 "MAX(d.last_seen) AS first_seen, MAX(d.last_seen) AS last_seen " +
                                 "FROM bluetooth_devices AS d " +

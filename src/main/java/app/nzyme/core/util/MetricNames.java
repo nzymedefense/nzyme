@@ -38,6 +38,7 @@ public class MetricNames {
 
     public static final String OUI_LOOKUP_TIMING = name(OuiService.class, "lookup-timing");
     public static final String BTSIG_CID_LOOKUP_TIMING = name(BluetoothSigService.class, "company-id-lookup-timing");
+    public static final String BTSIG_SUUID_LOOKUP_TIMING = name(BluetoothSigService.class, "service-uuid-lookup-timing");
     public static final String DATABASE_SIZE = name(DatabaseImpl.class, "size");
     public static final String GEOIP_CACHE_SIZE = name(GeoIpService.class, "cache-size");
     public static final String GEOIP_LOOKUP_TIMING_UNCACHED = name(GeoIpService.class, "lookup-timing-uncached");

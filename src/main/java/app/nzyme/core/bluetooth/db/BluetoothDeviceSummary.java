@@ -16,10 +16,11 @@ public abstract class BluetoothDeviceSummary {
     public abstract double averageRssi();
     public abstract List<Integer> companyIds();
     public abstract List<Integer> classNumbers();
+    public abstract List<String> discoveredServices();
     public abstract DateTime firstSeen();
     public abstract DateTime lastSeen();
 
-    public static BluetoothDeviceSummary create(String mac, List<String> aliases, List<String> devices, List<String> transports, List<String> names, double averageRssi, List<Integer> companyIds, List<Integer> classNumbers, DateTime firstSeen, DateTime lastSeen) {
+    public static BluetoothDeviceSummary create(String mac, List<String> aliases, List<String> devices, List<String> transports, List<String> names, double averageRssi, List<Integer> companyIds, List<Integer> classNumbers, List<String> discoveredServices, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .mac(mac)
                 .aliases(aliases)
@@ -29,6 +30,7 @@ public abstract class BluetoothDeviceSummary {
                 .averageRssi(averageRssi)
                 .companyIds(companyIds)
                 .classNumbers(classNumbers)
+                .discoveredServices(discoveredServices)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .build();
@@ -55,6 +57,8 @@ public abstract class BluetoothDeviceSummary {
         public abstract Builder companyIds(List<Integer> companyIds);
 
         public abstract Builder classNumbers(List<Integer> classNumbers);
+
+        public abstract Builder discoveredServices(List<String> discoveredServices);
 
         public abstract Builder firstSeen(DateTime firstSeen);
 

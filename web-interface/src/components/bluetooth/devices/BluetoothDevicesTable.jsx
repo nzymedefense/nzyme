@@ -6,6 +6,7 @@ import MacAddress from "../../shared/context/macs/MacAddress";
 import SignalStrength from "../../dot11/util/SignalStrength";
 import {TapContext} from "../../../App";
 import GroupedParameterList from "../../shared/GroupedParameterList";
+import numeral from "numeral";
 
 export default function BluetoothDevicesTable(props) {
 
@@ -52,6 +53,7 @@ export default function BluetoothDevicesTable(props) {
             <th>Transport</th>
             <th>Name</th>
             <th>Class</th>
+            <th>Services</th>
             <th>Last Seen</th>
           </tr>
           </thead>
@@ -67,6 +69,7 @@ export default function BluetoothDevicesTable(props) {
                   <td><GroupedParameterList list={d.transports} valueTransform={transformTransport} /></td>
                   <td><GroupedParameterList list={d.names} /></td>
                   <td><GroupedParameterList list={d.device_classes} /></td>
+                  <td>{numeral(d.discovered_services.length).format("0,0")}</td>
                   <td>{moment(d.last_seen).fromNow()}</td>
                 </tr>
             )

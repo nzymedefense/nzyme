@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use log::error;
+use bitvec::order::Msb0;
+use bitvec::view::BitView;
+use log::{error, info};
 use crate::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
+use crate::bluetooth::detection::device_tagger::tag_device_advertisement;
 use crate::bluetooth::tables::bluetooth_device::BluetoothDevice;
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::bluetooth_devices_report;
@@ -24,6 +27,12 @@ impl BluetoothTable {
     }
 
     pub fn register_device_advertisement(&self, advertisement: Arc<BluetoothDeviceAdvertisement>) {
+        if advertisement.rssi.is_none() {
+            return
+        }
+
+        tag_device_advertisement(&advertisement);
+
         match self.devices.lock() {
             Ok(mut devices) => {
                 match devices.get_mut(&advertisement.mac) {

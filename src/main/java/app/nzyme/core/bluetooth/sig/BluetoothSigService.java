@@ -29,19 +29,24 @@ public class BluetoothSigService {
     private static final Logger LOG = LogManager.getLogger(BluetoothSigService.class);
 
     private final NzymeNode nzyme;
-    private final Timer lookupTimer;
+    private final Timer companyIdLookupTimer;
+    private final Timer serviceUuidLookupTimer;
 
     private final ScheduledExecutorService refresher;
 
     private final ReentrantLock lock = new ReentrantLock();
     private Map<Integer, String> companyIds;
+    private Map<String, String> serviceUuids;
 
     // Can be disabled if Connect is not set up or BT SIG data source is not enabled in Connect.
     private boolean isEnabled = false;
 
     public BluetoothSigService(NzymeNode nzyme) {
         this.nzyme = nzyme;
-        this.lookupTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.BTSIG_CID_LOOKUP_TIMING));
+        this.companyIdLookupTimer = nzyme.getMetrics()
+                .timer(MetricRegistry.name(MetricNames.BTSIG_CID_LOOKUP_TIMING));
+        this.serviceUuidLookupTimer = nzyme.getMetrics()
+                .timer(MetricRegistry.name(MetricNames.BTSIG_SUUID_LOOKUP_TIMING));
 
         // Reload on configuration change.
         nzyme.getRegistryChangeMonitor()
@@ -79,18 +84,20 @@ public class BluetoothSigService {
         lock.lock();
 
         try {
-            Optional<Map<Integer, String>> data = fetchCompanyIdsFromConnect();
+            Optional<Map<Integer, String>> companyIds = fetchCompanyIdsFromConnect();
+            Optional<Map<String, String>> serviceUuids = fetchServiceUuidsFromConnect();
 
-            // Check if BT SIG data was disabled in Connect for this cluster.
-            if (data.isEmpty()) {
+            // Check if BT SIG data was disabled in Connect for this cluster. (It's enough to check for one type)
+            if (companyIds.isEmpty()) {
                 this.isEnabled = false;
                 return;
             }
 
-            this.companyIds = data.get();
+            this.companyIds = companyIds.get();
+            this.serviceUuids = serviceUuids.get();
             this.isEnabled = true;
         } catch (Exception e) {
-            LOG.error("Could not download SIG Company ID data from Connect.", e);
+            LOG.error("Could not download Bluetooth SIG data from Connect.", e);
             this.isEnabled = false;
         } finally {
             lock.unlock();
@@ -102,7 +109,7 @@ public class BluetoothSigService {
             return Optional.empty();
         }
 
-        try(Timer.Context ignored = lookupTimer.time()) {
+        try(Timer.Context ignored = companyIdLookupTimer.time()) {
             lock.lock();
 
             try {
@@ -114,6 +121,22 @@ public class BluetoothSigService {
         }
     }
 
+    public Optional<String> lookupServiceUuid(String uuid) {
+        if (!isEnabled) {
+            return Optional.empty();
+        }
+
+        try(Timer.Context ignored = serviceUuidLookupTimer.time()) {
+            lock.lock();
+
+            try {
+                String name = serviceUuids.get(uuid);
+                return name == null ? Optional.empty() : Optional.of(name);
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
 
     private Optional<Map<Integer, String>> fetchCompanyIdsFromConnect() {
         LOG.debug("Loading new Bluetooth SIG Company IDs from Connect.");
@@ -175,6 +198,70 @@ public class BluetoothSigService {
             }
         } catch (Exception e) {
             LOG.error("Could not download SIG Company ID data from Connect.", e);
+            return Optional.empty();
+        }
+    }
+
+    private Optional<Map<String, String>> fetchServiceUuidsFromConnect() {
+        LOG.debug("Loading new Bluetooth SIG service UUIDs from Connect.");
+
+        try {
+            OkHttpClient c = new OkHttpClient.Builder()
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(15, TimeUnit.SECONDS)
+                    .readTimeout(5, TimeUnit.MINUTES)
+                    .followRedirects(true)
+                    .build();
+
+            HttpUrl url = HttpUrl.get(nzyme.getConnect().getApiUri())
+                    .newBuilder()
+                    .addPathSegment("data")
+                    .addPathSegment("bluetooth")
+                    .addPathSegment("serviceuuids")
+                    .build();
+
+            Response response = c.newCall(new Request.Builder()
+                    .addHeader("User-Agent", "nzyme")
+                    .get()
+                    .url(url)
+                    .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + nzyme.getConnect().getApiKey())
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader(HttpHeaders.USER_AGENT, "nzyme-node")
+                    .build()
+            ).execute();
+
+            try (response) {
+                if (!response.isSuccessful()) {
+                    if (response.code() == 403) {
+                        // BG SIG data disabled in Connect for this cluster.
+                        return Optional.empty();
+                    }
+
+                    throw new RuntimeException("Expected HTTP 200 or 403 but got HTTP " + response.code());
+                }
+
+
+                if (response.body() == null) {
+                    throw new RuntimeException("Empty response.");
+                }
+
+                LOG.debug("Bluetooth SIG service UUID data download from Connect complete.");
+
+                ObjectMapper om = new ObjectMapper();
+                om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                om.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+
+                ConnectServiceUuidListResponse ids = om.readValue(response.body().bytes(), ConnectServiceUuidListResponse.class);
+
+                Map<String, String> table = Maps.newHashMap();
+                for (ConnectServiceUuidResponse id : ids.serviceUuids()) {
+                    table.put(id.uuid(), id.name());
+                }
+
+                return Optional.of(table);
+            }
+        } catch (Exception e) {
+            LOG.error("Could not download SIG service UUID data from Connect.", e);
             return Optional.empty();
         }
     }
