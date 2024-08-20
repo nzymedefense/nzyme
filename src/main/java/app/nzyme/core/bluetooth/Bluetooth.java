@@ -50,8 +50,10 @@ public class Bluetooth {
                                 "ARRAY_AGG(DISTINCT(COALESCE(d.company_id, 0))) AS company_ids, " +
                                 "ARRAY_AGG(DISTINCT(COALESCE(d.uuids, '[]'))) AS service_uuids, " +
                                 "ARRAY_AGG(DISTINCT(COALESCE(d.class_number, 0))) AS class_numbers, " +
+                                "ARRAY_AGG(DISTINCT tag) AS tags, " +
                                 "MAX(d.last_seen) AS first_seen, MAX(d.last_seen) AS last_seen " +
                                 "FROM bluetooth_devices AS d " +
+                                "LEFT JOIN LATERAL (SELECT DISTINCT jsonb_object_keys(d.tags) AS tag) AS ignore ON true " +
                                 "WHERE d.last_seen >= :tr_from AND d.last_seen <= :tr_to AND d.tap_uuid IN (<taps>) " +
                                 "GROUP BY d.mac " +
                                 "ORDER BY average_rssi DESC " +

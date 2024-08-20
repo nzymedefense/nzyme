@@ -35,13 +35,16 @@ public abstract class BluetoothDeviceSummaryDetailsResponse {
     @JsonProperty("discovered_services")
     public abstract List<String> discoveredServices();
 
+    @JsonProperty("tags")
+    public abstract List<String> tags();
+
     @JsonProperty("first_seen")
     public abstract DateTime firstSeen();
 
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static BluetoothDeviceSummaryDetailsResponse create(BluetoothMacAddressResponse mac, List<String> aliases, List<String> devices, List<String> transports, List<String> names, double averageRssi, List<String> companies, List<String> classes, List<String> discoveredServices, DateTime firstSeen, DateTime lastSeen) {
+    public static BluetoothDeviceSummaryDetailsResponse create(BluetoothMacAddressResponse mac, List<String> aliases, List<String> devices, List<String> transports, List<String> names, double averageRssi, List<String> companies, List<String> classes, List<String> discoveredServices, List<String> tags, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .mac(mac)
                 .aliases(aliases)
@@ -52,6 +55,7 @@ public abstract class BluetoothDeviceSummaryDetailsResponse {
                 .companies(companies)
                 .classes(classes)
                 .discoveredServices(discoveredServices)
+                .tags(tags)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .build();
@@ -80,6 +84,8 @@ public abstract class BluetoothDeviceSummaryDetailsResponse {
         public abstract Builder classes(List<String> classes);
 
         public abstract Builder discoveredServices(List<String> discoveredServices);
+
+        public abstract Builder tags(List<String> tags);
 
         public abstract Builder firstSeen(DateTime firstSeen);
 

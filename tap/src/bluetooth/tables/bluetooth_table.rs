@@ -31,7 +31,26 @@ impl BluetoothTable {
             return
         }
 
-        tag_device_advertisement(&advertisement);
+        let tags = tag_device_advertisement(&advertisement);
+
+        let device = BluetoothDevice {
+            mac: advertisement.mac.clone(),
+            name: advertisement.name.clone(),
+            rssi: advertisement.rssi,
+            company_id: advertisement.company_id,
+            alias: advertisement.alias.clone(),
+            class: advertisement.class,
+            appearance: advertisement.appearance,
+            modalias: advertisement.modalias.clone(),
+            tx_power: advertisement.tx_power.clone(),
+            manufacturer_data: advertisement.manufacturer_data.clone(),
+            uuids: advertisement.uuids.clone(),
+            service_data: advertisement.service_data.clone(),
+            device: advertisement.device.clone(),
+            transport: advertisement.transport.clone(),
+            last_seen: advertisement.timestamp,
+            tags
+        };
 
         match self.devices.lock() {
             Ok(mut devices) => {
@@ -42,7 +61,7 @@ impl BluetoothTable {
                     },
                     None => {
                         // New device. Insert.
-                        devices.insert(advertisement.mac.clone(), advertisement.into());
+                        devices.insert(advertisement.mac.clone(), device);
                     }
                 }
             },

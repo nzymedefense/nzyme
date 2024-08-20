@@ -5,7 +5,6 @@ import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDevi
 import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDevicesReport;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
-import app.nzyme.core.tables.ssh.SSHTable;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,12 +17,11 @@ import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public class BluetoothTable implements DataTable {
 
-    private static final Logger LOG = LogManager.getLogger(SSHTable.class);
+    private static final Logger LOG = LogManager.getLogger(BluetoothTable.class);
 
     private final TablesService tablesService;
 
@@ -49,10 +47,9 @@ public class BluetoothTable implements DataTable {
     private void writeDevices(Handle handle, UUID tapUuid, List<BluetoothDeviceReport> devices) {
         PreparedBatch batch = handle.prepareBatch("INSERT INTO bluetooth_devices(uuid, tap_uuid, mac, alias, " +
                 "device, transport, name, rssi, company_id, class_number, appearance, modalias, tx_power, " +
-                "manufacturer_data, uuids, service_data, last_seen, created_at) VALUES(:uuid, :tap_uuid, :mac, " +
+                "manufacturer_data, uuids, service_data, tags, last_seen, created_at) VALUES(:uuid, :tap_uuid, :mac, " +
                 ":alias, :device, :transport, :name, :rssi, :company_id, :class_number, :appearance, :modalias, " +
-                ":tx_power, :manufacturer_data, :uuids, :service_data, :last_seen, NOW())");
-
+                ":tx_power, :manufacturer_data, :uuids, :service_data, :tags::jsonb, :last_seen, NOW())");
 
         for (BluetoothDeviceReport device : devices) {
             List<BluetoothServiceUuidJson> serviceUuids = Lists.newArrayList();
@@ -91,6 +88,19 @@ public class BluetoothTable implements DataTable {
                 continue;
             }
 
+            String tags;
+            if (device.tags() != null) {
+                try {
+                    tags = om.writeValueAsString(device.tags());
+                } catch (JsonProcessingException e) {
+                    LOG.error("Could not write reported tags of Bluetooth device [{}] to JSON. Skipping tags.",
+                            device.mac(), e);
+                    tags = null;
+                }
+            } else {
+                tags = null;
+            }
+
             batch
                     .bind("uuid", UUID.randomUUID())
                     .bind("tap_uuid", tapUuid)
@@ -108,6 +118,7 @@ public class BluetoothTable implements DataTable {
                     .bind("manufacturer_data", device.manufacturerData())
                     .bind("uuids", uuids)
                     .bind("service_data", serviceData)
+                    .bind("tags", tags)
                     .bind("last_seen", device.lastSeen())
                     .add();
         }

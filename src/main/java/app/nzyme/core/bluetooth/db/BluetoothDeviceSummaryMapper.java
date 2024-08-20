@@ -59,6 +59,7 @@ public class BluetoothDeviceSummaryMapper implements RowMapper<BluetoothDeviceSu
                 Lists.newArrayList((Integer[]) rs.getArray("company_ids").getArray()),
                 Lists.newArrayList((Integer[]) rs.getArray("class_numbers").getArray()),
                 serviceUuids,
+                Lists.newArrayList((String[]) rs.getArray("tags").getArray()),
                 new DateTime(rs.getTimestamp("first_seen")),
                 new DateTime(rs.getTimestamp("last_seen"))
         );

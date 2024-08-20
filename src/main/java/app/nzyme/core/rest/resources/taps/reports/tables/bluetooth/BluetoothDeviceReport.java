@@ -7,6 +7,7 @@ import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.Map;
 
 @AutoValue
 public abstract class BluetoothDeviceReport {
@@ -37,6 +38,8 @@ public abstract class BluetoothDeviceReport {
     public abstract List<String> uuids();
     @Nullable
     public abstract List<String> serviceData();
+    @Nullable
+    public abstract Map<String, Map<String, Object>> tags();
 
     @JsonCreator
     public static BluetoothDeviceReport create(@JsonProperty("mac") String mac,
@@ -53,7 +56,8 @@ public abstract class BluetoothDeviceReport {
                                                @JsonProperty("tx_power") Integer txPower,
                                                @JsonProperty("manufacturer_data") String manufacturerData,
                                                @JsonProperty("uuids") List<String> uuids,
-                                               @JsonProperty("service_data") List<String> serviceData) {
+                                               @JsonProperty("service_data") List<String> serviceData,
+                                               @JsonProperty("tags") Map<String, Map<String, Object>> tags) {
         return builder()
                 .mac(mac)
                 .alias(alias)
@@ -70,6 +74,7 @@ public abstract class BluetoothDeviceReport {
                 .manufacturerData(manufacturerData)
                 .uuids(uuids)
                 .serviceData(serviceData)
+                .tags(tags)
                 .build();
     }
 
@@ -108,6 +113,8 @@ public abstract class BluetoothDeviceReport {
         public abstract Builder uuids(List<String> uuids);
 
         public abstract Builder serviceData(List<String> serviceData);
+
+        public abstract Builder tags(Map<String, Map<String, Object>> tags);
 
         public abstract BluetoothDeviceReport build();
     }

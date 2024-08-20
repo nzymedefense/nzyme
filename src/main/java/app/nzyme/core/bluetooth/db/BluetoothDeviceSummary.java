@@ -4,6 +4,7 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.Map;
 
 @AutoValue
 public abstract class BluetoothDeviceSummary {
@@ -17,10 +18,11 @@ public abstract class BluetoothDeviceSummary {
     public abstract List<Integer> companyIds();
     public abstract List<Integer> classNumbers();
     public abstract List<String> discoveredServices();
+    public abstract List<String> tags();
     public abstract DateTime firstSeen();
     public abstract DateTime lastSeen();
 
-    public static BluetoothDeviceSummary create(String mac, List<String> aliases, List<String> devices, List<String> transports, List<String> names, double averageRssi, List<Integer> companyIds, List<Integer> classNumbers, List<String> discoveredServices, DateTime firstSeen, DateTime lastSeen) {
+    public static BluetoothDeviceSummary create(String mac, List<String> aliases, List<String> devices, List<String> transports, List<String> names, double averageRssi, List<Integer> companyIds, List<Integer> classNumbers, List<String> discoveredServices, List<String> tags, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .mac(mac)
                 .aliases(aliases)
@@ -31,6 +33,7 @@ public abstract class BluetoothDeviceSummary {
                 .companyIds(companyIds)
                 .classNumbers(classNumbers)
                 .discoveredServices(discoveredServices)
+                .tags(tags)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .build();
@@ -59,6 +62,8 @@ public abstract class BluetoothDeviceSummary {
         public abstract Builder classNumbers(List<Integer> classNumbers);
 
         public abstract Builder discoveredServices(List<String> discoveredServices);
+
+        public abstract Builder tags(List<String> tags);
 
         public abstract Builder firstSeen(DateTime firstSeen);
 

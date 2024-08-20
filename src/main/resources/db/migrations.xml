@@ -5393,4 +5393,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_tags_too_bluetooth_devices" author="lennartkoopmann">
+        <addColumn tableName="bluetooth_devices">
+            <column name="tags" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+    
 </databaseChangeLog>

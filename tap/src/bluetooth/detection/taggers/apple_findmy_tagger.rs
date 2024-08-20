@@ -1,11 +1,10 @@
-use std::any::Any;
 use std::collections::HashMap;
 use std::sync::Arc;
-use log::info;
 use crate::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
+use crate::bluetooth::detection::device_tagger::TagValue;
 use crate::bluetooth::detection::taggers::tagger_utils;
 
-pub fn tag(advertisement: &Arc<BluetoothDeviceAdvertisement>) -> Option<HashMap<String, Box<dyn Any>>> {
+pub fn tag(advertisement: &Arc<BluetoothDeviceAdvertisement>) -> Option<(String, HashMap<String, TagValue>)> {
     if tagger_utils::mac_is_locally_administered_and_multicast(&advertisement.mac)
         && advertisement.company_id.is_some()
         && advertisement.company_id? == 76
@@ -18,19 +17,28 @@ pub fn tag(advertisement: &Arc<BluetoothDeviceAdvertisement>) -> Option<HashMap<
         }
 
         if payload[0] == 0x07 || payload[0] == 0x12 {
-            let mut parameters: HashMap<String, Box<dyn Any>> = HashMap::new();
+            let mut parameters: HashMap<String, TagValue> = HashMap::new();
 
             let (battery_level, battery_level_string) = status_to_battery_state_description(
                 (payload[2] & 0xF0) >> 4
             );
 
-            parameters.insert("of_type".to_string(), Box::new(payload[0]));
-            parameters.insert("status".to_string(), Box::new(payload[2]));
-            parameters.insert("device_type".to_string(), Box::new(payload[2] & 0x0F));
-            parameters.insert("battery_level".to_string(), Box::new(battery_level));
-            parameters.insert("battery_level_string".to_string(), Box::new(battery_level_string));
+            let is_paired = payload[0] == 0x12;
 
-            Some(parameters)
+            parameters.insert("of_type".to_string(), TagValue::Byte(payload[0]));
+            parameters.insert("status".to_string(), TagValue::Byte(payload[2]));
+            parameters.insert("paired".to_string(), TagValue::Boolean(is_paired));
+            parameters.insert("device_type".to_string(), TagValue::Byte(payload[2] & 0x0F));
+            parameters.insert("battery_level".to_string(), TagValue::Byte(battery_level));
+            parameters.insert("battery_level_string".to_string(),
+                              TagValue::Text(battery_level_string.to_string()));
+
+            let tag = match is_paired  {
+                true => "apple_find_my_paired",
+                false => "apple_find_my_unpaired"
+            }.to_string();
+
+            Some((tag, parameters))
         } else {
             None
         }

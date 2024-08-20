@@ -129,14 +129,19 @@ public class Tools {
             return false;
         }
 
-        if (mac.length() != 17) {
+        if (mac.length() != 17 || !mac.contains(":")) {
             LOG.warn("Passed invalid MAC address [{}]", mac);
             return false;
         }
 
-        char c = mac.toUpperCase().charAt(1);
+        // Extract the first octet of the MAC address
+        String firstOctet = mac.split(":")[0];
 
-        return c == '2' || c == '6' || c == 'A' || c == 'E';
+        // Convert the first octet to an integer
+        int firstOctetInt = Integer.parseInt(firstOctet, 16);
+
+        // Check if the second least significant bit is 1 (i.e., if the address is locally administered)
+        return (firstOctetInt & 0b00000010) != 0;
     }
 
 }

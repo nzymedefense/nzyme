@@ -90,6 +90,7 @@ public class BluetoothDevicesResource extends TapDataHandlingResource {
                     companies,
                     deviceClasses,
                     dev.discoveredServices(),
+                    dev.tags(),
                     dev.firstSeen(),
                     dev.lastSeen()
             ));

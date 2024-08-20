@@ -31,6 +31,14 @@ export default function BluetoothDevicesTable(props) {
     return transport;
   }
 
+  const transformTag = (tag) => {
+    switch (tag) {
+      case "apple_find_my_paired": return "Apple \"Find My\" (Paired)";
+      case "apple_find_my_unpaired": return "Apple \"Find My\" (Unpaired)";
+      default: return tag;
+    }
+  }
+
   if (!devices) {
     return <LoadingSpinner />
   }
@@ -52,10 +60,10 @@ export default function BluetoothDevicesTable(props) {
             <th>OUI</th>
             <th>Manufacturer</th>
             <th>Signal Strength</th>
+            <th>Type</th>
             <th>Transport</th>
             <th>Name</th>
             <th>Class</th>
-            <th>Services</th>
             <th>Last Seen</th>
           </tr>
           </thead>
@@ -69,10 +77,10 @@ export default function BluetoothDevicesTable(props) {
                   <td>{d.mac.oui ? d.mac.oui : <span className="text-muted">Unknown</span>}</td>
                   <td><GroupedParameterList list={d.companies}/></td>
                   <td><SignalStrength strength={d.average_rssi} selectedTapCount={selectedTaps.length}/></td>
+                  <td><GroupedParameterList list={d.tags} valueTransform={transformTag} /></td>
                   <td><GroupedParameterList list={d.transports} valueTransform={transformTransport}/></td>
                   <td><GroupedParameterList list={d.names}/></td>
                   <td><GroupedParameterList list={d.device_classes}/></td>
-                  <td>{numeral(d.discovered_services.length).format("0,0")}</td>
                   <td>{moment(d.last_seen).fromNow()}</td>
                 </tr>
             )
