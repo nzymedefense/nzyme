@@ -1,10 +1,11 @@
 import React, {useState} from "react";
-import MacAddressContextOverlay from "./details/MacAddressContextOverlay";
+import Dot11MacAddressContextOverlay from "./details/Dot11MacAddressContextOverlay";
 import ContextOverlayVisibilityWrapper from "../ContextOverlayVisibilityWrapper";
 import Dot11MacAddressType from "./Dot11MacAddressType";
 
 function MacAddress(props) {
 
+  const overlay = props.overlay ? props.overlay : null;
   const address = props.addressWithContext ? props.addressWithContext.address : props.address;
   const context = props.addressWithContext ? props.addressWithContext.context : null;
   const oui = props.addressWithContext ? props.addressWithContext.oui : null;
@@ -80,7 +81,7 @@ function MacAddress(props) {
 
         <ContextOverlayVisibilityWrapper
             visible={overlayVisible}
-            overlay={<MacAddressContextOverlay address={address} isRandomized={isRandomized} />} />
+            overlay={overlay} />
       </div>
   )
 

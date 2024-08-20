@@ -7,7 +7,9 @@ import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothDeviceSummaryDetailsResponse;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothDeviceSummaryListResponse;
+import app.nzyme.core.rest.responses.bluetooth.BluetoothMacAddressResponse;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -60,7 +62,12 @@ public class BluetoothDevicesResource extends TapDataHandlingResource {
             }
 
             devices.add(BluetoothDeviceSummaryDetailsResponse.create(
-                    dev.mac(),
+                    BluetoothMacAddressResponse.create(
+                            dev.mac(),
+                            nzyme.getOuiService().lookup(dev.mac()).orElse(null),
+                            Tools.macAddressIsRandomized(dev.mac()),
+                            null
+                    ),
                     dev.aliases(),
                     dev.devices(),
                     dev.transports(),

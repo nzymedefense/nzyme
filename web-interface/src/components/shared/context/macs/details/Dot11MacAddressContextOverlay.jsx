@@ -8,7 +8,7 @@ import ContextOwnerInformation from "../../../../context/ContextOwnerInformation
 
 const contextService = new ContextService();
 
-function MacAddressContextOverlay(props) {
+function Dot11MacAddressContextOverlay(props) {
 
   const address = props.address;
   const isRandomized = props.isRandomized;
@@ -100,6 +100,8 @@ function MacAddressContextOverlay(props) {
             <dd>{contextType(ctx.context_type)}</dd>
             <dt>Is Monitored:</dt>
             <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
+            <dt>Has Notes:</dt>
+            <dd>No</dd>
             <dt>Is Randomized:</dt>
             <dd>{isRandomized === null ? "n/a" : (isRandomized ? "Yes" : "No")}</dd>
           </dl>
@@ -151,4 +153,4 @@ function MacAddressContextOverlay(props) {
 
 }
 
-export default MacAddressContextOverlay;
+export default Dot11MacAddressContextOverlay;

@@ -1,8 +1,8 @@
-import React from "react";
 import MacAddress from "./MacAddress";
-import Dot11MacAddressContextOverlay from "./details/Dot11MacAddressContextOverlay";
+import React from "react";
+import BluetoothMacAddressContextOverlay from "./details/BluetoothMacAddressContextOverlay";
 
-function Dot11MacAddress(props) {
+function BluetoothMacAddress(props) {
 
   const address = props.address;
   const addressWithContext = props.addressWithContext;
@@ -18,7 +18,7 @@ function Dot11MacAddress(props) {
       <span className="mac-address">
         <MacAddress address={address}
                     addressWithContext={addressWithContext}
-                    overlay={<Dot11MacAddressContextOverlay
+                    overlay={<BluetoothMacAddressContextOverlay
                         address={addressWithContext ? addressWithContext.address : address}
                         isRandomized={addressWithContext ? addressWithContext.is_randomized : address.is_randomized} />}
                     type={type}
@@ -31,4 +31,4 @@ function Dot11MacAddress(props) {
 
 }
 
-export default Dot11MacAddress;
+export default BluetoothMacAddress;

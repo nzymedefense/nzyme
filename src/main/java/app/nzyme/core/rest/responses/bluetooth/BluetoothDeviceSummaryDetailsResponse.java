@@ -10,7 +10,7 @@ import java.util.List;
 public abstract class BluetoothDeviceSummaryDetailsResponse {
 
     @JsonProperty("mac")
-    public abstract String mac();
+    public abstract BluetoothMacAddressResponse mac();
 
     @JsonProperty("aliases")
     public abstract List<String> aliases();
@@ -41,7 +41,7 @@ public abstract class BluetoothDeviceSummaryDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static BluetoothDeviceSummaryDetailsResponse create(String mac, List<String> aliases, List<String> devices, List<String> transports, List<String> names, double averageRssi, List<String> companies, List<String> classes, List<String> discoveredServices, DateTime firstSeen, DateTime lastSeen) {
+    public static BluetoothDeviceSummaryDetailsResponse create(BluetoothMacAddressResponse mac, List<String> aliases, List<String> devices, List<String> transports, List<String> names, double averageRssi, List<String> companies, List<String> classes, List<String> discoveredServices, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .mac(mac)
                 .aliases(aliases)
@@ -63,7 +63,7 @@ public abstract class BluetoothDeviceSummaryDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder mac(String mac);
+        public abstract Builder mac(BluetoothMacAddressResponse mac);
 
         public abstract Builder aliases(List<String> aliases);
 

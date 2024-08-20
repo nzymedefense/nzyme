@@ -892,7 +892,7 @@ div.context-overlay dd {
 }
 
 div.context-overlay-no-context-controls {
-    margin-top: 30px;
+    margin-top: 10px;
 }
 
 span.context-name {
@@ -908,7 +908,7 @@ div.context-overlay h6 span.context-name {
 div.context-overlay i.context-owner-information {
     cursor: help;
     position: relative;
-    left: 35px;
+    left: 145px;
     top: 5px;
 }
 
