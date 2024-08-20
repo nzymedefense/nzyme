@@ -188,11 +188,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
         );
 
         // Invalidate caches.
-        nzyme.getMessageBus().sendToAllOnlineNodes(ClusterMessage.create(
-                MessageType.INVALIDATE_CACHE,
-                Map.of("cache_type", "context_macs"),
-                false
-        ));
+        invalidateContextCachesClusterWide();
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -218,6 +214,9 @@ public class AssetContextResource extends UserAuthenticatedResource {
                 uuid, organizationId, tenantId, req.name(), req.description(), req.notes()
         );
 
+        // Invalidate caches.
+        invalidateContextCachesClusterWide();
+
         return Response.ok().build();
     }
 
@@ -233,6 +232,9 @@ public class AssetContextResource extends UserAuthenticatedResource {
         }
 
         nzyme.getContextService().deleteMacAddressContext(uuid, organizationId, tenantId);
+
+        // Invalidate caches.
+        invalidateContextCachesClusterWide();
 
         return Response.status(Response.Status.OK).build();
     }
@@ -253,5 +255,12 @@ public class AssetContextResource extends UserAuthenticatedResource {
         );
     }
 
+    private void invalidateContextCachesClusterWide() {
+        nzyme.getMessageBus().sendToAllOnlineNodes(ClusterMessage.create(
+                MessageType.INVALIDATE_CACHE,
+                Map.of("cache_type", "context_macs"),
+                false
+        ));
+    }
 
 }
