@@ -3,11 +3,14 @@ package app.nzyme.core.rest.resources.bluetooth;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.bluetooth.db.BluetoothDeviceSummary;
 import app.nzyme.core.bluetooth.sig.BluetoothDeviceClass;
+import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothDeviceSummaryDetailsResponse;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothDeviceSummaryListResponse;
+import app.nzyme.core.rest.responses.bluetooth.BluetoothMacAddressContextResponse;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothMacAddressResponse;
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -53,6 +56,12 @@ public class BluetoothDevicesResource extends TapDataHandlingResource {
 
         List<BluetoothDeviceSummaryDetailsResponse> devices = Lists.newArrayList();
         for (BluetoothDeviceSummary dev : nzyme.getBluetooth().findAllDevices(timeRange, limit, offset, tapUuids)) {
+            Optional<MacAddressContextEntry> deviceContext = nzyme.getContextService().findMacAddressContext(
+                    dev.mac(),
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
+            );
+
             List<String> deviceClasses = buildDeviceClasses(dev);
 
             List<String> companies = Lists.newArrayList();
@@ -66,7 +75,12 @@ public class BluetoothDevicesResource extends TapDataHandlingResource {
                             dev.mac(),
                             nzyme.getOuiService().lookup(dev.mac()).orElse(null),
                             Tools.macAddressIsRandomized(dev.mac()),
-                            null
+                            deviceContext.map(macAddressContextEntry ->
+                                            BluetoothMacAddressContextResponse.create(
+                                                    macAddressContextEntry.name(),
+                                                    macAddressContextEntry.description()
+                                            ))
+                                    .orElse(null)
                     ),
                     dev.aliases(),
                     dev.devices(),

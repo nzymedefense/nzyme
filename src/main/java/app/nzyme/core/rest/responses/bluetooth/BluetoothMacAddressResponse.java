@@ -20,9 +20,9 @@ public abstract class BluetoothMacAddressResponse {
 
     @JsonProperty("context")
     @Nullable
-    public abstract BluetoothMacAddressResponse context();
+    public abstract BluetoothMacAddressContextResponse context();
 
-    public static BluetoothMacAddressResponse create(String address, String oui, Boolean isRandomized, BluetoothMacAddressResponse context) {
+    public static BluetoothMacAddressResponse create(String address, String oui, Boolean isRandomized, BluetoothMacAddressContextResponse context) {
         return builder()
                 .address(address)
                 .oui(oui)
@@ -43,7 +43,7 @@ public abstract class BluetoothMacAddressResponse {
 
         public abstract Builder isRandomized(Boolean isRandomized);
 
-        public abstract Builder context(BluetoothMacAddressResponse context);
+        public abstract Builder context(BluetoothMacAddressContextResponse context);
 
         public abstract BluetoothMacAddressResponse build();
     }

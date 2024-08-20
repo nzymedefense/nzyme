@@ -71,7 +71,9 @@ function BluetoothMacAddressContextOverlay(props) {
         </h6>
 
         <p className="context-description">
-          <i className="fa-solid fa-angle-right"></i> {ctx.context.description}
+          <i className="fa-solid fa-angle-right"></i>{' '}
+          {ctx.context.description && ctx.context.description.trim().length > 0
+              ? ctx.context.description : "No Description"}
         </p>
 
         <dl style={{marginBottom: 30}}>

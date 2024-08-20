@@ -1,5 +1,4 @@
 import React, {useState} from "react";
-import Dot11MacAddressContextOverlay from "./details/Dot11MacAddressContextOverlay";
 import ContextOverlayVisibilityWrapper from "../ContextOverlayVisibilityWrapper";
 import Dot11MacAddressType from "./Dot11MacAddressType";
 
