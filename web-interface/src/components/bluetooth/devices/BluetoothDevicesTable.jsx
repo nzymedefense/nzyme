@@ -63,7 +63,6 @@ export default function BluetoothDevicesTable(props) {
             <th>Type</th>
             <th>Transport</th>
             <th>Name</th>
-            <th>Class</th>
             <th>Last Seen</th>
           </tr>
           </thead>
@@ -80,7 +79,6 @@ export default function BluetoothDevicesTable(props) {
                   <td><GroupedParameterList list={d.tags} valueTransform={transformTag} /></td>
                   <td><GroupedParameterList list={d.transports} valueTransform={transformTransport}/></td>
                   <td><GroupedParameterList list={d.names}/></td>
-                  <td><GroupedParameterList list={d.device_classes}/></td>
                   <td>{moment(d.last_seen).fromNow()}</td>
                 </tr>
             )
