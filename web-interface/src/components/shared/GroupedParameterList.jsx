@@ -13,8 +13,8 @@ export default function GroupedParameterList(props) {
     }
   }
 
-  if (!list || list.length === 0) {
-    return "None"
+  if (!list || list.length === 0 || list[0] == null) {
+    return <span className="text-muted">None</span>
   }
 
   return (

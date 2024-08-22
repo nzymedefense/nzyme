@@ -5,7 +5,8 @@ use crate::bluetooth::detection::device_tagger::TagValue;
 use crate::bluetooth::detection::taggers::tagger_utils;
 
 pub fn tag(advertisement: &Arc<BluetoothDeviceAdvertisement>) -> Option<(String, HashMap<String, TagValue>)> {
-    if tagger_utils::mac_is_locally_administered_and_multicast(&advertisement.mac)
+    // We check for locally administered OR multicast because some AirTags are using only multicast.
+    if tagger_utils::mac_is_locally_administered_or_multicast(&advertisement.mac)
         && advertisement.company_id.is_some()
         && advertisement.company_id? == 76
         && advertisement.manufacturer_data.is_some() {
@@ -25,6 +26,7 @@ pub fn tag(advertisement: &Arc<BluetoothDeviceAdvertisement>) -> Option<(String,
 
             let is_paired = payload[0] == 0x12;
 
+            // Type and paired are reliable but all others are not. We are not reporting those yet.
             parameters.insert("of_type".to_string(), TagValue::Byte(payload[0]));
             parameters.insert("status".to_string(), TagValue::Byte(payload[2]));
             parameters.insert("paired".to_string(), TagValue::Boolean(is_paired));

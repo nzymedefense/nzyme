@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use bitvec::order::Msb0;
-use bitvec::view::BitView;
-use log::{error, info};
+use log::{error};
 use crate::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
 use crate::bluetooth::detection::device_tagger::tag_device_advertisement;
 use crate::bluetooth::tables::bluetooth_device::BluetoothDevice;
