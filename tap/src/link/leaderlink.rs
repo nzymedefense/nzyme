@@ -45,7 +45,7 @@ impl Leaderlink {
         default_headers.insert(AUTHORIZATION, bearer.parse().unwrap());
 
         let http_client = reqwest::blocking::Client::builder()
-            .timeout(Duration::from_secs(10))
+            .timeout(Duration::from_secs(20))
             .user_agent("nzyme-tap")
             .default_headers(default_headers)
             .gzip(true)
