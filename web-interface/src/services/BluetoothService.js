@@ -10,6 +10,14 @@ class BluetoothService {
     )
   }
 
+  findOneDevice(setDevice, mac, taps) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get(`/bluetooth/devices/show/${mac}`, { taps: tapsList },
+        (response) => setDevice(response.data)
+    )
+  }
+
 }
 
 export default BluetoothService;

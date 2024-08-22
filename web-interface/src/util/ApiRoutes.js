@@ -192,7 +192,10 @@ const ApiRoutes = {
     }
   },
   BLUETOOTH: {
-    DEVICES: '/bluetooth/devices'
+    DEVICES: {
+      INDEX: '/bluetooth/devices',
+      DETAILS: (mac) => `/bluetooth/devices/show/${mac}`
+    }
   },
   CONTEXT: {
     MAC_ADDRESSES: {

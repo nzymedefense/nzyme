@@ -1,0 +1,188 @@
+import React, {useContext, useEffect} from "react";
+import {useParams} from "react-router-dom";
+import LoadingSpinner from "../../misc/LoadingSpinner";
+import BluetoothService from "../../../services/BluetoothService";
+import {TapContext} from "../../../App";
+import ApiRoutes from "../../../util/ApiRoutes";
+import CardTitleWithControls from "../../shared/CardTitleWithControls";
+import {Presets} from "../../shared/timerange/TimeRange";
+import MacAddressContextLine from "../../shared/context/macs/details/MacAddressContextLine";
+import moment from "moment";
+import BluetoothMacAddress from "../../shared/context/macs/BluetoothMacAddress";
+import GroupedParameterList from "../../shared/GroupedParameterList";
+import {transformTag, transformTransport} from "../BluetoothTools";
+
+const btService = new BluetoothService();
+
+export default function BluetoothDeviceDetailsPage() {
+
+  const {macParam} = useParams();
+
+  const tapContext = useContext(TapContext);
+  const selectedTaps = tapContext.taps;
+
+  const [device, setSelectedDevice] = React.useState(null);
+
+  useEffect(() => {
+    btService.findOneDevice(setSelectedDevice, macParam, selectedTaps);
+  }, [macParam]);
+
+  const deviceTags = () => {
+    if (!device.device.tags || device.device.tags.length === 0 || device.device.tags[0] == null) {
+      return <div className="alert alert-info mt-2 mb-0">The make or model of this device was not identified because
+        nzyme could not determine any specific properties.</div>
+    }
+
+    return (
+        <React.Fragment>
+          This device has been identified as:
+
+          <ul className="mb-0 mt-2">
+            {device.device.tags.map((t, i) => {
+              return <li key={i}>{transformTag(t)}</li>
+            })}
+          </ul>
+        </React.Fragment>
+    )
+  }
+
+  if (!device) {
+    return <LoadingSpinner />
+  }
+
+  return (
+      <React.Fragment>
+        <div className="row">
+          <div className="col-12">
+            <nav aria-label="breadcrumb">
+              <ol className="breadcrumb">
+                <li className="breadcrumb-item">Bluetooth</li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.BLUETOOTH.DEVICES.INDEX}>Clients</a></li>
+                <li className="breadcrumb-item">{device.device.mac.address}</li>
+                <li className="breadcrumb-item active" aria-current="page">Details</li>
+              </ol>
+            </nav>
+          </div>
+
+          <div className="col-12">
+            <h1>
+              Bluetooth Device &quot;{device.device.mac.address}&quot;
+            </h1>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-6">
+            <div className="row">
+              <div className="col-12">
+                <div className="card">
+                  <div className="card-body">
+                    <CardTitleWithControls title="Device Information"
+                                           fixedAppliedTimeRange={Presets.ALL_TIME}/>
+
+                    <dl className="mb-0">
+                      <dt>MAC Address</dt>
+                      <dd>
+                        <BluetoothMacAddress addressWithContext={device.device.mac}/>
+                      </dd>
+                      <dt>Transport</dt>
+                      <dd>
+                        <GroupedParameterList list={device.device.transports}
+                                              valueTransform={(t) => transformTransport(t, true)}/>
+                      </dd>
+                      <dt>Bluetooth Vendor</dt>
+                      <dd><GroupedParameterList list={device.device.companies}/></dd>
+                      <dt>MAC OUI Vendor</dt>
+                      <dd>{device.device.mac.oui ? device.device.mac.oui : "Unknown"}</dd>
+                      <dt>Name:</dt>
+                      <dd>
+                        <GroupedParameterList list={device.device.names}/>
+                      </dd>
+                      <dt>Context</dt>
+                      <dd>
+                        <MacAddressContextLine address={device.device.mac.address} context={device.device.mac.context}/>
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-12">
+                <div className="card">
+                  <div className="card-body">
+                    <CardTitleWithControls title="Signal Strength by Tap"
+                                           fixedAppliedTimeRange={Presets.ALL_TIME}/>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-6">
+            <div className="row">
+              <div className="col-12">
+                <div className="card">
+                  <div className="card-body">
+                    <CardTitleWithControls title="Activity" fixedAppliedTimeRange={Presets.ALL_TIME}/>
+
+                    <dl className="mb-0">
+                      <dt>First Seen</dt>
+                      <dd>
+                        {moment(device.device.first_seen).format()}{' '}
+                        <span className="text-muted">
+                          (Note: Bluetooth data retention time is {device.data_retention_days} days)
+                        </span>
+                      </dd>
+                      <dt>Last Seen</dt>
+                      <dd>{moment(device.device.last_seen).format()}</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-12">
+                <div className="card">
+                  <div className="card-body">
+                    <CardTitleWithControls title="Tags"
+                    fixedAppliedTimeRange={Presets.ALL_TIME}/>
+
+                    {deviceTags()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Signal Strength"
+                                       fixedAppliedTimeRange={Presets.ALL_TIME}/>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Physical Location / Trilateration"
+                                       fixedAppliedTimeRange={Presets.ALL_TIME}/>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </React.Fragment>
+  )
+
+}

@@ -27,7 +27,6 @@ import DNSOverviewPage from './components/ethernet/dns/DNSOverviewPage'
 import SearchPage from './components/retro/SearchPage'
 import ServiceSummaryPage from './components/retro/servicesummary/ServiceSummaryPage'
 import RetroConfigurationPage from './components/retro/configuration/RetroConfigurationPage'
-import PluginsService from './services/PluginsService'
 import MissingRetroPluginPage from './components/retro/MissingRetroPluginPage'
 import CryptoSummaryPage from './components/system/crypto/CryptoSummaryPage'
 import MonitoringPage from './components/system/monitoring/MonitoringPage'
@@ -134,6 +133,7 @@ import HostnameDetailsPage from "./components/ethernet/hostnames/HostnameDetails
 import SocksTunnelDetailsPage from "./components/ethernet/tunnels/socks/SocksTunnelDetailsPage";
 import SSHSessionDetailsPage from "./components/ethernet/remote/ssh/SSHSessionDetailsPage";
 import L4OverviewPage from "./components/ethernet/l4/L4OverviewPage";
+import BluetoothDeviceDetailsPage from "./components/bluetooth/devices/BluetoothDeviceDetailsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -440,7 +440,8 @@ function App() {
                           <Route path={ApiRoutes.DOT11.DISCO.INDEX} element={<DiscoPage />}/>
 
                           { /* Bluetooth. */}
-                          <Route path={ApiRoutes.BLUETOOTH.DEVICES} element={<BluetoothDevicesPage />}/>
+                          <Route path={ApiRoutes.BLUETOOTH.DEVICES.INDEX} element={<BluetoothDevicesPage />}/>
+                          <Route path={ApiRoutes.BLUETOOTH.DEVICES.DETAILS(':macParam')} element={<BluetoothDeviceDetailsPage />}/>
 
                           { /* Context. */ }
                           <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>

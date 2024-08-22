@@ -19,6 +19,9 @@ public abstract class DatabaseSummaryResponse {
     @JsonProperty("dot11_retention_time_days")
     public abstract ConfigurationEntryResponse dot11RetentionTimeDays();
 
+    @JsonProperty("bluetooth_retention_time_days")
+    public abstract ConfigurationEntryResponse bluetoothRetentionTimeDays();
+
     @JsonProperty("ethernet_l4_retention_time_days")
     public abstract ConfigurationEntryResponse ethernetL4RetentionTimeDays();
 
@@ -28,12 +31,13 @@ public abstract class DatabaseSummaryResponse {
     @JsonProperty("ethernet_arp_retention_time_days")
     public abstract ConfigurationEntryResponse ethernetArpRetentionTimeDays();
 
-    public static DatabaseSummaryResponse create(long totalSize, long ethernetSize, long dot11Size, ConfigurationEntryResponse dot11RetentionTimeDays, ConfigurationEntryResponse ethernetL4RetentionTimeDays, ConfigurationEntryResponse ethernetDnsRetentionTimeDays, ConfigurationEntryResponse ethernetArpRetentionTimeDays) {
+    public static DatabaseSummaryResponse create(long totalSize, long ethernetSize, long dot11Size, ConfigurationEntryResponse dot11RetentionTimeDays, ConfigurationEntryResponse bluetoothRetentionTimeDays, ConfigurationEntryResponse ethernetL4RetentionTimeDays, ConfigurationEntryResponse ethernetDnsRetentionTimeDays, ConfigurationEntryResponse ethernetArpRetentionTimeDays) {
         return builder()
                 .totalSize(totalSize)
                 .ethernetSize(ethernetSize)
                 .dot11Size(dot11Size)
                 .dot11RetentionTimeDays(dot11RetentionTimeDays)
+                .bluetoothRetentionTimeDays(bluetoothRetentionTimeDays)
                 .ethernetL4RetentionTimeDays(ethernetL4RetentionTimeDays)
                 .ethernetDnsRetentionTimeDays(ethernetDnsRetentionTimeDays)
                 .ethernetArpRetentionTimeDays(ethernetArpRetentionTimeDays)
@@ -53,6 +57,8 @@ public abstract class DatabaseSummaryResponse {
         public abstract Builder dot11Size(long dot11Size);
 
         public abstract Builder dot11RetentionTimeDays(ConfigurationEntryResponse dot11RetentionTimeDays);
+
+        public abstract Builder bluetoothRetentionTimeDays(ConfigurationEntryResponse bluetoothRetentionTimeDays);
 
         public abstract Builder ethernetL4RetentionTimeDays(ConfigurationEntryResponse ethernetL4RetentionTimeDays);
 

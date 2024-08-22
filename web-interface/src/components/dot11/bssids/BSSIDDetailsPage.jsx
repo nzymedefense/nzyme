@@ -160,7 +160,9 @@ function BSSIDDetailsPage() {
                   <dt>First Seen</dt>
                   <dd>
                     {moment(bssid.summary.first_seen).format()}{' '}
-                    (Note: 802.11/WiFi data retention time is {bssid.data_retention_days} days)
+                    <span className="text-muted">
+                      (Note: 802.11/WiFi data retention time is {bssid.data_retention_days} days)
+                    </span>
                   </dd>
                   <dt>Last Seen</dt>
                   <dd>{moment(bssid.summary.last_seen).format()}</dd>

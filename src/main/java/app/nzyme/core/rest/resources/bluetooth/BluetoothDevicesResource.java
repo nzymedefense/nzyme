@@ -6,11 +6,8 @@ import app.nzyme.core.bluetooth.sig.BluetoothDeviceClass;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
-import app.nzyme.core.rest.responses.bluetooth.BluetoothDeviceSummaryDetailsResponse;
-import app.nzyme.core.rest.responses.bluetooth.BluetoothDeviceSummaryListResponse;
-import app.nzyme.core.rest.responses.bluetooth.BluetoothMacAddressContextResponse;
-import app.nzyme.core.rest.responses.bluetooth.BluetoothMacAddressResponse;
-import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
+import app.nzyme.core.rest.constraints.MacAddress;
+import app.nzyme.core.rest.responses.bluetooth.*;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -18,17 +15,11 @@ import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,50 +47,79 @@ public class BluetoothDevicesResource extends TapDataHandlingResource {
 
         List<BluetoothDeviceSummaryDetailsResponse> devices = Lists.newArrayList();
         for (BluetoothDeviceSummary dev : nzyme.getBluetooth().findAllDevices(timeRange, limit, offset, tapUuids)) {
-            Optional<MacAddressContextEntry> deviceContext = nzyme.getContextService().findMacAddressContext(
-                    dev.mac(),
-                    authenticatedUser.getOrganizationId(),
-                    authenticatedUser.getTenantId()
-            );
-
-            List<String> deviceClasses = buildDeviceClasses(dev);
-
-            List<String> companies = Lists.newArrayList();
-            for (Integer companyId : dev.companyIds()) {
-                nzyme.getBluetoothSigService().lookupCompanyId(companyId)
-                        .ifPresent(companies::add);
-            }
-
-            devices.add(BluetoothDeviceSummaryDetailsResponse.create(
-                    BluetoothMacAddressResponse.create(
-                            dev.mac(),
-                            nzyme.getOuiService().lookup(dev.mac()).orElse(null),
-                            Tools.macAddressIsRandomized(dev.mac()),
-                            deviceContext.map(macAddressContextEntry ->
-                                            BluetoothMacAddressContextResponse.create(
-                                                    macAddressContextEntry.name(),
-                                                    macAddressContextEntry.description()
-                                            ))
-                                    .orElse(null)
-                    ),
-                    dev.aliases(),
-                    dev.devices(),
-                    dev.transports(),
-                    dev.names(),
-                    dev.averageRssi(),
-                    companies,
-                    deviceClasses,
-                    dev.discoveredServices(),
-                    dev.tags(),
-                    dev.firstSeen(),
-                    dev.lastSeen()
-            ));
+            devices.add(buildResponse(dev, authenticatedUser));
         }
 
         return Response.ok(BluetoothDeviceSummaryListResponse.create(total, devices)).build();
     }
 
-    private static @NotNull List<String> buildDeviceClasses(BluetoothDeviceSummary dev) {
+    @GET
+    @Path("/show/{mac}")
+    public Response findOne(@Context SecurityContext sc,
+                            @PathParam("mac") @MacAddress String mac,
+                            @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        Optional<BluetoothDeviceSummary> device = nzyme.getBluetooth().findOneDevice(mac, tapUuids);
+
+        if (device.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        int dataRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                .getValue(BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.key())
+                .orElse(BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
+        );
+
+        return Response.ok(BluetoothDeviceDetailsResponse.create(
+                buildResponse(device.get(), authenticatedUser), dataRetentionDays
+        )).build();
+    }
+
+    private BluetoothDeviceSummaryDetailsResponse buildResponse(BluetoothDeviceSummary dev,
+                                                                AuthenticatedUser authenticatedUser) {
+        Optional<MacAddressContextEntry> deviceContext = nzyme.getContextService().findMacAddressContext(
+                dev.mac(),
+                authenticatedUser.getOrganizationId(),
+                authenticatedUser.getTenantId()
+        );
+
+        List<String> deviceClasses = buildDeviceClasses(dev);
+
+        List<String> companies = Lists.newArrayList();
+        for (Integer companyId : dev.companyIds()) {
+            nzyme.getBluetoothSigService().lookupCompanyId(companyId)
+                    .ifPresent(companies::add);
+        }
+
+        return BluetoothDeviceSummaryDetailsResponse.create(
+                BluetoothMacAddressResponse.create(
+                        dev.mac(),
+                        nzyme.getOuiService().lookup(dev.mac()).orElse(null),
+                        Tools.macAddressIsRandomized(dev.mac()),
+                        deviceContext.map(macAddressContextEntry ->
+                                        BluetoothMacAddressContextResponse.create(
+                                                macAddressContextEntry.name(),
+                                                macAddressContextEntry.description()
+                                        ))
+                                .orElse(null)
+                ),
+                dev.aliases(),
+                dev.devices(),
+                dev.transports(),
+                dev.names(),
+                dev.averageRssi(),
+                companies,
+                deviceClasses,
+                dev.discoveredServices(),
+                dev.tags(),
+                dev.firstSeen(),
+                dev.lastSeen()
+        );
+    }
+
+    private static List<String> buildDeviceClasses(BluetoothDeviceSummary dev) {
         List<String> deviceClasses = Lists.newArrayList();
         for (Integer classNumber : dev.classNumbers()) {
             if (classNumber > 0) {

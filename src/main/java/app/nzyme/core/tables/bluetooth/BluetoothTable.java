@@ -1,8 +1,10 @@
 package app.nzyme.core.tables.bluetooth;
 
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.bluetooth.db.BluetoothServiceUuidJson;
 import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDeviceReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDevicesReport;
+import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
@@ -146,7 +148,21 @@ public class BluetoothTable implements DataTable {
 
     @Override
     public void retentionClean() {
-        throw new RuntimeException("Not Implemented.");
+        NzymeNode nzyme = tablesService.getNzyme();
+        int bluetoothRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                .getValue(BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.key())
+                .orElse(BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
+        );
+        DateTime bluetoothCutoff = DateTime.now().minusDays(bluetoothRetentionDays);
+
+        LOG.info("Bluetooth data retention: <{}> days / Delete data older than <{}>.",
+                bluetoothRetentionDays, bluetoothCutoff);
+
+        nzyme.getDatabase().useHandle(handle -> {
+            handle.createUpdate("DELETE FROM bluetooth_devices WHERE last_seen < :cutoff")
+                    .bind("cutoff", bluetoothCutoff)
+                    .execute();
+        });
     }
 
     public static final class InvalidBluetoothUuidException extends Exception {

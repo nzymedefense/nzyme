@@ -5,6 +5,7 @@ import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.rest.requests.RetentionTimeConfigurationUpdateRequest;
+import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
 import app.nzyme.core.rest.responses.system.DatabaseSummaryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
@@ -85,6 +86,17 @@ public class DatabaseResource {
                 "retention-time"
         );
 
+        ConfigurationEntryResponse bluetoothRetentionTimeConfig = ConfigurationEntryResponse.create(
+                BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.key(),
+                "Retention Time (in days)",
+                dot11RetentionTime,
+                ConfigurationEntryValueType.NUMBER,
+                BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.defaultValue().orElse(null),
+                BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.requiresRestart(),
+                BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.constraints().orElse(Lists.newArrayList()),
+                "retention-time"
+        );
+
         ConfigurationEntryResponse ethernetL4RetentionTimeConfig = ConfigurationEntryResponse.create(
                 EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key(),
                 "Retention Time (in days)",
@@ -123,6 +135,7 @@ public class DatabaseResource {
                 ethernetSize,
                 dot11Size,
                 dot11RetentionTimeConfig,
+                bluetoothRetentionTimeConfig,
                 ethernetL4RetentionTimeConfig,
                 ethernetDnsRetentionTimeConfig,
                 ethernetArpRetentionTimeConfig
@@ -136,6 +149,11 @@ public class DatabaseResource {
             switch (c.getKey()) {
                 case "dot11_retention_time_days":
                     if (!ConfigurationEntryConstraintValidator.checkConstraints(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "bluetooth_retention_time_days":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS, c)) {
                         return Response.status(422).build();
                     }
                     break;
@@ -154,6 +172,8 @@ public class DatabaseResource {
                         return Response.status(422).build();
                     }
                     break;
+                default:
+                    return Response.status(422).build();
             }
 
             nzyme.getDatabaseCoreRegistry().setValue(c.getKey(), c.getValue().toString());

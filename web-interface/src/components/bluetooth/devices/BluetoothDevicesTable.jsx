@@ -2,12 +2,12 @@ import React, {useContext} from 'react';
 import moment from "moment";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Paginator from "../../misc/Paginator";
-import MacAddress from "../../shared/context/macs/MacAddress";
 import SignalStrength from "../../dot11/util/SignalStrength";
 import {TapContext} from "../../../App";
 import GroupedParameterList from "../../shared/GroupedParameterList";
-import numeral from "numeral";
 import BluetoothMacAddress from "../../shared/context/macs/BluetoothMacAddress";
+import ApiRoutes from "../../../util/ApiRoutes";
+import {transformTag, transformTransport} from "../BluetoothTools";
 
 export default function BluetoothDevicesTable(props) {
 
@@ -18,26 +18,6 @@ export default function BluetoothDevicesTable(props) {
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
-
-  const transformTransport = (transport) => {
-    if (transport === "bredr") {
-      return <span title="Bluetooth Classic">Classic</span>;
-    }
-
-    if (transport === "le") {
-      return <span title="Bluetooth Low Energy">LE</span>;
-    }
-
-    return transport;
-  }
-
-  const transformTag = (tag) => {
-    switch (tag) {
-      case "apple_find_my_paired": return "Apple \"Find My\" (Paired)";
-      case "apple_find_my_unpaired": return "Apple \"Find My\" (Unpaired)";
-      default: return tag;
-    }
-  }
 
   if (!devices) {
     return <LoadingSpinner />
@@ -71,13 +51,13 @@ export default function BluetoothDevicesTable(props) {
             return (
                 <tr key={i}>
                   <td>
-                    <BluetoothMacAddress addressWithContext={d.mac} href="#"/>
+                    <BluetoothMacAddress addressWithContext={d.mac} href={ApiRoutes.BLUETOOTH.DEVICES.DETAILS((d.mac.address))} />
                   </td>
                   <td>{d.mac.oui ? d.mac.oui : <span className="text-muted">Unknown</span>}</td>
                   <td><GroupedParameterList list={d.companies}/></td>
                   <td><SignalStrength strength={d.average_rssi} selectedTapCount={selectedTaps.length}/></td>
                   <td><GroupedParameterList list={d.tags} valueTransform={transformTag} /></td>
-                  <td><GroupedParameterList list={d.transports} valueTransform={transformTransport}/></td>
+                  <td><GroupedParameterList list={d.transports} valueTransform={transformTransport} /></td>
                   <td><GroupedParameterList list={d.names}/></td>
                   <td>{moment(d.last_seen).fromNow()}</td>
                 </tr>
