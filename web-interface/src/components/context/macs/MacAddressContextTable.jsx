@@ -97,7 +97,15 @@ function MacAddressContextTable() {
           {context.mac_addresses.map((m, i) => {
             return (
                 <tr key={i}>
-                  <td><a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(m.uuid, organizationId, tenantId)}>{m.mac_address}</a></td>
+                  <td>
+                    <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(m.uuid, organizationId, tenantId)}>
+                      {m.mac_address}
+                    </a>{' '}
+
+                    {m.mac_address_is_randomized ?
+                        <i className="fa-solid fa-triangle-exclamation text-danger cursor-help" title="This is a randomized MAC address." />
+                        : null}
+                  </td>
                   <td>{m.name}</td>
                   <td>{m.description}</td>
                 </tr>

@@ -1116,3 +1116,7 @@ div.connect-status-pending {
 div.dropdown-headline ul.dropdown-menu {
     font-size: 18px;
 }
+
+.cursor-help {
+    cursor: help;
+}

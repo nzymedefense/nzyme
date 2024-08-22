@@ -62,7 +62,11 @@ function MacAddressContextDetailsPage() {
         <div className="row">
           <div className="col-md-8">
             <h1>
-              Context of MAC Address &quot;{context.mac_address}&quot;
+              Context of MAC Address &quot;{context.mac_address}&quot;{' '}
+
+              {context.mac_address_is_randomized ?
+                  <i className="fa-solid fa-triangle-exclamation text-danger cursor-help" title="This is a randomized MAC address." />
+                  : null}
             </h1>
           </div>
 

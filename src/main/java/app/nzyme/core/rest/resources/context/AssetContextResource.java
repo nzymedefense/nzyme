@@ -12,6 +12,7 @@ import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
 import app.nzyme.core.rest.requests.UpdateMacAddressContextRequest;
 import app.nzyme.core.rest.responses.context.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
+import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.distributed.messaging.ClusterMessage;
 import app.nzyme.plugin.distributed.messaging.MessageType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -102,20 +103,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
 
         MacAddressContextDetailsResponse contextDetails;
         if (ctx.isPresent()) {
-            MacAddressContextEntry context = ctx.get();
-            contextDetails = MacAddressContextDetailsResponse.create(
-                    context.uuid(),
-                    context.macAddress(),
-                    context.name(),
-                    context.description(),
-                    context.notes(),
-                    context.organizationId(),
-                    nzyme.getAuthenticationService().findOrganization(context.organizationId()).get().name(),
-                    context.tenantId(),
-                    nzyme.getAuthenticationService().findTenant(context.tenantId()).get().name(),
-                    context.createdAt(),
-                    context.updatedAt()
-            );
+            contextDetails = entryToResponse(ctx.get());
         } else {
             contextDetails = null;
         }
@@ -243,6 +231,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
         return MacAddressContextDetailsResponse.create(
                 m.uuid(),
                 m.macAddress(),
+                Tools.macAddressIsRandomized(m.macAddress()),
                 m.name(),
                 m.description(),
                 m.notes(),

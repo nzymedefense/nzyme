@@ -16,6 +16,9 @@ public abstract class MacAddressContextDetailsResponse {
     @JsonProperty("mac_address")
     public abstract String macAddress();
 
+    @JsonProperty("mac_address_is_randomized")
+    public abstract boolean macAddressIsRandomized();
+
     @JsonProperty("name")
     public abstract String name();
 
@@ -47,10 +50,11 @@ public abstract class MacAddressContextDetailsResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static MacAddressContextDetailsResponse create(UUID uuid, String macAddress, String name, String description, String notes, UUID organizationId, String organizationName, UUID tenantId, String tenantName, DateTime createdAt, DateTime updatedAt) {
+    public static MacAddressContextDetailsResponse create(UUID uuid, String macAddress, boolean macAddressIsRandomized, String name, String description, String notes, UUID organizationId, String organizationName, UUID tenantId, String tenantName, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .uuid(uuid)
                 .macAddress(macAddress)
+                .macAddressIsRandomized(macAddressIsRandomized)
                 .name(name)
                 .description(description)
                 .notes(notes)
@@ -72,6 +76,8 @@ public abstract class MacAddressContextDetailsResponse {
         public abstract Builder uuid(UUID uuid);
 
         public abstract Builder macAddress(String macAddress);
+
+        public abstract Builder macAddressIsRandomized(boolean macAddressIsRandomized);
 
         public abstract Builder name(String name);
 
