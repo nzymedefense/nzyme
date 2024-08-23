@@ -34,7 +34,7 @@ export default function BluetoothDeviceDetailsPage() {
     btService.findOneDevice(setSelectedDevice, macParam, selectedTaps);
     btService.getRssiHistogramOfDevice(setRssiHistogram, macParam, rssiHistogramTimerange, selectedTaps);
     btService.getRssiOfDeviceByTap(setTapRssis, macParam, tapRssiTimerange, selectedTaps);
-  }, [macParam]);
+  }, [macParam, rssiHistogramTimerange, tapRssiTimerange]);
 
   const deviceTags = () => {
     if (!device.device.tags || device.device.tags.length === 0 || device.device.tags[0] == null) {
