@@ -42,7 +42,7 @@ function EditCustomBanditPage() {
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.MONITORING.INDEX}>Monitoring</a></li>
-                <li className="breadcrumb-item">Bandits</li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX}>Bandits</a></li>
                 <li className="breadcrumb-item">Custom</li>
                 <li className="breadcrumb-item">
                   <a href={ApiRoutes.DOT11.MONITORING.BANDITS.CUSTOM_DETAILS(bandit.id)}>

@@ -169,6 +169,7 @@ const ApiRoutes = {
       SIMILAR_SSID_CONFIGURATION: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/configuration/similarssids`,
       RESTRICTED_SUBSTRINGS_CONFIGURATION: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/configuration/restrictedsubstrings`,
       BANDITS: {
+        INDEX: "/dot11/monitoring/bandits",
         BUILTIN_DETAILS: (id) => `/dot11/monitoring/bandits/builtin/show/${id}`,
         CREATE: (organizationId, tenantId) => `/dot11/monitoring/bandits/custom/organizations/${organizationId}/tenants/${tenantId}/create`,
         CUSTOM_DETAILS: (id) => `/dot11/monitoring/bandits/custom/show/${id}`,
@@ -176,6 +177,9 @@ const ApiRoutes = {
       },
       DISCO: {
         CONFIGURATION: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/disco/configuration`,
+      },
+      PROBE_REQUESTS: {
+        INDEX: "/dot11/monitoring/proberequests"
       }
     },
     NETWORKS: {

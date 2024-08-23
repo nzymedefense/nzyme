@@ -22,7 +22,7 @@ function CreateCustomBanditPage(props) {
   }
 
   if (redirect) {
-    return <Navigate to={ApiRoutes.DOT11.MONITORING.INDEX} />
+    return <Navigate to={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX} />
   }
 
   return (
@@ -33,7 +33,7 @@ function CreateCustomBanditPage(props) {
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.MONITORING.INDEX}>Monitoring</a></li>
-                <li className="breadcrumb-item">Bandits</li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX}>Bandits</a></li>
                 <li className="breadcrumb-item">Custom</li>
                 <li className="breadcrumb-item active" aria-current="page">Create</li>
               </ol>
@@ -42,7 +42,7 @@ function CreateCustomBanditPage(props) {
 
           <div className="col-md-5">
             <span className="float-end">
-              <a className="btn btn-primary" href={ApiRoutes.DOT11.MONITORING.INDEX}>Back</a>
+              <a className="btn btn-primary" href={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX}>Back</a>
             </span>
           </div>
         </div>

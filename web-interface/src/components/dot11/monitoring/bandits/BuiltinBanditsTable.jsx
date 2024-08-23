@@ -19,7 +19,7 @@ function BuiltinBanditsTable() {
 
   return (
       <React.Fragment>
-        <table className="table table-sm table-hover table-striped">
+        <table className="table table-sm table-hover table-striped mb-0">
           <thead>
           <tr>
             <th>Name</th>

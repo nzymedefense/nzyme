@@ -56,7 +56,7 @@ function CustomBanditDetailsPage() {
       return;
     }
 
-    dot11Service.deleteCustomBandit(bandit.id,() => {
+    dot11Service.deleteCustomBandit(bandit.id, () => {
       notify.show('Custom bandit deleted.', 'success');
       setRedirect(true);
     });
@@ -67,7 +67,7 @@ function CustomBanditDetailsPage() {
   }, [id, revision]);
 
   if (redirect) {
-    return <Navigate to={ApiRoutes.DOT11.MONITORING.INDEX} />
+    return <Navigate to={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX} />
   }
 
   if (!bandit) {
@@ -82,7 +82,7 @@ function CustomBanditDetailsPage() {
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.MONITORING.INDEX}>Monitoring</a></li>
-                <li className="breadcrumb-item">Bandits</li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX}>Bandits</a></li>
                 <li className="breadcrumb-item">Custom</li>
                 <li className="breadcrumb-item active" aria-current="page">{bandit.name}</li>
               </ol>
@@ -91,7 +91,7 @@ function CustomBanditDetailsPage() {
 
           <div className="col-md-5">
             <span className="float-end">
-              <a className="btn btn-secondary" href={ApiRoutes.DOT11.MONITORING.INDEX}>Back</a>{' '}
+              <a className="btn btn-secondary" href={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX}>Back</a>{' '}
               <a className="btn btn-danger" href="" onClick={onDelete}>Delete</a>{' '}
               <a className="btn btn-primary" href={ApiRoutes.DOT11.MONITORING.BANDITS.EDIT(bandit.id)}>Edit</a>
             </span>
