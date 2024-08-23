@@ -2,6 +2,10 @@ package app.nzyme.core.bluetooth;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.bluetooth.db.BluetoothDeviceSummary;
+import app.nzyme.core.dot11.db.Dot11AdvertisementHistogramEntry;
+import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
+import app.nzyme.core.shared.db.TapBasedSignalStrengthResult;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -93,6 +97,50 @@ public class Bluetooth {
                         .bindList("taps", taps)
                         .mapTo(BluetoothDeviceSummary.class)
                         .findOne()
+        );
+    }
+
+    public List<GenericIntegerHistogramEntry> getDeviceSignalStrengthHistogram(String mac,
+                                                                               TimeRange timeRange,
+                                                                               Bucketing.BucketingConfiguration bucketing,
+                                                                               List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT AVG(rssi) AS value," +
+                                "DATE_TRUNC(:date_trunc, created_at) AS bucket FROM bluetooth_devices " +
+                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) AND mac = :mac " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bindList("taps", taps)
+                        .bind("mac", mac)
+                        .mapTo(GenericIntegerHistogramEntry.class)
+                        .list()
+        );
+    }
+
+    public List<TapBasedSignalStrengthResult> getDeviceSignalStrengthPerTap(String mac,
+                                                                             TimeRange timeRange,
+                                                                             List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT d.tap_uuid AS tap_uuid, t.name AS tap_name, " +
+                                "AVG(d.rssi) AS signal_strength " +
+                                "FROM bluetooth_devices AS d " +
+                                "LEFT JOIN taps AS t ON d.tap_uuid = t.uuid " +
+                                "WHERE d.mac = :mac  AND d.tap_uuid IN (<taps>) " +
+                                "AND d.created_at >= :tr_from AND d.created_at <= :tr_to " +
+                                "GROUP BY d.tap_uuid, t.name ORDER BY signal_strength DESC")
+                        .bind("mac", mac)
+                        .bindList("taps", taps)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .mapTo(TapBasedSignalStrengthResult.class)
+                        .list()
         );
     }
 

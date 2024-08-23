@@ -12,6 +12,7 @@ import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11SecurityInfo
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
+import app.nzyme.core.shared.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.TimeRangeFactory;

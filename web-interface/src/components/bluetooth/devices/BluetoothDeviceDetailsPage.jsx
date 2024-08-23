@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import BluetoothService from "../../../services/BluetoothService";
@@ -11,6 +11,8 @@ import moment from "moment";
 import BluetoothMacAddress from "../../shared/context/macs/BluetoothMacAddress";
 import GroupedParameterList from "../../shared/GroupedParameterList";
 import {transformTag, transformTransport} from "../BluetoothTools";
+import TapBasedSignalStrengthTable from "../../shared/TapBasedSignalStrengthTable";
+import {BluetoothDeviceSignalStrengthHistogram} from "./BluetoothDeviceSignalStrengthHistogram";
 
 const btService = new BluetoothService();
 
@@ -21,10 +23,17 @@ export default function BluetoothDeviceDetailsPage() {
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
-  const [device, setSelectedDevice] = React.useState(null);
+  const [device, setSelectedDevice] = useState(null);
+  const [rssiHistogram, setRssiHistogram] = useState(null);
+  const [tapRssis, setTapRssis] = useState(null);
+
+  const [rssiHistogramTimerange, setRssiHistogramTimerange] = useState(Presets.RELATIVE_HOURS_24);
+  const [tapRssiTimerange, setTapRssiTimerange] = useState(Presets.RELATIVE_MINUTES_15);
 
   useEffect(() => {
     btService.findOneDevice(setSelectedDevice, macParam, selectedTaps);
+    btService.getRssiHistogramOfDevice(setRssiHistogram, macParam, rssiHistogramTimerange, selectedTaps);
+    btService.getRssiOfDeviceByTap(setTapRssis, macParam, tapRssiTimerange, selectedTaps);
   }, [macParam]);
 
   const deviceTags = () => {
@@ -112,9 +121,10 @@ export default function BluetoothDeviceDetailsPage() {
               <div className="col-12">
                 <div className="card">
                   <div className="card-body">
-                    <CardTitleWithControls title="Signal Strength by Tap"
-                                           fixedAppliedTimeRange={Presets.ALL_TIME}/>
+                    <CardTitleWithControls title="Signal Strength by Tap" timeRange={tapRssiTimerange}
+                                           setTimeRange={setTapRssiTimerange} />
 
+                    <TapBasedSignalStrengthTable strengths={tapRssis} />
                   </div>
                 </div>
               </div>
@@ -149,7 +159,7 @@ export default function BluetoothDeviceDetailsPage() {
                 <div className="card">
                   <div className="card-body">
                     <CardTitleWithControls title="Tags"
-                    fixedAppliedTimeRange={Presets.ALL_TIME}/>
+                                           fixedAppliedTimeRange={Presets.ALL_TIME}/>
 
                     {deviceTags()}
                   </div>
@@ -164,8 +174,10 @@ export default function BluetoothDeviceDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Signal Strength"
-                                       fixedAppliedTimeRange={Presets.ALL_TIME}/>
+                                       timeRange={rssiHistogramTimerange}
+                                       setTimeRange={setRssiHistogramTimerange} />
 
+                <BluetoothDeviceSignalStrengthHistogram data={rssiHistogram} />
               </div>
             </div>
           </div>
@@ -178,6 +190,7 @@ export default function BluetoothDeviceDetailsPage() {
                 <CardTitleWithControls title="Physical Location / Trilateration"
                                        fixedAppliedTimeRange={Presets.ALL_TIME}/>
 
+                <div className="alert alert-info mb-0">Not implemented yet.</div>
               </div>
             </div>
           </div>

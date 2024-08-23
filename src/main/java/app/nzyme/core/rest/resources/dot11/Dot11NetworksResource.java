@@ -12,6 +12,8 @@ import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.UpdateTrackDetectorConfigurationRequest;
 import app.nzyme.core.rest.responses.dot11.*;
+import app.nzyme.core.rest.responses.shared.TapBasedSignalStrengthResponse;
+import app.nzyme.core.shared.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
@@ -33,7 +35,6 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
-import org.joda.time.Duration;
 
 import java.util.*;
 

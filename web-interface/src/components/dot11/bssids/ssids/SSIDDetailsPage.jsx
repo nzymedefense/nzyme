@@ -19,7 +19,7 @@ import SSIDMonitoredInformation from "./SSIDMonitoredInformation";
 import DiscoHistogram from "../../disco/DiscoHistogram";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import Dot11MacAddress from "../../../shared/context/macs/Dot11MacAddress";
-import TapBasedSignalStrengthTable from "../../shared/TapBasedSignalStrengthTable";
+import TapBasedSignalStrengthTable from "../../../shared/TapBasedSignalStrengthTable";
 import Dot11SecurityProtocolList from "../../shared/Dot11SecurityProtocolList";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 import {Presets} from "../../../shared/timerange/TimeRange";

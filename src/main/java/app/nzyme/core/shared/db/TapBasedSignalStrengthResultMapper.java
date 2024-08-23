@@ -1,4 +1,4 @@
-package app.nzyme.core.dot11.db;
+package app.nzyme.core.shared.db;
 
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;

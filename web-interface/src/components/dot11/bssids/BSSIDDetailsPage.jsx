@@ -14,7 +14,7 @@ import DiscoHistogram from "../disco/DiscoHistogram";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 import MacAddressContextLine from "../../shared/context/macs/details/MacAddressContextLine";
-import TapBasedSignalStrengthTable from "../shared/TapBasedSignalStrengthTable";
+import TapBasedSignalStrengthTable from "../../shared/TapBasedSignalStrengthTable";
 import BSSIDSignalWaterfallChart from "./BSSIDSignalWaterfallChart";
 import ReadOnlyTrilaterationResultFloorPlanWrapper
   from "../../shared/floorplan/ReadOnlyTrilaterationResultFloorPlanWrapper";

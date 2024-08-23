@@ -1,11 +1,16 @@
 import React from "react";
-import SignalStrength from "../util/SignalStrength";
+import SignalStrength from "../dot11/util/SignalStrength";
+import LoadingSpinner from "../misc/LoadingSpinner";
 
 function TapBasedSignalStrengthTable(props) {
 
   const strengths = props.strengths;
 
-  if (!strengths || strengths.length === 0) {
+  if (strengths === null || strengths === undefined) {
+    return <LoadingSpinner />
+  }
+
+  if (strengths.length === 0) {
     return (
         <div className="alert alert-info mb-0">
           No data recorded in requested time frame.

@@ -12,7 +12,7 @@ import DiscoPairsTable from "../disco/DiscoPairsTable";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 import MacAddressContextLine from "../../shared/context/macs/details/MacAddressContextLine";
-import TapBasedSignalStrengthTable from "../shared/TapBasedSignalStrengthTable";
+import TapBasedSignalStrengthTable from "../../shared/TapBasedSignalStrengthTable";
 import ClientSignalStrengthChart from "./ClientSignalStrengthChart";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";

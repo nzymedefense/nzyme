@@ -1,7 +1,7 @@
 package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.dot11.db.TapBasedSignalStrengthResult;
+import app.nzyme.core.shared.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.dot11.db.TapBasedSignalStrengthResultHistogramEntry;
 import app.nzyme.core.dot11.trilateration.FloorSelectionResult;
 import app.nzyme.core.dot11.trilateration.LocationSolver;

@@ -1,7 +1,7 @@
 package app.nzyme.core.taps;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.dot11.db.TapBasedSignalStrengthResult;
+import app.nzyme.core.shared.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.resources.taps.reports.*;

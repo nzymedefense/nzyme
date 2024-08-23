@@ -1,4 +1,4 @@
-package app.nzyme.core.dot11.db;
+package app.nzyme.core.shared.db;
 
 import com.google.auto.value.AutoValue;
 

@@ -17,13 +17,18 @@
 
 package app.nzyme.core.rest;
 
+import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.MultivaluedMap;
+import org.joda.time.DateTime;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class RestTools {
@@ -65,6 +70,17 @@ public class RestTools {
             return URI.create(uri.toString() + "/");
         }
         return uri;
+    }
+
+    public static Map<DateTime, Integer> genericHistogramToResponse(List<GenericIntegerHistogramEntry> entries) {
+        Map<DateTime, Integer> response = Maps.newHashMap();
+
+        for (GenericIntegerHistogramEntry entry : entries) {
+            response.put(entry.bucket(), entry.value());
+        }
+
+
+        return response;
     }
 
 }

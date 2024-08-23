@@ -1,13 +1,12 @@
 package app.nzyme.core.rest.responses.dot11;
 
 import app.nzyme.core.dot11.db.BSSIDClientDetails;
+import app.nzyme.core.rest.responses.shared.TapBasedSignalStrengthResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
-import javax.annotation.Nullable;
 import java.util.List;
-import java.util.UUID;
 
 @AutoValue
 public abstract class SSIDDetailsResponse {

@@ -18,6 +18,22 @@ class BluetoothService {
     )
   }
 
+  getRssiHistogramOfDevice(setData, mac, timeRange, taps) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get(`/bluetooth/devices/show/${mac}/rssi/histogram`, { time_range: timeRange, taps: tapsList },
+        (response) => setData(response.data)
+    )
+  }
+
+  getRssiOfDeviceByTap(setData, mac, timeRange, taps) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get(`/bluetooth/devices/show/${mac}/rssi/bytap`, { time_range: timeRange, taps: tapsList },
+        (response) => setData(response.data)
+    )
+  }
+
 }
 
 export default BluetoothService;

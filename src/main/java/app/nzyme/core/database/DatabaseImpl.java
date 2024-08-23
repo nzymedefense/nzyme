@@ -36,6 +36,8 @@ import app.nzyme.core.security.authentication.db.TenantEntryMapper;
 import app.nzyme.core.security.authentication.db.UserEntryMapper;
 import app.nzyme.core.security.sessions.db.SessionEntryMapper;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetailsMapper;
+import app.nzyme.core.shared.db.GenericIntegerHistogramEntryMapper;
+import app.nzyme.core.shared.db.TapBasedSignalStrengthResultMapper;
 import app.nzyme.core.taps.db.metrics.Dot11FrequencyAndChannelWidthEntryMapper;
 import app.nzyme.core.taps.db.metrics.TapMetricsTimerMapper;
 import app.nzyme.plugin.Database;
@@ -154,7 +156,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new NumberBucketAggregationResultMapper())
                 .registerRowMapper(new TimerEntryMapper())
                 .registerRowMapper(new BluetoothDeviceEntryMapper())
-                .registerRowMapper(new BluetoothDeviceSummaryMapper());
+                .registerRowMapper(new BluetoothDeviceSummaryMapper())
+                .registerRowMapper(new GenericIntegerHistogramEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

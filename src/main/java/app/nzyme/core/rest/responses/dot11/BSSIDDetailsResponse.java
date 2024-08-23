@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.responses.dot11;
 
 import app.nzyme.core.dot11.db.BSSIDClientDetails;
+import app.nzyme.core.rest.responses.shared.TapBasedSignalStrengthResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 

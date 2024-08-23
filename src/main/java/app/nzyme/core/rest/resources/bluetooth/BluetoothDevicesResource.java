@@ -4,10 +4,15 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.bluetooth.db.BluetoothDeviceSummary;
 import app.nzyme.core.bluetooth.sig.BluetoothDeviceClass;
 import app.nzyme.core.context.db.MacAddressContextEntry;
+import app.nzyme.core.rest.RestTools;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.constraints.MacAddress;
 import app.nzyme.core.rest.responses.bluetooth.*;
+import app.nzyme.core.rest.responses.shared.TapBasedSignalStrengthResponse;
+import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
+import app.nzyme.core.shared.db.TapBasedSignalStrengthResult;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -75,6 +80,46 @@ public class BluetoothDevicesResource extends TapDataHandlingResource {
         return Response.ok(BluetoothDeviceDetailsResponse.create(
                 buildResponse(device.get(), authenticatedUser), dataRetentionDays
         )).build();
+    }
+
+    @GET
+    @Path("/show/{mac}/rssi/histogram")
+    public Response rssiHistogram(@Context SecurityContext sc,
+                                  @PathParam("mac") @MacAddress String mac,
+                                  @QueryParam("time_range") @Valid String timeRangeParameter,
+                                  @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        List<GenericIntegerHistogramEntry> histo = nzyme.getBluetooth()
+                .getDeviceSignalStrengthHistogram(mac, timeRange, bucketing, tapUuids);
+
+        return Response.ok(RestTools.genericHistogramToResponse(histo)).build();
+    }
+
+    @GET
+    @Path("/show/{mac}/rssi/bytap")
+    public Response rssiByTap(@Context SecurityContext sc,
+                              @PathParam("mac") @MacAddress String mac,
+                              @QueryParam("time_range") @Valid String timeRangeParameter,
+                              @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        List<TapBasedSignalStrengthResponse> response = Lists.newArrayList();
+        for (TapBasedSignalStrengthResult ss : nzyme.getBluetooth()
+                .getDeviceSignalStrengthPerTap(mac, timeRange, tapUuids)) {
+            response.add(TapBasedSignalStrengthResponse.create(
+                    ss.tapUuid(),
+                    ss.tapName(),
+                    ss.signalStrength()
+            ));
+        }
+
+        return Response.ok(response).build();
     }
 
     private BluetoothDeviceSummaryDetailsResponse buildResponse(BluetoothDeviceSummary dev,

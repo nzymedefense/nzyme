@@ -1,7 +1,7 @@
 package app.nzyme.core.rest.responses.dot11.clients;
 
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
-import app.nzyme.core.rest.responses.dot11.TapBasedSignalStrengthResponse;
+import app.nzyme.core.rest.responses.shared.TapBasedSignalStrengthResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
