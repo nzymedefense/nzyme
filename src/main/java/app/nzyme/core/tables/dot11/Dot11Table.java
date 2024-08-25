@@ -8,6 +8,7 @@ import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.dot11.bandits.Dot11BanditDescription;
 import app.nzyme.core.dot11.bandits.Dot11Bandits;
+import app.nzyme.core.dot11.db.monitoring.probereq.MonitoredProbeRequestEntry;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.*;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 public class Dot11Table implements DataTable {
 
@@ -92,6 +94,11 @@ public class Dot11Table implements DataTable {
     }
 
     private void writeClients(Tap tap, DateTime timestamp, Map<String, Dot11ClientReport> clients) {
+        Map<String, MonitoredProbeRequestEntry> monitoredProbeRequests = tablesService.getNzyme().getDot11()
+                .findAllMonitoredProbeRequests(tap.organizationId(), tap.tenantId(), Integer.MAX_VALUE, 0)
+                .stream()
+                .collect(Collectors.toMap(MonitoredProbeRequestEntry::ssid, entry -> entry));
+
         for (Map.Entry<String, Dot11ClientReport> entry : clients.entrySet()) {
             String clientMac = entry.getKey();
             Dot11ClientReport report = entry.getValue();
@@ -121,8 +128,31 @@ public class Dot11Table implements DataTable {
                 );
 
                 for (Map.Entry<String, Long> pr : report.probeRequestSSIDs().entrySet()) {
+                    String ssid = Tools.sanitizeSSID(pr.getKey());
+
+                    // Check if we are monitoring for this probe request SSID and raise alert if so.
+                    if (monitoredProbeRequests.containsKey(ssid)) {
+                        // Raise alert.
+                        Map<String, String> attributes = Maps.newHashMap();
+                        attributes.put("ssid", ssid);
+                        attributes.put("client_mac", clientMac);
+
+                        tablesService.getNzyme().getDetectionAlertService().raiseAlert(
+                                tap.organizationId(),
+                                tap.tenantId(),
+                                null,
+                                tap.uuid(),
+                                DetectionType.DOT11_PROBEREQ,
+                                Subsystem.DOT11,
+                                "Monitored probe request for SSID \"" + ssid + "\" detected in range.",
+                                attributes,
+                                new String[]{"ssid"},
+                                report.signalStrength().average()
+                        );
+                    }
+
                     batch.bind("client_id", clientDatabaseId)
-                            .bind("ssid", Tools.sanitizeSSID(pr.getKey()))
+                            .bind("ssid", ssid)
                             .bind("frame_count", pr.getValue())
                             .bind("tap_uuid", tap.uuid())
                             .add();

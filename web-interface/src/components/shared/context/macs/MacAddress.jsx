@@ -78,9 +78,7 @@ function MacAddress(props) {
       <div onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
         {typeElement()}{addressElement()}{randomizedIcon()}{contextElement()} {ouiElement()}
 
-        <ContextOverlayVisibilityWrapper
-            visible={overlayVisible}
-            overlay={overlay} />
+        {overlay ? <ContextOverlayVisibilityWrapper visible={overlayVisible} overlay={overlay} /> : null }
       </div>
   )
 

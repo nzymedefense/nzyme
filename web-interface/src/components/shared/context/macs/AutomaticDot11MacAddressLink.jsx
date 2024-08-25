@@ -1,7 +1,7 @@
 import React from "react";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import Dot11MacAddress from "./Dot11MacAddress";
-import Dot11MacAddressType, {ACCESS_POINT, CLIENT} from "./Dot11MacAddressType";
+import {ACCESS_POINT, CLIENT} from "./Dot11MacAddressType";
 import MacAddress from "./MacAddress";
 
 function AutomaticDot11MacAddressLink(props) {

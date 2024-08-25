@@ -2,6 +2,7 @@ import React from 'react';
 import HeadlineMenu from "../../../shared/HeadlineMenu";
 import {MONITORING_HEADLINE_MENU_ITEMS} from "../../Dot11HeadlineMenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import ProbeRequestsTableProxy from "./ProbeRequestsTableProxy";
 
 export default function ProbeRequestsPage() {
 
@@ -15,12 +16,12 @@ export default function ProbeRequestsPage() {
           </div>
 
           <div className="col-md-2">
-            <a href="https://go.nzyme.org/wifi-probereq-monitoring" className="btn btn-secondary float-end">Help</a>
+            <a href="https://go.nzyme.org/kb-probereq-monitoring" className="btn btn-secondary float-end">Help</a>
           </div>
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <h3>Probe Request Monitoring</h3>
@@ -37,7 +38,19 @@ export default function ProbeRequestsPage() {
             </div>
           </div>
         </div>
+
+        <div className="row mt-3">
+          <div className="col-xl-12 col-xxl-6">
+            <div className="card">
+              <div className="card-body">
+                <h3>Monitored Probe Requests</h3>
+
+                <ProbeRequestsTableProxy />
+              </div>
+            </div>
+          </div>
+        </div>
       </React.Fragment>
-  )
+)
 
 }

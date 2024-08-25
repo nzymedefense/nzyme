@@ -415,6 +415,43 @@ class Dot11Service {
           setFloors(response.data);
         })
   }
+
+  findAllMonitoredProbeRequests(organizationUUID, tenantUUID, limit, offset, setProbeRequests) {
+    RESTClient.get(
+        "/dot11/monitoring/proberequests",
+        {limit: limit, offset: offset, organization_uuid: organizationUUID, tenant_uuid: tenantUUID},
+        (response) => setProbeRequests(response.data)
+    )
+  }
+
+  findMonitoredProbeRequest(organizationUUID, tenantUUID, uuid, setProbeRequest) {
+    RESTClient.get(
+        `/dot11/monitoring/proberequests/show/${uuid}`,
+        {organization_uuid: organizationUUID, tenant_uuid: tenantUUID},
+        (response) => setProbeRequest(response.data)
+    )
+  }
+
+  createMonitoredProbeRequest(organizationUUID, tenantUUID, ssid, notes, onSuccess) {
+    RESTClient.post(
+        "/dot11/monitoring/proberequests",
+        {organization_id: organizationUUID, tenant_id: tenantUUID, ssid: ssid, notes: notes},
+        onSuccess
+    )
+  }
+
+  updateMonitoredProbeRequest(organizationUUID, tenantUUID, uuid, ssid, notes, onSuccess) {
+    RESTClient.put(
+        `/dot11/monitoring/proberequests/show/${uuid}`,
+        {organization_id: organizationUUID, tenant_id: tenantUUID, ssid: ssid, notes: notes},
+        onSuccess
+    )
+  }
+
+  deleteMonitoredProbeRequest(uuid, onSuccess) {
+    RESTClient.delete(`/dot11/monitoring/proberequests/show/${uuid}`, onSuccess)
+  }
+
 }
 
 export default Dot11Service

@@ -46,7 +46,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -160,6 +159,7 @@ public class NzymeHttpServer {
         resourceConfig.register(SSHResource.class);
         resourceConfig.register(ConnectResource.class);
         resourceConfig.register(BluetoothDevicesResource.class);
+        resourceConfig.register(Dot11MonitoredProbeRequestResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

@@ -136,6 +136,8 @@ import L4OverviewPage from "./components/ethernet/l4/L4OverviewPage";
 import BluetoothDeviceDetailsPage from "./components/bluetooth/devices/BluetoothDeviceDetailsPage";
 import BanditsPage from "./components/dot11/monitoring/bandits/BanditsPage";
 import ProbeRequestsPage from "./components/dot11/monitoring/probereq/ProbeRequestsPage";
+import CreateProbeRequestPage from "./components/dot11/monitoring/probereq/CreateProbeRequestPage";
+import EditProbeRequestPage from "./components/dot11/monitoring/probereq/EditProbeRequestPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -429,6 +431,8 @@ function App() {
                           <Route path={ApiRoutes.DOT11.MONITORING.SIMILAR_SSID_CONFIGURATION(':uuid')} element={<SimilarSSIDConfigurationPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.RESTRICTED_SUBSTRINGS_CONFIGURATION(':uuid')} element={<RestrictedSubstringsConfigurationPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.INDEX} element={<ProbeRequestsPage />}/>
+                          <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE(':organizationId', ':tenantId')} element={<CreateProbeRequestPage />}/>
+                          <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(':id', ':organizationId', ':tenantId')} element={<EditProbeRequestPage />}/>
 
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>

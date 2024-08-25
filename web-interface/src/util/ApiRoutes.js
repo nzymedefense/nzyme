@@ -179,7 +179,9 @@ const ApiRoutes = {
         CONFIGURATION: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/disco/configuration`,
       },
       PROBE_REQUESTS: {
-        INDEX: "/dot11/monitoring/proberequests"
+        INDEX: "/dot11/monitoring/proberequests",
+        CREATE: (organizationId, tenantId) => `/dot11/monitoring/proberequests/organizations/${organizationId}/tenants/${tenantId}/create`,
+        EDIT: (id, organizationId, tenantId) => `/dot11/monitoring/proberequests/organizations/${organizationId}/tenants/${tenantId}/edit/${id}`
       }
     },
     NETWORKS: {

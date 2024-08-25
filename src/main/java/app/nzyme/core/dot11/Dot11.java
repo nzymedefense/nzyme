@@ -5,6 +5,7 @@ import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
+import app.nzyme.core.dot11.db.monitoring.probereq.MonitoredProbeRequestEntry;
 import app.nzyme.core.dot11.monitoring.disco.db.Dot11DiscoMonitorMethodConfiguration;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
@@ -2133,6 +2134,119 @@ public class Dot11 {
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .mapTo(TapBasedSignalStrengthResultHistogramEntry.class)
                         .list()
+        );
+    }
+
+    public long countAllMonitoredProbeRequests(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_probereqs " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<MonitoredProbeRequestEntry> findAllMonitoredProbeRequests(UUID organizationId,
+                                                                          UUID tenantId,
+                                                                          int limit,
+                                                                          int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_monitored_probereqs " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(MonitoredProbeRequestEntry.class)
+                        .list()
+        );
+    }
+
+    public Optional<MonitoredProbeRequestEntry> findMonitoredProbeRequest(UUID uuid,
+                                                                          UUID organizationId,
+                                                                          UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_monitored_probereqs WHERE uuid = :uuid " +
+                                "AND organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(MonitoredProbeRequestEntry.class)
+                        .findOne()
+        );
+    }
+
+    public Optional<MonitoredProbeRequestEntry> findMonitoredProbeRequest(UUID uuid) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_monitored_probereqs WHERE uuid = :uuid")
+                        .bind("uuid", uuid)
+                        .mapTo(MonitoredProbeRequestEntry.class)
+                        .findOne()
+        );
+    }
+
+    public void createMonitoredProbeRequest(UUID organizationId,
+                                            UUID tenantId,
+                                            String ssid,
+                                            String notes) {
+        final String sanitizedNotes;
+        if (notes != null && !notes.trim().isEmpty()) {
+            sanitizedNotes = notes.trim();
+        } else {
+            sanitizedNotes = null;
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_monitored_probereqs(uuid, organization_id, tenant_id, " +
+                                "ssid, notes, updated_at, created_at) VALUES(:uuid, :organization_id, :tenant_id, " +
+                                ":ssid, :notes, NOW(), NOW())")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("ssid", ssid.trim())
+                        .bind("notes", sanitizedNotes)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .execute()
+        );
+    }
+
+    public void updateMonitoredProbeRequest(UUID uuid,
+                                            UUID organizationId,
+                                            UUID tenantId,
+                                            String ssid,
+                                            String notes) {
+        final String sanitizedNotes;
+        if (notes != null && !notes.trim().isEmpty()) {
+            sanitizedNotes = notes.trim();
+        } else {
+            sanitizedNotes = null;
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_monitored_probereqs SET ssid = :ssid, notes = :notes, " +
+                                "updated_at = NOW() WHERE uuid = :uuid AND organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id")
+                        .bind("ssid", ssid.trim())
+                        .bind("notes", sanitizedNotes)
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .execute()
+        );
+    }
+
+    public void deleteMonitoredProbeRequest(UUID uuid,
+                                            UUID organizationId,
+                                            UUID tenantId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_monitored_probereqs WHERE uuid = :uuid AND " +
+                                "organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .execute()
         );
     }
 

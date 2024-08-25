@@ -41,8 +41,9 @@ public class Permissions {
         put("dot11_monitoring_manage", Permission.create(
                 "dot11_monitoring_manage",
                 "Manage Monitored WiFi Networks",
-                "Allows user to create, edit and delete configurations of WiFi network monitoring. This can " +
-                        "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
+                "Allows user to create, edit and delete configurations of WiFi network monitoring, " +
+                        "including bandits and probe request SSIDs. This can potentially trigger alerts based on " +
+                        "data from all taps of tenant the user belongs to.",
                 false
         ));
         put("mac_aliases_manage", Permission.create(

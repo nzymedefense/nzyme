@@ -5400,5 +5400,41 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="create_dot11_monitored_probereqs" author="lennartkoopmann">
+        <createTable tableName="dot11_monitored_probereqs">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="notes" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
     
 </databaseChangeLog>

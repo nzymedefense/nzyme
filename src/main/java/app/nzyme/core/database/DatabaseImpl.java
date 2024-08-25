@@ -17,6 +17,7 @@ import app.nzyme.core.distributed.messaging.postgres.PostgresMessageEntryMapper;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueEntryMapper;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
+import app.nzyme.core.dot11.db.monitoring.probereq.MonitoredProbeRequestEntryMapper;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfigMapper;
 import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.ethernet.socks.db.SocksTunnelEntryMapper;
@@ -157,7 +158,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new TimerEntryMapper())
                 .registerRowMapper(new BluetoothDeviceEntryMapper())
                 .registerRowMapper(new BluetoothDeviceSummaryMapper())
-                .registerRowMapper(new GenericIntegerHistogramEntryMapper());
+                .registerRowMapper(new GenericIntegerHistogramEntryMapper())
+                .registerRowMapper(new MonitoredProbeRequestEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());
