@@ -68,14 +68,14 @@ impl TryFrom<u8> for ProtocolType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum DNSType {
     Query,
     QueryResponse
 }
 
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Eq, PartialEq)]
 pub enum DNSDataType {
     A,
     NS,
@@ -220,4 +220,58 @@ impl TryFrom<u16> for DNSClass {
         }
     }
 
-} 
+}
+
+#[derive(Debug)]
+pub enum DHCPv4OpCode {
+    Request,
+    Reply
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub enum DHCPv4MessageType {
+    Discover,
+    Offer,
+    Request,
+    Decline,
+    Ack,
+    Nack,
+    Release,
+    Inform,
+    ForceRenew,
+    LeaseQuery,
+    LeaseUnassigned,
+    LeaseUnknown,
+    LeaseActive,
+    BulkLeaseQuery,
+    LeaseQueryDone,
+    LeaseQueryData,
+    Unknown
+}
+
+
+impl TryFrom<u8> for DHCPv4MessageType {
+    type Error = ();
+
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            1  => Ok(DHCPv4MessageType::Discover),
+            2  => Ok(DHCPv4MessageType::Offer),
+            3  => Ok(DHCPv4MessageType::Request),
+            4  => Ok(DHCPv4MessageType::Decline),
+            5  => Ok(DHCPv4MessageType::Ack),
+            6  => Ok(DHCPv4MessageType::Nack),
+            7  => Ok(DHCPv4MessageType::Release),
+            8  => Ok(DHCPv4MessageType::Inform),
+            9  => Ok(DHCPv4MessageType::ForceRenew),
+            10 => Ok(DHCPv4MessageType::LeaseQuery),
+            11 => Ok(DHCPv4MessageType::LeaseUnassigned),
+            12 => Ok(DHCPv4MessageType::LeaseUnknown),
+            13 => Ok(DHCPv4MessageType::LeaseActive),
+            14 => Ok(DHCPv4MessageType::BulkLeaseQuery),
+            15 => Ok(DHCPv4MessageType::LeaseQueryDone),
+            16 => Ok(DHCPv4MessageType::LeaseQueryData),
+            _  => Ok(DHCPv4MessageType::Unknown),
+        }
+    }
+}

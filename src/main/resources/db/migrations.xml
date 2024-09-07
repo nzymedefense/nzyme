@@ -5437,4 +5437,79 @@
         </createTable>
     </changeSet>
     
+    <changeSet id="add_transparent_context" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="context_mac_addresses" columnName="name" />
+    </changeSet>
+
+    <changeSet id="add_transparent_context_fields" author="lennartkoopmann">
+        <addColumn tableName="context_mac_addresses">
+            <column name="hostnames" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="ip_addresses" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="create_own_table_for_transparent_context" author="lennartkoopmann">
+        <dropColumn tableName="context_mac_addresses" columnName="hostnames" />
+        <dropColumn tableName="context_mac_addresses" columnName="ip_addresses" />
+
+        <createTable tableName="context_mac_addresses_transparent">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="context_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="type" type="varchar(24)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ip_address" type="inet">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="hostname" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_macctx2transp"
+                                 baseTableName="context_mac_addresses_transparent"
+                                 baseColumnNames="context_id"
+                                 referencedTableName="context_mac_addresses"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="add_source_to_transparent_mac_address_context" author="lennartkoopmann">
+        <addColumn tableName="context_mac_addresses_transparent">
+            <column name="source" type="varchar(24)">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="rename_transparent_updated_to_last_seen" author="lennartkoopmann">
+        <renameColumn tableName="context_mac_addresses_transparent" oldColumnName="updated_at" newColumnName="last_seen" />
+    </changeSet>
+
 </databaseChangeLog>

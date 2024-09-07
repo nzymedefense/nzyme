@@ -42,7 +42,7 @@ function BluetoothMacAddressContextOverlay(props) {
             <i className="fa-solid fa-circle-info"></i> This MAC address has no context.
           </p>
 
-          <dl style={{marginBottom: 30}}>
+          <dl style={{marginBottom: 70}}>
             <dt>Device Type:</dt>
             <dd>Bluetooth Device</dd>
             <dt>Has Notes:</dt>
@@ -76,7 +76,7 @@ function BluetoothMacAddressContextOverlay(props) {
               ? ctx.context.description : "No Description"}
         </p>
 
-        <dl style={{marginBottom: 30}}>
+        <dl style={{marginBottom: 70}}>
           <dt>Device Type:</dt>
           <dd>Bluetooth Device</dd>
           <dt>Has Notes:</dt>

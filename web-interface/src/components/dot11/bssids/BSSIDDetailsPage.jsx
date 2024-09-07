@@ -141,7 +141,7 @@ function BSSIDDetailsPage() {
                   <dd>
                     {bssid.summary.bssid.oui ? bssid.summary.bssid.oui : "Unknown"}
                   </dd>
-                  <dt>Context</dt>
+                  <dt>Name &amp; Description (from Context)</dt>
                   <dd>
                     <MacAddressContextLine address={bssid.summary.bssid.address} context={bssid.summary.bssid.context} />
                   </dd>

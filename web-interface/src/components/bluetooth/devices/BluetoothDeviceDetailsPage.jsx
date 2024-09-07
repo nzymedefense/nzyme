@@ -107,7 +107,7 @@ export default function BluetoothDeviceDetailsPage() {
                       <dd>
                         <GroupedParameterList list={device.device.names}/>
                       </dd>
-                      <dt>Context</dt>
+                      <dt>Name &amp; Description (from Context)</dt>
                       <dd>
                         <MacAddressContextLine address={device.device.mac.address} context={device.device.mac.context}/>
                       </dd>

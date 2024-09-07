@@ -7,6 +7,9 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
 import moment from "moment";
 import ContextNotes from "../ContextNotes";
+import TransparentContextSource from "../../shared/context/transparent/TransparentContextSource";
+import TransparentIpAddressTable from "../../shared/context/transparent/TransparentIpAddressTable";
+import TransparentHostnamesTable from "../../shared/context/transparent/TransparentHostnamesTable";
 
 const contextService = new ContextService();
 
@@ -65,7 +68,8 @@ function MacAddressContextDetailsPage() {
               Context of MAC Address &quot;{context.mac_address}&quot;{' '}
 
               {context.mac_address_is_randomized ?
-                  <i className="fa-solid fa-triangle-exclamation text-danger cursor-help" title="This is a randomized MAC address." />
+                  <i className="fa-solid fa-triangle-exclamation text-danger cursor-help"
+                     title="This is a randomized MAC address."/>
                   : null}
             </h1>
           </div>
@@ -92,7 +96,8 @@ function MacAddressContextDetailsPage() {
 
                 <dl className="mb-0">
                   <dt>Name</dt>
-                  <dd><span className="context-name">{context.name}</span></dd>
+                  <dd>{context.name ? <span className="context-name">{context.name}</span> :
+                      <span className="text-muted">None</span>}</dd>
                   <dt>Description</dt>
                   <dd>{context.description}</dd>
                 </dl>
@@ -117,12 +122,34 @@ function MacAddressContextDetailsPage() {
         </div>
 
         <div className="row mt-3">
+          <div className="col-4">
+            <div className="card">
+              <div className="card-body">
+                <h3>IP Addresses</h3>
+
+                <TransparentIpAddressTable addresses={context.transparent_ip_addresses} />
+              </div>
+            </div>
+          </div>
+
+          <div className="col-4">
+            <div className="card">
+              <div className="card-body">
+                <h3>Hostnames</h3>
+
+                <TransparentHostnamesTable hostnames={context.transparent_hostnames} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
           <div className="col-8">
             <div className="card">
               <div className="card-body">
                 <h3>Notes</h3>
 
-                <ContextNotes notes={context.notes} />
+                <ContextNotes notes={context.notes}/>
               </div>
             </div>
           </div>

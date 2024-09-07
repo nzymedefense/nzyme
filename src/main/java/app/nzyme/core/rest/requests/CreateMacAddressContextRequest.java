@@ -17,7 +17,8 @@ public abstract class CreateMacAddressContextRequest {
     @NotEmpty @MacAddress
     public abstract String macAddress();
 
-    @NotEmpty @Size(max = 12)
+    @Nullable
+    @Size(max = 12)
     public abstract String name();
 
     @Nullable @Size(max = 32)

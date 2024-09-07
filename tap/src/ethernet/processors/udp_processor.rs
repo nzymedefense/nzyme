@@ -3,8 +3,8 @@ use log::{error};
 
 use crate::{ethernet::packets::Datagram, to_pipeline};
 use crate::ethernet::detection::l7_tagger::L7SessionTag;
-use crate::ethernet::detection::l7_tagger::L7SessionTag::{Dns, Unencrypted};
-use crate::ethernet::parsers::dns_parser;
+use crate::ethernet::detection::l7_tagger::L7SessionTag::{Dhcpv4, Dns, Unencrypted};
+use crate::ethernet::parsers::{dhcpv4_parser, dns_parser};
 use crate::ethernet::tables::udp_table::UdpTable;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::messagebus::bus::Bus;
@@ -60,6 +60,20 @@ impl UDPProcessor {
                 EthernetChannelName::DnsPipeline,
                 self.bus.dns_pipeline.sender,
                 Arc::new(dns),
+                size
+            );
+        }
+
+        if let Some(dhcp) = dhcpv4_parser::parse(datagram) {
+            tags.push(Dhcpv4);
+            tags.push(Unencrypted);
+
+            // To DHCPv4 pipeline.
+            let size = dhcp.estimate_struct_size();
+            to_pipeline!(
+                EthernetChannelName::Dhcpv4Pipeline,
+                self.bus.dhcpv4_pipeline.sender,
+                Arc::new(dhcp),
                 size
             );
         }

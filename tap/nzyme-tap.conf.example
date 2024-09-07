@@ -5,6 +5,13 @@ accept_insecure_certs = false
 
 [ethernet_interfaces.enp6s0]
 active = true
+networks = [
+  { 
+    cidr = "192.168.0.0/24",  
+    dns_servers = [ "192.168.0.1:53" ],
+    injection_interface = enp6s0
+  }
+]
 
 [wifi_interfaces.wlx00c0ca000000]
 active = true
@@ -55,5 +62,10 @@ pipeline_size = 1024
 [protocols.arp]
 pipeline_size = 1024
 
+[protocols.dhcpv4]
+pipeline_size = 1024
+
 [misc]
 training_period_minutes = 5
+context_mac_ip_retention_hours = 36 
+context_mac_hostname_retention_hours = 36

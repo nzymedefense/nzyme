@@ -5,6 +5,7 @@ import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.util.UUID;
 
 @AutoValue
@@ -19,6 +20,7 @@ public abstract class MacAddressContextDetailsResponse {
     @JsonProperty("mac_address_is_randomized")
     public abstract boolean macAddressIsRandomized();
 
+    @Nullable
     @JsonProperty("name")
     public abstract String name();
 
@@ -29,6 +31,12 @@ public abstract class MacAddressContextDetailsResponse {
     @Nullable
     @JsonProperty("notes")
     public abstract String notes();
+
+    @JsonProperty("transparent_ip_addresses")
+    public abstract List<MacAddressTransparentIpAddressResponse> transparentIpAddresses();
+
+    @JsonProperty("transparent_hostnames")
+    public abstract List<MacAddressTransparentHostnameResponse> transparentHostnames();
 
     @JsonProperty("organization_id")
     public abstract UUID organizationId();
@@ -50,7 +58,7 @@ public abstract class MacAddressContextDetailsResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static MacAddressContextDetailsResponse create(UUID uuid, String macAddress, boolean macAddressIsRandomized, String name, String description, String notes, UUID organizationId, String organizationName, UUID tenantId, String tenantName, DateTime createdAt, DateTime updatedAt) {
+    public static MacAddressContextDetailsResponse create(UUID uuid, String macAddress, boolean macAddressIsRandomized, String name, String description, String notes, List<MacAddressTransparentIpAddressResponse> transparentIpAddresses, List<MacAddressTransparentHostnameResponse> transparentHostnames, UUID organizationId, String organizationName, UUID tenantId, String tenantName, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .uuid(uuid)
                 .macAddress(macAddress)
@@ -58,6 +66,8 @@ public abstract class MacAddressContextDetailsResponse {
                 .name(name)
                 .description(description)
                 .notes(notes)
+                .transparentIpAddresses(transparentIpAddresses)
+                .transparentHostnames(transparentHostnames)
                 .organizationId(organizationId)
                 .organizationName(organizationName)
                 .tenantId(tenantId)
@@ -84,6 +94,10 @@ public abstract class MacAddressContextDetailsResponse {
         public abstract Builder description(String description);
 
         public abstract Builder notes(String notes);
+
+        public abstract Builder transparentIpAddresses(List<MacAddressTransparentIpAddressResponse> transparentIpAddresses);
+
+        public abstract Builder transparentHostnames(List<MacAddressTransparentHostnameResponse> transparentHostnames);
 
         public abstract Builder organizationId(UUID organizationId);
 

@@ -2,12 +2,15 @@ package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.context.db.MacAddressContextEntry;
+import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.dot11.db.*;
+import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.misc.CategorizedTransparentContextData;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.shared.TapBasedSignalStrengthResponse;
@@ -332,6 +335,15 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 authenticatedUser.getTenantId()
         );
 
+        CategorizedTransparentContextData transparentContext;
+        if (macContext.isPresent()) {
+            transparentContext =  RestHelpers.transparentContextDataToResponses(
+                    nzyme.getContextService().findTransparentMacAddressContext(macContext.get().id())
+            );
+        } else {
+            transparentContext = CategorizedTransparentContextData.create(Lists.newArrayList(), Lists.newArrayList());
+        }
+
         return Response.ok(ClientDetailsResponse.create(
                 Dot11MacAddressResponse.create(
                         c.mac(),
@@ -348,6 +360,8 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 c.connectedBSSIDHistory(),
                 c.firstSeen(),
                 c.lastSeen(),
+                transparentContext.ipAddresses(),
+                transparentContext.hostnames(),
                 c.probeRequests(),
                 activityHistogram,
                 connectedSignalStrengthsByTap,

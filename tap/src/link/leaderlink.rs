@@ -270,6 +270,30 @@ impl Leaderlink {
             .send()
     }
 
+    /*
+     * We will eventually likely want to have a generic method to send data to any path
+     * on the nodes.
+     */
+    pub fn send_context(&self, context: String) -> Result<Response, anyhow::Error> {
+        let mut uri = self.uri.clone();
+        uri.set_path("/api/taps/context");
+
+        match self.http_client
+            .post(uri)
+            .header("Content-Type", "application/json")
+            .body(context.clone())
+            .send() {
+            Ok(r) => {
+                if !r.status().is_success() {
+                    bail!("Could not send context. Received response code [HTTP {}].", r.status())
+                } else {
+                    Ok(r)
+                }
+            },
+            Err(e) => bail!("Could not send context. {}", e)
+        }
+    }
+
     fn build_system_metrics(&self) -> SystemMetricsReport {
         let cpu_load: f32;
         match self.system.cpu_load_aggregate() {

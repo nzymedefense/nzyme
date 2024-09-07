@@ -833,9 +833,9 @@ div.context-overlay {
     position: relative;
     top: -16px;
     left: -2px;
-    height: 195px;
+    height: 235px;
     width: 300px;
-    margin-top: -195px;
+    margin-top: -235px;
     margin-right: -300px;
     overflow: hidden;
     padding: 10px;

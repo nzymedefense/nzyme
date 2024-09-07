@@ -15,7 +15,7 @@ use crate::{
 };
 use crate::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
 use crate::configuration::Configuration;
-use crate::ethernet::packets::{SocksTunnel, SshSession};
+use crate::ethernet::packets::{DHCPv4Packet, SocksTunnel, SshSession};
 use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, EthernetChannelName};
 
 pub struct Bus {
@@ -33,7 +33,8 @@ pub struct Bus {
     pub udp_pipeline: NzymeChannel<Datagram>,
     pub dns_pipeline: NzymeChannel<DNSPacket>,
     pub ssh_pipeline: NzymeChannel<SshSession>,
-    pub socks_pipeline: NzymeChannel<SocksTunnel>
+    pub socks_pipeline: NzymeChannel<SocksTunnel>,
+    pub dhcpv4_pipeline: NzymeChannel<DHCPv4Packet>
 }
 
 pub struct NzymeChannelSender<T> {
@@ -102,6 +103,8 @@ impl Bus<> {
             bounded(configuration.protocols.socks.pipeline_size as usize);
         let (ssh_pipeline_sender, ssh_pipeline_receiver) =
             bounded(configuration.protocols.ssh.pipeline_size as usize);
+        let (dhcpv4_pipeline_sender, dhcpv4_pipeline_receiver) =
+            bounded(configuration.protocols.dhcpv4.pipeline_size as usize);
         Self {
             name,
             ethernet_broker: NzymeChannel {
@@ -178,11 +181,19 @@ impl Bus<> {
             },
             ssh_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {
-                    metrics,
+                    metrics: metrics.clone(),
                     sender: ssh_pipeline_sender,
                     name: EthernetChannelName::SshPipeline.to_string()
                 }),
                 receiver: Arc::new(ssh_pipeline_receiver),
+            },
+            dhcpv4_pipeline: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics,
+                    sender: dhcpv4_pipeline_sender,
+                    name: EthernetChannelName::Dhcpv4Pipeline.to_string()
+                }),
+                receiver: Arc::new(dhcpv4_pipeline_receiver),
             }
         }
     }

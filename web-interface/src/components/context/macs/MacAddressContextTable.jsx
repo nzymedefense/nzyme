@@ -5,6 +5,8 @@ import Paginator from "../../misc/Paginator";
 import ContextService from "../../../services/ContextService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import ApiRoutes from "../../../util/ApiRoutes";
+import FirstContextIpAddress from "../../shared/context/macs/details/FirstContextIpAddress";
+import FirstContextHostname from "../../shared/context/macs/details/FirstContextHostname";
 
 const contextService = new ContextService();
 
@@ -90,6 +92,8 @@ function MacAddressContextTable() {
           <tr>
             <th>MAC Address</th>
             <th>Name</th>
+            <th>IP Addresses</th>
+            <th>Hostnames</th>
             <th>Description</th>
           </tr>
           </thead>
@@ -103,10 +107,13 @@ function MacAddressContextTable() {
                     </a>{' '}
 
                     {m.mac_address_is_randomized ?
-                        <i className="fa-solid fa-triangle-exclamation text-danger cursor-help" title="This is a randomized MAC address." />
+                        <i className="fa-solid fa-triangle-exclamation text-danger cursor-help"
+                           title="This is a randomized MAC address."/>
                         : null}
                   </td>
                   <td>{m.name}</td>
+                  <td><FirstContextIpAddress addresses={m.transparent_ip_addresses} /></td>
+                  <td><FirstContextHostname hostnames={m.transparent_hostnames} /></td>
                   <td>{m.description}</td>
                 </tr>
             )

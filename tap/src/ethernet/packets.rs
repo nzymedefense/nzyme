@@ -1,3 +1,4 @@
+use std::mem;
 use std::net::IpAddr;
 use std::sync::Mutex;
 use chrono::{DateTime, Utc};
@@ -6,7 +7,7 @@ use crate::ethernet::detection::l7_tagger::L7SessionTag;
 use crate::ethernet::tcp_session_key::TcpSessionKey;
 use crate::ethernet::traffic_direction::TrafficDirection;
 
-use super::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass, DNSDataType};
+use super::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass, DNSDataType, DHCPv4MessageType, DHCPv4OpCode};
 
 #[derive(Debug)]
 pub struct EthernetData {
@@ -32,10 +33,10 @@ pub struct ARPPacket {
     pub hardware_length: u8,
     pub protocol_length: u8,
     pub operation: ARPOpCode,
-    pub sender_hardware_address: String,
-    pub sender_protocol_address: String,
-    pub target_hardware_address: String,
-    pub target_protocol_address: String,
+    pub sender_mac_address: String,
+    pub sender_address: IpAddr,
+    pub target_mac_address: String,
+    pub target_address: IpAddr,
     pub size: u32,
     pub timestamp: DateTime<Utc>
 }
@@ -214,25 +215,36 @@ pub struct SocksTunnel {
 impl SocksTunnel {
 
     pub fn estimate_struct_size(&self) -> u32 {
-        let mut x: u32 = 156; // known size members
+        // Fixed size types
+        let mut size = mem::size_of::<SocksType>() as u32             // socks_type
+            + mem::size_of::<SocksAuthenticationResult>() as u32      // authentication_status
+            + mem::size_of::<SocksConnectionHandshakeStatus>() as u32 // handshake_status
+            + mem::size_of::<GenericConnectionStatus>() as u32        // connection_status
+            + mem::size_of::<u64>() as u32                            // tunneled_bytes
+            + mem::size_of::<u16>() as u32 * 3                        // tunneled_destination_port, source_port, destination_port
+            + mem::size_of::<TcpSessionKey>() as u32                  // tcp_session_key
+            + mem::size_of::<IpAddr>() as u32 * 2                     // source_address, destination_address
+            + mem::size_of::<DateTime<Utc>>() as u32 * 2;             // established_at, most_recent_segment_time
 
-        if let Some(username) = &self.username {
-            x += username.len() as u32;
+        // Add size for terminated_at if it's present
+        size += mem::size_of::<DateTime<Utc>>() as u32 * self.terminated_at.is_some() as u32;
+
+        // Option<IpAddr> field (tunneled_destination_address)
+        size += mem::size_of::<IpAddr>() as u32 * self.tunneled_destination_address.is_some() as u32;
+
+        // Option<String> fields (username, tunneled_destination_host)
+        if let Some(ref username) = self.username {
+            size += username.len() as u32;
+        }
+        if let Some(ref tunneled_destination_host) = self.tunneled_destination_host {
+            size += tunneled_destination_host.len() as u32;
         }
 
-        if self.tunneled_destination_address.is_some() {
-            x += 16; // We'll just assume it's the largest type, IPv6. Accurate enough.
-        }
+        // Strings (source_mac, destination_mac)
+        size += self.source_mac.len() as u32
+            + self.destination_mac.len() as u32;
 
-        if let Some(host) = &self.tunneled_destination_host {
-            x += host.len() as u32;
-        }
-
-        if self.terminated_at.is_some() {
-            x += 8; // We'll just assume it's the largest type, IPv6. Accurate enough.
-        }
-
-        x
+        size
     }
 
 }
@@ -265,20 +277,76 @@ pub struct SshSession {
 impl SshSession {
 
     pub fn estimate_struct_size(&self) -> u32 {
-        let mut x: u32 = 103; // known size members
+        // Fixed size types
+        let mut size = mem::size_of::<SshVersion>() as u32 * 2 // client_version, server_version
+            + mem::size_of::<GenericConnectionStatus>() as u32 // connection_status
+            + mem::size_of::<u64>() as u32                     // tunneled_bytes
+            + mem::size_of::<TcpSessionKey>() as u32           // tcp_session_key
+            + mem::size_of::<u16>() as u32 * 2                 // source_port, destination_port
+            + mem::size_of::<IpAddr>() as u32 * 2              // source_address, destination_address
+            + mem::size_of::<DateTime<Utc>>() as u32 * 2;      // established_at, most_recent_segment_time
 
-        x += (self.client_version.version.len() + self.client_version.software.len()) as u32;
-        x += (self.server_version.version.len() + self.server_version.software.len()) as u32;
+        // Add size for terminated_at if it's present
+        size += mem::size_of::<DateTime<Utc>>() as u32 * self.terminated_at.is_some() as u32;
 
-        if let Some(c) = &self.client_version.comments {
-            x += c.len() as u32;
-        }
+        // Strings (source_mac, destination_mac)
+        size += self.source_mac.len() as u32
+            + self.destination_mac.len() as u32;
 
-        if let Some(c) = &self.server_version.comments {
-            x += c.len() as u32;
-        }
-
-        x
+        size
     }
 
+}
+
+#[derive(Debug)]
+pub struct DHCPv4Packet {
+    pub source_mac: String,
+    pub destination_mac: String,
+    pub source_address: IpAddr,
+    pub destination_address: IpAddr,
+    pub source_port: u16,
+    pub destination_port: u16,
+
+    pub op_code: DHCPv4OpCode,
+    pub hardware_type: HardwareType,
+    pub transaction_id: u32,
+    pub seconds_elapsed: u16,
+    pub dhcp_client_address: Option<IpAddr>,
+    pub assigned_address: Option<IpAddr>,
+    pub client_mac_address: String,
+
+    // From DHCP options.
+    pub message_type: DHCPv4MessageType,
+    pub requested_ip_address: Option<IpAddr>,
+    pub hostname: Option<String>
+}
+
+impl DHCPv4Packet {
+
+    pub fn estimate_struct_size(&self) -> u32 {
+        // Fixed size types
+        let mut size = mem::size_of::<u16>() as u32 * 3 // source_port, destination_port, seconds_elapsed
+            + mem::size_of::<u32>() as u32              // transaction_id
+            + mem::size_of::<DHCPv4OpCode>() as u32     // op_code
+            + mem::size_of::<HardwareType>() as u32     // hardware_type
+            + mem::size_of::<DHCPv4MessageType>() as u32 // message_type
+            + mem::size_of::<IpAddr>() as u32 * 2;      // source_address, destination_address
+
+        // Strings (including client_mac_address)
+        size += self.source_mac.len() as u32
+            + self.destination_mac.len() as u32
+            + self.client_mac_address.len() as u32;
+
+        // Option<IpAddr> fields (dhcp_client_address, assigned_address, requested_ip_address)
+        size += mem::size_of::<IpAddr>() as u32 * self.dhcp_client_address.is_some() as u32;
+        size += mem::size_of::<IpAddr>() as u32 * self.assigned_address.is_some() as u32;
+        size += mem::size_of::<IpAddr>() as u32 * self.requested_ip_address.is_some() as u32;
+
+        // Option<String> fields (hostname)
+        if let Some(ref hostname) = self.hostname {
+            size += hostname.len() as u32;
+        }
+
+        size
+    }
 }

@@ -18,6 +18,8 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
 import ReadOnlyTrilaterationResultFloorPlanWrapper
   from "../../shared/floorplan/ReadOnlyTrilaterationResultFloorPlanWrapper";
+import TransparentIpAddressTable from "../../shared/context/transparent/TransparentIpAddressTable";
+import TransparentHostnamesTable from "../../shared/context/transparent/TransparentHostnamesTable";
 
 const dot11Service = new Dot11Service();
 
@@ -105,7 +107,7 @@ function ClientDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Client Information"
-                                       fixedAppliedTimeRange={Presets.ALL_TIME} />
+                                       fixedAppliedTimeRange={Presets.ALL_TIME}/>
 
                 <dl className="mb-0">
                   <dt>MAC Address</dt>
@@ -118,7 +120,7 @@ function ClientDetailsPage() {
                                                                href={ApiRoutes.DOT11.NETWORKS.BSSID(client.connected_bssid.mac.address)}
                                                                showOui={true}/> : "None"}{' '}
                   </dd>
-                  <dt>Context</dt>
+                  <dt>Name &amp; Description (from Context)</dt>
                   <dd>
                     <MacAddressContextLine address={client.mac.address} context={client.mac.context}/>
                   </dd>
@@ -130,7 +132,7 @@ function ClientDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Activity"
-                                       fixedAppliedTimeRange={Presets.ALL_TIME} />
+                                       fixedAppliedTimeRange={Presets.ALL_TIME}/>
 
                 <dl className="mb-0">
                   <dt>First Seen</dt>
@@ -147,11 +149,37 @@ function ClientDetailsPage() {
         </div>
 
         <div className="row mt-3">
+          <div className="col-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="IP Addresses"
+                                       hideTimeRange={true} />
+
+                <TransparentIpAddressTable addresses={client.transparent_ip_addresses}/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Hostnames"
+                                       hideTimeRange={true} />
+
+                <TransparentHostnamesTable hostnames={client.transparent_hostnames}/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Observed Connections to BSSIDs"
-                                       fixedAppliedTimeRange={Presets.ALL_TIME} />
+                                       fixedAppliedTimeRange={Presets.ALL_TIME}/>
 
                 <ClientBSSIDHistory connectedBSSID={client.connected_bssid ? client.connected_bssid : null}
                                     bssids={client.connected_bssid_history}/>
@@ -163,7 +191,7 @@ function ClientDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Observed Probe Requests"
-                                       fixedAppliedTimeRange={Presets.ALL_TIME} />
+                                       fixedAppliedTimeRange={Presets.ALL_TIME}/>
 
                 <ObservedProbeRequestsList probeRequests={client.probe_requests}/>
               </div>
@@ -252,7 +280,7 @@ function ClientDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Data &amp; Control Frames"
-                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24} />
+                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24}/>
 
                 <ClientActivityHistogram histogram={client.activity_histogram}
                                          parameter="connected_frames"
@@ -267,7 +295,7 @@ function ClientDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Probe Request Frames"
-                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24} />
+                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24}/>
 
                 <ClientActivityHistogram histogram={client.activity_histogram}
                                          parameter="disconnected_frames"
@@ -282,7 +310,7 @@ function ClientDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Disconnection Frames"
-                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24} />
+                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24}/>
 
                 <ClientActivityHistogram histogram={client.activity_histogram}
                                          parameter="disconnection_activity"
@@ -302,9 +330,10 @@ function ClientDetailsPage() {
               <div className="card-body">
                 <CardTitleWithControls title="Top Disconnection Pairs"
                                        timeRange={discoPairsTimeRange}
-                                       setTimeRange={setDiscoPairsTimeRange} />
+                                       setTimeRange={setDiscoPairsTimeRange}/>
 
-                <DiscoPairsTable bssids={[client.mac.address]} highlightValue={client.mac} timeRange={discoPairsTimeRange} />
+                <DiscoPairsTable bssids={[client.mac.address]} highlightValue={client.mac}
+                                 timeRange={discoPairsTimeRange}/>
 
                 <p className="mb-0 mt-3 text-muted">
                   The MAC address of this client is <span className="highlighted">highlighted.</span>

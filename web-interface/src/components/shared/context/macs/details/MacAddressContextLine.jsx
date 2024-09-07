@@ -2,7 +2,7 @@ import React from "react";
 import WithPermission from "../../../../misc/WithPermission";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 
-function MacAddressContextLine(props) {
+export default function MacAddressContextLine(props) {
 
   const address = props.address;
   const ctx = props.context;
@@ -22,10 +22,11 @@ function MacAddressContextLine(props) {
 
   return (
       <React.Fragment>
-        <span className="context-name">{ctx.name}</span> ({ctx.description})
+        {ctx.name ? <span className="context-name">{ctx.name}</span> : <span className="text-muted">No Name</span> }
+        {' '}
+        {ctx.description ? <span>({ctx.description})</span> : null }
+
       </React.Fragment>
   )
 
 }
-
-export default MacAddressContextLine;

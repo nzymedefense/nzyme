@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 use std::env;
 use std::fs::read_to_string;
-
+use std::net::{IpAddr, SocketAddr};
+use std::str::FromStr;
 use anyhow::{Result, bail, Error};
+use cidr::{Ipv4Cidr, Ipv6Cidr};
 use regex::Regex;
 use reqwest::Url;
 use serde::Deserialize;
@@ -27,7 +29,24 @@ pub struct General {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct EthernetInterface {
-    pub active: bool
+    pub active: bool,
+    pub networks: Option<Vec<EthernetInterfaceNetwork>>
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EthernetInterfaceNetwork {
+    pub cidr: String,
+    pub dns_servers: Vec<SocketAddr>,
+    pub injection_interface: Option<String>,
+
+    /*
+     * The IP address and MAC address will be automatically determined if not set. In almost
+     * all cases, it should not have to be set manually. That's why it's not in the example
+     * config and in such a flat format. The user should usually not have to worry about it
+     * and this is purely a fallback for edge cases where it needs to be set manually.
+     */
+    pub injection_interface_ip_address: Option<String>,
+    pub injection_interface_mac_address: Option<String>
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -66,7 +85,9 @@ pub struct Performance {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Misc {
-    pub training_period_minutes: i32
+    pub training_period_minutes: i32,
+    pub context_mac_ip_retention_hours: i32,
+    pub context_mac_hostname_retention_hours: i32
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -76,7 +97,8 @@ pub struct Protocols {
     pub dns: ProtocolsDns,
     pub arp: ProtocolsArp,
     pub ssh: ProtocolsSsh,
-    pub socks: ProtocolsSocks
+    pub socks: ProtocolsSocks,
+    pub dhcpv4: ProtocolsDhcpv4
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -112,6 +134,11 @@ pub struct ProtocolsSocks {
     pub pipeline_size: i32,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct ProtocolsDhcpv4 {
+    pub pipeline_size: i32,
+}
+
 pub fn load(path: String) -> Result<Configuration, Error> {
     let config_str = match read_to_string(path) {
         Ok(c) => c,
@@ -135,6 +162,15 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     if doc.misc.training_period_minutes < 0 {
         bail!("Configuration variable `training_period_minutes` must be set to a value greater or equal to 0.");
     }
+
+    if doc.misc.context_mac_ip_retention_hours < 0 {
+        bail!("Configuration variable `context_mac_ip_retention_hours` must be set to a value greater or equal to 0.");
+    }
+
+    if doc.misc.context_mac_hostname_retention_hours < 0 {
+        bail!("Configuration variable `context_mac_hostname_retention_hours` must be set to a value greater or equal to 0.");
+    }
+
     if doc.performance.ethernet_brokers <= 0 {
         bail!("Configuration variable `ethernet_brokers` must be set to a value greater than 0.");
     }
@@ -154,6 +190,22 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     if let Some(size) = doc.performance.bluetooth_devices_pipeline_size {
         if size <= 0 {
             bail!("Configuration variable `bluetooth_devices_pipeline_size` must be set to a value greater than 0.");
+        }
+    }
+
+    // Ethernet captures.
+
+    // Ensure CIDRs are valid.
+    if let Some(ethernet_interfaces) = doc.clone().ethernet_interfaces {
+        for (interface_name, interface) in ethernet_interfaces {
+            if let Some(networks) = &interface.networks {
+                for network in networks {
+                    if !is_valid_cidr(&network.cidr) {
+                        bail!("CIDR [{}] of ethernet interface [{}] is invalid.",
+                            network.cidr, interface_name);
+                    }
+                }
+            }
         }
     }
     
@@ -196,6 +248,11 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     // SOCKS.
     if doc.protocols.socks.pipeline_size <= 0 {
         bail!("Configuration variable `protocols.socks.pipeline_size` must be set to a value greater than 0.");
+    }
+
+    // DHCPv4.
+    if doc.protocols.dhcpv4.pipeline_size <= 0 {
+        bail!("Configuration variable `protocols.dhcpv4.pipeline_size` must be set to a value greater than 0.");
     }
 
     // Validate WiFi interfaces configuration
@@ -289,4 +346,24 @@ fn substitute_environment_variables(config_str: &String) -> Result<String, Error
     }
 
     Ok(substituted_string.clone())
+}
+
+
+fn is_valid_cidr(cidr_str: &str) -> bool {
+    if !cidr_str.contains('/') {
+        return false;
+    }
+
+    // Try parsing as IPv4 CIDR
+    if Ipv4Cidr::from_str(cidr_str).is_ok() {
+        return true;
+    }
+
+    // Try parsing as IPv6 CIDR
+    if Ipv6Cidr::from_str(cidr_str).is_ok() {
+        return true;
+    }
+
+    // If neither succeeded, it's not a valid CIDR
+    false
 }

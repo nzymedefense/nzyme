@@ -1,14 +1,22 @@
 package app.nzyme.core.rest;
 
+import app.nzyme.core.context.ContextService;
+import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
 import app.nzyme.core.ethernet.L4AddressData;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.tcp.TcpSessionState;
+import app.nzyme.core.rest.misc.CategorizedTransparentContextData;
+import app.nzyme.core.rest.responses.context.MacAddressTransparentHostnameResponse;
+import app.nzyme.core.rest.responses.context.MacAddressTransparentIpAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.L4AddressAttributesResponse;
 import app.nzyme.core.rest.responses.ethernet.L4AddressGeoResponse;
 import app.nzyme.core.rest.responses.ethernet.L4AddressResponse;
 import app.nzyme.core.rest.responses.ethernet.L4AddressTypeResponse;
+import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.List;
 
 
 public class RestHelpers {
@@ -83,4 +91,42 @@ public class RestHelpers {
 
         return "Invalid";
     }
+
+    public static CategorizedTransparentContextData transparentContextDataToResponses(List<MacAddressTransparentContextEntry> data) {
+        List<MacAddressTransparentIpAddressResponse> transparentIps = Lists.newArrayList();
+        List<MacAddressTransparentHostnameResponse> transparentHostnames = Lists.newArrayList();
+
+        for (MacAddressTransparentContextEntry t : data) {
+            ContextService.TransparentDataType dataType;
+
+            try {
+                dataType = ContextService.TransparentDataType.valueOf(t.type());
+            } catch (IllegalArgumentException e) {
+                LOG.error("Invalid transparent context data type [{}].", t.type());
+                continue;
+            }
+
+            switch (dataType) {
+                case IP_ADDRESS:
+                    transparentIps.add(MacAddressTransparentIpAddressResponse.create(
+                            t.ipAddress().toString().substring(1),
+                            t.source(),
+                            t.lastSeen(),
+                            t.createdAt()
+                    ));
+                    break;
+                case HOSTNAME:
+                    transparentHostnames.add(MacAddressTransparentHostnameResponse.create(
+                            t.hostname(),
+                            t.source(),
+                            t.lastSeen(),
+                            t.createdAt()
+                    ));
+                    break;
+            }
+        }
+
+        return CategorizedTransparentContextData.create(transparentIps, transparentHostnames);
+    }
+
 }

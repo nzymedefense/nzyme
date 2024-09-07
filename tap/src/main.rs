@@ -11,8 +11,10 @@ mod logging;
 mod dot11;
 mod alerting;
 mod bluetooth;
-pub mod distributor;
+mod distributor;
 mod log_monitor;
+mod state;
+mod context;
 
 use std::{time, thread::{self, sleep}, time::Duration, sync::{Arc, Mutex}, process::exit};
 use anyhow::Error;
@@ -25,12 +27,13 @@ use log::{error, info};
 use toml::map::Map;
 use messagebus::bus::Bus;
 use system_state::SystemState;
-
+use crate::context::context_engine::ContextEngine;
 use crate::dot11::{channel_hopper::ChannelHopper};
 use crate::dot11::dot11_broker::Dot11Broker;
 use crate::ethernet::ethernet_broker::EthernetBroker;
 use crate::helpers::network::Channel;
 use crate::log_monitor::LogMonitor;
+use crate::state::state::State;
 
 #[derive(Parser,Debug)]
 struct Arguments {
@@ -157,11 +160,22 @@ fn main() {
     };
 
     let tables = Arc::new(Tables::new(metrics.clone(), leaderlink.clone(), ethernet_bus.clone(), &configuration));
+    let state = Arc::new(State::new(metrics.clone()));
+    state.initialize();
 
     let tables_bg = tables.clone();
     thread::spawn(move || {
         tables_bg.run_jobs();
     });
+
+    // Start context engine.
+    let context_engine = Arc::new(ContextEngine::new(
+        state.clone(),
+        leaderlink.clone(),
+        metrics.clone(), 
+        configuration.clone())
+    );
+    context_engine.initialize();
 
     // Ethernet handler.
     let ethernet_handlerbus = ethernet_bus.clone();
@@ -307,6 +321,8 @@ fn main() {
                        dot11_bus.clone(),
                        bluetooth_bus.clone(),
                        tables.clone(),
+                       state.clone(),
+                       context_engine,
                        system_state,
                        metrics.clone(),
                        &configuration);

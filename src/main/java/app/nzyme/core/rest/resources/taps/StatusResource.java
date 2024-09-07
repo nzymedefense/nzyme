@@ -22,6 +22,7 @@ import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
 import app.nzyme.core.rest.resources.taps.reports.HelloReport;
 import app.nzyme.core.rest.resources.taps.reports.StatusReport;
+import app.nzyme.core.rest.resources.taps.reports.context.TapContextReport;
 import jakarta.ws.rs.POST;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -65,6 +66,17 @@ public class StatusResource {
 
         LOG.debug("Received status from tap [{}]: {}", tapId, report);
         nzyme.getTapManager().registerTapStatus(report, request.getRemoteAddr(), tapId);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @Path("/context")
+    @POST
+    public Response context(@Context SecurityContext sc, TapContextReport report) {
+        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+
+        LOG.debug("Received context report from tap [{}]: {}", tapId, report);
+        nzyme.getTapManager().registerTapContext(report, tapId);
 
         return Response.status(Response.Status.CREATED).build();
     }

@@ -2,7 +2,7 @@ use std::{
     collections::HashMap,
     sync::{Arc, Mutex}, thread
 };
-
+use std::net::IpAddr;
 use log::error;
 use std::time::Duration;
 use crate::bluetooth::tables::bluetooth_table::BluetoothTable;
@@ -21,7 +21,7 @@ use crate::metrics::Metrics;
 pub struct Tables {
     pub dot11: Arc<Mutex<Dot11Table>>,
     pub bluetooth: Arc<Mutex<BluetoothTable>>,
-    pub arp: Arc<Mutex<HashMap<String, HashMap<String, u128>>>>,
+    pub arp: Arc<Mutex<HashMap<IpAddr, HashMap<String, u128>>>>,
     pub tcp: Arc<Mutex<TcpTable>>,
     pub udp: Arc<Mutex<UdpTable>>,
     pub dns: Arc<Mutex<DnsTable>>,

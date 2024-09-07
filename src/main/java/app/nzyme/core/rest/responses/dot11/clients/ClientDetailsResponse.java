@@ -1,5 +1,7 @@
 package app.nzyme.core.rest.responses.dot11.clients;
 
+import app.nzyme.core.rest.responses.context.MacAddressTransparentHostnameResponse;
+import app.nzyme.core.rest.responses.context.MacAddressTransparentIpAddressResponse;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.shared.TapBasedSignalStrengthResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,6 +31,12 @@ public abstract class ClientDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
+    @JsonProperty("transparent_ip_addresses")
+    public abstract List<MacAddressTransparentIpAddressResponse> transparentIpAddresses();
+
+    @JsonProperty("transparent_hostnames")
+    public abstract List<MacAddressTransparentHostnameResponse> transparentHostnames();
+
     @JsonProperty("probe_requests")
     public abstract List<String> probeRequests();
 
@@ -50,13 +58,15 @@ public abstract class ClientDetailsResponse {
     @JsonProperty("data_retention_days")
     public abstract int dataRetentionDays();
 
-    public static ClientDetailsResponse create(Dot11MacAddressResponse mac, ConnectedBSSID connectedBSSID, List<ConnectedBSSID> connectedBSSIDHistory, DateTime firstSeen, DateTime lastSeen, List<String> probeRequests, Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram, List<TapBasedSignalStrengthResponse> connectedSignalStrength, List<TapBasedSignalStrengthResponse> disconnectedSignalStrength, List<ClientSignalStrengthResponse> connectedSignalStrengthHistogram, List<ClientSignalStrengthResponse> disconnectedSignalStrengthHistogram, int dataRetentionDays) {
+    public static ClientDetailsResponse create(Dot11MacAddressResponse mac, ConnectedBSSID connectedBSSID, List<ConnectedBSSID> connectedBSSIDHistory, DateTime firstSeen, DateTime lastSeen, List<MacAddressTransparentIpAddressResponse> transparentIpAddresses, List<MacAddressTransparentHostnameResponse> transparentHostnames, List<String> probeRequests, Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram, List<TapBasedSignalStrengthResponse> connectedSignalStrength, List<TapBasedSignalStrengthResponse> disconnectedSignalStrength, List<ClientSignalStrengthResponse> connectedSignalStrengthHistogram, List<ClientSignalStrengthResponse> disconnectedSignalStrengthHistogram, int dataRetentionDays) {
         return builder()
                 .mac(mac)
                 .connectedBSSID(connectedBSSID)
                 .connectedBSSIDHistory(connectedBSSIDHistory)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
+                .transparentIpAddresses(transparentIpAddresses)
+                .transparentHostnames(transparentHostnames)
                 .probeRequests(probeRequests)
                 .activityHistogram(activityHistogram)
                 .connectedSignalStrength(connectedSignalStrength)
@@ -82,6 +92,10 @@ public abstract class ClientDetailsResponse {
         public abstract Builder firstSeen(DateTime firstSeen);
 
         public abstract Builder lastSeen(DateTime lastSeen);
+
+        public abstract Builder transparentIpAddresses(List<MacAddressTransparentIpAddressResponse> transparentIpAddresses);
+
+        public abstract Builder transparentHostnames(List<MacAddressTransparentHostnameResponse> transparentHostnames);
 
         public abstract Builder probeRequests(List<String> probeRequests);
 

@@ -2,10 +2,12 @@ package app.nzyme.core.rest.responses.dot11;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 
 @AutoValue
 public abstract class Dot11MacAddressContextResponse {
 
+    @Nullable
     @JsonProperty("name")
     public abstract String name();
 

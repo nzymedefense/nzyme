@@ -4,6 +4,7 @@ import app.nzyme.core.bluetooth.db.BluetoothDeviceEntryMapper;
 import app.nzyme.core.bluetooth.db.BluetoothDeviceSummaryMapper;
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.context.db.MacAddressContextEntryMapper;
+import app.nzyme.core.context.db.MacAddressTransparentContextEntryMapper;
 import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntryMapper;
 import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntryMapper;
 import app.nzyme.core.database.generic.NumberBucketAggregationResultMapper;
@@ -159,7 +160,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new BluetoothDeviceEntryMapper())
                 .registerRowMapper(new BluetoothDeviceSummaryMapper())
                 .registerRowMapper(new GenericIntegerHistogramEntryMapper())
-                .registerRowMapper(new MonitoredProbeRequestEntryMapper());
+                .registerRowMapper(new MonitoredProbeRequestEntryMapper())
+                .registerRowMapper(new MacAddressTransparentContextEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

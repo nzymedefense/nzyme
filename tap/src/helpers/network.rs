@@ -1,6 +1,9 @@
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::str::FromStr;
 use anyhow::{bail, Error};
+use cidr::{Ipv4Cidr, Ipv6Cidr};
 use log::error;
+use pnet::datalink::MacAddr;
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
@@ -52,6 +55,23 @@ pub fn to_mac_address_string(bytes: &[u8]) -> String {
 
     format!("{:02X?}:{:02X?}:{:02X?}:{:02X?}:{:02X?}:{:02X?}",
         bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5])
+}
+
+pub fn mac_address_from_string(mac_str: &str) -> Option<MacAddr> {
+    let parts: Vec<&str> = mac_str.split(':').collect();
+    if parts.len() != 6 {
+        return None;
+    }
+    let bytes: Vec<u8> = parts
+        .into_iter()
+        .filter_map(|part| u8::from_str_radix(part, 16).ok())
+        .collect();
+
+    if bytes.len() == 6 {
+        Some(MacAddr::new(bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]))
+    } else {
+        None
+    }
 }
 
 pub fn to_ipv4_address_string(bytes: &[u8]) -> String {
@@ -199,4 +219,23 @@ pub fn string_up_to_null_byte(b: &[u8]) -> Option<String> {
                     .ok()
             }
         })
+}
+
+pub fn ip_in_cidr(ip: IpAddr, cidr_str: &str) -> bool {
+    match ip {
+        IpAddr::V4(ipv4) => {
+            if let Ok(cidr) = Ipv4Cidr::from_str(cidr_str) {
+                cidr.contains(&ipv4)
+            } else {
+                false
+            }
+        }
+        IpAddr::V6(ipv6) => {
+            if let Ok(cidr) = Ipv6Cidr::from_str(cidr_str) {
+                cidr.contains(&ipv6)
+            } else {
+                false
+            }
+        }
+    }
 }

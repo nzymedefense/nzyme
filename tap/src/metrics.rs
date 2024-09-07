@@ -61,7 +61,8 @@ pub struct Channels {
     udp_pipeline: ChannelUtilization,
     dns_pipeline: ChannelUtilization,
     socks_pipeline: ChannelUtilization,
-    ssh_pipeline: ChannelUtilization
+    ssh_pipeline: ChannelUtilization,
+    dhcpv4_pipeline: ChannelUtilization
 }
 
 #[derive(Clone, Display)]
@@ -195,6 +196,7 @@ impl Metrics {
             "DnsPipeline" => &mut self.channels.dns_pipeline,
             "SocksPipeline" => &mut self.channels.socks_pipeline,
             "SshPipeline" => &mut self.channels.ssh_pipeline,
+            "Dhcpv4Pipeline" => &mut self.channels.dhcpv4_pipeline,
             _ => panic!("Unknown channel {}", channel)
         }
     }

@@ -42,7 +42,7 @@ function MacAddressContextForm(props) {
   }
 
   const formIsReady = () => {
-    return isValidMACAddress(macAddress) && name && name.trim().length > 0
+    return isValidMACAddress(macAddress)
   }
 
   const submit = () => {
@@ -84,7 +84,7 @@ function MacAddressContextForm(props) {
       <hr />
 
       <div className="mb-3">
-        <label htmlFor="name" className="form-label">Name <small>Required</small></label>
+        <label htmlFor="name" className="form-label">Name</label>
         <input type="text" className="form-control" id="name" maxLength={12}
                value={name} onChange={(e) => { setName(formatName(e.target.value)) }} />
         <div className="form-text">

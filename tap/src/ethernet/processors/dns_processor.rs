@@ -1,19 +1,28 @@
 use std::{sync::{Mutex, Arc}, collections::HashMap, thread};
-
+use std::net::{IpAddr, Ipv4Addr};
+use std::ptr::copy;
 use crate::{ethernet::{packets::DNSPacket, types::DNSType}, helpers::math, system_state::SystemState, metrics::Metrics};
 
 use chrono::{DateTime, Utc, Duration};
 use clokwerk::{Scheduler, TimeUnits};
-use log::{error, debug};
+use log::{error, debug, info};
 use crate::configuration::Configuration;
+use crate::context::context_engine::ContextEngine;
+use crate::context::context_source::ContextSource;
 use crate::ethernet::tables::dns_table::DnsTable;
+use crate::ethernet::types::DNSDataType::PTR;
+use crate::ethernet::types::DNSType::QueryResponse;
+use crate::state::state::State;
 
 pub struct DnsProcessor {
     system_state: Arc<SystemState>,
+    state: Arc<State>,
+    context_engine: Arc<ContextEngine>,
     dns_table: Arc<Mutex<DnsTable>>,
     query_entropy: Arc<Mutex<HashMap<DateTime<Utc>, f32>>>,
     response_entropy: Arc<Mutex<HashMap<DateTime<Utc>, f32>>>,
-    entropy_zscore_threshold: f32
+    entropy_zscore_threshold: f32,
+    dns_servers: Vec<IpAddr>
 }
 
 struct ZScoreResult {
@@ -24,6 +33,8 @@ struct ZScoreResult {
 impl DnsProcessor {
 
     pub fn new(system_state: Arc<SystemState>,
+               state: Arc<State>,
+               context_engine: Arc<ContextEngine>,
                dns_table: Arc<Mutex<DnsTable>>, 
                metrics: Arc<Mutex<Metrics>>,
                configuration: &Configuration) -> Self {
@@ -74,17 +85,88 @@ impl DnsProcessor {
                 thread::sleep(std::time::Duration::from_millis(10));
             }
         });
-        
+
+        // Build a list of our own DNS servers, according to network config.
+        let mut dns_servers = Vec::new();
+        if let Some(interfaces) = &configuration.ethernet_interfaces {
+            for interface in interfaces.values() {
+                if let Some(networks) = &interface.networks {
+                    dns_servers.extend(
+                        networks.iter()
+                            .flat_map(|network| network.dns_servers.iter()
+                                    .map(|dns_server| dns_server.ip()))
+                    );
+                }
+            }
+        }
+
         DnsProcessor {
             system_state,
+            state,
+            context_engine,
             dns_table,
             query_entropy,
             response_entropy,
-            entropy_zscore_threshold: configuration.protocols.dns.entropy_zscore_threshold
+            dns_servers,
+            entropy_zscore_threshold: configuration.protocols.dns.entropy_zscore_threshold,
         }
     }
 
     pub fn process(&mut self, packet: Arc<DNSPacket>) {
+        // Is this a PTR response for an internal host that we can use for context?
+        if packet.dns_type == QueryResponse && packet.queries.is_some()
+            && packet.transaction_id.is_some() {
+
+            if let Some(queries) = &packet.queries {
+                for query in queries {
+                    if query.dns_type == PTR && self.dns_servers.contains(&packet.source_address) {
+                        // This is a PTR response from one of our servers.
+                        if let Some(responses) = &packet.responses {
+                            for response in responses {
+                                if response.value.is_none() {
+                                   continue; 
+                                }
+                                
+                                match self.state.arp.lock() {
+                                    Ok(arp) => {
+                                        let response_ip = match Self::reverse_dns_to_ip(&response.name) {
+                                            Some(ip) => ip,
+                                            None => {
+                                                info!("{:?}", packet);
+
+                                                error!("Could not parse PTR response [{}] to IP.",
+                                                    response.name);
+                                                continue;
+                                            }
+                                        };
+
+                                        let mac = match arp.mac_address_of_ip_address(response_ip) {
+                                            Some(mac) => mac,
+                                            None => {
+                                                debug!("We don't have MAC address of IP [{}] in \
+                                                    ARP table.", response_ip);
+                                                continue;
+                                            }
+                                        };
+
+                                        self.context_engine.register_mac_address_hostname(
+                                            mac,
+                                            response.value.clone().unwrap(),
+                                            packet.transaction_id,
+                                            ContextSource::PtrDns
+                                        );
+                                    },
+                                    Err(e) => {
+                                        error!("Could not acquire ARP state: {}", e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         match self.dns_table.lock() {
             Ok(mut table) => {
                 match packet.dns_type {
@@ -219,6 +301,29 @@ impl DnsProcessor {
             },
             Err(e) => error!("Could not acquire entropy table mutex for retention cleaning: {}", e)
         }
+    }
+
+    fn reverse_dns_to_ip(dns_str: &str) -> Option<IpAddr> {
+        // Split the string by the '.' and take the first four parts (the IP segments).
+        let parts: Vec<&str> = dns_str.split('.').take(4).collect();
+
+        // Ensure we have exactly four parts (this is necessary for a valid IPv4 address).
+        if parts.len() == 4 {
+            // Reverse the parts and try to parse them as u8, which is valid for IPv4 segments.
+            let octets: Vec<u8> = parts.iter()
+                .rev()  // Reverse the parts to get the correct order.
+                .filter_map(|part| part.parse().ok())  // Parse each segment to u8.
+                .collect();
+
+            // Ensure we got exactly 4 valid octets.
+            if octets.len() == 4 {
+                // Construct the Ipv4Addr and return it wrapped in an IpAddr.
+                return Some(IpAddr::V4(Ipv4Addr::new(octets[0], octets[1], octets[2], octets[3])));
+            }
+        }
+
+        // Return None if parsing failed.
+        None
     }
 
 }

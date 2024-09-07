@@ -1,0 +1,14 @@
+export default function TransparentContextSource(props) {
+
+  const source = props.source;
+
+  switch (source) {
+    case "Arp":
+      return "ARP"
+    case "PtrDns":
+      return "Reverse DNS"
+    case "Dhcp":
+      return "DHCP"
+  }
+
+}

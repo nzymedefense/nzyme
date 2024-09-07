@@ -1,6 +1,12 @@
 package app.nzyme.core.taps;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.context.ContextService;
+import app.nzyme.core.context.db.MacAddressContextEntry;
+import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
+import app.nzyme.core.rest.resources.taps.reports.context.TapContextDataReport;
+import app.nzyme.core.rest.resources.taps.reports.context.TapContextReport;
+import app.nzyme.core.rest.resources.taps.reports.context.TapMacContextReport;
 import app.nzyme.core.shared.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
@@ -19,6 +25,8 @@ import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -368,6 +376,126 @@ public class TapManager {
             }
         }
 
+    }
+
+    public void registerTapContext(TapContextReport report, UUID tapUuid) {
+        Optional<Tap> tap = findTap(tapUuid);
+
+        if (tap.isEmpty()) {
+            LOG.error("No tap with UUID [{}] found. Not writing context.", tapUuid);
+            return;
+        }
+
+        for (TapMacContextReport mac : report.macs()) {
+            Optional<MacAddressContextEntry> existingContext = nzyme.getContextService()
+                    .findMacAddressContextNoCache(mac.mac(), tap.get().organizationId(), tap.get().tenantId());
+
+            long contextId;
+            List<MacAddressTransparentContextEntry> transparentContext;
+            if (existingContext.isPresent()) {
+                // Update existing context.
+                contextId = existingContext.get().id();
+
+                nzyme.getContextService().updateMacAddressContext(
+                        existingContext.get().uuid(),
+                        tap.get().organizationId(),
+                        tap.get().tenantId(),
+                        existingContext.get().name(),
+                        existingContext.get().description(),
+                        existingContext.get().notes()
+                );
+
+                transparentContext = nzyme.getContextService()
+                        .findTransparentMacAddressContext(existingContext.get().id());
+            } else {
+                // Write new context.
+                contextId = nzyme.getContextService().createMacAddressContext(
+                        mac.mac(),
+                        null,
+                        "Created via transparent context.",
+                        null,
+                        tap.get().organizationId(),
+                        tap.get().tenantId()
+                );
+
+                transparentContext = Lists.newArrayList();
+            }
+
+            nzyme.getDatabase().useHandle(handle -> {
+                for (TapContextDataReport ip : mac.ipAddresses()) {
+                    try {
+                        InetAddress ipAddr = InetAddress.getByName(ip.value());
+
+                        boolean exists = false;
+                        for (MacAddressTransparentContextEntry tcx : transparentContext) {
+                            if (ContextService.TransparentDataType.valueOf(tcx.type()).equals(ContextService.TransparentDataType.IP_ADDRESS)
+                                    && tcx.tapUuid().equals(tapUuid)
+                                    && tcx.source().equals(ip.source())
+                                    && tcx.ipAddress() != null
+                                    && tcx.ipAddress().equals(ipAddr)) {
+                                exists = true;
+                            }
+                        }
+
+                        if (!exists) {
+                            nzyme.getContextService().registerTransparentMacAddressIpAddress(
+                                    handle,
+                                    contextId,
+                                    tapUuid,
+                                    ip.source(),
+                                    ipAddr,
+                                    ip.lastSeen()
+                            );
+                        } else {
+                            nzyme.getContextService().touchTransparentMacAddressIpAddress(
+                                    handle,
+                                    contextId,
+                                    tapUuid,
+                                    ip.source(),
+                                    ipAddr,
+                                    ip.lastSeen()
+                            );
+                        }
+                    } catch (UnknownHostException e) {
+                        LOG.error("Could not parse IP address [{}] for context <{}>.",
+                                ip.value(), contextId, e);
+                    }
+                }
+
+                for (TapContextDataReport hostname : mac.hostnames()) {
+                    boolean exists = false;
+                    for (MacAddressTransparentContextEntry tcx : transparentContext) {
+                        if (ContextService.TransparentDataType.valueOf(tcx.type()).equals(ContextService.TransparentDataType.HOSTNAME)
+                                && tcx.tapUuid().equals(tapUuid)
+                                && tcx.source().equals(hostname.source())
+                                && tcx.hostname() != null
+                                && tcx.hostname().equals(hostname.value())) {
+                            exists = true;
+                        }
+                    }
+
+                    if (!exists) {
+                        nzyme.getContextService().registerTransparentMacAddressHostname(
+                                handle,
+                                contextId,
+                                tapUuid,
+                                hostname.source(),
+                                hostname.value(),
+                                hostname.lastSeen()
+                        );
+                    } else {
+                        nzyme.getContextService().touchTransparentMacAddressHostname(
+                                handle,
+                                contextId,
+                                tapUuid,
+                                hostname.source(),
+                                hostname.value(),
+                                hostname.lastSeen()
+                        );
+                    }
+                }
+            });
+        }
     }
 
     private void writeGauge(UUID tapUUID, String metricName, Long metricValue, DateTime timestamp) {

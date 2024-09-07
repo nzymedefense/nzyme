@@ -1,13 +1,17 @@
 package app.nzyme.core.rest.resources.context;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.context.ContextService;
 import app.nzyme.core.context.db.MacAddressContextEntry;
+import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
 import app.nzyme.core.dot11.Dot11MacAddressMetadata;
 import app.nzyme.core.dot11.db.monitoring.MonitoredBSSID;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
+import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.constraints.MacAddress;
+import app.nzyme.core.rest.misc.CategorizedTransparentContextData;
 import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
 import app.nzyme.core.rest.requests.UpdateMacAddressContextRequest;
 import app.nzyme.core.rest.responses.context.*;
@@ -26,6 +30,8 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -37,6 +43,8 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
 public class AssetContextResource extends UserAuthenticatedResource {
+
+    private static final Logger LOG = LogManager.getLogger(AssetContextResource.class);
 
     @Inject
     private NzymeNode nzyme;
@@ -53,20 +61,27 @@ public class AssetContextResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        String filter;
         if (addressFilter == null || addressFilter.trim().isEmpty()) {
             // Set to SQL wildcard matcher to find all addresses if no filter set.
-            addressFilter = "%";
+            filter = "%";
         } else {
-            addressFilter = "%" + addressFilter.trim().toUpperCase() + "%";
+            filter = "%" + addressFilter.trim().toUpperCase() + "%";
         }
 
         long count = nzyme.getContextService().countMacAddressContext(organizationId, tenantId);
 
         List<MacAddressContextDetailsResponse> addresses = Lists.newArrayList();
-        for (MacAddressContextEntry m : nzyme.getContextService()
-                .findAllMacAddressContext(organizationId, tenantId, addressFilter, limit, offset)) {
-            addresses.add(entryToResponse(m));
-        }
+
+        nzyme.getDatabase().useHandle(handle -> {
+            for (MacAddressContextEntry m : nzyme.getContextService()
+                    .findAllMacAddressContext(organizationId, tenantId, filter, limit, offset)) {
+                List<MacAddressTransparentContextEntry> transparent = nzyme.getContextService()
+                        .findTransparentMacAddressContext(handle, m.id());
+
+                addresses.add(entryToResponse(m, transparent));
+            }
+        });
 
         return Response.ok(MacAddressContextListResponse.create(count, addresses)).build();
     }
@@ -88,7 +103,10 @@ public class AssetContextResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(entryToResponse(ctx.get())).build();
+        List<MacAddressTransparentContextEntry> transparent = nzyme.getContextService()
+                .findTransparentMacAddressContext(ctx.get().id());
+
+        return Response.ok(entryToResponse(ctx.get(), transparent)).build();
     }
 
     @GET
@@ -103,7 +121,10 @@ public class AssetContextResource extends UserAuthenticatedResource {
 
         MacAddressContextDetailsResponse contextDetails;
         if (ctx.isPresent()) {
-            contextDetails = entryToResponse(ctx.get());
+            List<MacAddressTransparentContextEntry> transparent = nzyme.getContextService()
+                    .findTransparentMacAddressContext(ctx.get().id());
+
+            contextDetails = entryToResponse(ctx.get(), transparent);
         } else {
             contextDetails = null;
         }
@@ -153,7 +174,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
     @POST
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_aliases_manage" })
     @Path("/mac")
-    public Response createMac(@Context SecurityContext sc, CreateMacAddressContextRequest req) {
+    public Response createMac(@Context SecurityContext sc, @Valid CreateMacAddressContextRequest req) {
         if (!passedTenantDataAccessible(sc, req.organizationId(), req.tenantId())) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -227,7 +248,9 @@ public class AssetContextResource extends UserAuthenticatedResource {
         return Response.status(Response.Status.OK).build();
     }
 
-    private MacAddressContextDetailsResponse entryToResponse(MacAddressContextEntry m) {
+    private MacAddressContextDetailsResponse entryToResponse(MacAddressContextEntry m,
+                                                             List<MacAddressTransparentContextEntry> transparent) {
+        CategorizedTransparentContextData transparentData = RestHelpers.transparentContextDataToResponses(transparent);
         return MacAddressContextDetailsResponse.create(
                 m.uuid(),
                 m.macAddress(),
@@ -235,6 +258,8 @@ public class AssetContextResource extends UserAuthenticatedResource {
                 m.name(),
                 m.description(),
                 m.notes(),
+                transparentData.ipAddresses(),
+                transparentData.hostnames(),
                 m.organizationId(),
                 null,
                 m.tenantId(),

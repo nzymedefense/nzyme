@@ -1,6 +1,7 @@
 package app.nzyme.core.context.db;
 
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
 import java.util.UUID;
@@ -11,8 +12,10 @@ public abstract class MacAddressContextEntry {
     public abstract long id();
     public abstract UUID uuid();
     public abstract String macAddress();
+    @Nullable
     public abstract String name();
     public abstract String description();
+    @Nullable
     public abstract String notes();
     public abstract UUID organizationId();
     public abstract UUID tenantId();

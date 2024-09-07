@@ -5,6 +5,8 @@ import WithPermission from "../../../../misc/WithPermission";
 import AssetImage from "../../../../misc/AssetImage";
 import {truncate} from "../../../../../util/Tools";
 import ContextOwnerInformation from "../../../../context/ContextOwnerInformation";
+import FirstContextIpAddress from "./FirstContextIpAddress";
+import FirstContextHostname from "./FirstContextHostname";
 
 const contextService = new ContextService();
 
@@ -100,6 +102,10 @@ function Dot11MacAddressContextOverlay(props) {
             <dd>{contextType(ctx.context_type)}</dd>
             <dt>Is Monitored:</dt>
             <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
+            <dt>IP Address</dt>
+            <dd>None</dd>
+            <dt>Hostname</dt>
+            <dd>None</dd>
             <dt>Has Notes:</dt>
             <dd>No</dd>
             <dt>Is Randomized:</dt>
@@ -135,6 +141,10 @@ function Dot11MacAddressContextOverlay(props) {
         <dl>
           <dt>Device Type:</dt>
           <dd>{contextType(ctx.context_type)}</dd>
+          <dt>IP Address</dt>
+          <dd><FirstContextIpAddress addresses={ctx.context.transparent_ip_addresses}/></dd>
+          <dt>Hostname</dt>
+          <dd><FirstContextHostname hostnames={ctx.context.transparent_hostnames}/></dd>
           <dt>Is Monitored:</dt>
           <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
           <dt>Has Notes:</dt>
