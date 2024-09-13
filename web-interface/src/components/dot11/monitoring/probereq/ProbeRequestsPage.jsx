@@ -1,5 +1,5 @@
 import React from 'react';
-import HeadlineMenu from "../../../shared/HeadlineMenu";
+import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {MONITORING_HEADLINE_MENU_ITEMS} from "../../Dot11HeadlineMenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import ProbeRequestsTableProxy from "./ProbeRequestsTableProxy";
@@ -10,9 +10,8 @@ export default function ProbeRequestsPage() {
       <React.Fragment>
         <div className="row">
           <div className="col-md-10">
-            <HeadlineMenu headline={"Probe Requests"}
-                          items={MONITORING_HEADLINE_MENU_ITEMS}
-                          activeRoute={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.INDEX}/>
+            <SectionMenuBar items={MONITORING_HEADLINE_MENU_ITEMS}
+                            activeRoute={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.INDEX}/>
           </div>
 
           <div className="col-md-2">

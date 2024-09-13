@@ -1,7 +1,7 @@
 import React from "react";
 import BuiltinBanditsTable from "./BuiltinBanditsTable";
 import CustomBanditsTableProxy from "./CustomBanditsTableProxy";
-import HeadlineMenu from "../../../shared/HeadlineMenu";
+import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {MONITORING_HEADLINE_MENU_ITEMS} from "../../Dot11HeadlineMenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
 
@@ -11,9 +11,8 @@ export default function BanditsPage() {
       <React.Fragment>
         <div className="row">
           <div className="col-md-10">
-            <HeadlineMenu headline={"Bandits"}
-                          items={MONITORING_HEADLINE_MENU_ITEMS}
-                          activeRoute={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX} />
+            <SectionMenuBar items={MONITORING_HEADLINE_MENU_ITEMS}
+                            activeRoute={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX} />
           </div>
 
           <div className="col-md-2">

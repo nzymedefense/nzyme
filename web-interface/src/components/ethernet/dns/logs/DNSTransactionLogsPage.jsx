@@ -10,7 +10,7 @@ import DNSTransactionCountChart from "./widgets/DNSTransactionCountChart";
 import {DNS_FILTER_FIELDS} from "../DNSFilterFields";
 import {useLocation} from "react-router-dom";
 import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
-import HeadlineMenu from "../../../shared/HeadlineMenu";
+import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {DNS_HEADLINE_MENU_ITEMS} from "../DNSHeadlineMenuItems";
 
 const useQuery = () => {
@@ -51,21 +51,10 @@ export default function DNSTransactionLogsPage() {
         <AlphaFeatureAlert/>
 
         <div className="row">
-          <div className="col-12">
-            <nav aria-label="breadcrumb">
-              <ol className="breadcrumb">
-                <li className="breadcrumb-item"><a href={ApiRoutes.ETHERNET.OVERVIEW}>Ethernet</a></li>
-                <li className="breadcrumb-item"><a href={ApiRoutes.ETHERNET.DNS.INDEX}>DNS</a></li>
-                <li className="breadcrumb-item active" aria-current="page">Transaction Log</li>
-              </ol>
-            </nav>
-          </div>
-
           <div className="row mb-3">
             <div className="col-md-12">
-              <HeadlineMenu headline={"DNS Transaction Logs"}
-                            items={DNS_HEADLINE_MENU_ITEMS}
-                            activeRoute={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS}/>
+              <SectionMenuBar items={DNS_HEADLINE_MENU_ITEMS}
+                              activeRoute={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS}/>
             </div>
           </div>
 
