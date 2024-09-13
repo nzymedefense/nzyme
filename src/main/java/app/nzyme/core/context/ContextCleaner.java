@@ -1,6 +1,5 @@
-package app.nzyme.core.periodicals.context;
+package app.nzyme.core.context;
 
-import app.nzyme.core.context.ContextService;
 import app.nzyme.core.periodicals.Periodical;
 import org.joda.time.DateTime;
 

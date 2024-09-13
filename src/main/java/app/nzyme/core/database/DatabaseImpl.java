@@ -161,7 +161,9 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new BluetoothDeviceSummaryMapper())
                 .registerRowMapper(new GenericIntegerHistogramEntryMapper())
                 .registerRowMapper(new MonitoredProbeRequestEntryMapper())
-                .registerRowMapper(new MacAddressTransparentContextEntryMapper());
+                .registerRowMapper(new MacAddressTransparentContextEntryMapper())
+                .registerRowMapper(new SSIDWithOrganizationAndTenantMapper())
+                .registerRowMapper(new Dot11KnownNetworkMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

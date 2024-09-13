@@ -5512,4 +5512,40 @@
         <renameColumn tableName="context_mac_addresses_transparent" oldColumnName="updated_at" newColumnName="last_seen" />
     </changeSet>
 
+    <changeSet id="create_dot11_known_networks" author="lennartkoopmann">
+        <createTable tableName="dot11_known_networks">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid" type="varchar(32)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="is_approved" type="boolean">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    
 </databaseChangeLog>

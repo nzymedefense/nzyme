@@ -65,6 +65,11 @@ public class TimeRangeFactory {
         return TimeRange.create(new DateTime(0), new DateTime().plusYears(1000), true);
     }
 
+    public static TimeRange oneMinute() {
+        DateTime now = DateTime.now();
+        return TimeRange.create(now.minusMinutes(1), now, false);
+    }
+
     public static TimeRange fifteenMinutes() {
         DateTime now = DateTime.now();
         return TimeRange.create(now.minusMinutes(15), now, false);

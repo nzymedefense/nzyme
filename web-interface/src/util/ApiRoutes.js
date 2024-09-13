@@ -182,6 +182,9 @@ const ApiRoutes = {
         INDEX: "/dot11/monitoring/proberequests",
         CREATE: (organizationId, tenantId) => `/dot11/monitoring/proberequests/organizations/${organizationId}/tenants/${tenantId}/create`,
         EDIT: (id, organizationId, tenantId) => `/dot11/monitoring/proberequests/organizations/${organizationId}/tenants/${tenantId}/edit/${id}`
+      },
+      SSIDS: {
+        INDEX: "/dot11/monitoring/ssids"
       }
     },
     NETWORKS: {

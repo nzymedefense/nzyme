@@ -30,6 +30,7 @@ import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.monitoring.Dot11SignalTrackMonitor;
 import app.nzyme.core.dot11.monitoring.disco.Dot11DiscoMonitor;
+import app.nzyme.core.dot11.monitoring.ssids.MonitoredSSIDWriter;
 import app.nzyme.core.ethernet.EthernetConnectionCleaner;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
@@ -37,7 +38,7 @@ import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.periodicals.connect.ConnectStatusReporter;
-import app.nzyme.core.periodicals.context.ContextCleaner;
+import app.nzyme.core.context.ContextCleaner;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.registry.RegistryChangeMonitorImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
@@ -253,6 +254,7 @@ public class NzymeNodeImpl implements NzymeNode {
         periodicalManager.scheduleAtFixedRate(new Dot11SignalTrackMonitor(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new Dot11DiscoMonitor(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new ContextCleaner(getContextService()), 0, 1, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new MonitoredSSIDWriter(this), 1, 1, TimeUnit.MINUTES);
         if (configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {

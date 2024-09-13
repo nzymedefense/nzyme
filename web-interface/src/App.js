@@ -138,6 +138,7 @@ import BanditsPage from "./components/dot11/monitoring/bandits/BanditsPage";
 import ProbeRequestsPage from "./components/dot11/monitoring/probereq/ProbeRequestsPage";
 import CreateProbeRequestPage from "./components/dot11/monitoring/probereq/CreateProbeRequestPage";
 import EditProbeRequestPage from "./components/dot11/monitoring/probereq/EditProbeRequestPage";
+import SSIDMonitoringPage from "./components/dot11/monitoring/ssid/SSIDMonitoringPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -433,6 +434,7 @@ function App() {
                           <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.INDEX} element={<ProbeRequestsPage />}/>
                           <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE(':organizationId', ':tenantId')} element={<CreateProbeRequestPage />}/>
                           <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(':id', ':organizationId', ':tenantId')} element={<EditProbeRequestPage />}/>
+                          <Route path={ApiRoutes.DOT11.MONITORING.SSIDS.INDEX} element={<SSIDMonitoringPage />}/>
 
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>

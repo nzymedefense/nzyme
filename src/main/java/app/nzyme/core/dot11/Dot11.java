@@ -180,6 +180,21 @@ public class Dot11 {
         );
     }
 
+    public List<SSIDWithOrganizationAndTenant> findAllSSIDsAndOwner(TimeRange timeRange) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT s.ssid, t.organization_id, t.tenant_id, " +
+                                "MAX(s.created_at) AS last_seen " +
+                                "FROM dot11_ssids AS s " +
+                                "LEFT JOIN taps AS t ON s.tap_uuid = t.uuid " +
+                                "WHERE s.created_at >= :tr_from AND s.created_at <= :tr_to " +
+                                "GROUP BY s.ssid, t.organization_id, t.tenant_id")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .mapTo(SSIDWithOrganizationAndTenant.class)
+                        .list()
+        );
+    }
+
     public Optional<BSSIDSummary> findBSSID(String bssid, int minutes, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
@@ -2247,6 +2262,17 @@ public class Dot11 {
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .execute()
+        );
+    }
+
+    public List<Dot11KnownNetwork> findAllKnownNetworks(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_known_networks " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(Dot11KnownNetwork.class)
+                        .list()
         );
     }
 
