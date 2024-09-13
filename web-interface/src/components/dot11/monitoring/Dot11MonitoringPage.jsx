@@ -2,7 +2,7 @@ import React from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
 import MonitoredNetworksTable from "./MonitoredNetworksTable";
 import SectionMenuBar from "../../shared/SectionMenuBar";
-import {MONITORING_HEADLINE_MENU_ITEMS} from "../Dot11HeadlineMenuItems";
+import {MONITORING_MENU_ITEMS} from "./Dot11MenuItems";
 
 function Dot11MonitoringPage() {
 
@@ -10,7 +10,7 @@ function Dot11MonitoringPage() {
     <React.Fragment>
       <div className="row">
         <div className="col-md-10">
-          <SectionMenuBar items={MONITORING_HEADLINE_MENU_ITEMS}
+          <SectionMenuBar items={MONITORING_MENU_ITEMS}
                           activeRoute={ApiRoutes.DOT11.MONITORING.INDEX} />
         </div>
 

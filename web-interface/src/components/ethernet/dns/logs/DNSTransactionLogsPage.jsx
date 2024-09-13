@@ -11,7 +11,7 @@ import {DNS_FILTER_FIELDS} from "../DNSFilterFields";
 import {useLocation} from "react-router-dom";
 import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
-import {DNS_HEADLINE_MENU_ITEMS} from "../DNSHeadlineMenuItems";
+import {DNS_MENU_ITEMS} from "../DNSMenuItems";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -53,7 +53,7 @@ export default function DNSTransactionLogsPage() {
         <div className="row">
           <div className="row mb-3">
             <div className="col-md-12">
-              <SectionMenuBar items={DNS_HEADLINE_MENU_ITEMS}
+              <SectionMenuBar items={DNS_MENU_ITEMS}
                               activeRoute={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS}/>
             </div>
           </div>

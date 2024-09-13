@@ -11,7 +11,7 @@ import DNSEntropyLogTable from "./entropy/DNSEntropyLogTable";
 import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 import ApiRoutes from "../../../util/ApiRoutes";
 import SectionMenuBar from "../../shared/SectionMenuBar";
-import {DNS_HEADLINE_MENU_ITEMS} from "./DNSHeadlineMenuItems";
+import {DNS_MENU_ITEMS} from "./DNSMenuItems";
 
 function byteConversion (x) {
   return x / 1024
@@ -63,7 +63,7 @@ function DNSOverviewPage () {
 
         <div className="row">
           <div className="col-md-12">
-            <SectionMenuBar items={DNS_HEADLINE_MENU_ITEMS}
+            <SectionMenuBar items={DNS_MENU_ITEMS}
                             activeRoute={ApiRoutes.ETHERNET.DNS.INDEX} />
           </div>
         </div>
