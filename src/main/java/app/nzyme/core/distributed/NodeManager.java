@@ -8,6 +8,7 @@ import app.nzyme.core.logging.CountingAppender;
 import app.nzyme.core.monitoring.TimerEntry;
 import app.nzyme.core.taps.db.metrics.BucketSize;
 import app.nzyme.core.util.MetricNames;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
@@ -352,7 +353,17 @@ public class NodeManager {
     }
 
     private double getLocalMetricsGaugeValue(MetricRegistry metrics, String metricName) {
-        Object value = metrics.getGauges().get(metricName).getValue();
+        Gauge gauge = metrics.getGauges().get(metricName);
+
+        /*
+         * The gauge *should* always exist because it's tied to a metric name that we defined, but this may
+         * be called before the gauge is initialized.
+         */
+        if (gauge == null) {
+            return 0;
+        }
+
+        Object value = gauge.getValue();
 
         if (value == null) {
             return 0;
