@@ -160,6 +160,7 @@ public class NzymeHttpServer {
         resourceConfig.register(ConnectResource.class);
         resourceConfig.register(BluetoothDevicesResource.class);
         resourceConfig.register(Dot11MonitoredProbeRequestResource.class);
+        resourceConfig.register(Dot11MonitoredSSIDsResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

@@ -5547,5 +5547,17 @@
             </column>
         </createTable>
     </changeSet>
+
+    <changeSet id="add_organization_and_tenant_to_registry" author="lennartkoopmann">
+        <addColumn tableName="registry">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
     
 </databaseChangeLog>

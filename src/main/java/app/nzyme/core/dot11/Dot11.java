@@ -28,6 +28,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 import org.joda.time.DateTime;
 
@@ -180,16 +181,16 @@ public class Dot11 {
         );
     }
 
-    public List<SSIDWithOrganizationAndTenant> findAllSSIDsAndOwner(TimeRange timeRange) {
+    public List<SSIDWithOrganizationAndTenant> findAllCurrentlyActiveSSIDsAndOwner() {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.ssid, t.organization_id, t.tenant_id, " +
-                                "MAX(s.created_at) AS last_seen " +
-                                "FROM dot11_ssids AS s " +
+                                "COUNT(DISTINCT date_trunc('minute', s.created_at)) AS active_minutes, " +
+                                "MAX(s.created_at) AS last_seen FROM dot11_ssids AS s " +
                                 "LEFT JOIN taps AS t ON s.tap_uuid = t.uuid " +
-                                "WHERE s.created_at >= :tr_from AND s.created_at <= :tr_to " +
-                                "GROUP BY s.ssid, t.organization_id, t.tenant_id")
-                        .bind("tr_from", timeRange.from())
-                        .bind("tr_to", timeRange.to())
+                                "WHERE s.created_at >= NOW() - INTERVAL '5 minutes' " +
+                                "GROUP BY s.ssid, t.organization_id, t.tenant_id " +
+                                "HAVING COUNT(DISTINCT date_trunc('minute', s.created_at)) >= 5 " +
+                                "AND MAX(s.created_at) >= (NOW() - INTERVAL '5 minutes')")
                         .mapTo(SSIDWithOrganizationAndTenant.class)
                         .list()
         );
@@ -2265,14 +2266,93 @@ public class Dot11 {
         );
     }
 
+    public long countAllKnownNetworks(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+            handle.createQuery("SELECT COUNT(*) FROM dot11_known_networks " +
+                            "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                    .bind("organization_id", organizationId)
+                    .bind("tenant_id", tenantId)
+                    .mapTo(Long.class)
+                    .one()
+        );
+    }
+
     public List<Dot11KnownNetwork> findAllKnownNetworks(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle -> findAllKnownNetworks(handle, organizationId, tenantId));
+    }
+
+    public List<Dot11KnownNetwork> findAllKnownNetworks(Handle handle, UUID organizationId, UUID tenantId) {
+        return handle.createQuery("SELECT * FROM dot11_known_networks " +
+                        "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                .bind("organization_id", organizationId)
+                .bind("tenant_id", tenantId)
+                .mapTo(Dot11KnownNetwork.class)
+                .list();
+    }
+
+    public Optional<Dot11KnownNetwork> findKnownNetwork(UUID uuid, UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM dot11_known_networks " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                                "WHERE uuid = :uuid AND organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id")
+                        .bind("uuid", uuid)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .mapTo(Dot11KnownNetwork.class)
-                        .list()
+                        .findOne()
+        );
+    }
+
+    public void changeStatusOfKnownNetwork(long id, boolean isApproved) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_known_networks SET is_approved = :is_approved WHERE id = :id")
+                        .bind("id", id)
+                        .bind("is_approved", isApproved)
+                        .execute()
+        );
+    }
+
+    public void deleteKnownNetwork(long id) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_known_networks WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
+    public void deleteKnownNetworksOfTenant(UUID organizationId, UUID tenantId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_known_networks " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .execute()
+        );
+    }
+
+    public void createKnownNetwork(Handle handle, String ssid, boolean isApproved, UUID organizationId, UUID tenantId) {
+        handle.createUpdate("INSERT INTO dot11_known_networks(uuid, ssid, is_approved, organization_id, " +
+                        "tenant_id, first_seen, last_seen) VALUES(:uuid, :ssid, :is_approved, :organization_id, " +
+                        ":tenant_id, NOW(), NOW())")
+                .bind("uuid", UUID.randomUUID())
+                .bind("ssid", ssid)
+                .bind("is_approved", isApproved)
+                .bind("organization_id", organizationId)
+                .bind("tenant_id", tenantId)
+                .execute();
+    }
+
+    public void touchKnownNetwork(Handle handle, long id) {
+        handle.createUpdate("UPDATE dot11_known_networks SET last_seen = NOW() WHERE id = :id")
+                .bind("id", id)
+                .execute();
+    }
+
+    public void retentionCleanKnownNetworks(DateTime since) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_known_networks WHERE last_seen < :since")
+                        .bind("since", since)
+                        .execute()
         );
     }
 
