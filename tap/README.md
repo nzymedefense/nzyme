@@ -31,5 +31,7 @@ user via `sudo` without a password in the `suoders` file:
 
 ```
 # Allow setcap
-youruser yourhostname = (root) NOPASSWD: /usr/sbin/setcap
+youruser ALL = (root) NOPASSWD: /usr/sbin/setcap
 ```
+
+**Make sure to place this line at the very end of your `sudoers` file**
