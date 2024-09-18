@@ -6,11 +6,7 @@ accept_insecure_certs = false
 [ethernet_interfaces.enp6s0]
 active = true
 networks = [
-  { 
-    cidr = "192.168.0.0/24",  
-    dns_servers = [ "192.168.0.1:53" ],
-    injection_interface = enp6s0
-  }
+  { cidr = "192.168.0.0/24", dns_servers = [ "192.168.0.1:53" ], injection_interface = "enp6s0" }
 ]
 
 [wifi_interfaces.wlx00c0ca000000]
