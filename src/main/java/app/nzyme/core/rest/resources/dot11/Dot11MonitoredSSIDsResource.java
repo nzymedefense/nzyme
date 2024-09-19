@@ -3,10 +3,15 @@ package app.nzyme.core.rest.resources.dot11;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.Dot11KnownNetwork;
 import app.nzyme.core.dot11.monitoring.ssids.MonitoredSSIDRegistryKeys;
+import app.nzyme.core.integrations.smtp.SMTPConfigurationRegistryKeys;
 import app.nzyme.core.rest.UserAuthenticatedResource;
+import app.nzyme.core.rest.requests.UpdateConfigurationRequest;
 import app.nzyme.core.rest.responses.dot11.monitoring.ssids.KnownNetworkDetailsResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.ssids.KnownNetworksListResponse;
-import app.nzyme.core.rest.responses.dot11.monitoring.ssids.SSIDMonitoringConfiguration;
+import app.nzyme.core.rest.responses.dot11.monitoring.ssids.SSIDMonitoringConfigurationResponse;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -20,9 +25,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Path("/api/dot11/monitoring/networks")
 @Produces(MediaType.APPLICATION_JSON)
@@ -35,11 +38,12 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
 
     @GET
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/organization/{organization_id}/tenant/{tenant_id}")
     public Response findAll(@Context SecurityContext sc,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset,
-                            @QueryParam("organization_uuid") @NotNull UUID organizationId,
-                            @QueryParam("tenant_uuid") @NotNull UUID tenantId) {
+                            @PathParam("organization_id") @NotNull UUID organizationId,
+                            @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -51,7 +55,7 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
 
         long total = nzyme.getDot11().countAllKnownNetworks(organizationId, tenantId);
         List<KnownNetworkDetailsResponse> networks = Lists.newArrayList();
-        for (Dot11KnownNetwork kn : nzyme.getDot11().findAllKnownNetworks(organizationId, tenantId)) {
+        for (Dot11KnownNetwork kn : nzyme.getDot11().findAllKnownNetworks(organizationId, tenantId, limit, offset)) {
             networks.add(KnownNetworkDetailsResponse.create(
                     kn.uuid(),
                     kn.organizationId(),
@@ -68,11 +72,11 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
 
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
-    @Path("/show/{uuid}/approve")
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/show/{uuid}/approve")
     public Response approve(@Context SecurityContext sc,
                             @PathParam("uuid") UUID uuid,
-                            @QueryParam("organization_uuid") @NotNull UUID organizationId,
-                            @QueryParam("tenant_uuid") @NotNull UUID tenantId) {
+                            @PathParam("organization_id") @NotNull UUID organizationId,
+                            @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -89,11 +93,11 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
 
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
-    @Path("/show/{uuid}/revoke")
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/show/{uuid}/revoke")
     public Response revoke(@Context SecurityContext sc,
                            @PathParam("uuid") UUID uuid,
-                           @QueryParam("organization_uuid") @NotNull UUID organizationId,
-                           @QueryParam("tenant_uuid") @NotNull UUID tenantId) {
+                           @PathParam("organization_id") @NotNull UUID organizationId,
+                           @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -110,11 +114,11 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
 
     @DELETE
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
-    @Path("/show/{uuid}")
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/show/{uuid}")
     public Response deleteSingle(@Context SecurityContext sc,
                                  @PathParam("uuid") UUID uuid,
-                                 @QueryParam("organization_uuid") @NotNull UUID organizationId,
-                                 @QueryParam("tenant_uuid") @NotNull UUID tenantId) {
+                                 @PathParam("organization_id") @NotNull UUID organizationId,
+                                 @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -131,10 +135,10 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
 
     @DELETE
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
-    @Path("/reset")
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/reset")
     public Response deleteAllOfTenant(@Context SecurityContext sc,
-                                     @QueryParam("organization_uuid") @NotNull UUID organizationId,
-                                     @QueryParam("tenant_uuid") @NotNull UUID tenantId) {
+                                     @PathParam("organization_id") @NotNull UUID organizationId,
+                                     @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -158,8 +162,17 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
                 MonitoredSSIDRegistryKeys.IS_ENABLED.key(), organizationId, tenantId
         );
 
-        SSIDMonitoringConfiguration configuration = SSIDMonitoringConfiguration.create(
-                isEnabled.isPresent() && isEnabled.get().equals("true")
+        SSIDMonitoringConfigurationResponse configuration = SSIDMonitoringConfigurationResponse.create(
+                ConfigurationEntryResponse.create(
+                        MonitoredSSIDRegistryKeys.IS_ENABLED.key(),
+                        "Is enabled",
+                        isEnabled.isPresent() && isEnabled.get().equals("true"),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        MonitoredSSIDRegistryKeys.IS_ENABLED.defaultValue().orElse(null),
+                        MonitoredSSIDRegistryKeys.IS_ENABLED.requiresRestart(),
+                        MonitoredSSIDRegistryKeys.IS_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "ssid-monitoring"
+                )
         );
 
         return Response.ok(configuration).build();
@@ -167,34 +180,31 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
 
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
-    @Path("/organization/{organization_id}/tenant/{tenant_id}/enable")
-    public Response enable(@Context SecurityContext sc,
-                           @PathParam("organization_id") @NotNull UUID organizationId,
-                           @PathParam("tenant_id") @NotNull UUID tenantId) {
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/configuration")
+    public Response updateConfiguration(@Context SecurityContext sc,
+                                        UpdateConfigurationRequest req,
+                                        @PathParam("organization_id") @NotNull UUID organizationId,
+                                        @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getDatabaseCoreRegistry().setValue(
-                MonitoredSSIDRegistryKeys.IS_ENABLED.key(), "true", organizationId, tenantId
-        );
-
-        return Response.ok().build();
-    }
-
-    @PUT
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
-    @Path("/organization/{organization_id}/tenant/{tenant_id}/disable")
-    public Response disable(@Context SecurityContext sc,
-                            @PathParam("organization_id") @NotNull UUID organizationId,
-                            @PathParam("tenant_id") @NotNull UUID tenantId) {
-        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+        if (req.change().isEmpty()) {
+            LOG.info("Empty configuration parameters.");
+            return Response.status(422).build();
         }
 
-        nzyme.getDatabaseCoreRegistry().setValue(
-                MonitoredSSIDRegistryKeys.IS_ENABLED.key(), "false", organizationId, tenantId
-        );
+        for (Map.Entry<String, Object> c : req.change().entrySet()) {
+            switch (c.getKey()) {
+                case "is_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(MonitoredSSIDRegistryKeys.IS_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+            }
+
+            nzyme.getDatabaseCoreRegistry().setValue(c.getKey(), c.getValue().toString(), organizationId, tenantId);
+        }
 
         return Response.ok().build();
     }

@@ -2277,15 +2277,20 @@ public class Dot11 {
         );
     }
 
-    public List<Dot11KnownNetwork> findAllKnownNetworks(UUID organizationId, UUID tenantId) {
-        return nzyme.getDatabase().withHandle(handle -> findAllKnownNetworks(handle, organizationId, tenantId));
+    public List<Dot11KnownNetwork> findAllKnownNetworks(UUID organizationId, UUID tenantId, int limit, int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                findAllKnownNetworks(handle, organizationId, tenantId, limit, offset)
+        );
     }
 
-    public List<Dot11KnownNetwork> findAllKnownNetworks(Handle handle, UUID organizationId, UUID tenantId) {
+    public List<Dot11KnownNetwork> findAllKnownNetworks(Handle handle, UUID organizationId, UUID tenantId, int limit, int offset) {
         return handle.createQuery("SELECT * FROM dot11_known_networks " +
-                        "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                        "ORDER BY ssid ASC LIMIT :limit OFFSET :offset")
                 .bind("organization_id", organizationId)
                 .bind("tenant_id", tenantId)
+                .bind("limit", limit)
+                .bind("offset", offset)
                 .mapTo(Dot11KnownNetwork.class)
                 .list();
     }

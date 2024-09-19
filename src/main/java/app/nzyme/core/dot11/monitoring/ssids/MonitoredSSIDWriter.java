@@ -51,7 +51,7 @@ public class MonitoredSSIDWriter extends Periodical {
                     List<Dot11KnownNetwork> knownNetworks = knownNetworksCache.get(key);
                     if (knownNetworks == null) {
                         knownNetworks = nzyme.getDot11()
-                                .findAllKnownNetworks(handle, ssid.organizationId(), ssid.tenantId());
+                                .findAllKnownNetworks(handle, ssid.organizationId(), ssid.tenantId(), Integer.MAX_VALUE, 0);
                         knownNetworksCache.put(key, knownNetworks);
                     }
 

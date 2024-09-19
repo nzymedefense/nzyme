@@ -14,7 +14,6 @@ export default function SSIDMonitoringProxy(props) {
 
   const user = useContext(UserContext);
 
-  const [configuration, setConfiguration] = useState(null);
   const [knownNetworks, setKnownNetworks] = useState(null);
 
   const [organizationUUID, setOrganizationUUID] = useState(null);
@@ -58,11 +57,6 @@ export default function SSIDMonitoringProxy(props) {
         authenticationManagementService.findTenantOfOrganization(organizationUUID, tenantUUID, setTenant);
       }
 
-      setConfiguration(null);
-      dot11Service.getSSIDMonitoringConfiguration(
-          organizationUUID, tenantUUID, setConfiguration
-      );
-
       setKnownNetworks(null);
       dot11Service.findAllKnownNetworks(
           organizationUUID, tenantUUID, perPage, (page-1)*perPage, setKnownNetworks
@@ -98,10 +92,8 @@ export default function SSIDMonitoringProxy(props) {
               <div className="card-body">
                 <h3>Monitor Configuration</h3>
 
-                <SSIDMonitoringConfiguration configuration={configuration}
-                                             organizationUUID={organizationUUID}
-                                             tenantUUID={tenantUUID}
-                                             onChange={onChange} />
+                <SSIDMonitoringConfiguration organizationUUID={organizationUUID}
+                                             tenantUUID={tenantUUID} />
               </div>
             </div>
           </div>
@@ -118,6 +110,7 @@ export default function SSIDMonitoringProxy(props) {
                   {' '}<a href="#" onClick={resetOrganizationAndTenant}>Change</a></div> : null}
 
                 <KnownNetworksTable networks={knownNetworks}
+                                    onChange={onChange}
                                     page={page}
                                     setPage={setPage}
                                     perPage={perPage} />

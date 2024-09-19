@@ -460,30 +460,41 @@ class Dot11Service {
     )
   }
 
-  enableSSIDMonitoring(organizationUUID, tenantUUID, onSuccess) {
-    RESTClient.put(
-        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/enable`,
-        {},
-        onSuccess
-    )
-  }
-
-  disableSSIDMonitoring(organizationUUID, tenantUUID, onSuccess) {
-    RESTClient.put(
-        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/disable`,
-        {},
-        onSuccess
-    )
+  updateSSIDMonitoringConfiguration(newConfig, organizationUUID, tenantUUID, successCallback, errorCallback) {
+    RESTClient.put(`/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/configuration`,
+        { change: newConfig }, successCallback, errorCallback)
   }
 
   findAllKnownNetworks(organizationUUID, tenantUUID, limit, offset, setKnownNetworks) {
     RESTClient.get(
-        "/dot11/monitoring/networks",
-        {limit: limit, offset: offset, organization_uuid: organizationUUID, tenant_uuid: tenantUUID},
+        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}`,
+        {limit: limit, offset: offset},
         (response) => setKnownNetworks(response.data)
     )
   }
 
+  deleteKnownNetwork(uuid, organizationUUID, tenantUUID, onSuccess) {
+    RESTClient.delete(
+        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/show/${uuid}`,
+        onSuccess
+    )
+  }
+
+  approveKnownNetwork(uuid, organizationUUID, tenantUUID, onSuccess) {
+    RESTClient.put(
+        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/show/${uuid}/approve`,
+        {},
+        onSuccess
+    )
+  }
+
+  revokeKnownNetwork(uuid, organizationUUID, tenantUUID, onSuccess) {
+    RESTClient.put(
+        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/show/${uuid}/revoke`,
+        {},
+        onSuccess
+    )
+  }
 }
 
 export default Dot11Service

@@ -1,13 +1,79 @@
 import React from "react";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import Paginator from "../../../misc/Paginator";
+import moment from "moment";
+import Dot11Service from "../../../../services/Dot11Service";
+import {notify} from "react-notify-toast";
+
+const dot11Service = new Dot11Service();
 
 export default function KnownNetworksTable(props) {
 
     const networks = props.networks;
+    const onChange = props.onChange;
     const page = props.page;
     const setPage = props.setPage;
     const perPage = props.perPage;
+
+    const status = (network) => {
+        if (network.is_approved) {
+            return (
+                <span>
+                    <i className="fa fa-check text-success"/> Approved
+                </span>
+            )
+        } else {
+            return (
+                <span>
+                    <i className="fa fa-warning text-warning"/> Not Approved
+                </span>
+            )
+        }
+    }
+
+    const changeStatusLink = (network) => {
+        if (network.is_approved) {
+            return <a href="#" onClick={() => onRevoke(network)}>Revoke Approval</a>
+        } else {
+            return <a href="#" onClick={() => onApprove(network)}>Approve</a>
+        }
+    }
+
+    const onApprove = (network) => {
+        if (!confirm("Really approve network? You can revoke the approval at any time.")) {
+            return;
+        }
+
+        dot11Service.approveKnownNetwork(network.uuid, network.organization_id, network.tenant_id, () => {
+            notify.show('Known network approved.', 'success');
+            onChange();
+        });
+    }
+
+    const onRevoke = (network) => {
+        if (!confirm("Really revoke approval? You can re-approve it at any time.")) {
+            return;
+        }
+
+        dot11Service.revokeKnownNetwork(network.uuid, network.organization_id, network.tenant_id, () => {
+            notify.show('Known network approval revoked.', 'success');
+            onChange();
+        });
+    }
+
+    const onDelete = (e, network) => {
+        e.preventDefault();
+
+        if (!confirm("Really delete known network? It will reappear as unapproved network " +
+            "next time nzyme records it.")) {
+            return;
+        }
+
+        dot11Service.deleteKnownNetwork(network.uuid, network.organization_id, network.tenant_id, () => {
+            notify.show('Known network deleted.', 'success');
+            onChange();
+        });
+    }
 
     if (!networks) {
         return <LoadingSpinner />
@@ -26,17 +92,30 @@ export default function KnownNetworksTable(props) {
                 <thead>
                 <tr>
                     <th>SSID</th>
-                    <th>Notes</th>
+                    <th>Status</th>
+                    <th>Last Seen</th>
                     <th>&nbsp;</th>
                     <th>&nbsp;</th>
                 </tr>
                 </thead>
                 <tbody>
-
+                {networks.networks.map((net, i) => {
+                    return (
+                        <tr key={i}>
+                            <td>{net.ssid}</td>
+                            <td>{status(net)}</td>
+                            <td title={moment(net.last_seen).format()}>{moment(net.last_seen).fromNow()}</td>
+                            <td>{changeStatusLink(net)}</td>
+                            <td>
+                                <a href="#" onClick={(e) => onDelete(e, net)}>Delete</a>
+                            </td>
+                        </tr>
+                    )
+                })}
                 </tbody>
             </table>
 
-                <Paginator page={page} setPage={setPage} perPage={perPage} itemCount={networks.total}/>
+            <Paginator page={page} setPage={setPage} perPage={perPage} itemCount={networks.total}/>
         </React.Fragment>
 )
 

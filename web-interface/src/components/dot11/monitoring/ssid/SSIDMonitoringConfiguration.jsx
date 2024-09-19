@@ -1,64 +1,59 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import Dot11Service from "../../../../services/Dot11Service";
+import ConfigurationValue from "../../../configuration/ConfigurationValue";
+import ConfigurationModal from "../../../configuration/modal/ConfigurationModal";
 
 const dot11Service = new Dot11Service();
 
 export default function SSIDMonitoringConfiguration(props) {
 
-  const configuration = props.configuration;
   const organizationUUID = props.organizationUUID;
   const tenantUUID = props.tenantUUID;
-  const onChange = props.onChange;
 
-  const onDisable = () => {
-    if (!confirm("Really disable SSID monitoring?")) {
-      return;
-    }
+  const [configuration, setConfiguration] = useState(null);
+  const [localRevision, setLocalRevision] = useState(0);
 
-    dot11Service.disableSSIDMonitoring(organizationUUID, tenantUUID, onChange)
-  }
+  useEffect(() => {
+    setConfiguration(null);
+    dot11Service.getSSIDMonitoringConfiguration(
+        organizationUUID, tenantUUID, setConfiguration
+    );
+  }, [localRevision, organizationUUID, tenantUUID]);
 
-  const onEnable = () => {
-    if (!confirm("Really enable SSID monitoring?")) {
-      return;
-    }
-
-    dot11Service.enableSSIDMonitoring(organizationUUID, tenantUUID, onChange)
-  }
-
-  if (configuration === null) {
+  if (!configuration) {
     return <LoadingSpinner />
   }
 
-  if (configuration.is_enabled) {
-    return (
-        <div>
-          <span className="text-success text-bold">
-            <i className="fa fa-check" /> SSID Monitoring is enabled.
-          </span>
-
-          <div className="mt-2">
-            <button className="btn btn-sm btn-danger" onClick={onDisable}>
-              Disable SSID Monitoring
-            </button>
-          </div>
-        </div>
-    )
-  } else {
-    return (
-        <div>
-          <span className="text-success text-warning">
-            <i className="fa fa-warning" /> SSID Monitoring is disabled.
-          </span>
-
-          <div className="mt-2">
-            <button className="btn btn-sm btn-success" onClick={onEnable}>
-              Enable SSID Monitoring
-            </button>
-          </div>
-        </div>
-    )
-  }
+  return (
+      <table className="table table-sm table-hover table-striped">
+        <thead>
+        <tr>
+          <th>Configuration</th>
+          <th>Value</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>Monitoring is enabled</td>
+          <td>
+            <ConfigurationValue value={configuration.is_enabled.value}
+                                configKey={configuration.is_enabled.key}
+                                boolean={true}
+                                required={true}/>
+          </td>
+          <td>
+            <ConfigurationModal config={configuration.is_enabled}
+                                setGlobalConfig={setConfiguration}
+                                setLocalRevision={setLocalRevision}
+                                organizationId={organizationUUID}
+                                tenantId={tenantUUID}
+                                dbUpdateCallback={dot11Service.updateSSIDMonitoringConfiguration}/>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+  )
 
 }

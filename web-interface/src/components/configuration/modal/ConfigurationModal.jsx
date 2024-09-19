@@ -26,6 +26,10 @@ function ConfigurationModal (props) {
   const dbUpdateCallback = props.dbUpdateCallback
   const setLocalRevision = props.setLocalRevision
 
+  // Optional: Used for dbUpdateCallback if it requires tenant scope.
+  const organizationId = props.organizationId;
+  const tenantId = props.tenantId;
+
   useEffect(() => {
     if (changeWarning && !changeWarningAck) {
       setFormDisabled(true)
@@ -81,19 +85,29 @@ function ConfigurationModal (props) {
     setFormDisabled(true)
     setInputDisabled(true)
 
-    dbUpdateCallback({
-      [key]: inputValue
-    }, function () {
-      setFormSubmitting(false)
-      setFormDisabled(false)
-      setFormSubmittedSuccessfully(true)
-    }, function () {
-      setFormSubmittedWithError(true)
-      setFormSubmitting(false)
-      setFormDisabled(false)
-      setInputDisabled(false)
-    })
+    if (!organizationId && !tenantId) {
+      dbUpdateCallback({
+        [key]: inputValue
+      }, onDbUpdateCallbackSuccess, onDbUpdateCallbackFailure)
+    } else {
+      dbUpdateCallback({
+        [key]: inputValue
+      }, organizationId, tenantId, onDbUpdateCallbackSuccess, onDbUpdateCallbackFailure)
+    }
   }, [inputValue, key, dbUpdateCallback])
+
+  const onDbUpdateCallbackSuccess = () => {
+    setFormSubmitting(false)
+    setFormDisabled(false)
+    setFormSubmittedSuccessfully(true)
+  }
+
+  const onDbUpdateCallbackFailure = () => {
+    setFormSubmittedWithError(true)
+    setFormSubmitting(false)
+    setFormDisabled(false)
+    setInputDisabled(false)
+  }
 
   const resetOnCancel = useCallback(() => {
     setInputValue(value)
