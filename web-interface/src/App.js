@@ -153,6 +153,7 @@ const isDarkMode = function() {
 
 export const UserContext = createContext(null);
 export const TapContext = createContext(null);
+export const AlertContext = createContext(null);
 
 function App() {
 
@@ -165,6 +166,7 @@ function App() {
   const [mfaEntryExpiresAt, setMfaEntryExpiresAt] = useState(null);
   const [nzymeInformation, setNzymeInformation] = useState(null);
   const [userInformation, setUserInformation] = useState(null);
+  const [alertInformation, setAlertInformation] = useState(null);
   const [branding, setBranding] = useState(null);
   const [plugins, setPlugins] = useState([]); // TODO
   const [selectedTaps, setSelectedTaps] = useState(Store.get("selected_taps"));
@@ -180,6 +182,9 @@ function App() {
         setMfaEntryExpiresAt(sessionInfo.mfa_entry_expires_at);
         setUserInformation(sessionInfo.user);
         setBranding(sessionInfo.branding);
+        setAlertInformation({has_active_alerts: sessionInfo.has_active_alerts})
+
+        console.log(sessionInfo);
 
         callback();
       }, function() {
@@ -301,189 +306,191 @@ function App() {
             <div className="nzyme d-flex">
               <UserContext.Provider value={userInformation}>
                 <TapContext.Provider value={{set: setSelectedTaps, taps: selectedTaps, selectorEnabled: tapSelectorEnabled, setSelectorEnabled: setTapSelectorEnabled}}>
-                  <Sidebar branding={branding} />
+                  <AlertContext.Provider value={alertInformation}>
+                    <Sidebar branding={branding} />
 
-                  <div id="main" className="flex-fill">
-                    <Notifications/>
-                    <NavigationBar darkModeEnabled={darkModeEnabled}
-                                   setDarkModeEnabled={setDarkModeEnabled}
-                                   onLogout={onLogout} />
+                    <div id="main" className="flex-fill">
+                      <Notifications/>
+                      <NavigationBar darkModeEnabled={darkModeEnabled}
+                                     setDarkModeEnabled={setDarkModeEnabled}
+                                     onLogout={onLogout} />
 
-                    <div className="container-fluid">
-                      <div className="content">
-                        <Routes>
-                          <Route path={ApiRoutes.DASHBOARD} element={<OverviewPage />}/>
+                      <div className="container-fluid">
+                        <div className="content">
+                          <Routes>
+                            <Route path={ApiRoutes.DASHBOARD} element={<OverviewPage />}/>
 
-                          { /* User Profile / Own User */}
-                          <Route path={ApiRoutes.USERPROFILE.PROFILE} element={<UserProfilePage onMfaReset={() => setRevision(new Date())} />}/>
-                          <Route path={ApiRoutes.USERPROFILE.PASSWORD} element={<ChangeOwnPasswordPage />}/>
+                            { /* User Profile / Own User */}
+                            <Route path={ApiRoutes.USERPROFILE.PROFILE} element={<UserProfilePage onMfaReset={() => setRevision(new Date())} />}/>
+                            <Route path={ApiRoutes.USERPROFILE.PASSWORD} element={<ChangeOwnPasswordPage />}/>
 
-                          { /* Search. */}
-                          <Route path={ApiRoutes.SEARCH.RESULTS} element={<SearchResultPage />}/>
+                            { /* Search. */}
+                            <Route path={ApiRoutes.SEARCH.RESULTS} element={<SearchResultPage />}/>
 
-                          { /* System/Authentication */ }
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SETTINGS} element={<AuthenticationSettingsPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.CREATE} element={<CreateSuperAdminPage/>}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.DETAILS(':userId')} element={<SuperAdminDetailsPage/>}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.EDIT(':userId')} element={<EditSuperAdminPage/>}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} element={<CreateOrganizationPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.CREATE(':organizationId')} element={<CreateOrganizationAdministratorPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.DETAILS(':organizationId', ':userId')} element={<OrganizationAdminDetailsPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.EDIT(':organizationId', ':userId')} element={<EditOrganizationAdminPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(':organizationId')} element={<OrganizationEventsPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.CREATE(':organizationId')} element={<CreateOrganizationActionPage />} />
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.DETAILS(':organizationId', ':actionId')} element={<OrganizationActionDetailsPage />} />
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.EDIT(':organizationId', ':actionId')} element={<EditOrganizationActionPage />} />
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.SUBSCRIPTIONS.DETAILS(':organizationId', ':eventTypeName')} element={<OrganizationEventSubscriptionDetailsPage />} />
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(':organizationId', ':tenantId')} element={<CreateLocationPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(':organizationId', ':tenantId', ':locationId')} element={<LocationDetailsPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.EDIT(':organizationId', ':tenantId', ':locationId')} element={<EditLocationPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.CREATE(':organizationId', ':tenantId', ':locationId')} element={<CreateFloorPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(':organizationId', ':tenantId', ':locationId', ':floorId')} element={<FloorDetailsPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.EDIT(':organizationId', ':tenantId', ':locationId', ':floorId')} element={<EditFloorPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<TenantUserDetailsPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.EDIT(':organizationId', ':tenantId', ':userId')} element={<EditTenantUserPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(':organizationId', ':tenantId')} element={<CreateTapPermissionPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(':organizationId', ':tenantId', ':tapUuid')} element={<TapPermissionDetailsPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.EDIT(':organizationId', ':tenantId', ':tapUuid')} element={<EditTapPermissionsPage />}/>
+                            { /* System/Authentication */ }
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SETTINGS} element={<AuthenticationSettingsPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.CREATE} element={<CreateSuperAdminPage/>}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.DETAILS(':userId')} element={<SuperAdminDetailsPage/>}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.EDIT(':userId')} element={<EditSuperAdminPage/>}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} element={<CreateOrganizationPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.CREATE(':organizationId')} element={<CreateOrganizationAdministratorPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.DETAILS(':organizationId', ':userId')} element={<OrganizationAdminDetailsPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.EDIT(':organizationId', ':userId')} element={<EditOrganizationAdminPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(':organizationId')} element={<OrganizationEventsPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.CREATE(':organizationId')} element={<CreateOrganizationActionPage />} />
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.DETAILS(':organizationId', ':actionId')} element={<OrganizationActionDetailsPage />} />
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.EDIT(':organizationId', ':actionId')} element={<EditOrganizationActionPage />} />
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.SUBSCRIPTIONS.DETAILS(':organizationId', ':eventTypeName')} element={<OrganizationEventSubscriptionDetailsPage />} />
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(':organizationId', ':tenantId')} element={<CreateLocationPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(':organizationId', ':tenantId', ':locationId')} element={<LocationDetailsPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.EDIT(':organizationId', ':tenantId', ':locationId')} element={<EditLocationPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.CREATE(':organizationId', ':tenantId', ':locationId')} element={<CreateFloorPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(':organizationId', ':tenantId', ':locationId', ':floorId')} element={<FloorDetailsPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.EDIT(':organizationId', ':tenantId', ':locationId', ':floorId')} element={<EditFloorPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<TenantUserDetailsPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.EDIT(':organizationId', ':tenantId', ':userId')} element={<EditTenantUserPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(':organizationId', ':tenantId')} element={<CreateTapPermissionPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(':organizationId', ':tenantId', ':tapUuid')} element={<TapPermissionDetailsPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.EDIT(':organizationId', ':tenantId', ':tapUuid')} element={<EditTapPermissionsPage />}/>
 
-                          { /* System/Taps. */}
-                          <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.TAPS.PROXY_ADD} element={<AddTapProxyPage />} />
-                          <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':uuid')} element={<TapDetailsPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':uuid', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
+                            { /* System/Taps. */}
+                            <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.TAPS.PROXY_ADD} element={<AddTapProxyPage />} />
+                            <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':uuid')} element={<TapDetailsPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':uuid', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
 
-                          { /* System/Crypto. */ }
-                          <Route path={ApiRoutes.SYSTEM.CRYPTO.INDEX} element={<CryptoSummaryPage />} />
-                          <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.CERTIFICATE(':nodeUUID')} element={<TLSCertificateDetailsPage />} />
-                          <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.WILDCARD.UPLOAD} element={<TLSWildcardCertificateUploadPage />} />
-                          <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.WILDCARD.EDIT(':certificateId')} element={<TLSWildcardCertificateEditPage />} />
+                            { /* System/Crypto. */ }
+                            <Route path={ApiRoutes.SYSTEM.CRYPTO.INDEX} element={<CryptoSummaryPage />} />
+                            <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.CERTIFICATE(':nodeUUID')} element={<TLSCertificateDetailsPage />} />
+                            <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.WILDCARD.UPLOAD} element={<TLSWildcardCertificateUploadPage />} />
+                            <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.WILDCARD.EDIT(':certificateId')} element={<TLSWildcardCertificateEditPage />} />
 
-                          { /* System/Monitoring. */ }
-                          <Route path={ApiRoutes.SYSTEM.MONITORING.INDEX} element={<MonitoringPage />} />
-                          <Route path={ApiRoutes.SYSTEM.MONITORING.PROMETHEUS.INDEX} element={<PrometheusMetricsPage />} />
+                            { /* System/Monitoring. */ }
+                            <Route path={ApiRoutes.SYSTEM.MONITORING.INDEX} element={<MonitoringPage />} />
+                            <Route path={ApiRoutes.SYSTEM.MONITORING.PROMETHEUS.INDEX} element={<PrometheusMetricsPage />} />
 
-                          { /* System/Cluster */ }
-                          <Route path={ApiRoutes.SYSTEM.CLUSTER.INDEX} element={<NodesPage />} />
-                          <Route path={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(':uuid')} element={<NodeDetailsPage />} />
-                          <Route path={ApiRoutes.SYSTEM.CLUSTER.MESSAGING.INDEX} element={<MessagingPage />} />
+                            { /* System/Cluster */ }
+                            <Route path={ApiRoutes.SYSTEM.CLUSTER.INDEX} element={<NodesPage />} />
+                            <Route path={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(':uuid')} element={<NodeDetailsPage />} />
+                            <Route path={ApiRoutes.SYSTEM.CLUSTER.MESSAGING.INDEX} element={<MessagingPage />} />
 
-                          { /* System/Health */ }
-                          <Route path={ApiRoutes.SYSTEM.HEALTH.INDEX} element={<HealthPage />} />
+                            { /* System/Health */ }
+                            <Route path={ApiRoutes.SYSTEM.HEALTH.INDEX} element={<HealthPage />} />
 
-                          { /* System/Integrations */ }
-                          <Route path={ApiRoutes.SYSTEM.INTEGRATIONS.INDEX} element={<IntegrationsPage />} />
+                            { /* System/Integrations */ }
+                            <Route path={ApiRoutes.SYSTEM.INTEGRATIONS.INDEX} element={<IntegrationsPage />} />
 
-                          { /* System/Events */ }
-                          <Route path={ApiRoutes.SYSTEM.EVENTS.INDEX} element={<EventsPage />} />
-                          <Route path={ApiRoutes.SYSTEM.EVENTS.SUBSCRIPTIONS.DETAILS(':eventTypeName')} element={<EventSubscriptionDetailsPage />} />
-                          <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.DETAILS(':actionId')} element={<ActionDetailsPage />} />
-                          <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.EDIT(':actionId')} element={<EditActionPage />} />
-                          <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.CREATE} element={<CreateActionPage />} />
+                            { /* System/Events */ }
+                            <Route path={ApiRoutes.SYSTEM.EVENTS.INDEX} element={<EventsPage />} />
+                            <Route path={ApiRoutes.SYSTEM.EVENTS.SUBSCRIPTIONS.DETAILS(':eventTypeName')} element={<EventSubscriptionDetailsPage />} />
+                            <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.DETAILS(':actionId')} element={<ActionDetailsPage />} />
+                            <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.EDIT(':actionId')} element={<EditActionPage />} />
+                            <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.CREATE} element={<CreateActionPage />} />
 
-                          { /* System/Database */ }
-                          <Route path={ApiRoutes.SYSTEM.DATABASE.INDEX} element={<DatabasePage />} />
+                            { /* System/Database */ }
+                            <Route path={ApiRoutes.SYSTEM.DATABASE.INDEX} element={<DatabasePage />} />
 
-                          { /* System/Misc. */}
-                          <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.LOOKANDFEEL} element={<LookAndFeelPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.CONNECT} element={<ConnectPage />}/>
+                            { /* System/Misc. */}
+                            <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.LOOKANDFEEL} element={<LookAndFeelPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.CONNECT} element={<ConnectPage />}/>
 
-                          { /* Ethernet/L4. */}
-                          <Route path={ApiRoutes.ETHERNET.L4.OVERVIEW} element={<L4OverviewPage />}/>
-                          <Route path={ApiRoutes.ETHERNET.L4.IP(':ipParam')} element={<IPDetailsPage />}/>
+                            { /* Ethernet/L4. */}
+                            <Route path={ApiRoutes.ETHERNET.L4.OVERVIEW} element={<L4OverviewPage />}/>
+                            <Route path={ApiRoutes.ETHERNET.L4.IP(':ipParam')} element={<IPDetailsPage />}/>
 
-                          { /* Ethernet/Hostnames. */}
-                          <Route path={ApiRoutes.ETHERNET.HOSTNAMES.HOSTNAME(':hostnameParam')} element={<HostnameDetailsPage />}/>
+                            { /* Ethernet/Hostnames. */}
+                            <Route path={ApiRoutes.ETHERNET.HOSTNAMES.HOSTNAME(':hostnameParam')} element={<HostnameDetailsPage />}/>
 
-                          { /* Ethernet/DNS. */}
-                          <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
-                          <Route path={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS} element={<DNSTransactionLogsPage />}/>
+                            { /* Ethernet/DNS. */}
+                            <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
+                            <Route path={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS} element={<DNSTransactionLogsPage />}/>
 
-                          { /* Ethernet/Remote. */}
-                          <Route path={ApiRoutes.ETHERNET.REMOTE.INDEX} element={<RemoteAccessPage />}/>
-                          <Route path={ApiRoutes.ETHERNET.REMOTE.SSH.SESSION_DETAILS(':sessionId')} element={<SSHSessionDetailsPage />}/>
+                            { /* Ethernet/Remote. */}
+                            <Route path={ApiRoutes.ETHERNET.REMOTE.INDEX} element={<RemoteAccessPage />}/>
+                            <Route path={ApiRoutes.ETHERNET.REMOTE.SSH.SESSION_DETAILS(':sessionId')} element={<SSHSessionDetailsPage />}/>
 
-                          { /* Ethernet/Tunnels. */}
-                          <Route path={ApiRoutes.ETHERNET.TUNNELS.INDEX} element={<TunnelsPage />}/>
-                          <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.TUNNEL_DETAILS(':tunnelId')} element={<SocksTunnelDetailsPage />}/>
+                            { /* Ethernet/Tunnels. */}
+                            <Route path={ApiRoutes.ETHERNET.TUNNELS.INDEX} element={<TunnelsPage />}/>
+                            <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.TUNNEL_DETAILS(':tunnelId')} element={<SocksTunnelDetailsPage />}/>
 
-                          { /* Ethernet/Beacons. */}
-                          <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>
+                            { /* Ethernet/Beacons. */}
+                            <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>
 
-                          { /* 802.11/Monitoring. */ }
-                          <Route path={ApiRoutes.DOT11.MONITORING.INDEX} element={<Dot11MonitoringPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.CREATE} element={<CreateMonitoredNetworkPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(':uuid')} element={<MonitoredNetworkDetailsPage/>} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(':uuid')} element={<MonitoredNetworkConfigurationImportPage/>} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX} element={<BanditsPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.BUILTIN_DETAILS(':id')} element={<BuiltinBanditDetailsPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(':organizationId', ':tenantId')} element={<CreateCustomBanditPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CUSTOM_DETAILS(':id')} element={<CustomBanditDetailsPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.EDIT(':id')} element={<EditCustomBanditPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(':uuid')} element={<ConfigureDiscoDetectionMethodPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.SIMILAR_SSID_CONFIGURATION(':uuid')} element={<SimilarSSIDConfigurationPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.RESTRICTED_SUBSTRINGS_CONFIGURATION(':uuid')} element={<RestrictedSubstringsConfigurationPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.INDEX} element={<ProbeRequestsPage />}/>
-                          <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE(':organizationId', ':tenantId')} element={<CreateProbeRequestPage />}/>
-                          <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(':id', ':organizationId', ':tenantId')} element={<EditProbeRequestPage />}/>
-                          <Route path={ApiRoutes.DOT11.MONITORING.SSIDS.INDEX} element={<SSIDMonitoringPage />}/>
+                            { /* 802.11/Monitoring. */ }
+                            <Route path={ApiRoutes.DOT11.MONITORING.INDEX} element={<Dot11MonitoringPage />} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.CREATE} element={<CreateMonitoredNetworkPage />} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(':uuid')} element={<MonitoredNetworkDetailsPage/>} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(':uuid')} element={<MonitoredNetworkConfigurationImportPage/>} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX} element={<BanditsPage />} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.BUILTIN_DETAILS(':id')} element={<BuiltinBanditDetailsPage />} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(':organizationId', ':tenantId')} element={<CreateCustomBanditPage />} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CUSTOM_DETAILS(':id')} element={<CustomBanditDetailsPage />} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.EDIT(':id')} element={<EditCustomBanditPage />} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(':uuid')} element={<ConfigureDiscoDetectionMethodPage />} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.SIMILAR_SSID_CONFIGURATION(':uuid')} element={<SimilarSSIDConfigurationPage />} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.RESTRICTED_SUBSTRINGS_CONFIGURATION(':uuid')} element={<RestrictedSubstringsConfigurationPage />} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.INDEX} element={<ProbeRequestsPage />}/>
+                            <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE(':organizationId', ':tenantId')} element={<CreateProbeRequestPage />}/>
+                            <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(':id', ':organizationId', ':tenantId')} element={<EditProbeRequestPage />}/>
+                            <Route path={ApiRoutes.DOT11.MONITORING.SSIDS.INDEX} element={<SSIDMonitoringPage />}/>
 
-                          { /* 802.11/Networks. */}
-                          <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>
-                          <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
-                          <Route path={ApiRoutes.DOT11.NETWORKS.BSSID(':bssidParam')} element={<BSSIDDetailsPage />}/>
-                          <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />
+                            { /* 802.11/Networks. */}
+                            <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>
+                            <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
+                            <Route path={ApiRoutes.DOT11.NETWORKS.BSSID(':bssidParam')} element={<BSSIDDetailsPage />}/>
+                            <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />
 
-                          { /* 802.11/Clients. */}
-                          <Route path={ApiRoutes.DOT11.CLIENTS.INDEX} element={<ClientsPage />}/>
-                          <Route path={ApiRoutes.DOT11.CLIENTS.DETAILS(':macParam')} element={<ClientDetailsPage />}/>
+                            { /* 802.11/Clients. */}
+                            <Route path={ApiRoutes.DOT11.CLIENTS.INDEX} element={<ClientsPage />}/>
+                            <Route path={ApiRoutes.DOT11.CLIENTS.DETAILS(':macParam')} element={<ClientDetailsPage />}/>
 
-                          { /* 802.11/Disco. */}
-                          <Route path={ApiRoutes.DOT11.DISCO.INDEX} element={<DiscoPage />}/>
+                            { /* 802.11/Disco. */}
+                            <Route path={ApiRoutes.DOT11.DISCO.INDEX} element={<DiscoPage />}/>
 
-                          { /* Bluetooth. */}
-                          <Route path={ApiRoutes.BLUETOOTH.DEVICES.INDEX} element={<BluetoothDevicesPage />}/>
-                          <Route path={ApiRoutes.BLUETOOTH.DEVICES.DETAILS(':macParam')} element={<BluetoothDeviceDetailsPage />}/>
+                            { /* Bluetooth. */}
+                            <Route path={ApiRoutes.BLUETOOTH.DEVICES.INDEX} element={<BluetoothDevicesPage />}/>
+                            <Route path={ApiRoutes.BLUETOOTH.DEVICES.DETAILS(':macParam')} element={<BluetoothDeviceDetailsPage />}/>
 
-                          { /* Context. */ }
-                          <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>
-                          <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE} element={<CreateMacAddressContextPage />}/>
-                          <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(':uuid', ':organizationId', ':tenantId')} element={<MacAddressContextDetailsPage />}/>
-                          <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.EDIT(':uuid', ':organizationId', ':tenantId')} element={<EditMacAddressContextPage />}/>
+                            { /* Context. */ }
+                            <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>
+                            <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE} element={<CreateMacAddressContextPage />}/>
+                            <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(':uuid', ':organizationId', ':tenantId')} element={<MacAddressContextDetailsPage />}/>
+                            <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.EDIT(':uuid', ':organizationId', ':tenantId')} element={<EditMacAddressContextPage />}/>
 
-                          { /* Alerts. */}
-                          <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>
-                          <Route path={ApiRoutes.ALERTS.DETAILS(':uuid')} element={<AlertDetailsPage />}/>
-                          <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.INDEX} element={<AlertSubscriptionsPage />}/>
-                          <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(':organizationId', ':detectionName')} element={<AlertSubscriptionDetailsPage />}/>
+                            { /* Alerts. */}
+                            <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>
+                            <Route path={ApiRoutes.ALERTS.DETAILS(':uuid')} element={<AlertDetailsPage />}/>
+                            <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.INDEX} element={<AlertSubscriptionsPage />}/>
+                            <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(':organizationId', ':detectionName')} element={<AlertSubscriptionDetailsPage />}/>
 
-                          { /* Retro. */ }
-                          <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>
-                          <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={plugins.includes('retroplugin') ? <ServiceSummaryPage /> : <MissingRetroPluginPage /> }/>
-                          <Route path={ApiRoutes.RETRO.CONFIGURATION} element={plugins.includes('retroplugin') ? <RetroConfigurationPage /> : <MissingRetroPluginPage /> }/>
+                            { /* Retro. */ }
+                            <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>
+                            <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={plugins.includes('retroplugin') ? <ServiceSummaryPage /> : <MissingRetroPluginPage /> }/>
+                            <Route path={ApiRoutes.RETRO.CONFIGURATION} element={plugins.includes('retroplugin') ? <RetroConfigurationPage /> : <MissingRetroPluginPage /> }/>
 
-                          { /* Reporting. */}
-                          <Route path={ApiRoutes.REPORTING.INDEX} element={<ReportingPage />}/>
+                            { /* Reporting. */}
+                            <Route path={ApiRoutes.REPORTING.INDEX} element={<ReportingPage />}/>
 
-                          { /* 404. */}
-                          <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>
+                            { /* 404. */}
+                            <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>
 
-                          { /* Catch-all. */}
-                          <Route path="*" element={<NotFoundPage />}/>
-                        </Routes>
+                            { /* Catch-all. */}
+                            <Route path="*" element={<NotFoundPage />}/>
+                          </Routes>
 
-                        <Footer />
+                          <Footer />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </AlertContext.Provider>
                 </TapContext.Provider>
               </UserContext.Provider>
             </div>

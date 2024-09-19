@@ -2,6 +2,7 @@ import React from 'react';
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {MONITORING_MENU_ITEMS} from "../Dot11MenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import SSIDMonitoringProxy from "./SSIDMonitoringProxy";
 
 export default function SSIDMonitoringPage() {
 
@@ -41,7 +42,9 @@ export default function SSIDMonitoringPage() {
             </div>
           </div>
         </div>
+
+        <SSIDMonitoringProxy />
       </React.Fragment>
-  )
+)
 
 }

@@ -221,6 +221,17 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         String sidebarSubtitleText = nzyme.getDatabaseCoreRegistry()
                 .getValueOrNull(BrandingRegistryKeys.SIDEBAR_SUBTITLE_TEXT.key());
 
+
+        // Fetch current alert info if user has permission to see alert.
+        boolean hasActiveAlerts = false;
+        List<String> userPermissions = nzyme.getAuthenticationService().findPermissionsOfUser(user.get().uuid());
+        if (user.get().isSuperAdmin() || user.get().isOrganizationAdmin() || userPermissions.contains("alerts_view")) {
+            hasActiveAlerts = nzyme.getDetectionAlertService().countActiveAlerts(
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
+            ) > 0;
+        }
+
         return Response.ok(SessionInformationResponse.create(
                 SessionUserInformationDetailsResponse.create(
                         u.uuid(),
@@ -235,7 +246,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                 session.get().mfaValid(),
                 user.get().mfaComplete(),
                 mfaExpiresAt,
-                BrandingResponse.create(sidebarTitleText, sidebarSubtitleText)
+                BrandingResponse.create(sidebarTitleText, sidebarSubtitleText),
+                hasActiveAlerts
         )).build();
     }
 

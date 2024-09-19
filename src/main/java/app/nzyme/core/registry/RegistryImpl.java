@@ -44,7 +44,7 @@ public class RegistryImpl implements Registry {
                 buildNamespacedKey(namespace, key), organizationId, tenantId);
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT value FROM registry WHERE key = :key " +
-                                "AND organization_id IS :organization_id AND tenant_id IS :tenant_id")
+                                "AND organization_id = :organization_id AND tenant_id = :tenant_id")
                         .bind("key", buildNamespacedKey(namespace, key))
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -73,7 +73,7 @@ public class RegistryImpl implements Registry {
 
         Optional<String> encrypted = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT value FROM registry_encrypted WHERE key = :key " +
-                                "AND organization_id IS :organization_id AND tenant_id IS :tenant_id")
+                                "AND organization_id = :organization_id AND tenant_id = :tenant_id")
                         .bind("key", buildNamespacedKey(namespace, key))
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -155,7 +155,7 @@ public class RegistryImpl implements Registry {
     public void setValue(String key, String value, UUID organizationId, UUID tenantId) {
         setValuePreflightChecks(key, value);
 
-        if (getValue(key).isPresent()) {
+        if (getValue(key, organizationId, tenantId).isPresent()) {
             // Update existing entry.
             LOG.debug("Updating existing value for key [{}] (Org <{}>, Tenant <{}>) in registry.",
                     buildNamespacedKey(namespace, key), organizationId, tenantId);

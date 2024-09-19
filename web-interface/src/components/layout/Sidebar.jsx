@@ -4,12 +4,13 @@ import NavigationLink from './NavigationLink'
 import SidebarSubmenu from './SidebarSubmenu'
 import UserProfileBlock from "./UserProfileBlock";
 
-import {UserContext} from "../../App";
+import {AlertContext, UserContext} from "../../App";
 import {userHasPermission} from "../../util/Tools";
 
 function Sidebar(props) {
 
   const user = useContext(UserContext);
+  const alerts = useContext(AlertContext);
   const branding = props.branding;
 
   return (
@@ -112,13 +113,13 @@ function Sidebar(props) {
 
           <SidebarSubmenu title="Alerts"
                           subhref="/alerts"
-                          icon={<i className="sidebar-icon fa-solid fa-bell"></i>}
+                          icon={<i className={"sidebar-icon fa-solid fa-bell " + (alerts.has_active_alerts ? " text-danger blink" : null )}></i>}
                           show={userHasPermission(user, "alerts_view")
                               || userHasPermission(user, "alerts_manage")}>
             <NavigationLink
                 href={ApiRoutes.ALERTS.INDEX}
-                title="Overview"
-                icon={<i className="sidebar-icon fa-solid fa-ranking-star"/>}
+                title={"Overview"}
+                icon={<i className={"sidebar-icon fa-solid fa-ranking-star"}/>}
                 show={userHasPermission(user, "alerts_view")
                     || userHasPermission(user, "alerts_manage")}/>
 

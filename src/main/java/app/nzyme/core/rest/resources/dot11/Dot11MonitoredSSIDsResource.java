@@ -2,9 +2,11 @@ package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.Dot11KnownNetwork;
+import app.nzyme.core.dot11.monitoring.ssids.MonitoredSSIDRegistryKeys;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.responses.dot11.monitoring.ssids.KnownNetworkDetailsResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.ssids.KnownNetworksListResponse;
+import app.nzyme.core.rest.responses.dot11.monitoring.ssids.SSIDMonitoringConfiguration;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -22,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Path("/api/dot11/monitoring/ssids")
+@Path("/api/dot11/monitoring/networks")
 @Produces(MediaType.APPLICATION_JSON)
 public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
 
@@ -144,45 +146,55 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
 
     @GET
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
-    @Path("/configuration")
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/configuration")
     public Response configuration(@Context SecurityContext sc,
-                                  @QueryParam("organization_uuid") @NotNull UUID organizationId,
-                                  @QueryParam("tenant_uuid") @NotNull UUID tenantId) {
+                                  @PathParam("organization_id") @NotNull UUID organizationId,
+                                  @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        // TODO return configuration (enabled/disabled, required device activity time (5))
+        Optional<String> isEnabled = nzyme.getDatabaseCoreRegistry().getValue(
+                MonitoredSSIDRegistryKeys.IS_ENABLED.key(), organizationId, tenantId
+        );
 
-        return Response.ok().build();
+        SSIDMonitoringConfiguration configuration = SSIDMonitoringConfiguration.create(
+                isEnabled.isPresent() && isEnabled.get().equals("true")
+        );
+
+        return Response.ok(configuration).build();
     }
 
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
-    @Path("/enable")
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/enable")
     public Response enable(@Context SecurityContext sc,
-                           @QueryParam("organization_uuid") @NotNull UUID organizationId,
-                           @QueryParam("tenant_uuid") @NotNull UUID tenantId) {
+                           @PathParam("organization_id") @NotNull UUID organizationId,
+                           @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        // TODO enable setting
+        nzyme.getDatabaseCoreRegistry().setValue(
+                MonitoredSSIDRegistryKeys.IS_ENABLED.key(), "true", organizationId, tenantId
+        );
 
         return Response.ok().build();
     }
 
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
-    @Path("/disable")
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/disable")
     public Response disable(@Context SecurityContext sc,
-                            @QueryParam("organization_uuid") @NotNull UUID organizationId,
-                            @QueryParam("tenant_uuid") @NotNull UUID tenantId) {
+                            @PathParam("organization_id") @NotNull UUID organizationId,
+                            @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        // TODO disable setting
+        nzyme.getDatabaseCoreRegistry().setValue(
+                MonitoredSSIDRegistryKeys.IS_ENABLED.key(), "false", organizationId, tenantId
+        );
 
         return Response.ok().build();
     }

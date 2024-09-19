@@ -12,6 +12,7 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class MonitoredSSIDWriter extends Periodical {
 
@@ -32,7 +33,19 @@ public class MonitoredSSIDWriter extends Periodical {
             Map<String, List<Dot11KnownNetwork>> knownNetworksCache = Maps.newHashMap();
             nzyme.getDatabase().useHandle(handle -> {
                 for (SSIDWithOrganizationAndTenant ssid : ssids) {
-                    LOG.debug("Processing SSID [{}] for monitoring.", ssid);
+                    // Don't run if SSID monitoring is disabled for this tenant.
+                    Optional<String> isEnabled = nzyme.getDatabaseCoreRegistry().getValue(
+                            MonitoredSSIDRegistryKeys.IS_ENABLED.key(), ssid.organizationId(), ssid.tenantId()
+                    );
+
+                    if (isEnabled.isEmpty() || !isEnabled.get().equals("true")) {
+                        LOG.debug("Skipping SSID [{}] of org/tenant ({}/{}) that has monitoring disabled.",
+                                ssid.ssid(), ssid.organizationId(), ssid.tenantId());
+                        continue;
+                    }
+
+                    LOG.debug("Processing SSID [{}] of org/tenant ({}/{}) for monitoring.",
+                            ssid, ssid.organizationId(), ssid.tenantId());
 
                     String key = ssid.organizationId().toString() + ssid.tenantId().toString();
                     List<Dot11KnownNetwork> knownNetworks = knownNetworksCache.get(key);

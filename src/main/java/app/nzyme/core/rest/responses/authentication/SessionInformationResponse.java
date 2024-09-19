@@ -43,13 +43,17 @@ public abstract class SessionInformationResponse {
     @JsonProperty("branding")
     public abstract BrandingResponse branding();
 
-    public static SessionInformationResponse create(SessionUserInformationDetailsResponse user, boolean mfaValid, boolean mfaSetup, DateTime mfaEntryExpiresAt, BrandingResponse branding) {
+    @JsonProperty("has_active_alerts")
+    public abstract boolean hasActiveAlerts();
+
+    public static SessionInformationResponse create(SessionUserInformationDetailsResponse user, boolean mfaValid, boolean mfaSetup, DateTime mfaEntryExpiresAt, BrandingResponse branding, boolean hasActiveAlerts) {
         return builder()
                 .user(user)
                 .mfaValid(mfaValid)
                 .mfaSetup(mfaSetup)
                 .mfaEntryExpiresAt(mfaEntryExpiresAt)
                 .branding(branding)
+                .hasActiveAlerts(hasActiveAlerts)
                 .build();
     }
 
@@ -68,6 +72,8 @@ public abstract class SessionInformationResponse {
         public abstract Builder mfaEntryExpiresAt(DateTime mfaEntryExpiresAt);
 
         public abstract Builder branding(BrandingResponse branding);
+
+        public abstract Builder hasActiveAlerts(boolean hasActiveAlerts);
 
         public abstract SessionInformationResponse build();
     }

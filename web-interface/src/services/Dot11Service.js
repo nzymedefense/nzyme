@@ -452,6 +452,38 @@ class Dot11Service {
     RESTClient.delete(`/dot11/monitoring/proberequests/show/${uuid}`, onSuccess)
   }
 
+  getSSIDMonitoringConfiguration(organizationUUID, tenantUUID, setConfiguration) {
+    RESTClient.get(
+        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/configuration`,
+        {},
+        (response) => setConfiguration(response.data)
+    )
+  }
+
+  enableSSIDMonitoring(organizationUUID, tenantUUID, onSuccess) {
+    RESTClient.put(
+        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/enable`,
+        {},
+        onSuccess
+    )
+  }
+
+  disableSSIDMonitoring(organizationUUID, tenantUUID, onSuccess) {
+    RESTClient.put(
+        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/disable`,
+        {},
+        onSuccess
+    )
+  }
+
+  findAllKnownNetworks(organizationUUID, tenantUUID, limit, offset, setKnownNetworks) {
+    RESTClient.get(
+        "/dot11/monitoring/networks",
+        {limit: limit, offset: offset, organization_uuid: organizationUUID, tenant_uuid: tenantUUID},
+        (response) => setKnownNetworks(response.data)
+    )
+  }
+
 }
 
 export default Dot11Service
