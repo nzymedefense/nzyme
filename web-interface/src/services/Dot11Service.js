@@ -480,6 +480,13 @@ class Dot11Service {
     )
   }
 
+  deleteAllKnownNetworks(organizationUUID, tenantUUID, onSuccess) {
+    RESTClient.delete(
+        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}`,
+        onSuccess
+    )
+  }
+
   approveKnownNetwork(uuid, organizationUUID, tenantUUID, onSuccess) {
     RESTClient.put(
         `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/show/${uuid}/approve`,

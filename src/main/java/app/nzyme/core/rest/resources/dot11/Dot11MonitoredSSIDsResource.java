@@ -135,10 +135,10 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
 
     @DELETE
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
-    @Path("/organization/{organization_id}/tenant/{tenant_id}/reset")
+    @Path("/organization/{organization_id}/tenant/{tenant_id}")
     public Response deleteAllOfTenant(@Context SecurityContext sc,
-                                     @PathParam("organization_id") @NotNull UUID organizationId,
-                                     @PathParam("tenant_id") @NotNull UUID tenantId) {
+                                      @PathParam("organization_id") @NotNull UUID organizationId,
+                                      @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -162,6 +162,10 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
                 MonitoredSSIDRegistryKeys.IS_ENABLED.key(), organizationId, tenantId
         );
 
+        Optional<String> eventingIsEnabled = nzyme.getDatabaseCoreRegistry().getValue(
+                MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.key(), organizationId, tenantId
+        );
+
         SSIDMonitoringConfigurationResponse configuration = SSIDMonitoringConfigurationResponse.create(
                 ConfigurationEntryResponse.create(
                         MonitoredSSIDRegistryKeys.IS_ENABLED.key(),
@@ -171,6 +175,16 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
                         MonitoredSSIDRegistryKeys.IS_ENABLED.defaultValue().orElse(null),
                         MonitoredSSIDRegistryKeys.IS_ENABLED.requiresRestart(),
                         MonitoredSSIDRegistryKeys.IS_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "ssid-monitoring"
+                ),
+                ConfigurationEntryResponse.create(
+                        MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.key(),
+                        "Event generation is enabled",
+                        eventingIsEnabled.isPresent() && eventingIsEnabled.get().equals("true"),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.defaultValue().orElse(null),
+                        MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.requiresRestart(),
+                        MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.constraints().orElse(Collections.emptyList()),
                         "ssid-monitoring"
                 )
         );
@@ -198,6 +212,11 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
             switch (c.getKey()) {
                 case "is_enabled":
                     if (!ConfigurationEntryConstraintValidator.checkConstraints(MonitoredSSIDRegistryKeys.IS_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "eventing_is_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED, c)) {
                         return Response.status(422).build();
                     }
                     break;

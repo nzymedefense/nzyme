@@ -6,6 +6,7 @@ import AuthenticationManagementService from "../../../../services/Authentication
 import Dot11Service from "../../../../services/Dot11Service";
 import KnownNetworksTable from "./KnownNetworksTable";
 import SSIDMonitoringConfiguration from "./SSIDMonitoringConfiguration";
+import {notify} from "react-notify-toast";
 
 const authenticationManagementService = new AuthenticationManagementService();
 const dot11Service = new Dot11Service();
@@ -64,6 +65,20 @@ export default function SSIDMonitoringProxy(props) {
     }
   }, [organizationUUID, tenantUUID, page, revision]);
 
+  const onDeleteAll = (e) => {
+    e.preventDefault();
+
+    if (!confirm("Really delete all known networks? Each will reappear as unapproved network " +
+        "next time nzyme records it.")) {
+      return;
+    }
+
+    dot11Service.deleteAllKnownNetworks(organizationUUID, tenantUUID, () => {
+      notify.show('All known networks deleted.', 'success');
+      onChange();
+    });
+  }
+
   if (!organizationUUID || !tenantUUID) {
     return (
         <div className="row mt-3">
@@ -103,21 +118,26 @@ export default function SSIDMonitoringProxy(props) {
           <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
-                <h3>Known SSIDs/Networks</h3>
+                <h3 style={{display: "inline-block"}}>Known SSIDs/Networks</h3>
+
+                <button className="btn btn-danger btn-sm float-end" onClick={onDeleteAll}>Delete All</button>
+                <br style={{clear: "both"}}/>
 
                 {user.is_superadmin || user.is_orgadmin ? <div className="mb-2">
                   <strong>Organization:</strong> {organization.name}, <strong>Tenant:</strong> {tenant.name}
                   {' '}<a href="#" onClick={resetOrganizationAndTenant}>Change</a></div> : null}
 
                 <KnownNetworksTable networks={knownNetworks}
+                                    organizationUUID={organizationUUID}
+                                    tenantUUID={tenantUUID}
                                     onChange={onChange}
                                     page={page}
                                     setPage={setPage}
-                                    perPage={perPage} />
+                                    perPage={perPage}/>
               </div>
             </div>
           </div>
         </div>
       </React.Fragment>
-)
+  )
 }

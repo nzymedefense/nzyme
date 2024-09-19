@@ -10,9 +10,13 @@ public abstract class SSIDMonitoringConfigurationResponse {
     @JsonProperty("is_enabled")
     public abstract ConfigurationEntryResponse isEnabled();
 
-    public static SSIDMonitoringConfigurationResponse create(ConfigurationEntryResponse isEnabled) {
+    @JsonProperty("eventing_is_enabled")
+    public abstract ConfigurationEntryResponse eventingIsEnabled();
+
+    public static SSIDMonitoringConfigurationResponse create(ConfigurationEntryResponse isEnabled, ConfigurationEntryResponse eventingIsEnabled) {
         return builder()
                 .isEnabled(isEnabled)
+                .eventingIsEnabled(eventingIsEnabled)
                 .build();
     }
 
@@ -23,6 +27,8 @@ public abstract class SSIDMonitoringConfigurationResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder isEnabled(ConfigurationEntryResponse isEnabled);
+
+        public abstract Builder eventingIsEnabled(ConfigurationEntryResponse eventingIsEnabled);
 
         public abstract SSIDMonitoringConfigurationResponse build();
     }

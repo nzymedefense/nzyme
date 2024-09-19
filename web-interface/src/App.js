@@ -184,8 +184,6 @@ function App() {
         setBranding(sessionInfo.branding);
         setAlertInformation({has_active_alerts: sessionInfo.has_active_alerts})
 
-        console.log(sessionInfo);
-
         callback();
       }, function() {
         Store.delete("sessionid");

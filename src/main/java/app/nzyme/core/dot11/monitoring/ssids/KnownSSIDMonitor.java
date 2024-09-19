@@ -1,10 +1,11 @@
 package app.nzyme.core.dot11.monitoring.ssids;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.Subsystem;
+import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.dot11.db.Dot11KnownNetwork;
 import app.nzyme.core.dot11.db.SSIDWithOrganizationAndTenant;
 import app.nzyme.core.periodicals.Periodical;
-import app.nzyme.core.util.TimeRangeFactory;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,13 +15,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class MonitoredSSIDWriter extends Periodical {
+public class KnownSSIDMonitor extends Periodical {
 
-    private static final Logger LOG = LogManager.getLogger(MonitoredSSIDWriter.class);
+    private static final Logger LOG = LogManager.getLogger(KnownSSIDMonitor.class);
 
     private final NzymeNode nzyme;
 
-    public MonitoredSSIDWriter(NzymeNode nzyme) {
+    public KnownSSIDMonitor(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 
@@ -62,6 +63,11 @@ public class MonitoredSSIDWriter extends Periodical {
                             LOG.debug("Updating existing known network [{}]", knownNetwork);
                             nzyme.getDot11().touchKnownNetwork(handle, knownNetwork.id());
                             known = true;
+
+                            // Raise alarm if network is not approved.
+                            if (!knownNetwork.isApproved()) {
+                                raiseAlertIfEventingEnabled(ssid);
+                            }
                         }
                     }
 
@@ -70,6 +76,9 @@ public class MonitoredSSIDWriter extends Periodical {
                         nzyme.getDot11().createKnownNetwork(
                                 handle, ssid.ssid(), false, ssid.organizationId(), ssid.tenantId()
                         );
+
+                        // Raise alarm for unapproved network.
+                        raiseAlertIfEventingEnabled(ssid);
                     }
                 }
             });
@@ -81,9 +90,36 @@ public class MonitoredSSIDWriter extends Periodical {
         }
     }
 
+    private void raiseAlertIfEventingEnabled(SSIDWithOrganizationAndTenant ssid) {
+        Optional<String> enabled = nzyme.getDatabaseCoreRegistry().getValue(
+                MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.key(), ssid.organizationId(), ssid.tenantId()
+        );
+
+        if (enabled.isEmpty() || enabled.get().equals("false")) {
+            LOG.debug("Not raising alert for unapproved SSID [{}] because eventing is enabled.", ssid.ssid());
+            return;
+        }
+
+        Map<String, String> parameters = Maps.newHashMap();
+        parameters.put("ssid", ssid.ssid());
+
+        nzyme.getDetectionAlertService().raiseAlert(
+                ssid.organizationId(),
+                ssid.tenantId(),
+                null,
+                null,
+                DetectionType.DOT11_UNAPPROVED_SSID,
+                Subsystem.DOT11,
+                "Unapproved SSID \"" + ssid.ssid() + "\" detected.",
+                parameters,
+                new String[]{"ssid"},
+                null
+        );
+    }
+
     @Override
     public String getName() {
-        return "MonitoredSSIDWriter";
+        return "KnownSSIDMonitor";
     }
 
 }

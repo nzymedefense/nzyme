@@ -36,15 +36,31 @@ export default function SSIDMonitoringConfiguration(props) {
         </thead>
         <tbody>
         <tr>
-          <td>Monitoring is enabled</td>
+          <td>Is monitoring enabled</td>
           <td>
             <ConfigurationValue value={configuration.is_enabled.value}
                                 configKey={configuration.is_enabled.key}
-                                boolean={true}
-                                required={true}/>
+                                boolean={true} />
           </td>
           <td>
             <ConfigurationModal config={configuration.is_enabled}
+                                setGlobalConfig={setConfiguration}
+                                setLocalRevision={setLocalRevision}
+                                organizationId={organizationUUID}
+                                tenantId={tenantUUID}
+                                dbUpdateCallback={dot11Service.updateSSIDMonitoringConfiguration}/>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Is event generation enabled</td>
+          <td>
+            <ConfigurationValue value={configuration.eventing_is_enabled.value}
+                                configKey={configuration.eventing_is_enabled.key}
+                                boolean={true} />
+          </td>
+          <td>
+            <ConfigurationModal config={configuration.eventing_is_enabled}
                                 setGlobalConfig={setConfiguration}
                                 setLocalRevision={setLocalRevision}
                                 organizationId={organizationUUID}

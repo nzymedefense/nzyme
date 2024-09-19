@@ -88,6 +88,7 @@ export default function KnownNetworksTable(props) {
 
     return (
         <React.Fragment>
+
             <table className="table table-sm table-hover table-striped">
                 <thead>
                 <tr>

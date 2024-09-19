@@ -17,4 +17,13 @@ public class MonitoredSSIDRegistryKeys {
             false
     );
 
+    public static final RegistryKey EVENTING_IS_ENABLED = RegistryKey.create(
+            "dot11_ssid_monitoring_eventing_enabled",
+            Optional.of(new ArrayList<>() {{
+                add(ConfigurationEntryConstraint.createSimpleBooleanConstraint());
+            }}),
+            Optional.of("false"),
+            false
+    );
+
 }
