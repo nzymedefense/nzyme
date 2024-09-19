@@ -28,7 +28,7 @@ public class MonitoredSSIDWriter extends Periodical {
     protected void execute() {
         try {
             // Fetch all SSIDs we saw in previous minute.
-            List<SSIDWithOrganizationAndTenant> ssids = nzyme.getDot11().findAllCurrentlyActiveSSIDsAndOwner();
+            List<SSIDWithOrganizationAndTenant> ssids = nzyme.getDot11().findAllCurrentlyActiveSSIDsAndOwner(5);
 
             Map<String, List<Dot11KnownNetwork>> knownNetworksCache = Maps.newHashMap();
             nzyme.getDatabase().useHandle(handle -> {
