@@ -17,6 +17,7 @@ public class Dot11KnownNetworkMapper implements RowMapper<Dot11KnownNetwork> {
                 UUID.fromString(rs.getString("uuid")),
                 rs.getString("ssid"),
                 rs.getBoolean("is_approved"),
+                rs.getBoolean("is_ignored"),
                 UUID.fromString(rs.getString("organization_id")),
                 UUID.fromString(rs.getString("tenant_id")),
                 new DateTime(rs.getTimestamp("first_seen")),

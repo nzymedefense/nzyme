@@ -62,6 +62,7 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
                     kn.tenantId(),
                     kn.ssid(),
                     kn.isApproved(),
+                    kn.isIgnored(),
                     kn.firstSeen(),
                     kn.lastSeen()
             ));
@@ -108,6 +109,48 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
         }
 
         nzyme.getDot11().changeStatusOfKnownNetwork(knownNetwork.get().id(), false);
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/show/{uuid}/ignore")
+    public Response ignore(@Context SecurityContext sc,
+                            @PathParam("uuid") UUID uuid,
+                            @PathParam("organization_id") @NotNull UUID organizationId,
+                            @PathParam("tenant_id") @NotNull UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Dot11KnownNetwork> knownNetwork = nzyme.getDot11().findKnownNetwork(uuid, organizationId, tenantId);
+        if (knownNetwork.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().changeIgnoreStatusOfKnownNetwork(knownNetwork.get().id(), true);
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/show/{uuid}/unignore")
+    public Response unignore(@Context SecurityContext sc,
+                             @PathParam("uuid") UUID uuid,
+                             @PathParam("organization_id") @NotNull UUID organizationId,
+                             @PathParam("tenant_id") @NotNull UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Dot11KnownNetwork> knownNetwork = nzyme.getDot11().findKnownNetwork(uuid, organizationId, tenantId);
+        if (knownNetwork.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().changeIgnoreStatusOfKnownNetwork(knownNetwork.get().id(), false);
 
         return Response.ok().build();
     }

@@ -40,7 +40,7 @@ export default function SSIDMonitoringConfiguration(props) {
           <td>
             <ConfigurationValue value={configuration.is_enabled.value}
                                 configKey={configuration.is_enabled.key}
-                                boolean={true} />
+                                boolean={true}/>
           </td>
           <td>
             <ConfigurationModal config={configuration.is_enabled}
@@ -57,7 +57,7 @@ export default function SSIDMonitoringConfiguration(props) {
           <td>
             <ConfigurationValue value={configuration.eventing_is_enabled.value}
                                 configKey={configuration.eventing_is_enabled.key}
-                                boolean={true} />
+                                boolean={true}/>
           </td>
           <td>
             <ConfigurationModal config={configuration.eventing_is_enabled}
@@ -67,6 +67,12 @@ export default function SSIDMonitoringConfiguration(props) {
                                 tenantId={tenantUUID}
                                 dbUpdateCallback={dot11Service.updateSSIDMonitoringConfiguration}/>
           </td>
+        </tr>
+
+        <tr>
+          <td>Minimum continuous network dwell time</td>
+          <td>5 minutes</td>
+          <td className="text-muted">n/a</td>
         </tr>
         </tbody>
       </table>

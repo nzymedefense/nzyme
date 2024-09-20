@@ -2319,6 +2319,16 @@ public class Dot11 {
         );
     }
 
+    public void changeIgnoreStatusOfKnownNetwork(long id, boolean isIgnored) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_known_networks SET is_ignored = :is_ignored WHERE id = :id")
+                        .bind("id", id)
+                        .bind("is_ignored", isIgnored)
+                        .execute()
+        );
+    }
+
+
     public void deleteKnownNetwork(long id) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM dot11_known_networks WHERE id = :id")

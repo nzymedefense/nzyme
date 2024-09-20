@@ -65,7 +65,7 @@ public class KnownSSIDMonitor extends Periodical {
                             known = true;
 
                             // Raise alarm if network is not approved.
-                            if (!knownNetwork.isApproved()) {
+                            if (!knownNetwork.isApproved() && !knownNetwork.isIgnored()) {
                                 raiseAlertIfEventingEnabled(ssid);
                             }
                         }

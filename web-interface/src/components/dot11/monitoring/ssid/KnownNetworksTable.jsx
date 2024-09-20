@@ -23,11 +23,19 @@ export default function KnownNetworksTable(props) {
                 </span>
             )
         } else {
-            return (
-                <span>
-                    <i className="fa fa-warning text-warning"/> Not Approved
-                </span>
-            )
+            if (network.is_ignored) {
+                return (
+                    <span>
+                        <i className="fa fa-info-circle text-primary" /> Ignored
+                    </span>
+                )
+            } else {
+                return (
+                    <span>
+                        <i className="fa fa-warning text-warning"/> Not Approved
+                    </span>
+                )
+            }
         }
     }
 
@@ -36,6 +44,18 @@ export default function KnownNetworksTable(props) {
             return <a href="#" onClick={() => onRevoke(network)}>Revoke Approval</a>
         } else {
             return <a href="#" onClick={() => onApprove(network)}>Approve</a>
+        }
+    }
+
+    const ignoreLink = (network) => {
+        if (network.is_approved) {
+            return <span className="text-muted" title="Approved networks cannot be ignored.">Ignore</span>
+        } else {
+            if (network.is_ignored) {
+                return <a href="#" onClick={() => onUnignore(network)}>Unignore</a>
+            } else {
+                return <a href="#" onClick={() => onIgnore(network)}>Ignore</a>
+            }
         }
     }
 
@@ -57,6 +77,29 @@ export default function KnownNetworksTable(props) {
 
         dot11Service.revokeKnownNetwork(network.uuid, network.organization_id, network.tenant_id, () => {
             notify.show('Known network approval revoked.', 'success');
+            onChange();
+        });
+    }
+
+
+    const onIgnore = (network) => {
+        if (!confirm("Really ignore network? You can un-ignore it at any time.")) {
+            return;
+        }
+
+        dot11Service.ignoreKnownNetwork(network.uuid, network.organization_id, network.tenant_id, () => {
+            notify.show('Known network ignored.', 'success');
+            onChange();
+        });
+    }
+
+    const onUnignore = (network) => {
+        if (!confirm("Really unignore network? You can ignore it again at any time.")) {
+            return;
+        }
+
+        dot11Service.unignoreKnownNetwork(network.uuid, network.organization_id, network.tenant_id, () => {
+            notify.show('Known network unignored.', 'success');
             onChange();
         });
     }
@@ -97,6 +140,7 @@ export default function KnownNetworksTable(props) {
                     <th>Last Seen</th>
                     <th>&nbsp;</th>
                     <th>&nbsp;</th>
+                    <th>&nbsp;</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -107,8 +151,11 @@ export default function KnownNetworksTable(props) {
                             <td>{status(net)}</td>
                             <td title={moment(net.last_seen).format()}>{moment(net.last_seen).fromNow()}</td>
                             <td>{changeStatusLink(net)}</td>
+                            <td>{ignoreLink(net)}</td>
                             <td>
-                                <a href="#" onClick={(e) => onDelete(e, net)}>Delete</a>
+                                <a href="#" onClick={(e) => onDelete(e, net)}>
+                                    Delete
+                                </a>
                             </td>
                         </tr>
                     )

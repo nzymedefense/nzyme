@@ -502,6 +502,22 @@ class Dot11Service {
         onSuccess
     )
   }
+
+  ignoreKnownNetwork(uuid, organizationUUID, tenantUUID, onSuccess) {
+    RESTClient.put(
+        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/show/${uuid}/ignore`,
+        {},
+        onSuccess
+    )
+  }
+
+  unignoreKnownNetwork(uuid, organizationUUID, tenantUUID, onSuccess) {
+    RESTClient.put(
+        `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/show/${uuid}/unignore`,
+        {},
+        onSuccess
+    )
+  }
 }
 
 export default Dot11Service

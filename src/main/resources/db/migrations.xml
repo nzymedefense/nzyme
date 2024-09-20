@@ -5559,5 +5559,13 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="add_ignore_field_to_known_networks" author="lennartkoopmann">
+        <addColumn tableName="dot11_known_networks">
+            <column name="is_ignored" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
     
 </databaseChangeLog>

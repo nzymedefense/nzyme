@@ -22,7 +22,10 @@ public abstract class KnownNetworkDetailsResponse {
     public abstract String ssid();
 
     @JsonProperty("is_approved")
-    public abstract boolean ispproved();
+    public abstract boolean isApproved();
+
+    @JsonProperty("is_ignored")
+    public abstract boolean isIgnored();
 
     @JsonProperty("first_seen")
     public abstract DateTime firstSeen();
@@ -30,13 +33,14 @@ public abstract class KnownNetworkDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static KnownNetworkDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String ssid, boolean ispproved, DateTime firstSeen, DateTime lastSeen) {
+    public static KnownNetworkDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String ssid, boolean isApproved, boolean isIgnored, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
                 .ssid(ssid)
-                .ispproved(ispproved)
+                .isApproved(isApproved)
+                .isIgnored(isIgnored)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .build();
@@ -56,7 +60,9 @@ public abstract class KnownNetworkDetailsResponse {
 
         public abstract Builder ssid(String ssid);
 
-        public abstract Builder ispproved(boolean ispproved);
+        public abstract Builder isApproved(boolean isApproved);
+
+        public abstract Builder isIgnored(boolean isIgnored);
 
         public abstract Builder firstSeen(DateTime firstSeen);
 

@@ -12,17 +12,19 @@ public abstract class Dot11KnownNetwork {
     public abstract UUID uuid();
     public abstract String ssid();
     public abstract boolean isApproved();
+    public abstract boolean isIgnored();
     public abstract UUID organizationId();
     public abstract UUID tenantId();
     public abstract DateTime firstSeen();
     public abstract DateTime lastSeen();
 
-    public static Dot11KnownNetwork create(long id, UUID uuid, String ssid, boolean isApproved, UUID organizationId, UUID tenantId, DateTime firstSeen, DateTime lastSeen) {
+    public static Dot11KnownNetwork create(long id, UUID uuid, String ssid, boolean isApproved, boolean isIgnored, UUID organizationId, UUID tenantId, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .id(id)
                 .uuid(uuid)
                 .ssid(ssid)
                 .isApproved(isApproved)
+                .isIgnored(isIgnored)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
                 .firstSeen(firstSeen)
@@ -43,6 +45,8 @@ public abstract class Dot11KnownNetwork {
         public abstract Builder ssid(String ssid);
 
         public abstract Builder isApproved(boolean isApproved);
+
+        public abstract Builder isIgnored(boolean isIgnored);
 
         public abstract Builder organizationId(UUID organizationId);
 
