@@ -5,6 +5,7 @@ import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.requests.SetDefaultTenantRequest;
 import app.nzyme.core.rest.requests.UpdateUserOwnPasswordRequest;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.rest.responses.userprofile.UserProfileDetailsResponse;
@@ -13,6 +14,7 @@ import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Strings;
+import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -133,5 +135,19 @@ public class UserProfileResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
+    @PUT
+    @Path("/defaults/tenant")
+    public Response setDefaultTenant(@Context SecurityContext sc, @Valid SetDefaultTenantRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserById(authenticatedUser.getUserId());
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().setUserDefaultTenant(user.get().uuid(), req.organizationId(), req.tenantId());
+
+        return Response.ok().build();
+    }
 
 }

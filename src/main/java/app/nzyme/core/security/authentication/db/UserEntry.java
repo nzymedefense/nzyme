@@ -1,9 +1,9 @@
 package app.nzyme.core.security.authentication.db;
 
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
 
 @AutoValue
@@ -52,13 +52,19 @@ public abstract class UserEntry {
     @Nullable
     public abstract String lastGeoAsn();
 
+    @Nullable
+    public abstract UUID defaultOrganizationId();
+
+    @Nullable
+    public abstract UUID defaultTenantId();
+
     public abstract boolean accessAllTenantTaps();
 
     public abstract long failedLoginCount();
 
     public abstract boolean isLoginThrottled();
 
-    public static UserEntry create(UUID uuid, UUID organizationId, UUID tenantId, String passwordHash, String passwordSalt, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, boolean accessAllTenantTaps, long failedLoginCount, boolean isLoginThrottled) {
+    public static UserEntry create(UUID uuid, UUID organizationId, UUID tenantId, String passwordHash, String passwordSalt, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, UUID defaultOrganizationId, UUID defaultTenantId, boolean accessAllTenantTaps, long failedLoginCount, boolean isLoginThrottled) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -79,6 +85,8 @@ public abstract class UserEntry {
                 .lastGeoCity(lastGeoCity)
                 .lastGeoCountry(lastGeoCountry)
                 .lastGeoAsn(lastGeoAsn)
+                .defaultOrganizationId(defaultOrganizationId)
+                .defaultTenantId(defaultTenantId)
                 .accessAllTenantTaps(accessAllTenantTaps)
                 .failedLoginCount(failedLoginCount)
                 .isLoginThrottled(isLoginThrottled)
@@ -128,6 +136,10 @@ public abstract class UserEntry {
         public abstract Builder lastGeoCountry(String lastGeoCountry);
 
         public abstract Builder lastGeoAsn(String lastGeoAsn);
+
+        public abstract Builder defaultOrganizationId(UUID defaultOrganizationId);
+
+        public abstract Builder defaultTenantId(UUID defaultTenantId);
 
         public abstract Builder accessAllTenantTaps(boolean accessAllTenantTaps);
 

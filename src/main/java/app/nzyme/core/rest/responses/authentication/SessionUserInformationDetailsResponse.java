@@ -2,8 +2,8 @@ package app.nzyme.core.rest.responses.authentication;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,10 +33,18 @@ public abstract class SessionUserInformationDetailsResponse {
     @JsonProperty("tenant_id")
     public abstract UUID tenantId();
 
+    @Nullable
+    @JsonProperty("default_organization")
+    public abstract UUID defaultOrganization();
+
+    @Nullable
+    @JsonProperty("default_tenant")
+    public abstract UUID defaultTenant();
+
     @JsonProperty("feature_permissions")
     public abstract List<String> featurePermissions();
 
-    public static SessionUserInformationDetailsResponse create(UUID id, String email, String name, boolean isSuperAdmin, boolean isOrgAdmin, UUID organizationId, UUID tenantId, List<String> featurePermissions) {
+    public static SessionUserInformationDetailsResponse create(UUID id, String email, String name, boolean isSuperAdmin, boolean isOrgAdmin, UUID organizationId, UUID tenantId, UUID defaultOrganization, UUID defaultTenant, List<String> featurePermissions) {
         return builder()
                 .id(id)
                 .email(email)
@@ -45,6 +53,8 @@ public abstract class SessionUserInformationDetailsResponse {
                 .isOrgAdmin(isOrgAdmin)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
+                .defaultOrganization(defaultOrganization)
+                .defaultTenant(defaultTenant)
                 .featurePermissions(featurePermissions)
                 .build();
     }
@@ -68,6 +78,10 @@ public abstract class SessionUserInformationDetailsResponse {
         public abstract Builder organizationId(UUID organizationId);
 
         public abstract Builder tenantId(UUID tenantId);
+
+        public abstract Builder defaultOrganization(UUID defaultOrganization);
+
+        public abstract Builder defaultTenant(UUID defaultTenant);
 
         public abstract Builder featurePermissions(List<String> featurePermissions);
 

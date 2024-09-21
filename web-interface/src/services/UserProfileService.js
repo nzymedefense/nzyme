@@ -23,6 +23,15 @@ class UserProfileService {
     RESTClient.put('/user/mfa/reset', {}, successCallback)
   }
 
+  setDefaultTenant(organizationId, tenantId, successCallback) {
+    RESTClient.put(
+        "/user/defaults/tenant",
+        {"organization_id": organizationId, "tenant_id": tenantId},
+        successCallback
+    );
+  }
+
+
 }
 
 export default UserProfileService

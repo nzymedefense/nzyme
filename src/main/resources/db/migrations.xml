@@ -5567,5 +5567,17 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="add_default_selected_tenant_and_org_to_users" author="lennartkoopmann">
+        <addColumn tableName="auth_users">
+            <column name="default_organization" type="uuid">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="default_tenant" type="uuid">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
     
 </databaseChangeLog>

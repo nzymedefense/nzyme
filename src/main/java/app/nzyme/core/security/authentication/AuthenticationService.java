@@ -1271,6 +1271,17 @@ public class AuthenticationService {
         );
     }
 
+    public void setUserDefaultTenant(UUID userId, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET default_organization = :organization_uuid, " +
+                                "default_tenant = :tenant_uuid WHERE uuid = :uuid")
+                        .bind("organization_uuid", organizationId)
+                        .bind("tenant_uuid", tenantId)
+                        .bind("uuid", userId)
+                        .execute()
+        );
+    }
+
     private void runSessionCleaning() {
         // We are extremely defensive with exception catching here to make sure it always executes the deletion query.
 
