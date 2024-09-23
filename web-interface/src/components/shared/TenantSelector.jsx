@@ -1,21 +1,44 @@
-import React, {useEffect} from "react";
+import React, {useContext, useEffect} from "react";
+import {UserContext} from "../../App";
 
 function TenantSelector(props) {
+
+  const user = useContext(UserContext);
 
   const tenants = props.tenants;
   const tenant = props.tenant;
   const setTenant = props.setTenant;
 
+  // Optional.
+  const emptyTitle = props.emptyTitle;
+
   useEffect(() => {
-    if (tenants && tenants.tenants.length === 1) {
-      setTenant(tenants.tenants[0].id)
+    if (tenants) {
+      if (tenants.tenants.length === 1) {
+        // Automatically select tenant if there is only one.
+        setTenant(tenants.tenants[0].id)
+      } else {
+        // Automatically select user-default tenant if user has one and tenant exists.
+        if (user.default_tenant) {
+          let exists = false;
+          for (const tenant of tenants.tenants) {
+            if (tenant.id === user.default_tenant) {
+              exists = true;
+            }
+          }
+
+          if (exists) {
+            setTenant(user.default_tenant);
+          }
+        }
+      }
     }
   }, [tenants]);
 
   if (!tenants) {
     return (
         <select className="form-select mb-3" disabled={true}>
-          <option>Select an organization first.</option>
+          <option>{emptyTitle ? emptyTitle : "Select an organization first."}</option>
         </select>
     )
   }
@@ -23,9 +46,8 @@ function TenantSelector(props) {
   return (
       <select className="form-select mb-3"
               value={tenant}
-              onChange={(e) => setTenant(e.target.value)}
-      >
-        <option value="">Select a tenant</option>
+              onChange={(e) => setTenant(e.target.value)}>
+        <option value="">{emptyTitle ? emptyTitle : "Select a tenant"}</option>
         {tenants.tenants.map(function(tenant, i){
           return (
               <option value={tenant.id} key={"tenant-" + i}>

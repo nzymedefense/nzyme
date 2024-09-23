@@ -13,6 +13,12 @@ function OrganizationAndTenantSelector(props) {
   const onOrganizationChange = props.onOrganizationChange;
   const onTenantChange = props.onTenantChange;
 
+  // Optional.
+  const organizationSelectorTitle = props.organizationSelectorTitle;
+  const tenantSelectorTitle = props.tenantSelectorTitle;
+  const emptyOrganizationTitle = props.emptyOrganizationTitle;
+  const emptyTenantTitle = props.emptyTenantTitle;
+
   const [organization, setOrganization] = useState("");
   const [tenant, setTenant] = useState("");
 
@@ -30,6 +36,7 @@ function OrganizationAndTenantSelector(props) {
 
   useEffect(() => {
     setLoaded(false);
+
     if (user.is_superadmin) {
       setUserOrganization(null);
       setUserTenant(null);
@@ -58,6 +65,7 @@ function OrganizationAndTenantSelector(props) {
     setUserTenant(user.tenant_id);
     onOrganizationChange(user.organization_id);
     onTenantChange(user.tenant_id);
+
     setLoaded(true);
   }, []);
 
@@ -89,6 +97,12 @@ function OrganizationAndTenantSelector(props) {
   useEffect(() => {
     if (organization) {
       onOrganizationChange(organization);
+    } else {
+      if (loaded) {
+        onOrganizationChange(null);
+        onTenantChange(null);
+        setTenant(null);
+      }
     }
   }, [organization]);
 
@@ -101,18 +115,19 @@ function OrganizationAndTenantSelector(props) {
     return (
         <React.Fragment>
           <label className="form-label">
-            Organization
+            {organizationSelectorTitle ? organizationSelectorTitle : "Organization"}
           </label>
 
           <OrganizationSelector organization={organization}
                                 setOrganization={setOrganization}
-                                organizations={organizations} />
+                                organizations={organizations}
+                                emptyTitle={emptyOrganizationTitle} />
 
           <label className="form-label">
-            Tenant {tenantsLoading ? <RefreshGears /> : null}
+            {tenantSelectorTitle ? tenantSelectorTitle : "Tenant"} {tenantsLoading ? <RefreshGears /> : null}
           </label>
 
-          <TenantSelector tenant={tenant} setTenant={setTenant} tenants={tenants} />
+          <TenantSelector tenant={tenant} setTenant={setTenant} tenants={tenants} emptyTitle={emptyTenantTitle} />
         </React.Fragment>
     )
   }
@@ -122,10 +137,10 @@ function OrganizationAndTenantSelector(props) {
     return (
         <React.Fragment>
           <label className="form-label">
-            Tenant
+            {tenantSelectorTitle ? tenantSelectorTitle : "Tenant"}
           </label>
 
-          <TenantSelector tenant={tenant} setTenant={setTenant} tenants={tenants} />
+          <TenantSelector tenant={tenant} setTenant={setTenant} tenants={tenants} emptyTitle={emptyTenantTitle} />
         </React.Fragment>
     )
   }

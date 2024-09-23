@@ -1,16 +1,25 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import UserProfile from "./UserProfile";
 import MfaRecoveryCodes from "./MfaRecoveryCodes";
 import UserProfileService from "../../services/UserProfileService";
 import {notify} from "react-notify-toast";
 import ApiRoutes from "../../util/ApiRoutes";
+import WithExactRole from "../misc/WithExactRole";
+import WithMinimumRole from "../misc/WithMinimumRole";
+import OrganizationAndTenantSelector from "../shared/OrganizationAndTenantSelector";
+import {UserContext} from "../../App";
 
 const userProfileService = new UserProfileService();
 
 function UserProfilePage(props) {
 
+  const user = useContext(UserContext);
+
   const onMfaReset = props.onMfaReset;
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
+
+  const [defaultTenant, setDefaultTenant] = useState(null);
+  const [defaultOrganization, setDefaultOrganization] = useState(null);
 
   const resetMfa = function() {
     if (!confirm("Really reset your MFA? You will be logged out and prompted to set up a new MFA method " +
@@ -21,6 +30,14 @@ function UserProfilePage(props) {
     userProfileService.resetOwnMfa(function () {
       notify.show('MFA successfully reset.', 'success');
       onMfaReset();
+    })
+  }
+
+  const onSaveDefaultTenant = (e) => {
+    e.preventDefault();
+
+    userProfileService.setDefaultTenant(defaultOrganization, defaultTenant, () => {
+      notify.show('Default tenant updated.', 'success');
     })
   }
 
@@ -40,7 +57,7 @@ function UserProfilePage(props) {
                   <div className="card-body">
                     <h3>User Data</h3>
 
-                    <UserProfile />
+                    <UserProfile/>
 
                     <a className="btn btn-sm btn-secondary mt-2" href={ApiRoutes.USERPROFILE.PASSWORD}>
                       Change Password
@@ -56,13 +73,13 @@ function UserProfilePage(props) {
                   <div className="card-body">
                     <h3>Multi-Factor Authentication</h3>
 
-                    { /* We can show this statically because if you reached this, your MFA is set up and active. */ }
+                    { /* We can show this statically because if you reached this, your MFA is set up and active. */}
                     <div className="alert alert-success">
-                      <i className="fa fa-check-circle" />{' '}
+                      <i className="fa fa-check-circle"/>{' '}
                       Your account is protected by multi-factor authentication.
                     </div>
 
-                    <hr />
+                    <hr/>
 
                     <h4>Reset MFA</h4>
                     <p>
@@ -74,7 +91,7 @@ function UserProfilePage(props) {
                       Reset my MFA configuration
                     </button>
 
-                    <hr />
+                    <hr/>
 
                     <h4>Recovery Codes</h4>
                     <p>
@@ -83,7 +100,7 @@ function UserProfilePage(props) {
                       them with anyone.
                     </p>
 
-                    <MfaRecoveryCodes show={showRecoveryCodes} />
+                    <MfaRecoveryCodes show={showRecoveryCodes}/>
 
                     <button className="btn btn-sm btn-secondary mt-2"
                             onClick={() => setShowRecoveryCodes(!showRecoveryCodes)}>
@@ -93,6 +110,37 @@ function UserProfilePage(props) {
                 </div>
               </div>
             </div>
+
+            <WithMinimumRole role="ORGADMIN">
+              <div className="row mt-3">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3>Default Tenant</h3>
+
+                      <p>
+                        You can select a default organization or tenant that will be automatically selected across the
+                        web interface when such a selection is required.
+                      </p>
+
+                      <div className="mt-2">
+                        <OrganizationAndTenantSelector
+                            organizationSelectorTitle={<strong>Default Organization</strong>}
+                            tenantSelectorTitle={<strong>Default Tenant</strong>}
+                            emptyOrganizationTitle="None"
+                            emptyTenantTitle="None"
+                            onOrganizationChange={(org) => setDefaultOrganization(org)}
+                            onTenantChange={(tenant) => setDefaultTenant(tenant)} />
+                      </div>
+
+                      <div className="mt-2">
+                        <button className="btn btn-sm btn-secondary" onClick={onSaveDefaultTenant}>Save</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </WithMinimumRole>
           </div>
 
           <div className="col-md-4">
@@ -108,9 +156,8 @@ function UserProfilePage(props) {
             </div>
           </div>
         </div>
-
       </React.Fragment>
-  )
+)
 
 }
 
