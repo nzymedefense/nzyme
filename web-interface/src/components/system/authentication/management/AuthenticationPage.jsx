@@ -19,11 +19,11 @@ function AuthenticationPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-10">
+          <div className="col-10">
             <h1>Authentication &amp; Authorization</h1>
           </div>
 
-          <div className="col-md-2">
+          <div className="col-2">
             <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SETTINGS} className="btn btn-primary float-end">
               Settings
             </a>
@@ -31,9 +31,9 @@ function AuthenticationPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-xl-12 col-xxl-6">
             <div className="row">
-              <div className="col-md-12">
+              <div className="col-12">
                 <div className="card">
                   <div className="card-body">
                     <h3>Organizations</h3>
@@ -50,7 +50,7 @@ function AuthenticationPage() {
             </div>
 
             <div className="row mt-3">
-              <div className="col-md-12">
+              <div className="col-12">
                 <div className="card">
                   <div className="card-body">
                     <h3>Super Administrators</h3>
@@ -69,7 +69,7 @@ function AuthenticationPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-12">
             <div className="card">
               <div className="card-body">
                 <h3>All Active Sessions</h3>

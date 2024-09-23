@@ -56,7 +56,7 @@ function EditSuperAdminPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-9">
+          <div className="col-9">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item">
@@ -73,7 +73,7 @@ function EditSuperAdminPage() {
             </nav>
           </div>
 
-          <div className="col-md-3">
+          <div className="col-3">
               <span className="float-end">
                 <a className="btn btn-secondary"
                    href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.DETAILS(userId)}>
@@ -84,13 +84,13 @@ function EditSuperAdminPage() {
         </div>
 
         <div className="row">
-          <div className="col-md-12">
+          <div className="col-12">
             <h1>Super Administrator &quot;{user.email}&quot;</h1>
           </div>
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-8">
+          <div className="col-xl-12 col-xxl-8">
             <div className="row">
               <div className="col-md-12">
                 <div className="card">

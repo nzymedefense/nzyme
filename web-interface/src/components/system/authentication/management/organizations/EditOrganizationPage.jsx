@@ -37,7 +37,7 @@ function EditOrganizationPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-9">
+          <div className="col-9">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item">
@@ -54,19 +54,19 @@ function EditOrganizationPage() {
             </nav>
           </div>
 
-          <div className="col-md-3">
+          <div className="col-3">
             <span className="float-end">
               <a className="btn btn-secondary" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>Back</a>{' '}
             </span>
           </div>
 
-          <div className="col-md-12">
+          <div className="col-12">
             <h1>Organization &quot;{organization.name}&quot;</h1>
           </div>
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <h3>Edit Organization Details</h3>

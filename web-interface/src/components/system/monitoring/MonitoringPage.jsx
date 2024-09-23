@@ -14,13 +14,13 @@ function MonitoringPage () {
   return (
         <div>
             <div className="row">
-                <div className="col-md-12">
+                <div className="col-12">
                     <h1>Monitoring &amp; Metrics</h1>
                 </div>
             </div>
 
-            <div className="row">
-                <div className="col-md-6">
+            <div className="row mt-2">
+                <div className="col-xl-12 col-xxl-6">
                     <div className="card">
                         <div className="card-body">
                             <h3>Metrics Exporters</h3>

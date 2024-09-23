@@ -53,7 +53,7 @@ function EventSubscriptionDetailsPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-9">
+          <div className="col-9">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={ApiRoutes.SYSTEM.EVENTS.INDEX}>Events &amp; Actions</a></li>
@@ -63,7 +63,7 @@ function EventSubscriptionDetailsPage() {
             </nav>
           </div>
 
-          <div className="col-md-3">
+          <div className="col-3">
             <span className="float-end">
               <a className="btn btn-secondary" href={ApiRoutes.SYSTEM.EVENTS.INDEX}>
                 Back
@@ -73,13 +73,13 @@ function EventSubscriptionDetailsPage() {
         </div>
 
         <div className="row">
-          <div className="col-md-12">
+          <div className="col-12">
             <h1>Subscriptions of Event &quot;{eventType.name}&quot;</h1>
           </div>
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <h3>Subscribed Actions</h3>

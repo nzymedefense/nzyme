@@ -28,7 +28,7 @@ function OrganizationEventsPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-10">
+          <div className="col-10">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item">
@@ -45,7 +45,7 @@ function OrganizationEventsPage() {
             </nav>
           </div>
 
-          <div className="col-md-2">
+          <div className="col-2">
             <a className="btn btn-primary float-end"
                href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
               Back
@@ -54,15 +54,15 @@ function OrganizationEventsPage() {
         </div>
 
         <div className="row">
-          <div className="col-md-12">
+          <div className="col-12">
             <h1>Events &amp; Actions of Organization &quot;{organization.name}&quot;</h1>
           </div>
         </div>
 
         <div className="row">
-          <div className="col-md-8">
+          <div className="col-xl-12 col-xxl-8">
             <div className="row mt-3">
-              <div className="col-md-12">
+              <div className="col-12">
                 <div className="card">
                   <div className="card-body">
                     <h3>Organization Event Subscriptions</h3>
@@ -99,7 +99,7 @@ function OrganizationEventsPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-12">
             <div className="card">
               <div className="card-body">
                 <h3>All Recorded Organization Events</h3>

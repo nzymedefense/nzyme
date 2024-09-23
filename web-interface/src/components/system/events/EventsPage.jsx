@@ -8,15 +8,15 @@ function EventsPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-12">
+          <div className="col-12">
             <h1>Events &amp; Actions</h1>
           </div>
         </div>
 
         <div className="row">
-          <div className="col-md-12">
+          <div className="col-12">
             <div className="row mt-3">
-              <div className="col-md-8">
+              <div className="col-xl-8 col-xxl-6">
                 <div className="card">
                   <div className="card-body">
                     <h3>Super Administrator Event Subscriptions</h3>
@@ -33,7 +33,7 @@ function EventsPage() {
             </div>
 
             <div className="row mt-3">
-              <div className="col-md-8">
+              <div className="col-xl-8 col-xxl-6">
                 <div className="card">
                   <div className="card-body">
                     <h3>Super Administrator Actions</h3>
@@ -53,7 +53,7 @@ function EventsPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-xl-8 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <h3>All Recorded Events</h3>

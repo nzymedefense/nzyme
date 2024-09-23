@@ -46,7 +46,7 @@ function CreateOrganizationAdministratorPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-10">
+          <div className="col-10">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item">
@@ -64,20 +64,20 @@ function CreateOrganizationAdministratorPage() {
             </nav>
           </div>
 
-          <div className="col-md-2">
+          <div className="col-2">
             <a className="btn btn-secondary float-end"
                href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
               Back
             </a>
           </div>
 
-          <div className="col-md-12">
+          <div className="col-12">
             <h1>Create Organization Administrator</h1>
           </div>
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <CreateUserForm onClick={onFormSubmitted} errorMessage={errorMessage} submitText="Create Organization Administrator" />

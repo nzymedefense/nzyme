@@ -55,7 +55,7 @@ function NodeDetailsPage() {
   return (
       <div>
         <div className="row">
-          <div className="col-md-10">
+          <div className="col-10">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={Routes.SYSTEM.CLUSTER.INDEX}>Nodes</a></li>
@@ -64,7 +64,7 @@ function NodeDetailsPage() {
             </nav>
           </div>
 
-          <div className="col-md-2">
+          <div className="col-2">
             <a className="btn btn-primary float-end" href={Routes.SYSTEM.CLUSTER.INDEX}>Back</a>
           </div>
 
@@ -81,7 +81,7 @@ function NodeDetailsPage() {
         <NodeClockWarning node={node} />
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-6">
             <div className="card">
               <div className="card-body">
                 <h3>Node Information</h3>
@@ -112,7 +112,7 @@ function NodeDetailsPage() {
             </div>
           </div>
 
-          <div className="col-md-6">
+          <div className="col-6">
             <div className="card">
               <div className="card-body">
                 <h3>Host Information</h3>
@@ -130,7 +130,7 @@ function NodeDetailsPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-4">
+          <div className="col-4">
             <div className="card">
               <div className="card-body">
                 <h3>System CPU Load</h3>
@@ -143,7 +143,7 @@ function NodeDetailsPage() {
             </div>
           </div>
 
-          <div className="col-md-4">
+          <div className="col-4">
             <div className="card">
               <div className="card-body">
                 <h3>System Memory Use</h3>
@@ -157,7 +157,7 @@ function NodeDetailsPage() {
             </div>
           </div>
 
-          <div className="col-md-4">
+          <div className="col-4">
             <div className="card">
               <div className="card-body">
                 <h3>JVM Heap Memory Use</h3>
@@ -173,7 +173,7 @@ function NodeDetailsPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-12">
             <div className="card">
               <div className="card-body">
                 <h3>Total Data Received from Taps</h3>
@@ -185,7 +185,7 @@ function NodeDetailsPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-12">
             <div className="card">
               <div className="card-body">
                 <h3>Process Arguments</h3>
@@ -198,9 +198,9 @@ function NodeDetailsPage() {
 
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-6">
             <div className="row">
-              <div className="col-md-12">
+              <div className="col-12">
                 <div className="card">
                   <div className="card-body">
                     <h3>HTTP Configuration</h3>
@@ -227,7 +227,7 @@ function NodeDetailsPage() {
             </div>
 
             <div className="row mt-3">
-              <div className="col-md-12">
+              <div className="col-12">
                 <div className="card">
                   <div className="card-body">
                     <h3>Metrics</h3>
@@ -241,12 +241,11 @@ function NodeDetailsPage() {
                 </div>
               </div>
             </div>
-
           </div>
 
-          <div className="col-md-6">
+          <div className="col-6">
             <div className="row">
-              <div className="col-md-12">
+              <div className="col-12">
                 <div className="card">
                   <div className="card-body">
                     <h3>Node Actions</h3>

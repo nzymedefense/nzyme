@@ -62,7 +62,7 @@ function TLSWildcardCertificateUploadPage() {
   return (
       <div>
         <div className="row">
-          <div className="col-md-10">
+          <div className="col-10">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={Routes.SYSTEM.CRYPTO.INDEX}>Crypto</a></li>
@@ -72,11 +72,11 @@ function TLSWildcardCertificateUploadPage() {
             </nav>
           </div>
 
-          <div className="col-md-2">
+          <div className="col-2">
             <a className="btn btn-primary float-end" href={Routes.SYSTEM.CRYPTO.INDEX}>Back</a>
           </div>
 
-          <div className="col-md-12">
+          <div className="col-12">
             <h1>
               Upload TLS Wildcard Certificate
             </h1>
@@ -84,7 +84,7 @@ function TLSWildcardCertificateUploadPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <h3>Upload TLS Wildcard Certificate</h3>

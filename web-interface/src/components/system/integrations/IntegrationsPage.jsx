@@ -6,13 +6,13 @@ function IntegrationsPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-12">
+          <div className="col-12">
             <h1>Integrations</h1>
           </div>
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <h3>SMTP / Email</h3>

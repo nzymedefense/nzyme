@@ -17,7 +17,7 @@ function CreateActionPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-10">
+          <div className="col-10">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={ApiRoutes.SYSTEM.EVENTS.INDEX}>Events &amp; Actions</a></li>
@@ -27,13 +27,13 @@ function CreateActionPage() {
             </nav>
           </div>
 
-          <div className="col-md-2">
+          <div className="col-2">
             <a className="btn btn-primary float-end" href={ApiRoutes.SYSTEM.EVENTS.INDEX}>Back</a>
           </div>
         </div>
 
         <div className="row">
-          <div className="col-md-6">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <h3>Create Action</h3>
