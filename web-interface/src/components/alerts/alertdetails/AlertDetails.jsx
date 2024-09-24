@@ -11,6 +11,7 @@ import MonitorDiscoAnomalyAlertDetails from "./dot11/MonitorDiscoAnomalyAlertDet
 import SimilarLookingSSIDAlertDetails from "./dot11/SimilarLookingSSIDAlertDetails";
 import RestrictedSSIDSubstringAlertDetails from "./dot11/RestrictedSSIDSubstringAlertDetails";
 import MonitoredProbeRequestAlertDetails from "./dot11/MonitoredProbeRequestAlertDetails";
+import UnapprovedSSIDAlertDetails from "./dot11/UnapprovedSSIDAlertDetails";
 
 function AlertDetails(props) {
 
@@ -41,6 +42,8 @@ function AlertDetails(props) {
       return <RestrictedSSIDSubstringAlertDetails alert={alert} />
     case "DOT11_PROBEREQ":
       return <MonitoredProbeRequestAlertDetails alert={alert} />
+    case "DOT11_UNAPPROVED_SSID":
+      return <UnapprovedSSIDAlertDetails alert={alert} />
     default:
       return <GenericAlertDetails alert={alert} />
   }

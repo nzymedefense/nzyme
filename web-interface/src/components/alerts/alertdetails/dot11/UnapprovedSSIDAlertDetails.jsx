@@ -1,11 +1,9 @@
-import React from 'react';
-import AutomaticDot11MacAddressLink from "../../../shared/context/macs/AutomaticDot11MacAddressLink";
-import {CLIENT} from "../../../shared/context/macs/Dot11MacAddressType";
+import React from "react";
 import WithPermission from "../../../misc/WithPermission";
 import WithoutPermission from "../../../misc/WithoutPermission";
 import ApiRoutes from "../../../../util/ApiRoutes";
 
-export default function MonitoredProbeRequestAlertDetails(props) {
+export default function UnapprovedSSIDAlertDetails(props) {
 
   const alert = props.alert;
 
@@ -18,22 +16,18 @@ export default function MonitoredProbeRequestAlertDetails(props) {
                 <h3>Details</h3>
                 <dl>
                   <dt>SSID</dt>
+
                   <WithPermission permission="dot11_monitoring_manage">
-                    <dd><a href={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.INDEX}>{alert.attributes.ssid}</a></dd>
+                    <dd><a href={ApiRoutes.DOT11.MONITORING.SSIDS.INDEX}>{alert.attributes.ssid}</a></dd>
                   </WithPermission>
 
                   <WithoutPermission permission="dot11_monitoring_manage">
                     <dd>{alert.attributes.ssid}</dd>
                   </WithoutPermission>
-
-                  <dt>Client MAC Address</dt>
-                  <dd>
-                    <AutomaticDot11MacAddressLink type={CLIENT} mac={alert.attributes.client_mac}/>
-                  </dd>
                 </dl>
 
-                <p className="mb-0 mt-3">
-                  A monitored probe request was detected.
+                <p className="mb-0">
+                  An unapproved WiFi Network (SSID) was detected.
                 </p>
               </div>
             </div>
