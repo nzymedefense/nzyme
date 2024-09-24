@@ -15,7 +15,7 @@ export default function SSIDMonitoringPage() {
           </div>
 
           <div className="col-md-2">
-            <a href="https://go.nzyme.org/kb-ssid-monitoring" className="btn btn-secondary float-end">Help</a>
+            <a href="https://go.nzyme.org/wifi-ssid-monitoring" className="btn btn-secondary float-end">Help</a>
           </div>
         </div>
 
@@ -36,7 +36,7 @@ export default function SSIDMonitoringPage() {
 
                 <p className="text-muted mb-0">
                   Newly detected networks should be treated as informational, not as critical alerts, until further
-                  investigated and properly classified to ensure they don&quot;t pose a security risk.
+                  investigated and properly classified to ensure they don&apos;t pose a security risk.
                 </p>
               </div>
             </div>

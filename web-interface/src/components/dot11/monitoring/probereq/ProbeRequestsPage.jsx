@@ -15,7 +15,7 @@ export default function ProbeRequestsPage() {
           </div>
 
           <div className="col-md-2">
-            <a href="https://go.nzyme.org/kb-probereq-monitoring" className="btn btn-secondary float-end">Help</a>
+            <a href="https://go.nzyme.org/wifi-probereq-monitoring" className="btn btn-secondary float-end">Help</a>
           </div>
         </div>
 
