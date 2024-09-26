@@ -150,6 +150,16 @@ class Dot11Service {
     })
   }
 
+  getClientFrameCountHistogram(clientMac, timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get(`/dot11/clients/show/${clientMac}/histogram/frames`,
+        { taps: tapsList, time_range: timeRange },
+        (response) => {
+          setHistogram(response.data);
+        })
+  }
+
   getClientConnectedSignalStrengthHistogram(clientMac, timeRange, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 

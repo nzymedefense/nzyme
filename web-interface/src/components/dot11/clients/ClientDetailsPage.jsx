@@ -20,6 +20,7 @@ import ReadOnlyTrilaterationResultFloorPlanWrapper
   from "../../shared/floorplan/ReadOnlyTrilaterationResultFloorPlanWrapper";
 import TransparentIpAddressTable from "../../shared/context/transparent/TransparentIpAddressTable";
 import TransparentHostnamesTable from "../../shared/context/transparent/TransparentHostnamesTable";
+import {singleTapSelected} from "../../../util/Tools";
 
 const dot11Service = new Dot11Service();
 
@@ -39,6 +40,10 @@ function ClientDetailsPage() {
   const [trilaterationResult, setTrilaterationResult] = useState(null);
   const [trilaterationError, setTrilaterationError] = useState(null);
   const [trilaterationRevision, setTrilaterationRevision] = useState(0);
+
+  const [frameCountHistogramTimeRange, setFrameCountHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [frameCountHistogramType, setFrameCountHistogramType] = useState("total_frames")
+  const [frameCountHistogram, setFrameCountHistogram] = useState(null);
 
   const [connectedSignalStrengthHistogramTimeRange, setConnectedSignalStrengthHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [connectedSignalStrengthHistogram, setConnectedSignalStrengthHistogram] = useState(null);
@@ -65,18 +70,29 @@ function ClientDetailsPage() {
   }, [macParam, selectedTaps, trilaterationFloor, trilaterationRevision, trilaterationTimeRange]);
 
   useEffect(() => {
-    setConnectedSignalStrengthHistogram(null);
-    dot11Service.getClientConnectedSignalStrengthHistogram(
-        macParam, connectedSignalStrengthHistogramTimeRange, selectedTaps, setConnectedSignalStrengthHistogram
+    setFrameCountHistogram(null);
+    dot11Service.getClientFrameCountHistogram(
+        macParam, frameCountHistogramTimeRange, selectedTaps, setFrameCountHistogram
     )
-  }, [macParam, connectedSignalStrengthHistogramTimeRange]);
+  }, [macParam, selectedTaps, frameCountHistogramTimeRange]);
 
   useEffect(() => {
-    setDisconnectedSignalStrengthHistogram(null);
-    dot11Service.getClientDisconnectedSignalStrengthHistogram(
-        macParam, disconnectedSignalStrengthHistogramTimeRange, selectedTaps, setDisconnectedSignalStrengthHistogram
-    )
-  }, [macParam, disconnectedSignalStrengthHistogramTimeRange]);
+    if (singleTapSelected(selectedTaps)) {
+      setConnectedSignalStrengthHistogram(null);
+      dot11Service.getClientConnectedSignalStrengthHistogram(
+          macParam, connectedSignalStrengthHistogramTimeRange, selectedTaps, setConnectedSignalStrengthHistogram
+      )
+    }
+  }, [macParam, selectedTaps, connectedSignalStrengthHistogramTimeRange]);
+
+  useEffect(() => {
+    if (singleTapSelected(selectedTaps)) {
+      setDisconnectedSignalStrengthHistogram(null);
+      dot11Service.getClientDisconnectedSignalStrengthHistogram(
+          macParam, disconnectedSignalStrengthHistogramTimeRange, selectedTaps, setDisconnectedSignalStrengthHistogram
+      )
+    }
+  }, [macParam, selectedTaps, disconnectedSignalStrengthHistogramTimeRange]);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -301,46 +317,24 @@ function ClientDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Data &amp; Control Frames"
-                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24}/>
+                <CardTitleWithControls title="Recorded Frames"
+                                       timeRange={frameCountHistogramTimeRange}
+                                       setTimeRange={setFrameCountHistogramTimeRange}/>
 
-                <ClientActivityHistogram histogram={client.activity_histogram}
-                                         parameter="connected_frames"
-                                         type="line"/>
-              </div>
-            </div>
-          </div>
-        </div>
+                <select className="form-select form-select-sm" style={{width: 250}}
+                        onChange={(e) => {
+                          setFrameCountHistogramType(e.target.value)
+                        }}
+                        value={frameCountHistogramType}>
+                  <option value="total_frames">Total Frames</option>
+                  <option value="connected_frames">Data & Control Frames</option>
+                  <option value="disconnected_frames">Probe Request Frames</option>
+                  <option value="disconnection_activity">Disconnection Frames</option>
+                </select>
 
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Probe Request Frames"
-                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24}/>
-
-                <ClientActivityHistogram histogram={client.activity_histogram}
-                                         parameter="disconnected_frames"
+                <ClientActivityHistogram histogram={frameCountHistogram}
+                                         parameter={frameCountHistogramType}
                                          type="bar"/>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Disconnection Frames"
-                                       fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24}/>
-
-                <ClientActivityHistogram histogram={client.activity_histogram}
-                                         parameter="disconnection_activity"
-                                         type="bar"/>
-
-                <p className="text-muted mb-0 mt-3">
-                  Disconnection activity refers to the sum of deauthentication and disassociation frames.
-                </p>
               </div>
             </div>
           </div>

@@ -1,12 +1,17 @@
 import React from "react";
 import SimpleLineChart from "../../widgets/charts/SimpleLineChart";
 import SimpleBarChart from "../../widgets/charts/SimpleBarChart";
+import LoadingSpinner from "../../misc/LoadingSpinner";
 
 function ClientActivityHistogram(props) {
 
   const histogram = props.histogram;
   const parameter = props.parameter;
   const type = props.type;
+
+  if (histogram === null) {
+    return <LoadingSpinner />
+  }
 
   const formatData = function(data) {
     const result = {}

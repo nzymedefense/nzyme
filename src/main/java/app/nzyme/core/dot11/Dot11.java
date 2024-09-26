@@ -883,6 +883,8 @@ public class Dot11 {
 
     public Optional<ClientDetails> findMergedConnectedOrDisconnectedClient(String clientMac,
                                                                            List<UUID> taps,
+                                                                           @Nullable TimeRange histogramTimeRange,
+                                                                           @Nullable Bucketing.BucketingConfiguration histogramBucketing,
                                                                            AuthenticatedUser authenticatedUser) {
         if (taps.isEmpty()) {
             return Optional.empty();
@@ -946,21 +948,28 @@ public class Dot11 {
                         advertisedSSIDs
                 ));
             }
-            connectedHistogram = nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT DATE_TRUNC('minute', b.created_at) as bucket, " +
-                                    "COALESCE(SUM(c.rx_frames) + SUM(c.tx_frames), 0) AS frames " +
-                                    "FROM dot11_bssids AS b " +
-                                    "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
-                                    "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
-                                    "AND c.client_mac = :client_mac " +
-                                    "GROUP BY bucket " +
-                                    "ORDER BY bucket DESC")
-                            .bind("cutoff", DateTime.now().minusMinutes(24*60))
-                            .bind("client_mac", clientMac)
-                            .bindList("taps", taps)
-                            .mapTo(ClientActivityHistogramEntry.class)
-                            .list()
-            );
+
+            if (histogramTimeRange != null) {
+                connectedHistogram = nzyme.getDatabase().withHandle(handle ->
+                        handle.createQuery("SELECT DATE_TRUNC(:date_trunc, b.created_at) as bucket, " +
+                                        "COALESCE(SUM(c.rx_frames) + SUM(c.tx_frames), 0) AS frames " +
+                                        "FROM dot11_bssids AS b " +
+                                        "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
+                                        "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
+                                        "AND b.tap_uuid IN (<taps>) AND c.client_mac = :client_mac " +
+                                        "GROUP BY bucket " +
+                                        "ORDER BY bucket DESC")
+                                .bind("tr_from", histogramTimeRange.from())
+                                .bind("tr_to", histogramTimeRange.to())
+                                .bind("date_trunc", histogramBucketing.type().getDateTruncName())
+                                .bind("client_mac", clientMac)
+                                .bindList("taps", taps)
+                                .mapTo(ClientActivityHistogramEntry.class)
+                                .list()
+                );
+            } else {
+                connectedHistogram = Collections.emptyList();
+            }
         } else {
             connectedBSSIDs = Collections.emptyList();
             connectedHistogram = Collections.emptyList();
@@ -986,22 +995,29 @@ public class Dot11 {
         List<ClientActivityHistogramEntry> disconnectedHistogram;
         if (disconnected.isPresent()) {
             probeRequests = findProbeRequestsOfClient(clientMac, taps);
-            disconnectedHistogram = nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT DATE_TRUNC('minute', c.created_at) as bucket, " +
-                                    "COALESCE(SUM(wildcard_probe_requests), 0) " +
-                                    "+ COALESCE(SUM(pr.frame_count), 0) AS frames " +
-                                    "FROM dot11_clients AS c " +
-                                    "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
-                                    "WHERE c.created_at > :cutoff AND c.tap_uuid IN (<taps>) " +
-                                    "AND client_mac = :client_mac " +
-                                    "GROUP BY bucket " +
-                                    "ORDER BY bucket DESC")
-                            .bind("cutoff", DateTime.now().minusMinutes(24*60))
-                            .bind("client_mac", clientMac)
-                            .bindList("taps", taps)
-                            .mapTo(ClientActivityHistogramEntry.class)
-                            .list()
-            );
+
+            if (histogramTimeRange != null) {
+                disconnectedHistogram = nzyme.getDatabase().withHandle(handle ->
+                        handle.createQuery("SELECT DATE_TRUNC(:date_trunc, c.created_at) as bucket, " +
+                                        "COALESCE(SUM(wildcard_probe_requests), 0) " +
+                                        "+ COALESCE(SUM(pr.frame_count), 0) AS frames " +
+                                        "FROM dot11_clients AS c " +
+                                        "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
+                                        "WHERE c.created_at >= :tr_from AND c.created_at <= :tr_to " +
+                                        "AND c.tap_uuid IN (<taps>) AND client_mac = :client_mac " +
+                                        "GROUP BY bucket " +
+                                        "ORDER BY bucket DESC")
+                                .bind("tr_from", histogramTimeRange.from())
+                                .bind("tr_to", histogramTimeRange.to())
+                                .bind("date_trunc", histogramBucketing.type().getDateTruncName())
+                                .bind("client_mac", clientMac)
+                                .bindList("taps", taps)
+                                .mapTo(ClientActivityHistogramEntry.class)
+                                .list()
+                );
+            } else {
+                disconnectedHistogram = Collections.emptyList();
+            }
         } else {
             probeRequests = Collections.emptyList();
             disconnectedHistogram = Collections.emptyList();

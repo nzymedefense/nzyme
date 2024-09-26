@@ -2,7 +2,6 @@ package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.context.db.MacAddressContextEntry;
-import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
@@ -216,7 +215,8 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
         Optional<ClientDetails> client = nzyme.getDot11().findMergedConnectedOrDisconnectedClient(
-                clientMac, tapUuids, authenticatedUser);
+                clientMac, tapUuids, null, null, authenticatedUser
+        );
 
         if (client.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -237,69 +237,6 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 .findDisconnectedClientSignalStrengthPerTap(c.mac(),  TimeRangeFactory.fifteenMinutes(), tapUuids)) {
             disconnectedSignalStrengthsByTap.add(TapBasedSignalStrengthResponse.create(
                     ssr.tapUuid(), ssr.tapName(), ssr.signalStrength()
-            ));
-        }
-
-        // Disconnection frames.
-        List<DiscoHistogramEntry> discos = nzyme.getDot11().getDiscoHistogram(
-                Dot11.DiscoType.DISCONNECTION,
-                TimeRangeFactory.oneDay(),
-                Bucketing.getConfig(TimeRangeFactory.oneDay()),
-                tapUuids,
-                List.of(c.mac())
-        );
-
-        Map<DateTime, ClientActivityHistogramEntry> connectedHistogram = Maps.newHashMap();
-        Map<DateTime, ClientActivityHistogramEntry> disconnectedHistogram = Maps.newHashMap();
-        Map<DateTime, DiscoHistogramEntry> discoActivityHistogram = Maps.newHashMap();
-
-        for (ClientActivityHistogramEntry ce : c.connectedFramesHistogram()) {
-            connectedHistogram.put(ce.bucket(), ce);
-        }
-
-        for (ClientActivityHistogramEntry ce : c.disconnectedFramesHistogram()) {
-            disconnectedHistogram.put(ce.bucket(), ce);
-        }
-
-        for (DiscoHistogramEntry disco : discos) {
-            discoActivityHistogram.put(disco.bucket(), disco);
-        }
-
-        Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram = Maps.newTreeMap();
-        for (int x = 24*60; x != 0; x--) {
-            DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
-
-            ClientActivityHistogramEntry connected = connectedHistogram.get(bucket);
-            ClientActivityHistogramEntry disconnected = disconnectedHistogram.get(bucket);
-            DiscoHistogramEntry disco = discoActivityHistogram.get(bucket);
-
-            long connectedFrames;
-            if (connected != null) {
-                connectedFrames = connected.frames();
-            } else {
-                connectedFrames = 0L;
-            }
-
-            long disconnectedFrames;
-            if (disconnected != null) {
-                disconnectedFrames = disconnected.frames();
-            } else {
-                disconnectedFrames = 0L;
-            }
-
-            long discoActivityFrames;
-            if (disco != null) {
-                discoActivityFrames = disco.frameCount();
-            } else {
-                discoActivityFrames = 0L;
-            }
-
-            activityHistogram.put(bucket, ClientActivityHistogramValueResponse.create(
-                    bucket,
-                    connectedFrames+disconnectedFrames,
-                    connectedFrames,
-                    disconnectedFrames,
-                    discoActivityFrames
             ));
         }
 
@@ -342,7 +279,6 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 transparentContext.ipAddresses(),
                 transparentContext.hostnames(),
                 c.probeRequests(),
-                activityHistogram,
                 connectedSignalStrengthsByTap,
                 disconnectedSignalStrengthsByTap,
                 dataRetentionDays
@@ -365,7 +301,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         UUID tapUUID = tapUuids.get(0);
 
         Optional<ClientDetails> client = nzyme.getDot11().findMergedConnectedOrDisconnectedClient(
-                clientMac, tapUuids, authenticatedUser
+                clientMac, tapUuids, null, null, authenticatedUser
         );
 
         if (client.isEmpty()) {
@@ -398,7 +334,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         UUID tapUUID = tapUuids.get(0);
 
         Optional<ClientDetails> client = nzyme.getDot11().findMergedConnectedOrDisconnectedClient(
-                clientMac, tapUuids, authenticatedUser
+                clientMac, tapUuids, null, null, authenticatedUser
         );
 
         if (client.isEmpty()) {
@@ -415,4 +351,81 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
 
         return Response.ok(histogram).build();
     }
+
+
+    @GET
+    @Path("/show/{clientMac}/histogram/frames")
+    public Response clientFrameCountHistogram(@Context SecurityContext sc,
+                                              @PathParam("clientMac") @NotEmpty String clientMac,
+                                              @QueryParam("time_range") @Valid String timeRangeParameter,
+                                              @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        Optional<ClientDetails> client = nzyme.getDot11().findMergedConnectedOrDisconnectedClient(
+                clientMac, tapUuids, timeRange, Bucketing.getConfig(timeRange), authenticatedUser
+        );
+
+        if (client.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        ClientDetails c = client.get();
+
+        List<DiscoHistogramEntry> discos = nzyme.getDot11().getDiscoHistogram(
+                Dot11.DiscoType.DISCONNECTION,  timeRange, Bucketing.getConfig(timeRange), tapUuids, List.of(c.mac())
+        );
+
+        Map<DateTime, Map<String, Long>> tempValues = Maps.newHashMap();
+        for (ClientActivityHistogramEntry ce : c.connectedFramesHistogram()) {
+            Map<String, Long> values = tempValues.get(ce.bucket());
+            if (values == null) {
+                Map<String, Long> newValues = Maps.newHashMap();
+                newValues.put("connected", ce.frames());
+                tempValues.put(ce.bucket(), newValues);
+            } else {
+                values.compute("connected", (k, current) -> (current == null ? 0 : current) + ce.frames());
+            }
+        }
+
+        for (ClientActivityHistogramEntry ce : c.disconnectedFramesHistogram()) {
+            Map<String, Long> values = tempValues.get(ce.bucket());
+            if (values == null) {
+                Map<String, Long> newValues = Maps.newHashMap();
+                newValues.put("disconnected", ce.frames());
+                tempValues.put(ce.bucket(), newValues);
+            } else {
+                values.compute("disconnected", (k, current) -> (current == null ? 0 : current) + ce.frames());
+            }
+        }
+
+        for (DiscoHistogramEntry disco : discos) {
+            Map<String, Long> values = tempValues.get(disco.bucket());
+            if (values == null) {
+                Map<String, Long> newValues = Maps.newHashMap();
+                newValues.put("disco", disco.frameCount());
+                tempValues.put(disco.bucket(), newValues);
+            } else {
+                values.compute("disco", (k, current) -> (current == null ? 0 : current) + disco.frameCount());
+            }
+        }
+
+        Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram = Maps.newTreeMap();
+        for (Map.Entry<DateTime, Map<String, Long>> temp : tempValues.entrySet()) {
+            long connectedFrames = temp.getValue().get("connected") == null ? 0L : temp.getValue().get("connected");
+            long disconnectedFrames = temp.getValue().get("disconnected") == null ? 0L : temp.getValue().get("disconnected");
+            long discoActivityFrames = temp.getValue().get("disco") == null ? 0L : temp.getValue().get("disco");
+
+            activityHistogram.put(temp.getKey(), ClientActivityHistogramValueResponse.create(
+                    temp.getKey(),
+                    connectedFrames+disconnectedFrames+discoActivityFrames,
+                    connectedFrames,
+                    disconnectedFrames,
+                    discoActivityFrames
+            ));
+        }
+
+        return Response.ok(activityHistogram).build();
+    }
+
 }

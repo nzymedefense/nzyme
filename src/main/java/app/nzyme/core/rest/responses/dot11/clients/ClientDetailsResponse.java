@@ -40,9 +40,6 @@ public abstract class ClientDetailsResponse {
     @JsonProperty("probe_requests")
     public abstract List<String> probeRequests();
 
-    @JsonProperty("activity_histogram")
-    public abstract Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram();
-
     @JsonProperty("connected_signal_strength")
     public abstract List<TapBasedSignalStrengthResponse> connectedSignalStrength();
 
@@ -52,7 +49,7 @@ public abstract class ClientDetailsResponse {
     @JsonProperty("data_retention_days")
     public abstract int dataRetentionDays();
 
-    public static ClientDetailsResponse create(Dot11MacAddressResponse mac, ConnectedBSSID connectedBSSID, List<ConnectedBSSID> connectedBSSIDHistory, DateTime firstSeen, DateTime lastSeen, List<MacAddressTransparentIpAddressResponse> transparentIpAddresses, List<MacAddressTransparentHostnameResponse> transparentHostnames, List<String> probeRequests, Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram, List<TapBasedSignalStrengthResponse> connectedSignalStrength, List<TapBasedSignalStrengthResponse> disconnectedSignalStrength, int dataRetentionDays) {
+    public static ClientDetailsResponse create(Dot11MacAddressResponse mac, ConnectedBSSID connectedBSSID, List<ConnectedBSSID> connectedBSSIDHistory, DateTime firstSeen, DateTime lastSeen, List<MacAddressTransparentIpAddressResponse> transparentIpAddresses, List<MacAddressTransparentHostnameResponse> transparentHostnames, List<String> probeRequests, List<TapBasedSignalStrengthResponse> connectedSignalStrength, List<TapBasedSignalStrengthResponse> disconnectedSignalStrength, int dataRetentionDays) {
         return builder()
                 .mac(mac)
                 .connectedBSSID(connectedBSSID)
@@ -62,7 +59,6 @@ public abstract class ClientDetailsResponse {
                 .transparentIpAddresses(transparentIpAddresses)
                 .transparentHostnames(transparentHostnames)
                 .probeRequests(probeRequests)
-                .activityHistogram(activityHistogram)
                 .connectedSignalStrength(connectedSignalStrength)
                 .disconnectedSignalStrength(disconnectedSignalStrength)
                 .dataRetentionDays(dataRetentionDays)
@@ -90,8 +86,6 @@ public abstract class ClientDetailsResponse {
         public abstract Builder transparentHostnames(List<MacAddressTransparentHostnameResponse> transparentHostnames);
 
         public abstract Builder probeRequests(List<String> probeRequests);
-
-        public abstract Builder activityHistogram(Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram);
 
         public abstract Builder connectedSignalStrength(List<TapBasedSignalStrengthResponse> connectedSignalStrength);
 
