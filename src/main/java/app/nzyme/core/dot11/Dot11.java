@@ -287,7 +287,8 @@ public class Dot11 {
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
                                 "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
-                                "COUNT(DISTINCT(c.client_mac)) AS client_count " +
+                                "COUNT(DISTINCT(c.client_mac)) AS client_count, " +
+                                "ARRAY[]::integer[] AS frequencies " + // Part of BSSIDSummary but not needed.
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
