@@ -49,16 +49,10 @@ public abstract class ClientDetailsResponse {
     @JsonProperty("disconnected_signal_strength")
     public abstract List<TapBasedSignalStrengthResponse> disconnectedSignalStrength();
 
-    @JsonProperty("connected_signal_strength_histogram")
-    public abstract List<ClientSignalStrengthResponse> connectedSignalStrengthHistogram();
-
-    @JsonProperty("disconnected_signal_strength_histogram")
-    public abstract List<ClientSignalStrengthResponse> disconnectedSignalStrengthHistogram();
-
     @JsonProperty("data_retention_days")
     public abstract int dataRetentionDays();
 
-    public static ClientDetailsResponse create(Dot11MacAddressResponse mac, ConnectedBSSID connectedBSSID, List<ConnectedBSSID> connectedBSSIDHistory, DateTime firstSeen, DateTime lastSeen, List<MacAddressTransparentIpAddressResponse> transparentIpAddresses, List<MacAddressTransparentHostnameResponse> transparentHostnames, List<String> probeRequests, Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram, List<TapBasedSignalStrengthResponse> connectedSignalStrength, List<TapBasedSignalStrengthResponse> disconnectedSignalStrength, List<ClientSignalStrengthResponse> connectedSignalStrengthHistogram, List<ClientSignalStrengthResponse> disconnectedSignalStrengthHistogram, int dataRetentionDays) {
+    public static ClientDetailsResponse create(Dot11MacAddressResponse mac, ConnectedBSSID connectedBSSID, List<ConnectedBSSID> connectedBSSIDHistory, DateTime firstSeen, DateTime lastSeen, List<MacAddressTransparentIpAddressResponse> transparentIpAddresses, List<MacAddressTransparentHostnameResponse> transparentHostnames, List<String> probeRequests, Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram, List<TapBasedSignalStrengthResponse> connectedSignalStrength, List<TapBasedSignalStrengthResponse> disconnectedSignalStrength, int dataRetentionDays) {
         return builder()
                 .mac(mac)
                 .connectedBSSID(connectedBSSID)
@@ -71,8 +65,6 @@ public abstract class ClientDetailsResponse {
                 .activityHistogram(activityHistogram)
                 .connectedSignalStrength(connectedSignalStrength)
                 .disconnectedSignalStrength(disconnectedSignalStrength)
-                .connectedSignalStrengthHistogram(connectedSignalStrengthHistogram)
-                .disconnectedSignalStrengthHistogram(disconnectedSignalStrengthHistogram)
                 .dataRetentionDays(dataRetentionDays)
                 .build();
     }
@@ -104,10 +96,6 @@ public abstract class ClientDetailsResponse {
         public abstract Builder connectedSignalStrength(List<TapBasedSignalStrengthResponse> connectedSignalStrength);
 
         public abstract Builder disconnectedSignalStrength(List<TapBasedSignalStrengthResponse> disconnectedSignalStrength);
-
-        public abstract Builder connectedSignalStrengthHistogram(List<ClientSignalStrengthResponse> connectedSignalStrengthHistogram);
-
-        public abstract Builder disconnectedSignalStrengthHistogram(List<ClientSignalStrengthResponse> disconnectedSignalStrengthHistogram);
 
         public abstract Builder dataRetentionDays(int dataRetentionDays);
 

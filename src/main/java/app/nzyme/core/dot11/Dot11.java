@@ -1113,36 +1113,43 @@ public class Dot11 {
     }
 
     public List<ClientSignalStrengthResult> findDisconnectedClientSignalStrengthHistogram(String clientMac,
-                                                                                          int minutes,
+                                                                                          TimeRange timeRange,
+                                                                                          Bucketing.BucketingConfiguration bucketing,
                                                                                           UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT AVG(signal_strength_average) AS signal_strength, " +
-                                "DATE_TRUNC('minute', created_at) AS bucket " +
+                                "DATE_TRUNC(:date_trunc, created_at) AS bucket " +
                                 "FROM dot11_clients " +
-                                "WHERE client_mac = :client_mac AND tap_uuid = :tap_uuid AND created_at > :cutoff " +
+                                "WHERE client_mac = :client_mac AND tap_uuid = :tap_uuid " +
+                                "AND created_at >= :tr_from AND created_at <= :tr_to " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("client_mac", clientMac)
                         .bind("tap_uuid", tap)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
                         .mapTo(ClientSignalStrengthResult.class)
                         .list()
         );
     }
 
     public List<ClientSignalStrengthResult> findBssidClientSignalStrengthHistogram(String clientMac,
-                                                                                     int minutes,
-                                                                                     UUID tap) {
+                                                                                   TimeRange timeRange,
+                                                                                   Bucketing.BucketingConfiguration bucketing,
+                                                                                   UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT AVG(c.signal_strength_average) AS signal_strength, " +
-                                "DATE_TRUNC('minute', b.created_at) AS bucket " +
+                                "DATE_TRUNC(:date_trunc, b.created_at) AS bucket " +
                                 "FROM dot11_bssid_clients AS c " +
                                 "LEFT JOIN dot11_bssids AS b ON b.id = c.bssid_id " +
                                 "WHERE c.client_mac = :client_mac AND b.tap_uuid = :tap_uuid " +
-                                "AND b.created_at > :cutoff " +
+                                "AND b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("client_mac", clientMac)
                         .bind("tap_uuid", tap)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
                         .mapTo(ClientSignalStrengthResult.class)
                         .list()
         );
@@ -2147,7 +2154,7 @@ public class Dot11 {
                                                                                                   Bucketing.BucketingConfiguration bucketing,
                                                                                                   List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DATE_TRUNC('minute', b.created_at) AS bucket, " +
+                handle.createQuery("SELECT DATE_TRUNC(:date_trunc, b.created_at) AS bucket, " +
                                 "b.tap_uuid AS tap_uuid, t.name AS tap_name, " +
                                 "AVG(b.signal_strength_average) AS signal_strength " +
                                 "FROM dot11_bssids AS b LEFT JOIN taps AS t ON b.tap_uuid = t.uuid " +

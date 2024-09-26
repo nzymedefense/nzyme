@@ -40,6 +40,12 @@ function ClientDetailsPage() {
   const [trilaterationError, setTrilaterationError] = useState(null);
   const [trilaterationRevision, setTrilaterationRevision] = useState(0);
 
+  const [connectedSignalStrengthHistogramTimeRange, setConnectedSignalStrengthHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [connectedSignalStrengthHistogram, setConnectedSignalStrengthHistogram] = useState(null);
+
+  const [disconnectedSignalStrengthHistogramTimeRange, setDisconnectedSignalStrengthHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [disconnectedSignalStrengthHistogram, setDisconnectedSignalStrengthHistogram] = useState(null);
+
   useEffect(() => {
     setClient(null);
     dot11Service.findMergedConnectedOrDisconnectedClient(macParam, selectedTaps, setClient);
@@ -57,6 +63,20 @@ function ClientDetailsPage() {
       );
     }
   }, [macParam, selectedTaps, trilaterationFloor, trilaterationRevision, trilaterationTimeRange]);
+
+  useEffect(() => {
+    setConnectedSignalStrengthHistogram(null);
+    dot11Service.getClientConnectedSignalStrengthHistogram(
+        macParam, connectedSignalStrengthHistogramTimeRange, selectedTaps, setConnectedSignalStrengthHistogram
+    )
+  }, [macParam, connectedSignalStrengthHistogramTimeRange]);
+
+  useEffect(() => {
+    setDisconnectedSignalStrengthHistogram(null);
+    dot11Service.getClientDisconnectedSignalStrengthHistogram(
+        macParam, disconnectedSignalStrengthHistogramTimeRange, selectedTaps, setDisconnectedSignalStrengthHistogram
+    )
+  }, [macParam, disconnectedSignalStrengthHistogramTimeRange]);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -238,9 +258,10 @@ function ClientDetailsPage() {
                 <div className="card">
                   <div className="card-body">
                     <CardTitleWithControls title="Data &amp; Control Frames Signal Strength"
-                                           fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24}/>
+                                           timeRange={connectedSignalStrengthHistogramTimeRange}
+                                           setTimeRange={setConnectedSignalStrengthHistogramTimeRange} />
 
-                    <ClientSignalStrengthChart data={client.connected_signal_strength_histogram}/>
+                    <ClientSignalStrengthChart data={connectedSignalStrengthHistogram} />
                   </div>
                 </div>
               </div>
@@ -265,9 +286,10 @@ function ClientDetailsPage() {
                 <div className="card">
                   <div className="card-body">
                     <CardTitleWithControls title="Probe Request Frames Signal Strength"
-                                           fixedAppliedTimeRange={Presets.RELATIVE_HOURS_24}/>
+                                           timeRange={disconnectedSignalStrengthHistogramTimeRange}
+                                           setTimeRange={setDisconnectedSignalStrengthHistogramTimeRange} />
 
-                    <ClientSignalStrengthChart data={client.disconnected_signal_strength_histogram}/>
+                    <ClientSignalStrengthChart data={disconnectedSignalStrengthHistogram} />
                   </div>
                 </div>
               </div>

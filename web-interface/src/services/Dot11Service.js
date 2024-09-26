@@ -150,6 +150,26 @@ class Dot11Service {
     })
   }
 
+  getClientConnectedSignalStrengthHistogram(clientMac, timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get(`/dot11/clients/show/${clientMac}/histogram/signal/connected`,
+        { taps: tapsList, time_range: timeRange },
+        (response) => {
+      setHistogram(response.data);
+    })
+  }
+
+  getClientDisconnectedSignalStrengthHistogram(clientMac, timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get(`/dot11/clients/show/${clientMac}/histogram/signal/disconnected`,
+        { taps: tapsList, time_range: timeRange },
+        (response) => {
+          setHistogram(response.data);
+        })
+  }
+
   findAllMonitoredSSIDs(setMonitoredSSIDs) {
     RESTClient.get("/dot11/monitoring/ssids", {}, function (response) {
       setMonitoredSSIDs(response.data.ssids);

@@ -2,6 +2,7 @@ import React, {useContext} from "react";
 import {TapContext} from "../../../App";
 import {singleTapSelected} from "../../../util/Tools";
 import SimpleLineChart from "../../widgets/charts/SimpleLineChart";
+import LoadingSpinner from "../../misc/LoadingSpinner";
 
 function ClientSignalStrengthChart(props) {
 
@@ -29,7 +30,11 @@ function ClientSignalStrengthChart(props) {
     )
   }
 
-  if (!data || data.length === 0) {
+  if (!data) {
+    return <LoadingSpinner />
+  }
+
+  if (data.length === 0) {
     return (
         <div className="alert alert-info mb-0">
           No data recorded in requested time frame.

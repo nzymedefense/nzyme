@@ -303,27 +303,6 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
             ));
         }
 
-        List<ClientSignalStrengthResponse> connectedSignalStrengthHistogram = Lists.newArrayList();
-        List<ClientSignalStrengthResponse> disconnectedSignalStrengthHistogram = Lists.newArrayList();
-        if (tapUuids.size() == 1) {
-            UUID tapUUID = tapUuids.get(0);
-
-            for (ClientSignalStrengthResult r : nzyme.getDot11()
-                    .findBssidClientSignalStrengthHistogram(clientMac, 24 * 60, tapUUID)) {
-                connectedSignalStrengthHistogram.add(ClientSignalStrengthResponse.create(
-                        r.bucket(), r.signalStrength().longValue()
-                ));
-            }
-
-
-            for (ClientSignalStrengthResult r : nzyme.getDot11()
-                    .findDisconnectedClientSignalStrengthHistogram(clientMac, 24 * 60, tapUUID)) {
-                disconnectedSignalStrengthHistogram.add(ClientSignalStrengthResponse.create(
-                        r.bucket(), r.signalStrength().longValue()
-                ));
-            }
-        }
-
         int dataRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
                 .getValue(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key())
                 .orElse(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
@@ -366,10 +345,74 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 activityHistogram,
                 connectedSignalStrengthsByTap,
                 disconnectedSignalStrengthsByTap,
-                connectedSignalStrengthHistogram,
-                disconnectedSignalStrengthHistogram,
                 dataRetentionDays
         )).build();
     }
 
+    @GET
+    @Path("/show/{clientMac}/histogram/signal/connected")
+    public Response connectedSignalStrengthHistogram(@Context SecurityContext sc,
+                                                     @PathParam("clientMac") @NotEmpty String clientMac,
+                                                     @QueryParam("time_range") @Valid String timeRangeParameter,
+                                                     @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        if (tapUuids.size() != 1) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        UUID tapUUID = tapUuids.get(0);
+
+        Optional<ClientDetails> client = nzyme.getDot11().findMergedConnectedOrDisconnectedClient(
+                clientMac, tapUuids, authenticatedUser
+        );
+
+        if (client.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<ClientSignalStrengthResponse> histogram = Lists.newArrayList();
+        for (ClientSignalStrengthResult r : nzyme.getDot11()
+                .findBssidClientSignalStrengthHistogram(clientMac, timeRange, Bucketing.getConfig(timeRange), tapUUID)) {
+            histogram.add(ClientSignalStrengthResponse.create(r.bucket(), r.signalStrength().longValue()));
+        }
+
+        return Response.ok(histogram).build();
+    }
+
+    @GET
+    @Path("/show/{clientMac}/histogram/signal/disconnected")
+    public Response disconnectedSignalStrengthHistogram(@Context SecurityContext sc,
+                                                        @PathParam("clientMac") @NotEmpty String clientMac,
+                                                        @QueryParam("time_range") @Valid String timeRangeParameter,
+                                                        @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        if (tapUuids.size() != 1) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        UUID tapUUID = tapUuids.get(0);
+
+        Optional<ClientDetails> client = nzyme.getDot11().findMergedConnectedOrDisconnectedClient(
+                clientMac, tapUuids, authenticatedUser
+        );
+
+        if (client.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<ClientSignalStrengthResponse> histogram = Lists.newArrayList();
+        for (ClientSignalStrengthResult r : nzyme.getDot11().findDisconnectedClientSignalStrengthHistogram(
+                clientMac, timeRange, Bucketing.getConfig(timeRange), tapUUID)) {
+            histogram.add(ClientSignalStrengthResponse.create(
+                    r.bucket(), r.signalStrength().longValue()
+            ));
+        }
+
+        return Response.ok(histogram).build();
+    }
 }
