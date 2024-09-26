@@ -13,6 +13,7 @@ function BSSIDSignalWaterfallChart(props) {
   const HEIGHT = 450;
 
   const bssid = props.bssid;
+  const frequency = props.frequency;
   const timeRange = props.timeRange;
 
   const tapContext = useContext(TapContext);
@@ -28,18 +29,18 @@ function BSSIDSignalWaterfallChart(props) {
     });
 
     return {
-      "z": data.z,
-      "x": data.x,
-      "y": yDates
+      z: data.z,
+      x: data.x,
+      y: yDates
     };
   }
 
   useEffect(() => {
     if (singleTapSelected(selectedTaps)) {
       setWaterfall(null);
-      dot11Service.getBSSIDSignalWaterfall(bssid, timeRange, selectedTaps, setWaterfall);
+      dot11Service.getBSSIDSignalWaterfall(bssid, frequency, timeRange, selectedTaps, setWaterfall);
     }
-  }, [bssid, timeRange, selectedTaps])
+  }, [bssid, frequency, timeRange, selectedTaps])
 
   if (!singleTapSelected(selectedTaps)) {
     return (

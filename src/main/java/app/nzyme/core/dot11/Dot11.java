@@ -207,9 +207,11 @@ public class Dot11 {
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
                                 "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
+                                "ARRAY_AGG(DISTINCT(ch.frequency)) AS frequencies, " +
                                 "COUNT(DISTINCT(c.client_mac)) AS client_count " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
+                                "LEFT JOIN dot11_channels AS ch ON s.id = ch.ssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
                                 "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
                                 "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
@@ -515,16 +517,22 @@ public class Dot11 {
         );
     }
 
-    public List<SignalTrackHistogramEntry> getBSSIDSignalStrengthWaterfall(String bssid, TimeRange timeRange, UUID tapId) {
+    public List<SignalTrackHistogramEntry> getBSSIDSignalStrengthWaterfall(String bssid,
+                                                                           int frequency,
+                                                                           TimeRange timeRange,
+                                                                           UUID tapId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DATE_TRUNC('minute', s.created_at) AS bucket, signal_strength, " +
-                                "SUM(frame_count) AS frame_count FROM dot11_ssids AS s " +
+                handle.createQuery("SELECT DATE_TRUNC('minute', s.created_at) AS bucket, " +
+                                "h.signal_strength AS signal_strength, SUM(h.frame_count) AS frame_count " +
+                                "FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channel_histograms h on s.id = h.ssid_id " +
-                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
-                                "AND s.tap_uuid = :tap_id AND bssid = :bssid " +
+                                "WHERE h.frequency = :frequency " +
+                                "AND s.created_at >= :tr_from AND s.created_at <= :tr_to " +
+                                "AND s.tap_uuid = :tap_id AND s.bssid = :bssid " +
                                 "GROUP BY bucket, signal_strength ORDER BY bucket DESC")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
+                        .bind("frequency", frequency)
                         .bind("tap_id", tapId)
                         .bind("bssid", bssid)
                         .mapTo(SignalTrackHistogramEntry.class)

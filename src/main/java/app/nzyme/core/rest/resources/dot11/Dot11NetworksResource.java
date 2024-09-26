@@ -182,6 +182,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 summary,
                 clients,
                 signalStrength,
+                bssid.frequencies(),
                 dataRetentionDays
         )).build();
     }
@@ -191,6 +192,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     public Response bssidSignalWaterfall(@Context SecurityContext sc,
                                          @PathParam("bssid") String bssid,
                                          @QueryParam("time_range") @Valid String timeRangeParameter,
+                                         @QueryParam("frequency") int frequency,
                                          @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
@@ -205,7 +207,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         Tap tap = nzyme.getTapManager().findTap(tapUuids.get(0)).get();
 
         List<SignalTrackHistogramEntry> signals = nzyme.getDot11().getBSSIDSignalStrengthWaterfall(
-                bssid, timeRange, tap.uuid()
+                bssid, frequency, timeRange, tap.uuid()
         );
 
         TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);

@@ -221,7 +221,7 @@ function SSIDDetailsPage() {
                   <div className="card">
                     <div className="card-body">
                       <CardTitleWithControls title="Average Signal Strength"
-                                             smallText="All SSIDs"
+                                             smallText="All SSIDs, All Channels"
                                              fixedAppliedTimeRange={ssidTimeRange} />
 
                       <TapBasedSignalStrengthTable strengths={ssid.signal_strength}/>

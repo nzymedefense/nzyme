@@ -20,6 +20,7 @@ import ReadOnlyTrilaterationResultFloorPlanWrapper
   from "../../shared/floorplan/ReadOnlyTrilaterationResultFloorPlanWrapper";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets, Relative} from "../../shared/timerange/TimeRange";
+import ChannelSelector from "../util/ChannelSelector";
 
 const dot11Service = new Dot11Service();
 
@@ -40,6 +41,8 @@ function BSSIDDetailsPage() {
   const [activeChannelsTimeRange, setActiveChannelsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [discoFramesTimeRange, setDiscoFramesTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [discoPairsTimeRange, setDiscoPairsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+
+  const [waterfallFrequency, setWaterfallFrequency] = useState(0);
 
   const [trilaterationTimeRange, setTrilaterationTimeRange] = useState(Presets.RELATIVE_MINUTES_15)
   const [trilaterationFloor, setTrilaterationFloor] = useState(null);
@@ -69,6 +72,12 @@ function BSSIDDetailsPage() {
       );
     }
   }, [bssidParam, selectedTaps, trilaterationFloor, trilaterationRevision, trilaterationTimeRange]);
+
+  useEffect(() => {
+    if (bssid) {
+      setWaterfallFrequency(bssid.frequencies[0]);
+    }
+  }, [bssid]);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -210,6 +219,7 @@ function BSSIDDetailsPage() {
                 <div className="card">
                   <div className="card-body">
                     <CardTitleWithControls title="Average Signal Strength"
+                                           smallText="All Channels"
                                            fixedAppliedTimeRange={Presets.RELATIVE_MINUTES_15} />
 
                     <TapBasedSignalStrengthTable strengths={bssid.signal_strength}/>
@@ -226,7 +236,13 @@ function BSSIDDetailsPage() {
                                            timeRange={signalWaterfallTimeRange}
                                            setTimeRange={setSignalWaterfallTimeRange} />
 
-                    <BSSIDSignalWaterfallChart bssid={bssid.summary.bssid.address} timeRange={signalWaterfallTimeRange} />
+                    <ChannelSelector currentFrequency={waterfallFrequency}
+                                     setFrequency={setWaterfallFrequency}
+                                     frequencies={bssid.frequencies}/>
+
+                    <BSSIDSignalWaterfallChart bssid={bssid.summary.bssid.address}
+                                               frequency={waterfallFrequency}
+                                               timeRange={signalWaterfallTimeRange} />
                   </div>
                 </div>
               </div>

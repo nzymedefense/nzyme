@@ -31,7 +31,8 @@ public class BSSIDSummaryMapper implements RowMapper<BSSIDSummary> {
                 ssids,
                 Lists.newArrayList((String[]) rs.getArray("security_protocols").getArray()),
                 Lists.newArrayList((String[]) rs.getArray("fingerprints").getArray()),
-                Lists.newArrayList((String[]) rs.getArray("infrastructure_types").getArray())
+                Lists.newArrayList((String[]) rs.getArray("infrastructure_types").getArray()),
+                Lists.newArrayList((Integer[]) rs.getArray("frequencies").getArray())
         );
     }
 
