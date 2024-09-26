@@ -2,7 +2,6 @@ import React from "react";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import Dot11MacAddress from "./Dot11MacAddress";
 import {ACCESS_POINT, CLIENT} from "./Dot11MacAddressType";
-import MacAddress from "./MacAddress";
 
 function AutomaticDot11MacAddressLink(props) {
 
@@ -23,7 +22,7 @@ function AutomaticDot11MacAddressLink(props) {
   if (type === ACCESS_POINT || type === CLIENT) {
     return (
         <span className="mac-address">
-          <MacAddress address={address}
+          <Dot11MacAddress address={address}
                       addressWithContext={addressWithContext}
                       type={type}
                       href={link(address, type)}

@@ -75,11 +75,11 @@ function MacAddress(props) {
   }
 
   return (
-      <div onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
+      <span onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
         {typeElement()}{addressElement()}{randomizedIcon()}{contextElement()} {ouiElement()}
 
         {overlay ? <ContextOverlayVisibilityWrapper visible={overlayVisible} overlay={overlay} /> : null }
-      </div>
+      </span>
   )
 
 }
