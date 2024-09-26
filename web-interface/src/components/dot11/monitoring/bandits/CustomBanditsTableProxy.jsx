@@ -19,6 +19,7 @@ function CustomBanditsTableProxy() {
 
   const [organizationUUID, setOrganizationUUID] = useState(null);
   const [tenantUUID, setTenantUUID] = useState(null);
+  const [tenantSelected, setTenantSelected] = useState(false);
 
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
@@ -35,6 +36,10 @@ function CustomBanditsTableProxy() {
   const onTenantChange = (tenantUUID) => {
     if (tenantUUID) {
       setTenantUUID(tenantUUID);
+    }
+
+    if (tenantUUID) {
+      setTenantSelected(true);
     }
   }
 
@@ -60,7 +65,8 @@ function CustomBanditsTableProxy() {
   if (!organizationUUID || !tenantUUID) {
     return <OrganizationAndTenantSelector
         onOrganizationChange={onOrganizationChange}
-        onTenantChange={onTenantChange} />
+        onTenantChange={onTenantChange}
+        autoSelectCompleted={tenantSelected} />
   }
 
   if ((user.is_superadmin || user.is_orgadmin) && (!organization || !tenant)) {

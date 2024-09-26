@@ -39,7 +39,8 @@
                 "dot-notation": "off",
                 "space-infix-ops": "off",
                 "key-spacing": "off",
-                "operator-linebreak": "off"
+                "operator-linebreak": "off",
+                "no-unneeded-ternary": "off"
             }
         }
    ],

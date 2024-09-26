@@ -19,6 +19,7 @@ function MacAddressContextTable() {
 
   const [addressFilter, setAddressFilter] = useState("");
   const [addressFilterRevision, setAddressFilterRevision] = useState(0);
+  const [tenantSelected, setTenantSelected] = useState(false);
 
   const perPage = 25;
   const [page, setPage] = useState(1);
@@ -35,6 +36,10 @@ function MacAddressContextTable() {
 
   const onTenantChange = (uuid) => {
     setTenantId(uuid);
+
+    if (uuid) {
+      setTenantSelected(true);
+    }
   }
 
   const resetTenantAndOrganization = () => {
@@ -43,7 +48,9 @@ function MacAddressContextTable() {
   }
 
   if (!organizationId || !tenantId) {
-    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange} onTenantChange={onTenantChange} />
+    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
+                                          onTenantChange={onTenantChange}
+                                          autoSelectCompleted={tenantSelected} />
   }
 
   if (!context) {
@@ -75,7 +82,7 @@ function MacAddressContextTable() {
           <div className="col-xl-12 col-xxl-8">
             <div className="input-group">
               <input type="text" className="form-control" id="macAddress"
-                     autocomplete="off"
+                     autoComplete="off"
                      value={addressFilter} onChange={(e) => { setAddressFilter(e.target.value.toUpperCase()) }} />
               <div className="input-group-append">
                 <button className="btn btn-outline-secondary"

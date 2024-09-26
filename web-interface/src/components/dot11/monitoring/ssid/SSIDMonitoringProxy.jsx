@@ -22,6 +22,7 @@ export default function SSIDMonitoringProxy(props) {
 
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
+  const [tenantSelected, setTenantSelected] = useState(false);
 
   const [revision, setRevision] = useState(new Date());
 
@@ -41,6 +42,10 @@ export default function SSIDMonitoringProxy(props) {
   const onTenantChange = (tenantUUID) => {
     if (tenantUUID) {
       setTenantUUID(tenantUUID);
+    }
+
+    if (tenantUUID) {
+      setTenantSelected(true);
     }
   }
 
@@ -87,7 +92,8 @@ export default function SSIDMonitoringProxy(props) {
               <div className="card-body">
                 <OrganizationAndTenantSelector
                     onOrganizationChange={onOrganizationChange}
-                    onTenantChange={onTenantChange} />
+                    onTenantChange={onTenantChange}
+                    autoSelectCompleted={tenantSelected} />
               </div>
             </div>
           </div>

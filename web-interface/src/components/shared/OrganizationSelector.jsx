@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {UserContext} from "../../App";
 
 function OrganizationSelector(props) {
@@ -11,8 +11,13 @@ function OrganizationSelector(props) {
 
   // Optional.
   const emptyTitle = props.emptyTitle;
+  const autoSelectCompleted = props.autoSelectCompleted;
 
   useEffect(() => {
+    if (autoSelectCompleted) {
+      return;
+    }
+
     if (organizations.organizations.length === 1) {
       // Automatically select org if there is only one.
       setOrganization(organizations.organizations[0].id);
@@ -31,7 +36,7 @@ function OrganizationSelector(props) {
         }
       }
     }
-  }, [organizations]);
+    }, [organizations]);
 
   return (
       <select className="form-select mb-3"

@@ -1,5 +1,4 @@
 import React, {useState} from "react";
-import Routes from "../../../util/ApiRoutes";
 import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
 import ApiRoutes from "../../../util/ApiRoutes";
 
@@ -40,14 +39,14 @@ function AddTapProxyPage() {
           <div className="col-md-10">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
-                <li className="breadcrumb-item"><a href={Routes.SYSTEM.TAPS.INDEX}>Taps</a></li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.SYSTEM.TAPS.INDEX}>Taps</a></li>
                 <li className="breadcrumb-item active" aria-current="page">Add</li>
               </ol>
             </nav>
           </div>
 
           <div className="col-md-2">
-            <a className="btn btn-primary float-end" href={Routes.SYSTEM.TAPS.INDEX}>Back</a>
+            <a className="btn btn-primary float-end" href={ApiRoutes.SYSTEM.TAPS.INDEX}>Back</a>
           </div>
         </div>
 
@@ -58,7 +57,7 @@ function AddTapProxyPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <h3>Please select a tenant first</h3>

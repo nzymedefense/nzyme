@@ -28,12 +28,18 @@ function MacAddressContextForm(props) {
 
   const [formSubmitting, setFormSubmitting] = useState(false);
 
+  const [tenantSelected, setTenantSelected] = useState(false);
+
   const onOrganizationChange = (uuid) => {
     setOrganizationId(uuid);
   }
 
   const onTenantChange = (uuid) => {
     setTenantId(uuid);
+
+    if (uuid) {
+      setTenantSelected(true);
+    }
   }
 
   const resetTenantAndOrganization = () => {
@@ -66,7 +72,9 @@ function MacAddressContextForm(props) {
   }
 
   if (!organizationId || !tenantId) {
-    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange} onTenantChange={onTenantChange} />
+    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
+                                          onTenantChange={onTenantChange}
+                                          autoSelectCompleted={tenantSelected} />
   }
 
   return (

@@ -18,6 +18,7 @@ function OrganizationAndTenantSelector(props) {
   const tenantSelectorTitle = props.tenantSelectorTitle;
   const emptyOrganizationTitle = props.emptyOrganizationTitle;
   const emptyTenantTitle = props.emptyTenantTitle;
+  const autoSelectCompleted = props.autoSelectCompleted;
 
   const [organization, setOrganization] = useState("");
   const [tenant, setTenant] = useState("");
@@ -121,13 +122,18 @@ function OrganizationAndTenantSelector(props) {
           <OrganizationSelector organization={organization}
                                 setOrganization={setOrganization}
                                 organizations={organizations}
-                                emptyTitle={emptyOrganizationTitle} />
+                                emptyTitle={emptyOrganizationTitle}
+                                autoSelectCompleted={autoSelectCompleted} />
 
           <label className="form-label">
             {tenantSelectorTitle ? tenantSelectorTitle : "Tenant"} {tenantsLoading ? <RefreshGears /> : null}
           </label>
 
-          <TenantSelector tenant={tenant} setTenant={setTenant} tenants={tenants} emptyTitle={emptyTenantTitle} />
+          <TenantSelector tenant={tenant}
+                          setTenant={setTenant}
+                          tenants={tenants}
+                          emptyTitle={emptyTenantTitle}
+                          autoSelectCompleted={autoSelectCompleted} />
         </React.Fragment>
     )
   }
@@ -140,7 +146,11 @@ function OrganizationAndTenantSelector(props) {
             {tenantSelectorTitle ? tenantSelectorTitle : "Tenant"}
           </label>
 
-          <TenantSelector tenant={tenant} setTenant={setTenant} tenants={tenants} emptyTitle={emptyTenantTitle} />
+          <TenantSelector tenant={tenant}
+                          setTenant={setTenant}
+                          tenants={tenants}
+                          emptyTitle={emptyTenantTitle}
+                          autoSelectCompleted={autoSelectCompleted} />
         </React.Fragment>
     )
   }

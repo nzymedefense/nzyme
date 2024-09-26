@@ -11,8 +11,13 @@ function TenantSelector(props) {
 
   // Optional.
   const emptyTitle = props.emptyTitle;
+  const autoSelectCompleted = props.autoSelectCompleted;
 
   useEffect(() => {
+    if (autoSelectCompleted) {
+      return;
+    }
+
     if (tenants) {
       if (tenants.tenants.length === 1) {
         // Automatically select tenant if there is only one.
