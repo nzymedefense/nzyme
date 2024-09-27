@@ -74,7 +74,8 @@ public class Dot11 {
         UNEXPECTED_SIGNAL_TRACKS("enabled_unexpected_signal_tracks"),
         DISCO_MONITOR("enabled_disco_monitor"),
         SIMILAR_SSIDS("enabled_similar_looking_ssid"),
-        RESTRICTED_SSID_SUBSTRINGS("enabled_ssid_substring");
+        RESTRICTED_SSID_SUBSTRINGS("enabled_ssid_substring"),
+        CLIENT_EVENTING("enabled_client_eventing");
 
         private final String columnName;
 
@@ -694,6 +695,20 @@ public class Dot11 {
                         .bindList("taps", taps)
                         .bind("client_mac", clientMac)
                         .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public List<ClientWithOrganizationAndTenant> findAllRecentlyConnectedClientsAndOwner(int sinceMinutes) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT c.client_mac, t.organization_id, t.tenant_id, " +
+                                "MAX(b.created_at) AS last_seen " +
+                                "FROM dot11_bssid_clients AS c " +
+                                "LEFT JOIN dot11_bssids AS b ON c.bssid_id = b.id " +
+                                "LEFT JOIN taps AS t ON b.tap_uuid = t.uuid WHERE b.created_at >= :since " +
+                                "GROUP BY c.client_mac, t.organization_id, t.tenant_id")
+                        .bind("since", DateTime.now().minusMinutes(sinceMinutes))
+                        .mapTo(ClientWithOrganizationAndTenant.class)
                         .list()
         );
     }

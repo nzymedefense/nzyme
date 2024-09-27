@@ -318,7 +318,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 ssid.enabledUnexpectedSignalTracks(),
                 ssid.enabledDiscoMonitor(),
                 ssid.enabledSimilarLookingSSID(),
-                ssid.enabledSSIDSubstring()
+                ssid.enabledSSIDSubstring(),
+                ssid.enabledClientMonitoring(),
+                ssid.enabledClientEventing()
         )).build();
     }
 
@@ -1002,6 +1004,29 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         nzyme.getDot11().deleteRestrictedSSIDSubstring(ssid.get().id(), substringUuid);
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/configuration/clients")
+    public Response setClientMonitoringConfiguration(@Context SecurityContext sc,
+                                                     @PathParam("uuid") UUID uuid,
+                                                     @Valid UpdateClientMonitorConfiguration req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(uuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // TODO actually update config
 
         return Response.ok().build();
     }

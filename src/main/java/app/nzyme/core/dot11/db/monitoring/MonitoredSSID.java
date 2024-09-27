@@ -23,13 +23,15 @@ public abstract class MonitoredSSID {
     public abstract boolean enabledDiscoMonitor();
     public abstract boolean enabledSimilarLookingSSID();
     public abstract boolean enabledSSIDSubstring();
+    public abstract boolean enabledClientMonitoring();
+    public abstract boolean enabledClientEventing();
     public abstract String discoMonitorType();
     public abstract String discoMonitorConfiguration();
     public abstract Integer detectionConfigSimilarLookingSSIDThreshold();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledDiscoMonitor, boolean enabledSimilarLookingSSID, boolean enabledSSIDSubstring, String discoMonitorType, String discoMonitorConfiguration, Integer detectionConfigSimilarLookingSSIDThreshold, DateTime createdAt, DateTime updatedAt) {
+    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledDiscoMonitor, boolean enabledSimilarLookingSSID, boolean enabledSSIDSubstring, boolean enabledClientMonitoring, boolean enabledClientEventing, String discoMonitorType, String discoMonitorConfiguration, Integer detectionConfigSimilarLookingSSIDThreshold, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -45,6 +47,8 @@ public abstract class MonitoredSSID {
                 .enabledDiscoMonitor(enabledDiscoMonitor)
                 .enabledSimilarLookingSSID(enabledSimilarLookingSSID)
                 .enabledSSIDSubstring(enabledSSIDSubstring)
+                .enabledClientMonitoring(enabledClientMonitoring)
+                .enabledClientEventing(enabledClientEventing)
                 .discoMonitorType(discoMonitorType)
                 .discoMonitorConfiguration(discoMonitorConfiguration)
                 .detectionConfigSimilarLookingSSIDThreshold(detectionConfigSimilarLookingSSIDThreshold)
@@ -86,6 +90,10 @@ public abstract class MonitoredSSID {
         public abstract Builder enabledSimilarLookingSSID(boolean enabledSimilarLookingSSID);
 
         public abstract Builder enabledSSIDSubstring(boolean enabledSSIDSubstring);
+
+        public abstract Builder enabledClientMonitoring(boolean enabledClientMonitoring);
+
+        public abstract Builder enabledClientEventing(boolean enabledClientEventing);
 
         public abstract Builder discoMonitorType(String discoMonitorType);
 

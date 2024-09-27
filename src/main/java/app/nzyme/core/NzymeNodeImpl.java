@@ -29,6 +29,7 @@ import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.monitoring.Dot11SignalTrackMonitor;
+import app.nzyme.core.dot11.monitoring.clients.KnownClientMonitor;
 import app.nzyme.core.dot11.monitoring.disco.Dot11DiscoMonitor;
 import app.nzyme.core.dot11.monitoring.ssids.KnownSSIDMonitor;
 import app.nzyme.core.ethernet.EthernetConnectionCleaner;
@@ -255,6 +256,7 @@ public class NzymeNodeImpl implements NzymeNode {
         periodicalManager.scheduleAtFixedRate(new Dot11DiscoMonitor(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new ContextCleaner(getContextService()), 0, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new KnownSSIDMonitor(this), 1, 1, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new KnownClientMonitor(this), 1, 1, TimeUnit.MINUTES);
         if (configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {

@@ -217,7 +217,7 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
                         KnownSSIDsRegistryKeys.IS_ENABLED.defaultValue().orElse(null),
                         KnownSSIDsRegistryKeys.IS_ENABLED.requiresRestart(),
                         KnownSSIDsRegistryKeys.IS_ENABLED.constraints().orElse(Collections.emptyList()),
-                        "ssid-monitoring"
+                        "wifi-ssid-monitoring"
                 ),
                 ConfigurationEntryResponse.create(
                         KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.key(),
@@ -227,7 +227,7 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
                         KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.defaultValue().orElse(null),
                         KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.requiresRestart(),
                         KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.constraints().orElse(Collections.emptyList()),
-                        "ssid-monitoring"
+                        "wifi-ssid-monitoring"
                 )
         );
 

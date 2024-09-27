@@ -168,6 +168,7 @@ const ApiRoutes = {
       CONFIGURATION_IMPORT: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/configuration/import`,
       SIMILAR_SSID_CONFIGURATION: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/configuration/similarssids`,
       RESTRICTED_SUBSTRINGS_CONFIGURATION: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/configuration/restrictedsubstrings`,
+      CLIENTS_CONFIGURATION: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/configuration/clients`,
       BANDITS: {
         INDEX: "/dot11/monitoring/bandits",
         BUILTIN_DETAILS: (id) => `/dot11/monitoring/bandits/builtin/show/${id}`,

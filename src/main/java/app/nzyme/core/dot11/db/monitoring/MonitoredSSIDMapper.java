@@ -29,6 +29,8 @@ public class MonitoredSSIDMapper implements RowMapper<MonitoredSSID> {
                 rs.getBoolean("enabled_disco_monitor"),
                 rs.getBoolean("enabled_similar_looking_ssid"),
                 rs.getBoolean("enabled_ssid_substring"),
+                rs.getBoolean("enabled_client_monitoring"),
+                rs.getBoolean("enabled_client_eventing"),
                 rs.getString("disco_monitor_type"),
                 rs.getString("disco_monitor_configuration"),
                 rs.getInt("dconf_similar_looking_ssid_threshold"),

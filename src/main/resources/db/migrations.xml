@@ -5579,5 +5579,17 @@
             </column>
         </addColumn>
     </changeSet>
-    
+
+    <changeSet id="add_client_monitoring_config_fields" author="lennartkoopmann">
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="enabled_client_monitoring" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="enabled_client_eventing" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
