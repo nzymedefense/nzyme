@@ -2,8 +2,7 @@ package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.Dot11KnownNetwork;
-import app.nzyme.core.dot11.monitoring.ssids.MonitoredSSIDRegistryKeys;
-import app.nzyme.core.integrations.smtp.SMTPConfigurationRegistryKeys;
+import app.nzyme.core.dot11.monitoring.ssids.KnownSSIDsRegistryKeys;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.requests.UpdateConfigurationRequest;
 import app.nzyme.core.rest.responses.dot11.monitoring.ssids.KnownNetworkDetailsResponse;
@@ -202,32 +201,32 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
         }
 
         Optional<String> isEnabled = nzyme.getDatabaseCoreRegistry().getValue(
-                MonitoredSSIDRegistryKeys.IS_ENABLED.key(), organizationId, tenantId
+                KnownSSIDsRegistryKeys.IS_ENABLED.key(), organizationId, tenantId
         );
 
         Optional<String> eventingIsEnabled = nzyme.getDatabaseCoreRegistry().getValue(
-                MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.key(), organizationId, tenantId
+                KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.key(), organizationId, tenantId
         );
 
         SSIDMonitoringConfigurationResponse configuration = SSIDMonitoringConfigurationResponse.create(
                 ConfigurationEntryResponse.create(
-                        MonitoredSSIDRegistryKeys.IS_ENABLED.key(),
+                        KnownSSIDsRegistryKeys.IS_ENABLED.key(),
                         "Is enabled",
                         isEnabled.isPresent() && isEnabled.get().equals("true"),
                         ConfigurationEntryValueType.BOOLEAN,
-                        MonitoredSSIDRegistryKeys.IS_ENABLED.defaultValue().orElse(null),
-                        MonitoredSSIDRegistryKeys.IS_ENABLED.requiresRestart(),
-                        MonitoredSSIDRegistryKeys.IS_ENABLED.constraints().orElse(Collections.emptyList()),
+                        KnownSSIDsRegistryKeys.IS_ENABLED.defaultValue().orElse(null),
+                        KnownSSIDsRegistryKeys.IS_ENABLED.requiresRestart(),
+                        KnownSSIDsRegistryKeys.IS_ENABLED.constraints().orElse(Collections.emptyList()),
                         "ssid-monitoring"
                 ),
                 ConfigurationEntryResponse.create(
-                        MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.key(),
+                        KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.key(),
                         "Event generation is enabled",
                         eventingIsEnabled.isPresent() && eventingIsEnabled.get().equals("true"),
                         ConfigurationEntryValueType.BOOLEAN,
-                        MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.defaultValue().orElse(null),
-                        MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.requiresRestart(),
-                        MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.constraints().orElse(Collections.emptyList()),
+                        KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.defaultValue().orElse(null),
+                        KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.requiresRestart(),
+                        KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.constraints().orElse(Collections.emptyList()),
                         "ssid-monitoring"
                 )
         );
@@ -254,12 +253,12 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
         for (Map.Entry<String, Object> c : req.change().entrySet()) {
             switch (c.getKey()) {
                 case "is_enabled":
-                    if (!ConfigurationEntryConstraintValidator.checkConstraints(MonitoredSSIDRegistryKeys.IS_ENABLED, c)) {
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(KnownSSIDsRegistryKeys.IS_ENABLED, c)) {
                         return Response.status(422).build();
                     }
                     break;
                 case "eventing_is_enabled":
-                    if (!ConfigurationEntryConstraintValidator.checkConstraints(MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED, c)) {
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED, c)) {
                         return Response.status(422).build();
                     }
                     break;

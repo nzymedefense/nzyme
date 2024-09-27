@@ -6,7 +6,7 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraint;
 import java.util.ArrayList;
 import java.util.Optional;
 
-public class MonitoredSSIDRegistryKeys {
+public class KnownSSIDsRegistryKeys {
 
     public static final RegistryKey IS_ENABLED = RegistryKey.create(
             "dot11_ssid_monitoring_enabled",

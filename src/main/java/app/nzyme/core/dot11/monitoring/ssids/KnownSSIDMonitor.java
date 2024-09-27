@@ -36,7 +36,7 @@ public class KnownSSIDMonitor extends Periodical {
                 for (SSIDWithOrganizationAndTenant ssid : ssids) {
                     // Don't run if SSID monitoring is disabled for this tenant.
                     Optional<String> isEnabled = nzyme.getDatabaseCoreRegistry().getValue(
-                            MonitoredSSIDRegistryKeys.IS_ENABLED.key(), ssid.organizationId(), ssid.tenantId()
+                            KnownSSIDsRegistryKeys.IS_ENABLED.key(), ssid.organizationId(), ssid.tenantId()
                     );
 
                     if (isEnabled.isEmpty() || !isEnabled.get().equals("true")) {
@@ -92,7 +92,7 @@ public class KnownSSIDMonitor extends Periodical {
 
     private void raiseAlertIfEventingEnabled(SSIDWithOrganizationAndTenant ssid) {
         Optional<String> enabled = nzyme.getDatabaseCoreRegistry().getValue(
-                MonitoredSSIDRegistryKeys.EVENTING_IS_ENABLED.key(), ssid.organizationId(), ssid.tenantId()
+                KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.key(), ssid.organizationId(), ssid.tenantId()
         );
 
         if (enabled.isEmpty() || enabled.get().equals("false")) {
