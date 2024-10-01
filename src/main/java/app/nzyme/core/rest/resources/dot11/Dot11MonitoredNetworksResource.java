@@ -14,9 +14,13 @@ import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.SSIDSimilarityResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.*;
+import app.nzyme.core.rest.responses.dot11.monitoring.clients.ClientMonitoringConfigurationResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.configimport.*;
 import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.Tools;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraint;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,9 +37,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Path("/api/dot11/monitoring")
@@ -1008,6 +1010,56 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         return Response.ok().build();
     }
 
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/configuration/clients")
+    public Response getClientMonitoringConfiguration(@Context SecurityContext sc,
+                                                     @PathParam("uuid") UUID uuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(uuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        /*
+         * We are not using the usual flow of registry keys here because the config is attached to
+         * the monitored network, not in a registry.
+         */
+        ClientMonitoringConfigurationResponse configuration = ClientMonitoringConfigurationResponse.create(
+                ConfigurationEntryResponse.create(
+                        "monitoring_is_enabled",
+                        "Is enabled",
+                        ssid.get().enabledClientMonitoring() ? "true" : false,
+                        ConfigurationEntryValueType.BOOLEAN,
+                        "false",
+                        false,
+                        new ArrayList<>() {{
+                            add(ConfigurationEntryConstraint.createSimpleBooleanConstraint());
+                        }},
+                        "wifi-client-monitoring"
+                ),
+                ConfigurationEntryResponse.create(
+                        "eventing_is_enabled",
+                        "Event generation is enabled",
+                        ssid.get().enabledClientEventing() ? "true" : false,
+                        ConfigurationEntryValueType.BOOLEAN,
+                        "false",
+                        false,
+                        new ArrayList<>() {{
+                            add(ConfigurationEntryConstraint.createSimpleBooleanConstraint());
+                        }},
+                        "wifi-client-monitoring"
+                )
+        );
+
+        return Response.ok(configuration).build();
+    }
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/ssids/show/{uuid}/configuration/clients")

@@ -548,6 +548,12 @@ class Dot11Service {
         onSuccess
     )
   }
+
+  getMonitoredClientsConfiguration(ssidUUID, setConfiguration) {
+    RESTClient.get(`/dot11/monitoring/ssids/show/${ssidUUID}/configuration/clients`, {},
+        (response) => { setConfiguration(response.data); })
+  }
+
 }
 
 export default Dot11Service

@@ -11,11 +11,18 @@ export default function MonitoredClientsConfigurationPage() {
   const { uuid } = useParams();
 
   const [ssid, setSSID] = useState(null);
+  const [configuration, setConfiguration] = useState(null);
   const [revision, setRevision] = useState(0);
 
   useEffect(() => {
-    dot11Service.findMonitoredSSID(uuid, setSSID, () => {});
-  }, [uuid, revision]);
+    dot11Service.findMonitoredSSID(uuid, setSSID, () => {  });
+  }, [uuid]);
+
+  useEffect(() => {
+    if (ssid) {
+      dot11Service.getMonitoredClientsConfiguration(uuid, setConfiguration);
+    }
+  }, [ssid, revision]);
 
   if (!ssid) {
     return <LoadingSpinner />
@@ -52,7 +59,7 @@ export default function MonitoredClientsConfigurationPage() {
               <div className="card-body">
                 <h3>Configuration</h3>
 
-                monitoring enabled, dwell time
+                monitoring enabled, alerting enabled, dwell time,
               </div>
             </div>
           </div>
