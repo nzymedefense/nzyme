@@ -68,12 +68,6 @@ export default function SSIDMonitoringConfiguration(props) {
                                 dbUpdateCallback={dot11Service.updateSSIDMonitoringConfiguration}/>
           </td>
         </tr>
-
-        <tr>
-          <td>Minimum continuous network dwell time</td>
-          <td>5 minutes</td>
-          <td className="text-muted">n/a</td>
-        </tr>
         </tbody>
       </table>
   )

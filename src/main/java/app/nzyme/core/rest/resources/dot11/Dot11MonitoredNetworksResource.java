@@ -1060,12 +1060,13 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         return Response.ok(configuration).build();
     }
+
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/ssids/show/{uuid}/configuration/clients")
     public Response setClientMonitoringConfiguration(@Context SecurityContext sc,
                                                      @PathParam("uuid") UUID uuid,
-                                                     @Valid UpdateClientMonitorConfiguration req) {
+                                                     @Valid UpdateConfigurationRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(uuid);

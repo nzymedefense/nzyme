@@ -554,6 +554,11 @@ class Dot11Service {
         (response) => { setConfiguration(response.data); })
   }
 
+  updateMonitoredClientsConfiguration(newConfig, ssidUUID, successCallback, errorCallback) {
+    RESTClient.put(`/dot11/monitoring/ssids/show/${ssidUUID}/configuration/clients`,
+        { change: newConfig }, successCallback, errorCallback)
+  }
+
 }
 
 export default Dot11Service

@@ -3,6 +3,8 @@ import {useParams} from "react-router-dom";
 import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import ConfigurationValue from "../../../configuration/ConfigurationValue";
+import ConfigurationModal from "../../../configuration/modal/ConfigurationModal";
 
 const dot11Service = new Dot11Service();
 
@@ -24,7 +26,12 @@ export default function MonitoredClientsConfigurationPage() {
     }
   }, [ssid, revision]);
 
-  if (!ssid) {
+  // We are using a custom update callback because we have to pass the SSID UUID.
+  const onConfigurationUpdate = (newConfig, successCallback, errorCallback) => {
+    dot11Service.updateMonitoredClientsConfiguration(newConfig, uuid, successCallback, errorCallback);
+  }
+
+  if (!ssid || !configuration) {
     return <LoadingSpinner />
   }
 
@@ -59,7 +66,46 @@ export default function MonitoredClientsConfigurationPage() {
               <div className="card-body">
                 <h3>Configuration</h3>
 
-                monitoring enabled, alerting enabled, dwell time,
+                <table className="table table-sm table-hover table-striped">
+                  <thead>
+                  <tr>
+                    <th>Configuration</th>
+                    <th>Value</th>
+                    <th>Actions</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>Is monitoring enabled</td>
+                    <td>
+                      <ConfigurationValue value={configuration.is_enabled.value}
+                                          configKey={configuration.is_enabled.key}
+                                          boolean={true}/>
+                    </td>
+                    <td>
+                      <ConfigurationModal config={configuration.is_enabled}
+                                          setGlobalConfig={setConfiguration}
+                                          setLocalRevision={setRevision}
+                                          dbUpdateCallback={onConfigurationUpdate}/>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>Is event generation enabled</td>
+                    <td>
+                      <ConfigurationValue value={configuration.eventing_is_enabled.value}
+                                          configKey={configuration.eventing_is_enabled.key}
+                                          boolean={true}/>
+                    </td>
+                    <td>
+                      <ConfigurationModal config={configuration.eventing_is_enabled}
+                                          setGlobalConfig={setConfiguration}
+                                          setLocalRevision={setRevision}
+                                          dbUpdateCallback={onConfigurationUpdate}/>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
