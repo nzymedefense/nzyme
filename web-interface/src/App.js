@@ -139,6 +139,7 @@ import ProbeRequestsPage from "./components/dot11/monitoring/probereq/ProbeReque
 import CreateProbeRequestPage from "./components/dot11/monitoring/probereq/CreateProbeRequestPage";
 import EditProbeRequestPage from "./components/dot11/monitoring/probereq/EditProbeRequestPage";
 import SSIDMonitoringPage from "./components/dot11/monitoring/ssid/SSIDMonitoringPage";
+import MonitoredClientsConfigurationPage from "./components/dot11/monitoring/clients/MonitoredClientsConfigurationPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -435,6 +436,7 @@ function App() {
                             <Route path={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(':uuid')} element={<ConfigureDiscoDetectionMethodPage />} />
                             <Route path={ApiRoutes.DOT11.MONITORING.SIMILAR_SSID_CONFIGURATION(':uuid')} element={<SimilarSSIDConfigurationPage />} />
                             <Route path={ApiRoutes.DOT11.MONITORING.RESTRICTED_SUBSTRINGS_CONFIGURATION(':uuid')} element={<RestrictedSubstringsConfigurationPage />} />
+                            <Route path={ApiRoutes.DOT11.MONITORING.CLIENTS_CONFIGURATION(':uuid')} element={<MonitoredClientsConfigurationPage />} />
                             <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.INDEX} element={<ProbeRequestsPage />}/>
                             <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE(':organizationId', ':tenantId')} element={<CreateProbeRequestPage />}/>
                             <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(':id', ':organizationId', ':tenantId')} element={<EditProbeRequestPage />}/>
