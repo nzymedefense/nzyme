@@ -75,6 +75,7 @@ public class Dot11 {
         DISCO_MONITOR("enabled_disco_monitor"),
         SIMILAR_SSIDS("enabled_similar_looking_ssid"),
         RESTRICTED_SSID_SUBSTRINGS("enabled_ssid_substring"),
+        CLIENT_MONITORING("enabled_client_monitoring"),
         CLIENT_EVENTING("enabled_client_eventing");
 
         private final String columnName;
@@ -699,20 +700,6 @@ public class Dot11 {
         );
     }
 
-    public List<ClientWithOrganizationAndTenant> findAllRecentlyConnectedClientsAndOwner(int sinceMinutes) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT c.client_mac, t.organization_id, t.tenant_id, " +
-                                "MAX(b.created_at) AS last_seen " +
-                                "FROM dot11_bssid_clients AS c " +
-                                "LEFT JOIN dot11_bssids AS b ON c.bssid_id = b.id " +
-                                "LEFT JOIN taps AS t ON b.tap_uuid = t.uuid WHERE b.created_at >= :since " +
-                                "GROUP BY c.client_mac, t.organization_id, t.tenant_id")
-                        .bind("since", DateTime.now().minusMinutes(sinceMinutes))
-                        .mapTo(ClientWithOrganizationAndTenant.class)
-                        .list()
-        );
-    }
-
     private String skipRandomizedQueryFragment(boolean skipRandomized) {
         return skipRandomized ? " AND client_mac_is_randomized = false " : "";
     }
@@ -773,26 +760,29 @@ public class Dot11 {
         );
     }
 
-    public List<ConnectedClientDetails> findClientsOfBSSID(String bssid, int minutes, List<UUID> taps) {
+    public List<ConnectedClientDetails> findClientsOfBSSID(Handle handle, String bssid, int minutes, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT b.bssid AS bssid, c.client_mac AS client_mac, " +
-                                "MAX(b.created_at) AS last_seen " +
-                                "FROM dot11_bssids AS b " +
-                                "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
-                                "WHERE b.bssid = :bssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
-                                "GROUP BY c.client_mac, b.bssid " +
-                                "HAVING c.client_mac IS NOT NULL " +
-                                "ORDER BY c.client_mac ASC ")
-                        .bind("bssid", bssid)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
-                        .bindList("taps", taps)
-                        .mapTo(ConnectedClientDetails.class)
-                        .list()
-        );
+
+        return handle.createQuery("SELECT b.bssid AS bssid, c.client_mac AS client_mac, " +
+                        "MAX(b.created_at) AS last_seen " +
+                        "FROM dot11_bssids AS b " +
+                        "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
+                        "WHERE b.bssid = :bssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                        "GROUP BY c.client_mac, b.bssid " +
+                        "HAVING c.client_mac IS NOT NULL " +
+                        "ORDER BY c.client_mac ASC ")
+                .bind("bssid", bssid)
+                .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                .bindList("taps", taps)
+                .mapTo(ConnectedClientDetails.class)
+                .list();
+    }
+
+    public List<ConnectedClientDetails> findClientsOfBSSID(String bssid, int minutes, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle -> findClientsOfBSSID(handle, bssid, minutes, taps));
     }
 
     public List<ClientHistogramEntry> getDisconnectedClientHistogram(TimeRange timeRange,
@@ -1325,14 +1315,17 @@ public class Dot11 {
         );
     }
 
+    public List<MonitoredBSSID> findMonitoredBSSIDsOfMonitoredNetwork(Handle handle, long ssidId) {
+        return handle.createQuery("SELECT * FROM dot11_monitored_networks_bssids " +
+                        "WHERE monitored_network_id = :ssid_id ORDER BY bssid ASC")
+                .bind("ssid_id", ssidId)
+                .mapTo(MonitoredBSSID.class)
+                .list();
+    }
+
+
     public List<MonitoredBSSID> findMonitoredBSSIDsOfMonitoredNetwork(long ssidId) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM dot11_monitored_networks_bssids " +
-                                "WHERE monitored_network_id = :ssid_id ORDER BY bssid ASC")
-                        .bind("ssid_id", ssidId)
-                        .mapTo(MonitoredBSSID.class)
-                        .list()
-        );
+        return nzyme.getDatabase().withHandle(handle -> findMonitoredBSSIDsOfMonitoredNetwork(handle, ssidId));
     }
 
     public List<MonitoredFingerprint> findMonitoredFingerprintsOfMonitoredBSSID(long bssidId) {
@@ -2394,13 +2387,14 @@ public class Dot11 {
         );
     }
 
-    public void createKnownNetwork(Handle handle, String ssid, boolean isApproved, UUID organizationId, UUID tenantId) {
-        handle.createUpdate("INSERT INTO dot11_known_networks(uuid, ssid, is_approved, organization_id, " +
-                        "tenant_id, first_seen, last_seen) VALUES(:uuid, :ssid, :is_approved, :organization_id, " +
-                        ":tenant_id, NOW(), NOW())")
+    public void createKnownNetwork(Handle handle, String ssid, UUID organizationId, UUID tenantId) {
+        handle.createUpdate("INSERT INTO dot11_known_networks(uuid, ssid, is_approved, is_ignored, " +
+                        "organization_id, tenant_id, first_seen, last_seen) VALUES(:uuid, :ssid, :is_approved, " +
+                        ":is_ignored, :organization_id, :tenant_id, NOW(), NOW())")
                 .bind("uuid", UUID.randomUUID())
                 .bind("ssid", ssid)
-                .bind("is_approved", isApproved)
+                .bind("is_approved", false)
+                .bind("is_ignored", false)
                 .bind("organization_id", organizationId)
                 .bind("tenant_id", tenantId)
                 .execute();
@@ -2418,6 +2412,18 @@ public class Dot11 {
                         .bind("since", since)
                         .execute()
         );
+    }
+
+    public void createKnownClient(Handle handle, String mac, long monitoredNetworkId) {
+        handle.createUpdate("INSERT INTO dot11_known_clients(uuid, mac, is_approved, is_ignored, " +
+                        "monitored_network_id, first_seen, last_seen) VALUES(:uuid, :mac, :is_approved, " +
+                        ":is_ignored, :monitored_network_id, NOW(), NOW())")
+                .bind("uuid", UUID.randomUUID())
+                .bind("mac", mac)
+                .bind("is_approved", false)
+                .bind("is_ignored", false)
+                .bind("monitored_network_id", monitoredNetworkId)
+                .execute();
     }
 
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {

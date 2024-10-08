@@ -5592,4 +5592,52 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="create_dot11_known_clients" author="lennartkoopmann">
+        <createTable tableName="dot11_known_clients">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="mac" type="varchar(32)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="is_approved" type="boolean">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="is_ignored" type="boolean">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="monitored_network_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_clients2networks"
+                                 baseTableName="dot11_known_clients"
+                                 baseColumnNames="monitored_network_id"
+                                 referencedTableName="dot11_monitored_networks"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <createIndex tableName="dot11_known_clients" indexName="known_clients_mac">
+            <column name="mac" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

@@ -163,8 +163,7 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new MonitoredProbeRequestEntryMapper())
                 .registerRowMapper(new MacAddressTransparentContextEntryMapper())
                 .registerRowMapper(new SSIDWithOrganizationAndTenantMapper())
-                .registerRowMapper(new Dot11KnownNetworkMapper())
-                .registerRowMapper(new ClientWithOrganizationAndTenantMapper());
+                .registerRowMapper(new Dot11KnownNetworkMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

@@ -1079,7 +1079,27 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        // TODO actually update config
+        if (req.change().containsKey("monitoring_is_enabled")) {
+            boolean status = (boolean) req.change().get("monitoring_is_enabled");
+
+            nzyme.getDot11().setMonitorAlertStatus(
+                    ssid.get().id(),
+                    Dot11.MonitorActiveStatusTypeColumn.CLIENT_MONITORING,
+                    status
+            );
+        }
+
+        if (req.change().containsKey("eventing_is_enabled")) {
+            boolean status = (boolean) req.change().get("eventing_is_enabled");
+
+            nzyme.getDot11().setMonitorAlertStatus(
+                    ssid.get().id(),
+                    Dot11.MonitorActiveStatusTypeColumn.CLIENT_EVENTING,
+                    status
+            );
+        }
+
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
 
         return Response.ok().build();
     }

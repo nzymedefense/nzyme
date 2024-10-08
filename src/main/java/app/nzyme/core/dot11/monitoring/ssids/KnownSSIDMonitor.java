@@ -74,7 +74,7 @@ public class KnownSSIDMonitor extends Periodical {
                     if (!known) {
                         LOG.debug("Inserting new known network [{}]", ssid);
                         nzyme.getDot11().createKnownNetwork(
-                                handle, ssid.ssid(), false, ssid.organizationId(), ssid.tenantId()
+                                handle, ssid.ssid(), ssid.organizationId(), ssid.tenantId()
                         );
 
                         // Raise alarm for unapproved network.
