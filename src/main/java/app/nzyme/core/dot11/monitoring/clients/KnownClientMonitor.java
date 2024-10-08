@@ -2,6 +2,7 @@ package app.nzyme.core.dot11.monitoring.clients;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.ConnectedClientDetails;
+import app.nzyme.core.dot11.db.Dot11KnownClient;
 import app.nzyme.core.dot11.db.monitoring.MonitoredBSSID;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.periodicals.Periodical;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class KnownClientMonitor extends Periodical {
@@ -48,19 +50,23 @@ public class KnownClientMonitor extends Periodical {
                     for (MonitoredBSSID bssid : bssids) {
                         // Find all clients of BSSID.
                         List<ConnectedClientDetails> clients = nzyme.getDot11()
-                                .findClientsOfBSSID(handle, bssid.bssid(), 5, taps);
+                                .findClientsOfBSSID(handle, bssid.bssid(), 1, taps);
 
                         // Process all clients.
                         for (ConnectedClientDetails client : clients) {
                             // Do we already know this client?
+                            Optional<Dot11KnownClient> knownClient = nzyme.getDot11()
+                                    .findKnownClient(handle, client.clientMac(), monitoredNetwork.id());
 
-                            // TODO
-                            nzyme.getDot11().createKnownClient(handle, client.clientMac(), monitoredNetwork.id());
+                            if (knownClient.isPresent()) {
+                                // We know this client. Only update `last_seen`.
+                                nzyme.getDot11().touchKnownClient(handle, knownClient.get().id());
+                            } else {
+                                // New client.
+                                nzyme.getDot11().createKnownClient(handle, client.clientMac(), monitoredNetwork.id());
+                            }
                         }
                     }
-
-
-                    // Process each monitored BSSID of this device. (exists / doesn't exist / write / update /// ALERT)
                 }
             });
         } catch (Exception e) {

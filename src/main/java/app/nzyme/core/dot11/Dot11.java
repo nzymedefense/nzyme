@@ -2414,6 +2414,15 @@ public class Dot11 {
         );
     }
 
+    public Optional<Dot11KnownClient> findKnownClient(Handle handle, String mac, long monitoredNetworkId) {
+        return handle.createQuery("SELECT * FROM dot11_known_clients " +
+                        "WHERE mac = :mac AND monitored_network_id = :monitored_network_id")
+                .bind("mac", mac)
+                .bind("monitored_network_id", monitoredNetworkId)
+                .mapTo(Dot11KnownClient.class)
+                .findOne();
+    }
+
     public void createKnownClient(Handle handle, String mac, long monitoredNetworkId) {
         handle.createUpdate("INSERT INTO dot11_known_clients(uuid, mac, is_approved, is_ignored, " +
                         "monitored_network_id, first_seen, last_seen) VALUES(:uuid, :mac, :is_approved, " +
@@ -2423,6 +2432,12 @@ public class Dot11 {
                 .bind("is_approved", false)
                 .bind("is_ignored", false)
                 .bind("monitored_network_id", monitoredNetworkId)
+                .execute();
+    }
+
+    public void touchKnownClient(Handle handle, long id) {
+        handle.createUpdate("UPDATE dot11_known_clients SET last_seen = NOW() WHERE id = :id")
+                .bind("id", id)
                 .execute();
     }
 
