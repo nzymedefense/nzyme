@@ -119,6 +119,12 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                         }
                         isAlerted = true;
                         break;
+                    case DOT11_UNAPPROVED_CLIENT:
+                        if (!ssid.enabledClientEventing() || !ssid.enabledClientMonitoring()) {
+                            continue;
+                        }
+                        isAlerted = true;
+                        break;
                 }
 
                 if (isAlerted) {
@@ -221,6 +227,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         boolean discoAnomaliesAlerted = false;
         boolean similarSSIDAlerted = false;
         boolean restrictedSSIDSubstringAlerted = false;
+        boolean unapprovedClientAlerted = false;
         for (DetectionAlertEntry alert : nzyme.getDetectionAlertService()
                 .findAllActiveAlertsOfMonitoredNetwork(ssid.uuid())) {
             DetectionType detectionType;
@@ -280,6 +287,12 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     }
                     restrictedSSIDSubstringAlerted = true;
                     break;
+                case DOT11_UNAPPROVED_CLIENT:
+                    if (!ssid.enabledClientEventing() || !ssid.enabledClientMonitoring()) {
+                        continue;
+                    }
+                    unapprovedClientAlerted = true;
+                    break;
             }
 
             isAlerted = true;
@@ -313,6 +326,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 discoAnomaliesAlerted,
                 similarSSIDAlerted,
                 restrictedSSIDSubstringAlerted,
+                unapprovedClientAlerted,
                 ssid.enabledUnexpectedBSSID(),
                 ssid.enabledUnexpectedChannel(),
                 ssid.enabledUnexpectedSecuritySuites(),
@@ -321,8 +335,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 ssid.enabledDiscoMonitor(),
                 ssid.enabledSimilarLookingSSID(),
                 ssid.enabledSSIDSubstring(),
-                ssid.enabledClientMonitoring(),
-                ssid.enabledClientEventing()
+                (ssid.enabledClientMonitoring() && ssid.enabledClientEventing())
         )).build();
     }
 

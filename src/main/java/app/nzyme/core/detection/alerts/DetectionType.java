@@ -18,6 +18,7 @@ public enum DetectionType {
     DOT11_BANDIT_CONTACT("WiFi Bandit detected", Subsystem.DOT11),
     DOT11_PROBEREQ("Monitored probe request detected", Subsystem.DOT11),
     DOT11_UNAPPROVED_SSID("Unapproved SSID detected", Subsystem.DOT11),
+    DOT11_UNAPPROVED_CLIENT("Unapproved WiFi Client detected", Subsystem.DOT11),
 
     // Wildcard subscription.
     WILDCARD("Subscribed to all detection alerts. (Wildcard)", Subsystem.GENERIC);

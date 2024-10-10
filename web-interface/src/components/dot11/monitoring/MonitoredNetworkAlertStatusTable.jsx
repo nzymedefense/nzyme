@@ -116,12 +116,13 @@ function MonitoredNetworkAlertStatusTable(props) {
           <tr>
               <td>Allowed Clients <HelpBubble
                   link="https://go.nzyme.org/wifi-client-monitoring"/></td>
-              <td>XX{' '}
+              <td><MonitoredNetworkSingleAlertStatus ssid={ssid}
+                                                     parameter="client_monitor"
+                                                     disabledTitle={"Monitoring or event generation is disabled."}/>{' '}
               </td>
               {renderControls ?
                   <React.Fragment>
-                      <td><AlertEnabledTrigger ssid={ssid} parameter="client_eventing"
-                                               bumpRevision={bumpRevision}/></td>
+                      <td><span className="text-muted">n/a</span></td>
                       <td>
                           <a href={ApiRoutes.DOT11.MONITORING.CLIENTS_CONFIGURATION(ssid.uuid)}>Configure</a>
                       </td>

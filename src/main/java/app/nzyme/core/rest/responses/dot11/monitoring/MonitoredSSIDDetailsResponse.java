@@ -80,6 +80,9 @@ public abstract class MonitoredSSIDDetailsResponse {
     @JsonProperty("status_restricted_ssid_substrings")
     public abstract boolean statusRestrictedSSIDSubstrings();
 
+    @JsonProperty("status_unapproved_client")
+    public abstract boolean statusUnapprovedClient();
+
     @JsonProperty("enabled_unexpected_bssid")
     public abstract boolean enabledUnexpectedBSSID();
 
@@ -104,13 +107,10 @@ public abstract class MonitoredSSIDDetailsResponse {
     @JsonProperty("enabled_restricted_ssid_substrings")
     public abstract boolean enabledRestrictedSSIDSubstrings();
 
-    @JsonProperty("enabled_client_monitoring")
-    public abstract boolean enabledClientMonitoring();
+    @JsonProperty("enabled_client_monitor")
+    public abstract boolean enabledClientMonitor();
 
-    @JsonProperty("enabled_client_eventing")
-    public abstract boolean enabledClientEventing();
-
-    public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, Integer similarLookingSSIDThreshold, List<RestrictedSSIDSubstringDetailsResponse> restrictedSSIDSubstrings, DateTime createdAt, DateTime updatedAt, boolean isAlerted, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecuritySuites, boolean statusUnexpectedFingerprint, boolean statusUnexpectedSignalTracks, boolean statusDiscoMonitor, boolean statusSimilarSSIDs, boolean statusRestrictedSSIDSubstrings, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledDiscoMonitor, boolean enabledSimilarSSIDs, boolean enabledRestrictedSSIDSubstrings, boolean enabledClientMonitoring, boolean enabledClientEventing) {
+    public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, Integer similarLookingSSIDThreshold, List<RestrictedSSIDSubstringDetailsResponse> restrictedSSIDSubstrings, DateTime createdAt, DateTime updatedAt, boolean isAlerted, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecuritySuites, boolean statusUnexpectedFingerprint, boolean statusUnexpectedSignalTracks, boolean statusDiscoMonitor, boolean statusSimilarSSIDs, boolean statusRestrictedSSIDSubstrings, boolean statusUnapprovedClient, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledDiscoMonitor, boolean enabledSimilarSSIDs, boolean enabledRestrictedSSIDSubstrings, boolean enabledClientMonitor) {
         return builder()
                 .uuid(uuid)
                 .isEnabled(isEnabled)
@@ -133,6 +133,7 @@ public abstract class MonitoredSSIDDetailsResponse {
                 .statusDiscoMonitor(statusDiscoMonitor)
                 .statusSimilarSSIDs(statusSimilarSSIDs)
                 .statusRestrictedSSIDSubstrings(statusRestrictedSSIDSubstrings)
+                .statusUnapprovedClient(statusUnapprovedClient)
                 .enabledUnexpectedBSSID(enabledUnexpectedBSSID)
                 .enabledUnexpectedChannel(enabledUnexpectedChannel)
                 .enabledUnexpectedSecuritySuites(enabledUnexpectedSecuritySuites)
@@ -141,8 +142,7 @@ public abstract class MonitoredSSIDDetailsResponse {
                 .enabledDiscoMonitor(enabledDiscoMonitor)
                 .enabledSimilarSSIDs(enabledSimilarSSIDs)
                 .enabledRestrictedSSIDSubstrings(enabledRestrictedSSIDSubstrings)
-                .enabledClientMonitoring(enabledClientMonitoring)
-                .enabledClientEventing(enabledClientEventing)
+                .enabledClientMonitor(enabledClientMonitor)
                 .build();
     }
 
@@ -194,6 +194,8 @@ public abstract class MonitoredSSIDDetailsResponse {
 
         public abstract Builder statusRestrictedSSIDSubstrings(boolean statusRestrictedSSIDSubstrings);
 
+        public abstract Builder statusUnapprovedClient(boolean statusUnapprovedClient);
+
         public abstract Builder enabledUnexpectedBSSID(boolean enabledUnexpectedBSSID);
 
         public abstract Builder enabledUnexpectedChannel(boolean enabledUnexpectedChannel);
@@ -210,9 +212,7 @@ public abstract class MonitoredSSIDDetailsResponse {
 
         public abstract Builder enabledRestrictedSSIDSubstrings(boolean enabledRestrictedSSIDSubstrings);
 
-        public abstract Builder enabledClientMonitoring(boolean enabledClientMonitoring);
-
-        public abstract Builder enabledClientEventing(boolean enabledClientEventing);
+        public abstract Builder enabledClientMonitor(boolean enabledClientMonitor);
 
         public abstract MonitoredSSIDDetailsResponse build();
     }
