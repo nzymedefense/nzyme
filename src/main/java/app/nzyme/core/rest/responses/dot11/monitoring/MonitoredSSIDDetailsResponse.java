@@ -107,7 +107,7 @@ public abstract class MonitoredSSIDDetailsResponse {
     @JsonProperty("enabled_restricted_ssid_substrings")
     public abstract boolean enabledRestrictedSSIDSubstrings();
 
-    @JsonProperty("enabled_client_monitor")
+    @JsonProperty("enabled_unapproved_client")
     public abstract boolean enabledClientMonitor();
 
     public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, Integer similarLookingSSIDThreshold, List<RestrictedSSIDSubstringDetailsResponse> restrictedSSIDSubstrings, DateTime createdAt, DateTime updatedAt, boolean isAlerted, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecuritySuites, boolean statusUnexpectedFingerprint, boolean statusUnexpectedSignalTracks, boolean statusDiscoMonitor, boolean statusSimilarSSIDs, boolean statusRestrictedSSIDSubstrings, boolean statusUnapprovedClient, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledDiscoMonitor, boolean enabledSimilarSSIDs, boolean enabledRestrictedSSIDSubstrings, boolean enabledClientMonitor) {

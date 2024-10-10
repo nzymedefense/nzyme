@@ -117,8 +117,8 @@ function MonitoredNetworkAlertStatusTable(props) {
               <td>Allowed Clients <HelpBubble
                   link="https://go.nzyme.org/wifi-client-monitoring"/></td>
               <td><MonitoredNetworkSingleAlertStatus ssid={ssid}
-                                                     parameter="client_monitor"
-                                                     disabledTitle={"Monitoring or event generation is disabled."}/>{' '}
+                                                     parameter="unapproved_client"
+                                                     disabledTitle={"Monitoring or event generation is disabled."} />{' '}
               </td>
               {renderControls ?
                   <React.Fragment>

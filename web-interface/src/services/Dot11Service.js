@@ -559,6 +559,35 @@ class Dot11Service {
         { change: newConfig }, successCallback, errorCallback)
   }
 
+  findMonitoredClients(ssidUUID, limit, offset, setClients) {
+    RESTClient.get(`/dot11/monitoring/ssids/show/${ssidUUID}/clients`, {limit: limit, offset: offset},
+        (response) => { setClients(response.data); })
+  }
+
+  approveMonitoredClient(ssidUUID, clientUUID, onSuccess) {
+    RESTClient.put(`/dot11/monitoring/ssids/show/${ssidUUID}/clients/show/${clientUUID}/approve`, {}, onSuccess)
+  }
+
+  revokedMonitoredClient(ssidUUID, clientUUID, onSuccess) {
+    RESTClient.put(`/dot11/monitoring/ssids/show/${ssidUUID}/clients/show/${clientUUID}/revoke`, {}, onSuccess)
+  }
+
+  ignoreMonitoredClient(ssidUUID, clientUUID, onSuccess) {
+    RESTClient.put(`/dot11/monitoring/ssids/show/${ssidUUID}/clients/show/${clientUUID}/ignore`, {}, onSuccess)
+  }
+
+  unignoreMonitoredClient(ssidUUID, clientUUID, onSuccess) {
+    RESTClient.put(`/dot11/monitoring/ssids/show/${ssidUUID}/clients/show/${clientUUID}/unignore`, {}, onSuccess)
+  }
+
+  deleteMonitoredClient(ssidUUID, clientUUID, onSuccess) {
+    RESTClient.delete(`/dot11/monitoring/ssids/show/${ssidUUID}/clients/show/${clientUUID}`, onSuccess)
+  }
+
+  deleteAllMonitoredClients(ssidUUID, onSuccess) {
+    RESTClient.delete(`/dot11/monitoring/ssids/show/${ssidUUID}/clients`, onSuccess)
+  }
+
 }
 
 export default Dot11Service

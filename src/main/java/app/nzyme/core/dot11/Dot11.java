@@ -333,7 +333,7 @@ public class Dot11 {
             return false;
         }
 
-        return nzyme.getDatabase().withHandle(handle ->
+        boolean isDisconnectedClient = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT EXISTS (SELECT 1 FROM dot11_clients " +
                                 "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
                                 "AND client_mac = :client_mac)")
@@ -343,6 +343,19 @@ public class Dot11 {
                         .mapTo(Boolean.class)
                         .one()
         );
+
+        boolean isConnectedClient = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT EXISTS (SELECT 1 FROM dot11_bssid_clients AS c LEFT JOIN dot11_bssids AS b ON c.bssid_id = b.id " +
+                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                                "AND c.client_mac = :client_mac)")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .bind("client_mac", clientMac)
+                        .mapTo(Boolean.class)
+                        .one()
+        );
+
+        return isDisconnectedClient || isConnectedClient;
     }
 
     public List<SSIDChannelDetails> findSSIDsOfBSSID(TimeRange timeRange, String bssid, List<UUID> taps) {
@@ -2368,7 +2381,6 @@ public class Dot11 {
         );
     }
 
-
     public void deleteKnownNetwork(long id) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM dot11_known_networks WHERE id = :id")
@@ -2414,6 +2426,29 @@ public class Dot11 {
         );
     }
 
+    public long countAllKnownClients(long monitoredNetworkId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM dot11_known_clients " +
+                                "WHERE monitored_network_id = :monitored_network_id")
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<Dot11KnownClient> findAllKnownClients(long monitoredNetworkId, int limit, int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_known_clients " +
+                                "WHERE monitored_network_id = :monitored_network_id ORDER BY mac ASC " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(Dot11KnownClient.class)
+                        .list()
+        );
+    }
+
     public Optional<Dot11KnownClient> findKnownClient(Handle handle, String mac, long monitoredNetworkId) {
         return handle.createQuery("SELECT * FROM dot11_known_clients " +
                         "WHERE mac = :mac AND monitored_network_id = :monitored_network_id")
@@ -2421,6 +2456,53 @@ public class Dot11 {
                 .bind("monitored_network_id", monitoredNetworkId)
                 .mapTo(Dot11KnownClient.class)
                 .findOne();
+    }
+
+    public Optional<Dot11KnownClient> findKnownClientByUuid(UUID uuid, long monitoredNetworkId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_known_clients " +
+                                "WHERE uuid = :uuid AND monitored_network_id = :monitored_network_id")
+                        .bind("uuid", uuid)
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .mapTo(Dot11KnownClient.class)
+                        .findOne()
+        );
+    }
+
+
+    public void changeStatusOfKnownClient(long id, boolean isApproved) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_known_clients SET is_approved = :is_approved WHERE id = :id")
+                        .bind("id", id)
+                        .bind("is_approved", isApproved)
+                        .execute()
+        );
+    }
+
+    public void changeIgnoreStatusOfKnownClient(long id, boolean isIgnored) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_known_clients SET is_ignored = :is_ignored WHERE id = :id")
+                        .bind("id", id)
+                        .bind("is_ignored", isIgnored)
+                        .execute()
+        );
+    }
+
+    public void deleteKnownClient(long id) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_known_clients WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
+    public void deleteKnownClientsOfMonitoredNetwork(long monitoredNetworkId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_known_clients " +
+                                "WHERE monitored_network_id = :monitored_network_id")
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .execute()
+        );
     }
 
     public void createKnownClient(Handle handle, String mac, long monitoredNetworkId) {
@@ -2439,6 +2521,14 @@ public class Dot11 {
         handle.createUpdate("UPDATE dot11_known_clients SET last_seen = NOW() WHERE id = :id")
                 .bind("id", id)
                 .execute();
+    }
+
+    public void retentionCleanKnownClients(DateTime since) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_known_clients WHERE last_seen < :since")
+                        .bind("since", since)
+                        .execute()
+        );
     }
 
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {

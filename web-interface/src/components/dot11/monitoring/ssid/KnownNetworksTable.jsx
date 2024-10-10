@@ -43,7 +43,11 @@ export default function KnownNetworksTable(props) {
         if (network.is_approved) {
             return <a href="#" onClick={() => onRevoke(network)}>Revoke Approval</a>
         } else {
-            return <a href="#" onClick={() => onApprove(network)}>Approve</a>
+            if (network.is_ignored) {
+                return <span className="text-muted" title="Ignored networks cannot be approved.">Approve</span>
+            } else {
+                return <a href="#" onClick={() => onApprove(network)}>Approve</a>
+            }
         }
     }
 
@@ -131,7 +135,6 @@ export default function KnownNetworksTable(props) {
 
     return (
         <React.Fragment>
-
             <table className="table table-sm table-hover table-striped">
                 <thead>
                 <tr>

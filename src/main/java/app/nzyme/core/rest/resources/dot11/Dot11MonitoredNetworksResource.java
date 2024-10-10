@@ -5,6 +5,7 @@ import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.dot11.Dot11;
+import app.nzyme.core.dot11.db.Dot11KnownClient;
 import app.nzyme.core.dot11.db.Dot11SecuritySuiteJson;
 import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.rest.TapDataHandlingResource;
@@ -15,6 +16,8 @@ import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.SSIDSimilarityResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.*;
 import app.nzyme.core.rest.responses.dot11.monitoring.clients.ClientMonitoringConfigurationResponse;
+import app.nzyme.core.rest.responses.dot11.monitoring.clients.KnownClientDetailsResponse;
+import app.nzyme.core.rest.responses.dot11.monitoring.clients.KnownClientsListResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.configimport.*;
 import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.Tools;
@@ -1113,6 +1116,229 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
+
+        return Response.ok().build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/clients")
+    public Response findAllKnownClients(@Context SecurityContext sc,
+                                        @PathParam("uuid") UUID uuid,
+                                        @QueryParam("limit") int limit,
+                                        @QueryParam("offset") int offset) {
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(uuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total = nzyme.getDot11().countAllKnownClients(ssid.get().id());
+        List<KnownClientDetailsResponse> clients = Lists.newArrayList();
+        for (Dot11KnownClient client : nzyme.getDot11().findAllKnownClients(ssid.get().id(), limit, offset)) {
+            Optional<MacAddressContextEntry> clientContext = nzyme.getContextService().findMacAddressContext(
+                    client.mac(),
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
+            );
+
+            clients.add(KnownClientDetailsResponse.create(
+                    client.uuid(),
+                    ssid.get().uuid(),
+                    Dot11MacAddressResponse.create(
+                            client.mac(),
+                            nzyme.getOuiService().lookup(client.mac()).orElse(null),
+                            Tools.macAddressIsRandomized(client.mac()),
+                            clientContext.map(macAddressContextEntry ->
+                                            Dot11MacAddressContextResponse.create(
+                                                    macAddressContextEntry.name(),
+                                                    macAddressContextEntry.description()
+                                            ))
+                                    .orElse(null)
+                    ),
+                    client.isApproved(),
+                    client.isIgnored(),
+                    client.firstSeen(),
+                    client.lastSeen()
+            ));
+        }
+
+        return Response.ok(KnownClientsListResponse.create(total, clients)).build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/clients/show/{client_uuid}/approve")
+    public Response approveKnownClient(@Context SecurityContext sc,
+                                       @PathParam("uuid") UUID ssidUuid,
+                                       @PathParam("client_uuid") UUID clientUuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Dot11KnownClient> client = nzyme.getDot11().findKnownClientByUuid(clientUuid, ssid.get().id());
+
+        if (client.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().changeStatusOfKnownClient(client.get().id(), true);
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/clients/show/{client_uuid}/revoke")
+    public Response revokeKnownClient(@Context SecurityContext sc,
+                                      @PathParam("uuid") UUID ssidUuid,
+                                      @PathParam("client_uuid") UUID clientUuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Dot11KnownClient> client = nzyme.getDot11().findKnownClientByUuid(clientUuid, ssid.get().id());
+
+        if (client.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().changeStatusOfKnownClient(client.get().id(), false);
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/clients/show/{client_uuid}/ignore")
+    public Response ignoreKnownClient(@Context SecurityContext sc,
+                                      @PathParam("uuid") UUID ssidUuid,
+                                      @PathParam("client_uuid") UUID clientUuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Dot11KnownClient> client = nzyme.getDot11().findKnownClientByUuid(clientUuid, ssid.get().id());
+
+        if (client.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().changeIgnoreStatusOfKnownClient(client.get().id(), true);
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/clients/show/{client_uuid}/unignore")
+    public Response unignoreKnownClient(@Context SecurityContext sc,
+                                        @PathParam("uuid") UUID ssidUuid,
+                                        @PathParam("client_uuid") UUID clientUuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Dot11KnownClient> client = nzyme.getDot11().findKnownClientByUuid(clientUuid, ssid.get().id());
+
+        if (client.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().changeIgnoreStatusOfKnownClient(client.get().id(), false);
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/clients/show/{client_uuid}")
+    public Response deleteKnownClient(@Context SecurityContext sc,
+                                      @PathParam("uuid") UUID ssidUuid,
+                                      @PathParam("client_uuid") UUID clientUuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Dot11KnownClient> client = nzyme.getDot11().findKnownClientByUuid(clientUuid, ssid.get().id());
+
+        if (client.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().deleteKnownClient(client.get().id());
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/clients/")
+    public Response deleteAllKnownClients(@Context SecurityContext sc, @PathParam("uuid") UUID ssidUuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().deleteKnownClientsOfMonitoredNetwork(ssid.get().id());
 
         return Response.ok().build();
     }
