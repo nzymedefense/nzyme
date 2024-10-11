@@ -131,6 +131,7 @@ export default function MonitoredClientsTable(props) {
         <thead>
         <tr>
           <th>MAC Address</th>
+          <th>OUI</th>
           <th>Status</th>
           <th>Last Seen</th>
           <th>&nbsp;</th>
@@ -146,6 +147,7 @@ export default function MonitoredClientsTable(props) {
                 <Dot11MacAddress addressWithContext={client.mac}
                                  href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac.address)}/>
               </td>
+              <td>{client.mac.oui ? client.mac.oui : <span className="text-muted">Unknown</span>}</td>
               <td>{status(client)}</td>
               <td title={moment(client.last_seen).format()}>{moment(client.last_seen).fromNow()}</td>
               <td>{changeStatusLink(client)}</td>
