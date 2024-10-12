@@ -78,7 +78,10 @@ export default function MonitoredClientsConfigurationPage() {
             </nav>
           </div>
           <div className="col-md-5">
-            <a className="btn btn-primary float-end" href={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(uuid)}>Back</a>
+            <span className="float-end">
+              <a className="btn btn-secondary" href="https://go.nzyme.org/wifi-client-monitoring">Help</a>&nbsp;
+              <a className="btn btn-primary" href={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(uuid)}>Back</a>
+            </span>
           </div>
         </div>
 
@@ -88,7 +91,7 @@ export default function MonitoredClientsConfigurationPage() {
 
         <div className="row mt-3">
           <div className="col-xl-12 col-xxl-6">
-            <div className="card">
+          <div className="card">
               <div className="card-body">
                 <h3>Configuration</h3>
 
