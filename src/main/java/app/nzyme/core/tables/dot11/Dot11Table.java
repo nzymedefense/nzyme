@@ -1,7 +1,7 @@
 package app.nzyme.core.tables.dot11;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.Subsystem;
+import app.nzyme.core.subsystems.Subsystem;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.Dot11RegistryKeys;

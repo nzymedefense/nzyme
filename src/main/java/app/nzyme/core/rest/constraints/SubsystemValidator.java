@@ -18,7 +18,7 @@ public class SubsystemValidator implements ConstraintValidator<Subsystem, String
         }
 
         try {
-            app.nzyme.core.Subsystem.valueOf(value.toUpperCase());
+            app.nzyme.core.subsystems.Subsystem.valueOf(value.toUpperCase());
             return true;
         } catch (IllegalArgumentException e) {
             return false;

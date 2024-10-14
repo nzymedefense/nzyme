@@ -1,7 +1,7 @@
 package app.nzyme.core.dot11.monitoring.ssids;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.Subsystem;
+import app.nzyme.core.subsystems.Subsystem;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.dot11.db.Dot11KnownNetwork;
 import app.nzyme.core.dot11.db.SSIDWithOrganizationAndTenant;

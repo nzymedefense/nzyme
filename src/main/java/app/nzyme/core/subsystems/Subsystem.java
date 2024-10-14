@@ -15,13 +15,14 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package app.nzyme.core;
+package app.nzyme.core.subsystems;
 
 public enum Subsystem {
 
     NZYME_SYS,
     DOT11,
     ETHERNET,
+    BLUETOOTH,
     GENERIC
 
 }

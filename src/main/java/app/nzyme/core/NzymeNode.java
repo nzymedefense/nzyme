@@ -32,6 +32,7 @@ import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
+import app.nzyme.core.subsystems.Subsystems;
 import app.nzyme.plugin.*;
 import app.nzyme.plugin.distributed.messaging.MessageBus;
 import app.nzyme.plugin.distributed.tasksqueue.TasksQueue;
@@ -59,6 +60,8 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
     TasksQueue getTasksQueue();
 
     AuthenticationService getAuthenticationService();
+
+    Subsystems getSubsystems();
 
     HealthMonitor getHealthMonitor();
 

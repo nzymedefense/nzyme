@@ -44,6 +44,7 @@ import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.registry.RegistryChangeMonitorImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
+import app.nzyme.core.subsystems.Subsystems;
 import app.nzyme.plugin.*;
 import app.nzyme.plugin.distributed.messaging.MessageBus;
 import app.nzyme.plugin.distributed.tasksqueue.TasksQueue;
@@ -97,6 +98,8 @@ public class NzymeNodeImpl implements NzymeNode {
     private final RegistryImpl registry;
     private final RegistryChangeMonitor registryChangeMonitor;
 
+    private final Subsystems subsystems;
+
     private final NodeManager nodeManager;
     private final ClusterManager clusterManager;
     private final NzymeHttpServer httpServer;
@@ -146,6 +149,8 @@ public class NzymeNodeImpl implements NzymeNode {
         this.registryChangeMonitor = new RegistryChangeMonitorImpl(this);
 
         this.authenticationService = new AuthenticationService(this);
+
+        this.subsystems = new Subsystems(this);
 
         this.nodeManager = new NodeManager(this);
         try {
@@ -327,6 +332,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public AuthenticationService getAuthenticationService() {
         return authenticationService;
+    }
+
+    @Override
+    public Subsystems getSubsystems() {
+        return subsystems;
     }
 
     @Override
