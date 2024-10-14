@@ -18,8 +18,7 @@ function NodesTable(props) {
 
   return (
       <div className="row">
-        <div className="col-md-12">
-
+        <div className="col-12">
           <h3 style={{display: "inline-block"}}>All Nodes</h3>
 
           <div className="form-check form-switch float-end">

@@ -39,7 +39,7 @@ function NodesPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-12">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <NodesTable nodes={nodes} />
