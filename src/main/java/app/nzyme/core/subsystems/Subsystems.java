@@ -2,7 +2,6 @@ package app.nzyme.core.subsystems;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.RegistryKey;
-import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 
 import java.util.Optional;
@@ -17,7 +16,6 @@ public class Subsystems {
     }
 
     public boolean isEnabled(Subsystem subsystem, @Nullable UUID organizationId, @Nullable UUID tenantId) {
-        Optional<String> value;
         if (organizationId == null && tenantId == null) {
             // Superadmin / System setting.
             return isGloballyEnabled(subsystem);

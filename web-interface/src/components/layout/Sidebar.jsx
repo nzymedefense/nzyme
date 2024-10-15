@@ -5,7 +5,7 @@ import SidebarSubmenu from './SidebarSubmenu'
 import UserProfileBlock from "./UserProfileBlock";
 
 import {AlertContext, UserContext} from "../../App";
-import {userHasPermission} from "../../util/Tools";
+import {userHasPermission, userHasSubsystem} from "../../util/Tools";
 
 function Sidebar(props) {
 
@@ -31,7 +31,7 @@ function Sidebar(props) {
           <SidebarSubmenu title="Ethernet"
                           subhref="/ethernet"
                           icon={<i className="sidebar-icon fa-solid fa-network-wired"/>}
-                          show={true}>
+                          show={userHasSubsystem(user, "ethernet")}>
             <NavigationLink
                 href={ApiRoutes.ETHERNET.OVERVIEW}
                 title="Overview"
@@ -61,7 +61,7 @@ function Sidebar(props) {
           <SidebarSubmenu title="WiFi"
                           subhref="/dot11"
                           icon={<i className="sidebar-icon fa-solid fa-wifi"/>}
-                          show={true}>
+                          show={userHasSubsystem(user, "dot11")}>
             <NavigationLink
                 href={ApiRoutes.DOT11.OVERVIEW}
                 title="Overview"
@@ -92,7 +92,7 @@ function Sidebar(props) {
           <SidebarSubmenu title="Bluetooth"
                           subhref="/bluetooth"
                           icon={<i className="sidebar-icon fa-brands fa-bluetooth"/>}
-                          show={true}>
+                          show={userHasSubsystem(user, "bluetooth")}>
             <NavigationLink
                 href={ApiRoutes.BLUETOOTH.DEVICES.INDEX}
                 title="Devices"
@@ -223,6 +223,11 @@ function Sidebar(props) {
                 href={ApiRoutes.SYSTEM.LOOKANDFEEL}
                 title="Look &amp; Feel"
                 icon={<i className="fa-solid fa-paint-roller"></i>}/>
+            <NavigationLink
+              show={user.is_superadmin}
+              href={ApiRoutes.SYSTEM.SUBSYSTEMS}
+              title="Subsystems"
+              icon={<i className="fa-solid fa-cubes"></i>}/>
             <NavigationLink
                 show={user.is_superadmin}
                 href={ApiRoutes.SYSTEM.VERSION}

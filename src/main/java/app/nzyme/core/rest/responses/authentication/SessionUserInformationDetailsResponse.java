@@ -44,7 +44,10 @@ public abstract class SessionUserInformationDetailsResponse {
     @JsonProperty("feature_permissions")
     public abstract List<String> featurePermissions();
 
-    public static SessionUserInformationDetailsResponse create(UUID id, String email, String name, boolean isSuperAdmin, boolean isOrgAdmin, UUID organizationId, UUID tenantId, UUID defaultOrganization, UUID defaultTenant, List<String> featurePermissions) {
+    @JsonProperty("subsystems")
+    public abstract List<String> subsystems();
+
+    public static SessionUserInformationDetailsResponse create(UUID id, String email, String name, boolean isSuperAdmin, boolean isOrgAdmin, UUID organizationId, UUID tenantId, UUID defaultOrganization, UUID defaultTenant, List<String> featurePermissions, List<String> subsystems) {
         return builder()
                 .id(id)
                 .email(email)
@@ -56,6 +59,7 @@ public abstract class SessionUserInformationDetailsResponse {
                 .defaultOrganization(defaultOrganization)
                 .defaultTenant(defaultTenant)
                 .featurePermissions(featurePermissions)
+                .subsystems(subsystems)
                 .build();
     }
 
@@ -84,6 +88,8 @@ public abstract class SessionUserInformationDetailsResponse {
         public abstract Builder defaultTenant(UUID defaultTenant);
 
         public abstract Builder featurePermissions(List<String> featurePermissions);
+
+        public abstract Builder subsystems(List<String> subsystems);
 
         public abstract SessionUserInformationDetailsResponse build();
     }

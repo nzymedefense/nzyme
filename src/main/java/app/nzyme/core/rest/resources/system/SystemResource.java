@@ -20,12 +20,15 @@ package app.nzyme.core.rest.resources.system;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.branding.BrandingRegistryKeys;
 import app.nzyme.core.distributed.NodeRegistryKeys;
+import app.nzyme.core.dot11.monitoring.ssids.KnownSSIDsRegistryKeys;
+import app.nzyme.core.rest.requests.UpdateConfigurationRequest;
 import app.nzyme.core.rest.requests.UpdateSidebarTitleRequest;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
+import app.nzyme.core.rest.responses.system.GlobalSubsystemsConfigurationResponse;
 import app.nzyme.core.rest.responses.system.SidebarTitleResponse;
-import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraint;
-import app.nzyme.plugin.rest.configuration.ConstraintValidationResult;
-import app.nzyme.plugin.rest.configuration.ConstraintValidator;
+import app.nzyme.core.subsystems.Subsystem;
+import app.nzyme.core.subsystems.SubsystemRegistryKeys;
+import app.nzyme.plugin.rest.configuration.*;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.responses.system.VersionResponse;
@@ -47,6 +50,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
 
 @Path("/api/system")
 @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
@@ -193,6 +198,78 @@ public class SystemResource {
     @Path("/lookandfeel/loginimage")
     public Response resetLoginImage() {
         nzyme.getDatabaseCoreRegistry().deleteValue(BrandingRegistryKeys.LOGIN_IMAGE.key());
+        return Response.ok().build();
+    }
+
+    @GET
+    @Path("/subsystems/configuration")
+    public Response getSubsystemsConfiguration() {
+        GlobalSubsystemsConfigurationResponse response = GlobalSubsystemsConfigurationResponse.create(
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
+                        "Ethernet is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, null, null),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                ),
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.DOT11_ENABLED.key(),
+                        "WiFi/802.11 is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.DOT11, null, null),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.DOT11_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.DOT11_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.DOT11_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                ),
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.key(),
+                        "Bluetooth is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, null, null),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                )
+        );
+
+        return Response.ok(response).build();
+    }
+
+    @PUT
+    @Path("/subsystems/configuration")
+    public Response updateSubsystemsConfiguration(UpdateConfigurationRequest req) {
+        if (req.change().isEmpty()) {
+            LOG.info("Empty configuration parameters.");
+            return Response.status(422).build();
+        }
+
+        for (Map.Entry<String, Object> c : req.change().entrySet()) {
+            switch (c.getKey()) {
+                case "subsystem_ethernet_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SubsystemRegistryKeys.ETHERNET_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "subsystem_dot11_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SubsystemRegistryKeys.DOT11_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "subsystem_bluetooth_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SubsystemRegistryKeys.BLUETOOTH_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+            }
+
+            nzyme.getDatabaseCoreRegistry().setValue(c.getKey(), c.getValue().toString());
+        }
+
         return Response.ok().build();
     }
 

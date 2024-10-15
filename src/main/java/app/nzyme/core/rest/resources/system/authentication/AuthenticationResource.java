@@ -39,6 +39,7 @@ import app.nzyme.core.security.authentication.RecoveryCodes;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.SessionId;
 import app.nzyme.core.security.sessions.db.SessionEntry;
+import app.nzyme.core.subsystems.Subsystem;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.requests.CreateSessionRequest;
@@ -232,6 +233,17 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             ) > 0;
         }
 
+        List<String> subsystems = Lists.newArrayList();
+        if (nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, user.get().organizationId(), user.get().tenantId())) {
+            subsystems.add("ethernet");
+        }
+        if (nzyme.getSubsystems().isEnabled(Subsystem.DOT11, user.get().organizationId(), user.get().tenantId())) {
+            subsystems.add("dot11");
+        }
+        if (nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, user.get().organizationId(), user.get().tenantId())) {
+            subsystems.add("bluetooth");
+        }
+
         return Response.ok(SessionInformationResponse.create(
                 SessionUserInformationDetailsResponse.create(
                         u.uuid(),
@@ -243,7 +255,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                         u.tenantId(),
                         u.defaultOrganizationId(),
                         u.defaultTenantId(),
-                        featurePermissions
+                        featurePermissions,
+                        subsystems
                 ),
                 session.get().mfaValid(),
                 user.get().mfaComplete(),

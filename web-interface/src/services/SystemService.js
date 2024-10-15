@@ -77,6 +77,18 @@ class SystemService {
     RESTClient.delete('/system/lookandfeel/loginimage', successCallback);
   }
 
+  getSubsystemsConfiguration(setConfiguration) {
+    RESTClient.get(
+      "/system/subsystems/configuration",
+      {},
+      (response) => setConfiguration(response.data)
+    )
+  }
+
+  updateSubsystemsConfiguration(newConfig, successCallback, errorCallback) {
+    RESTClient.put("/system/subsystems/configuration", { change: newConfig }, successCallback, errorCallback)
+  }
+
 }
 
 export default SystemService

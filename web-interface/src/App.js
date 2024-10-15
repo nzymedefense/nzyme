@@ -140,6 +140,10 @@ import CreateProbeRequestPage from "./components/dot11/monitoring/probereq/Creat
 import EditProbeRequestPage from "./components/dot11/monitoring/probereq/EditProbeRequestPage";
 import SSIDMonitoringPage from "./components/dot11/monitoring/ssid/SSIDMonitoringPage";
 import MonitoredClientsConfigurationPage from "./components/dot11/monitoring/clients/MonitoredClientsConfigurationPage";
+import SubsystemsPage from "./components/system/subsystems/SubsystemsPage";
+import WithSubsystem from "./components/misc/WithSubsystem";
+import ProtectedRoute from "./components/misc/ProtectedRoute";
+import {userHasSubsystem} from "./util/Tools";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -400,64 +404,74 @@ function App() {
                             <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
                             <Route path={ApiRoutes.SYSTEM.LOOKANDFEEL} element={<LookAndFeelPage />}/>
                             <Route path={ApiRoutes.SYSTEM.CONNECT} element={<ConnectPage />}/>
+                            <Route path={ApiRoutes.SYSTEM.SUBSYSTEMS} element={<SubsystemsPage />}/>
 
-                            { /* Ethernet/L4. */}
-                            <Route path={ApiRoutes.ETHERNET.L4.OVERVIEW} element={<L4OverviewPage />}/>
-                            <Route path={ApiRoutes.ETHERNET.L4.IP(':ipParam')} element={<IPDetailsPage />}/>
+                            { /* Ethernet. */ }
+                            <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "ethernet")} />}>
+                              { /* Ethernet/L4. */}
+                              <Route path={ApiRoutes.ETHERNET.L4.OVERVIEW} element={<L4OverviewPage />}/>
+                              <Route path={ApiRoutes.ETHERNET.L4.IP(':ipParam')} element={<IPDetailsPage />}/>
 
-                            { /* Ethernet/Hostnames. */}
-                            <Route path={ApiRoutes.ETHERNET.HOSTNAMES.HOSTNAME(':hostnameParam')} element={<HostnameDetailsPage />}/>
+                              { /* Ethernet/Hostnames. */}
+                              <Route path={ApiRoutes.ETHERNET.HOSTNAMES.HOSTNAME(':hostnameParam')} element={<HostnameDetailsPage />}/>
 
-                            { /* Ethernet/DNS. */}
-                            <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
-                            <Route path={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS} element={<DNSTransactionLogsPage />}/>
+                              { /* Ethernet/DNS. */}
+                              <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
+                              <Route path={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS} element={<DNSTransactionLogsPage />}/>
 
-                            { /* Ethernet/Remote. */}
-                            <Route path={ApiRoutes.ETHERNET.REMOTE.INDEX} element={<RemoteAccessPage />}/>
-                            <Route path={ApiRoutes.ETHERNET.REMOTE.SSH.SESSION_DETAILS(':sessionId')} element={<SSHSessionDetailsPage />}/>
+                              { /* Ethernet/Remote. */}
+                              <Route path={ApiRoutes.ETHERNET.REMOTE.INDEX} element={<RemoteAccessPage />}/>
+                              <Route path={ApiRoutes.ETHERNET.REMOTE.SSH.SESSION_DETAILS(':sessionId')} element={<SSHSessionDetailsPage />}/>
 
-                            { /* Ethernet/Tunnels. */}
-                            <Route path={ApiRoutes.ETHERNET.TUNNELS.INDEX} element={<TunnelsPage />}/>
-                            <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.TUNNEL_DETAILS(':tunnelId')} element={<SocksTunnelDetailsPage />}/>
+                              { /* Ethernet/Tunnels. */}
+                              <Route path={ApiRoutes.ETHERNET.TUNNELS.INDEX} element={<TunnelsPage />}/>
+                              <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.TUNNEL_DETAILS(':tunnelId')} element={<SocksTunnelDetailsPage />}/>
 
-                            { /* Ethernet/Beacons. */}
-                            <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>
+                              { /* Ethernet/Beacons. */}
+                              <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>
+                            </Route>
 
-                            { /* 802.11/Monitoring. */ }
-                            <Route path={ApiRoutes.DOT11.MONITORING.INDEX} element={<Dot11MonitoringPage />} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.CREATE} element={<CreateMonitoredNetworkPage />} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(':uuid')} element={<MonitoredNetworkDetailsPage/>} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(':uuid')} element={<MonitoredNetworkConfigurationImportPage/>} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX} element={<BanditsPage />} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.BUILTIN_DETAILS(':id')} element={<BuiltinBanditDetailsPage />} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(':organizationId', ':tenantId')} element={<CreateCustomBanditPage />} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CUSTOM_DETAILS(':id')} element={<CustomBanditDetailsPage />} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.EDIT(':id')} element={<EditCustomBanditPage />} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(':uuid')} element={<ConfigureDiscoDetectionMethodPage />} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.SIMILAR_SSID_CONFIGURATION(':uuid')} element={<SimilarSSIDConfigurationPage />} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.RESTRICTED_SUBSTRINGS_CONFIGURATION(':uuid')} element={<RestrictedSubstringsConfigurationPage />} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.CLIENTS_CONFIGURATION(':uuid')} element={<MonitoredClientsConfigurationPage />} />
-                            <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.INDEX} element={<ProbeRequestsPage />}/>
-                            <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE(':organizationId', ':tenantId')} element={<CreateProbeRequestPage />}/>
-                            <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(':id', ':organizationId', ':tenantId')} element={<EditProbeRequestPage />}/>
-                            <Route path={ApiRoutes.DOT11.MONITORING.SSIDS.INDEX} element={<SSIDMonitoringPage />}/>
+                            { /* 802.11. */ }
+                            <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "dot11")} />}>
+                              { /* 802.11/Monitoring. */ }
+                              <Route path={ApiRoutes.DOT11.MONITORING.INDEX} element={<Dot11MonitoringPage />} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.CREATE} element={<CreateMonitoredNetworkPage />} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(':uuid')} element={<MonitoredNetworkDetailsPage/>} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(':uuid')} element={<MonitoredNetworkConfigurationImportPage/>} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX} element={<BanditsPage />} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.BUILTIN_DETAILS(':id')} element={<BuiltinBanditDetailsPage />} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(':organizationId', ':tenantId')} element={<CreateCustomBanditPage />} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CUSTOM_DETAILS(':id')} element={<CustomBanditDetailsPage />} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.EDIT(':id')} element={<EditCustomBanditPage />} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(':uuid')} element={<ConfigureDiscoDetectionMethodPage />} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.SIMILAR_SSID_CONFIGURATION(':uuid')} element={<SimilarSSIDConfigurationPage />} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.RESTRICTED_SUBSTRINGS_CONFIGURATION(':uuid')} element={<RestrictedSubstringsConfigurationPage />} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.CLIENTS_CONFIGURATION(':uuid')} element={<MonitoredClientsConfigurationPage />} />
+                              <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.INDEX} element={<ProbeRequestsPage />}/>
+                              <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE(':organizationId', ':tenantId')} element={<CreateProbeRequestPage />}/>
+                              <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(':id', ':organizationId', ':tenantId')} element={<EditProbeRequestPage />}/>
+                              <Route path={ApiRoutes.DOT11.MONITORING.SSIDS.INDEX} element={<SSIDMonitoringPage />}/>
 
-                            { /* 802.11/Networks. */}
-                            <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>
-                            <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
-                            <Route path={ApiRoutes.DOT11.NETWORKS.BSSID(':bssidParam')} element={<BSSIDDetailsPage />}/>
-                            <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />
+                              { /* 802.11/Networks. */}
+                              <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>
+                              <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
+                              <Route path={ApiRoutes.DOT11.NETWORKS.BSSID(':bssidParam')} element={<BSSIDDetailsPage />}/>
+                              <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />
 
-                            { /* 802.11/Clients. */}
-                            <Route path={ApiRoutes.DOT11.CLIENTS.INDEX} element={<ClientsPage />}/>
-                            <Route path={ApiRoutes.DOT11.CLIENTS.DETAILS(':macParam')} element={<ClientDetailsPage />}/>
+                              { /* 802.11/Clients. */}
+                              <Route path={ApiRoutes.DOT11.CLIENTS.INDEX} element={<ClientsPage />}/>
+                              <Route path={ApiRoutes.DOT11.CLIENTS.DETAILS(':macParam')} element={<ClientDetailsPage />}/>
 
-                            { /* 802.11/Disco. */}
-                            <Route path={ApiRoutes.DOT11.DISCO.INDEX} element={<DiscoPage />}/>
+                              { /* 802.11/Disco. */}
+                              <Route path={ApiRoutes.DOT11.DISCO.INDEX} element={<DiscoPage />}/>
+                            </Route>
 
-                            { /* Bluetooth. */}
-                            <Route path={ApiRoutes.BLUETOOTH.DEVICES.INDEX} element={<BluetoothDevicesPage />}/>
-                            <Route path={ApiRoutes.BLUETOOTH.DEVICES.DETAILS(':macParam')} element={<BluetoothDeviceDetailsPage />}/>
+                            { /* Bluetooth. */ }
+                            <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "bluetooth")} />}>
+                              { /* Bluetooth Clients/Devices. */}
+                              <Route path={ApiRoutes.BLUETOOTH.DEVICES.INDEX} element={<BluetoothDevicesPage />}/>
+                              <Route path={ApiRoutes.BLUETOOTH.DEVICES.DETAILS(':macParam')} element={<BluetoothDeviceDetailsPage />}/>
+                            </Route>
 
                             { /* Context. */ }
                             <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>

@@ -43,6 +43,10 @@ export function userHasPermission(user, permission) {
       || user.feature_permissions.includes(permission)
 }
 
+export function userHasSubsystem(user, subsystem) {
+  return user.subsystems.includes(subsystem)
+}
+
 export function truncate(str, n, useWordBoundary) {
   if (!str) {
     return null;

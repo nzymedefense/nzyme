@@ -118,7 +118,8 @@ const ApiRoutes = {
       }
     },
     CONNECT: '/system/connect',
-    LOOKANDFEEL: '/system/lookandfeel'
+    LOOKANDFEEL: '/system/lookandfeel',
+    SUBSYSTEMS: '/system/subsystems'
   },
   SEARCH: {
     RESULTS: '/search/results'

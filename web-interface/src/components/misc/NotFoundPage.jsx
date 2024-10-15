@@ -1,25 +1,23 @@
-import React from 'react'
+  import React from 'react'
 
-class NotFoundPage extends React.Component {
-  render () {
+  export default function NotFoundPage() {
+
     return (
-            <div>
-                <div className="row">
-                    <div className="col-md-12">
-                        <h1>404 - Not found!</h1>
-                    </div>
-                </div>
+      <div>
+        <div className="row">
+          <div className="col-12">
+            <h1>404 - Not found!</h1>
+          </div>
+        </div>
 
-                <div className="row">
-                    <div className="col-md-12">
-                        <div className="alert alert-danger">
-                            <strong>Page not found.</strong>
-                        </div>
-                    </div>
-                </div>
+        <div className="row mt-2">
+          <div className="col-12">
+            <div className="alert alert-danger mb-0">
+              <strong>Page not found.</strong>
             </div>
+          </div>
+        </div>
+      </div>
     )
-  }
-}
 
-export default NotFoundPage
+  }
