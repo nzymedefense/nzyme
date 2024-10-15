@@ -27,6 +27,7 @@ import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsRepor
 import app.nzyme.core.rest.resources.taps.reports.tables.ssh.SshSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpDatagramsReport;
+import app.nzyme.core.subsystems.Subsystem;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -59,10 +60,15 @@ public class TablesResource {
     @POST
     @Path("/dot11/summary")
     public Response dot11Summary(@Context SecurityContext sc, Dot11TablesReport report) {
-        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
 
-        LOG.debug("Received 802.11 summary report from [{}]: {}", tapId, report);
-        nzyme.getTablesService().dot11().handleReport(tapId, DateTime.now(), report);
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.DOT11, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting 802.11 summary report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        LOG.debug("Received 802.11 summary report from tap [{}]: {}", tap.getUuid(), report);
+        nzyme.getTablesService().dot11().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -70,10 +76,15 @@ public class TablesResource {
     @POST
     @Path("/bluetooth/devices")
     public Response bluetoothDevices(@Context SecurityContext sc, BluetoothDevicesReport report) {
-        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
 
-        LOG.debug("Received Bluetooth devices report from [{}]: {}", tapId, report);
-        nzyme.getTablesService().bluetooth().handleReport(tapId, DateTime.now(), report);
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting Bluetooth devices report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        LOG.debug("Received Bluetooth devices report from tap [{}]: {}", tap.getUuid(), report);
+        nzyme.getTablesService().bluetooth().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -81,10 +92,15 @@ public class TablesResource {
     @POST
     @Path("/tcp/sessions")
     public Response tcpSessions(@Context SecurityContext sc, TcpSessionsReport report) {
-        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
 
-        LOG.debug("Received TCP session table report from [{}]: {}", tapId, report);
-        nzyme.getTablesService().tcp().handleReport(tapId, DateTime.now(), report);
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting TCP sessions report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        LOG.debug("Received TCP session table report from tap [{}]: {}", tap.getUuid(), report);
+        nzyme.getTablesService().tcp().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -92,9 +108,14 @@ public class TablesResource {
     @POST
     @Path("/udp/datagrams")
     public Response udpDatagrams(@Context SecurityContext sc, UdpDatagramsReport report) {
-        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
 
-        LOG.debug("Received UDP datagram table report from [{}]: {}", tapId, report);
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting UDP datagrams report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        LOG.debug("Received UDP datagram table report from tap [{}]: {}", tap.getUuid(), report);
 
         // Store in combined TCP/UDP table.
 
@@ -104,10 +125,15 @@ public class TablesResource {
     @POST
     @Path("/dns/summary")
     public Response dnsSummary(@Context SecurityContext sc, DnsTablesReport report) {
-        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
 
-        LOG.debug("Received DNS summary report from [{}]: {}", tapId, report);
-        nzyme.getTablesService().dns().handleReport(tapId, DateTime.now(), report);
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting DNS summary report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        LOG.debug("Received DNS summary report from tap [{}]: {}", tap.getUuid(), report);
+        nzyme.getTablesService().dns().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -115,10 +141,15 @@ public class TablesResource {
     @POST
     @Path("/ssh/sessions")
     public Response sshSessions(@Context SecurityContext sc, SshSessionsReport report) {
-        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
 
-        LOG.debug("Received SSH sessions report from [{}]: {}", tapId, report);
-        nzyme.getTablesService().ssh().handleReport(tapId, DateTime.now(), report);
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting SSH sessions report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        LOG.debug("Received SSH sessions report from tap [{}]: {}", tap.getUuid(), report);
+        nzyme.getTablesService().ssh().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -126,10 +157,15 @@ public class TablesResource {
     @POST
     @Path("/socks/tunnels")
     public Response socksTunnels(@Context SecurityContext sc, SocksTunnelsReport report) {
-        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
 
-        LOG.debug("Received SOCKS tunnels report from [{}]: {}", tapId, report);
-        nzyme.getTablesService().socks().handleReport(tapId, DateTime.now(), report);
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting SOCKS tunnels report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        LOG.debug("Received SOCKS tunnels report from tap [{}]: {}", tap.getUuid(), report);
+        nzyme.getTablesService().socks().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

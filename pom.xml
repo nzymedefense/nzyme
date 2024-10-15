@@ -51,7 +51,7 @@
         <quartz.version>2.3.2</quartz.version>
         <cronutils.version>9.2.1</cronutils.version>
         <httpcomponents.version>4.5.13</httpcomponents.version>
-        <nzymeplugin.version>2.0.20</nzymeplugin.version>
+        <nzymeplugin.version>2.0.21</nzymeplugin.version>
         <bouncycastle.version>1.75</bouncycastle.version>
         <oshi.version>6.4.0</oshi.version>
         <commonsnet.version>3.9.0</commonsnet.version>

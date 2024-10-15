@@ -8,7 +8,6 @@ import jakarta.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
-@AutoValue
 public class Subsystems {
 
     private final NzymeNode nzyme;
@@ -18,30 +17,60 @@ public class Subsystems {
     }
 
     public boolean isEnabled(Subsystem subsystem, @Nullable UUID organizationId, @Nullable UUID tenantId) {
-        RegistryKey key;
-        switch (subsystem) {
-            case DOT11 -> key = SubsystemRegistryKeys.DOT11_ENABLED;
-            case ETHERNET -> key = SubsystemRegistryKeys.ETHERNET_ENABLED;
-            case BLUETOOTH -> key = SubsystemRegistryKeys.BLUETOOTH_ENABLED;
-            default -> throw new RuntimeException("Subsystem [" + subsystem + "] cannot be enabled/disabled.");
-        }
-
-        if (organizationId != null || tenantId != null) {
-            throw new RuntimeException("NOT SUPPORTED YET."); // TODO implement org selection in registry APIs.
-        }
-
         Optional<String> value;
         if (organizationId == null && tenantId == null) {
             // Superadmin / System setting.
-            value = nzyme.getDatabaseCoreRegistry().getValue(key.key());
+            return isGloballyEnabled(subsystem);
         } else if (organizationId != null && tenantId == null) {
-            // Organization setting. TODO
-            value = Optional.empty();
+            // Organization setting.
+            return isGloballyEnabled(subsystem)
+                    && isEnabledForOrganization(subsystem, organizationId);
         } else {
             // Tenant setting.
-            value = nzyme.getDatabaseCoreRegistry().getValue(key.key(), organizationId, tenantId);
+            return isGloballyEnabled(subsystem)
+                    && isEnabledForOrganization(subsystem, organizationId)
+                    && isEnabledForTenant(subsystem, organizationId, tenantId);
         }
+    }
 
+    private boolean isGloballyEnabled(Subsystem subsystem) {
+        RegistryKey key = subsystemToRegistryKey(subsystem);
+        Optional<String> value = nzyme.getDatabaseCoreRegistry().getValue(key.key());
+
+        return getValue(key, value);
+    }
+
+    private boolean isEnabledForOrganization(Subsystem subsystem, UUID organizationId) {
+        RegistryKey key = subsystemToRegistryKey(subsystem);
+        Optional<String> value = nzyme.getDatabaseCoreRegistry().getValue(key.key(), organizationId);
+
+        return getValue(key, value);
+    }
+
+    private boolean isEnabledForTenant(Subsystem subsystem, UUID organizationId, UUID tenantId) {
+        RegistryKey key = subsystemToRegistryKey(subsystem);
+        Optional<String> value = nzyme.getDatabaseCoreRegistry().getValue(key.key(), organizationId, tenantId);
+
+        return getValue(key, value);
+    }
+
+    private RegistryKey subsystemToRegistryKey(Subsystem subsystem) {
+        switch (subsystem) {
+            case DOT11 -> {
+                return SubsystemRegistryKeys.DOT11_ENABLED;
+            }
+            case ETHERNET -> {
+                return SubsystemRegistryKeys.ETHERNET_ENABLED;
+            }
+            case BLUETOOTH -> {
+                return SubsystemRegistryKeys.BLUETOOTH_ENABLED;
+            }
+            default -> throw new RuntimeException("Subsystem [" + subsystem + "] cannot be enabled/disabled.");
+        }
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private boolean getValue(RegistryKey key, Optional<String> value) {
         if (value.isPresent()) {
             return Boolean.parseBoolean(value.get());
         } else {

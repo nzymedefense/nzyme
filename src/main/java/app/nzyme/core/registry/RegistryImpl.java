@@ -39,6 +39,20 @@ public class RegistryImpl implements Registry {
     }
 
     @Override
+    public Optional<String> getValue(String key, UUID organizationId) {
+        LOG.debug("Getting value for [{}] (Org <{}>) from registry.",
+                buildNamespacedKey(namespace, key), organizationId);
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT value FROM registry WHERE key = :key " +
+                                "AND organization_id = :organization_id AND tenant_id IS NULL")
+                        .bind("key", buildNamespacedKey(namespace, key))
+                        .bind("organization_id", organizationId)
+                        .mapTo(String.class)
+                        .findOne()
+        );
+    }
+
+    @Override
     public Optional<String> getValue(String key, UUID organizationId, UUID tenantId) {
         LOG.debug("Getting value for [{}] (Org <{}>, Tenant <{}>) from registry.",
                 buildNamespacedKey(namespace, key), organizationId, tenantId);
@@ -59,6 +73,23 @@ public class RegistryImpl implements Registry {
         Optional<String> encrypted = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT value FROM registry_encrypted WHERE key = :key")
                         .bind("key", buildNamespacedKey(namespace, key))
+                        .mapTo(String.class)
+                        .findOne()
+        );
+
+        return dbResultToResult(key, encrypted);
+    }
+
+    @Override
+    public Optional<String> getEncryptedValue(String key, UUID organizationId) throws RegistryCryptoException {
+        LOG.debug("Getting encrypted value for [{}] (Org <{}>) from registry.",
+                buildNamespacedKey(namespace, key), organizationId);
+
+        Optional<String> encrypted = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT value FROM registry_encrypted WHERE key = :key " +
+                                "AND organization_id = :organization_id AND tenant_id IS NULL")
+                        .bind("key", buildNamespacedKey(namespace, key))
+                        .bind("organization_id", organizationId)
                         .mapTo(String.class)
                         .findOne()
         );
@@ -106,7 +137,13 @@ public class RegistryImpl implements Registry {
         return getValue(key).orElse(null);
     }
 
-    @org.jetbrains.annotations.Nullable
+    @Nullable
+    @Override
+    public String getValueOrNull(String key, UUID organizationId) {
+        return getValue(key, organizationId).orElse(null);
+    }
+
+    @Nullable
     @Override
     public String getValueOrNull(String key, UUID organizationId, UUID tenantId) {
         return getValue(key, organizationId, tenantId).orElse(null);
@@ -118,7 +155,13 @@ public class RegistryImpl implements Registry {
         return getEncryptedValue(key).orElse(null);
     }
 
-    @org.jetbrains.annotations.Nullable
+    @Nullable
+    @Override
+    public String getEncryptedValueOrNull(String key, UUID organizationId) throws RegistryCryptoException {
+        return getEncryptedValue(key, organizationId).orElse(null);
+    }
+
+    @Nullable
     @Override
     public String getEncryptedValueOrNull(String key, UUID organizationId, UUID tenantId) throws RegistryCryptoException {
         return getEncryptedValue(key, organizationId, tenantId).orElse(null);
@@ -146,6 +189,39 @@ public class RegistryImpl implements Registry {
                     handle.createUpdate("INSERT INTO registry(key, value) VALUES(:key, :value)")
                             .bind("key", buildNamespacedKey(namespace, key))
                             .bind("value", value)
+                            .execute()
+            );
+        }
+    }
+
+    @Override
+    public void setValue(String key, String value, UUID organizationId) {
+        setValuePreflightChecks(key, value);
+
+        if (getValue(key, organizationId).isPresent()) {
+            // Update existing entry.
+            LOG.debug("Updating existing value for key [{}] (Org <{}>) in registry.",
+                    buildNamespacedKey(namespace, key), organizationId);
+
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("UPDATE registry SET value = :value WHERE key = :key " +
+                                    "AND organization_id = :organization_id AND tenant_id IS NULL")
+                            .bind("key", buildNamespacedKey(namespace, key))
+                            .bind("value", value)
+                            .bind("organization_id", organizationId)
+                            .execute()
+            );
+        } else {
+            // Insert new entry.
+            LOG.debug("Inserting new entry for key [{}] (Org <{}>) in registry.",
+                    buildNamespacedKey(namespace, key), organizationId);
+
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("INSERT INTO registry(key, value, organization_id, tenant_id) " +
+                                    "VALUES(:key, :value, :organization_id, NULL)")
+                            .bind("key", buildNamespacedKey(namespace, key))
+                            .bind("value", value)
+                            .bind("organization_id", organizationId)
                             .execute()
             );
         }
@@ -229,6 +305,11 @@ public class RegistryImpl implements Registry {
     }
 
     @Override
+    public void setEncryptedValue(String key, String value, UUID organizationId) throws RegistryCryptoException {
+        throw new RuntimeException("Encrypted database registry with organization scope not implemented yet.");
+    }
+
+    @Override
     public void setEncryptedValue(String key, String value, UUID organizationId, UUID tenantId) throws RegistryCryptoException {
         throw new RuntimeException("Encrypted database registry with tenant scope not implemented yet.");
     }
@@ -239,6 +320,19 @@ public class RegistryImpl implements Registry {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM registry WHERE key = :key")
                         .bind("key", buildNamespacedKey(namespace, key))
+                        .execute()
+        );
+    }
+
+    @Override
+    public void deleteValue(String key, UUID organizationId) {
+        LOG.debug("Deleting registry value for key [{}] (Org <{}>)", key, organizationId);
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM registry WHERE key = :key " +
+                                "AND organization_id = :organization_id AND tenant_id IS NULL")
+                        .bind("key", buildNamespacedKey(namespace, key))
+                        .bind("organization_id", organizationId)
                         .execute()
         );
     }
