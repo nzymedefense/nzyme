@@ -36,6 +36,14 @@ class AuthenticationManagementService {
     RESTClient.delete('/system/authentication/mgmt/organizations/show/' + id, successCallback);
   }
 
+  getSubsystemsConfigurationOfOrganization(id, setConfiguration) {
+    RESTClient.get(`/system/authentication/mgmt/organizations/show/${id}/subsystems/configuration`, {}, (response) => setConfiguration(response.data))
+  }
+
+  updateSubsystemsConfigurationOfOrganization(newConfig, id, successCallback, errorCallback) {
+    RESTClient.put(`/system/authentication/mgmt/organizations/show/${id}/subsystems/configuration`, { change: newConfig }, successCallback, errorCallback)
+  }
+
   findAllTenantsOfOrganization(organizationId, setTenants, limit, offset, successCallback = undefined) {
     RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants',
         {limit: limit, offset: offset}, function (response) {
@@ -77,6 +85,14 @@ class AuthenticationManagementService {
   deleteTenantOfOrganization(organizationId, tenantId, successCallback) {
     RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId,
         successCallback);
+  }
+
+  getSubsystemsConfigurationOfTenantOfOrganization(organizationId, tenantId, setConfiguration) {
+    RESTClient.get(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/subsystems/configuration`, {}, (response) => setConfiguration(response.data))
+  }
+
+  updateSubsystemsConfigurationOfTenantOfOrganization(newConfig, organizationId, tenantId, successCallback, errorCallback) {
+    RESTClient.put(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/subsystems/configuration`, {change: newConfig}, successCallback, errorCallback)
   }
 
   findAllOrganizationAdmins(organizationId, setUsers, limit, offset) {

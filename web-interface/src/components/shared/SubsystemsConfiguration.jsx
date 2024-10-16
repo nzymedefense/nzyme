@@ -3,10 +3,14 @@ import ConfigurationValue from "../configuration/ConfigurationValue";
 import ConfigurationModal from "../configuration/modal/ConfigurationModal";
 import SystemService from "../../services/SystemService";
 import LoadingSpinner from "../misc/LoadingSpinner";
+import AuthenticationManagementService from "../../services/AuthenticationManagementService";
 
 const systemService = new SystemService();
+const authMgmtService = new AuthenticationManagementService();
 
 export default function SubsystemsConfiguration(props) {
+
+  const dbUpdateCallback = props.dbUpdateCallback;
 
   // Optional.
   const organizationUUID = props.organizationUUID;
@@ -24,12 +28,13 @@ export default function SubsystemsConfiguration(props) {
     }
 
     if (organizationUUID && !tenantUUID) {
-      // TODO org config
+      authMgmtService.getSubsystemsConfigurationOfOrganization(organizationUUID, setConfiguration);
       return
     }
 
     if (organizationUUID && tenantUUID) {
-      // TODO tenant config
+      authMgmtService.getSubsystemsConfigurationOfTenantOfOrganization(organizationUUID, tenantUUID, setConfiguration);
+      return;
     }
   }, [localRevision, organizationUUID, tenantUUID]);
 
@@ -60,7 +65,7 @@ export default function SubsystemsConfiguration(props) {
                               setLocalRevision={setLocalRevision}
                               organizationId={organizationUUID}
                               tenantId={tenantUUID}
-                              dbUpdateCallback={systemService.updateSubsystemsConfiguration}/>
+                              dbUpdateCallback={dbUpdateCallback}/>
         </td>
       </tr>
       <tr>
@@ -76,7 +81,7 @@ export default function SubsystemsConfiguration(props) {
                               setLocalRevision={setLocalRevision}
                               organizationId={organizationUUID}
                               tenantId={tenantUUID}
-                              dbUpdateCallback={systemService.updateSubsystemsConfiguration}/>
+                              dbUpdateCallback={dbUpdateCallback}/>
         </td>
       </tr>
       <tr>
@@ -92,7 +97,7 @@ export default function SubsystemsConfiguration(props) {
                               setLocalRevision={setLocalRevision}
                               organizationId={organizationUUID}
                               tenantId={tenantUUID}
-                              dbUpdateCallback={systemService.updateSubsystemsConfiguration}/>
+                              dbUpdateCallback={dbUpdateCallback}/>
         </td>
       </tr>
       </tbody>

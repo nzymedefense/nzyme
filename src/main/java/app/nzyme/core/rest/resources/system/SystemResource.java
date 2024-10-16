@@ -20,11 +20,10 @@ package app.nzyme.core.rest.resources.system;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.branding.BrandingRegistryKeys;
 import app.nzyme.core.distributed.NodeRegistryKeys;
-import app.nzyme.core.dot11.monitoring.ssids.KnownSSIDsRegistryKeys;
 import app.nzyme.core.rest.requests.UpdateConfigurationRequest;
 import app.nzyme.core.rest.requests.UpdateSidebarTitleRequest;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
-import app.nzyme.core.rest.responses.system.GlobalSubsystemsConfigurationResponse;
+import app.nzyme.core.rest.responses.subsystems.SubsystemsConfigurationResponse;
 import app.nzyme.core.rest.responses.system.SidebarTitleResponse;
 import app.nzyme.core.subsystems.Subsystem;
 import app.nzyme.core.subsystems.SubsystemRegistryKeys;
@@ -204,7 +203,7 @@ public class SystemResource {
     @GET
     @Path("/subsystems/configuration")
     public Response getSubsystemsConfiguration() {
-        GlobalSubsystemsConfigurationResponse response = GlobalSubsystemsConfigurationResponse.create(
+        SubsystemsConfigurationResponse response = SubsystemsConfigurationResponse.create(
                 ConfigurationEntryResponse.create(
                         SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
                         "Ethernet is enabled",

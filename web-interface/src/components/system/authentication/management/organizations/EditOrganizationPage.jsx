@@ -5,6 +5,7 @@ import AuthenticationManagementService from "../../../../../services/Authenticat
 import Routes from "../../../../../util/ApiRoutes";
 import OrganizationForm from "./OrganizationForm";
 import {notify} from "react-notify-toast";
+import SubsystemsConfiguration from "../../../../shared/SubsystemsConfiguration";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -56,7 +57,8 @@ function EditOrganizationPage() {
 
           <div className="col-3">
             <span className="float-end">
-              <a className="btn btn-secondary" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>Back</a>{' '}
+              <a className="btn btn-secondary"
+                 href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>Back</a>{' '}
             </span>
           </div>
 
@@ -74,7 +76,26 @@ function EditOrganizationPage() {
                 <OrganizationForm onClick={onFormSubmitted}
                                   name={organization.name}
                                   description={organization.description}
-                                  submitText="Edit Organization"  />
+                                  submitText="Edit Organization"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-xl-12 col-xxl-6">
+            <div className="card">
+              <div className="card-body">
+                <h3>Subsystem Settings</h3>
+
+                <p>
+                  This setting governs subsystem availability for all tenants in this organization. <strong>You can also
+                  configure subsystems at the tenant level</strong>, with the higher-level configuration taking
+                  precedence.
+                </p>
+
+                <SubsystemsConfiguration organizationUUID={organization.id}
+                                         dbUpdateCallback={authenticationMgmtService.updateSubsystemsConfigurationOfOrganization}/>
               </div>
             </div>
           </div>

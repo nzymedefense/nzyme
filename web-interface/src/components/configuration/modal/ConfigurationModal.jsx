@@ -90,9 +90,15 @@ function ConfigurationModal (props) {
         [key]: inputValue
       }, onDbUpdateCallbackSuccess, onDbUpdateCallbackFailure)
     } else {
-      dbUpdateCallback({
-        [key]: inputValue
-      }, organizationId, tenantId, onDbUpdateCallbackSuccess, onDbUpdateCallbackFailure)
+      if (organizationId && !tenantId) {
+        dbUpdateCallback({
+          [key]: inputValue
+        }, organizationId, onDbUpdateCallbackSuccess, onDbUpdateCallbackFailure)
+      } else {
+        dbUpdateCallback({
+          [key]: inputValue
+        }, organizationId, tenantId, onDbUpdateCallbackSuccess, onDbUpdateCallbackFailure)
+      }
     }
   }, [inputValue, key, dbUpdateCallback])
 

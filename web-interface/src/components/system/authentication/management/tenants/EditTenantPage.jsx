@@ -5,6 +5,7 @@ import AuthenticationManagementService from "../../../../../services/Authenticat
 import Routes from "../../../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
 import TenantForm from "./TenantForm";
+import SubsystemsConfiguration from "../../../../shared/SubsystemsConfiguration";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -101,7 +102,25 @@ function EditTenantPage() {
                             sessionTimeoutMinutes={tenant.session_timeout_minutes.toString()}
                             sessionInactivityTimeoutMinutes={tenant.session_inactivity_timeout_minutes.toString()}
                             mfaTimeoutMinutes={tenant.mfa_timeout_minutes.toString()}
-                            submitText="Edit Tenant" />
+                            submitText="Edit Tenant"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-xl-12 col-xxl-6">
+            <div className="card">
+              <div className="card-body">
+                <h3>Subsystem Settings</h3>
+
+                <p>
+                  This setting governs subsystem availability for this tenant.
+                </p>
+
+                <SubsystemsConfiguration organizationUUID={organization.id}
+                                         tenantUUID={tenant.id}
+                                         dbUpdateCallback={authenticationMgmtService.updateSubsystemsConfigurationOfTenantOfOrganization}/>
               </div>
             </div>
           </div>

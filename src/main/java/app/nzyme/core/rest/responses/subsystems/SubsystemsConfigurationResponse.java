@@ -1,11 +1,11 @@
-package app.nzyme.core.rest.responses.system;
+package app.nzyme.core.rest.responses.subsystems;
 
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
 @AutoValue
-public abstract class GlobalSubsystemsConfigurationResponse {
+public abstract class SubsystemsConfigurationResponse {
 
     @JsonProperty("subsystem_ethernet_enabled")
     public abstract ConfigurationEntryResponse ethernetEnabled();
@@ -16,7 +16,7 @@ public abstract class GlobalSubsystemsConfigurationResponse {
     @JsonProperty("subsystem_bluetooth_enabled")
     public abstract ConfigurationEntryResponse bluetoothEnabled();
 
-    public static GlobalSubsystemsConfigurationResponse create(ConfigurationEntryResponse ethernetEnabled, ConfigurationEntryResponse dot11Enabled, ConfigurationEntryResponse bluetoothEnabled) {
+    public static SubsystemsConfigurationResponse create(ConfigurationEntryResponse ethernetEnabled, ConfigurationEntryResponse dot11Enabled, ConfigurationEntryResponse bluetoothEnabled) {
         return builder()
                 .ethernetEnabled(ethernetEnabled)
                 .dot11Enabled(dot11Enabled)
@@ -25,7 +25,7 @@ public abstract class GlobalSubsystemsConfigurationResponse {
     }
 
     public static Builder builder() {
-        return new AutoValue_GlobalSubsystemsConfigurationResponse.Builder();
+        return new AutoValue_SubsystemsConfigurationResponse.Builder();
     }
 
     @AutoValue.Builder
@@ -36,6 +36,6 @@ public abstract class GlobalSubsystemsConfigurationResponse {
 
         public abstract Builder bluetoothEnabled(ConfigurationEntryResponse bluetoothEnabled);
 
-        public abstract GlobalSubsystemsConfigurationResponse build();
+        public abstract SubsystemsConfigurationResponse build();
     }
 }

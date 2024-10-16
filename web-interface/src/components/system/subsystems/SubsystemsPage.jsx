@@ -1,5 +1,8 @@
 import React from "react";
 import SubsystemsConfiguration from "../../shared/SubsystemsConfiguration";
+import SystemService from "../../../services/SystemService";
+
+const systemService = new SystemService();
 
 export default function SubsystemsPage() {
 
@@ -23,7 +26,7 @@ export default function SubsystemsPage() {
                 taking precedence.
               </p>
 
-              <SubsystemsConfiguration />
+              <SubsystemsConfiguration dbUpdateCallback={systemService.updateSubsystemsConfiguration} />
             </div>
           </div>
         </div>

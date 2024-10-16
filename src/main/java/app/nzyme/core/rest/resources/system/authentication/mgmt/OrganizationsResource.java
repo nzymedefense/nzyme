@@ -20,6 +20,7 @@ import app.nzyme.core.rest.responses.events.EventActionDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventActionsListResponse;
 import app.nzyme.core.rest.responses.floorplans.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
+import app.nzyme.core.rest.responses.subsystems.SubsystemsConfigurationResponse;
 import app.nzyme.core.security.authentication.AuthenticationRegistryKeys;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
@@ -30,6 +31,8 @@ import app.nzyme.core.security.authentication.roles.Permission;
 import app.nzyme.core.security.authentication.roles.Permissions;
 import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
+import app.nzyme.core.subsystems.Subsystem;
+import app.nzyme.core.subsystems.SubsystemRegistryKeys;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
@@ -124,24 +127,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/show/{id}")
-    public Response update(@Context SecurityContext sc,
-                           @PathParam("id") UUID id,
+    public Response update(@PathParam("id") UUID id,
                            @Valid UpdateOrganizationRequest req) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
 
         if (org.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        // Check if user is org admin for this org.
-        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(org.get().uuid())) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
         nzyme.getAuthenticationService().updateOrganization(
-                id, req.name(),
-                req.description()
+                id, req.name(), req.description()
         );
 
         return Response.ok().build();
@@ -162,6 +157,107 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         nzyme.getAuthenticationService().deleteOrganization(id);
+
+        return Response.ok().build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
+    @Path("/show/{id}/subsystems/configuration")
+    public Response getOrganizationSubsystemConfiguration(@PathParam("id") UUID id) {
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        SubsystemsConfigurationResponse response = SubsystemsConfigurationResponse.create(
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
+                        "Ethernet is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, org.get().uuid(), null),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                ),
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.DOT11_ENABLED.key(),
+                        "WiFi/802.11 is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.DOT11,  org.get().uuid(), null),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.DOT11_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.DOT11_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.DOT11_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                ),
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.key(),
+                        "Bluetooth is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH,  org.get().uuid(), null),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                )
+        );
+
+        return Response.ok(response).build();
+    }
+
+    @PUT
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
+    @Path("/show/{id}/subsystems/configuration")
+    public Response updateOrganizationSubsystemConfiguration(@PathParam("id") UUID id, UpdateConfigurationRequest req) {
+        if (req.change().isEmpty()) {
+            LOG.info("Empty configuration parameters.");
+            return Response.status(422).build();
+        }
+
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        for (Map.Entry<String, Object> c : req.change().entrySet()) {
+            switch (c.getKey()) {
+                case "subsystem_ethernet_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SubsystemRegistryKeys.ETHERNET_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+
+                    if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, null, null)) {
+                        return Response.status(Response.Status.FORBIDDEN).build();
+                    }
+
+                    break;
+                case "subsystem_dot11_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SubsystemRegistryKeys.DOT11_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+
+                    if (!nzyme.getSubsystems().isEnabled(Subsystem.DOT11, null, null)) {
+                        return Response.status(Response.Status.FORBIDDEN).build();
+                    }
+
+                    break;
+                case "subsystem_bluetooth_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SubsystemRegistryKeys.BLUETOOTH_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+
+                    if (!nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, null, null)) {
+                        return Response.status(Response.Status.FORBIDDEN).build();
+                    }
+
+                    break;
+            }
+
+            nzyme.getDatabaseCoreRegistry().setValue(c.getKey(), c.getValue().toString(), org.get().uuid());
+        }
 
         return Response.ok().build();
     }
@@ -557,6 +653,122 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         nzyme.getAuthenticationService().deleteTenant(tenantId);
+
+        return Response.ok().build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/subsystems/configuration")
+    public Response getTenantSubsystemConfiguration(@Context SecurityContext sc,
+                                                    @PathParam("organizationId") UUID organizationId,
+                                                    @PathParam("tenantId") UUID tenantId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        SubsystemsConfigurationResponse response = SubsystemsConfigurationResponse.create(
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
+                        "Ethernet is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, organizationId, tenantId),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.ETHERNET_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                ),
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.DOT11_ENABLED.key(),
+                        "WiFi/802.11 is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.DOT11,  organizationId, tenantId),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.DOT11_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.DOT11_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.DOT11_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                ),
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.key(),
+                        "Bluetooth is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH,  organizationId, tenantId),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.BLUETOOTH_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                )
+        );
+
+        return Response.ok(response).build();
+    }
+
+    @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/subsystems/configuration")
+    public Response updateTenantSubsystemConfiguration(@Context SecurityContext sc,
+                                                       @PathParam("organizationId") UUID organizationId,
+                                                       @PathParam("tenantId") UUID tenantId,
+                                                       UpdateConfigurationRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (req.change().isEmpty()) {
+            LOG.info("Empty configuration parameters.");
+            return Response.status(422).build();
+        }
+
+        for (Map.Entry<String, Object> c : req.change().entrySet()) {
+            switch (c.getKey()) {
+                case "subsystem_ethernet_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SubsystemRegistryKeys.ETHERNET_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+
+                    if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, organizationId, null)) {
+                        return Response.status(Response.Status.FORBIDDEN).build();
+                    }
+
+                    break;
+                case "subsystem_dot11_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SubsystemRegistryKeys.DOT11_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+
+                    if (!nzyme.getSubsystems().isEnabled(Subsystem.DOT11, organizationId, null)) {
+                        return Response.status(Response.Status.FORBIDDEN).build();
+                    }
+
+                    break;
+                case "subsystem_bluetooth_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SubsystemRegistryKeys.BLUETOOTH_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+
+                    if (!nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, organizationId, null)) {
+                        return Response.status(Response.Status.FORBIDDEN).build();
+                    }
+
+                    break;
+            }
+
+            nzyme.getDatabaseCoreRegistry().setValue(c.getKey(), c.getValue().toString(), organizationId, tenantId);
+        }
 
         return Response.ok().build();
     }
