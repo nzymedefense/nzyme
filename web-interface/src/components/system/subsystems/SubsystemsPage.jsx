@@ -9,8 +9,12 @@ export default function SubsystemsPage() {
   return (
     <div>
       <div className="row">
-        <div className="col-md-12">
+        <div className="col-md-10">
           <h1>Subsystems</h1>
+        </div>
+
+        <div className="col-md-2">
+          <a href="https://go.nzyme.org/subsystems" className="float-end btn btn-secondary">Help</a>
         </div>
       </div>
 
