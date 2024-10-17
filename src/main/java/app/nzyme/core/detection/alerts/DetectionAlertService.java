@@ -193,23 +193,38 @@ public class DetectionAlertService {
         );
     }
 
+    private String buildSubsystemSelectorFragment(@Nullable Subsystem subsystem) {
+        if (subsystem != null) {
+            switch (subsystem) {
+                case DOT11 -> { return "subsystem = 'DOT11'"; }
+                case ETHERNET -> { return "subsystem = 'ETHERNET'"; }
+                case BLUETOOTH -> { return"subsystem = 'BLUETOOTH'"; }
+                default -> { return "1=1"; }
+            }
+        } else {
+            return "1=1";
+        }
+    }
 
     public List<DetectionAlertEntry> findAllAlerts(@Nullable UUID organizationId,
                                                    @Nullable UUID tenantId,
+                                                   @Nullable Subsystem subsystem,
                                                    int limit,
                                                    int offset) {
+        String subsystemSelector = buildSubsystemSelectorFragment(subsystem);
+
         return nzyme.getDatabase().withHandle(handle -> {
             Query query;
             if (organizationId == null && tenantId == null) {
                 // Super Admin.
-                query = handle.createQuery("SELECT * FROM detection_alerts ORDER BY last_seen DESC " +
-                                "LIMIT :limit OFFSET :offset")
+                query = handle.createQuery("SELECT * FROM detection_alerts WHERE " + subsystemSelector + " " +
+                                "ORDER BY last_seen DESC LIMIT :limit OFFSET :offset")
                         .bind("limit", limit)
                         .bind("offset", offset);
             } else if (organizationId != null && tenantId == null) {
                 // Organization Admin.
                 query = handle.createQuery("SELECT * FROM detection_alerts " +
-                                "WHERE organization_id = :organization_id " +
+                                "WHERE organization_id = :organization_id AND " + subsystemSelector + " " +
                                 "ORDER BY last_seen DESC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("limit", limit)
@@ -217,7 +232,8 @@ public class DetectionAlertService {
             } else {
                 // Tenant User.
                 query = handle.createQuery("SELECT * FROM detection_alerts " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "WHERE organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id AND " + subsystemSelector + " " +
                                 "ORDER BY last_seen DESC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -241,21 +257,24 @@ public class DetectionAlertService {
         );
     }
 
-    public long countAlerts(UUID organizationId, UUID tenantId) {
+    public long countAlerts(UUID organizationId, UUID tenantId, @Nullable Subsystem subsystem) {
+        String subsystemSelector = buildSubsystemSelectorFragment(subsystem);
+
         return nzyme.getDatabase().withHandle(handle -> {
             Query query;
             if (organizationId == null && tenantId == null) {
                 // Super Admin.
-                query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts");
+                query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts WHERE " + subsystemSelector);
             } else if (organizationId != null && tenantId == null) {
                 // Organization Admin.
                 query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts " +
-                                "WHERE organization_id = :organization_id")
+                                "WHERE organization_id = :organization_id AND " + subsystemSelector)
                         .bind("organization_id", organizationId);
             } else {
                 // Tenant User.
                 query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND " + subsystemSelector)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId);
             }
@@ -264,26 +283,28 @@ public class DetectionAlertService {
         });
     }
 
-    public long countActiveAlerts(UUID organizationId, UUID tenantId) {
+    public long countActiveAlerts(UUID organizationId, UUID tenantId, @Nullable Subsystem subsystem) {
+        String subsystemSelector = buildSubsystemSelectorFragment(subsystem);
+
         return nzyme.getDatabase().withHandle(handle -> {
             Query query;
             if (organizationId == null && tenantId == null) {
                 // Super Admin.
                 query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts " +
-                                "WHERE is_resolved = false AND last_seen > :cutoff")
+                                "WHERE is_resolved = false AND last_seen > :cutoff AND " + subsystemSelector)
                         .bind("cutoff", DateTime.now().minusMinutes(ACTIVE_THRESHOLD_MINUTES));
             } else if (organizationId != null && tenantId == null) {
                 // Organization Admin.
                 query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts " +
                                 "WHERE organization_id = :organization_id " +
-                                "AND is_resolved = false AND last_seen > :cutoff")
+                                "AND is_resolved = false AND last_seen > :cutoff AND " + subsystemSelector)
                         .bind("organization_id", organizationId)
                         .bind("cutoff", DateTime.now().minusMinutes(ACTIVE_THRESHOLD_MINUTES));
             } else {
                 // Tenant User.
                 query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
-                                "AND is_resolved = false AND last_seen > :cutoff")
+                                "AND is_resolved = false AND last_seen > :cutoff AND " + subsystemSelector)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("cutoff", DateTime.now().minusMinutes(ACTIVE_THRESHOLD_MINUTES));

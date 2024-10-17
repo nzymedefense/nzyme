@@ -229,7 +229,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         if (user.get().isSuperAdmin() || user.get().isOrganizationAdmin() || userPermissions.contains("alerts_view")) {
             hasActiveAlerts = nzyme.getDetectionAlertService().countActiveAlerts(
                     authenticatedUser.getOrganizationId(),
-                    authenticatedUser.getTenantId()
+                    authenticatedUser.getTenantId(),
+                    null
             ) > 0;
         }
 

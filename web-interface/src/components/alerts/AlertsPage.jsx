@@ -29,11 +29,11 @@ function AlertsPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-10">
+          <div className="col-10">
             <h1>Alerts</h1>
           </div>
 
-          <div className="col-md-2">
+          <div className="col-2">
             <a href="https://go.nzyme.org/detection-alerts" className="btn btn-secondary float-end">Help</a>
           </div>
         </div>

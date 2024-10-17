@@ -57,6 +57,7 @@ public class AlertsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_view" })
     public Response findAll(@Context SecurityContext sc,
+                            @QueryParam("subsystem") @Nullable String subsystemParam,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
@@ -66,21 +67,34 @@ public class AlertsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
+        Subsystem subsystem = null;
+        if (subsystemParam != null) {
+            try {
+                subsystem = Subsystem.valueOf(subsystemParam.toUpperCase());
+            } catch(IllegalArgumentException e) {
+                LOG.warn("Unknown subsystem.");
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
+
         List<DetectionAlertEntry> alerts = nzyme.getDetectionAlertService().findAllAlerts(
                 authenticatedUser.getOrganizationId(),
                 authenticatedUser.getTenantId(),
+                subsystem,
                 limit,
                 offset
         );
 
         long total = nzyme.getDetectionAlertService().countAlerts(
                 authenticatedUser.getOrganizationId(),
-                authenticatedUser.getTenantId()
+                authenticatedUser.getTenantId(),
+                subsystem
         );
 
         long totalActive = nzyme.getDetectionAlertService().countActiveAlerts(
                 authenticatedUser.getOrganizationId(),
-                authenticatedUser.getTenantId()
+                authenticatedUser.getTenantId(),
+                subsystem
         );
 
         List<DetectionAlertDetailsResponse> responsesList = Lists.newArrayList();
