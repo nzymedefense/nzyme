@@ -20,6 +20,7 @@ package app.nzyme.core.rest.authentication;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.db.SessionEntry;
+import app.nzyme.core.subsystems.Subsystem;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.net.HttpHeaders;
@@ -134,13 +135,40 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
                 return;
             }
 
+            String requestPath = requestContext.getUriInfo().getPath();
+
+            // Check if we have access to potential subsystem.
+            if (requestPath.startsWith("api/ethernet")
+                    && !nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, user.get().organizationId(), user.get().tenantId())) {
+                LOG.debug("Blocking access to disabled subsystem at [{}] for user [{}].",
+                        requestPath, user.get().uuid());
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+                return;
+            }
+
+            if (requestPath.startsWith("api/dot11")
+                    && !nzyme.getSubsystems().isEnabled(Subsystem.DOT11, user.get().organizationId(), user.get().tenantId())) {
+                LOG.debug("Blocking access to disabled subsystem at [{}] for user [{}].",
+                        requestPath, user.get().uuid());
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+                return;
+            }
+
+            if (requestPath.startsWith("api/bluetooth")
+                    && !nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, user.get().organizationId(), user.get().tenantId())) {
+                LOG.debug("Blocking access to disabled subsystem at [{}] for user [{}].",
+                        requestPath, user.get().uuid());
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+                return;
+            }
+
             // Check if we have the permissions required by resource.
             switch (resourcePermissionLevel) {
                 case SUPERADMINISTRATOR:
                     if (!user.get().isSuperAdmin()) {
                         LOG.warn("User <{}> requested resource [/{}] which requires super administrator permissions " +
                                         "but is not super administrator.",
-                                user.get().email(), requestContext.getUriInfo().getPath());
+                                user.get().email(), requestPath);
                         abortWithUnauthorized(requestContext);
                         return;
                     }
@@ -149,7 +177,7 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
                     if (!user.get().isSuperAdmin() && !user.get().isOrganizationAdmin()) {
                         LOG.warn("User <{}> requested resource [/{}] which requires organization administrator permissions " +
                                         "but is not organization administrator.",
-                                user.get().email(), requestContext.getUriInfo().getPath());
+                                user.get().email(), requestPath);
                         abortWithUnauthorized(requestContext);
                         return;
                     }
@@ -165,7 +193,7 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
                 for (String requiredPermission : requiredFeaturePermissions.get()) {
                     if(!userPermissions.contains(requiredPermission)) {
                         LOG.warn("User <{}> requested resource [/{}] which requires missing feature permission [{}].",
-                                user.get().email(), requestContext.getUriInfo().getPath(), requiredPermission);
+                                user.get().email(), requestPath, requiredPermission);
                         abortWithUnauthorized(requestContext);
                         return;
                     }
