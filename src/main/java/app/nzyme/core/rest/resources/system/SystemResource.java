@@ -204,6 +204,9 @@ public class SystemResource {
     @Path("/subsystems/configuration")
     public Response getSubsystemsConfiguration() {
         SubsystemsConfigurationResponse response = SubsystemsConfigurationResponse.create(
+                true,
+                true,
+                true,
                 ConfigurationEntryResponse.create(
                         SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
                         "Ethernet is enabled",

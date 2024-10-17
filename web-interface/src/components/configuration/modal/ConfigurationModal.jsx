@@ -30,6 +30,10 @@ function ConfigurationModal (props) {
   const organizationId = props.organizationId;
   const tenantId = props.tenantId;
 
+  // Optional.
+  const disabled = props.disabled;
+  const disabledTitle = props.disabledTitle;
+
   useEffect(() => {
     if (changeWarning && !changeWarningAck) {
       setFormDisabled(true)
@@ -127,6 +131,10 @@ function ConfigurationModal (props) {
     setInputDisabled(false)
     setLocalRevision(prevRev => prevRev + 1)
   }, [setLocalRevision])
+
+  if (disabled) {
+    return <span className="text-muted" title={disabledTitle ? disabledTitle : "Value cannot be edited."}>Edit</span>
+  }
 
   return (
         <React.Fragment>

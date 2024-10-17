@@ -61,11 +61,13 @@ export default function SubsystemsConfiguration(props) {
         </td>
         <td>
           <ConfigurationModal config={configuration.subsystem_ethernet_enabled}
+                              disabled={!configuration.subsystem_ethernet_available}
+                              disabledTitle={"Subsystem is disabled system-wide."}
                               setGlobalConfig={setConfiguration}
                               setLocalRevision={setLocalRevision}
                               organizationId={organizationUUID}
                               tenantId={tenantUUID}
-                              dbUpdateCallback={dbUpdateCallback}/>
+                              dbUpdateCallback={dbUpdateCallback} />
         </td>
       </tr>
       <tr>
@@ -77,6 +79,8 @@ export default function SubsystemsConfiguration(props) {
         </td>
         <td>
           <ConfigurationModal config={configuration.subsystem_dot11_enabled}
+                              disabled={!configuration.subsystem_dot11_available}
+                              disabledTitle={"Subsystem is disabled system-wide."}
                               setGlobalConfig={setConfiguration}
                               setLocalRevision={setLocalRevision}
                               organizationId={organizationUUID}
@@ -93,6 +97,8 @@ export default function SubsystemsConfiguration(props) {
         </td>
         <td>
           <ConfigurationModal config={configuration.subsystem_bluetooth_enabled}
+                              disabled={!configuration.subsystem_bluetooth_available}
+                              disabledTitle={"Subsystem is disabled system-wide."}
                               setGlobalConfig={setConfiguration}
                               setLocalRevision={setLocalRevision}
                               organizationId={organizationUUID}

@@ -7,6 +7,15 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class SubsystemsConfigurationResponse {
 
+    @JsonProperty("subsystem_ethernet_available")
+    public abstract boolean ethernetAvailable();
+
+    @JsonProperty("subsystem_dot11_available")
+    public abstract boolean dot11Available();
+
+    @JsonProperty("subsystem_bluetooth_available")
+    public abstract boolean bluetoothAvailable();
+
     @JsonProperty("subsystem_ethernet_enabled")
     public abstract ConfigurationEntryResponse ethernetEnabled();
 
@@ -16,8 +25,11 @@ public abstract class SubsystemsConfigurationResponse {
     @JsonProperty("subsystem_bluetooth_enabled")
     public abstract ConfigurationEntryResponse bluetoothEnabled();
 
-    public static SubsystemsConfigurationResponse create(ConfigurationEntryResponse ethernetEnabled, ConfigurationEntryResponse dot11Enabled, ConfigurationEntryResponse bluetoothEnabled) {
+    public static SubsystemsConfigurationResponse create(boolean ethernetAvailable, boolean dot11Available, boolean bluetoothAvailable, ConfigurationEntryResponse ethernetEnabled, ConfigurationEntryResponse dot11Enabled, ConfigurationEntryResponse bluetoothEnabled) {
         return builder()
+                .ethernetAvailable(ethernetAvailable)
+                .dot11Available(dot11Available)
+                .bluetoothAvailable(bluetoothAvailable)
                 .ethernetEnabled(ethernetEnabled)
                 .dot11Enabled(dot11Enabled)
                 .bluetoothEnabled(bluetoothEnabled)
@@ -30,6 +42,12 @@ public abstract class SubsystemsConfigurationResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder ethernetAvailable(boolean ethernetAvailable);
+
+        public abstract Builder dot11Available(boolean dot11Available);
+
+        public abstract Builder bluetoothAvailable(boolean bluetoothAvailable);
+
         public abstract Builder ethernetEnabled(ConfigurationEntryResponse ethernetEnabled);
 
         public abstract Builder dot11Enabled(ConfigurationEntryResponse dot11Enabled);

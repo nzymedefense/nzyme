@@ -171,7 +171,15 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        // Check if subsystems are enabled system-wide.
+        boolean ethernetAvailable = nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, null, null);
+        boolean dot11Available = nzyme.getSubsystems().isEnabled(Subsystem.DOT11, null, null);
+        boolean bluetoothAvailable = nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, null, null);
+
         SubsystemsConfigurationResponse response = SubsystemsConfigurationResponse.create(
+                ethernetAvailable,
+                dot11Available,
+                bluetoothAvailable,
                 ConfigurationEntryResponse.create(
                         SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
                         "Ethernet is enabled",
@@ -674,7 +682,15 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        // Check if subsystems are enabled for organization.
+        boolean ethernetAvailable = nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, organizationId, null);
+        boolean dot11Available = nzyme.getSubsystems().isEnabled(Subsystem.DOT11, organizationId, null);
+        boolean bluetoothAvailable = nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, organizationId, null);
+
         SubsystemsConfigurationResponse response = SubsystemsConfigurationResponse.create(
+                ethernetAvailable,
+                dot11Available,
+                bluetoothAvailable,
                 ConfigurationEntryResponse.create(
                         SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
                         "Ethernet is enabled",
