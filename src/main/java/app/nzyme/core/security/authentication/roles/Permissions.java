@@ -19,25 +19,6 @@ public class Permissions {
                 "Allows user to view triggered alerts across data from all taps of tenant the user belongs to.",
                 false
         ));
-        put("reports_manage", Permission.create(
-                "reports_manage",
-                "Manage Reports",
-                "Allows user to create, edit and delete report configurations across data from all taps of " +
-                        "tenant the user belongs to.",
-                false
-        ));
-        put("reports_view", Permission.create(
-                "reports_view",
-                "View Reports",
-                "Allows user to view generated reports across data from all taps of tenant the user belongs to.",
-                false
-        ));
-        put("retrospective_view", Permission.create(
-                "retrospective_view",
-                "View/Query Retrospective",
-                "Allows user to use the Retrospective feature using data from all taps the user has access to.",
-                true
-        ));
         put("dot11_monitoring_manage", Permission.create(
                 "dot11_monitoring_manage",
                 "Manage Monitored WiFi Networks",

@@ -5,7 +5,7 @@ import MonitoringService from '../../../../services/MonitoringService'
 import LoadingSpinner from '../../../misc/LoadingSpinner'
 import ConfigurationModal from '../../../configuration/modal/ConfigurationModal'
 import EncryptedConfigurationValue from '../../../configuration/EncryptedConfigurationValue'
-import IncompleteConfigurationWarning from '../../../retro/configuration/IncompleteConfigurationWarning'
+import IncompleteConfigurationWarning from "../../../misc/IncompleteConfigurationWarning";
 
 const monitoringService = new MonitoringService()
 

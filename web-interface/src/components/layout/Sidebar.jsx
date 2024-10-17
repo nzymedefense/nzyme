@@ -130,37 +130,6 @@ function Sidebar(props) {
                 show={user.is_orgadmin || user.is_superadmin}/>
           </SidebarSubmenu>
 
-          <SidebarSubmenu title="Retrospective"
-                          subhref="/retro"
-                          icon={<i className="sidebar-icon fa-solid fa-box-archive"/>}
-                          show={userHasPermission(user, "retrospective_view")}>
-            <NavigationLink
-                href={ApiRoutes.RETRO.SEARCH.INDEX}
-                title="Search"
-                icon={<i className="sidebar-icon fa-solid fa-magnifying-glass"/>}/>
-
-            <NavigationLink
-                href={ApiRoutes.RETRO.SERVICE_SUMMARY}
-                title="Service Summary"
-                icon={<i className="sidebar-icon fa-solid fa-gear"/>}/>
-
-            <NavigationLink
-                href={ApiRoutes.RETRO.CONFIGURATION}
-                title="Configuration"
-                icon={<i className="sidebar-icon fa-solid fa-wrench"/>}/>
-          </SidebarSubmenu>
-
-          <SidebarSubmenu title="Reporting"
-                          subhref="/reporting"
-                          icon={<i className="sidebar-icon fa-solid fa-file-circle-check"/>}
-                          show={userHasPermission(user, "reports_manage")
-                              || userHasPermission(user, "reports_view")}>
-            <NavigationLink
-                href={ApiRoutes.REPORTING.INDEX}
-                title="Reporting"
-                icon={<i className="sidebar-icon fa-solid fa-file-circle-check"/>}/>
-          </SidebarSubmenu>
-
           <SidebarSubmenu title="System"
                           subhref="/system"
                           icon={<i className="sidebar-icon fa-solid fa-screwdriver-wrench"/>}

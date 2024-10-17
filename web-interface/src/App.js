@@ -24,10 +24,6 @@ import TapsPage from './components/system/taps/TapsPage'
 import TapDetailsPage from './components/system/taps/details/TapDetailsPage'
 import TapMetricsDetailsPage from './components/system/taps/details/metrics/TapMetricsDetailsPage'
 import DNSOverviewPage from './components/ethernet/dns/DNSOverviewPage'
-import SearchPage from './components/retro/SearchPage'
-import ServiceSummaryPage from './components/retro/servicesummary/ServiceSummaryPage'
-import RetroConfigurationPage from './components/retro/configuration/RetroConfigurationPage'
-import MissingRetroPluginPage from './components/retro/MissingRetroPluginPage'
 import CryptoSummaryPage from './components/system/crypto/CryptoSummaryPage'
 import MonitoringPage from './components/system/monitoring/MonitoringPage'
 import PrometheusMetricsPage from './components/system/monitoring/prometheus/PrometheusMetricsPage'
@@ -87,7 +83,6 @@ import DatabasePage from "./components/system/database/DatabasePage";
 import SSIDDetailsPage from "./components/dot11/bssids/ssids/SSIDDetailsPage";
 import ClientsPage from "./components/dot11/clients/ClientsPage";
 import BeaconsPage from "./components/ethernet/beacons/BeaconsPage";
-import ReportingPage from "./components/reporting/ReportingPage";
 import ClientDetailsPage from "./components/dot11/clients/ClientDetailsPage";
 import BSSIDDetailsPage from "./components/dot11/bssids/BSSIDDetailsPage";
 import Dot11OverviewPage from "./components/dot11/Dot11OverviewPage";
@@ -141,7 +136,6 @@ import EditProbeRequestPage from "./components/dot11/monitoring/probereq/EditPro
 import SSIDMonitoringPage from "./components/dot11/monitoring/ssid/SSIDMonitoringPage";
 import MonitoredClientsConfigurationPage from "./components/dot11/monitoring/clients/MonitoredClientsConfigurationPage";
 import SubsystemsPage from "./components/system/subsystems/SubsystemsPage";
-import WithSubsystem from "./components/misc/WithSubsystem";
 import ProtectedRoute from "./components/misc/ProtectedRoute";
 import {userHasSubsystem} from "./util/Tools";
 
@@ -484,14 +478,6 @@ function App() {
                             <Route path={ApiRoutes.ALERTS.DETAILS(':uuid')} element={<AlertDetailsPage />}/>
                             <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.INDEX} element={<AlertSubscriptionsPage />}/>
                             <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(':organizationId', ':detectionName')} element={<AlertSubscriptionDetailsPage />}/>
-
-                            { /* Retro. */ }
-                            <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>
-                            <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={plugins.includes('retroplugin') ? <ServiceSummaryPage /> : <MissingRetroPluginPage /> }/>
-                            <Route path={ApiRoutes.RETRO.CONFIGURATION} element={plugins.includes('retroplugin') ? <RetroConfigurationPage /> : <MissingRetroPluginPage /> }/>
-
-                            { /* Reporting. */}
-                            <Route path={ApiRoutes.REPORTING.INDEX} element={<ReportingPage />}/>
 
                             { /* 404. */}
                             <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>

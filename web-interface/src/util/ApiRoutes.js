@@ -124,12 +124,6 @@ const ApiRoutes = {
   SEARCH: {
     RESULTS: '/search/results'
   },
-  REPORTING: {
-    INDEX: '/reporting',
-    SCHEDULE: '/reporting/schedule',
-    DETAILS: name => `/reporting/show/${name}`,
-    EXECUTION_LOG_DETAILS: (name, executionId) => `/reporting/show/${name}/execution/show/${executionId}`
-  },
   ETHERNET: {
     OVERVIEW: '/ethernet/overview',
     L4: {
@@ -215,13 +209,6 @@ const ApiRoutes = {
       EDIT: (uuid, organizationId, tenantId) => `/context/macs/organizations/show/${organizationId}/tenants/show/${tenantId}/show/${uuid}/edit`,
       CREATE: '/context/macs/create'
     }
-  },
-  RETRO: {
-    SEARCH: {
-      INDEX: '/retro/search'
-    },
-    SERVICE_SUMMARY: '/retro/servicesummary',
-    CONFIGURATION: '/retro/configuration'
   },
   NOT_FOUND: '/notfound',
   ALERTS: {
