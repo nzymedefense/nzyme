@@ -6,6 +6,7 @@ import UserProfileBlock from "./UserProfileBlock";
 
 import {AlertContext, UserContext} from "../../App";
 import {userHasPermission, userHasSubsystem} from "../../util/Tools";
+import AlertedHealthIndicatorIcon from "../misc/AlertedHealthIndicatorIcon";
 
 function Sidebar(props) {
 
@@ -132,7 +133,7 @@ function Sidebar(props) {
 
           <SidebarSubmenu title="System"
                           subhref="/system"
-                          icon={<i className="sidebar-icon fa-solid fa-screwdriver-wrench"/>}
+                          icon={<AlertedHealthIndicatorIcon icon="fa-solid fa-screwdriver-wrench" healthIndicatorLevel={alerts.health_indicator_level} />}
                           show={user.is_orgadmin || user.is_superadmin}>
             <NavigationLink
                 show={user.is_superadmin}
@@ -176,7 +177,7 @@ function Sidebar(props) {
                 show={user.is_superadmin}
                 href={ApiRoutes.SYSTEM.HEALTH.INDEX}
                 title="Health Console"
-                icon={<i className="sidebar-icon fa-solid fa-laptop-medical"/>}/>
+                icon={<AlertedHealthIndicatorIcon icon="fa-solid fa-laptop-medical" healthIndicatorLevel={alerts.health_indicator_level} />}/>
             <NavigationLink
                 show={user.is_superadmin}
                 href={ApiRoutes.SYSTEM.MONITORING.INDEX}
