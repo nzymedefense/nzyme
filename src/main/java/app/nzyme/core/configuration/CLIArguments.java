@@ -30,6 +30,12 @@ public class CLIArguments {
     @Parameter(names={"--trace", "-t"})
     private boolean traceMode;
 
+    @Parameter(names={"--bootstrap-test", "-b"})
+    private boolean bootstrapTestMode;
+
+    @Parameter(names={"--no-pid-check", "-p"})
+    private boolean noPidCheckMode;
+
     public String getConfigFilePath() {
         return configFilePath;
     }
@@ -41,4 +47,13 @@ public class CLIArguments {
     public boolean isTraceMode() {
         return traceMode;
     }
+
+    public boolean isBootstrapTestMode() {
+        return bootstrapTestMode;
+    }
+
+    public boolean isNoPidCheckMode() {
+        return noPidCheckMode;
+    }
+
 }

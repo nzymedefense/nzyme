@@ -35,11 +35,13 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Main {
 
     private static final Logger LOG = LogManager.getLogger(Main.class);
 
+    private static final int SUCCESS = 0;
     private static final int FAILURE = 1;
 
     public static void main(String[] argv) {
@@ -54,12 +56,31 @@ public class Main {
                 .parse(argv);
 
         // Override log level if requested.
-        if(cliArguments.isDebugMode()) {
+        if (cliArguments.isDebugMode()) {
             Logging.setRootLoggerLevel(Level.DEBUG);
         }
 
-        if(cliArguments.isTraceMode()) {
+        if (cliArguments.isTraceMode()) {
             Logging.setRootLoggerLevel(Level.TRACE);
+        }
+
+        // Bootstrap test mode logging config if requested.
+        if (cliArguments.isBootstrapTestMode()) {
+            Logging.removeAllAppenders();
+            Logging.appendConsoleLogger();
+            LOG.warn("In bootstrap test mode.");
+        }
+
+        // Check if nzyme is already running.
+        if (!cliArguments.isNoPidCheckMode()) {
+            try {
+                if (PidFile.isAlreadyRunning()) {
+                    LOG.error("Nzyme is already running. Exiting.");
+                    System.exit(FAILURE);
+                }
+            } catch (IOException e) {
+                LOG.error("Could not check if nzyme is already running.", e);
+            }
         }
 
         // Parse configuration.
@@ -115,6 +136,11 @@ public class Main {
             Thread.currentThread().setName("shutdown-hook");
             nzyme.shutdown();
         }));
+
+        if (cliArguments.isBootstrapTestMode()) {
+            LOG.warn("Finished bootstrap and in bootstrap test mode. Exiting.");
+            System.exit(SUCCESS);
+        }
 
         while(true) {
             // https://www.youtube.com/watch?v=Vmb1tqYqyII#t=47s
