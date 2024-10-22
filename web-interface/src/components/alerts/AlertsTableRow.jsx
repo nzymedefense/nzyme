@@ -4,21 +4,25 @@ import moment from "moment";
 import Subsystem from "../misc/Subsystem";
 import AlertActiveIndicator from "./AlertActiveIndicator";
 import ApiRoutes from "../../util/ApiRoutes";
+import RenderConditionally from "../misc/RenderConditionally";
 
 function AlertsTableRow(props) {
 
   const alert = props.alert;
   const onSelect = props.onSelect;
   const isSelected = props.isSelected;
+  const hideControls = props.hideControls ? props.hideControls : false;
 
   return (
       <tr>
-        <td>
-          <input className="form-check-input"
-                 type="checkbox"
-                 checked={isSelected}
-                 onChange={() => onSelect(alert.id)} />
-        </td>
+        <RenderConditionally render={!hideControls}>
+          <td>
+            <input className="form-check-input"
+                   type="checkbox"
+                   checked={isSelected}
+                   onChange={() => onSelect(alert.id)} />
+          </td>
+        </RenderConditionally>
         <td>
           <AlertActiveIndicator active={alert.is_active} />
         </td>

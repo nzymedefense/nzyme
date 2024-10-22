@@ -19,6 +19,15 @@ small {
 
 .bg-danger {
     background-color: #EF233C !important;
+    color: #fff;
+}
+
+.bg-danger a {
+    color: #fff;
+}
+
+.bg-danger a:hover {
+    color: #b1b1b1;
 }
 
 .text-warning {
@@ -348,6 +357,10 @@ div.card div.card-number div.value {
 
 div.card div.card-number div.value-loading {
     text-align: center;
+}
+
+div.card div.card-number a {
+    text-decoration: none;
 }
 
 dl.retro-servicesummary-topmetrics dt {

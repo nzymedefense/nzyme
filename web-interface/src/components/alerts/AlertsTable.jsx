@@ -9,6 +9,7 @@ import {notify} from "react-notify-toast";
 import AlertActionMultiSelector from "./AlertActionMultiSelector";
 import {userHasPermission} from "../../util/Tools";
 import {UserContext} from "../../App";
+import RenderConditionally from "../misc/RenderConditionally";
 
 const detectionAlertsService = new DetectionAlertsService();
 
@@ -16,17 +17,19 @@ const loadData = function(setAlerts, page, perPage) {
   detectionAlertsService.findAllAlerts(setAlerts, perPage, (page-1)*perPage);
 }
 
-function AlertsTable() {
+function AlertsTable(props) {
 
   const user = useContext(UserContext);
 
+  const perPage = props.perPage ? props.perPage : 25;
+  const hideControls = props.hideControls ? props.hideControls : false;
+
   const [alerts, setAlerts] = useState(null);
-  const [isAutoRefresh, setIsAutoRefresh] = useState(true);
+  const [isAutoRefresh, setIsAutoRefresh] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [allRowsSelected, setAllRowsSelected] = useState(false);
 
-  const perPage = 25;
   const [page, setPage] = useState(1);
 
   const [revision, setRevision] = useState(0);
@@ -120,17 +123,19 @@ function AlertsTable() {
         <div className="mb-2">
           <div className="float-start">
             <AlertActionMultiSelector
-                show={userHasPermission(user, "alerts_manage")}
+                show={userHasPermission(user, "alerts_manage") && !hideControls}
                 selectedRows={selectedRows}
                 onDeleteSelected={deleteSelected}
                 onResolveSelected={resolveSelected}/>
           </div>
 
-          <div className="float-end">
-            <AutoRefreshSelector isAutoRefresh={isAutoRefresh}
-                                 setIsAutoRefresh={setIsAutoRefresh}
-                                 lastUpdated={lastUpdated}/>
-          </div>
+          <RenderConditionally render={!hideControls}>
+            <div className="float-end">
+              <AutoRefreshSelector isAutoRefresh={isAutoRefresh}
+                                   setIsAutoRefresh={setIsAutoRefresh}
+                                   lastUpdated={lastUpdated}/>
+            </div>
+          </RenderConditionally>
 
           <div style={{clear: "both"}}/>
         </div>
@@ -138,12 +143,14 @@ function AlertsTable() {
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
-            <th>
-              <input className="form-check-input"
-                     type="checkbox"
-                     checked={allRowsSelected}
-                     onChange={handleAllRowsSelected}/>
-            </th>
+            <RenderConditionally render={!hideControls}>
+              <th>
+                <input className="form-check-input"
+                       type="checkbox"
+                       checked={allRowsSelected}
+                       onChange={handleAllRowsSelected}/>
+              </th>
+            </RenderConditionally>
             <th>&nbsp;</th>
             <th>Details</th>
             <th>Type</th>
@@ -155,6 +162,7 @@ function AlertsTable() {
           <tbody>
           {alerts.alerts.map(function(alert, i){
             return <AlertsTableRow key={"alert-" + i}
+                                   hideControls={hideControls}
                                    alert={alert}
                                    onSelect={onRowSelect}
                                    isSelected={selectedRows.includes(alert.id)} />
