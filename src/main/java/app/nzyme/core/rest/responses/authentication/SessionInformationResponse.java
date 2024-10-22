@@ -46,7 +46,11 @@ public abstract class SessionInformationResponse {
     @JsonProperty("has_active_alerts")
     public abstract boolean hasActiveAlerts();
 
-    public static SessionInformationResponse create(SessionUserInformationDetailsResponse user, boolean mfaValid, boolean mfaSetup, DateTime mfaEntryExpiresAt, BrandingResponse branding, boolean hasActiveAlerts) {
+    @JsonProperty("health_indicator_level")
+    @Nullable
+    public abstract String healthIndicatorLevel();
+
+    public static SessionInformationResponse create(SessionUserInformationDetailsResponse user, boolean mfaValid, boolean mfaSetup, DateTime mfaEntryExpiresAt, BrandingResponse branding, boolean hasActiveAlerts, String healthIndicatorLevel) {
         return builder()
                 .user(user)
                 .mfaValid(mfaValid)
@@ -54,6 +58,7 @@ public abstract class SessionInformationResponse {
                 .mfaEntryExpiresAt(mfaEntryExpiresAt)
                 .branding(branding)
                 .hasActiveAlerts(hasActiveAlerts)
+                .healthIndicatorLevel(healthIndicatorLevel)
                 .build();
     }
 
@@ -74,6 +79,8 @@ public abstract class SessionInformationResponse {
         public abstract Builder branding(BrandingResponse branding);
 
         public abstract Builder hasActiveAlerts(boolean hasActiveAlerts);
+
+        public abstract Builder healthIndicatorLevel(String healthIndicatorLevel);
 
         public abstract SessionInformationResponse build();
     }

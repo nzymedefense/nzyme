@@ -22,6 +22,7 @@ import app.nzyme.core.branding.BrandingRegistryKeys;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
+import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.authentication.PreMFASecured;
@@ -245,6 +246,35 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             subsystems.add("bluetooth");
         }
 
+        String healthIndicatorLevel = null;
+        if (user.get().isSuperAdmin()) {
+            boolean hasRed = false;
+            boolean hasOrange = false;
+
+            Optional<List<IndicatorStatus>> indicators = nzyme.getHealthMonitor().getIndicatorStatus();
+            if (indicators.isPresent()) {
+                for (IndicatorStatus status : indicators.get()) {
+                    if (status.active()) {
+                        if (status.resultLevel().equals("RED")) {
+                            hasRed = true;
+                        }
+
+                        if (status.resultLevel().equals("ORANGE")) {
+                            hasOrange = true;
+                        }
+                    }
+                }
+            }
+
+            if (hasRed) {
+                healthIndicatorLevel = "RED";
+            } else if (hasOrange) {
+                healthIndicatorLevel = "ORANGE";
+            } else {
+                healthIndicatorLevel = "GREEN";
+            }
+        }
+
         return Response.ok(SessionInformationResponse.create(
                 SessionUserInformationDetailsResponse.create(
                         u.uuid(),
@@ -263,7 +293,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                 user.get().mfaComplete(),
                 mfaExpiresAt,
                 BrandingResponse.create(sidebarTitleText, sidebarSubtitleText),
-                hasActiveAlerts
+                hasActiveAlerts,
+                healthIndicatorLevel
         )).build();
     }
 

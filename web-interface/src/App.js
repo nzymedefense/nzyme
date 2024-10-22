@@ -181,7 +181,10 @@ function App() {
         setMfaEntryExpiresAt(sessionInfo.mfa_entry_expires_at);
         setUserInformation(sessionInfo.user);
         setBranding(sessionInfo.branding);
-        setAlertInformation({has_active_alerts: sessionInfo.has_active_alerts})
+        setAlertInformation({
+          has_active_alerts: sessionInfo.has_active_alerts,
+          health_indicator_level: sessionInfo.health_indicator_level
+        });
 
         callback();
       }, function() {
