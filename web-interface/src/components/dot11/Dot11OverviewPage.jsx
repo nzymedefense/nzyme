@@ -43,9 +43,9 @@ export default function Dot11OverviewPage() {
           <div className="col-3">
             <NumberCard title="Active Alerts"
                         href={ApiRoutes.ALERTS.INDEX}
-                        value={alerts.total_active}
+                        value={alerts ? alerts.total_active : 0}
                         numberFormat="0,0"
-                        className={alerts.alerts.length > 0 ? "bg-danger" : null}/>
+                        className={alerts ? (alerts.alerts.length > 0 ? "bg-danger" : null) : null}/>
           </div>
         </WithPermission>
 
