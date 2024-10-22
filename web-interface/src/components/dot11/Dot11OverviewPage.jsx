@@ -3,30 +3,54 @@ import DetectionAlertsService from "../../services/DetectionAlertsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import NumberCard from "../widgets/presentation/NumberCard";
 import {userHasPermission} from "../../util/Tools";
-import {UserContext} from "../../App";
+import {TapContext, UserContext} from "../../App";
 import WithPermission from "../misc/WithPermission";
 import ApiRoutes from "../../util/ApiRoutes";
 import AlertsTable from "../alerts/AlertsTable";
 import {Presets} from "../shared/timerange/TimeRange";
 import BSSIDAndSSIDChart from "./bssids/BSSIDAndSSIDChart";
 import DiscoHistogram from "./disco/DiscoHistogram";
+import Dot11Service from "../../services/Dot11Service";
+import MonitoredNetworkAlertStatusTable from "./monitoring/MonitoredNetworkAlertStatusTable";
+import Dot11OverviewMonitoredNetworkSummary from "./Dot11OverviewMonitoredNetworkSummary";
+import CardTitleWithControls from "../shared/CardTitleWithControls";
+import {disableTapSelector, enableTapSelector} from "../misc/TapSelector";
 
 const alertsService = new DetectionAlertsService();
+const dot11Service = new Dot11Service();
 
 export default function Dot11OverviewPage() {
 
+  const tapContext = useContext(TapContext);
   const user = useContext(UserContext);
 
   const [alerts, setAlerts] = useState(null);
+  const [monitoredNetworks, setMonitoredNetworks] = useState(null);
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
 
   useEffect(() => {
     if (userHasPermission(user, "alerts_view")) {
       alertsService.findAllAlerts(setAlerts, 10, 0, "DOT11");
     }
+
+    if (userHasPermission(user, "dot11_monitoring_manage")) {
+      dot11Service.findAllMonitoredSSIDs(setMonitoredNetworks);
+    }
   }, []);
 
-  if (userHasPermission(user, "alerts_view") && !alerts) {
+  if ((userHasPermission(user, "alerts_view") && !alerts) || (userHasPermission(user, "dot11_monitoring_manage") && !monitoredNetworks)) {
     return <LoadingSpinner />
+  }
+
+  const topRowColWidth = () => {
+    return userHasPermission(user, "alerts_view") ? 3 : 4;
   }
 
   return (
@@ -40,45 +64,51 @@ export default function Dot11OverviewPage() {
       <div className="row mt-3">
 
         <WithPermission permission="alerts_view">
-          <div className="col-3">
+          <div className={"col-" + topRowColWidth()}>
             <NumberCard title="Active Alerts"
-                        href={ApiRoutes.ALERTS.INDEX}
+                        internalLink={ApiRoutes.ALERTS.INDEX}
                         value={alerts ? alerts.total_active : 0}
                         numberFormat="0,0"
-                        className={alerts ? (alerts.alerts.length > 0 ? "bg-danger" : null) : null}/>
+                        fullHeight={true}
+                        className={(alerts ? (alerts.total_active > 0 ? "bg-danger" : null) : null)}/>
           </div>
         </WithPermission>
 
-        <div className="col-3">
+        <div className={"col-" + topRowColWidth()}>
           <div className="card">
             <div className="card-body">
-              <h3>Access Points (BSSIDs)</h3>
+              <CardTitleWithControls title="Access Points"
+                                     slim={true}
+                                     internalLink={ApiRoutes.DOT11.NETWORKS.BSSIDS} />
 
               <BSSIDAndSSIDChart parameter="bssid_count" timeRange={Presets.RELATIVE_HOURS_24}/>
             </div>
           </div>
         </div>
 
-        <div className="col-3">
+        <div className={"col-" + topRowColWidth()}>
           <div className="card">
             <div className="card-body">
-              <h3>Networks (SSIDs)</h3>
+              <CardTitleWithControls title="Networks"
+                                     slim={true}
+                                     internalLink={ApiRoutes.DOT11.NETWORKS.BSSIDS} />
 
               <BSSIDAndSSIDChart parameter="ssid_count" timeRange={Presets.RELATIVE_HOURS_24}/>
             </div>
           </div>
         </div>
 
-        <div className="col-3">
+        <div className={"col-" + topRowColWidth()}>
           <div className="card">
             <div className="card-body">
-              <h3>Global Disconnections</h3>
+              <CardTitleWithControls title="Disconnections"
+                                     slim={true}
+                                     internalLink={ApiRoutes.DOT11.DISCO.INDEX} />
 
-              <DiscoHistogram discoType="disconnection" timeRange={Presets.RELATIVE_HOURS_24} />
+              <DiscoHistogram discoType="disconnection" timeRange={Presets.RELATIVE_HOURS_24}/>
             </div>
           </div>
         </div>
-
       </div>
 
       <WithPermission permission="alerts_view">
@@ -86,7 +116,9 @@ export default function Dot11OverviewPage() {
           <div className="col-12">
             <div className="card">
               <div className="card-body">
-                <h3>All Alerts</h3>
+                <CardTitleWithControls title="All Alerts"
+                                       slim={true}
+                                       internalLink={ApiRoutes.ALERTS.INDEX} />
 
                 <AlertsTable perPage={5} hideControls={true}/>
               </div>
@@ -94,6 +126,10 @@ export default function Dot11OverviewPage() {
           </div>
         </div>
       </WithPermission>
+
+      {monitoredNetworks && monitoredNetworks.map((ssid, i) => {
+        return <Dot11OverviewMonitoredNetworkSummary uuid={ssid.uuid} />
+      })}
 
     </React.Fragment>
 )

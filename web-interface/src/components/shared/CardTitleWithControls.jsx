@@ -17,6 +17,9 @@ function CardTitleWithControls(props) {
   // Required if using help link.
   const helpLink = props.helpLink;
 
+  // Required if using internal link.
+  const internalLink = props.internalLink;
+
   // Required if using a refresh button.
   const refreshAction = props.refreshAction;
 
@@ -76,6 +79,31 @@ function CardTitleWithControls(props) {
     )
   }
 
+  const internalLinkButton = () => {
+    if (!internalLink) {
+      return null;
+    }
+
+    if (disabled) {
+      return (
+        <button className="btn card-title-option"
+                title="Navigate"
+                disabled={true}
+                onClick={(e) => {
+                  e.preventDefault();
+                }}>
+          <i className="fa-solid fa-diamond-turn-right"></i>
+        </button>
+      )
+    }
+
+    return (
+      <a href={internalLink} className="card-title-option" title="Navigate">
+        <i className="fa-solid fa-diamond-turn-right"></i>
+      </a>
+    )
+  }
+
   const refreshButton = () => {
     if (refreshAction) {
       return (
@@ -127,6 +155,7 @@ function CardTitleWithControls(props) {
 
           <div className="col-2 text-end">
             {timeRangeButton()}
+            {internalLinkButton()}
             {helpLinkButton()}
             {refreshButton()}
           </div>

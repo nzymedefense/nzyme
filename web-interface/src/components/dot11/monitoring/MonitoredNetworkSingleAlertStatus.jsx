@@ -15,7 +15,7 @@ function MonitoredNetworkSingleAlertStatus(props) {
       return <i className="fa-solid fa-thumbs-up text-success" title="No active alerts." />
     }
   } else {
-    return <i className="fa-solid fa-triangle-exclamation text-warning"
+    return <i className="fa-solid fa-triangle-exclamation text-muted"
               title={disabledTitle ? disabledTitle : "Monitoring is disabled."} />
   }
 

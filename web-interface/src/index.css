@@ -363,6 +363,18 @@ div.card div.card-number a {
     text-decoration: none;
 }
 
+div.card div.card-number div.value a {
+    color: #000;
+}
+
+div.card div.bg-danger div.value a {
+    color: #fff;
+}
+
+div.card-full-height {
+    height: 100%;
+}
+
 dl.retro-servicesummary-topmetrics dt {
     float: left;
 }
@@ -1021,6 +1033,10 @@ a.card-title-option {
     color: #000;
     font-size: 15px;
     padding-right: 7px;
+}
+
+.bg-danger a.card-title-option {
+    color: #fff;
 }
 
 span.applied-timerange {

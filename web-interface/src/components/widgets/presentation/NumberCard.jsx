@@ -10,8 +10,9 @@ function NumberCard (props) {
   const value = props.value;
   const numberFormat = props.numberFormat;
   const helpLink = props.helpLink;
+  const internalLink = props.internalLink;
   const className = props.className;
-  const href = props.href;
+  const fullHeight = props.fullHeight;
 
   const timeRange = props.timeRange;
   const setTimeRange = props.setTimeRange;
@@ -19,14 +20,6 @@ function NumberCard (props) {
 
   const format = () => {
     return numeral(value).format(numberFormat)
-  }
-
-  const element = () => {
-    if (href) {
-      return <a href={href}>{format()}</a>
-    } else {
-      return format();
-    }
   }
 
   if (value === null || value === undefined) {
@@ -38,18 +31,17 @@ function NumberCard (props) {
   }
 
   return (
-      <div className="card">
+      <div className={"card " + (fullHeight ? " card-full-height" : "")}>
         <div className={"card-body card-number " + (className ? className : "")}>
           <CardTitleWithControls title={title}
                                  helpLink={helpLink}
+                                 internalLink={internalLink}
                                  slim={true}
                                  timeRange={timeRange}
                                  setTimeRange={setTimeRange}
                                  fixedAppliedTimeRange={fixedAppliedTimeRange}/>
 
-          <div className="value">
-            {element()}
-          </div>
+          <div className="value">{format()}</div>
         </div>
         </div>
   )

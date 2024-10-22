@@ -52,6 +52,10 @@ div.card {
     background-color: #2B2D42;
 }
 
+div.card div.card-number div.value a {
+    color: #fff;
+}
+
 .table {
     color: #fff !important;
 }
