@@ -390,6 +390,12 @@ public class TapManager {
             Optional<MacAddressContextEntry> existingContext = nzyme.getContextService()
                     .findMacAddressContextNoCache(mac.mac(), tap.get().organizationId(), tap.get().tenantId());
 
+            if (mac.hostnames().isEmpty() && mac.ipAddresses().isEmpty()) {
+                // Do not process empty context.
+                LOG.debug("Skipping empty context for [{}] from tap [{}].", mac.mac(), tapUuid);
+                continue;
+            }
+
             long contextId;
             List<MacAddressTransparentContextEntry> transparentContext;
             if (existingContext.isPresent()) {
