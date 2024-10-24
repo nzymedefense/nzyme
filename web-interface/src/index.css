@@ -8,6 +8,10 @@ code {
     color: #212529;
 }
 
+h2 {
+    font-size: 20px;
+}
+
 h5 {
     font-size: 13px;
     font-weight: bold;

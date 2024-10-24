@@ -62,7 +62,6 @@ export default function Dot11OverviewPage() {
       </div>
 
       <div className="row mt-3">
-
         <WithPermission permission="alerts_view">
           <div className={"col-" + topRowColWidth()}>
             <NumberCard title="Active Alerts"
