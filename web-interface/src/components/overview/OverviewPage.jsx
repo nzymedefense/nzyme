@@ -66,7 +66,8 @@ export default function OverviewPage() {
   }, [])
 
   const noContentInfo = () => {
-    if (!user.is_superadmin && !userHasPermission(user, "alerts_view")) {
+    if (!user.is_superadmin && !userHasPermission(user, "alerts_view")
+        && !userHasSubsystem(user, "ethernet") && !userHasSubsystem(user, "dot11")) {
       return (
           <div className="alert alert-info mt-3">
             Please enable at least one nzyme subsystem to display data on this dashboard.
@@ -176,7 +177,7 @@ export default function OverviewPage() {
           </div>
         </WithSubsystem>
 
-        <WithSubsystem subsystem="dot11">
+        <WithSubsystem subsystem="ethernet">
           <div className="row mt-5">
             <div className="col-12">
               <h2>Ethernet Overview</h2>
