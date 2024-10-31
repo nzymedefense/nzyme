@@ -4,5 +4,5 @@ Section: misc
 Priority: low
 Architecture: all
 Description: [[description]]
-Maintainer: Lennart Koopmann <lennart@0x58ed.com>
-Depends: openjdk-11-jre-headless | java11-runtime
+Maintainer: nzyme LLC <hello@nzyme.org>
+Depends: openjdk-17-jre-headless | java17-runtime
