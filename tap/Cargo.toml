@@ -2,7 +2,7 @@
 name = "nzyme-tap"
 description = "The nzyme Network Defense System tap"
 license = "SSPL-1.0"
-version = "2.0.0-alpha.15-SNAPSHOT"
+version = "2.0.0-alpha.15"
 edition = "2021"
 readme = "README.md"
 
@@ -22,8 +22,8 @@ inherits = "release"
 debug = true
 
 [package.metadata.deb]
-maintainer = "Lennart Koopmann <lennart.koopmann@nzyme.org>"
-copyright = "nzyme LLC <lennart.koopmann@nzyme.org>"
+maintainer = "nzyme LLC <hello@nzyme.org>"
+copyright = "nzyme LLC <hello@nzyme.org>"
 license-file = ["COPYING", "0"]
 extended-description = "The nzyme Network Defense System tap"
 depends = "$auto"
