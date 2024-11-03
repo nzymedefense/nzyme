@@ -1,14 +1,18 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import UserProfileService from "../../services/UserProfileService";
 import Routes from "../../util/ApiRoutes";
 
 import InlineFormValidationMessage from "../misc/InlineFormValidationMessage";
 import FormSubmitErrorMessage from "../misc/FormSubmitErrorMessage";
 import {notify} from "react-notify-toast";
+import {Navigate} from "react-router-dom";
+import {AppContext} from "../../App";
 
 const userProfileService = new UserProfileService();
 
 function ChangeOwnPasswordPage() {
+
+  const app = useContext(AppContext);
 
   const maskCurrent = useRef();
   const [maskedCurrent, setMaskedCurrent] = useState(true);
@@ -21,7 +25,7 @@ function ChangeOwnPasswordPage() {
   const [passwordValidation, setPasswordValidation] = useState(undefined);
   const [formSubmitting, setFormSubmitting] = useState(false);
 
-  const [errorMessage, setErrorMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     if (newPassword && (newPassword.length < 12 || newPassword.length > 128)) {
@@ -63,6 +67,7 @@ function ChangeOwnPasswordPage() {
 
     userProfileService.changeOwnPassword(currentPassword, newPassword, function() {
       notify.show('Password updated.', 'success');
+      app.logout();
     }, function(error) {
       setFormSubmitting(false);
       setErrorMessage(error.response.data.message);
