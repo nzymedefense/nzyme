@@ -51,7 +51,7 @@
         <quartz.version>2.3.2</quartz.version>
         <cronutils.version>9.2.1</cronutils.version>
         <httpcomponents.version>4.5.13</httpcomponents.version>
-        <nzymeplugin.version>2.0.21</nzymeplugin.version>
+        <nzymeplugin.version>2.0.24</nzymeplugin.version>
         <bouncycastle.version>1.75</bouncycastle.version>
         <oshi.version>6.4.0</oshi.version>
         <commonsnet.version>3.9.0</commonsnet.version>
@@ -567,7 +567,7 @@
                                     <type>file</type>
                                     <mapper>
                                         <type>perm</type>
-                                        <prefix>/usr/share/nzyme/bin</prefix>
+                                        <prefix>/usr/local/bin</prefix>
                                         <filemode>740</filemode>
                                         <user>root</user>
                                         <group>root</group>
@@ -607,7 +607,18 @@
                                 </data>
 
                                 <data>
-                                    <src>src/main/resources/log4j2-debian.xml</src>
+                                    <src>src/main/resources/log4j2-production.xml</src>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/etc/nzyme</prefix>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+
+                                <data>
+                                    <src>src/main/resources/log4j2-production-foreground.xml</src>
                                     <type>file</type>
                                     <mapper>
                                         <type>perm</type>

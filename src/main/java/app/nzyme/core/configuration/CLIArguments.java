@@ -24,6 +24,9 @@ public class CLIArguments {
     @Parameter(names={"--config-file", "-c"}, required = true)
     private String configFilePath;
 
+    @Parameter(names={"--migrate-database", "-m"})
+    private boolean migrateDatabaseMode;
+
     @Parameter(names={"--debug", "-d"})
     private boolean debugMode;
 
@@ -38,6 +41,10 @@ public class CLIArguments {
 
     public String getConfigFilePath() {
         return configFilePath;
+    }
+
+    public boolean isMigrateDatabaseMode() {
+        return migrateDatabaseMode;
     }
 
     public boolean isDebugMode() {

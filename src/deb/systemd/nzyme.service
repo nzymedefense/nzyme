@@ -1,6 +1,6 @@
 [Unit]
-Description=Nzyme
-Documentation=https://github.com/lennartkoopmann/nzyme
+Description=nzyme
+Documentation=https://github.com/nzymedefense/nzyme
 Wants=network-online.target
 After=network-online.target
 
@@ -12,7 +12,7 @@ User=root
 Group=root
 LimitNOFILE=64000
 
-ExecStart=/usr/share/nzyme/bin/nzyme
+ExecStart=/usr/local/bin/nzyme
 
 # When a JVM receives a SIGTERM signal it exits with 143.
 SuccessExitStatus=143

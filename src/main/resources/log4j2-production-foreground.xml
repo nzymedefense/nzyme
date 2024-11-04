@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console" />
+        </Root>
+
+        <Logger name="org.pcap4j" level="error">
+            <AppenderRef ref="Console" />
+        </Logger>
+
+        <Logger name="liquibase" level="warn">
+            <AppenderRef ref="Console" />
+        </Logger>
+
+        <Logger name="org.quartz" level="warn">
+            <AppenderRef ref="Console" />
+        </Logger>
+
+        <Logger name="com.mchange" level="warn">
+            <AppenderRef ref="Console" />
+        </Logger>
+
+        <Logger name="org.glassfish.grizzly" level="error">
+            <AppenderRef ref="Console" />
+        </Logger>
+    </Loggers>
+</Configuration>

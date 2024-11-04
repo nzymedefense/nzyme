@@ -111,18 +111,22 @@ public class Main {
             LOG.error("Could not read configuration file.", e);
             System.exit(FAILURE);
         }
-        
-        LOG.info("Performance Configuration: {}", nodeConfiguration.performance());
 
         // Database.
         DatabaseImpl database = new DatabaseImpl(nodeConfiguration);
         try {
-            database.initializeAndMigrate();
+            if (cliArguments.isMigrateDatabaseMode()) {
+                LOG.info("Database migration requested.");
+                database.migrate();
+                System.exit(SUCCESS);
+            }
+            database.initialize();
         } catch (LiquibaseException e) {
-            LOG.fatal("Error during database initialization and migration.", e);
+            LOG.fatal("Database error.", e);
             System.exit(FAILURE);
         }
 
+        LOG.info("Performance Configuration: {}", nodeConfiguration.performance());
         NzymeNode nzyme = new NzymeNodeImpl(baseConfiguration, nodeConfiguration, database);
 
         try {

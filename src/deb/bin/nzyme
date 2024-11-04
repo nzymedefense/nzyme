@@ -3,7 +3,37 @@
 set -e
 
 if [ -f "/etc/default/nzyme" ]; then
-    . "/etc/default/nzyme"
+  . "/etc/default/nzyme"
 fi
 
-${JAVA:=/usr/bin/java} $NZYME_JAVA_OPTS -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-debian.xml /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf
+# Default to running the main application if no specific command is provided.
+COMMAND="main"
+ARGS=""
+
+# Parse arguments to detect commands and store non-command flags in ARGS.
+for arg in "$@"; do
+  case $arg in
+    --migrate-database)
+      COMMAND="migrate-database"
+      ;;
+    --bootstrap-test)
+      COMMAND="bootstrap-test"
+      ;;
+    *)
+      ARGS="$ARGS $arg"
+      ;;
+  esac
+done
+
+# Execute the appropriate command with all arguments passed through.
+case $COMMAND in
+  migrate-database)
+    ${JAVA:=/usr/bin/java} $NZYME_JAVA_OPTS -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-production-foreground.xml /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf --migrate-database $ARGS
+    ;;
+  bootstrap-test)
+    ${JAVA:=/usr/bin/java} $NZYME_JAVA_OPTS -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-production-foreground.xml /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf --bootstrap-test $ARGS
+    ;;
+  main)
+    ${JAVA:=/usr/bin/java} $NZYME_JAVA_OPTS -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-production.xml /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf $ARGS
+    ;;
+esac

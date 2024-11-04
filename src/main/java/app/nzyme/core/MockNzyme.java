@@ -128,7 +128,8 @@ public class MockNzyme implements NzymeNode {
         this.database = new DatabaseImpl(configuration);
 
         try {
-            this.database.initializeAndMigrate();
+            this.database.migrate();
+            this.database.initialize();
         } catch (LiquibaseException e) {
             throw new RuntimeException(e);
         }

@@ -81,7 +81,7 @@ public class DatabaseImpl implements Database {
         this.configuration = configuration;
     }
 
-    public void initializeAndMigrate() throws LiquibaseException {
+    public void initialize() throws LiquibaseException {
         // TODO use reflection here at some point.
         this.jdbi = Jdbi.create("jdbc:" + configuration.databasePath())
                 .installPlugin(new PostgresPlugin())
@@ -180,10 +180,8 @@ public class DatabaseImpl implements Database {
             });
         }
 
-        // Run migrations against underlying JDBC connection.
-        JdbcConnection connection;
-
         // Try to establish connection, retry if connection fails.
+        JdbcConnection connection;
         while (true) {
             try {
                 connection = new JdbcConnection(jdbi.open().getConnection());
@@ -203,13 +201,58 @@ public class DatabaseImpl implements Database {
         try {
             liquibase.database.Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
             liquibase = new liquibase.Liquibase("db/migrations.xml", new ClassLoaderResourceAccessor(), database);
-            liquibase.update(new Contexts(), new LabelExpression());
+
+            if (!liquibase.listUnrunChangeSets(new Contexts(), new LabelExpression()).isEmpty()) {
+                throw new RuntimeException("There are un-run database changesets. Please run migrations.");
+            }
         } finally {
             if (liquibase != null) {
                 liquibase.close();
             }
             if (!connection.isClosed()) {
                 connection.close();
+            }
+        }
+    }
+
+    public void migrate() throws LiquibaseException {
+        Jdbi migrationJdbi = Jdbi.create("jdbc:" + configuration.databasePath())
+                .installPlugin(new PostgresPlugin());
+
+        JdbcConnection migrationConnection;
+
+        // Try to establish connection, retry if connection fails.
+        while (true) {
+            try {
+                migrationConnection = new JdbcConnection(migrationJdbi.open().getConnection());
+                break;
+            } catch (ConnectionException e) {
+                LOG.warn("Could not connect to PostgreSQL. Retrying.", e);
+
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+
+        Liquibase liquibase = null;
+        try {
+            LOG.info("Running database migrations.");
+            liquibase.database.Database database = DatabaseFactory.getInstance()
+                    .findCorrectDatabaseImplementation(migrationConnection);
+            liquibase = new liquibase.Liquibase(
+                    "db/migrations.xml", new ClassLoaderResourceAccessor(), database
+            );
+            liquibase.update(new Contexts(), new LabelExpression());
+            LOG.info("All database migrations complete.");
+        } finally {
+            if (liquibase != null) {
+                liquibase.close();
+            }
+            if (!migrationConnection.isClosed()) {
+                migrationConnection.close();
             }
         }
     }
