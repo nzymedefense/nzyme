@@ -20,7 +20,6 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
 
         <log4j.version>2.17.1</log4j.version>
-        <pcap4j.version>1.8.2</pcap4j.version>
         <guava.version>32.0.0-jre</guava.version>
         <jcommander.version>1.81</jcommander.version>
         <testng.version>7.4.0</testng.version>
@@ -82,22 +81,6 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.pcap4j</groupId>
-            <artifactId>pcap4j-core</artifactId>
-            <version>${pcap4j.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.java.dev.jna</groupId>
-                    <artifactId>jna</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.pcap4j</groupId>
-            <artifactId>pcap4j-packetfactory-static</artifactId>
-            <version>${pcap4j.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
