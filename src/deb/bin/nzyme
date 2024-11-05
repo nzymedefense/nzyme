@@ -28,12 +28,12 @@ done
 # Execute the appropriate command with all arguments passed through.
 case $COMMAND in
   migrate-database)
-    ${JAVA:=/usr/bin/java} $NZYME_JAVA_OPTS -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-production-foreground.xml /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf --migrate-database $ARGS
+    ${JAVA:=/usr/bin/java} $NZYME_JAVA_OPTS -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-production-foreground.xml -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf --migrate-database $ARGS
     ;;
   bootstrap-test)
-    ${JAVA:=/usr/bin/java} $NZYME_JAVA_OPTS -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-production-foreground.xml /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf --bootstrap-test $ARGS
+    ${JAVA:=/usr/bin/java} $NZYME_JAVA_OPTS -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-production-foreground.xml -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf --bootstrap-test $ARGS
     ;;
   main)
-    ${JAVA:=/usr/bin/java} $NZYME_JAVA_OPTS -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-production.xml /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf $ARGS
+    ${JAVA:=/usr/bin/java} $NZYME_JAVA_OPTS -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-production.xml -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf $ARGS
     ;;
 esac

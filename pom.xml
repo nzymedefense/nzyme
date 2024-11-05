@@ -19,7 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.javadoc.skip>true</maven.javadoc.skip>
 
-        <log4j.version>2.17.1</log4j.version>
+        <log4j.version>2.24.1</log4j.version>
         <guava.version>32.0.0-jre</guava.version>
         <jcommander.version>1.81</jcommander.version>
         <testng.version>7.4.0</testng.version>
@@ -45,7 +45,6 @@
         <lanterna.version>3.1.1</lanterna.version>
         <simplejavamail.version>6.7.5</simplejavamail.version>
         <freemarker.version>2.3.31</freemarker.version>
-        <syslog.version>1.1.7</syslog.version>
         <opencsv.version>5.7.1</opencsv.version>
         <quartz.version>2.3.2</quartz.version>
         <cronutils.version>9.2.1</cronutils.version>
@@ -80,6 +79,11 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jul</artifactId>
             <version>${log4j.version}</version>
         </dependency>
         <dependency>
@@ -121,11 +125,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-joda</artifactId>
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
@@ -287,11 +286,6 @@
             <version>${httpcomponents.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.cloudbees</groupId>
-            <artifactId>syslog-java-client</artifactId>
-            <version>${syslog.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>${opencsv.version}</version>
@@ -444,6 +438,11 @@
                 <configuration>
                     <source>17</source>
                     <target>17</target>
+                    <release>17</release>
+                    <compilerArgs>
+                        <arg>--multi-release</arg>
+                        <arg>17</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 
@@ -464,7 +463,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <version>3.4.1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-transform-maven-shade-plugin-extensions</artifactId>
+                        <version>0.2.0</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <filters>
                         <filter>
@@ -473,12 +479,6 @@
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
-                            </excludes>
-                        </filter>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>**/Log4j2Plugins.dat</exclude>
                             </excludes>
                         </filter>
                     </filters>
@@ -490,6 +490,17 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Multi-Release>true</Multi-Release>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration status="WARN" shutdownHook="disable">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} [%t] %-5level %logger{36} - %msg%n" />
@@ -27,6 +27,10 @@
         </Logger>
 
         <Logger name="org.glassfish.grizzly" level="error">
+            <AppenderRef ref="Console" />
+        </Logger>
+
+        <Logger name="org.glassfish.jersey.server.wadl" level="error">
             <AppenderRef ref="Console" />
         </Logger>
     </Loggers>

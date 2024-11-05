@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration status="WARN" shutdownHook="disable">
     <Appenders>
         <RollingFile name="Logfile" fileName="/var/log/nzyme/nzyme.log" filePattern="logs/$${date:yyyy-MM}/nzyme-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout pattern="%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} [%t] %-5level %logger{36} - %msg%n" />
@@ -32,6 +32,10 @@
         </Logger>
 
         <Logger name="org.glassfish.grizzly" level="error">
+            <AppenderRef ref="Logfile" />
+        </Logger>
+
+        <Logger name="org.glassfish.jersey.server.wadl" level="error">
             <AppenderRef ref="Logfile" />
         </Logger>
     </Loggers>
