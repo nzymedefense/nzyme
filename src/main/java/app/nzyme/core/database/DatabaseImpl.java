@@ -47,13 +47,15 @@ import app.nzyme.core.crypto.database.PGPKeyFingerprintMapper;
 import app.nzyme.core.taps.db.*;
 import app.nzyme.core.taps.db.metrics.TapMetricsAggregationMapper;
 import app.nzyme.core.taps.db.metrics.TapMetricsGaugeMapper;
-import liquibase.Contexts;
-import liquibase.LabelExpression;
-import liquibase.Liquibase;
+import liquibase.*;
+import liquibase.command.core.helpers.ShowSummaryArgument;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
+import liquibase.logging.LogMessageFilter;
+import liquibase.logging.LogService;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import liquibase.ui.LoggerUIService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.ConnectionException;
@@ -68,6 +70,7 @@ import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 
 public class DatabaseImpl implements Database {
 
@@ -202,6 +205,8 @@ public class DatabaseImpl implements Database {
             liquibase.database.Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
             liquibase = new liquibase.Liquibase("db/migrations.xml", new ClassLoaderResourceAccessor(), database);
 
+            routeLiquibaseLogging(liquibase);
+
             if (!liquibase.listUnrunChangeSets(new Contexts(), new LabelExpression()).isEmpty()) {
                 throw new RuntimeException("There are un-run database changesets. Please run migrations.");
             }
@@ -245,6 +250,9 @@ public class DatabaseImpl implements Database {
             liquibase = new liquibase.Liquibase(
                     "db/migrations.xml", new ClassLoaderResourceAccessor(), database
             );
+
+            routeLiquibaseLogging(liquibase);
+
             liquibase.update(new Contexts(), new LabelExpression());
             LOG.info("All database migrations complete.");
         } finally {
@@ -290,5 +298,27 @@ public class DatabaseImpl implements Database {
     public <X extends Exception> void useHandle(final HandleConsumer<X> callback) throws X {
         jdbi.useHandle(callback);
     }
+
+    private void routeLiquibaseLogging(Liquibase liquibase) {
+        try {
+            liquibase.setShowSummaryOutput(UpdateSummaryOutputEnum.LOG);
+            Scope.enter(Map.of(Scope.Attr.ui.name(), new NullUIService()));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static class NullUIService extends LoggerUIService {
+        @Override
+        public void sendMessage(String message) {
+            LOG.info(message);
+        }
+
+        @Override
+        public void sendErrorMessage(String message, Throwable exception) {
+            LOG.error(message, exception);
+        }
+    }
+
 
 }
