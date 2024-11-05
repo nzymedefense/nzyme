@@ -45,4 +45,4 @@
             <AppenderRef ref="Logfile" />
         </Logger>
     </Loggers>
-</>
+</Configuration>
