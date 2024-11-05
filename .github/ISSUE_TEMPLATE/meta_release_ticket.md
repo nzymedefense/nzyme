@@ -17,17 +17,35 @@ assignees: ''
 ### New Optional Configuration Parameters
 
 *
-
 ### Upgrade Procedure
 
 #### `nzyme-node`
 
 If you are upgrading from a previous version, you can simply run `dpkg -i` on the new release 
-package and restart the `nzyme-node` service. Always upgrade `nzyme-node` before `nzyme-tap` 
-unless instructed otherwise.
+package, execute database migrations and restart the `nzyme-node` service. Always upgrade 
+`nzyme-node` before `nzyme-tap` unless instructed otherwise:
+
+#### Debian-based systems:
+
+```
+sudo systemctl stop nzyme
+sudo dpkg -i nzyme-node_[version].deb
+sudo nzyme --migrate-database
+sudo systemctl daemon-reload
+sudo systemctl start nzyme
+```
 
 #### `nzyme-tap`
 
 If you are upgrading from a previous version, you can simply run `dpkg -i` on the new release
 package and restart the `nzyme-tap` service. Always upgrade `nzyme-node` before `nzyme-tap` 
 unless instructed otherwise.
+
+#### Debian-based systems:
+
+```
+sudo systemctl stop nzyme-tap
+sudo dpkg -i nzyme-tap_[version].deb
+sudo systemctl daemon-reload
+sudo systemctl start nzyme-tap
+```
