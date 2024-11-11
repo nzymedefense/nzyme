@@ -1,20 +1,21 @@
-use std::{sync::{Arc, Mutex}, thread, process::exit};
+use std::{process::exit, sync::{Arc, Mutex}, thread};
 
-use log::{error};
+use log::error;
 
-use crate::{messagebus::bus::Bus, exit_code, tables::tables::Tables, system_state::SystemState, metrics::Metrics};
-use crate::bluetooth::processors::bluetooth_device_processor::BluetoothDeviceProcessor;
+use crate::{exit_code, messagebus::bus::Bus, metrics::Metrics, system_state::SystemState};
+use crate::wireless::bluetooth::processors::bluetooth_device_processor::BluetoothDeviceProcessor;
 use crate::configuration::Configuration;
 use crate::context::context_engine::ContextEngine;
-use crate::dot11::processors::dot11_frame_processor::Dot11FrameProcessor;
-use crate::ethernet::processors::arp_processor::ARPProcessor;
-use crate::ethernet::processors::dhcpv4_processor::Dhcpv4Processor;
-use crate::ethernet::processors::dns_processor::DnsProcessor;
-use crate::ethernet::processors::socks_processor::SocksProcessor;
-use crate::ethernet::processors::ssh_processor::SshProcessor;
-use crate::ethernet::processors::tcp_processor::TcpProcessor;
-use crate::ethernet::processors::udp_processor::UDPProcessor;
+use crate::protocols::processors::arp_processor::ARPProcessor;
+use crate::protocols::processors::dhcpv4_processor::Dhcpv4Processor;
+use crate::protocols::processors::dns_processor::DnsProcessor;
+use crate::protocols::processors::dot11::dot11_frame_processor::Dot11FrameProcessor;
+use crate::protocols::processors::socks_processor::SocksProcessor;
+use crate::protocols::processors::ssh_processor::SshProcessor;
+use crate::protocols::processors::tcp_processor::TcpProcessor;
+use crate::protocols::processors::udp_processor::UDPProcessor;
 use crate::state::state::State;
+use crate::state::tables::tables::Tables;
 
 pub fn spawn(ethernet_bus: Arc<Bus>,
              dot11_bus: Arc<Bus>,

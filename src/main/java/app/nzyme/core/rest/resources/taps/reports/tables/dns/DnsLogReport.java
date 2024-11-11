@@ -30,7 +30,9 @@ public abstract class DnsLogReport {
     public abstract Integer transactionId();
     public abstract String clientAddress();
     public abstract String serverAddress();
+    @Nullable
     public abstract String clientMac();
+    @Nullable
     public abstract String serverMac();
     public abstract int clientPort();
     public abstract int serverPort();

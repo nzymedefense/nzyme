@@ -1,36 +1,37 @@
-mod ethernet;
 mod helpers;
 mod messagebus;
 mod link;
 mod configuration;
 mod exit_code;
 mod metrics;
-mod tables;
 mod system_state;
 mod logging;
-mod dot11;
 mod alerting;
-mod bluetooth;
 mod distributor;
 mod log_monitor;
 mod state;
 mod context;
+mod protocols;
+mod wired;
+mod wireless;
 
-use std::{time, thread::{self, sleep}, time::Duration, sync::{Arc, Mutex}, process::exit};
+use std::{process::exit, sync::{Arc, Mutex}, thread::{self, sleep}, time, time::Duration};
 use anyhow::Error;
 
 use clap::Parser;
 use configuration::Configuration;
-use tables::tables::Tables;
+use state::tables::tables::Tables;
 use link::leaderlink::Leaderlink;
 use log::{error, info};
 use toml::map::Map;
 use messagebus::bus::Bus;
 use system_state::SystemState;
+use wired::ethernet;
 use crate::context::context_engine::ContextEngine;
-use crate::dot11::{channel_hopper::ChannelHopper};
-use crate::dot11::dot11_broker::Dot11Broker;
-use crate::ethernet::ethernet_broker::EthernetBroker;
+use wireless::dot11::channel_hopper::ChannelHopper;
+use wireless::dot11::dot11_broker::Dot11Broker;
+use wired::ethernet::ethernet_broker::EthernetBroker;
+use wireless::{bluetooth, dot11};
 use crate::helpers::network::Channel;
 use crate::log_monitor::LogMonitor;
 use crate::state::state::State;
@@ -136,7 +137,7 @@ fn main() {
         SystemState::new(configuration.misc.training_period_minutes as usize).initialize()
     );
 
-    ethernet::capture::print_devices();
+    wired::interfaces::print_devices();
 
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new(log_monitor)));
 
@@ -182,7 +183,7 @@ fn main() {
     thread::spawn(move || {
         EthernetBroker::new(ethernet_handlerbus, configuration.performance.ethernet_brokers as usize).run();
     });
-
+    
     // WiFi handler.
     let wifi_handlerbus = dot11_bus.clone();
     thread::spawn(move || {
@@ -214,6 +215,42 @@ fn main() {
                     ethernet_capture.run(&interface_name);
 
                     error!("Ethernet capture [{}] disconnected. Retrying in 5 seconds.", interface_name);
+                    match capture_metrics.lock() {
+                        Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                        Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                    }
+                    sleep(Duration::from_secs(5));
+                }
+            });
+        }
+    }
+    
+    // Raw IP capture.
+    if let Some(rawip_interfaces) = &configuration.rawip_interfaces {
+        for (interface_name, interface_config) in rawip_interfaces {
+            if !interface_config.active {
+                info!("Skipping disabled Raw IP interface [{}].", interface_name);
+                continue;
+            }
+            let capture_metrics = metrics.clone();
+            let capture_bus = ethernet_bus.clone();
+            let interface_name = interface_name.clone();
+            
+            thread::spawn(move || {
+                let mut rawip_capture = wired::rawip::capture::Capture {
+                    metrics: capture_metrics.clone(),
+                    bus: capture_bus
+                };
+
+                match capture_metrics.lock() {
+                    Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::RawIp),
+                    Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                }
+
+                loop {
+                    rawip_capture.run(&interface_name);
+
+                    error!("Raw IP capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
                     match capture_metrics.lock() {
                         Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
                         Err(e) => error!("Could not acquire mutex of metrics: {}", e)

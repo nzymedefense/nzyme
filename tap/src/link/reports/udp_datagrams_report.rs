@@ -2,7 +2,7 @@ use std::sync::{Arc, MutexGuard};
 use chrono::{DateTime, Utc};
 use log::error;
 use serde::Serialize;
-use crate::ethernet::packets::Datagram;
+use crate::wired::packets::Datagram;
 
 #[derive(Serialize)]
 pub struct UdpDatagramsReport {
@@ -11,8 +11,8 @@ pub struct UdpDatagramsReport {
 
 #[derive(Serialize)]
 pub struct UdpDatagramReport {
-    pub source_mac: String,
-    pub destination_mac: String,
+    pub source_mac: Option<String>,
+    pub destination_mac: Option<String>,
     pub source_address: String,
     pub destination_address: String,
     pub source_port: u16,

@@ -21,7 +21,9 @@ public abstract class SocksTunnelReport {
     @Nullable
     public abstract String tunneledDestinationHost();
     public abstract int tunneledDestinationPort();
+    @Nullable
     public abstract String sourceMac();
+    @Nullable
     public abstract String destinationMac();
     public abstract String sourceAddress();
     public abstract int sourcePort();

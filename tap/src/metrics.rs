@@ -8,7 +8,7 @@ use statrs::statistics::{Distribution, OrderStatistics, Data};
 
 use log::{warn, error, info};
 use crate::log_monitor::{LogCounts, LogMonitor};
-use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, EthernetChannelName};
+use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, WiredChannelName};
 
 #[derive(Default, Clone)]
 pub struct TotalWithAverage {
@@ -68,6 +68,7 @@ pub struct Channels {
 #[derive(Clone, Display)]
 pub enum CaptureType {
     Ethernet,
+    RawIp,
     WiFi,
     Bluetooth
 }
@@ -109,7 +110,7 @@ impl Metrics {
     pub fn calculate_averages(&mut self) {
         self.processed_bytes.calculate_averages();
 
-        for channel in EthernetChannelName::iter() {
+        for channel in WiredChannelName::iter() {
             let c = self.select_channel(&channel.to_string());
             c.throughput_bytes.calculate_averages();
             c.throughput_messages.calculate_averages();
@@ -349,7 +350,7 @@ impl MetricsMonitor {
             match self.metrics.lock() {
                 Ok(mut metrics) => {
                     // TODO de-duplicate here.
-                    for channel in EthernetChannelName::iter() {
+                    for channel in WiredChannelName::iter() {
                         let errors = metrics.get_channel_errors(&channel.to_string()).avg;
 
                         if errors > 0 {

@@ -10,9 +10,9 @@ use crate::{
     configuration::Configuration,
     metrics::Metrics, messagebus::bus::Bus
 };
-use crate::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
+use crate::wireless::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
 use crate::link::payloads::{NodeHelloReport, TimerReport, WiFiSupportedFrequencyReport};
-use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, EthernetChannelName};
+use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, WiredChannelName};
 use crate::metrics::ChannelUtilization;
 
 use super::{payloads::{StatusReport, SystemMetricsReport, TotalWithAverage, ChannelReport, CaptureReport}};
@@ -172,7 +172,7 @@ impl Leaderlink {
                 processed_bytes_avg = metrics.get_processed_bytes().avg;
 
                 // TODO de-duplicate here.
-                for c in EthernetChannelName::iter() {
+                for c in WiredChannelName::iter() {
                     ethernet_channels.push(
                         Self::build_channel_report(metrics.select_channel(&c.to_string()), c.to_string())
                     );

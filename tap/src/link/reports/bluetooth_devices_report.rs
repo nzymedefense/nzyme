@@ -3,8 +3,8 @@ use std::sync::MutexGuard;
 use base64::Engine;
 use chrono::{DateTime, Utc};
 use serde::{Serialize, Serializer};
-use crate::bluetooth::detection::device_tagger::TagValue;
-use crate::bluetooth::tables::bluetooth_device::BluetoothDevice;
+use crate::wireless::bluetooth::detection::device_tagger::TagValue;
+use crate::wireless::bluetooth::tables::bluetooth_device::BluetoothDevice;
 
 #[derive(Serialize)]
 pub struct BluetoothDevicesReport {

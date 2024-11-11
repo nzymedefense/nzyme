@@ -2,8 +2,8 @@ use std::collections::{HashMap};
 use std::sync::MutexGuard;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use crate::ethernet::tables::tcp_table::TcpSession;
-use crate::ethernet::tcp_session_key::TcpSessionKey;
+use crate::state::tables::tcp_table::TcpSession;
+use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
 
 #[derive(Serialize)]
 pub struct TcpSessionsReport {
@@ -13,8 +13,8 @@ pub struct TcpSessionsReport {
 #[derive(Serialize)]
 pub struct TcpSessionReport {
     pub state: String,
-    pub source_mac: String,
-    pub destination_mac: String,
+    pub source_mac: Option<String>,
+    pub destination_mac: Option<String>,
     pub source_address: String,
     pub source_port: u16,
     pub destination_address: String,

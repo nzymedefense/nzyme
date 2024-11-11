@@ -12,7 +12,9 @@ import java.util.List;
 public abstract class TcpSessionReport {
 
     public abstract String state();
+    @Nullable
     public abstract String sourceMac();
+    @Nullable
     public abstract String destinationMac();
     public abstract String sourceAddress();
     public abstract int sourcePort();

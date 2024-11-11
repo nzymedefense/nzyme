@@ -14,7 +14,9 @@ public abstract class SshSessionReport {
     public abstract SshVersionReport serverVersion();
     public abstract String connectionStatus();
     public abstract int tunneledBytes();
+    @jakarta.annotation.Nullable
     public abstract String sourceMac();
+    @jakarta.annotation.Nullable
     public abstract String destinationMac();
     public abstract String sourceAddress();
     public abstract String destinationAddress();

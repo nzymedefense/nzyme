@@ -11,7 +11,9 @@ import java.util.List;
 @AutoValue
 public abstract class UdpDatagramReport {
 
+    @Nullable
     public abstract String sourceMac();
+    @Nullable
     public abstract String destinationMac();
     public abstract String sourceAddress();
     public abstract int sourcePort();

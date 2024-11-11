@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use clokwerk::{Scheduler, TimeUnits};
 use log::{error, info};
-use crate::ethernet::state::arp_state::ArpState;
+use crate::state::arp_state::ArpState;
 use crate::metrics::Metrics;
 
 pub struct State {

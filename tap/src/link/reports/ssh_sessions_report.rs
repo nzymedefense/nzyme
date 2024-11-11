@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::sync::MutexGuard;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use crate::ethernet::packets::SshSession;
-use crate::ethernet::tcp_session_key::TcpSessionKey;
+use crate::wired::packets::SshSession;
+use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
 
 #[derive(Serialize)]
 pub struct SshSessionsReport {
@@ -16,8 +16,8 @@ pub struct SshSessionReport {
     pub server_version: SshVersionReport,
     pub connection_status: String,
     pub tunneled_bytes: u64,
-    pub source_mac: String,
-    pub destination_mac: String,
+    pub source_mac: Option<String>,
+    pub destination_mac: Option<String>,
     pub source_address: String,
     pub source_port: u16,
     pub destination_address: String,

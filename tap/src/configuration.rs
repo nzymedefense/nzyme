@@ -14,6 +14,7 @@ pub struct Configuration {
     pub general: General,
     pub wifi_interfaces: Option<HashMap<String, WifiInterface>>,
     pub ethernet_interfaces: Option<HashMap<String, EthernetInterface>>,
+    pub rawip_interfaces: Option<HashMap<String, RawIpInterface>>,
     pub bluetooth_interfaces: Option<HashMap<String, BluetoothInterface>>,
     pub performance: Performance,
     pub protocols: Protocols,
@@ -31,6 +32,11 @@ pub struct General {
 pub struct EthernetInterface {
     pub active: bool,
     pub networks: Option<Vec<EthernetInterfaceNetwork>>
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RawIpInterface {
+    pub active: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]

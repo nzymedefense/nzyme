@@ -1,22 +1,21 @@
 use std::sync::{Arc, Mutex};
 
-use crossbeam_channel::{Sender, Receiver, bounded};
+use crossbeam_channel::{bounded, Receiver, Sender};
 use log::{debug, error};
 
-use crate::{
-    ethernet::packets::{
-        ARPPacket,
-        EthernetData,
-        Datagram,
-        DNSPacket,
-        TcpSegment
-    },
-    metrics::Metrics, dot11::frames::{Dot11RawFrame, Dot11Frame}
-};
-use crate::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
+use crate::metrics::Metrics;
+use crate::wireless::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
 use crate::configuration::Configuration;
-use crate::ethernet::packets::{DHCPv4Packet, SocksTunnel, SshSession};
-use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, EthernetChannelName};
+use crate::wired::packets::{DHCPv4Packet, SocksTunnel, SshSession};
+use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, WiredChannelName};
+use crate::wired::packets::{
+    ARPPacket,
+    DNSPacket,
+    Datagram,
+    EthernetData,
+    TcpSegment
+};
+use crate::wireless::dot11::frames::{Dot11Frame, Dot11RawFrame};
 
 pub struct Bus {
     pub name: String,
@@ -111,7 +110,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: ethernet_broker_sender,
-                    name: EthernetChannelName::EthernetBroker.to_string()
+                    name: WiredChannelName::EthernetBroker.to_string()
                 }),
                 receiver: Arc::new(ethernet_broker_receiver),
             },
@@ -143,7 +142,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),  
                     sender: arp_pipeline_sender,
-                    name: EthernetChannelName::ArpPipeline.to_string()
+                    name: WiredChannelName::ArpPipeline.to_string()
                 }),
                 receiver: Arc::new(arp_pipeline_receiver),
             },
@@ -151,7 +150,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: tcp_pipeline_sender,
-                    name: EthernetChannelName::TcpPipeline.to_string()
+                    name: WiredChannelName::TcpPipeline.to_string()
                 }),
                 receiver: Arc::new(tcp_pipeline_receiver),
             },
@@ -159,7 +158,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: udp_pipeline_sender,
-                    name: EthernetChannelName::UdpPipeline.to_string()
+                    name: WiredChannelName::UdpPipeline.to_string()
                 }),
                 receiver: Arc::new(udp_pipeline_receiver),
             },
@@ -167,7 +166,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: dns_pipeline_sender,
-                    name: EthernetChannelName::DnsPipeline.to_string()
+                    name: WiredChannelName::DnsPipeline.to_string()
                 }),
                 receiver: Arc::new(dns_pipeline_receiver),
             },
@@ -175,7 +174,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: socks_pipeline_sender,
-                    name: EthernetChannelName::SocksPipeline.to_string()
+                    name: WiredChannelName::SocksPipeline.to_string()
                 }),
                 receiver: Arc::new(socks_pipeline_receiver),
             },
@@ -183,7 +182,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
                     sender: ssh_pipeline_sender,
-                    name: EthernetChannelName::SshPipeline.to_string()
+                    name: WiredChannelName::SshPipeline.to_string()
                 }),
                 receiver: Arc::new(ssh_pipeline_receiver),
             },
@@ -191,7 +190,7 @@ impl Bus<> {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics,
                     sender: dhcpv4_pipeline_sender,
-                    name: EthernetChannelName::Dhcpv4Pipeline.to_string()
+                    name: WiredChannelName::Dhcpv4Pipeline.to_string()
                 }),
                 receiver: Arc::new(dhcpv4_pipeline_receiver),
             }
