@@ -86,12 +86,7 @@ public class WebInterfaceAssetsResource {
     @GET
     @Path("/{s:.*}")
     public Response getIndex(@Context ContainerRequest request, @Context HttpHeaders headers) {
-        final URI originalLocation = request.getRequestUri();
-        if (originalLocation.getPath().endsWith("/")) {
-            return get(request, headers, originalLocation.getPath());
-        }
-        final URI redirect = UriBuilder.fromPath(originalLocation.getPath() + "/").build();
-        return Response.temporaryRedirect(redirect).build();
+        return get(request, headers, request.getRequestUri().getPath());
     }
 
     @Path("/assets/{filename: .*}")
