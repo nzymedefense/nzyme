@@ -543,18 +543,6 @@
                             <verbose>true</verbose>
 
                             <dataSet>
-                                <data>
-                                    <src>src/deb/usrshare</src>
-                                    <type>directory</type>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/usr/share/nzyme</prefix>
-                                        <dirmode>640</dirmode>
-                                        <user>root</user>
-                                        <group>root</group>
-                                    </mapper>
-                                </data>
-
                                 <!-- Moving this one manually to set +x permission. -->
                                 <data>
                                     <src>src/deb/bin/nzyme</src>
@@ -651,7 +639,10 @@
                                 <data>
                                     <type>template</type>
                                     <paths>
-                                        <path>var/log/nzyme</path>
+                                        <path>/var/log/nzyme</path>
+                                        <path>/usr/share/nzyme/crypto</path>
+                                        <path>/usr/share/nzyme/lib</path>
+                                        <path>/usr/share/nzyme/plugins</path>
                                     </paths>
                                     <mapper>
                                         <type>perm</type>
