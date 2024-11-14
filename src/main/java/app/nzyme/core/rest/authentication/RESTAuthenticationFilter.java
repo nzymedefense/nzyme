@@ -20,7 +20,7 @@ package app.nzyme.core.rest.authentication;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.db.SessionEntry;
-import app.nzyme.core.subsystems.Subsystem;
+import app.nzyme.plugin.Subsystem;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.net.HttpHeaders;

@@ -1,7 +1,6 @@
 package app.nzyme.core.dot11.monitoring.disco;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.subsystems.Subsystem;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.dot11.monitoring.disco.monitormethods.DiscoMonitorFactory;
@@ -10,6 +9,7 @@ import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.plugin.Subsystem;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.collect.Maps;

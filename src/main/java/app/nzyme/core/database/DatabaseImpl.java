@@ -47,13 +47,11 @@ import app.nzyme.core.crypto.database.PGPKeyFingerprintMapper;
 import app.nzyme.core.taps.db.*;
 import app.nzyme.core.taps.db.metrics.TapMetricsAggregationMapper;
 import app.nzyme.core.taps.db.metrics.TapMetricsGaugeMapper;
+import com.google.common.collect.Lists;
 import liquibase.*;
-import liquibase.command.core.helpers.ShowSummaryArgument;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
-import liquibase.logging.LogMessageFilter;
-import liquibase.logging.LogService;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import liquibase.ui.LoggerUIService;
 import org.apache.logging.log4j.LogManager;
@@ -70,6 +68,7 @@ import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 
 public class DatabaseImpl implements Database {
@@ -297,6 +296,48 @@ public class DatabaseImpl implements Database {
 
     public <X extends Exception> void useHandle(final HandleConsumer<X> callback) throws X {
         jdbi.useHandle(callback);
+    }
+
+    public long getDataCategorySize(DataCategory category) {
+        List<String> tableNames = Lists.newArrayList();
+
+        switch (category) {
+            case DOT11 -> {
+                tableNames.add("dot11_bssids");
+                tableNames.add("dot11_channels");
+                tableNames.add("dot11_fingerprints");
+                tableNames.add("dot11_ssids");
+                tableNames.add("dot11_ssid_settings");
+                tableNames.add("dot11_infrastructure_types");
+                tableNames.add("dot11_bssid_clients");
+                tableNames.add("dot11_rates");
+                tableNames.add("dot11_clients");
+                tableNames.add("dot11_client_probereq_ssids");
+                tableNames.add("dot11_channel_histograms");
+                tableNames.add("dot11_disco_activity");
+                tableNames.add("dot11_disco_activity_receivers");
+                tableNames.add("dot11_known_clients");
+                tableNames.add("dot11_known_networks");
+            }
+            case BLUETOOTH -> {
+                tableNames.add("bluetooth_devices");
+            }
+            case ETHERNET_L4 -> {
+                tableNames.add("l4_sessions");
+                tableNames.add("ssh_sessions");
+                tableNames.add("socks_tunnels");
+            }
+            case ETHERNET_DNS -> {
+                tableNames.add("dns_log");
+                tableNames.add("dns_entropy_log");
+                tableNames.add("dns_pairs");
+                tableNames.add("dns_statistics");
+            }
+        }
+
+        return tableNames.stream()
+                .mapToLong(this::getTableSize)
+                .sum();
     }
 
     private void routeLiquibaseLogging(Liquibase liquibase) {

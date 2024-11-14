@@ -27,7 +27,7 @@ import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsRepor
 import app.nzyme.core.rest.resources.taps.reports.tables.ssh.SshSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpDatagramsReport;
-import app.nzyme.core.subsystems.Subsystem;
+import app.nzyme.plugin.Subsystem;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -39,8 +39,6 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
-
-import java.util.UUID;
 
 @Path("/api/taps/tables")
 @TapSecured

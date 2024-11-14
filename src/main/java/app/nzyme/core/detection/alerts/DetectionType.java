@@ -1,6 +1,6 @@
 package app.nzyme.core.detection.alerts;
 
-import app.nzyme.core.subsystems.Subsystem;
+import app.nzyme.plugin.Subsystem;
 
 public enum DetectionType {
 

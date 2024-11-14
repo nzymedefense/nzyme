@@ -5648,4 +5648,40 @@
         <dropNotNullConstraint tableName="dns_log" columnName="server_mac" />
     </changeSet>
 
+    <changeSet id="move_retention_config_to_tenants" author="lennartkoopmann">
+        <sql>
+            WITH registry_entries AS (
+                SELECT key, value FROM registry
+                WHERE key IN (
+                    'core.ethernet_l4_retention_time_days',
+                    'core.ethernet_dns_retention_time_days',
+                    'core.ethernet_arp_retention_time_days',
+                    'core.dot11_retention_time_days',
+                    'core.bluetooth_retention_time_days'
+                    ) AND value &lt;&gt; '7'
+            )
+            INSERT INTO registry (organization_id, tenant_id, key, value)
+            SELECT
+                t.organization_id,
+                t.uuid AS tenant_id,
+                reg.key,
+                reg.value
+            FROM auth_tenants t
+            JOIN registry_entries reg ON TRUE
+            ON CONFLICT DO NOTHING;
+        </sql>
+    </changeSet>
+
+    <changeSet id="delete_global_retention_config" author="lennartkoopmann">
+        <sql>
+            DELETE FROM registry WHERE key IN (
+                'core.ethernet_l4_retention_time_days',
+                'core.ethernet_dns_retention_time_days',
+                'core.ethernet_arp_retention_time_days',
+                'core.dot11_retention_time_days',
+                'core.bluetooth_retention_time_days'
+            ) AND organization_id IS NULL AND tenant_id IS NULL;
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

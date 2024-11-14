@@ -1,7 +1,6 @@
 package app.nzyme.core.rest.resources.alerts;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.subsystems.Subsystem;
 import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntry;
@@ -20,6 +19,7 @@ import app.nzyme.core.rest.responses.alerts.*;
 import app.nzyme.core.rest.responses.events.SubscriptionDetailsResponse;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.util.Tools;
+import app.nzyme.plugin.Subsystem;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Strings;

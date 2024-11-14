@@ -2,6 +2,7 @@ package app.nzyme.core.subsystems;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.RegistryKey;
+import app.nzyme.plugin.Subsystem;
 import jakarta.annotation.Nullable;
 
 import java.util.Optional;

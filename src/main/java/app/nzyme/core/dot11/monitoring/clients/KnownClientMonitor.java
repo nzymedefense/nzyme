@@ -1,7 +1,6 @@
 package app.nzyme.core.dot11.monitoring.clients;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.subsystems.Subsystem;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.dot11.db.ConnectedClientDetails;
 import app.nzyme.core.dot11.db.Dot11KnownClient;
@@ -9,6 +8,7 @@ import app.nzyme.core.dot11.db.monitoring.MonitoredBSSID;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.plugin.Subsystem;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

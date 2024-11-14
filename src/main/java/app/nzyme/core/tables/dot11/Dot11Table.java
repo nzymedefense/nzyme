@@ -1,7 +1,6 @@
 package app.nzyme.core.tables.dot11;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.subsystems.Subsystem;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
@@ -17,6 +16,7 @@ import app.nzyme.core.tables.dot11.monitoring.PreLoadedMonitoredSSID;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
+import app.nzyme.plugin.Subsystem;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;

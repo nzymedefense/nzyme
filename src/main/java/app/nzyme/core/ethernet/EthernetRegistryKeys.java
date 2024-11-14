@@ -26,13 +26,4 @@ public class EthernetRegistryKeys {
             false
     );
 
-    public static final RegistryKey ARP_RETENTION_TIME_DAYS = RegistryKey.create(
-            "ethernet_arp_retention_time_days",
-            Optional.of(new ArrayList<>() {{
-                add(ConfigurationEntryConstraint.createNumberRangeConstraint(1, Integer.MAX_VALUE));
-            }}),
-            Optional.of("7"),
-            false
-    );
-
 }
