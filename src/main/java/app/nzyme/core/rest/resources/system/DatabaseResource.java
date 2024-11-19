@@ -7,10 +7,17 @@ import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.rest.requests.RetentionTimeConfigurationUpdateRequest;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
+import app.nzyme.core.rest.responses.system.database.DataCategorySizesResponse;
+import app.nzyme.core.rest.responses.system.database.GlobalDatabaseCategoriesResponse;
+import app.nzyme.core.rest.responses.system.database.OrganizationDataCategoriesResponse;
+import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +28,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,9 +43,85 @@ public class DatabaseResource {
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/retention/settings/global")
     public Response globalRetentionSettings() {
-        DatabaseImpl db = (DatabaseImpl) nzyme.getDatabase();
+        Map<String, DataCategorySizesResponse> globalSizes = Maps.newHashMap();
+        for (DataCategory category : DataCategory.values()) {
+            globalSizes.put(category.name(), DataCategorySizesResponse.create(
+                    null, countDataCategoryRows(category, null, null))
+            );
+        }
 
-        // GlobalDatabaseCategoriesResponse
+        List<OrganizationDataCategoriesResponse> organizations = Lists.newArrayList();
+        for (OrganizationEntry org : nzyme.getAuthenticationService().findAllOrganizations(0, Integer.MAX_VALUE)) {
+            Map<String, DataCategorySizesResponse> orgSizes = Maps.newHashMap();
+            for (DataCategory category : DataCategory.values()) {
+                orgSizes.put(category.name(), DataCategorySizesResponse.create(
+                        null, countDataCategoryRows(category, org.uuid(), null)
+                ));
+            }
+
+            organizations.add(OrganizationDataCategoriesResponse.create(
+                    org.uuid(),
+                    org.name(),
+                    orgSizes,
+                    
+            ));
+        }
+
+
+        return Response.ok().build();
+    }
+
+    private long countDataCategoryRows(DataCategory category,
+                                       @Nullable UUID organizationId,
+                                       @Nullable UUID tenantId) {
+        return 0L;
+    }
+
+
+    public long calculateDataCategorySize(DataCategory category) {
+        List<String> tableNames = Lists.newArrayList();
+
+        switch (category) {
+            case DOT11 -> {
+                tableNames.add("dot11_bssids");
+                tableNames.add("dot11_channels");
+                tableNames.add("dot11_fingerprints");
+                tableNames.add("dot11_ssids");
+                tableNames.add("dot11_ssid_settings");
+                tableNames.add("dot11_infrastructure_types");
+                tableNames.add("dot11_bssid_clients");
+                tableNames.add("dot11_rates");
+                tableNames.add("dot11_clients");
+                tableNames.add("dot11_client_probereq_ssids");
+                tableNames.add("dot11_channel_histograms");
+                tableNames.add("dot11_disco_activity");
+                tableNames.add("dot11_disco_activity_receivers");
+                tableNames.add("dot11_known_clients");
+                tableNames.add("dot11_known_networks");
+            }
+            case BLUETOOTH -> {
+                tableNames.add("bluetooth_devices");
+            }
+            case ETHERNET_L4 -> {
+                tableNames.add("l4_sessions");
+                tableNames.add("ssh_sessions");
+                tableNames.add("socks_tunnels");
+            }
+            case ETHERNET_DNS -> {
+                tableNames.add("dns_log");
+                tableNames.add("dns_entropy_log");
+                tableNames.add("dns_pairs");
+                tableNames.add("dns_statistics");
+            }
+        }
+
+        long size = 0;
+        DatabaseImpl database = (DatabaseImpl) nzyme.getDatabase();
+        for (String table : tableNames) {
+            size += database.getTableSize(table);
+        }
+
+        return size;
     }
 
 
