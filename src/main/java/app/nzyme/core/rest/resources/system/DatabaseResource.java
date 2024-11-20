@@ -7,10 +7,9 @@ import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.rest.requests.RetentionTimeConfigurationUpdateRequest;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
-import app.nzyme.core.rest.responses.system.database.DataCategorySizesResponse;
-import app.nzyme.core.rest.responses.system.database.GlobalDatabaseCategoriesResponse;
-import app.nzyme.core.rest.responses.system.database.OrganizationDataCategoriesResponse;
+import app.nzyme.core.rest.responses.system.database.*;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
+import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -43,15 +42,18 @@ public class DatabaseResource {
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/retention/settings/global")
     public Response globalRetentionSettings() {
+        // Global/Total database size.
         Map<String, DataCategorySizesResponse> globalSizes = Maps.newHashMap();
         for (DataCategory category : DataCategory.values()) {
             globalSizes.put(category.name(), DataCategorySizesResponse.create(
-                    null, countDataCategoryRows(category, null, null))
+                    calculateDataCategorySize(category),
+                    countDataCategoryRows(category, null, null))
             );
         }
 
+        // Organizations.
         List<OrganizationDataCategoriesResponse> organizations = Lists.newArrayList();
-        for (OrganizationEntry org : nzyme.getAuthenticationService().findAllOrganizations(0, Integer.MAX_VALUE)) {
+        for (OrganizationEntry org : nzyme.getAuthenticationService().findAllOrganizations()) {
             Map<String, DataCategorySizesResponse> orgSizes = Maps.newHashMap();
             for (DataCategory category : DataCategory.values()) {
                 orgSizes.put(category.name(), DataCategorySizesResponse.create(
@@ -59,22 +61,46 @@ public class DatabaseResource {
                 ));
             }
 
+            // Tenants.
+            List<TenantDataCategoriesResponse> tenants = Lists.newArrayList();
+            for (TenantEntry tenant : nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.uuid())) {
+                Map<String, DataCategorySizesAndConfigurationResponse> tenantSizes = Maps.newHashMap();
+
+                for (DataCategory category : DataCategory.values()) {
+                    tenantSizes.put(category.name(), DataCategorySizesAndConfigurationResponse.create(
+                            null,
+                            countDataCategoryRows(category, org.uuid(), tenant.uuid()),
+                            getDataCategoryRetentionTimeDays(category, org.uuid(), tenant.uuid())
+                    ));
+                }
+
+                tenants.add(TenantDataCategoriesResponse.create(
+                        tenant.uuid(),
+                        tenant.name(),
+                        tenantSizes
+                ));
+            }
+
             organizations.add(OrganizationDataCategoriesResponse.create(
                     org.uuid(),
                     org.name(),
                     orgSizes,
-                    
+                    tenants
             ));
         }
 
 
-        return Response.ok().build();
+        return Response.ok(GlobalDatabaseCategoriesResponse.create(globalSizes, organizations)).build();
     }
+
+    // TODO for org
+
+    // TODO for tenant
 
     private long countDataCategoryRows(DataCategory category,
                                        @Nullable UUID organizationId,
                                        @Nullable UUID tenantId) {
-        return 0L;
+        throw new RuntimeException("Not implemented.");
     }
 
 
@@ -125,7 +151,7 @@ public class DatabaseResource {
     }
 
 
-    private long getDataCategoryRetentionTimeDays(DataCategory category,
+    private int getDataCategoryRetentionTimeDays(DataCategory category,
                                                   @NotNull UUID organizationId,
                                                   @NotNull UUID tenantId) {
         String key = null;

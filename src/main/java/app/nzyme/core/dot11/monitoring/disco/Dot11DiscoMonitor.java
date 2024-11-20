@@ -36,14 +36,7 @@ public class Dot11DiscoMonitor extends Periodical {
     @Override
     protected void execute() {
         for (OrganizationEntry org : nzyme.getAuthenticationService().findAllOrganizations()) {
-            Optional<List<TenantEntry>> tenants = nzyme.getAuthenticationService()
-                    .findAllTenantsOfOrganization(org.uuid());
-
-            if (tenants.isEmpty()) {
-                continue;
-            }
-
-            for (TenantEntry tenant : tenants.get()) {
+            for (TenantEntry tenant : nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.uuid())) {
                 for (MonitoredSSID monitoredNetwork : nzyme.getDot11().findAllMonitoredSSIDs(org.uuid(), tenant.uuid())) {
                     if (!monitoredNetwork.enabledDiscoMonitor() || monitoredNetwork.discoMonitorType() == null) {
                         continue;

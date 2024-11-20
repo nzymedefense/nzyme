@@ -294,14 +294,10 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Optional<List<TenantEntry>> tenants = nzyme.getAuthenticationService().findAllTenantsOfOrganization(
-                org.get().uuid(), limit, offset);
-
         List<TenantDetailsResponse> response = Lists.newArrayList();
-        if (tenants.isPresent()) {
-            for (TenantEntry tenant : tenants.get()) {
-                response.add(tenantEntryToResponse(tenant));
-            }
+        for (TenantEntry tenant : nzyme.getAuthenticationService()
+                .findAllTenantsOfOrganization(org.get().uuid(), limit, offset)) {
+            response.add(tenantEntryToResponse(tenant));
         }
 
         long tenantsCount = nzyme.getAuthenticationService().countTenantsOfOrganization(org.get());

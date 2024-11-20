@@ -341,12 +341,12 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<List<TenantEntry>> findAllTenantsOfOrganization(UUID organizationId) {
+    public List<TenantEntry> findAllTenantsOfOrganization(UUID organizationId) {
         return findAllTenantsOfOrganization(organizationId, Integer.MAX_VALUE, 0);
     }
 
-    public Optional<List<TenantEntry>> findAllTenantsOfOrganization(UUID organizationId, int limit, int offset) {
-        List<TenantEntry> tenants = nzyme.getDatabase().withHandle(handle ->
+    public List<TenantEntry> findAllTenantsOfOrganization(UUID organizationId, int limit, int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_tenants " +
                                 "WHERE organization_id = :organization_id " +
                                 "ORDER BY name DESC LIMIT :limit OFFSET :offset")
@@ -356,12 +356,6 @@ public class AuthenticationService {
                         .mapTo(TenantEntry.class)
                         .list()
         );
-
-        if (tenants.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(tenants);
-        }
     }
 
     public Optional<TenantEntry> findTenant(UUID tenantId) {
@@ -1324,28 +1318,25 @@ public class AuthenticationService {
         // Apply tenant-specific authentication settings to all tenant users.
         try {
             for (OrganizationEntry organization : findAllOrganizations(Integer.MAX_VALUE, 0)) {
-                Optional<List<TenantEntry>> tenants = findAllTenantsOfOrganization(organization.uuid());
-                if (tenants.isPresent()) {
-                    for (TenantEntry tenant : tenants.get()) {
-                        sessionsToClean.addAll(
-                                nzyme.getDatabase().withHandle(handle ->
-                                        handle.createQuery("SELECT u.uuid FROM auth_users AS u " +
-                                                        "LEFT JOIN auth_sessions AS s ON s.user_id = u.uuid " +
-                                                        "WHERE u.organization_id = :organization_id " +
-                                                        "AND u.tenant_id = :tenant_id " +
-                                                        "AND (s.created_at < :session_timeout OR (s.mfa_valid = true " +
-                                                        "AND u.last_activity < :inactivity_timeout) " +
-                                                        "OR (s.mfa_valid = false AND s.mfa_requested_at < :mfa_timeout))")
-                                                .bind("organization_id", organization.uuid())
-                                                .bind("tenant_id", tenant.uuid())
-                                                .bind("session_timeout", DateTime.now().minusMinutes(tenant.sessionTimeoutMinutes()))
-                                                .bind("inactivity_timeout", DateTime.now().minusMinutes(tenant.sessionInactivityTimeoutMinutes()))
-                                                .bind("mfa_timeout", DateTime.now().minusMinutes(tenant.mfaTimeoutMinutes()))
-                                                .mapTo(UUID.class)
-                                                .list()
-                                )
-                        );
-                    }
+                for (TenantEntry tenant : findAllTenantsOfOrganization(organization.uuid())) {
+                    sessionsToClean.addAll(
+                            nzyme.getDatabase().withHandle(handle ->
+                                    handle.createQuery("SELECT u.uuid FROM auth_users AS u " +
+                                                    "LEFT JOIN auth_sessions AS s ON s.user_id = u.uuid " +
+                                                    "WHERE u.organization_id = :organization_id " +
+                                                    "AND u.tenant_id = :tenant_id " +
+                                                    "AND (s.created_at < :session_timeout OR (s.mfa_valid = true " +
+                                                    "AND u.last_activity < :inactivity_timeout) " +
+                                                    "OR (s.mfa_valid = false AND s.mfa_requested_at < :mfa_timeout))")
+                                            .bind("organization_id", organization.uuid())
+                                            .bind("tenant_id", tenant.uuid())
+                                            .bind("session_timeout", DateTime.now().minusMinutes(tenant.sessionTimeoutMinutes()))
+                                            .bind("inactivity_timeout", DateTime.now().minusMinutes(tenant.sessionInactivityTimeoutMinutes()))
+                                            .bind("mfa_timeout", DateTime.now().minusMinutes(tenant.mfaTimeoutMinutes()))
+                                            .mapTo(UUID.class)
+                                            .list()
+                            )
+                    );
                 }
             }
 
