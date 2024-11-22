@@ -50,7 +50,6 @@ public class NzymeExceptionMapper implements ExceptionMapper<Throwable> {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-
         LOG.error("Error while handling REST call.", t);
         return Response.serverError().build();
     }

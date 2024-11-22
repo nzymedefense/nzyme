@@ -328,22 +328,5 @@ public class DNSTable implements DataTable {
                 .orElse(EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
         );
 
-        tablesService.getNzyme().getDatabase().useHandle(handle -> {
-            handle.createUpdate("DELETE FROM dns_statistics WHERE created_at < :created_at")
-                    .bind("created_at", DateTime.now().minusDays(retentionTimeDays))
-                    .execute();
-
-            handle.createUpdate("DELETE FROM dns_pairs WHERE created_at < :created_at")
-                    .bind("created_at", DateTime.now().minusDays(retentionTimeDays))
-                    .execute();
-
-            handle.createUpdate("DELETE FROM dns_log WHERE timestamp < :created_at")
-                    .bind("created_at", DateTime.now().minusDays(retentionTimeDays))
-                    .execute();
-
-            handle.createUpdate("DELETE FROM dns_entropy_log WHERE timestamp < :created_at")
-                    .bind("created_at", DateTime.now().minusDays(retentionTimeDays))
-                    .execute();
-        });
     }
 }

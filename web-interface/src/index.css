@@ -1153,3 +1153,11 @@ div.dropdown-headline ul.dropdown-menu {
 .cursor-help {
     cursor: help;
 }
+
+.indent-left {
+    margin-left: 10px;
+}
+
+.indent-left-2 {
+    margin-left: 20px;
+}

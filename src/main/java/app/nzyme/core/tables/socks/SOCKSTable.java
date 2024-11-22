@@ -125,11 +125,7 @@ public class SOCKSTable implements DataTable {
         LOG.info("SOCKS (TCP/L4) data retention: <{}> days / Delete data older than <{}>.",
                 l4RetentionDays, l4CutOff);
 
-        nzyme.getDatabase().useHandle(handle -> {
-            handle.createUpdate("DELETE FROM socks_tunnels WHERE established_at < :cutoff")
-                    .bind("cutoff", l4CutOff)
-                    .execute();
-        });
+
     }
 
 }

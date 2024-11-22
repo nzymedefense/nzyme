@@ -790,19 +790,6 @@ public class Dot11Table implements DataTable {
                 dot11RetentionDays, dot11CutOff);
 
 
-        nzyme.getDatabase().useHandle(handle -> {
-            handle.createUpdate("DELETE FROM dot11_bssids WHERE created_at < :cutoff")
-                    .bind("cutoff", dot11CutOff)
-                    .execute();
-
-            handle.createUpdate("DELETE FROM dot11_clients WHERE created_at < :cutoff")
-                    .bind("cutoff", dot11CutOff)
-                    .execute();
-
-            handle.createUpdate("DELETE FROM dot11_disco_activity WHERE created_at < :cutoff")
-                    .bind("cutoff", dot11CutOff)
-                    .execute();
-        });
     }
 
 }

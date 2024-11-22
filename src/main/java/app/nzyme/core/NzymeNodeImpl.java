@@ -22,6 +22,11 @@ import app.nzyme.core.bluetooth.sig.BluetoothSigService;
 import app.nzyme.core.cache.CacheManager;
 import app.nzyme.core.connect.ConnectService;
 import app.nzyme.core.context.ContextService;
+import app.nzyme.core.database.DataCategory;
+import app.nzyme.core.database.DataTableInformation;
+import app.nzyme.core.database.tasks.handlers.GlobalPurgeCategoryTaskHandler;
+import app.nzyme.core.database.tasks.handlers.OrganizationPurgeCategoryTaskHandler;
+import app.nzyme.core.database.tasks.handlers.TenantPurgeCategoryTaskHandler;
 import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
@@ -47,7 +52,7 @@ import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.subsystems.Subsystems;
 import app.nzyme.plugin.*;
 import app.nzyme.plugin.distributed.messaging.MessageBus;
-import app.nzyme.plugin.distributed.tasksqueue.TasksQueue;
+import app.nzyme.plugin.distributed.tasksqueue.*;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
@@ -217,6 +222,20 @@ public class NzymeNodeImpl implements NzymeNode {
         LOG.info("Initializing tasks queue [{}] ...", this.tasksQueue.getClass().getCanonicalName());
         this.tasksQueue.initialize();
         LOG.info("Done.");
+
+        // Register task handlers. (There are others registered in other parts of the system.)
+        this.tasksQueue.onMessageReceived(
+                TaskType.PURGE_DATA_CATEGORY_GLOBAL,
+                new GlobalPurgeCategoryTaskHandler(this)
+        );
+        this.tasksQueue.onMessageReceived(
+                TaskType.PURGE_DATA_CATEGORY_ORGANIZATION,
+                new OrganizationPurgeCategoryTaskHandler(this)
+        );
+        this.tasksQueue.onMessageReceived(
+                TaskType.PURGE_DATA_CATEGORY_TENANT,
+                new TenantPurgeCategoryTaskHandler(this)
+        );
 
         try {
             this.crypto.initialize();

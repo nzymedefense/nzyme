@@ -121,11 +121,6 @@ public class SSHTable implements DataTable {
         LOG.info("SSH (TCP/L4) data retention: <{}> days / Delete data older than <{}>.",
                 l4RetentionDays, l4CutOff);
 
-        nzyme.getDatabase().useHandle(handle -> {
-            handle.createUpdate("DELETE FROM ssh_sessions WHERE established_at < :cutoff")
-                    .bind("cutoff", l4CutOff)
-                    .execute();
-        });
     }
 
 }

@@ -40,6 +40,7 @@ import app.nzyme.core.security.sessions.db.SessionEntryMapper;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetailsMapper;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntryMapper;
 import app.nzyme.core.shared.db.TapBasedSignalStrengthResultMapper;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.core.taps.db.metrics.Dot11FrequencyAndChannelWidthEntryMapper;
 import app.nzyme.core.taps.db.metrics.TapMetricsTimerMapper;
 import app.nzyme.plugin.Database;
@@ -48,6 +49,7 @@ import app.nzyme.core.taps.db.*;
 import app.nzyme.core.taps.db.metrics.TapMetricsAggregationMapper;
 import app.nzyme.core.taps.db.metrics.TapMetricsGaugeMapper;
 import com.google.common.collect.Lists;
+import jakarta.annotation.Nullable;
 import liquibase.*;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
@@ -277,6 +279,146 @@ public class DatabaseImpl implements Database {
                         .bind("table", tableName)
                         .mapTo(Long.class)
                         .one());
+    }
+
+    public List<DataTableInformation> getTablesOfDataCategory(DataCategory category) {
+        List<DataTableInformation> tables = Lists.newArrayList();
+
+        switch (category) {
+            case DOT11 -> {
+                tables.add(new DataTableInformation(
+                        "dot11_bssids",
+                        "SELECT COUNT(*) FROM dot11_bssids WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM dot11_bssids WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dot11_fingerprints",
+                        "SELECT (SELECT COUNT(*) FROM dot11_fingerprints LEFT JOIN dot11_bssids ON dot11_bssids.id = dot11_fingerprints.bssid_id WHERE dot11_bssids.tap_uuid IN (<taps>)) + (SELECT COUNT(*) FROM dot11_fingerprints LEFT JOIN dot11_ssids ON dot11_ssids.id = dot11_fingerprints.ssid_id WHERE dot11_ssids.tap_uuid IN (<taps>))",
+                        null
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dot11_bssid_clients",
+                        "SELECT COUNT(*) FROM dot11_bssid_clients LEFT JOIN dot11_bssids ON dot11_bssids.id = dot11_bssid_clients.bssid_id WHERE dot11_bssids.tap_uuid IN (<taps>)",
+                        null
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dot11_ssids",
+                        "SELECT COUNT(*) FROM dot11_ssids WHERE tap_uuid IN (<taps>)",
+                        null
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dot11_ssid_settings",
+                        "SELECT COUNT(*) FROM dot11_ssid_settings LEFT JOIN dot11_ssids ON dot11_ssids.id = dot11_ssid_settings.ssid_id WHERE dot11_ssids.tap_uuid IN (<taps>)",
+                        null
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dot11_infrastructure_types",
+                        "SELECT COUNT(*) FROM dot11_infrastructure_types LEFT JOIN dot11_ssids ON dot11_ssids.id = dot11_infrastructure_types.ssid_id WHERE dot11_ssids.tap_uuid IN (<taps>)",
+                        null
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dot11_rates",
+                        "SELECT COUNT(*) FROM dot11_rates LEFT JOIN dot11_ssids ON dot11_ssids.id = dot11_rates.ssid_id WHERE dot11_ssids.tap_uuid IN (<taps>)",
+                        null
+                ));
+
+
+                tables.add(new DataTableInformation(
+                        "dot11_channel_histograms",
+                        "SELECT COUNT(*) FROM dot11_channel_histograms LEFT JOIN dot11_ssids ON dot11_ssids.id = dot11_channel_histograms.ssid_id WHERE dot11_ssids.tap_uuid IN (<taps>)",
+                        null
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dot11_channels",
+                        "SELECT COUNT(*) FROM dot11_channels LEFT JOIN dot11_ssids ON dot11_ssids.id = dot11_channels.ssid_id WHERE dot11_ssids.tap_uuid IN (<taps>)",
+                        null
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dot11_disco_activity",
+                        "SELECT COUNT(*) FROM dot11_disco_activity WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM dot11_disco_activity WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dot11_disco_activity_receivers",
+                        "SELECT COUNT(*) FROM dot11_disco_activity_receivers LEFT JOIN dot11_disco_activity ON dot11_disco_activity.id = dot11_disco_activity_receivers.disco_activity_id WHERE dot11_disco_activity.tap_uuid IN (<taps>)",
+                        null
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dot11_clients",
+                        "SELECT COUNT(*) FROM dot11_clients WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM dot11_clients WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dot11_client_probereq_ssids",
+                        "SELECT COUNT(*) FROM dot11_client_probereq_ssids WHERE tap_uuid IN (<taps>)",
+                        null
+                ));
+            }
+            case BLUETOOTH -> {
+                tables.add(new DataTableInformation(
+                        "bluetooth_devices",
+                        "SELECT COUNT(*) FROM bluetooth_devices WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM bluetooth_devices WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                ));
+            }
+            case ETHERNET_L4 -> {
+                tables.add(new DataTableInformation(
+                        "l4_sessions",
+                        "SELECT COUNT(*) FROM l4_sessions WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM l4_sessions WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                ));
+
+                tables.add(new DataTableInformation(
+                        "ssh_sessions",
+                        "SELECT COUNT(*) FROM ssh_sessions LEFT JOIN l4_sessions ON l4_sessions.session_key = ssh_sessions.tcp_session_key WHERE l4_sessions.tap_uuid IN (<taps>)",
+                        "DELETE FROM ssh_sessions WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                ));
+
+                tables.add(new DataTableInformation(
+                        "socks_tunnels",
+                        "SELECT COUNT(*) FROM socks_tunnels LEFT JOIN l4_sessions ON l4_sessions.session_key = socks_tunnels.tcp_session_key WHERE l4_sessions.tap_uuid IN (<taps>)",
+                        "DELETE FROM socks_tunnels WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                ));
+            }
+            case ETHERNET_DNS -> {
+                tables.add(new DataTableInformation(
+                        "dns_log",
+                        "SELECT COUNT(*) FROM dns_log WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM dns_log WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dns_entropy_log",
+                        "SELECT COUNT(*) FROM dns_entropy_log WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM dns_entropy_log WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dns_pairs",
+                        "SELECT COUNT(*) FROM dns_pairs WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM dns_pairs WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                ));
+
+                tables.add(new DataTableInformation(
+                        "dns_statistics",
+                        "SELECT COUNT(*) FROM dns_statistics WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM dns_statistics WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                ));
+            }
+        }
+
+        return tables;
     }
 
     @Override

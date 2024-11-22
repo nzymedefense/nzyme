@@ -17,9 +17,12 @@
 
 package app.nzyme.core.util;
 
+import app.nzyme.core.NzymeNode;
+import app.nzyme.core.taps.Tap;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.hash.Hashing;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,8 +33,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Tools {
 
@@ -142,6 +148,21 @@ public class Tools {
 
         // Check if the second least significant bit is 1 (i.e., if the address is locally administered)
         return (firstOctetInt & 0b00000010) != 0;
+    }
+
+    public static List<UUID> getTapUuids(NzymeNode nzyme, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+        List<Tap> taps;
+        if (organizationId == null && tenantId == null) {
+            taps = nzyme.getTapManager().findAllTapsOfAllUsers();
+        } else if (organizationId != null && tenantId == null) {
+            taps = nzyme.getTapManager().findAllTapsOfOrganization(organizationId);
+        } else {
+            taps = nzyme.getTapManager().findAllTapsOfTenant(organizationId, tenantId);
+        }
+
+        return taps.stream()
+                .map(Tap::uuid)
+                .collect(Collectors.toList());
     }
 
 }

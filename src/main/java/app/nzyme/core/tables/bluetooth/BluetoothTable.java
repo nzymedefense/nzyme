@@ -158,11 +158,6 @@ public class BluetoothTable implements DataTable {
         LOG.info("Bluetooth data retention: <{}> days / Delete data older than <{}>.",
                 bluetoothRetentionDays, bluetoothCutoff);
 
-        nzyme.getDatabase().useHandle(handle -> {
-            handle.createUpdate("DELETE FROM bluetooth_devices WHERE last_seen < :cutoff")
-                    .bind("cutoff", bluetoothCutoff)
-                    .execute();
-        });
     }
 
     public static final class InvalidBluetoothUuidException extends Exception {

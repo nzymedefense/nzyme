@@ -10,7 +10,10 @@ import java.util.UUID;
 @AutoValue
 public abstract class OrganizationDataCategoriesResponse {
 
+    @JsonProperty("organization_id")
     public abstract UUID organizationId();
+
+    @JsonProperty("organization_name")
     public abstract String organizationName();
 
     @JsonProperty("total_sizes")

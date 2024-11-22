@@ -48,14 +48,20 @@ class SystemService {
         })
   }
 
-  getDatabaseSummary(setSummary) {
-    RESTClient.get("/system/database", {}, function(response) {
-      setSummary(response.data);
-    })
+  getDatabaseGlobalSizes(setSizes) {
+    RESTClient.get("/system/database/sizes/global", {}, (response) => setSizes(response.data))
   }
 
-  updateRetentionTimes(newConfig, successCallback, errorCallback) {
-    RESTClient.put('/system/database/retention', { change: newConfig }, successCallback, errorCallback)
+  purgeDatabaseGlobalCategory(category, onSuccess) {
+    RESTClient.post(`/system/database/purge/category/${category}`, {}, onSuccess)
+  }
+
+  purgeDatabaseOrganizationCategory(category, organizationId, onSuccess) {
+    RESTClient.post(`/system/database/purge/organization/${organizationId}/category/${category}`, {}, onSuccess)
+  }
+
+  purgeDatabaseTenantCategory(category, organizationId, tenantId, onSuccess) {
+    RESTClient.post(`/system/database/purge/organization/${organizationId}/tenant/${tenantId}/category/${category}`, {}, onSuccess)
   }
 
   getSidebarTitle(setSidebarTitle, setSidebarSubtitle) {
