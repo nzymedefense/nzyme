@@ -12,6 +12,8 @@ const ApiRoutes = {
         SETTINGS: '/system/authentication/settings',
         ORGANIZATIONS: {
           DETAILS: (organizationId) => `/system/authentication/organizations/show/${organizationId}`,
+          TENANTS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/tenants`,
+          ADMINS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/administrators`,
           CREATE: '/system/authentication/organizations/create',
           EDIT: (organizationId) => `/system/authentication/organizations/show/${organizationId}/edit`,
           ADMINS: {

@@ -48,7 +48,7 @@ function OrganizationAdminDetailsPage() {
   }, [userId, organizationId])
 
   if (redirect) {
-    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organizationId)} />
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS_PAGE(organizationId)} />
   }
 
   if (!user || !organization) {
@@ -70,7 +70,11 @@ function OrganizationAdminDetailsPage() {
                     {organization.name}
                   </a>
                 </li>
-                <li className="breadcrumb-item">Organization Administrators</li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS_PAGE(organization.id)}>
+                    Organization Administrators
+                  </a>
+                </li>
                 <li className="breadcrumb-item active" aria-current="page">
                   {user.email}
                 </li>
@@ -80,7 +84,7 @@ function OrganizationAdminDetailsPage() {
 
           <div className="col-md-3">
             <span className="float-end">
-              <a className="btn btn-secondary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
+              <a className="btn btn-secondary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS_PAGE(organization.id)}>
                 Back
               </a>{' '}
               <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.EDIT(organization.id, user.id)}>

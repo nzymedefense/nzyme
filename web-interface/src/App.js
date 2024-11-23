@@ -138,6 +138,10 @@ import MonitoredClientsConfigurationPage from "./components/dot11/monitoring/cli
 import SubsystemsPage from "./components/system/subsystems/SubsystemsPage";
 import ProtectedRoute from "./components/misc/ProtectedRoute";
 import {userHasSubsystem} from "./util/Tools";
+import OrganizationTenantsPage
+  from "./components/system/authentication/management/organizations/OrganizationTenantsPage";
+import OrganizationAdministratorsPage
+  from "./components/system/authentication/management/organizations/OrganizationAdministratorsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -340,6 +344,8 @@ function App() {
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.EDIT(':userId')} element={<EditSuperAdminPage/>}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} element={<CreateOrganizationPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
+                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.TENANTS_PAGE(':organizationId')} element={<OrganizationTenantsPage />}/>
+                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS_PAGE(':organizationId')} element={<OrganizationAdministratorsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.CREATE(':organizationId')} element={<CreateOrganizationAdministratorPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.DETAILS(':organizationId', ':userId')} element={<OrganizationAdminDetailsPage />}/>

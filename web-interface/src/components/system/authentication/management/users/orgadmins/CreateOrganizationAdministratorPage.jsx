@@ -40,7 +40,7 @@ function CreateOrganizationAdministratorPage() {
   }
 
   if (redirect) {
-    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)} />
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS_PAGE(organization.id)} />
   }
 
   return (
@@ -66,7 +66,7 @@ function CreateOrganizationAdministratorPage() {
 
           <div className="col-2">
             <a className="btn btn-secondary float-end"
-               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
+               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS_PAGE(organization.id)}>
               Back
             </a>
           </div>

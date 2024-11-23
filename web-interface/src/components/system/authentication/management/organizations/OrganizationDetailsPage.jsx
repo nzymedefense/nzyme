@@ -4,12 +4,12 @@ import Routes from "../../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
-import TenantsTable from "../tenants/TenantsTable";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import OrganizationSessions from "../sessions/OrganizationSessions";
-import OrganizationAdminTable from "../users/orgadmins/OrganizationAdminTable";
 import {UserContext} from "../../../../../App";
 import WithExactRole from "../../../../misc/WithExactRole";
+import SectionMenuBar from "../../../../shared/SectionMenuBar";
+import {ORGANIZATION_MENU_ITEMS} from "./OrganizationMenuItems";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -62,19 +62,27 @@ function OrganizationDetailsPage() {
 
           <div className="col-md-3">
             <span className="float-end">
-              { user.is_superadmin ?
+              {user.is_superadmin ?
                   <a className="btn btn-secondary" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Back</a>
-                  : null }{' '}
+                  : null}{' '}
 
-              { user.is_superadmin ?
-              <a className="btn btn-primary" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(organization.id)}>
-                Edit Organization
-              </a> : null }
+              {user.is_superadmin ?
+                  <a className="btn btn-primary"
+                     href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(organization.id)}>
+                    Edit Organization
+                  </a> : null}
             </span>
           </div>
         </div>
 
         <div className="row">
+          <div className="col-md-12">
+            <SectionMenuBar items={ORGANIZATION_MENU_ITEMS(organization.id)}
+                            activeRoute={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}/>
+          </div>
+        </div>
+
+        <div className="row mt-3">
           <div className="col-md-12">
             <h1>Organization &quot;{organization.name}&quot;</h1>
           </div>
@@ -91,44 +99,6 @@ function OrganizationDetailsPage() {
                     <p className="mb-0">
                       {organization.description}
                     </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="row mt-3">
-              <div className="col-md-12">
-                <div className="card">
-                  <div className="card-body">
-                    <h3>Tenants</h3>
-
-                    <p className="mb-2">
-                      The following tenants are part of this organization.
-                    </p>
-
-                    <TenantsTable organizationId={organization.id} />
-
-                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(organization.id)}
-                       className="btn btn-sm btn-secondary">
-                      Create Tenant
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="row mt-3">
-              <div className="col-md-12">
-                <div className="card">
-                  <div className="card-body">
-                    <h3>Organization Administrators</h3>
-
-                    <OrganizationAdminTable organization={organization} />
-
-                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.CREATE(organization.id)}
-                       className="btn btn-sm btn-secondary">
-                      Create Organization Administrator
-                    </a>
                   </div>
                 </div>
               </div>
@@ -158,25 +128,27 @@ function OrganizationDetailsPage() {
           </div>
 
           <div className="col-md-6">
-            { user.is_superadmin ?
-            <div className="row">
-              <div className="col-md-12">
-                <div className="card">
-                  <div className="card-body">
-                    <h3>Delete Organization</h3>
+            {user.is_superadmin ?
+                <div className="row">
+                  <div className="col-md-12">
+                    <div className="card">
+                      <div className="card-body">
+                        <h3>Delete Organization</h3>
 
-                    <p>
-                      You can only delete an organization if it has no tenants and if it is not the last remaining one.
-                    </p>
+                        <p>
+                          You can only delete an organization if it has no tenants and if it is not the last remaining
+                          one.
+                        </p>
 
-                    <button className="btn btn-sm btn-danger" disabled={!organization.is_deletable} onClick={deleteOrganization}>
-                      Delete Organization
-                    </button>
+                        <button className="btn btn-sm btn-danger" disabled={!organization.is_deletable}
+                                onClick={deleteOrganization}>
+                          Delete Organization
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            : null }
+                : null}
           </div>
         </div>
 
@@ -186,7 +158,7 @@ function OrganizationDetailsPage() {
               <div className="card-body">
                 <h3>All Active Sessions of Organization</h3>
 
-                <OrganizationSessions organizationId={organization.id} />
+                <OrganizationSessions organizationId={organization.id}/>
               </div>
             </div>
           </div>

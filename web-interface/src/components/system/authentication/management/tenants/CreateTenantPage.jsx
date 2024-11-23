@@ -32,7 +32,7 @@ function CreateTenantPage() {
   }
 
   if (redirect) {
-    return <Navigate to={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organizationId)} />
+    return <Navigate to={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.TENANTS_PAGE(organizationId)} />
   }
 
   if (!organization) {
@@ -51,7 +51,11 @@ function CreateTenantPage() {
                 <li className="breadcrumb-item">
                   <a href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>{organization.name}</a>
                 </li>
-                <li className="breadcrumb-item">Tenants</li>
+                <li className="breadcrumb-item">
+                  <a href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.TENANTS_PAGE(organization.id)}>
+                    Tenants
+                  </a>
+                </li>
                 <li className="breadcrumb-item active" aria-current="page">Create</li>
               </ol>
             </nav>
@@ -59,7 +63,7 @@ function CreateTenantPage() {
 
           <div className="col-2">
             <a className="btn btn-secondary float-end"
-               href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
+               href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.TENANTS_PAGE(organization.id)}>
               Back
             </a>
           </div>
