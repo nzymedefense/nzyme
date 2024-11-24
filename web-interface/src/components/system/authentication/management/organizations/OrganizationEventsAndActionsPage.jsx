@@ -1,24 +1,25 @@
 import React, {useEffect, useState} from "react";
+import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import {useParams} from "react-router-dom";
-import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
-import ApiRoutes from "../../../../../../util/ApiRoutes";
-import Routes from "../../../../../../util/ApiRoutes";
-import OrganizationActions from "./actions/OrganizationActions";
-import OrganizationEventSubscriptions from "./subscriptions/OrganizationEventSubscriptions";
-import Events from "../../../../events/Events";
-import OrganizationEvents from "./OrganizationEvents";
+import LoadingSpinner from "../../../../misc/LoadingSpinner";
+import OrganizationHeader from "./OrganizationHeader";
+import SectionMenuBar from "../../../../shared/SectionMenuBar";
+import {ORGANIZATION_MENU_ITEMS} from "./OrganizationMenuItems";
+import ApiRoutes from "../../../../../util/ApiRoutes";
+import OrganizationEventSubscriptions from "./events/subscriptions/OrganizationEventSubscriptions";
+import OrganizationActions from "./events/actions/OrganizationActions";
+import OrganizationEvents from "./events/OrganizationEvents";
 
-const authenticationMgmtService = new AuthenticationManagementService();
+const authenticationManagementService = new AuthenticationManagementService();
 
-function OrganizationEventsPage() {
+export default function OrganizationEventsAndActionsPage() {
 
   const { organizationId } = useParams();
 
   const [organization, setOrganization] = useState(null);
 
   useEffect(() => {
-    authenticationMgmtService.findOrganization(organizationId, setOrganization);
+    authenticationManagementService.findOrganization(organizationId, setOrganization);
   }, [organizationId])
 
   if (!organization) {
@@ -27,34 +28,17 @@ function OrganizationEventsPage() {
 
   return (
       <React.Fragment>
-        <div className="row">
-          <div className="col-10">
-            <nav aria-label="breadcrumb">
-              <ol className="breadcrumb">
-                <li className="breadcrumb-item">
-                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication &amp; Authorization</a>
-                </li>
-                <li className="breadcrumb-item">Organizations</li>
-                <li className="breadcrumb-item">
-                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
-                    {organization.name}
-                  </a>
-                </li>
-                <li className="breadcrumb-item active" aria-current="page">Events &amp; Actions</li>
-              </ol>
-            </nav>
-          </div>
+        <OrganizationHeader organization={organization}/>
 
-          <div className="col-2">
-            <a className="btn btn-primary float-end"
-               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
-              Back
-            </a>
+        <div className="row">
+          <div className="col-md-12">
+            <SectionMenuBar items={ORGANIZATION_MENU_ITEMS(organization.id)}
+                            activeRoute={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS_PAGE(organizationId)}/>
           </div>
         </div>
 
-        <div className="row">
-          <div className="col-12">
+        <div className="row mt-3">
+          <div className="col-md-12">
             <h1>Events &amp; Actions of Organization &quot;{organization.name}&quot;</h1>
           </div>
         </div>
@@ -72,7 +56,7 @@ function OrganizationEventsPage() {
                       their respective subscribed actions.
                     </p>
 
-                    <OrganizationEventSubscriptions organizationId={organizationId} />
+                    <OrganizationEventSubscriptions organizationId={organizationId}/>
                   </div>
                 </div>
               </div>
@@ -90,7 +74,7 @@ function OrganizationEventsPage() {
                       organization must be assigned access to individual event actions.
                     </p>
 
-                    <OrganizationActions organizationId={organizationId} />
+                    <OrganizationActions organizationId={organization.id}/>
                   </div>
                 </div>
               </div>
@@ -99,25 +83,25 @@ function OrganizationEventsPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-12">
+          <div className="col-xl-12 col-xxl-8">
             <div className="card">
               <div className="card-body">
                 <h3>All Recorded Organization Events</h3>
 
                 <p>
                   The table below displays all recorded events that can trigger actions within this organization. Please
-                  note that detection alerts have additionally been organized in a separate section in the navigation panel
+                  note that detection alerts have additionally been organized in a separate section in the navigation
+                  panel
                   for easier and streamlined management.
                 </p>
 
-                <OrganizationEvents organizationId={organization.id} />
+                <OrganizationEvents organizationId={organization.id}/>
               </div>
             </div>
           </div>
         </div>
+
       </React.Fragment>
   )
 
 }
-
-export default OrganizationEventsPage;

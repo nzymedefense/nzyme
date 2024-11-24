@@ -14,6 +14,7 @@ const ApiRoutes = {
           DETAILS: (organizationId) => `/system/authentication/organizations/show/${organizationId}`,
           TENANTS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/tenants`,
           ADMINS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/administrators`,
+          EVENTS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/events`,
           CREATE: '/system/authentication/organizations/create',
           EDIT: (organizationId) => `/system/authentication/organizations/show/${organizationId}/edit`,
           ADMINS: {
@@ -22,7 +23,6 @@ const ApiRoutes = {
             EDIT: (organizationId, userId) => `/system/authentication/organizations/show/${organizationId}/admins/show/${userId}/edit`,
           },
           EVENTS: {
-            INDEX: (organizationId) => `/system/authentication/organizations/show/${organizationId}/events`,
             ACTIONS: {
               DETAILS: (organizationId, actionId) => `/system/authentication/organizations/show/${organizationId}/events/actions/show/${actionId}`,
               CREATE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/events/actions/create`,

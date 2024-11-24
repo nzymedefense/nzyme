@@ -104,27 +104,6 @@ function OrganizationDetailsPage() {
               </div>
             </div>
 
-            <WithExactRole role="SUPERADMIN">
-              <div className="row mt-3">
-                <div className="col-md-12">
-                  <div className="card">
-                    <div className="card-body">
-                      <h3>Events &amp; Actions</h3>
-
-                      <p>
-                        Events, such as system notifications or detection alerts, within this organization, have the
-                        ability to trigger actions, which are managed on the events & action pages.
-                      </p>
-
-                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(organization.id)}
-                         className="btn btn-secondary btn-sm">
-                        Manage Organization Events &amp; Actions
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </WithExactRole>
           </div>
 
           <div className="col-md-6">

@@ -156,7 +156,7 @@ function Sidebar(props) {
                 icon={<i className="sidebar-icon fa-solid fa-bolt"/>}/>
             <NavigationLink
                 show={user.is_orgadmin}
-                href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(user.organization_id)}
+                href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS_PAGE(user.organization_id)}
                 title="Events &amp; Actions"
                 icon={<i className="sidebar-icon fa-solid fa-bolt"/>}/>
             <NavigationLink

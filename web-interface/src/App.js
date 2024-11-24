@@ -75,7 +75,6 @@ import EditOrganizationActionPage
 import ActionDetailsPage from "./components/system/events/actions/ActionDetailsPage";
 import CreateActionPage from "./components/system/events/actions/CreateActionPage";
 import EditActionPage from "./components/system/events/actions/EditActionPage";
-import OrganizationEventsPage from "./components/system/authentication/management/organizations/events/OrganizationEventsPage";
 import OrganizationEventSubscriptionDetailsPage
   from "./components/system/authentication/management/organizations/events/subscriptions/OrganizationEventSubscriptionDetailsPage";
 import BSSIDsPage from "./components/dot11/bssids/BSSIDsPage";
@@ -142,6 +141,8 @@ import OrganizationTenantsPage
   from "./components/system/authentication/management/organizations/OrganizationTenantsPage";
 import OrganizationAdministratorsPage
   from "./components/system/authentication/management/organizations/OrganizationAdministratorsPage";
+import OrganizationEventsAndActionsPage
+  from "./components/system/authentication/management/organizations/OrganizationEventsAndActionsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -346,11 +347,11 @@ function App() {
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.TENANTS_PAGE(':organizationId')} element={<OrganizationTenantsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS_PAGE(':organizationId')} element={<OrganizationAdministratorsPage />}/>
+                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS_PAGE(':organizationId')} element={<OrganizationEventsAndActionsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.CREATE(':organizationId')} element={<CreateOrganizationAdministratorPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.DETAILS(':organizationId', ':userId')} element={<OrganizationAdminDetailsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.EDIT(':organizationId', ':userId')} element={<EditOrganizationAdminPage />}/>
-                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(':organizationId')} element={<OrganizationEventsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.CREATE(':organizationId')} element={<CreateOrganizationActionPage />} />
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.DETAILS(':organizationId', ':actionId')} element={<OrganizationActionDetailsPage />} />
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.EDIT(':organizationId', ':actionId')} element={<EditOrganizationActionPage />} />
