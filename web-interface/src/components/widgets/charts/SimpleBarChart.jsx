@@ -34,7 +34,7 @@ class SimpleBarChart extends React.Component {
           x: x,
           y: y,
           type: 'bar',
-          line: { width: 1, shape: 'linear', color: '#0d6efd' }
+          line: { width: 1, shape: 'linear', color: '#111111' }
         }
       ]
     }
@@ -51,10 +51,10 @@ class SimpleBarChart extends React.Component {
       colors.lines = '#8D99AE'
       colors.grid = '#8D99AE'
     } else {
-      colors.background = '#ffffff'
-      colors.text = '#212529'
-      colors.lines = '#212529'
-      colors.grid = '#e3e3e3'
+      colors.background = '#f9f9f9'
+      colors.text = '#111111'
+      colors.lines = '#373737'
+      colors.grid = '#e6e6e6'
     }
 
     let hovermode;

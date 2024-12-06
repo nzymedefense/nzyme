@@ -1,7 +1,8 @@
 body {
     font-family: 'Nunito Sans', sans-serif;
     font-size: 13px;
-    background-color: #edf2f4;
+    background-color: #efefef;
+    color: #111;
 }
 
 code {
@@ -83,7 +84,7 @@ img.loading-miller-layer2 {
 }
 
 .navbar {
-    background-color: #fff;
+    background-color: #f9f9f9;
     padding: 8px 12px;
 }
 
@@ -103,40 +104,39 @@ div.tap-selector li.tap-selector-actions {
 }
 
 div.tap-selector ul {
-    background-color: #2b2d42;
-    color: #fff;
+    background-color: #262626;
+    color: #F9F9F9;
     font-size: 13px;
 }
 
 div.tap-selector ul a.active {
-    color: #fff;
-    background-color: #4d505e;
+    color: #F9F9F9;
+    background-color: #373737;
 }
 
 div.tap-selector ul li a:hover {
-    color: #fff;
-    background-color: #4d505e;
+    color: #F9F9F9;
+    background-color: #373737;
 }
 
 div.tap-selector ul li a:focus {
-    color: #fff;
-    background-color: #2b2d42;
+    color: #F9F9F9;
+    background-color: #373737;
 }
 
 div.tap-selector ul li a.active:focus {
-    color: #fff;
-    background-color: #4d505e;
+    color: #F9F9F9;
+    background-color: #373737;
 }
 
-
 div.tap-selector ul li a {
-    color: #fff;
+    color: #F9F9F9;
     padding-top: 7px;
     padding-bottom: 5px;
 }
 
 #nav-side {
-    background-color: #2b2d42;
+    background-color: #262626;
     width: 230px;
 }
 
@@ -180,15 +180,15 @@ div.tap-selector ul li a {
 }
 
 #nav-side a.nav-link-active {
-    color: #fff;
+    color: #f9f9f9;
 }
 
 #nav-side a.nav-link-active:hover {
-    color: #fff !important;
+    color: #f9f9f9 !important;
 }
 
 #nav-side a.nav-link:hover {
-    color: #c9c9c9;
+    color: #f9f9f9;
 }
 
 #nav-side span.nav-icon {
@@ -227,8 +227,8 @@ div.tap-selector ul li a {
 }
 
 #nav-side li.nav-item-active {
-    background-color: #343642;
-    border-left: 3px solid #8D99AE;
+    background-color: #373737;
+    border-left: 3px solid #5c5d6f;
 }
 
 #nav-side .nav-link {
@@ -244,24 +244,17 @@ div.tap-selector ul li a {
     margin-bottom: 16px;
     padding-left: 18px;
     height: 40px;
-    color: #fff;
+    color: #f9f9f9;
     width: 210px;
 }
 
-#nav-side .user-profile .avatar {
-    width: 40px;
-    height: 40px;
-    margin-right: 10px;
-    background-color: #ccc;
-}
-
 #nav-side .user-profile a {
-    color: #8D99AE;
+    color: #ababb5;
     text-decoration: none;
 }
 
 #nav-side .user-profile a:hover {
-    color: #fff;
+    color: #f9f9f9;
 }
 
 #nav-side .user-profile i.settings-icon {
@@ -286,6 +279,11 @@ div.tap-selector ul li a {
 
 #footer a {
     text-decoration: none;
+}
+
+div.card {
+    background-color: #f9f9f9;
+    border-color: #e6e6e6;
 }
 
 a {
@@ -323,6 +321,24 @@ dt {
 pre.json {
     padding: 10px 10px 10px 15px;
     border-left: 2px dotted #ccc;
+}
+
+button.btn-outline-dark {
+    background-color: #f9f9f9;
+    border-color: #111;
+}
+
+button.btn-outline-dark:hover {
+    background-color: #111;
+}
+
+button.btn-outline-secondary {
+    background-color: #f9f9f9;
+    border-color: #111;
+}
+
+button.btn-outline-secondary:hover {
+    background-color: #262626;
 }
 
 div.widget-loading-spinner {
