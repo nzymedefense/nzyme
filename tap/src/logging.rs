@@ -46,6 +46,7 @@ pub fn initialize(config_level: &str, log_monitor: &Arc<LogMonitor>) {
             ));
         })
         .level(filter)
+        .level_for("soapysdr", LevelFilter::Error)
         .chain(std::io::stdout())
         .apply();
 

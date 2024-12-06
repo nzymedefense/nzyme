@@ -17,7 +17,6 @@ mod wireless;
 
 use std::{process::exit, sync::{Arc, Mutex}, thread::{self, sleep}, time, time::Duration};
 use anyhow::Error;
-
 use clap::Parser;
 use configuration::Configuration;
 use state::tables::tables::Tables;
@@ -35,6 +34,7 @@ use wireless::{bluetooth, dot11};
 use crate::helpers::network::Channel;
 use crate::log_monitor::LogMonitor;
 use crate::state::state::State;
+use crate::wireless::sdr;
 
 #[derive(Parser,Debug)]
 struct Arguments {
@@ -352,6 +352,11 @@ fn main() {
             });
         }
     }
+
+    thread::spawn(move || {
+        let mut sdr = sdr::capture::Capture {};
+        sdr.run();
+    });
 
     // Processors.
     distributor::spawn(ethernet_bus.clone(),
