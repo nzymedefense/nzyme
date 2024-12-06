@@ -204,6 +204,14 @@ const ApiRoutes = {
       DETAILS: (mac) => `/bluetooth/devices/show/${mac}`
     }
   },
+  CLOSE_ACCESS: {
+    MONITORING: {
+      INDEX: '/close-access/monitoring',
+    },
+    RESPONSE: {
+      INDEX: '/close-access/response',
+    }
+  },
   CONTEXT: {
     MAC_ADDRESSES: {
       INDEX: '/context/macs',

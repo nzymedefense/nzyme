@@ -101,6 +101,22 @@ function Sidebar(props) {
 
           </SidebarSubmenu>
 
+          <SidebarSubmenu title="Close Access"
+                          subhref="/close-access"
+                          icon={<i className="sidebar-icon fa-solid fa-building-shield"/>}
+                          show={userHasSubsystem(user, "dot11")
+                            || userHasSubsystem(user, "bluetooth")}>
+            <NavigationLink
+              href={ApiRoutes.CLOSE_ACCESS.MONITORING.INDEX}
+              title="Monitoring"
+              icon={<i className="sidebar-icon fa-solid fa-tower-observation"/>}/>
+            <NavigationLink
+              href={ApiRoutes.CLOSE_ACCESS.RESPONSE.INDEX}
+              title="Response"
+              icon={<i className="sidebar-icon fa-solid fa-shield-dog"/>}/>
+
+          </SidebarSubmenu>
+
           <SidebarSubmenu title="Context"
                           subhref="/context"
                           icon={<i className="sidebar-icon fa-solid fa-circle-info"></i>}
