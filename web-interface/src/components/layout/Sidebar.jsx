@@ -7,6 +7,7 @@ import UserProfileBlock from "./UserProfileBlock";
 import {AlertContext, UserContext} from "../../App";
 import {userHasPermission, userHasSubsystem} from "../../util/Tools";
 import AlertedHealthIndicatorIcon from "../misc/AlertedHealthIndicatorIcon";
+import AssetImage from "../misc/AssetImage";
 
 function Sidebar(props) {
 
@@ -16,7 +17,10 @@ function Sidebar(props) {
 
   return (
       <div id="nav-side">
-        <p className="brand"><a href={ApiRoutes.DASHBOARD}>{branding.sidebar_title_text}</a></p>
+        <p className="brand">
+          <a href={ApiRoutes.DASHBOARD}>
+           {branding.sidebar_title_text === "nzyme" ? <AssetImage filename="navlogo.png" filenameHover="navlogo_hover.png" />: branding.sidebar_title_text}
+          </a></p>
         <p className="brand-subtitle">{branding.sidebar_subtitle_text ? branding.sidebar_subtitle_text : null}</p>
 
         <div className="mt-4 mb-4">

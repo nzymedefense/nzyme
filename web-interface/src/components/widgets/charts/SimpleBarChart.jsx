@@ -34,7 +34,7 @@ class SimpleBarChart extends React.Component {
           x: x,
           y: y,
           type: 'bar',
-          line: { width: 1, shape: 'linear', color: '#111111' }
+          marker: { color: Store.get('dark_mode') ? '#e6e6e6' : '#5c5d6f' }
         }
       ]
     }
@@ -46,10 +46,10 @@ class SimpleBarChart extends React.Component {
 
     const colors = {}
     if (Store.get('dark_mode')) {
-      colors.background = '#2B2D42'
-      colors.text = '#ffffff'
-      colors.lines = '#8D99AE'
-      colors.grid = '#8D99AE'
+      colors.background = '#262626'
+      colors.text = '#f9f9f9'
+      colors.lines = '#373737'
+      colors.grid = '#373737'
     } else {
       colors.background = '#f9f9f9'
       colors.text = '#111111'

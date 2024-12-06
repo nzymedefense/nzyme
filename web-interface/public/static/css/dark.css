@@ -1,14 +1,14 @@
 body {
-    background-color: #12131c;
-    color: #fff;
+    background-color: #111111;
+    color: #f9f9f9;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: #fff;
+    color: #f9f9f9;
 }
 
 a {
-    color: #ffffff;
+    color: #f9f9f9;
 }
 
 a:hover {
@@ -16,11 +16,7 @@ a:hover {
 }
 
 code {
-    color: #ffffff;
-}
-
-input.form-control {
-    background-color: #fff !important;
+    color: #f9f9f9;
 }
 
 section.login div.left-half {
@@ -45,11 +41,12 @@ section.start div.main-card li {
 }
 
 nav.navbar {
-    background-color: #1d1e2c;
+    background-color: #262626;
 }
 
 div.card {
-    background-color: #2B2D42;
+    background-color: #262626;
+    border-color: #373737;
 }
 
 div.card div.card-number div.value a {
@@ -66,7 +63,7 @@ div.card div.card-number div.value a {
 
 .table-hover > tbody > tr:hover > * {
     color: #fff !important;
-    background-color: #1d1e2c;
+    background-color: #373737;
 }
 
 .btn-outline-primary {
@@ -175,11 +172,11 @@ div.rendered-markdown pre {
     background-color: #40435e;
 }
 
-button.card-title-option {
+a.card-title-option {
     color: #fff;
 }
 
-button.card-title-option:hover {
+a.card-title-option:hover {
     color: #71769F;
 }
 
@@ -209,4 +206,38 @@ a span.port {
 
 span.fi-none {
     background-color: #71769F;
+}
+
+input.form-control {
+    background-color: #373737 !important;
+    border-color: #f9f9f9;
+    color: #f9f9f9 !important;
+}
+
+.form-control:focus {
+    border-color: #f9f9f9;
+    box-shadow: none !important;
+}
+
+button.btn-outline-primary, a.btn-outline-primary {
+    background-color: inherit;
+    border-color: #f9f9f9;
+    color: #f9f9f9;
+}
+
+button.btn-outline-primary:hover, a.btn-outline-primary:hover {
+    background-color: #111111;
+    border-color: #f9f9f9;
+}
+
+button.btn-outline-secondary, a.btn-outline-primary {
+    background-color: inherit;
+    border-color: #7e808d;
+    color: #f9f9f9;
+}
+
+button.btn-outline-secondary:hover, a.btn-outline-secondary:hover {
+    background-color: inherit;
+    border-color: #f9f9f9;
+    color: #f9f9f9;
 }

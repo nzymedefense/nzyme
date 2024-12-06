@@ -6,7 +6,7 @@ import {notify} from "react-notify-toast";
 
 const systemService = new SystemService();
 
-export default function SidebarTitleForm() {
+export default function SidebarTitleForm(props) {
 
   const [originalSidebarTitle, setOriginalSidebarTitle] = useState(null);
 
@@ -14,6 +14,8 @@ export default function SidebarTitleForm() {
   const [sidebarSubtitle, setSidebarSubtitle] = useState(null);
 
   const [errorMessage, setErrorMessage] = useState(null);
+
+  const onSettingsUpdated = props.onSettingsUpdated;
 
   useEffect(() => {
     systemService.getSidebarTitle(setOriginalSidebarTitle, setSidebarSubtitle);
@@ -28,6 +30,7 @@ export default function SidebarTitleForm() {
     systemService.setSidebarTitle(sidebarTitle, sidebarSubtitle,
         () => {
           notify.show('Sidebar title updated.', 'success');
+          onSettingsUpdated();
         },
         (error) => {
           if (error.response && error.response.status === 400) {

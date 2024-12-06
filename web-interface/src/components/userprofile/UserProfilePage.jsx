@@ -13,8 +13,6 @@ const userProfileService = new UserProfileService();
 
 function UserProfilePage(props) {
 
-  const user = useContext(UserContext);
-
   const onMfaReset = props.onMfaReset;
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
 

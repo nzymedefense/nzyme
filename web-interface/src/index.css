@@ -1,5 +1,6 @@
 body {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: "Geist", sans-serif;
+    font-optical-sizing: auto;
     font-size: 13px;
     background-color: #efefef;
     color: #111;
@@ -153,6 +154,10 @@ div.tap-selector ul li a {
     color: #fff;
 }
 
+#nav-side p.brand a img {
+    height: 18px;
+}
+
 #nav-side p.brand-subtitle {
     padding-left: 20px;
     padding-right: 20px;
@@ -180,15 +185,15 @@ div.tap-selector ul li a {
 }
 
 #nav-side a.nav-link-active {
-    color: #f9f9f9;
+    color: #f56c86;
 }
 
 #nav-side a.nav-link-active:hover {
-    color: #f9f9f9 !important;
+    color: #e79ca9 !important;
 }
 
 #nav-side a.nav-link:hover {
-    color: #f9f9f9;
+    color: #e79ca9;
 }
 
 #nav-side span.nav-icon {
@@ -254,7 +259,7 @@ div.tap-selector ul li a {
 }
 
 #nav-side .user-profile a:hover {
-    color: #f9f9f9;
+    color: #e79ca9;
 }
 
 #nav-side .user-profile i.settings-icon {
@@ -287,40 +292,61 @@ div.card {
 }
 
 a {
-    color: #0E42B0;
+    color: #1d30d7;
 }
 
 a:hover {
-    color: #144FD7;
+    color: #0c145a;
 }
 
 h1 {
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 h3 {
     font-size: 17px;
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 500;
     margin-bottom: 13px;
 }
 
 h4 {
     font-size: 13px;
     text-transform: uppercase;
-    font-weight: 700;
+    font-weight: 500;
     margin-bottom: 13px;
 }
 
 dt {
     font-size: 13px;
     text-transform: uppercase;
+    font-weight: 500;
 }
 
 pre.json {
     padding: 10px 10px 10px 15px;
     border-left: 2px dotted #ccc;
+}
+
+a.btn-primary, button.btn-primary {
+    border-color: #1d30d7;
+    background-color: #1d30d7;
+}
+
+a.btn-primary:hover, button.btn-primary:hover {
+    border-color: #0c145a;
+    background-color: #0c145a;
+}
+
+a.btn-outline-primary, button.btn-outline-primary {
+    border-color: #1d30d7;
+}
+
+a.btn-outline-primary:hover, button.btn-outline-primary:hover {
+    background-color: #0c145a;
+    border-color: #0c145a;
+    color: #fff;
 }
 
 button.btn-outline-dark {
@@ -358,7 +384,7 @@ p.help-text {
 }
 
 div.tap-secret input {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: "Geist Mono", monospace;
     padding-top: 30px !important;
 }
 
@@ -471,7 +497,7 @@ div.health-console div.hc-row {
 }
 
 div.health-console div.hc-row div.hc-indicator {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: "Geist Mono", monospace;
     font-size: 14px;
     width: 15%;
     padding: 6px 6px 3px;
@@ -509,7 +535,7 @@ div.health-console div.hc-row div.hc-disabled {
 }
 
 div.health-consequence {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: "Geist Mono", monospace;
     border: 1px dashed #ccc;
     padding: 10px;
     margin-bottom: 8px;
@@ -666,7 +692,7 @@ code.codeblock {
 }
 
 ul.mfa-recovery-codes {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: "Geist Mono", monospace;
     font-size: 14px;
     list-style-type: none;
     padding: 0;
@@ -811,7 +837,7 @@ a.mac-address, span.mac-address {
 }
 
 span.mac-address-oui {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: "Geist", sans-serif;
     font-size: 13px;
 }
 
@@ -839,7 +865,7 @@ span.port {
 }
 
 a span.port {
-    color: #0e42b099;
+    color: #1d30d7;
 }
 
 select.monitored-network-selector {
@@ -886,7 +912,7 @@ div.context-overlay {
     padding: 10px;
     box-shadow: 0 0 8px 3px #c5c5c5;
     animation: fadeIn 0.5s;
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: "Geist", sans-serif;
     font-size: 12px;
     background-color: #ffffff;
     border: 1px solid #c5c5c5;
@@ -1030,6 +1056,7 @@ div.floorplan-floor-selector {
 
 div.card-title h3 {
     margin-bottom: 8px;
+    font-weight: 400;
 }
 
 div.card-title hr {
@@ -1113,7 +1140,7 @@ ul.applied-filters span.applied-filter-value {
 
 ul.applied-filters span.applied-filter-connector {
     font-size: 14px;
-    font-family: 'Share Tech Mono', monospace;
+    font-family: "Geist Mono", monospace;
     font-weight: 600;
     padding-left: 3px;
     padding-right: 3px;

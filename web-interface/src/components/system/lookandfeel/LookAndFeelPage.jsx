@@ -2,7 +2,9 @@ import React from "react";
 import SidebarTitleForm from "./SidebarTitleForm";
 import LoginPageVideoForm from "./LoginPageVideoForm";
 
-export default function LookAndFeelPage() {
+export default function LookAndFeelPage(props) {
+
+  const onSettingsUpdated = props.onSettingsUpdated;
 
   return (
       <div>
@@ -37,7 +39,7 @@ export default function LookAndFeelPage() {
 
                 <p>You can change the sidebar title and subtitle to any string you wish.</p>
 
-                <SidebarTitleForm />
+                <SidebarTitleForm onSettingsUpdated={onSettingsUpdated} />
               </div>
             </div>
           </div>

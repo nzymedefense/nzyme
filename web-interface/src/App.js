@@ -411,7 +411,7 @@ function App() {
 
                               { /* System/Misc. */}
                               <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
-                              <Route path={ApiRoutes.SYSTEM.LOOKANDFEEL} element={<LookAndFeelPage />}/>
+                              <Route path={ApiRoutes.SYSTEM.LOOKANDFEEL} element={<LookAndFeelPage onSettingsUpdated={() => setRevision(new Date())} />} />
                               <Route path={ApiRoutes.SYSTEM.CONNECT} element={<ConnectPage />}/>
                               <Route path={ApiRoutes.SYSTEM.SUBSYSTEMS} element={<SubsystemsPage />}/>
 

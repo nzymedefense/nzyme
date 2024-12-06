@@ -4,6 +4,7 @@ import Dot11Service from "../../../services/Dot11Service";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import SimpleBarChart from "../../widgets/charts/SimpleBarChart";
 import numeral from "numeral";
+import Store from "../../../util/Store";
 
 const dot11Service = new Dot11Service();
 
@@ -35,7 +36,7 @@ function BSSIDChannelUsageHistogram(props) {
         x: x,
         y: y,
         type: 'bar',
-        line: { width: 1, shape: 'linear', color: '#2983fe' }
+        marker: { color: Store.get('dark_mode') ? '#e6e6e6' : '#5c5d6f' }
       }
     ]
   }
