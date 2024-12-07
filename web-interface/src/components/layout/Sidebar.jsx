@@ -19,7 +19,7 @@ function Sidebar(props) {
       <div id="nav-side">
         <p className="brand">
           <a href={ApiRoutes.DASHBOARD}>
-           {branding.sidebar_title_text === "nzyme" ? <AssetImage filename="navlogo.png" filenameHover="navlogo_hover.png" />: branding.sidebar_title_text}
+           {branding.sidebar_title_text === "nzyme" ? <AssetImage filename="navlogo.png" filenameHover="navlogo_hover.png" /> : branding.sidebar_title_text}
           </a></p>
         <p className="brand-subtitle">{branding.sidebar_subtitle_text ? branding.sidebar_subtitle_text : null}</p>
 

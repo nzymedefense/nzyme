@@ -1,9 +1,17 @@
 body {
-    background-color: #040303;
+    background-color: #111111;
+}
+
+div.card {
+    background-color: #f9f9f9;
+}
+
+img.brand {
+    width: 150px;
 }
 
 section.start div.right-half {
-    background-color: #2B2D42;
+    background-color: #5c5d6f;
     border-radius: 0 0.5rem 0.5rem 0;
 }
 
