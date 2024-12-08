@@ -64,9 +64,14 @@ function CreateFloorPage() {
                   {tenant.name}
                 </a>
               </li>
-              <li className="breadcrumb-item">Locations</li>
               <li className="breadcrumb-item">
-                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)}>
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS_PAGE(organization.id, tenant.id)}>
+                  Locations
+                </a>
+              </li>
+              <li className="breadcrumb-item">
+                <a
+                  href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)}>
                   {location.name}
                 </a>
               </li>

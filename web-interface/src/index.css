@@ -1204,3 +1204,11 @@ div.dropdown-headline ul.dropdown-menu {
 .indent-left-2 {
     margin-left: 20px;
 }
+
+.nav-tabs .nav-link {
+    color: #1d30d7;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #0c145a;
+}

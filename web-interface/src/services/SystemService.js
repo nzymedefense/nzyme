@@ -52,6 +52,14 @@ class SystemService {
     RESTClient.get("/system/database/sizes/global", {}, (response) => setSizes(response.data))
   }
 
+  getDatabaseOrganizationSizes(setSizes, organizationId) {
+    RESTClient.get(`/system/database/sizes/organization/${organizationId}`, {}, (response) => setSizes(response.data))
+  }
+
+  getDatabaseTenantSizes(setSizes, organizationId, tenantId) {
+    RESTClient.get(`/system/database/sizes/organization/${organizationId}/tenants/${tenantId}`, {}, (response) => setSizes(response.data))
+  }
+
   purgeDatabaseGlobalCategory(category, onSuccess) {
     RESTClient.post(`/system/database/purge/category/${category}`, {}, onSuccess)
   }

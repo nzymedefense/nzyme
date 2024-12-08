@@ -10,6 +10,7 @@ import {UserContext} from "../../../../../App";
 import WithExactRole from "../../../../misc/WithExactRole";
 import SectionMenuBar from "../../../../shared/SectionMenuBar";
 import {ORGANIZATION_MENU_ITEMS} from "./OrganizationMenuItems";
+import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -94,7 +95,7 @@ function OrganizationDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Description</h3>
+                    <CardTitleWithControls title="Description" slim={true} />
 
                     <p className="mb-0">
                       {organization.description}
@@ -112,7 +113,7 @@ function OrganizationDetailsPage() {
                   <div className="col-md-12">
                     <div className="card">
                       <div className="card-body">
-                        <h3>Delete Organization</h3>
+                        <CardTitleWithControls title="Delete Organization" slim={true} />
 
                         <p>
                           You can only delete an organization if it has no tenants and if it is not the last remaining
@@ -135,7 +136,7 @@ function OrganizationDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>All Active Sessions of Organization</h3>
+                <CardTitleWithControls title="All Active Sessions of Organization" slim={true} />
 
                 <OrganizationSessions organizationId={organization.id}/>
               </div>

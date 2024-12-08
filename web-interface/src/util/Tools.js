@@ -137,3 +137,18 @@ export function convertGenericChartData(data) {
 
   return result
 }
+
+export function humanReadableDatabaseCategoryName(category) {
+  switch (category) {
+    case "DOT11":
+      return "802.11/WiFi"
+    case "BLUETOOTH":
+      return "Bluetooth"
+    case "ETHERNET_DNS":
+      return "Ethernet: DNS"
+    case "ETHERNET_L4":
+      return "Ethernet: Layer 4"
+  }
+
+  return category;
+}

@@ -9,6 +9,7 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import OrganizationEventSubscriptions from "./events/subscriptions/OrganizationEventSubscriptions";
 import OrganizationActions from "./events/actions/OrganizationActions";
 import OrganizationEvents from "./events/OrganizationEvents";
+import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -49,7 +50,7 @@ export default function OrganizationEventsAndActionsPage() {
               <div className="col-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Organization Event Subscriptions</h3>
+                    <CardTitleWithControls title="Organization Event Subscriptions" slim={true} />
 
                     <p>
                       This table shows all system events that can be triggered within the organization, together with
@@ -66,7 +67,7 @@ export default function OrganizationEventsAndActionsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Organization Event Actions</h3>
+                    <CardTitleWithControls title="Organization Event Actions" slim={true} />
 
                     <p>
                       Events, such as system notifications or detection alerts, within this organization, have the
@@ -86,7 +87,7 @@ export default function OrganizationEventsAndActionsPage() {
           <div className="col-xl-12 col-xxl-8">
             <div className="card">
               <div className="card-body">
-                <h3>All Recorded Organization Events</h3>
+                <CardTitleWithControls title="All Recorded Organization Events" slim={true} />
 
                 <p>
                   The table below displays all recorded events that can trigger actions within this organization. Please

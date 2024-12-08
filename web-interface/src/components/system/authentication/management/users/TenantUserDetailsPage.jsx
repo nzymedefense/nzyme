@@ -70,7 +70,7 @@ function TenantUserDetailsPage() {
   }, [organizationId, tenantId, localRevision])
 
   if (redirect) {
-    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)} />
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.USERS_PAGE(organization.id, tenant.id)} />
   }
 
   if (!organization || !tenant || !user || !allPermissions || !taps) {
@@ -98,7 +98,11 @@ function TenantUserDetailsPage() {
                     {tenant.name}
                   </a>
                 </li>
-                <li className="breadcrumb-item">Users</li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.USERS_PAGE(organization.id, tenant.id)}>
+                    Users
+                  </a>
+                </li>
                 <li className="breadcrumb-item active" aria-current="page">{user.email}</li>
               </ol>
             </nav>
@@ -107,7 +111,7 @@ function TenantUserDetailsPage() {
           <div className="col-md-3">
             <span className="float-end">
               <a className="btn btn-secondary"
-                 href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
+                 href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.USERS_PAGE(organization.id, tenant.id)}>
                 Back
               </a>{' '}
               <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.EDIT(organization.id, tenant.id, user.id)}>

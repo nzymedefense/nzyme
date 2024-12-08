@@ -7,6 +7,7 @@ import {ORGANIZATION_MENU_ITEMS} from "./OrganizationMenuItems";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import OrganizationAdminTable from "../users/orgadmins/OrganizationAdminTable";
+import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -45,7 +46,7 @@ export default function OrganizationAdministratorsPage() {
           <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
-                <h3>Organization Administrators</h3>
+                <CardTitleWithControls title="Organization Administrators" slim={true} />
 
                 <OrganizationAdminTable organization={organization}/>
 

@@ -11,6 +11,7 @@ export default function TenantDatabaseUsageTableRows(props) {
   const tenants = props.tenants;
   const category = props.category;
   const onPurge = props.onPurge;
+  const skipSizeColumns = props.skipSizeColumns;
 
   const purge = (e, category, organizationId, tenantId) => {
     e.preventDefault();
@@ -38,7 +39,7 @@ export default function TenantDatabaseUsageTableRows(props) {
               </a>
             </span>
           </td>
-          <td className="text-muted" title="Data size not available for individual organizations and tenants.">n/a</td>
+          {skipSizeColumns ? null : <td className="text-muted" title="Data size not available for individual organizations and tenants.">n/a</td> }
           <td>{numeral(tenant.categories[category].rows).format("0,0")}</td>
           <td>{numeral(tenant.categories[category].retention_days).format("0,0")} Days</td>
           <td>

@@ -15,6 +15,7 @@ const ApiRoutes = {
           TENANTS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/tenants`,
           ADMINS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/administrators`,
           EVENTS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/events`,
+          DATABASE_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/database`,
           CREATE: '/system/authentication/organizations/create',
           EDIT: (organizationId) => `/system/authentication/organizations/show/${organizationId}/edit`,
           ADMINS: {
@@ -35,6 +36,9 @@ const ApiRoutes = {
         },
         TENANTS: {
           DETAILS: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}`,
+          TAPS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/taps`,
+          LOCATIONS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/locations`,
+          USERS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/users`,
           CREATE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/tenants/create`,
           EDIT: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/edit`,
           LOCATIONS: {

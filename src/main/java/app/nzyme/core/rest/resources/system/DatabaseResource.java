@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/system/database")
@@ -99,6 +100,59 @@ public class DatabaseResource extends UserAuthenticatedResource {
         }
 
         return Response.ok(GlobalDatabaseCategoriesResponse.create(globalSizes, organizations)).build();
+    }
+
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/sizes/organization/{organization_id}")
+    public Response organizationDatabaseSizes(@Context SecurityContext sc,
+                                              @PathParam("organization_id") UUID organizationId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (authenticatedUser.getOrganizationId() != null
+                && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Map<String, DataCategorySizesResponse> orgSizes = Maps.newHashMap();
+        for (DataCategory category : DataCategory.values()) {
+            orgSizes.put(category.name(), DataCategorySizesResponse.create(
+                    null, countDataCategoryRows(category, org.get().uuid(), null)
+            ));
+        }
+
+        // Tenants.
+        List<TenantDataCategoriesResponse> tenants = Lists.newArrayList();
+        for (TenantEntry tenant : nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.get().uuid())) {
+            Map<String, DataCategorySizesAndConfigurationResponse> tenantSizes = Maps.newHashMap();
+
+            for (DataCategory category : DataCategory.values()) {
+                tenantSizes.put(category.name(), DataCategorySizesAndConfigurationResponse.create(
+                        null,
+                        countDataCategoryRows(category, org.get().uuid(), tenant.uuid()),
+                        getDataCategoryRetentionTimeDays(category, org.get().uuid(), tenant.uuid())
+                ));
+            }
+
+            tenants.add(TenantDataCategoriesResponse.create(
+                    tenant.uuid(),
+                    tenant.name(),
+                    org.get().uuid(),
+                    org.get().name(),
+                    tenantSizes
+            ));
+        }
+
+        return Response.ok(
+                OrganizationDataCategoriesResponse.create(org.get().uuid(), org.get().name(), orgSizes, tenants)
+        ).build();
     }
 
     @POST

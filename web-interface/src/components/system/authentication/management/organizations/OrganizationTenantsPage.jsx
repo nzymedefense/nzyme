@@ -7,6 +7,7 @@ import {ORGANIZATION_MENU_ITEMS} from "./OrganizationMenuItems";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import TenantsTable from "../tenants/TenantsTable";
 import OrganizationHeader from "./OrganizationHeader";
+import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -45,7 +46,7 @@ export default function OrganizationTenantsPage() {
           <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
-                <h3>Tenants</h3>
+                <CardTitleWithControls title="Tenants" slim={true} />
 
                 <p className="mb-2">
                   The following tenants are part of this organization.

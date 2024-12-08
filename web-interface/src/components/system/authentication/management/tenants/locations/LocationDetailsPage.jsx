@@ -41,7 +41,7 @@ function LocationDetailsPage() {
   }
 
   if (redirect) {
-    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)} />
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS_PAGE(organization.id, tenant.id)} />
   }
 
   if (!organization || !tenant || !location) {
@@ -68,7 +68,11 @@ function LocationDetailsPage() {
                   {tenant.name}
                 </a>
               </li>
-              <li className="breadcrumb-item">Locations</li>
+              <li className="breadcrumb-item">
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS_PAGE(organization.id, tenant.id)}>
+                  Locations
+                </a>
+              </li>
               <li className="breadcrumb-item active" aria-current="page">{location.name}</li>
             </ol>
           </nav>
@@ -77,7 +81,7 @@ function LocationDetailsPage() {
         <div className="col-md-3">
           <span className="float-end">
             <a className="btn btn-secondary"
-               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
+               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS_PAGE(organization.id, tenant.id)}>
               Back
             </a>{' '}
             <a className="btn btn-primary"

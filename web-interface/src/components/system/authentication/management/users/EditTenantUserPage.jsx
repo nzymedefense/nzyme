@@ -80,7 +80,11 @@ function EditTenantUserPage() {
                   {tenant.name}
                 </a>
               </li>
-              <li className="breadcrumb-item">Users</li>
+              <li className="breadcrumb-item">
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.USERS_PAGE(organization.id, tenant.id)}>
+                  Users
+                </a>
+              </li>
               <li className="breadcrumb-item">
                 <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(organization.id, tenant.id, user.id)}>
                   {user.email}

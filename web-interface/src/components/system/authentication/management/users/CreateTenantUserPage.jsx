@@ -5,6 +5,7 @@ import Routes from "../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import CreateUserForm from "./shared/CreateUserForm";
 import {notify} from "react-notify-toast";
+import ApiRoutes from "../../../../../util/ApiRoutes";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -37,7 +38,7 @@ function CreateTenantUserPage() {
   }
 
   if (redirect) {
-    return <Navigate to={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organizationId, tenantId)} />
+    return <Navigate to={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.USERS_PAGE(organizationId, tenantId)} />
   }
 
   if (!organization || !tenant) {
@@ -65,6 +66,11 @@ function CreateTenantUserPage() {
                     {tenant.name}
                   </a>
                 </li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.USERS_PAGE(organization.id, tenant.id)}>
+                    Users
+                  </a>
+                </li>
                 <li className="breadcrumb-item active" aria-current="page">Create User</li>
               </ol>
             </nav>
@@ -72,7 +78,7 @@ function CreateTenantUserPage() {
 
           <div className="col-2">
             <a className="btn btn-secondary float-end"
-               href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
+               href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.USERS_PAGE(organization.id, tenant.id)}>
               Back
             </a>
           </div>

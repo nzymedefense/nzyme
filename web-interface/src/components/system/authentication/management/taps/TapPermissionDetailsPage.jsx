@@ -6,6 +6,7 @@ import Routes from "../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
 import TapSecret from "./TapSecret";
+import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -52,7 +53,7 @@ function TapPermissionDetailsPage() {
   }, [organizationId, tenantId, revision])
 
   if (redirect) {
-    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)} />
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.TAPS_PAGE(organization.id, tenant.id)} />
   }
 
   if (!organization || !tenant || !tap) {
@@ -80,7 +81,11 @@ function TapPermissionDetailsPage() {
                     {tenant.name}
                   </a>
                 </li>
-                <li className="breadcrumb-item">Taps</li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.TAPS_PAGE(organization.id, tenant.id)}>
+                    Taps
+                  </a>
+                </li>
                 <li className="breadcrumb-item active" aria-current="page">{tap.name}</li>
               </ol>
             </nav>
@@ -89,7 +94,7 @@ function TapPermissionDetailsPage() {
           <div className="col-md-3">
             <span className="float-end">
               <a className="btn btn-secondary"
-                 href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
+                 href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.TAPS_PAGE(organization.id, tenant.id)}>
                 Back
               </a>{' '}
               <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.EDIT(organization.id, tenant.id, tap.uuid)}>
@@ -111,7 +116,7 @@ function TapPermissionDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Description</h3>
+                    <CardTitleWithControls title="Description" slim={true}/>
 
                     <p className="mb-0">
                       {tap.description}
@@ -125,7 +130,7 @@ function TapPermissionDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Tap Secret</h3>
+                    <CardTitleWithControls title="Tap Secret" slim={true}/>
 
                     <p>The tap secret is used to authenticate taps when they connect to nzyme. Every tap has a unique
                     secret that must be configured in the tap configuration file. <strong>You must update the secret
@@ -143,7 +148,7 @@ function TapPermissionDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Delete Tap</h3>
+                    <CardTitleWithControls title="Delete Tap" slim={true}/>
 
                     <p>
                       <strong>Warning:</strong> Deleted taps cannot be restored. The deleted tap will not be able to

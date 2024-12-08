@@ -9,6 +9,10 @@ import TenantUsersTable from "../users/TenantUsersTable";
 import TapPermissionsTable from "../taps/TapPermissionsTable";
 import TenantSessions from "../sessions/TenantSessions";
 import LocationsTable from "./locations/LocationsTable";
+import SectionMenuBar from "../../../../shared/SectionMenuBar";
+import {ORGANIZATION_MENU_ITEMS} from "../organizations/OrganizationMenuItems";
+import {TENANT_MENU_ITEMS} from "./TenantMenuItems";
+import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -68,119 +72,96 @@ function TenantDetailsPage() {
 
           <div className="col-md-3">
             <span className="float-end">
-              <a className="btn btn-secondary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
+              <a className="btn btn-secondary"
+                 href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
                 Back
               </a>{' '}
-              <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(organization.id, tenant.id)}>
+              <a className="btn btn-primary"
+                 href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(organization.id, tenant.id)}>
                 Edit Tenant
               </a>
             </span>
           </div>
+        </div>
 
+        <div className="row">
+          <div className="col-md-12">
+            <SectionMenuBar items={TENANT_MENU_ITEMS(organization.id, tenant.id)}
+                            activeRoute={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}/>
+          </div>
+        </div>
+
+        <div className="row mt-3">
           <div className="col-md-12">
             <h1>Tenant &quot;{tenant.name}&quot;</h1>
           </div>
+        </div>
 
-          <div className="row mt-3">
-            <div className="col-md-8">
-              <div className="row">
-                <div className="col-md-12">
-                  <div className="card">
-                    <div className="card-body">
-                      <h3>Description</h3>
+        <div className="row mt-3">
+          <div className="col-md-8">
+            <div className="row">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <CardTitleWithControls title="Description" slim={true} />
 
-                      <p className="mb-0">
-                        {tenant.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="row mt-3">
-                <div className="col-md-12">
-                  <div className="card">
-                    <div className="card-body">
-                      <h3>Users</h3>
-
-                      <TenantUsersTable organizationId={organization.id} tenantId={tenant.id}/>
-
-                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(organization.id, tenant.id)}
-                         className="btn btn-sm btn-secondary">
-                        Create User
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="row mt-3">
-                <div className="col-md-12">
-                  <div className="card">
-                    <div className="card-body">
-                      <h3>Taps</h3>
-
-                      <TapPermissionsTable organizationId={organization.id} tenantId={tenant.id} />
-
-                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(organization.id, tenant.id)}
-                         className="btn btn-sm btn-secondary">
-                        Create Tap
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="row mt-3">
-                <div className="col-md-12">
-                  <div className="card">
-                    <div className="card-body">
-                      <h3>Locations</h3>
-
-                      <p>Physical locations that taps are deployed at. Used for floor plans across the product.</p>
-
-                      <LocationsTable organizationId={organization.id} tenantId={tenant.id} />
-
-                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(organization.id, tenant.id)}
-                         className="btn btn-sm btn-secondary">
-                        Create Location
-                      </a>
-                    </div>
+                    <p className="mb-0">
+                      {tenant.description}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="col-md-4">
-              <div className="row">
-                <div className="col-md-12">
-                  <div className="card">
-                    <div className="card-body">
-                      <h3>Delete Tenant</h3>
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <CardTitleWithControls title="Locations" slim={true} />
 
-                      <p>
-                        You can only delete a tenant if it has no users and no taps.
-                      </p>
+                    <p>Physical locations that taps are deployed at. Used for floor plans across the product.</p>
 
-                      <button className="btn btn-sm btn-danger" disabled={!tenant.is_deletable} onClick={deleteTenant}>
-                        Delete Tenant
-                      </button>
-                    </div>
+                    <LocationsTable organizationId={organization.id} tenantId={tenant.id}/>
+
+                    <a
+                      href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(organization.id, tenant.id)}
+                      className="btn btn-sm btn-secondary">
+                      Create Location
+                    </a>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
+          <div className="col-md-4">
+            <div className="row">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <CardTitleWithControls title="Delete Tenant" slim={true} />
+
+                    <p>
+                      You can only delete a tenant if it has no users and no taps.
+                    </p>
+
+                    <button className="btn btn-sm btn-danger" disabled={!tenant.is_deletable} onClick={deleteTenant}>
+                      Delete Tenant
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="row mt-3">
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>All Active Sessions of Tenant</h3>
+                <CardTitleWithControls title="All Active Sessions of Tenant" slim={true} />
 
-                <TenantSessions organizationId={organization.id} tenantId={tenant.id} />
+                <TenantSessions organizationId={organization.id} tenantId={tenant.id}/>
               </div>
             </div>
           </div>

@@ -4,6 +4,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import numeral from "numeral";
 import OrganizationDatabaseUsageTableRows from "./OrganizationDatabaseUsageTableRows";
 import SystemService from "../../../services/SystemService";
+import {humanReadableDatabaseCategoryName} from "../../../util/Tools";
 
 const systemService = new SystemService();
 
@@ -11,21 +12,6 @@ export default function GlobalDatabaseUsageTable(props) {
   
   const sizes = props.sizes;
   const onPurge = props.onPurge;
-
-  const humanReadableCategoryName = (category) => {
-    switch (category) {
-      case "DOT11":
-        return "802.11/WiFi"
-      case "BLUETOOTH":
-        return "Bluetooth"
-      case "ETHERNET_DNS":
-        return "Ethernet: DNS"
-      case "ETHERNET_L4":
-        return "Ethernet: Layer 4"
-    }
-
-    return category;
-  }
 
   const purge = (e, category) => {
     e.preventDefault();
@@ -57,7 +43,7 @@ export default function GlobalDatabaseUsageTable(props) {
           return (
               <React.Fragment key={i}>
                 <tr>
-                  <td><strong>{humanReadableCategoryName(key)}</strong></td>
+                  <td><strong>{humanReadableDatabaseCategoryName(key)}</strong></td>
                   <td>{numeral(sizes.global_sizes[key].bytes).format("0,0b")}</td>
                   <td>{numeral(sizes.global_sizes[key].rows).format("0,0")}</td>
                   <td className="text-muted" title="Retention time is configured per tenant only.">n/a</td>

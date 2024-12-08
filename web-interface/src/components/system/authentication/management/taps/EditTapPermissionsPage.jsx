@@ -63,7 +63,11 @@ function EditTapPermissionsPage() {
                     {tenant.name}
                   </a>
                 </li>
-                <li className="breadcrumb-item">Taps</li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.TAPS_PAGE(organization.id, tenant.id)}>
+                    Taps
+                  </a>
+                </li>
                 <li className="breadcrumb-item">
                   <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(organization.id, tenant.id, tap.uuid)}>
                     {tap.name}
