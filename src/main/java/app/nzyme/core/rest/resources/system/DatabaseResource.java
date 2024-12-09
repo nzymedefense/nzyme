@@ -102,7 +102,6 @@ public class DatabaseResource extends UserAuthenticatedResource {
         return Response.ok(GlobalDatabaseCategoriesResponse.create(globalSizes, organizations)).build();
     }
 
-
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/sizes/organization/{organization_id}")
@@ -153,6 +152,37 @@ public class DatabaseResource extends UserAuthenticatedResource {
         return Response.ok(
                 OrganizationDataCategoriesResponse.create(org.get().uuid(), org.get().name(), orgSizes, tenants)
         ).build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/sizes/organization/{organization_id}/tenants/{tenant_id}")
+    public Response tenantDatabaseSizes(@Context SecurityContext sc,
+                                        @PathParam("organization_id") UUID organizationId,
+                                        @PathParam("tenant_id") UUID tenantId){
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        Optional<TenantEntry> tenant = nzyme.getAuthenticationService().findTenant(tenantId);
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
+
+        if (tenant.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Map<String, DataCategorySizesAndConfigurationResponse> tenantSizes = Maps.newHashMap();
+        for (DataCategory category : DataCategory.values()) {
+            tenantSizes.put(category.name(), DataCategorySizesAndConfigurationResponse.create(
+                    null,
+                    countDataCategoryRows(category, org.get().uuid(), tenant.get().uuid()),
+                    getDataCategoryRetentionTimeDays(category, org.get().uuid(), tenant.get().uuid())
+            ));
+        }
+
+        return Response.ok(TenantDataCategoriesResponse.create(
+                tenant.get().uuid(), tenant.get().name(), org.get().uuid(), org.get().name(), tenantSizes
+        )).build();
     }
 
     @POST

@@ -148,6 +148,7 @@ import OrganizationDatabasePage
 import TenantUsersPage from "./components/system/authentication/management/tenants/TenantUsersPage";
 import TenantTapsPage from "./components/system/authentication/management/tenants/TenantTapsPage";
 import TenantLocationsPage from "./components/system/authentication/management/tenants/locations/TenantLocationsPage";
+import TenantDatabasePage from "./components/system/authentication/management/tenants/TenantDatabasePage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -366,6 +367,7 @@ function App() {
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.USERS_PAGE(':organizationId', ':tenantId')} element={<TenantUsersPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.TAPS_PAGE(':organizationId', ':tenantId')} element={<TenantTapsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS_PAGE(':organizationId', ':tenantId')} element={<TenantLocationsPage />}/>
+                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DATABASE_PAGE(':organizationId', ':tenantId')} element={<TenantDatabasePage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(':organizationId', ':tenantId')} element={<CreateLocationPage />}/>
