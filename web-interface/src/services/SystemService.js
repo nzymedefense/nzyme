@@ -72,6 +72,10 @@ class SystemService {
     RESTClient.post(`/system/database/purge/organization/${organizationId}/tenant/${tenantId}/category/${category}`, {}, onSuccess)
   }
 
+  setDatabaseCategoryRetentionTime(category, organizationId, tenantId, retentionTimeDays, onSuccess) {
+    RESTClient.put(`/system/database/configuration/organization/${organizationId}/tenant/${tenantId}/category/${category}/retention`, {retention_time_days: retentionTimeDays}, onSuccess)
+  }
+
   getSidebarTitle(setSidebarTitle, setSidebarSubtitle) {
     RESTClient.get('/system/lookandfeel/sidebartitle', {}, function (response) {
       setSidebarTitle(response.data.title);

@@ -4,6 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.DataCategory;
 import app.nzyme.core.database.DataTableInformation;
 import app.nzyme.core.database.DatabaseImpl;
+import app.nzyme.core.database.DatabaseTools;
 import app.nzyme.core.database.tasks.GlobalPurgeCategoryTask;
 import app.nzyme.core.database.tasks.OrganizationPurgeCategoryTask;
 import app.nzyme.core.database.tasks.TenantPurgeCategoryTask;
@@ -11,6 +12,7 @@ import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.requests.SetDatabaseCategoryRetentionTimeRequest;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
 import app.nzyme.core.rest.responses.system.database.*;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
@@ -23,6 +25,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -31,6 +34,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Map;
@@ -78,7 +82,7 @@ public class DatabaseResource extends UserAuthenticatedResource {
                     tenantSizes.put(category.name(), DataCategorySizesAndConfigurationResponse.create(
                             null,
                             countDataCategoryRows(category, org.uuid(), tenant.uuid()),
-                            getDataCategoryRetentionTimeDays(category, org.uuid(), tenant.uuid())
+                            DatabaseTools.getDataCategoryRetentionTimeDays(nzyme, category, org.uuid(), tenant.uuid())
                     ));
                 }
 
@@ -136,7 +140,7 @@ public class DatabaseResource extends UserAuthenticatedResource {
                 tenantSizes.put(category.name(), DataCategorySizesAndConfigurationResponse.create(
                         null,
                         countDataCategoryRows(category, org.get().uuid(), tenant.uuid()),
-                        getDataCategoryRetentionTimeDays(category, org.get().uuid(), tenant.uuid())
+                        DatabaseTools.getDataCategoryRetentionTimeDays(nzyme, category, org.get().uuid(), tenant.uuid())
                 ));
             }
 
@@ -176,7 +180,7 @@ public class DatabaseResource extends UserAuthenticatedResource {
             tenantSizes.put(category.name(), DataCategorySizesAndConfigurationResponse.create(
                     null,
                     countDataCategoryRows(category, org.get().uuid(), tenant.get().uuid()),
-                    getDataCategoryRetentionTimeDays(category, org.get().uuid(), tenant.get().uuid())
+                    DatabaseTools.getDataCategoryRetentionTimeDays(nzyme, category, org.get().uuid(), tenant.get().uuid())
             ));
         }
 
@@ -197,7 +201,7 @@ public class DatabaseResource extends UserAuthenticatedResource {
         }
 
         LOG.info("Submitting tasks to globally purge data category [{}] on API request.", category);
-        nzyme.getTasksQueue().publish(new GlobalPurgeCategoryTask(category));
+        nzyme.getTasksQueue().publish(new GlobalPurgeCategoryTask(category, DateTime.now()));
         return Response.status(Response.Status.ACCEPTED).build();
     }
 
@@ -224,7 +228,7 @@ public class DatabaseResource extends UserAuthenticatedResource {
         LOG.info("Submitting tasks to purge data category [{}] of organization [{}] on API request.",
                 category, organizationId);
 
-        nzyme.getTasksQueue().publish(new OrganizationPurgeCategoryTask(category, organizationId));
+        nzyme.getTasksQueue().publish(new OrganizationPurgeCategoryTask(category, organizationId, DateTime.now()));
         return Response.status(Response.Status.ACCEPTED).build();
     }
 
@@ -249,10 +253,43 @@ public class DatabaseResource extends UserAuthenticatedResource {
         LOG.info("Submitting tasks to purge data category [{}] of tenant [{}] on API request.",
                 category, tenantId);
 
-        // TODO set purge cutoff at task creation
+        nzyme.getTasksQueue().publish(new TenantPurgeCategoryTask(category, organizationId, tenantId, DateTime.now()));
+        return Response.status(Response.Status.ACCEPTED).build();
+    }
 
+    @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/configuration/organization/{organization_id}/tenant/{tenant_id}/category/{category}/retention")
+    public Response setCategoryRetentionTime(@Context SecurityContext sc,
+                                             @Valid SetDatabaseCategoryRetentionTimeRequest req,
+                                             @PathParam("category") String categoryParam,
+                                             @PathParam("organization_id") UUID organizationId,
+                                             @PathParam("tenant_id") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
 
-        nzyme.getTasksQueue().publish(new TenantPurgeCategoryTask(category, organizationId, tenantId));
+        DataCategory category;
+        try {
+            category = DataCategory.valueOf(categoryParam.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        LOG.info("Setting retention time of data category [{}] of tenant [{}] to [{}] on API request.",
+                category, tenantId, req.retentionTimeDays());
+
+        String key = null;
+        switch (category) {
+            case DOT11 -> key = Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key();
+            case BLUETOOTH -> key = BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.key();
+            case ETHERNET_L4 -> key = EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key();
+            case ETHERNET_DNS -> key = EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.key();
+        }
+
+        nzyme.getDatabaseCoreRegistry()
+                .setValue(key, String.valueOf(req.retentionTimeDays()), organizationId, tenantId);
+
         return Response.status(Response.Status.ACCEPTED).build();
     }
 
@@ -290,38 +327,6 @@ public class DatabaseResource extends UserAuthenticatedResource {
         }
 
         return size;
-    }
-
-    private int getDataCategoryRetentionTimeDays(DataCategory category,
-                                                  @NotNull UUID organizationId,
-                                                  @NotNull UUID tenantId) {
-        String key = null;
-        String defaultValue = null;
-        switch (category) {
-            case DOT11 -> {
-                key = Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key();
-                defaultValue = Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
-            }
-            case BLUETOOTH -> {
-                key = BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.key();
-                defaultValue = BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
-
-            }
-            case ETHERNET_L4 -> {
-                key = EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key();
-                defaultValue = EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
-
-            }
-            case ETHERNET_DNS -> {
-                key = EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.key();
-                defaultValue = EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
-
-            }
-        }
-
-        return Integer.parseInt(nzyme.getDatabaseCoreRegistry()
-                .getValue(key, organizationId, tenantId)
-                .orElse(defaultValue));
     }
 
 }

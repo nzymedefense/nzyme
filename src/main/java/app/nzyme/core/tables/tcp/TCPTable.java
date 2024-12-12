@@ -1,6 +1,8 @@
 package app.nzyme.core.tables.tcp;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.DataCategory;
+import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.ethernet.tcp.TcpSessionState;
 import app.nzyme.core.ethernet.tcp.db.TcpSessionEntry;
@@ -191,20 +193,6 @@ public class TCPTable implements DataTable {
 
     @Override
     public void retentionClean() {
-        NzymeNode nzyme = tablesService.getNzyme();
-        int l4RetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
-                .getValue(EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key())
-                .orElse(EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
-        );
-        DateTime l4CutOff = DateTime.now().minusDays(l4RetentionDays);
-
-        LOG.info("Ethernet/L4 data retention: <{}> days / Delete data older than <{}>.",
-                l4RetentionDays, l4CutOff);
-
-        nzyme.getDatabase().useHandle(handle -> {
-            handle.createUpdate("DELETE FROM l4_sessions WHERE most_recent_segment_time < :cutoff")
-                    .bind("cutoff", l4CutOff)
-                    .execute();
-        });
+        // NOOP. Remove from plugin APIs if there remains no use. Database cleaned by category/tenant independently.
     }
 }

@@ -46,6 +46,7 @@ import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.periodicals.connect.ConnectStatusReporter;
 import app.nzyme.core.context.ContextCleaner;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
+import app.nzyme.core.periodicals.housekeeping.DatabaseRetentionCleaner;
 import app.nzyme.core.registry.RegistryChangeMonitorImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
@@ -281,6 +282,7 @@ public class NzymeNodeImpl implements NzymeNode {
         periodicalManager.scheduleAtFixedRate(new ContextCleaner(getContextService()), 0, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new KnownSSIDMonitor(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new KnownClientMonitor(this), 1, 1, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new DatabaseRetentionCleaner(this), 1, 60, TimeUnit.MINUTES);
         if (configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {

@@ -1,6 +1,8 @@
 package app.nzyme.core.tables.dot11;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.DataCategory;
+import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
@@ -779,17 +781,7 @@ public class Dot11Table implements DataTable {
 
     @Override
     public void retentionClean() {
-        NzymeNode nzyme = tablesService.getNzyme();
-        int dot11RetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
-                .getValue(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key())
-                .orElse(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
-        );
-        DateTime dot11CutOff = DateTime.now().minusDays(dot11RetentionDays);
-
-        LOG.info("802.11/WiFi data retention: <{}> days / Delete data older than <{}>.",
-                dot11RetentionDays, dot11CutOff);
-
-
+        // NOOP. Remove from plugin APIs if there remains no use. Database cleaned by category/tenant independently.
     }
 
 }

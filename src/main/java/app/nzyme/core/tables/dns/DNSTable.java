@@ -17,6 +17,8 @@
 
 package app.nzyme.core.tables.dns;
 
+import app.nzyme.core.database.DataCategory;
+import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsEntropyLogReport;
@@ -323,10 +325,6 @@ public class DNSTable implements DataTable {
 
     @Override
     public void retentionClean() {
-        int retentionTimeDays = Integer.parseInt(tablesService.getNzyme().getDatabaseCoreRegistry()
-                .getValue(EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.key())
-                .orElse(EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
-        );
-
+        // NOOP. Remove from plugin APIs if there remains no use. Database cleaned by category/tenant independently.
     }
 }

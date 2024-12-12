@@ -115,17 +115,7 @@ public class SOCKSTable implements DataTable {
 
     @Override
     public void retentionClean() {
-        NzymeNode nzyme = tablesService.getNzyme();
-        int l4RetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
-                .getValue(EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key())
-                .orElse(EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
-        );
-        DateTime l4CutOff = DateTime.now().minusDays(l4RetentionDays);
-
-        LOG.info("SOCKS (TCP/L4) data retention: <{}> days / Delete data older than <{}>.",
-                l4RetentionDays, l4CutOff);
-
-
+        // NOOP. Remove from plugin APIs if there remains no use. Database cleaned by category/tenant independently.
     }
 
 }

@@ -11,9 +11,11 @@ import java.util.Map;
 public class GlobalPurgeCategoryTask extends Task {
 
     private final DataCategory category;
+    private final DateTime purgeTime;
 
-    public GlobalPurgeCategoryTask(DataCategory category) {
+    public GlobalPurgeCategoryTask(DataCategory category, DateTime purgeTime) {
         this.category = category;
+        this.purgeTime = purgeTime;
     }
 
     @Override
@@ -30,7 +32,7 @@ public class GlobalPurgeCategoryTask extends Task {
     public Map<String, Object> parameters() {
         return new HashMap<>(){{
             put("category", category);
-            put("since", new DateTime().toString());
+            put("since", purgeTime.toString());
         }};
     }
 

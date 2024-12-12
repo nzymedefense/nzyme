@@ -136,7 +136,8 @@ public class TapManager {
                                 "processed_bytes_total = :processed_bytes_total, " +
                                 "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
                                 "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
-                                "remote_address = :remote_address, last_report = NOW() WHERE uuid = :uuid")
+                                "remote_address = :remote_address, last_report = NOW() " +
+                                "WHERE deleted = false AND uuid = :uuid")
                         .bind("version", report.version())
                         .bind("clock", report.timestamp())
                         .bind("processed_bytes_total", report.processedBytes().total())
@@ -554,7 +555,7 @@ public class TapManager {
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM taps WHERE uuid IN (<ids>) " +
+                handle.createQuery("SELECT * FROM taps WHERE deleted = false AND uuid IN (<ids>) " +
                                 "ORDER BY name ASC")
                         .bindList("ids", tapIds)
                         .mapTo(Tap.class)
@@ -564,7 +565,7 @@ public class TapManager {
 
     public List<Tap> findAllTapsOfAllUsers() {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM taps")
+                handle.createQuery("SELECT * FROM taps WHERE deleted = false")
                         .mapTo(Tap.class)
                         .list()
         );
@@ -572,7 +573,8 @@ public class TapManager {
 
     public List<Tap> findAllTapsOfOrganization(UUID organizationUUID) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM taps WHERE organization_id = :organization_uuid")
+                handle.createQuery("SELECT * FROM taps WHERE deleted = false " +
+                                "AND organization_id = :organization_uuid")
                         .bind("organization_uuid", organizationUUID)
                         .mapTo(Tap.class)
                         .list()
@@ -581,7 +583,8 @@ public class TapManager {
 
     public List<Tap> findAllTapsOfTenant(UUID organizationUUID, UUID tenantUUID) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM taps WHERE organization_id = :organization_uuid " +
+                handle.createQuery("SELECT * FROM taps " +
+                                "WHERE deleted = false AND organization_id = :organization_uuid " +
                                 "AND tenant_id = :tenant_uuid")
                         .bind("organization_uuid", organizationUUID)
                         .bind("tenant_uuid", tenantUUID)
@@ -594,7 +597,8 @@ public class TapManager {
         if (organizationUUID == null && tenantUUID == null) {
             return nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT * FROM taps " +
-                                    "WHERE location_uuid = :location_uuid AND floor_uuid = :floor_uuid")
+                                    "WHERE deleted = false AND location_uuid = :location_uuid " +
+                                    "AND floor_uuid = :floor_uuid")
                             .bind("location_uuid", locationUUID)
                             .bind("floor_uuid", floorUUID)
                             .mapTo(Tap.class)
@@ -605,7 +609,8 @@ public class TapManager {
         if (organizationUUID != null && tenantUUID == null) {
             // Org Admin.
             return nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT * FROM taps WHERE organization_id = :organization_uuid " +
+                    handle.createQuery("SELECT * FROM taps WHERE deleted = false " +
+                                    "AND organization_id = :organization_uuid " +
                                     "AND location_uuid = :location_uuid AND floor_uuid = :floor_uuid")
                             .bind("organization_uuid", organizationUUID)
                             .bind("location_uuid", locationUUID)
@@ -617,7 +622,8 @@ public class TapManager {
 
         // Tenant user.
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM taps WHERE organization_id = :organization_uuid " +
+                handle.createQuery("SELECT * FROM taps WHERE deleted = false AND " +
+                                "organization_id = :organization_uuid " +
                                 "AND tenant_id = :tenant_uuid AND location_uuid = :location_uuid " +
                                 "AND floor_uuid = :floor_uuid")
                         .bind("organization_uuid", organizationUUID)
@@ -631,7 +637,7 @@ public class TapManager {
 
     public List<UUID> allTapUUIDsAccessibleByUser(AuthenticatedUser user) {
         List<UUID> allTaps = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT uuid FROM taps")
+                handle.createQuery("SELECT uuid FROM taps WHERE deleted = false")
                         .mapTo(UUID.class)
                         .list()
         );
@@ -646,7 +652,8 @@ public class TapManager {
             }
 
             return nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT uuid FROM taps WHERE organization_id = :organization_id")
+                    handle.createQuery("SELECT uuid FROM taps WHERE deleted = false " +
+                                    "AND organization_id = :organization_id")
                             .bind("organization_id", user.getOrganizationId())
                             .mapTo(UUID.class)
                             .list()
@@ -666,7 +673,8 @@ public class TapManager {
             if (user.accessAllTenantTaps) {
                 return nzyme.getDatabase().withHandle(handle ->
                         handle.createQuery("SELECT uuid FROM taps " +
-                                        "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                                        "WHERE deleted = false AND organization_id = :organization_id " +
+                                        "AND tenant_id = :tenant_id")
                                 .bind("organization_id", user.getOrganizationId())
                                 .bind("tenant_id", user.getTenantId())
                                 .mapTo(UUID.class)
@@ -712,7 +720,7 @@ public class TapManager {
 
     public Optional<Tap> findTap(UUID uuid) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM taps WHERE uuid = :uuid")
+                handle.createQuery("SELECT * FROM taps WHERE deleted = false AND uuid = :uuid")
                         .bind("uuid", uuid)
                         .mapTo(Tap.class)
                         .findOne()

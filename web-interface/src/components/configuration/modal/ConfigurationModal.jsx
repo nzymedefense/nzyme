@@ -145,8 +145,7 @@ function ConfigurationModal (props) {
             </a>
 
             <div className="modal configuration-dialog" id={'configuration-dialog-' + key}
-                 data-bs-keyboard="false" data-bs-backdrop="static" tabIndex="-1"
-                 aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                 data-bs-keyboard="false" data-bs-backdrop="static" tabIndex="-1">
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">

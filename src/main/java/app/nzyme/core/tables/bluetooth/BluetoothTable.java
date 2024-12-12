@@ -2,6 +2,8 @@ package app.nzyme.core.tables.bluetooth;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.bluetooth.db.BluetoothServiceUuidJson;
+import app.nzyme.core.database.DataCategory;
+import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDeviceReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDevicesReport;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
@@ -148,16 +150,7 @@ public class BluetoothTable implements DataTable {
 
     @Override
     public void retentionClean() {
-        NzymeNode nzyme = tablesService.getNzyme();
-        int bluetoothRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
-                .getValue(BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.key())
-                .orElse(BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
-        );
-        DateTime bluetoothCutoff = DateTime.now().minusDays(bluetoothRetentionDays);
-
-        LOG.info("Bluetooth data retention: <{}> days / Delete data older than <{}>.",
-                bluetoothRetentionDays, bluetoothCutoff);
-
+        // NOOP. Remove from plugin APIs if there remains no use. Database cleaned by category/tenant independently.
     }
 
     public static final class InvalidBluetoothUuidException extends Exception {

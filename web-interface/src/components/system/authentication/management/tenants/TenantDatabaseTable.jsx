@@ -4,6 +4,8 @@ import {notify} from "react-notify-toast";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import numeral from "numeral";
 import {humanReadableDatabaseCategoryName} from "../../../../../util/Tools";
+import ConfigurationSubmitButton from "../../../../configuration/modal/ConfigurationSubmitButton";
+import ConfigurationCloseButton from "../../../../configuration/modal/ConfigurationCloseButton";
 
 const systemService = new SystemService();
 
@@ -14,8 +16,9 @@ export default function TenantDatabaseTable(props) {
   const [sizes, setSizes] = useState(null);
 
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [retentionTimeDays, setRetentionTimeDays] = useState(null);
+  const [retentionTimeDays, setRetentionTimeDays] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [submittedSuccessfully, setSubmittedSuccessfully] = useState(false);
 
   const [revision, setRevision] = useState(new Date());
 
@@ -50,13 +53,24 @@ export default function TenantDatabaseTable(props) {
       return;
     }
 
-    // REST: category, retentionTimeDays. update submitting/submitted. handle submitted in button to close
+    setSubmitting(true);
+    systemService.setDatabaseCategoryRetentionTime(selectedCategory, tenant.organization_id, tenant.id, retentionTimeDays, () => {
+      setSubmittedSuccessfully(true);
+      setSubmitting(false);
+    });
+  }
+
+  const onFinishedClick = (e) => {
+    e.preventDefault();
+
+    setRevision(new Date());
+    setSubmittedSuccessfully(false);
   }
 
   useEffect(() => {
     if (tenant) {
       setSizes(null);
-      systemService.getDatabaseTenantSizes(setSizes, tenant.organization_id, tenant.id,);
+      systemService.getDatabaseTenantSizes(setSizes, tenant.organization_id, tenant.id);
     }
   }, [tenant, revision]);
 
@@ -120,20 +134,16 @@ export default function TenantDatabaseTable(props) {
             </div>
 
             <div className="modal-footer">
-            <button type="button"
-                      className="btn btn-secondary"
-                      data-bs-dismiss="modal">
-                Cancel
-              </button>
+              <ConfigurationCloseButton submittedSuccessfully={submittedSuccessfully}
+                                        onClick={() => {}}
+                                        submitting={submitting} />
 
-              <button type="button"
-                      className="btn btn-primary"
-                      onClick={submit}
-                      disabled={!readyToSubmit()}>
-                {submitting
-                  ? <span><i className="fa-solid fa-circle-notch fa-spin"></i> &nbsp;Saving ...</span>
-                  : 'Save Changes'}
-              </button>
+              <ConfigurationSubmitButton onFinishedClick={onFinishedClick}
+                                         onClick={submit}
+                                         disabled={!readyToSubmit()}
+                                         submitting={submitting}
+                                         submittedSuccessfully={submittedSuccessfully} />
+
             </div>
           </div>
         </div>

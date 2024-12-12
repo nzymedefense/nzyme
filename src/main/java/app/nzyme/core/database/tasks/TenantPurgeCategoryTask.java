@@ -14,11 +14,13 @@ public class TenantPurgeCategoryTask extends Task  {
     private final DataCategory category;
     private final UUID organizationId;
     private final UUID tenantid;
+    private final DateTime purgeTime;
 
-    public TenantPurgeCategoryTask(DataCategory category, UUID organizationId, UUID tenantid) {
+    public TenantPurgeCategoryTask(DataCategory category, UUID organizationId, UUID tenantid, DateTime purgeTime) {
         this.category = category;
         this.organizationId = organizationId;
         this.tenantid = tenantid;
+        this.purgeTime = purgeTime;
     }
 
     @Override
@@ -37,7 +39,7 @@ public class TenantPurgeCategoryTask extends Task  {
             put("category", category);
             put("organization_id", organizationId);
             put("tenant_id", tenantid);
-            put("since", new DateTime().toString());
+            put("since", purgeTime.toString());
         }};
     }
 

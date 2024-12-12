@@ -1,5 +1,7 @@
 import React from 'react'
 
+// ATTENTION: This component is not only used in the default configuration modals.
+
 function ConfigurationCloseButton (props) {
   if (props.submittedSuccessfully) {
     return null

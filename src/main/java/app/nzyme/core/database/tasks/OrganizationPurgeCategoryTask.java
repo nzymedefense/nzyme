@@ -13,10 +13,12 @@ public class OrganizationPurgeCategoryTask extends Task  {
 
     private final DataCategory category;
     private final UUID organizationId;
+    private final DateTime purgeTime;
 
-    public OrganizationPurgeCategoryTask(DataCategory category, UUID organizationId) {
+    public OrganizationPurgeCategoryTask(DataCategory category, UUID organizationId, DateTime purgeTime) {
         this.category = category;
         this.organizationId = organizationId;
+        this.purgeTime = purgeTime;
     }
 
     @Override
@@ -34,7 +36,7 @@ public class OrganizationPurgeCategoryTask extends Task  {
         return new HashMap<>(){{
             put("category", category);
             put("organization_id", organizationId);
-            put("since", new DateTime().toString());
+            put("since", purgeTime.toString());
         }};
     }
 

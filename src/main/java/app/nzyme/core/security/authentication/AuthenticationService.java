@@ -236,7 +236,7 @@ public class AuthenticationService {
     public long countTapsOfOrganization(OrganizationEntry o) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM taps " +
-                                "WHERE organization_id = :organization_id")
+                                "WHERE organization_id = :organization_id AND deleted = false")
                         .bind("organization_id", o.uuid())
                         .mapTo(Long.class)
                         .one()
@@ -602,8 +602,8 @@ public class AuthenticationService {
 
     public long countTapsOfTenant(TenantEntry t) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM taps WHERE organization_id = :organization_id AND " +
-                                "tenant_id = :tenant_id")
+                handle.createQuery("SELECT COUNT(*) FROM taps WHERE deleted = false AND " +
+                                "organization_id = :organization_id AND tenant_id = :tenant_id")
                         .bind("organization_id", t.organizationUuid())
                         .bind("tenant_id", t.uuid())
                         .mapTo(Long.class)
@@ -901,7 +901,8 @@ public class AuthenticationService {
     public List<TapPermissionEntry> findAllTapsOfTenant(UUID organizationId, UUID tenantId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM taps " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "WHERE deleted = false AND organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id " +
                                 "ORDER BY name ASC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -915,7 +916,8 @@ public class AuthenticationService {
     public Optional<TapPermissionEntry> findTap(UUID organizationId, UUID tenantId, UUID tapId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM taps " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "WHERE deleted = false AND organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id " +
                                 "AND uuid = :uuid")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -932,7 +934,7 @@ public class AuthenticationService {
          */
 
         List<TapPermissionEntry> taps = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM taps")
+                handle.createQuery("SELECT * FROM taps WHERE deleted = false")
                         .mapTo(TapPermissionEntry.class)
                         .list()
         );
@@ -958,7 +960,7 @@ public class AuthenticationService {
 
     public void deleteTap(UUID organizationId, UUID tenantId, UUID tapId) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("DELETE FROM taps WHERE organization_id = :organization_id " +
+                handle.createUpdate("UPDATE taps SET deleted = true WHERE organization_id = :organization_id " +
                                 "AND tenant_id = :tenant_id AND uuid = :uuid")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -1120,7 +1122,7 @@ public class AuthenticationService {
 
     public long countTapsOfTenantLocation(UUID locationId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM taps WHERE location_uuid = :id")
+                handle.createQuery("SELECT COUNT(*) FROM taps WHERE deleted = false AND location_uuid = :id")
                         .bind("id", locationId)
                         .mapTo(Long.class)
                         .one()
