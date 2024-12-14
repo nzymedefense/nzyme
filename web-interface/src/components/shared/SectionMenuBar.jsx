@@ -10,7 +10,7 @@ export default function SectionMenuBar(props) {
         {items.map((item, i) => {
           return (
               <li key={i} className="nav-item">
-                <a className={"nav-link " + (item.href === activeRoute ? "active" : null)} href={item.href}>
+                <a className={"nav-link " + (item.href === activeRoute ? "active" : "")} href={item.href}>
                   {item.name}
                 </a>
               </li>

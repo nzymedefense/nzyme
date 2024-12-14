@@ -12,7 +12,7 @@ function BSSIDSecurityProtocols(props) {
   if (bssid.security_protocols.length === 1 && bssid.security_protocols[0] === "None") {
     if (bssid.has_hidden_ssid_advertisements && bssid.advertised_ssid_names.length === 0) {
       // Only hidden SSIDs.
-      return <span className="hidden-ssid">Unknown/Hidden</span>;
+      return <span className="text-muted">Unknown/Hidden</span>;
     } else {
       return "None";
     }

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 
 import SimpleBarChart from "../charts/SimpleBarChart";
@@ -8,6 +8,7 @@ import Papa from "papaparse";
 import {MODE_BAR_CHART, MODE_EXPORT, MODE_TABLE} from "./HistogramModes";
 import {EXPORT_TYPE_CSV, EXPORT_TYPE_JSON, EXPORT_TYPE_TEXT} from "./ExportTypes";
 import HistogramValue from "./HistogramValue";
+import Store from "../../../util/Store";
 
 function TwoColumnHistogram(props) {
 
@@ -36,7 +37,7 @@ function TwoColumnHistogram(props) {
         x: x,
         y: y,
         type: 'bar',
-        line: { width: 1, shape: 'linear', color: '#2983fe' },
+        marker: { color: Store.get('dark_mode') ? '#e6e6e6' : '#1d30d7' },
         orientation: "h"
       }
     ]

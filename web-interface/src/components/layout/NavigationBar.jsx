@@ -9,20 +9,16 @@ function NavigationBar(props) {
   const darkModeEnabled = props.darkModeEnabled;
   const setDarkModeEnabled = props.setDarkModeEnabled;
 
-  const onSearchSubmit = function() {
-    setSearchSubmitted(true);
-  }
-
   return (
     <nav className="navbar">
       <div className="container-fluid">
         <div className="d-flex flex-row">
           <form method="GET" action={ApiRoutes.SEARCH.RESULTS}>
             <div className="input-group">
-            <input className="form-control" type="search" placeholder="Search" aria-label="Search" />
-            <button className="btn btn-outline-primary" type="submit">
-            <i className="fa-solid fa-search" />
-            </button>
+              <input className="form-control" type="search" placeholder="Search" aria-label="Search" />
+              <button className="btn btn-outline-secondary" type="submit">
+                <i className="fa-solid fa-search" />
+              </button>
             </div>
           </form>
 
@@ -34,10 +30,12 @@ function NavigationBar(props) {
         <div className="d-flex flex-row">
           <DarkModeButton darkModeEnabled={darkModeEnabled} setDarkModeEnabled={setDarkModeEnabled} />
 
-          <a href="https://go.nzyme.org/help" className="btn btn-outline-dark main-help" title="Help" target="_blank" rel="noreferrer">
+          <a href="https://go.nzyme.org/help" className="btn btn-outline-secondary main-help"
+             title="Help"
+             target="_blank">
             Help
           </a>
-          <button className="btn btn-outline-primary" title="Sign out" onClick={onLogout} >
+          <button className="btn btn-outline-secondary" title="Sign out" onClick={onLogout} >
             Sign Out &nbsp;<i className="fa-solid fa-arrow-right-from-bracket" />
           </button>
         </div>

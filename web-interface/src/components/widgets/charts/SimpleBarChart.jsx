@@ -34,7 +34,7 @@ class SimpleBarChart extends React.Component {
           x: x,
           y: y,
           type: 'bar',
-          marker: { color: Store.get('dark_mode') ? '#e6e6e6' : '#5c5d6f' }
+          marker: { color: Store.get('dark_mode') ? '#e6e6e6' : '#1d30d7' }
         }
       ]
     }

@@ -752,10 +752,6 @@ i.signal-strength-bad {
     color: #dc3545;
 }
 
-span.hidden-ssid {
-    color: #c0c0c0;
-}
-
 span.main-active-channel {
     border-bottom: 2px solid #000;
 }

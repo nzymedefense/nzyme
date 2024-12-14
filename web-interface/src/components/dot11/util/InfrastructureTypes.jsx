@@ -6,7 +6,7 @@ function InfrastructureTypes(props) {
 
   if (types.length === 0) {
     // Purely wildcard/hidden BSSIDs have none.
-    return <span className="hidden-ssid">None</span>
+    return <span className="text-muted">None</span>
   }
 
   return (
