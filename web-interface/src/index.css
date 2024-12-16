@@ -438,10 +438,6 @@ div.configuration-dialog a.configuration-help {
     text-decoration: none !important;
 }
 
-div.configuration-dialog button.configuration-submit {
-    width: 130px;
-}
-
 div.configuration-dialog button.configuration-submitted {
     width: 100%;
 }
