@@ -33,7 +33,7 @@ function TapSecret (props) {
   <div className="tap-secret">
     <form className="form-floating">
       <input type="text" className="form-control" placeholder={secret} value={secret} readOnly={true} />
-        <label htmlFor="floatingInputInvalid">Secret</label>
+      <label>Secret</label>
     </form>
 
     <div className="mt-2">

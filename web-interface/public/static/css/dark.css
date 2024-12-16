@@ -323,3 +323,7 @@ ul.pagination li.page-item a.page-link:hover {
 ul.pagination li.disabled a.page-link {
     color: #7e7e7e;
 }
+
+div.tap-secret label {
+    color: #111;
+}
