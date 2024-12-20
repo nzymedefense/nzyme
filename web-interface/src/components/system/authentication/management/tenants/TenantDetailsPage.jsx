@@ -116,26 +116,6 @@ function TenantDetailsPage() {
                 </div>
               </div>
             </div>
-
-            <div className="row mt-3">
-              <div className="col-md-12">
-                <div className="card">
-                  <div className="card-body">
-                    <CardTitleWithControls title="Locations" slim={true} />
-
-                    <p>Physical locations that taps are deployed at. Used for floor plans across the product.</p>
-
-                    <LocationsTable organizationId={organization.id} tenantId={tenant.id}/>
-
-                    <a
-                      href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(organization.id, tenant.id)}
-                      className="btn btn-sm btn-secondary">
-                      Create Location
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div className="col-md-4">
