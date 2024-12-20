@@ -6,6 +6,7 @@ import Routes from "../../../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
 import TenantForm from "./TenantForm";
 import SubsystemsConfiguration from "../../../../shared/SubsystemsConfiguration";
+import ApiRoutes from "../../../../../util/ApiRoutes";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -65,10 +66,14 @@ function EditTenantPage() {
                     {organization.name}
                   </a>
                 </li>
-                <li className="breadcrumb-item">Tenants</li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
+                    {tenant.name}
+                  </a>
+                </li>
                 <li className="breadcrumb-item">
                   <a href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
-                    {tenant.name}
+                  {tenant.name}
                   </a>
                 </li>
                 <li className="breadcrumb-item active" aria-current="page">Edit</li>

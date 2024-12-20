@@ -52,7 +52,11 @@ function CreateLocationPage() {
                   {organization.name}
                 </a>
               </li>
-              <li className="breadcrumb-item">Tenants</li>
+              <li className="breadcrumb-item">
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.TENANTS_PAGE(organization.id)}>
+                  Tenants
+                </a>
+              </li>
               <li className="breadcrumb-item">
                 <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
                   {tenant.name}

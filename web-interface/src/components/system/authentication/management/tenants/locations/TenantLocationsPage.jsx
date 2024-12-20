@@ -44,7 +44,11 @@ export default function TenantLocationsPage() {
                   {organization.name}
                 </a>
               </li>
-              <li className="breadcrumb-item">Tenants</li>
+              <li className="breadcrumb-item">
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.TENANTS_PAGE(organization.id)}>
+                  Tenants
+                </a>
+              </li>
               <li className="breadcrumb-item active" aria-current="page">{tenant.name}</li>
             </ol>
           </nav>

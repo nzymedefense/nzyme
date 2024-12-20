@@ -56,10 +56,14 @@ function EditLocationPage() {
                   {organization.name}
                 </a>
               </li>
-              <li className="breadcrumb-item">Tenants</li>
               <li className="breadcrumb-item">
                 <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
                   {tenant.name}
+                </a>
+              </li>
+              <li className="breadcrumb-item">
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
+                {tenant.name}
                 </a>
               </li>
               <li className="breadcrumb-item">
