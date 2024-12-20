@@ -57,8 +57,8 @@ function EditLocationPage() {
                 </a>
               </li>
               <li className="breadcrumb-item">
-                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
-                  {tenant.name}
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.TENANTS_PAGE(organization.id)}>
+                  Tenants
                 </a>
               </li>
               <li className="breadcrumb-item">
