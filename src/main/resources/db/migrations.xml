@@ -5684,4 +5684,9 @@
         </sql>
     </changeSet>
 
+    <changeSet id="extend_mac_context_uniqueness" author="lennartkoopmann">
+        <dropUniqueConstraint tableName="context_mac_addresses" constraintName="context_mac_addresses_mac_address_key" />
+        <addUniqueConstraint tableName="context_mac_addresses" columnNames="mac_address, organization_id, tenant_id" />
+    </changeSet>
+
 </databaseChangeLog>
