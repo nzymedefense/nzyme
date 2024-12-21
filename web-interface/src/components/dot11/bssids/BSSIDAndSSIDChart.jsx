@@ -10,6 +10,7 @@ function BSSIDAndSSIDChart(props) {
 
   const parameter = props.parameter;
   const timeRange = props.timeRange;
+  const revision = props.revision;
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -19,7 +20,7 @@ function BSSIDAndSSIDChart(props) {
   useEffect(() => {
     setHistogram(null);
     dot11Service.getBSSIDAndSSIDHistogram(timeRange, selectedTaps, setHistogram);
-  }, [selectedTaps, timeRange])
+  }, [selectedTaps, timeRange, revision])
 
   const formatData = function(data) {
     const result = {}

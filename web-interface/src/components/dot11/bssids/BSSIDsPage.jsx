@@ -39,15 +39,21 @@ function BSSIDsPage() {
   const [bssids, setBSSIDs] = useState(null);
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [revision, setRevision] = useState(new Date());
+
   const [bssidTimeRange, setBssidTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [bssidChartRevision, setBssidChartRevision] = useState(new Date());
+
   const [ssidTimeRange, setSsidTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [ssidChartRevision, setSsidChartRevision] = useState(new Date());
 
   const [filters, setFilters] = useState(filtersJson)
+
 
   useEffect(() => {
     setBSSIDs(null);
     dot11Service.findAllBSSIDs(timeRange, filters, selectedTaps, setBSSIDs);
-  }, [selectedTaps, filters, timeRange])
+  }, [selectedTaps, filters, timeRange, revision])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -72,10 +78,11 @@ function BSSIDsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Active BSSIDs" slim={true}
+                                       refreshAction={() => setBssidChartRevision(new Date())}
                                        timeRange={bssidTimeRange}
                                        setTimeRange={setBssidTimeRange} />
 
-                <BSSIDAndSSIDChart parameter="bssid_count" timeRange={bssidTimeRange} />
+                <BSSIDAndSSIDChart parameter="bssid_count" timeRange={bssidTimeRange} revision={bssidChartRevision} />
               </div>
             </div>
           </div>
@@ -83,9 +90,10 @@ function BSSIDsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Active SSIDs" slim={true}
+                                       refreshAction={() => setSsidChartRevision(new Date())}
                                        timeRange={ssidTimeRange} setTimeRange={setSsidTimeRange} />
 
-                <BSSIDAndSSIDChart parameter="ssid_count" timeRange={ssidTimeRange}/>
+                <BSSIDAndSSIDChart parameter="ssid_count" timeRange={ssidTimeRange} revision={ssidChartRevision}/>
               </div>
             </div>
           </div>
@@ -110,6 +118,7 @@ function BSSIDsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Access Points / BSSIDs"
+                                       refreshAction={() => setRevision(new Date())}
                                        fixedAppliedTimeRange={timeRange} />
 
                 <p className="text-muted">
