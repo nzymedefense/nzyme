@@ -13,6 +13,7 @@ import TapMetricsChartProxy from './metrics/TapMetricsChartProxy'
 import TapClockWarning from "./TapClockWarning";
 import {byteAverageToMbit} from "../../../../util/Tools";
 import TapDot11CoverageMap from "./TapDot11CoverageMap";
+import WithMinimumRole from "../../../misc/WithMinimumRole";
 
 const tapsService = new TapsService()
 
@@ -41,7 +42,7 @@ function TapDetailsPage () {
     <div>
       <div className="row">
 
-        <div className="col-md-10">
+        <div className="col-md-8">
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item"><a href={Routes.SYSTEM.TAPS.INDEX}>Taps</a></li>
@@ -50,8 +51,14 @@ function TapDetailsPage () {
           </nav>
         </div>
 
-        <div className="col-md-2">
-          <a className="btn btn-primary float-end" href={Routes.SYSTEM.TAPS.INDEX}>Back</a>
+        <div className="col-md-4">
+          <span className="float-end">
+            <a className="btn btn-secondary" href={Routes.SYSTEM.TAPS.INDEX}>Back</a>
+            {' '}
+            <a className="btn btn-primary" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(tap.organization_id, tap.tenant_id, tap.uuid)}>
+              Tap Details &amp; Keys
+            </a>
+          </span>
         </div>
       </div>
 

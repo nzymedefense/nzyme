@@ -292,7 +292,9 @@ public class TapsResource extends UserAuthenticatedResource {
                 busesResponse,
                 capturesResponse,
                 tap.remoteAddress(),
-                dot11Frequencies
+                dot11Frequencies,
+                tap.organizationId(),
+                tap.tenantId()
         );
     }
 

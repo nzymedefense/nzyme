@@ -77,7 +77,13 @@ public abstract class TapDetailsResponse {
     @JsonProperty("dot11_frequencies")
     public abstract List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies();
 
-    public static TapDetailsResponse create(UUID uuid, String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, boolean active, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures, String remoteAddress, List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies) {
+    @JsonProperty("organization_id")
+    public abstract UUID organizationId();
+
+    @JsonProperty("tenant_id")
+    public abstract UUID tenantId();
+
+    public static TapDetailsResponse create(UUID uuid, String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, boolean active, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures, String remoteAddress, List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies, UUID organizationId, UUID tenantId) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -98,6 +104,8 @@ public abstract class TapDetailsResponse {
                 .captures(captures)
                 .remoteAddress(remoteAddress)
                 .dot11Frequencies(dot11Frequencies)
+                .organizationId(organizationId)
+                .tenantId(tenantId)
                 .build();
     }
 
@@ -144,6 +152,10 @@ public abstract class TapDetailsResponse {
         public abstract Builder remoteAddress(String remoteAddress);
 
         public abstract Builder dot11Frequencies(List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies);
+
+        public abstract Builder organizationId(UUID organizationId);
+
+        public abstract Builder tenantId(UUID tenantId);
 
         public abstract TapDetailsResponse build();
     }
