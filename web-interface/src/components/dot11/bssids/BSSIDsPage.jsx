@@ -17,15 +17,12 @@ function BSSIDsPage() {
 
   const [bssids, setBSSIDs] = useState(null);
 
-  const [bssidTimeRange, setBssidTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
-
-  const [bssidChartTimeRange, setBssidChartTimeRange] = useState(Presets.RELATIVE_HOURS_24);
-  const [ssidChartTimeRange, setSsidChartTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
 
   useEffect(() => {
     setBSSIDs(null);
-    dot11Service.findAllBSSIDs(bssidTimeRange, selectedTaps, setBSSIDs);
-  }, [selectedTaps, bssidTimeRange])
+    dot11Service.findAllBSSIDs(timeRange, selectedTaps, setBSSIDs);
+  }, [selectedTaps, timeRange])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -40,60 +37,64 @@ function BSSIDsPage() {
       return <LoadingSpinner />
     }
 
-    return <BSSIDsTable bssids={bssids} timeRange={bssidTimeRange} />
+    return <BSSIDsTable bssids={bssids} timeRange={timeRange} />
   }
 
   return (
       <React.Fragment>
-        <div className="row">
-          <div className="col-md-12">
-            <h1>Access Points</h1>
+        <div className="row mt-3">
+          <div className="col-12">
+          <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Filters"
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange} />
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div className="row mt-3">
-            <div className="col-md-12">
-              <div className="row">
-                <div className="col-md-6">
-                  <div className="card">
-                    <div className="card-body">
-                      <CardTitleWithControls title="Active BSSIDs" slim={true}
-                                             timeRange={bssidChartTimeRange}
-                                             setTimeRange={setBssidChartTimeRange} />
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="row">
+              <div className="col-6">
+                <div className="card">
+                  <div className="card-body">
+                    <CardTitleWithControls title="Active BSSIDs" slim={true}
+                                           fixedAppliedTimeRange={timeRange} />
 
-                      <BSSIDAndSSIDChart parameter="bssid_count" timeRange={bssidChartTimeRange} />
-                    </div>
+                    <BSSIDAndSSIDChart parameter="bssid_count" timeRange={timeRange} />
                   </div>
                 </div>
-                <div className="col-md-6">
-                  <div className="card">
-                    <div className="card-body">
-                      <CardTitleWithControls title="Active SSIDs" slim={true}
-                                             timeRange={ssidChartTimeRange}
-                                             setTimeRange={setSsidChartTimeRange} />
+              </div>
+              <div className="col-6">
+                <div className="card">
+                  <div className="card-body">
+                    <CardTitleWithControls title="Active SSIDs" slim={true}
+                                           fixedAppliedTimeRange={timeRange} />
 
-                      <BSSIDAndSSIDChart parameter="ssid_count" timeRange={ssidChartTimeRange} />
-                    </div>
+                    <BSSIDAndSSIDChart parameter="ssid_count" timeRange={timeRange} />
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="row mt-3">
-            <div className="col-md-12">
-              <div className="card">
-                <div className="card-body">
-                  <CardTitleWithControls title="Access Points / BSSIDs"
-                                         timeRange={bssidTimeRange}
-                                         setTimeRange={setBssidTimeRange} />
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Access Points / BSSIDs"
+                                       timeRange={timeRange}
+                                       fixedAppliedTimeRange={setTimeRange} />
 
-                  <p className="text-muted">
-                    List of all access points advertised by recorded beacon or probe response frames. Click on a BSSID
-                    to open a list of all advertised SSIDs and their respective channels.
-                  </p>
+                <p className="text-muted">
+                  List of all access points advertised by recorded beacon or probe response frames. Click on a BSSID
+                  to open a list of all advertised SSIDs and their respective channels.
+                </p>
 
-                  {table()}
-                </div>
+                {table()}
               </div>
             </div>
           </div>
