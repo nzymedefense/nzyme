@@ -2,12 +2,13 @@ import React, {useEffect, useRef, useState} from 'react';
 import AppliedFilterList from "./AppliedFilterList";
 import FilterValueInput from "./FilterValueInput";
 import validateStringNotEmpty from "./validators/StringNotEmptyValidator";
-import validateNumberNotNegative from "./validators/NumberNotNegativeValidator";
-import validateIPAddressValid from "./validators/IPAddressValidator";
 import validatePortNumberValid from "./validators/PortNumberValidator";
 import validateDNSDataTypeValid from "./validators/DNSTypeValidator";
 import validateCIDRValid from "./validators/CIDRValidator";
 import {useNavigate} from "react-router-dom";
+import validateIPAddressValid from "./validators/IPAddressValidator";
+import validateMACAddressValid from "./validators/MACAddressValidator";
+import validateNumber from "./validators/NumberValidator";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -17,13 +18,18 @@ export const FILTER_TYPE = {
   },
   NUMERIC: {
     name: "numeric",
-    validators: [validateNumberNotNegative],
+    validators: [validateNumber],
     placeholder: null
   },
   IP_ADDRESS: {
     name: "ip_address",
     validators: [validateIPAddressValid],
     placeholder: "172.16.0.1"
+  },
+  MAC_ADDRESS: {
+    name: "mac_address",
+    validators: [validateMACAddressValid],
+    placeholder: "00:00:00:00:00:00"
   },
   PORT_NUMBER: {
     name: "port_number",
@@ -199,6 +205,7 @@ export default function Filters(props) {
       switch (fields[field].type) {
         case FILTER_TYPE.STRING:
         case FILTER_TYPE.DNS_TYPE:
+        case FILTER_TYPE.MAC_ADDRESS:
           setAllowedOperators([
             OPERATORS.EQUALS,
             OPERATORS.NOT_EQUALS,
@@ -340,6 +347,7 @@ export default function Filters(props) {
     }
 
     setFilters(newFilters);
+    setFilterValue("");
   }
 
   const onFilterRemoved = (e, deleteFilter) => {

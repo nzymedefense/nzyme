@@ -7,22 +7,47 @@ import BSSIDAndSSIDChart from "./BSSIDAndSSIDChart";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
+import Filters from "../../shared/filtering/Filters";
+import {useLocation} from "react-router-dom";
+import {BSSID_FILTER_FIELDS} from "./BssidFilterFields";
 
 const dot11Service = new Dot11Service();
 
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+}
+
 function BSSIDsPage() {
+
+  const urlQuery = useQuery();
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
+  let filtersJson;
+  try {
+    if (urlQuery.get("filters")) {
+      filtersJson = JSON.parse(urlQuery.get("filters"));
+    } else {
+      filtersJson = null;
+    }
+  } catch (error) {
+    console.error("Failed to parse filter URL parameter JSON.");
+    filtersJson = null;
+  }
+
   const [bssids, setBSSIDs] = useState(null);
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [bssidTimeRange, setBssidTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [ssidTimeRange, setSsidTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+
+  const [filters, setFilters] = useState(filtersJson)
 
   useEffect(() => {
     setBSSIDs(null);
-    dot11Service.findAllBSSIDs(timeRange, selectedTaps, setBSSIDs);
-  }, [selectedTaps, timeRange])
+    dot11Service.findAllBSSIDs(timeRange, filters, selectedTaps, setBSSIDs);
+  }, [selectedTaps, filters, timeRange])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -42,13 +67,25 @@ function BSSIDsPage() {
 
   return (
       <React.Fragment>
-        <div className="row mt-3">
-          <div className="col-12">
-          <div className="card">
+        <div className="row">
+          <div className="col-6">
+            <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Filters"
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange} />
+                <CardTitleWithControls title="Active BSSIDs" slim={true}
+                                       timeRange={bssidTimeRange}
+                                       setTimeRange={setBssidTimeRange} />
+
+                <BSSIDAndSSIDChart parameter="bssid_count" timeRange={bssidTimeRange} />
+              </div>
+            </div>
+          </div>
+          <div className="col-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Active SSIDs" slim={true}
+                                       timeRange={ssidTimeRange} setTimeRange={setSsidTimeRange} />
+
+                <BSSIDAndSSIDChart parameter="ssid_count" timeRange={ssidTimeRange}/>
               </div>
             </div>
           </div>
@@ -56,26 +93,13 @@ function BSSIDsPage() {
 
         <div className="row mt-3">
           <div className="col-12">
-            <div className="row">
-              <div className="col-6">
-                <div className="card">
-                  <div className="card-body">
-                    <CardTitleWithControls title="Active BSSIDs" slim={true}
-                                           fixedAppliedTimeRange={timeRange} />
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Filters"
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange} />
 
-                    <BSSIDAndSSIDChart parameter="bssid_count" timeRange={timeRange} />
-                  </div>
-                </div>
-              </div>
-              <div className="col-6">
-                <div className="card">
-                  <div className="card-body">
-                    <CardTitleWithControls title="Active SSIDs" slim={true}
-                                           fixedAppliedTimeRange={timeRange} />
-
-                    <BSSIDAndSSIDChart parameter="ssid_count" timeRange={timeRange} />
-                  </div>
-                </div>
+                <Filters filters={filters} setFilters={setFilters} fields={BSSID_FILTER_FIELDS} />
               </div>
             </div>
           </div>
@@ -86,8 +110,7 @@ function BSSIDsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Access Points / BSSIDs"
-                                       timeRange={timeRange}
-                                       fixedAppliedTimeRange={setTimeRange} />
+                                       fixedAppliedTimeRange={timeRange} />
 
                 <p className="text-muted">
                   List of all access points advertised by recorded beacon or probe response frames. Click on a BSSID
