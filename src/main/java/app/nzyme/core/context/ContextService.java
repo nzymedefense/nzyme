@@ -142,7 +142,7 @@ public class ContextService {
                                 .bind("organization_id", organizationId)
                                 .bind("mac_address", mac)
                                 .mapTo(MacAddressContextEntry.class)
-                                .findOne()
+                                .findFirst()
                 );
             }
 
@@ -152,7 +152,7 @@ public class ContextService {
                                     "WHERE mac_address = :mac_address")
                             .bind("mac_address", mac)
                             .mapTo(MacAddressContextEntry.class)
-                            .findOne()
+                            .findFirst()
             );
         }
     }
