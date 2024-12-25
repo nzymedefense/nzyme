@@ -5,6 +5,7 @@ function BSSIDsTable(props) {
 
   const bssids = props.bssids;
   const timeRange = props.timeRange;
+  const setFilters = props.setFilters;
 
   if (bssids.length === 0) {
     return <div className="alert alert-info mb-0">
@@ -29,7 +30,7 @@ function BSSIDsTable(props) {
         <tbody>
         {Object.keys(bssids.sort((a, b) => b.signal_strength_average - a.signal_strength_average))
             .map(function (key, i) {
-          return <BSSIDRow key={'bssid-' + i} bssid={bssids[key]} timeRange={timeRange} />
+          return <BSSIDRow key={'bssid-' + i} bssid={bssids[key]} timeRange={timeRange} setFilters={setFilters} />
         })}
         </tbody>
       </table>

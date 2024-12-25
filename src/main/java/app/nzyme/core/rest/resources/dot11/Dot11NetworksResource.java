@@ -18,6 +18,7 @@ import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.Tools;
+import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -60,14 +61,16 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     @Path("/bssids")
     public Response bssids(@Context SecurityContext sc,
                            @QueryParam("time_range") @Valid String timeRangeParameter,
+                           @QueryParam("filters") String filtersParameter,
                            @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         List<BSSIDSummaryDetailsResponse> bssids = Lists.newArrayList();
 
-        for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(timeRange, tapUuids)) {
+        for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(timeRange, filters, tapUuids)) {
             Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
                     bssid.bssid(),
                     authenticatedUser.getOrganizationId(),

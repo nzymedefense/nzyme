@@ -7,12 +7,14 @@ import java.util.Map;
 @AutoValue
 public abstract class FilterSqlFragment {
 
-    public abstract String sql();
+    public abstract String whereSql();
+    public abstract String havingSql();
     public abstract Map<String, Object> bindings();
 
-    public static FilterSqlFragment create(String sql, Map<String, Object> bindings) {
+    public static FilterSqlFragment create(String whereSql, String havingSql, Map<String, Object> bindings) {
         return builder()
-                .sql(sql)
+                .whereSql(whereSql)
+                .havingSql(havingSql)
                 .bindings(bindings)
                 .build();
     }
@@ -23,7 +25,9 @@ public abstract class FilterSqlFragment {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder sql(String sql);
+        public abstract Builder whereSql(String whereSql);
+
+        public abstract Builder havingSql(String havingSql);
 
         public abstract Builder bindings(Map<String, Object> bindings);
 

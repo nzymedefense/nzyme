@@ -53,7 +53,7 @@ public class RestResource {
         try {
             param = this.om.readValue(query, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
-            LOG.info(e);
+            LOG.debug(e);
             throw new IllegalArgumentException("Invalid filters parameter provided.", e);
         }
 
@@ -66,7 +66,7 @@ public class RestResource {
                 }
                 filters.put(filterParam.getKey(), fieldFilters);
             } catch (Exception e) {
-                LOG.info(e);
+                LOG.debug(e);
                 throw new IllegalArgumentException("Invalid filters parameter provided.", e);
             }
         }

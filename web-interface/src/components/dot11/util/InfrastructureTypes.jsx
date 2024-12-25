@@ -1,4 +1,5 @@
 import React from "react";
+import {translateInfrastructureType} from "./InfrastructureTypeTranslator";
 
 function InfrastructureTypes(props) {
 
@@ -12,18 +13,7 @@ function InfrastructureTypes(props) {
   return (
       <React.Fragment>
         {types.map(function(type, i){
-          let x = ""
-          switch (type) {
-            case "accesspoint":
-              x = "Infrastructure";
-              break;
-            case "adhoc":
-              x = "Ad-Hoc";
-              break;
-            case "invalid":
-              x = "Unknown/Invalid";
-              break;
-          }
+          let x = translateInfrastructureType(type);
 
           if (i !== types.length-1) {
             x += ", "

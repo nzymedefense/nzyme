@@ -1146,6 +1146,7 @@ ul.applied-filters a.applied-filter-remove {
 
 div.filters-modal div.modal-dialog {
     max-width: 800px !important;
+    font-family: "Geist", sans-serif;
 }
 
 div.connect-status {

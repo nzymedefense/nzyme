@@ -13,6 +13,7 @@ function Dot11MacAddress(props) {
   // Optional.
   const href = props.href;
   const onClick = props.onClick;
+  const filterElement = props.filterElement;
 
   return (
       <span className="mac-address">
@@ -25,6 +26,7 @@ function Dot11MacAddress(props) {
                     showOui={showOui}
                     href={href}
                     onClick={onClick}
+                    filterElement={filterElement}
                     highlighted={highlighted} />
       </span>
   )

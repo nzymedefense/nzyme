@@ -49,7 +49,6 @@ function BSSIDsPage() {
 
   const [filters, setFilters] = useState(filtersJson)
 
-
   useEffect(() => {
     setBSSIDs(null);
     dot11Service.findAllBSSIDs(timeRange, filters, selectedTaps, setBSSIDs);
@@ -68,7 +67,7 @@ function BSSIDsPage() {
       return <LoadingSpinner />
     }
 
-    return <BSSIDsTable bssids={bssids} timeRange={timeRange} />
+    return <BSSIDsTable bssids={bssids} timeRange={timeRange} setFilters={setFilters} />
   }
 
   return (

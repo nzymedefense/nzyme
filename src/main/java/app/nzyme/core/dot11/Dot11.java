@@ -4,6 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
+import app.nzyme.core.dot11.db.filters.Dot11BSSIDFilters;
 import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.dot11.db.monitoring.probereq.MonitoredProbeRequestEntry;
 import app.nzyme.core.dot11.monitoring.disco.db.Dot11DiscoMonitorMethodConfiguration;
@@ -18,6 +19,9 @@ import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.Tools;
+import app.nzyme.core.util.filters.FilterSql;
+import app.nzyme.core.util.filters.FilterSqlFragment;
+import app.nzyme.core.util.filters.Filters;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -276,10 +280,12 @@ public class Dot11 {
         );
     }
 
-    public List<BSSIDSummary> findBSSIDs(TimeRange timeRange, List<UUID> taps) {
+    public List<BSSIDSummary> findBSSIDs(TimeRange timeRange, Filters filters, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new Dot11BSSIDFilters());
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
@@ -299,10 +305,11 @@ public class Dot11 {
                                 "AND ssp.attribute = 'security_protocol' " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
-                                "AND b.tap_uuid IN (<taps>) " +
-                                "GROUP BY b.bssid")
+                                "AND b.tap_uuid IN (<taps>)" + filterFragment.whereSql() +
+                                "GROUP BY b.bssid HAVING 1=1 " + filterFragment.havingSql())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
+                        .bindMap(filterFragment.bindings())
                         .bindList("taps", taps)
                         .mapTo(BSSIDSummary.class)
                         .list()

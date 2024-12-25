@@ -11,7 +11,6 @@ import {Presets} from "../shared/timerange/TimeRange";
 import BSSIDAndSSIDChart from "./bssids/BSSIDAndSSIDChart";
 import DiscoHistogram from "./disco/DiscoHistogram";
 import Dot11Service from "../../services/Dot11Service";
-import MonitoredNetworkAlertStatusTable from "./monitoring/MonitoredNetworkAlertStatusTable";
 import Dot11OverviewMonitoredNetworkSummary from "./Dot11OverviewMonitoredNetworkSummary";
 import CardTitleWithControls from "../shared/CardTitleWithControls";
 import {disableTapSelector, enableTapSelector} from "../misc/TapSelector";

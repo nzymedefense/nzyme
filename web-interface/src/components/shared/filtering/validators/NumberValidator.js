@@ -1,6 +1,8 @@
 export default function validateNumber(value) {
-  if (value.trim() === '') {
+  if (value === undefined || value === null) {
     return false;
   }
-  return Number.isInteger(Number(value.trim()));
+
+  const parsedValue = Number(value);
+  return !Number.isNaN(parsedValue) && Number.isFinite(parsedValue);
 }

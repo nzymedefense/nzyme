@@ -9,6 +9,9 @@ import BSSIDDetailsRows from "./BSSIDDetailsRows";
 import BSSIDSecurityProtocols from "./BSSIDSecurityProtocols";
 import InfrastructureTypes from "../util/InfrastructureTypes";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
+import {BSSID_FILTER_FIELDS} from "./BssidFilterFields";
+import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
+import {translateInfrastructureType} from "../util/InfrastructureTypeTranslator";
 
 const dot11Service = new Dot11Service();
 
@@ -17,6 +20,7 @@ function BSSIDRow(props) {
 
   const bssid = props.bssid;
   const timeRange = props.timeRange;
+  const setFilters = props.setFilters;
 
   const [ssids, setSSIDs] = useState(null);
   const [ssidsLoading, setSSIDsLoading] = useState(false);
@@ -46,15 +50,34 @@ function BSSIDRow(props) {
       <React.Fragment>
         <tr>
           <td style={{width: 165}}>
-            <Dot11MacAddress addressWithContext={bssid.bssid} onClick={(e) => onExpandClick(e, bssid.bssid.address)} />
+            <Dot11MacAddress addressWithContext={bssid.bssid}
+                             filterElement={<FilterValueIcon setFilters={setFilters}
+                                                             fields={BSSID_FILTER_FIELDS}
+                                                             field="bssid"
+                                                             value={bssid.bssid.address} />}
+                             onClick={(e) => onExpandClick(e, bssid.bssid.address)} />
           </td>
-          <td><SignalStrength strength={bssid.signal_strength_average} selectedTapCount={selectedTaps.length} /></td>
-          <td><InfrastructureTypes types={bssid.infrastructure_types} /></td>
+          <td>
+            <SignalStrength strength={bssid.signal_strength_average} selectedTapCount={selectedTaps.length} />
+            <FilterValueIcon setFilters={setFilters}
+                             fields={BSSID_FILTER_FIELDS}
+                             field="signal_strength"
+                             value={Math.round(bssid.signal_strength_average)} />
+          </td>
+          <td>
+            <InfrastructureTypes types={bssid.infrastructure_types} />
+          </td>
           <td>
             { bssid.has_hidden_ssid_advertisements || bssid.advertised_ssid_names.length === 0 ? <span className="text-muted">&lt;hidden&gt;</span> : null }{ bssid.has_hidden_ssid_advertisements && bssid.advertised_ssid_names.length > 0 ? ", " : null }
             <SSIDsList ssids={bssid.advertised_ssid_names} />
           </td>
-          <td>{numeral(bssid.client_count).format("0,0")}</td>
+          <td>
+            {numeral(bssid.client_count).format("0,0")}
+            <FilterValueIcon setFilters={setFilters}
+                             fields={BSSID_FILTER_FIELDS}
+                             field="client_count"
+                             value={bssid.client_count} />
+          </td>
           <td><BSSIDSecurityProtocols bssid={bssid} /></td>
           <td>{bssid.bssid.oui ? bssid.bssid.oui : <span className="text-muted">Unknown</span>}</td>
           <td title={moment(bssid.last_seen).format()}>

@@ -1,6 +1,8 @@
 import React, {useState} from "react";
 import ContextOverlayVisibilityWrapper from "../ContextOverlayVisibilityWrapper";
 import Dot11MacAddressType from "./Dot11MacAddressType";
+import {BSSID_FILTER_FIELDS} from "../../../dot11/bssids/BssidFilterFields";
+import FilterValueIcon from "../../filtering/FilterValueIcon";
 
 function MacAddress(props) {
 
@@ -17,6 +19,7 @@ function MacAddress(props) {
 
   const showOui = props.showOui;
   const highlighted = props.highlighted;
+  const filterElement = props.filterElement;
 
   const [overlayTimeout, setOverlayTimeout] = React.useState(null);
   const [overlayVisible, setOverlayVisible] = useState(false);
@@ -45,7 +48,7 @@ function MacAddress(props) {
       return null;
     }
 
-    return <span className="mac-address-oui">(Vendor: {oui ? oui : "Unknown"})</span>
+    return ( <span className="mac-address-oui">(Vendor: {oui ? oui : "Unknown"})</span>)
   }
 
   const typeElement = () => {
@@ -76,7 +79,7 @@ function MacAddress(props) {
 
   return (
       <span onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
-        {typeElement()}{addressElement()}{randomizedIcon()}{contextElement()} {ouiElement()}
+        {typeElement()}{addressElement()}{randomizedIcon()}{contextElement()}{ouiElement()}{filterElement ? filterElement : null}
 
         {overlay ? <ContextOverlayVisibilityWrapper visible={overlayVisible} overlay={overlay} /> : null }
       </span>

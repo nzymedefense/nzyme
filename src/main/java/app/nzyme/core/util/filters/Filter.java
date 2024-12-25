@@ -8,12 +8,14 @@ public abstract class Filter {
     public abstract String field();
     public abstract FilterOperator operator();
     public abstract Object value();
+    public abstract Object untransformedValue();
 
-    public static Filter create(String field, FilterOperator operator, Object value) {
+    public static Filter create(String field, FilterOperator operator, Object value, Object untransformedValue) {
         return builder()
                 .field(field)
                 .operator(operator)
                 .value(value)
+                .untransformedValue(untransformedValue)
                 .build();
     }
 
@@ -28,6 +30,8 @@ public abstract class Filter {
         public abstract Builder operator(FilterOperator operator);
 
         public abstract Builder value(Object value);
+
+        public abstract Builder untransformedValue(Object untransformedValue);
 
         public abstract Filter build();
     }

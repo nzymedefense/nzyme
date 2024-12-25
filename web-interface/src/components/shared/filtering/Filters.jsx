@@ -165,7 +165,7 @@ export default function Filters(props) {
   const preSelectedValue = props.preSelectedValue;
 
   const defaultOperator = OPERATORS.EQUALS;
-  const defaultFilter = { name: "", field: "0", type: FILTER_TYPE.STRING };
+  const defaultFilter = { name: "", field: "0", type: FILTER_TYPE.STRING, value_transform: null };
 
   const [selectionMade, setSelectionMade] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(defaultFilter);
@@ -181,16 +181,16 @@ export default function Filters(props) {
     const filterOption = fields[selectedOption.value];
 
     if (filterOption) {
-      changeFilter(filterOption.title, selectedOption.value, filterOption.type);
+      changeFilter(filterOption.title, selectedOption.value, filterOption.type, filterOption.value_transform);
     } else {
       // The option dialog placeholder was selected again.
-      changeFilter(defaultFilter.name, defaultFilter.field, defaultFilter.type);
+      changeFilter(defaultFilter.name, defaultFilter.field, defaultFilter.type, filterOption.value_transform);
     }
   }
 
-  const changeFilter = (name, field, type) => {
+  const changeFilter = (name, field, type, value_transform) => {
     setFilterValue("");
-    setSelectedFilter({ name: name, field: field, type: type });
+    setSelectedFilter({ name: name, field: field, type: type, value_transform: value_transform});
 
     if (field === "0") {
       // Reset.
@@ -270,7 +270,7 @@ export default function Filters(props) {
 
   useEffect(() => {
     if (preSelectedField && preSelectedValue) {
-      changeFilter(fields[preSelectedField].title, preSelectedField, fields[preSelectedField].type);
+      changeFilter(fields[preSelectedField].title, preSelectedField, fields[preSelectedField].type, fields[preSelectedField].value_transform);
       setFilterValue(preSelectedValue);
     }
   }, [preSelectedField, preSelectedValue]);
@@ -321,9 +321,10 @@ export default function Filters(props) {
       field: selectedFilter.field,
       operator: selectedOperator.name,
       sign: selectedOperator.sign,
-      value: filterValue
+      value: filterValue,
+      transformed_value: selectedFilter.value_transform ? selectedFilter.value_transform(filterValue) : null
     }
-
+    
     // Check if this filter already exists and do not add again if so.
     for (const filterName of Object.keys(filters)) {
       const filterList = filters[filterName];
