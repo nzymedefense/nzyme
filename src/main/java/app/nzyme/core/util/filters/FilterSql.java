@@ -128,6 +128,17 @@ public class FilterSql {
         }
     }
 
+    public static String stringNoRegexMatch(String bindId, String fieldName, FilterOperator operator) {
+        switch (operator) {
+            case EQUALS:
+                return fieldName + " = :" + bindId;
+            case NOT_EQUALS:
+                return fieldName + " <> :" + bindId;
+            default:
+                throw new RuntimeException("Invalid operator [" + operator + "] for string field [" + fieldName + "].");
+        }
+    }
+
     public static String numericMatch(String bindId, String fieldName, FilterOperator operator) {
         switch (operator) {
             case EQUALS_NUMERIC:

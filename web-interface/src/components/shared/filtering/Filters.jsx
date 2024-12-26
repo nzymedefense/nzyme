@@ -16,6 +16,11 @@ export const FILTER_TYPE = {
     validators: [validateStringNotEmpty],
     placeholder: null
   },
+  STRING_NO_REGEX: {
+    name: "string_no_regex",
+    validators: [validateStringNotEmpty],
+    placeholder: null
+  },
   NUMERIC: {
     name: "numeric",
     validators: [validateNumber],
@@ -211,6 +216,12 @@ export default function Filters(props) {
             OPERATORS.NOT_EQUALS,
             OPERATORS.REGEX_MATCH,
             OPERATORS.NOT_REGEX_MATCH
+          ]);
+          break;
+        case FILTER_TYPE.STRING_NO_REGEX:
+          setAllowedOperators([
+            OPERATORS.EQUALS,
+            OPERATORS.NOT_EQUALS
           ]);
           break;
         case FILTER_TYPE.NUMERIC:

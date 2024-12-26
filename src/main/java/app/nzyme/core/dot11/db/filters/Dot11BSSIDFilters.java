@@ -4,8 +4,7 @@ import app.nzyme.core.util.filters.FilterOperator;
 import app.nzyme.core.util.filters.GeneratedSql;
 import app.nzyme.core.util.filters.SqlFilterProvider;
 
-import static app.nzyme.core.util.filters.FilterSql.numericMatch;
-import static app.nzyme.core.util.filters.FilterSql.stringMatch;
+import static app.nzyme.core.util.filters.FilterSql.*;
 
 public class Dot11BSSIDFilters implements SqlFilterProvider {
 
@@ -17,7 +16,7 @@ public class Dot11BSSIDFilters implements SqlFilterProvider {
             case "signal_strength":
                 return GeneratedSql.create(numericMatch(bindId, "b.signal_strength_average", operator), "");
             case "mode":
-                return GeneratedSql.create(stringMatch(bindId, "i.infrastructure_type", operator), "");
+                return GeneratedSql.create(stringNoRegexMatch(bindId, "i.infrastructure_type", operator), "");
             case "advertised_ssid":
                 return GeneratedSql.create(stringMatch(bindId, "s.ssid", operator), "");
             case "client_count":
