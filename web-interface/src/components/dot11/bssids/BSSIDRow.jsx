@@ -65,11 +65,11 @@ function BSSIDRow(props) {
                              value={Math.round(bssid.signal_strength_average)} />
           </td>
           <td>
-            <InfrastructureTypes types={bssid.infrastructure_types} />
+            <InfrastructureTypes types={bssid.infrastructure_types} setFilters={setFilters} />
           </td>
           <td>
             { bssid.has_hidden_ssid_advertisements || bssid.advertised_ssid_names.length === 0 ? <span className="text-muted">&lt;hidden&gt;</span> : null }{ bssid.has_hidden_ssid_advertisements && bssid.advertised_ssid_names.length > 0 ? ", " : null }
-            <SSIDsList ssids={bssid.advertised_ssid_names} />
+            <SSIDsList ssids={bssid.advertised_ssid_names} setFilters={setFilters} />
           </td>
           <td>
             {numeral(bssid.client_count).format("0,0")}
@@ -78,7 +78,7 @@ function BSSIDRow(props) {
                              field="client_count"
                              value={bssid.client_count} />
           </td>
-          <td><BSSIDSecurityProtocols bssid={bssid} /></td>
+          <td><BSSIDSecurityProtocols bssid={bssid} setFilters={setFilters} /></td>
           <td>{bssid.bssid.oui ? bssid.bssid.oui : <span className="text-muted">Unknown</span>}</td>
           <td title={moment(bssid.last_seen).format()}>
             {moment(bssid.last_seen).fromNow()}

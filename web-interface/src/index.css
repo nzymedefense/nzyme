@@ -1113,6 +1113,7 @@ div.filters {
 i.filter-value {
     margin-left: 5px;
     cursor: pointer;
+    color: #6c757d;
 }
 
 ul.applied-filters, ul.applied-filters ul {

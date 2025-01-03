@@ -49,10 +49,13 @@ function BSSIDsPage() {
 
   const [filters, setFilters] = useState(filtersJson)
 
+  const PER_PAGE = 75;
+  const [page, setPage] = useState(1);
+
   useEffect(() => {
     setBSSIDs(null);
-    dot11Service.findAllBSSIDs(timeRange, filters, selectedTaps, setBSSIDs);
-  }, [selectedTaps, filters, timeRange, revision])
+    dot11Service.findAllBSSIDs(timeRange, filters, PER_PAGE, (page-1)*PER_PAGE, selectedTaps, setBSSIDs);
+  }, [selectedTaps, filters, page, timeRange, revision])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -67,7 +70,12 @@ function BSSIDsPage() {
       return <LoadingSpinner />
     }
 
-    return <BSSIDsTable bssids={bssids} timeRange={timeRange} setFilters={setFilters} />
+    return <BSSIDsTable bssids={bssids}
+                        timeRange={timeRange}
+                        setFilters={setFilters}
+                        page={page}
+                        setPage={setPage}
+                        perPage={PER_PAGE} />
   }
 
   return (

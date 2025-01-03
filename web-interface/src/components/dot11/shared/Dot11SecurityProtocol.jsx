@@ -1,33 +1,64 @@
 import React from "react";
+import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
+import {BSSID_FILTER_FIELDS} from "../bssids/BssidFilterFields";
 
 function Dot11SecurityProtocol(props) {
 
   const protocol = props.protocol;
 
-  if (!protocol) {
+  // Optional.
+  const setFilters = props.setFilters;
+
+  const filterIcon = (value) => {
+    if (!setFilters) {
+      return null;
+    }
+
+    return <FilterValueIcon setFilters={setFilters}
+                            fields={BSSID_FILTER_FIELDS}
+                            field="security"
+                            value={value}/>
+  }
+
+  if (!protocol || protocol === "None") {
     return "None/Unknown"
   }
 
+  let name;
   switch (protocol) {
     case "WEP":
-      return "WEP"
+      name = "WEP";
+      break;
     case "WPA1":
-      return "WPA1"
+      name = "WPA1";
+      break;
     case "WPA2Personal":
-      return "WPA2-Personal"
+      name = "WPA2-Personal";
+      break;
     case "WPA2Enterprise":
-      return "WPA2-Enterprise"
+      name = "WPA2-Enterprise";
+      break;
     case "WPA3Transition":
-      return "WPA3-Transition"
+      name = "WPA3-Transition";
+      break;
     case "WPA3Personal":
-      return "WPA3-Personal"
+      name = "WPA3-Personal";
+      break;
     case "WPA3Enterprise":
-      return "WPA3-Enterprise"
+      name = "WPA3-Enterprise";
+      break;
     case "WPA3EnterpriseCNSA":
-      return "WPA3-Enterprise (CNSA/192)"
+      name = "WPA3-Enterprise (CNSA/192)";
+      break;
     default:
-      return protocol
+      name = protocol
   }
+
+  return (
+    <React.Fragment>
+      <span>{name}</span>{filterIcon(name)}
+    </React.Fragment>
+  )
 
 }
 

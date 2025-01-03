@@ -5,6 +5,9 @@ function Dot11SecurityProtocolList(props) {
 
   const protocols = props.protocols;
 
+  // Optional.
+  const setFilters = props.setFilters;
+
   if (!protocols || protocols.length === 0) {
     return "None"
   }
@@ -14,7 +17,7 @@ function Dot11SecurityProtocolList(props) {
         {protocols.map((p, i) => {
           return (
               <React.Fragment key={i}>
-                <Dot11SecurityProtocol key={i} protocol={p} />{i < protocols.length-1 ? ", " : null}
+                <Dot11SecurityProtocol key={i} protocol={p} setFilters={setFilters} />{i < protocols.length-1 ? ", " : null}
               </React.Fragment>
           )
         })}

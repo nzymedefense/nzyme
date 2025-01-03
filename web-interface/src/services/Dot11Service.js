@@ -44,12 +44,12 @@ class Dot11Service {
         })
   }
 
-  findAllBSSIDs(timeRange, filters, taps, setBSSIDs) {
+  findAllBSSIDs(timeRange, filters, limit, offset, taps, setBSSIDs) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
-    RESTClient.get("/dot11/networks/bssids", { time_range: timeRange, filters: filters, taps: tapsList },
+    RESTClient.get("/dot11/networks/bssids", { time_range: timeRange, limit: limit, offset: offset, filters: filters, taps: tapsList },
         function (response) {
-          setBSSIDs(response.data.bssids)
+          setBSSIDs(response.data)
     })
   }
 

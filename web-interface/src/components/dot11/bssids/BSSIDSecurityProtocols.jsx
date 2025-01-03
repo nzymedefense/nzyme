@@ -1,9 +1,14 @@
 import React from "react";
 import Dot11SecurityProtocolList from "../shared/Dot11SecurityProtocolList";
+import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
+import {BSSID_FILTER_FIELDS} from "./BssidFilterFields";
 
 function BSSIDSecurityProtocols(props) {
 
   const bssid = props.bssid;
+
+  // Optional.
+  const setFilters = props.setFilters;
 
   if (bssid.security_protocols.length === 1 && bssid.security_protocols[0] === "") {
     return "None";
@@ -18,7 +23,7 @@ function BSSIDSecurityProtocols(props) {
     }
   }
 
-  return <Dot11SecurityProtocolList protocols={bssid.security_protocols} />
+  return <Dot11SecurityProtocolList protocols={bssid.security_protocols} setFilters={setFilters} />
 
 }
 

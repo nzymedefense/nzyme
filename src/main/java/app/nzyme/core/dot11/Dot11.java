@@ -280,7 +280,49 @@ public class Dot11 {
         );
     }
 
-    public List<BSSIDSummary> findBSSIDs(TimeRange timeRange, Filters filters, List<UUID> taps) {
+    public long countBSSIDs(TimeRange timeRange, Filters filters, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new Dot11BSSIDFilters());
+
+        // We need the entire query, including SELECTs here to make the HAVING filters work.
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM (" +
+                                "SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
+                                "MIN(b.created_at) AS first_seen, MAX(b.created_at) AS last_seen, " +
+                                "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
+                                "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
+                                "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
+                                "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
+                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
+                                "COUNT(DISTINCT(c.client_mac)) AS client_count, " +
+                                "ARRAY[]::integer[] AS frequencies " +
+                                "FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
+                                "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
+                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
+                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
+                                "AND ssp.attribute = 'security_protocol' " +
+                                "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
+                                "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
+                                "AND b.tap_uuid IN (<taps>)" + filterFragment.whereSql() +
+                                "GROUP BY b.bssid HAVING 1=1 " + filterFragment.havingSql() + ")")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(Long.class)
+                        .first()
+        );
+    }
+
+    public List<BSSIDSummary> findBSSIDs(TimeRange timeRange,
+                                         Filters filters,
+                                         int limit,
+                                         int offset,
+                                         List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -306,9 +348,12 @@ public class Dot11 {
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "AND b.tap_uuid IN (<taps>)" + filterFragment.whereSql() +
-                                "GROUP BY b.bssid HAVING 1=1 " + filterFragment.havingSql())
+                                "GROUP BY b.bssid HAVING 1=1 " + filterFragment.havingSql() +
+                                "ORDER BY signal_strength_average DESC LIMIT :limit OFFSET :offset")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
+                        .bind("limit", limit)
+                        .bind("offset", offset)
                         .bindMap(filterFragment.bindings())
                         .bindList("taps", taps)
                         .mapTo(BSSIDSummary.class)

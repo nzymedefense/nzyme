@@ -62,6 +62,8 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     public Response bssids(@Context SecurityContext sc,
                            @QueryParam("time_range") @Valid String timeRangeParameter,
                            @QueryParam("filters") String filtersParameter,
+                           @QueryParam("limit") int limit,
+                           @QueryParam("offset") int offset,
                            @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
@@ -69,8 +71,8 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         List<BSSIDSummaryDetailsResponse> bssids = Lists.newArrayList();
-
-        for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(timeRange, filters, tapUuids)) {
+        long total = nzyme.getDot11().countBSSIDs(timeRange, filters, tapUuids);
+        for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(timeRange, filters, limit, offset, tapUuids)) {
             Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
                     bssid.bssid(),
                     authenticatedUser.getOrganizationId(),
@@ -101,7 +103,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
             ));
         }
 
-        return Response.ok(BSSIDListResponse.create(bssids)).build();
+        return Response.ok(BSSIDListResponse.create(total, bssids)).build();
     }
 
     @GET

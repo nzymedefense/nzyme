@@ -193,9 +193,9 @@ export default function Filters(props) {
     }
   }
 
-  const changeFilter = (name, field, type, value_transform) => {
+  const changeFilter = (name, field, type, valueTransform) => {
     setFilterValue("");
-    setSelectedFilter({ name: name, field: field, type: type, value_transform: value_transform});
+    setSelectedFilter({ name: name, field: field, type: type, value_transform: valueTransform});
 
     if (field === "0") {
       // Reset.
@@ -280,7 +280,7 @@ export default function Filters(props) {
   }, [filterValue, selectedOperator]);
 
   useEffect(() => {
-    if (preSelectedField && preSelectedValue) {
+    if (preSelectedField && preSelectedValue != null) {
       changeFilter(fields[preSelectedField].title, preSelectedField, fields[preSelectedField].type, fields[preSelectedField].value_transform);
       setFilterValue(preSelectedValue);
     }

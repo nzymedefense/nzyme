@@ -7,7 +7,6 @@ import ClientHistogram from "./ClientHistogram";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import {Presets} from "../../shared/timerange/TimeRange";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
-import moment from "moment";
 import HelpBubble from "../../misc/HelpBubble";
 
 const dot11Service = new Dot11Service();
