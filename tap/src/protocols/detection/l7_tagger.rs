@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 use std::panic;
 use std::sync::{Arc, Mutex, MutexGuard};
-use log::{error};
+use log::error;
 use strum_macros::Display;
 use crate::protocols::detection::l7_tagger::L7SessionTag::{Http, Socks, Ssh, Unencrypted};
-use crate::protocols::detection::taggers::{http_tagger, socks_tagger, ssh_tagger};
 use crate::state::tables::tcp_table::TcpSession;
 use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::WiredChannelName;
 use crate::metrics::Metrics;
+use crate::protocols::detection::taggers::ethernet::{http_tagger, socks_tagger, ssh_tagger};
 use crate::to_pipeline;
 
 #[derive(Debug, Display, PartialEq, Clone)]

@@ -4,6 +4,8 @@ use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{ByteOrder, LittleEndian};
 use log::{debug, trace, warn};
 use sha2::{Digest, Sha256};
+use crate::protocols::detection::dot11_tag_tagger;
+use crate::protocols::detection::dot11_tag_tagger::tag_advertisement_frame_tags;
 
 pub fn parse_capabilities(mask: &[u8]) -> Result<Dot11Capabilities, Error> {
     if mask.len() != 2 {
@@ -177,10 +179,13 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
                                     security_bytes.extend(data);
                                 }
 
-                                _ => { /* Ignore other types. */ }
+                                _ => {}
                             }
                         },
-                        _ => {}
+                        _ => {
+                            // Potentially tag anything else / anything unknown.
+                            tag_advertisement_frame_tags(data);
+                        }
                     }
                 },
                 222 => {
