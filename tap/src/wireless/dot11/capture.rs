@@ -142,7 +142,7 @@ impl Capture {
             // Write to Dot11 broker pipeline.
             match self.bus.dot11_broker.sender.lock() {
                 Ok(mut sender) => { sender.send_packet(Arc::new(data), length as u32) },
-                Err(e) => error!("Could not aquire dot11 handler broker mutex: {}", e)
+                Err(e) => error!("Could not aquire remoteid handler broker mutex: {}", e)
             }
         }
     }

@@ -554,7 +554,7 @@ impl Dot11Table {
         // Send report.
         match self.leaderlink.lock() {
             Ok(link) => {
-                if let Err(e) = link.send_report("dot11/summary", report) {
+                if let Err(e) = link.send_report("remoteid/summary", report) {
                     error!("Could not submit 802.11 report: {}", e);
                 }
             },

@@ -243,7 +243,7 @@ impl Serialize for TablesReport {
         state.serialize_field("timestamp", &self.timestamp.to_rfc3339())?;
         state.serialize_field("arp", &self.arp)?;
         state.serialize_field("dns", &self.dns)?;
-        state.serialize_field("dot11", &self.dot11)?;
+        state.serialize_field("remoteid", &self.dot11)?;
         state.end()
     }
 
