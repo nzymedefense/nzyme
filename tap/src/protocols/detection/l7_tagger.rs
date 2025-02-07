@@ -10,7 +10,7 @@ use crate::helpers::timer::{record_timer, Timer};
 use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::WiredChannelName;
 use crate::metrics::Metrics;
-use crate::protocols::detection::taggers::ethernet::{http_tagger, socks_tagger, ssh_tagger};
+use crate::protocols::detection::taggers::network_protocols::{http_tagger, socks_tagger, ssh_tagger};
 use crate::to_pipeline;
 
 #[derive(Debug, Display, PartialEq, Clone)]

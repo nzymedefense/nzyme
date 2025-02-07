@@ -74,3 +74,4 @@ dbus = "0.9.7"
 base64 = "0.22.1"
 cidr = "0.2.3"
 pnet = "0.35.0"
+uuid = { version = "1.13.1", features = ["v4"] }
