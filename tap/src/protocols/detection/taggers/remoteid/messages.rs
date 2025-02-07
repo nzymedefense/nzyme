@@ -3,7 +3,8 @@ pub struct RemoteIdMessage {
     pub operator_license_id: Option<OperatorIdMessage>,
     pub uav_type: Option<UavType>,
     pub ids: Vec<UavIdSummary>,
-    pub location_and_vector: Option<LocationVectorMessage>
+    pub location_and_vector: Option<LocationVectorMessage>,
+    pub self_id: Option<SelfIdMessage>
 }
 
 #[derive(Debug)]
@@ -29,6 +30,11 @@ pub struct BasicIdMessage {
     pub id_type: IdType,
     pub uav_type: UavType,
     pub uav_id: String
+}
+
+#[derive(Debug)]
+pub struct SelfIdMessage {
+    pub flight_description: String
 }
 
 #[derive(Debug)]

@@ -1,8 +1,8 @@
 use anyhow::{Result, bail};
 use base64::Engine;
-use log::{error, info};
+use log::error;
 use uuid::Uuid;
-use crate::protocols::detection::taggers::remoteid::messages::{BasicIdMessage, HeightType, IdType, LocationVectorMessage, OperationalStatus, OperatorIdMessage, RemoteIdMessage, UavIdSummary, UavType};
+use crate::protocols::detection::taggers::remoteid::messages::{BasicIdMessage, HeightType, IdType, LocationVectorMessage, OperationalStatus, OperatorIdMessage, RemoteIdMessage, SelfIdMessage, UavIdSummary, UavType};
 use crate::tracemark;
 
 pub fn tag(data: &[u8]) -> Option<RemoteIdMessage> {
@@ -49,8 +49,6 @@ pub fn tag(data: &[u8]) -> Option<RemoteIdMessage> {
         if intact_messages == 0 {
             return None
         }
-
-        info!("MESSAGE: {:?}", parent_message);
 
         Some(parent_message)
     } else {
@@ -99,6 +97,16 @@ fn parse_message(data: &[u8], parent_message: &mut RemoteIdMessage) -> Result<()
                     Ok(())
                 },
                 Err(e) => bail!("Failed to parse location / vector message: {}", e)
+            }
+        },
+        3 => {
+            // Self-ID message.
+            match parse_self_id_message(message_payload) {
+                Ok(msg) => {
+                    parent_message.self_id = Some(msg);
+                    Ok(())
+                },
+                Err(e) => bail!("Failed to parse Self-ID message: {}", e)
             }
         },
         5 => {
@@ -252,13 +260,32 @@ fn parse_location_vector_message(data: &[u8]) -> Result<LocationVectorMessage> {
     })
 }
 
+fn parse_self_id_message(data: &[u8]) -> Result<SelfIdMessage> {
+    if data.len() < 24 {
+        bail!("Self-ID message too short. Length: {}", data.len());
+    }
+
+    // Message is all remaining bytes, padded ASCII.
+    let flight_description = ascii_padded_to_string(&data[1..data.len()]).trim().to_string();
+
+    if flight_description.is_empty() {
+        bail!("Empty flight description");
+    }
+
+    Ok(SelfIdMessage { flight_description })
+}
+
 fn parse_operator_id_message(data: &[u8]) -> Result<OperatorIdMessage> {
     if data.len() < 24 {
         bail!("Operator ID message too short. Length: {}", data.len());
     }
 
     // Message is 20 bytes padded ASCII.
-    let operator_id = ascii_padded_to_string(&data[1..21]);
+    let operator_id = ascii_padded_to_string(&data[1..21]).trim().to_string();
+
+    if operator_id.is_empty() {
+        bail!("Empty operator ID");
+    }
 
     Ok(OperatorIdMessage { operator_id })
 }
