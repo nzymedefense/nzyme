@@ -1,8 +1,8 @@
 use anyhow::{Result, bail};
 use base64::Engine;
-use log::error;
+use log::{error, info};
 use uuid::Uuid;
-use crate::protocols::detection::taggers::remoteid::messages::{BasicIdMessage, HeightType, IdType, LocationVectorMessage, OperationalStatus, OperatorIdMessage, RemoteIdMessage, SelfIdMessage, UavIdSummary, UavType};
+use crate::protocols::detection::taggers::remoteid::messages::{BasicIdMessage, ClassificationCategory, ClassificationClass, ClassificationType, HeightType, IdType, LocationVectorMessage, OperationalStatus, OperatorIdMessage, OperatorLocationType, RemoteIdMessage, SelfIdMessage, SystemMessage, UavIdSummary, UavType};
 use crate::tracemark;
 
 pub fn tag(data: &[u8]) -> Option<RemoteIdMessage> {
@@ -109,6 +109,16 @@ fn parse_message(data: &[u8], parent_message: &mut RemoteIdMessage) -> Result<()
                 Err(e) => bail!("Failed to parse Self-ID message: {}", e)
             }
         },
+        4 => {
+            // System message.
+            match parse_system_message(message_payload) {
+                Ok(msg) => {
+                    parent_message.system = Some(msg);
+                    Ok(())
+                },
+                Err(e) => bail!("Failed to parse system message: {}", e)
+            }
+        }
         5 => {
             // Operator ID message.
             match parse_operator_id_message(message_payload) {
@@ -273,6 +283,73 @@ fn parse_self_id_message(data: &[u8]) -> Result<SelfIdMessage> {
     }
 
     Ok(SelfIdMessage { flight_description })
+}
+
+fn parse_system_message(data: &[u8]) -> Result<SystemMessage> {
+    if data.len() < 24 {
+        bail!("System message too short. Length: {}", data.len());
+    }
+
+    let classification_type_num = (data[0] >> 2) & 0x03;
+
+    let classification_type = match ClassificationType::try_from(classification_type_num) {
+        Ok(classification_type) => classification_type,
+        Err(_) => bail!("Invalid classification type: {}", classification_type_num)
+    };
+
+    let operator_location_type_num = data[0] & 0x03;
+    let operator_location_type = match OperatorLocationType::try_from(operator_location_type_num) {
+        Ok(operator_location_type) => operator_location_type,
+        Err(_) => bail!("Invalid operator location type: {}", operator_location_type_num)
+    };
+
+    let operator_location_latitude = decode_coordinate(&data[1..5]);
+    let operator_location_longitude = decode_coordinate(&data[5..9]);
+
+    let area_count: u16 = u16::from_le_bytes(
+        data[9..11].try_into()?
+    );
+    
+    let area_radius = data[11] as u16 * 10;
+
+    let area_ceiling = decode_altitude(&data[12..14]);
+    let area_floor = decode_altitude(&data[14..16]);
+
+    let classification_category_num: u8 = (data[16] & 0xF0) >> 4;
+    let classification_class_num: u8 = data[16] & 0x0F;
+
+    let operator_altitude = decode_altitude(&data[17..19]);
+
+    let (classification_category, classification_class) = match classification_type {
+        ClassificationType::EuropeanUnion => {
+            let category = match ClassificationCategory::try_from(classification_category_num) {
+                Ok(cat) => cat,
+                Err(_) => bail!("Invalid classification category: {}", classification_category_num)
+            };
+
+            let class = match ClassificationClass::try_from(classification_class_num) {
+                Ok(class) => class,
+                Err(_) => bail!("Invalid classification class: {}", classification_class_num)
+            };
+
+            (category, class)
+        },
+        _ => (ClassificationCategory::Undefined, ClassificationClass::Undefined)
+    };
+
+    Ok(SystemMessage {
+        classification_type,
+        operator_location_type,
+        operator_location_latitude,
+        operator_location_longitude,
+        area_count,
+        area_radius,
+        area_ceiling,
+        area_floor,
+        classification_category,
+        classification_class,
+        operator_altitude,
+    })
 }
 
 fn parse_operator_id_message(data: &[u8]) -> Result<OperatorIdMessage> {

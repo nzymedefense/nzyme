@@ -4,6 +4,7 @@ pub struct RemoteIdMessage {
     pub uav_type: Option<UavType>,
     pub ids: Vec<UavIdSummary>,
     pub location_and_vector: Option<LocationVectorMessage>,
+    pub system: Option<SystemMessage>,
     pub self_id: Option<SelfIdMessage>
 }
 
@@ -35,6 +36,111 @@ pub struct BasicIdMessage {
 #[derive(Debug)]
 pub struct SelfIdMessage {
     pub flight_description: String
+}
+
+#[derive(Debug)]
+pub struct SystemMessage {
+    pub classification_type: ClassificationType,
+    pub operator_location_type: OperatorLocationType,
+    pub operator_location_latitude: f64,
+    pub operator_location_longitude: f64,
+    pub area_count: u16,
+    pub area_radius: u16,
+    pub area_ceiling: Option<f32>,
+    pub area_floor: Option<f32>,
+    pub classification_category: ClassificationCategory,
+    pub classification_class: ClassificationClass,
+    pub operator_altitude: Option<f32>
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub enum ClassificationType {
+    Undeclared,
+    EuropeanUnion
+}
+
+impl TryFrom<u8> for ClassificationType {
+    type Error = InvalidTypeError;
+
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(ClassificationType::Undeclared),
+            1 => Ok(ClassificationType::EuropeanUnion),
+            _ => Err(InvalidTypeError)
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum OperatorLocationType {
+    TakeOff,
+    Dynamic,
+    Fixed
+}
+
+impl TryFrom<u8> for OperatorLocationType {
+    type Error = InvalidTypeError;
+
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(OperatorLocationType::TakeOff),
+            1 => Ok(OperatorLocationType::Dynamic),
+            2 => Ok(OperatorLocationType::Fixed),
+            _ => Err(InvalidTypeError)
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum ClassificationCategory {
+    Undefined,
+    Open,
+    Specific,
+    Certified
+}
+
+impl TryFrom<u8> for ClassificationCategory {
+    type Error = InvalidTypeError;
+
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(ClassificationCategory::Undefined),
+            1 => Ok(ClassificationCategory::Open),
+            2 => Ok(ClassificationCategory::Specific),
+            3 => Ok(ClassificationCategory::Certified),
+            _ => Err(InvalidTypeError)
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum ClassificationClass {
+    Undefined,
+    Class0,
+    Class1,
+    Class2,
+    Class3,
+    Class4,
+    Class5,
+    Class6
+}
+
+impl TryFrom<u8> for ClassificationClass {
+    type Error = InvalidTypeError;
+
+    fn try_from(val: u8) -> Result<Self, Self::Error> {
+        match val {
+            0 => Ok(ClassificationClass::Undefined),
+            1 => Ok(ClassificationClass::Class0),
+            2 => Ok(ClassificationClass::Class1),
+            3 => Ok(ClassificationClass::Class2),
+            4 => Ok(ClassificationClass::Class3),
+            5 => Ok(ClassificationClass::Class4),
+            6 => Ok(ClassificationClass::Class5),
+            7 => Ok(ClassificationClass::Class6),
+            _ => Err(InvalidTypeError)
+        }
+    }
 }
 
 #[derive(Debug)]
