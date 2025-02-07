@@ -10,7 +10,7 @@ pub struct RemoteIdMessage {
 pub struct LocationVectorMessage {
     pub operational_status: OperationalStatus,
     pub height_type: HeightType,
-    pub ground_track: u16,
+    pub ground_track: Option<u16>,
     pub speed: f32,
     pub vertical_speed: f32,
     pub latitude: f64,

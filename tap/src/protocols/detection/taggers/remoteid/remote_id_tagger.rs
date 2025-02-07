@@ -168,9 +168,16 @@ fn parse_location_vector_message(data: &[u8]) -> Result<LocationVectorMessage> {
     let east_west_flag: bool = (data[0] >> 1) & 0x01 != 0;
     let speed_multiplier_flag: bool = data[0] & 0x01 != 0;
 
-    let ground_track: u16 = match east_west_flag {
+    let ground_track_value: u16 = match east_west_flag {
         true => data[1] as u16 + 180,
         false => data[1] as u16,
+    };
+
+    // Some UAS send nonsensical values when not determining a ground track.
+    let ground_track = if ground_track_value <= 360 {
+        Some(ground_track_value)
+    } else {
+        None
     };
 
     let speed = match speed_multiplier_flag {
@@ -291,7 +298,7 @@ fn decode_altitude(data: &[u8]) -> Option<f32> {
     );
 
     let decoded = (raw_value as f32 * 0.5) - 1000.0;
-    
+
     if decoded == -1000.0 {
         None
     } else {
