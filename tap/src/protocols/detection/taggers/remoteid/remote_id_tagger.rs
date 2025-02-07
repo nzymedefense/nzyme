@@ -283,12 +283,18 @@ fn decode_coordinate(data: &[u8]) -> f64 {
     raw_value as f64 / 10_000_000.0
 }
 
-fn decode_altitude(data: &[u8]) -> f32 {
+fn decode_altitude(data: &[u8]) -> Option<f32> {
     assert_eq!(data.len(), 2, "Altitude must be 2 bytes / u16.");
 
     let raw_value: u16 = u16::from_le_bytes(
         data[0..2].try_into().unwrap()
     );
 
-    (raw_value as f32 * 0.5) - 1000.0
+    let decoded = (raw_value as f32 * 0.5) - 1000.0;
+    
+    if decoded == -1000.0 {
+        None
+    } else {
+        Some(decoded)
+    }
 }
