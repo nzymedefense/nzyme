@@ -6,6 +6,8 @@ use log::{error, info, trace};
 
 use crate::wireless::dot11::frames::{Dot11BeaconFrame, Dot11DataFrame, Dot11DeauthenticationFrame, Dot11Frame, Dot11ProbeRequestFrame, FrameSubType};
 use crate::alerting::alert_types::{Dot11Alert, Dot11AlertAttribute, Dot11AlertType};
+use crate::messagebus::bus::Bus;
+use crate::metrics::Metrics;
 use crate::wireless::dot11::frames::{Dot11DisassociationFrame, Dot11ProbeResponseFrame, PwnagotchiData};
 use crate::protocols::parsers::dot11::management::{disassociation_frame_parser, probe_response_frame_parser};
 use crate::protocols::parsers::dot11::data::data_frame_parser;
@@ -13,28 +15,28 @@ use crate::protocols::parsers::dot11::management::{beacon_frame_parser, deauthen
 use crate::state::tables::dot11_table::Dot11Table;
 
 pub struct Dot11FrameProcessor {
-    dot11_table: Arc<Mutex<Dot11Table>>
+    dot11_table: Arc<Mutex<Dot11Table>>,
+    metrics: Arc<Mutex<Metrics>>,
+    generic_bus: Arc<Bus>
 }
 
 impl Dot11FrameProcessor {
 
-    pub fn new(dot11_table: Arc<Mutex<Dot11Table>>) -> Self {
-        Self {
-            dot11_table
-        }
+    pub fn new(dot11_table: Arc<Mutex<Dot11Table>>, metrics: Arc<Mutex<Metrics>>, generic_bus: Arc<Bus>) -> Self {
+        Self { dot11_table, metrics, generic_bus }
     }
 
     pub fn process(&self, frame: Arc<Dot11Frame>) {
         let result = panic::catch_unwind(|| {
             match frame.frame_type {
                 FrameSubType::Beacon => {
-                    match beacon_frame_parser::parse(&frame) {
+                    match beacon_frame_parser::parse(&frame, self.generic_bus.clone(), self.metrics.clone()) {
                         Ok(frame) => self.handle_beacon_frame(frame),
                         Err(e) => trace!("Could not parse beacon frame: {}", e)
                     }
                 },
                 FrameSubType::ProbeResponse => {
-                    match probe_response_frame_parser::parse(&frame) {
+                    match probe_response_frame_parser::parse(&frame, self.generic_bus.clone(), self.metrics.clone()) {
                         Ok(frame) => self.handle_probe_response_frame(frame),
                         Err(e) => trace!("Could not parse probe response frame: {}", e)
                     }
@@ -116,10 +118,7 @@ impl Dot11FrameProcessor {
                 if let Some(pwnagotchi) = &frame.tagged_parameters.pwnagotchi_data {
                     // Pwnagotchi payload detected in tagged parameters. Raise alert.
 
-                    let signal_strength = match frame.header.antenna_signal {
-                        Some(s) => s,
-                        None => -1
-                    };
+                    let signal_strength = frame.header.antenna_signal.unwrap_or_else(|| -1);
 
                     table.register_alert(Dot11Alert {
                         alert_type: Dot11AlertType::PwnagotchiDetected,

@@ -1,11 +1,16 @@
+use chrono::{DateTime, Utc};
+use strum_macros::Display;
+
 #[derive(Default, Debug)]
-pub struct RemoteIdMessage {
+pub struct UavRemoteIdMessage {
+    pub bssid: String,
     pub operator_license_id: Option<OperatorIdMessage>,
     pub uav_type: Option<UavType>,
     pub ids: Vec<UavIdSummary>,
     pub location_and_vector: Option<LocationVectorMessage>,
     pub system: Option<SystemMessage>,
-    pub self_id: Option<SelfIdMessage>
+    pub self_id: Option<SelfIdMessage>,
+    pub timestamp: DateTime<Utc>
 }
 
 #[derive(Debug)]
@@ -71,7 +76,7 @@ impl TryFrom<u8> for ClassificationType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum OperatorLocationType {
     TakeOff,
     Dynamic,
@@ -156,7 +161,7 @@ pub struct UavIdSummary {
 
 pub struct InvalidTypeError;
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum UavType {
     Undeclared,
     Aeroplane,
@@ -202,7 +207,7 @@ impl TryFrom<u8> for UavType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum IdType {
     AnsiCtaSerial,
     CaaRegistrationId,
@@ -224,7 +229,7 @@ impl TryFrom<u8> for IdType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum OperationalStatus {
     Undeclared,
     Ground,
@@ -250,8 +255,74 @@ impl TryFrom<u8> for OperationalStatus {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum HeightType {
     AboveGround,
     AboveTakeoffLocation
+}
+
+impl UavRemoteIdMessage {
+    pub fn estimate_struct_size(&self) -> u32 {
+        let mut size = 0;
+
+        if let Some(ref op) = self.operator_license_id {
+            size += op.operator_id.len() as u32;
+        }
+
+        size += size_of::<UavType>() as u32 * (self.uav_type.is_some() as u32);
+
+        for id in &self.ids {
+            size += id.id.len() as u32;
+            size += size_of::<IdType>() as u32;
+        }
+
+        if let Some(ref loc) = self.location_and_vector {
+            size += size_of::<OperationalStatus>() as u32;
+            size += size_of::<HeightType>() as u32;
+            size += size_of::<f32>() as u32;
+            size += size_of::<f32>() as u32;
+            size += size_of::<f64>() as u32;
+            size += size_of::<f64>() as u32;
+            size += size_of::<u8>() as u32 * 4;
+
+            if loc.ground_track.is_some() {
+                size += size_of::<u16>() as u32;
+            }
+            if loc.altitude_pressure.is_some() {
+                size += size_of::<f32>() as u32;
+            }
+            if loc.altitude_geodetic.is_some() {
+                size += size_of::<f32>() as u32;
+            }
+            if loc.height.is_some() {
+                size += size_of::<f32>() as u32;
+            }
+        }
+
+        if let Some(ref sys) = self.system {
+            size += size_of::<ClassificationType>() as u32;
+            size += size_of::<OperatorLocationType>() as u32;
+            size += size_of::<f64>() as u32 * 2;
+            size += size_of::<u16>() as u32 * 2;
+            size += size_of::<ClassificationCategory>() as u32;
+            size += size_of::<ClassificationClass>() as u32;
+
+            if sys.area_ceiling.is_some() {
+                size += size_of::<f32>() as u32;
+            }
+            if sys.area_floor.is_some() {
+                size += size_of::<f32>() as u32;
+            }
+            if sys.operator_altitude.is_some() {
+                size += size_of::<f32>() as u32;
+            }
+        }
+
+        // self_id: Option<SelfIdMessage>
+        if let Some(ref self_id) = self.self_id {
+            size += self_id.flight_description.len() as u32;
+        }
+
+        size
+    }
 }

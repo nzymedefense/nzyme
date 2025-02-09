@@ -7,7 +7,8 @@ use crate::metrics::Metrics;
 use crate::wireless::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
 use crate::configuration::Configuration;
 use crate::wired::packets::{DHCPv4Packet, SocksTunnel, SshSession};
-use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, WiredChannelName};
+use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
+use crate::protocols::detection::taggers::remoteid::messages::UavRemoteIdMessage;
 use crate::wired::packets::{
     ARPPacket,
     DNSPacket,
@@ -33,7 +34,9 @@ pub struct Bus {
     pub dns_pipeline: NzymeChannel<DNSPacket>,
     pub ssh_pipeline: NzymeChannel<SshSession>,
     pub socks_pipeline: NzymeChannel<SocksTunnel>,
-    pub dhcpv4_pipeline: NzymeChannel<DHCPv4Packet>
+    pub dhcpv4_pipeline: NzymeChannel<DHCPv4Packet>,
+    
+    pub uav_remote_id_pipeline: NzymeChannel<UavRemoteIdMessage>
 }
 
 pub struct NzymeChannelSender<T> {
@@ -104,6 +107,10 @@ impl Bus<> {
             bounded(configuration.protocols.ssh.pipeline_size as usize);
         let (dhcpv4_pipeline_sender, dhcpv4_pipeline_receiver) =
             bounded(configuration.protocols.dhcpv4.pipeline_size as usize);
+
+        let (uav_remote_id_sender, uav_remote_id_receiver) =
+            bounded(configuration.protocols.uav_remote_id.pipeline_size as usize);
+
         Self {
             name,
             ethernet_broker: NzymeChannel {
@@ -188,11 +195,19 @@ impl Bus<> {
             },
             dhcpv4_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {
-                    metrics,
+                    metrics: metrics.clone(),
                     sender: dhcpv4_pipeline_sender,
                     name: WiredChannelName::Dhcpv4Pipeline.to_string()
                 }),
                 receiver: Arc::new(dhcpv4_pipeline_receiver),
+            },
+            uav_remote_id_pipeline: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics,
+                    sender: uav_remote_id_sender,
+                    name: GenericChannelName::UavRemoteIdPipeline.to_string()
+                }),
+                receiver: Arc::new(uav_remote_id_receiver),
             }
         }
     }

@@ -22,3 +22,8 @@ pub enum Dot11ChannelName {
 pub enum BluetoothChannelName {
     BluetoothDevicesPipeline,
 }
+
+#[derive(Debug, Clone, EnumIter, Display)]
+pub enum GenericChannelName {
+    UavRemoteIdPipeline
+}

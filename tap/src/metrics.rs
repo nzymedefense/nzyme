@@ -8,7 +8,7 @@ use statrs::statistics::{Distribution, OrderStatistics, Data};
 
 use log::{warn, error, info};
 use crate::log_monitor::{LogCounts, LogMonitor};
-use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, WiredChannelName};
+use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
 
 #[derive(Default, Clone)]
 pub struct TotalWithAverage {
@@ -62,7 +62,9 @@ pub struct Channels {
     dns_pipeline: ChannelUtilization,
     socks_pipeline: ChannelUtilization,
     ssh_pipeline: ChannelUtilization,
-    dhcpv4_pipeline: ChannelUtilization
+    dhcpv4_pipeline: ChannelUtilization,
+
+    uav_remote_id_pipeline: ChannelUtilization
 }
 
 #[derive(Clone, Display)]
@@ -125,6 +127,13 @@ impl Metrics {
         }
 
         for channel in BluetoothChannelName::iter() {
+            let c = self.select_channel(&channel.to_string());
+            c.throughput_bytes.calculate_averages();
+            c.throughput_messages.calculate_averages();
+            c.errors.calculate_averages();
+        }
+
+        for channel in GenericChannelName::iter() {
             let c = self.select_channel(&channel.to_string());
             c.throughput_bytes.calculate_averages();
             c.throughput_messages.calculate_averages();
@@ -198,6 +207,7 @@ impl Metrics {
             "SocksPipeline" => &mut self.channels.socks_pipeline,
             "SshPipeline" => &mut self.channels.ssh_pipeline,
             "Dhcpv4Pipeline" => &mut self.channels.dhcpv4_pipeline,
+            "UavRemoteIdPipeline" => &mut self.channels.uav_remote_id_pipeline,
             _ => panic!("Unknown channel {}", channel)
         }
     }

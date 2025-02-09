@@ -1,6 +1,6 @@
 use std::{process::exit, sync::{Arc, Mutex}, thread};
 
-use log::error;
+use log::{error, info};
 
 use crate::{exit_code, messagebus::bus::Bus, metrics::Metrics, system_state::SystemState};
 use crate::wireless::bluetooth::processors::bluetooth_device_processor::BluetoothDeviceProcessor;
@@ -13,6 +13,7 @@ use crate::protocols::processors::dot11::dot11_frame_processor::Dot11FrameProces
 use crate::protocols::processors::socks_processor::SocksProcessor;
 use crate::protocols::processors::ssh_processor::SshProcessor;
 use crate::protocols::processors::tcp_processor::TcpProcessor;
+use crate::protocols::processors::uav_remote_id_processor::UavRemoteIdProcessor;
 use crate::protocols::processors::udp_processor::UDPProcessor;
 use crate::state::state::State;
 use crate::state::tables::tables::Tables;
@@ -20,13 +21,14 @@ use crate::state::tables::tables::Tables;
 pub fn spawn(ethernet_bus: Arc<Bus>,
              dot11_bus: Arc<Bus>,
              bluetooth_bus: Arc<Bus>,
+             generic_bus: Arc<Bus>,
              tables: Arc<Tables>,
              state: Arc<State>,
              context: Arc<ContextEngine>,
              system_state: Arc<SystemState>,
              metrics: Arc<Mutex<Metrics>>,
              configuration: &Configuration) {
-    spawn_base_dot11(dot11_bus.clone(), tables.clone());
+    spawn_base_dot11(dot11_bus.clone(), generic_bus.clone(), metrics.clone(), tables.clone());
 
     spawn_base_bluetooth(bluetooth_bus.clone(), tables.clone());
 
@@ -41,17 +43,20 @@ pub fn spawn(ethernet_bus: Arc<Bus>,
                    configuration);
     spawn_base_ssh(ethernet_bus.clone(), tables.clone(), metrics.clone());
     spawn_base_socks(ethernet_bus.clone(), tables.clone(), metrics.clone());
-    spawn_base_arp(ethernet_bus.clone(), tables, state.clone(), context.clone());
+    spawn_base_arp(ethernet_bus.clone(), tables.clone(), state.clone(), context.clone());
     spawn_base_dhcpv4(ethernet_bus, state, context);
+    spawn_base_uav_remote_id(generic_bus.clone(), tables.clone());
 }
 
 // TODO don't exit here ever
 
-fn spawn_base_dot11(bus: Arc<Bus>, tables: Arc<Tables>) {
-    let processor = Dot11FrameProcessor::new(tables.dot11.clone());
+fn spawn_base_dot11(dot11_bus: Arc<Bus>, generic_bus: Arc<Bus>, metrics: Arc<Mutex<Metrics>>, tables: Arc<Tables>) {
+    let processor = Dot11FrameProcessor::new(
+        tables.dot11.clone(), metrics, generic_bus
+    );
 
     thread::spawn(move || {
-        for frame in bus.dot11_frames_pipeline.receiver.iter() {
+        for frame in dot11_bus.dot11_frames_pipeline.receiver.iter() {
             processor.process(frame);
         }
 
@@ -90,7 +95,7 @@ fn spawn_base_arp(bus: Arc<Bus>,
 
 fn spawn_base_tcp(bus: Arc<Bus>, tables: Arc<Tables>) {
     let mut processor = TcpProcessor::new(tables.tcp.clone());
-    
+
     thread::spawn(move || {
         for segment in bus.tcp_pipeline.receiver.iter() {
             processor.process(segment);
@@ -177,6 +182,19 @@ fn spawn_base_dhcpv4(bus: Arc<Bus>, state: Arc<State>, context: Arc<ContextEngin
         }
 
         error!("DHCPv4 receiver disconnected.");
+        exit(exit_code::EX_UNAVAILABLE);
+    });
+}
+
+fn spawn_base_uav_remote_id(bus: Arc<Bus>, tables: Arc<Tables>) {
+    let mut processor = UavRemoteIdProcessor::new(tables.uav.clone());
+
+    thread::spawn(move || {
+        for segment in bus.uav_remote_id_pipeline.receiver.iter() {
+            processor.process(segment);
+        }
+
+        error!("UAV Remote ID receiver disconnected.");
         exit(exit_code::EX_UNAVAILABLE);
     });
 }

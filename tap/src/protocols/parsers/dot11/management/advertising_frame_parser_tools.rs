@@ -1,11 +1,14 @@
+use std::sync::{Arc, Mutex};
 use anyhow::{bail, Error};
 use crate::wireless::dot11::frames::{CipherSuite, CipherSuites, CountryInformation, Dot11Capabilities, EncryptionProtocol, InfraStructureType, KeyManagementMode, PmfMode, PwnagotchiData, RegulatoryEnvironment, SecurityInformation, TaggedParameters};
 use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{ByteOrder, LittleEndian};
 use log::{debug, trace, warn};
 use sha2::{Digest, Sha256};
-use crate::protocols::detection::dot11_tag_tagger;
-use crate::protocols::detection::dot11_tag_tagger::tag_advertisement_frame_tags;
+use crate::messagebus::bus::Bus;
+use crate::metrics::Metrics;
+use crate::protocols::detection::dot11_tagged_parameters_tagger::tag_advertisement_frame_tags;
+use crate::wireless::tags::Tag;
 
 pub fn parse_capabilities(mask: &[u8]) -> Result<Dot11Capabilities, Error> {
     if mask.len() != 2 {
@@ -47,11 +50,15 @@ pub struct TaggedParameterParserData {
     pub tagged_parameters: TaggedParameters,
     pub security: Vec<SecurityInformation>,
     pub security_bytes: Vec<u8>,
-    pub has_wps: bool
+    pub has_wps: bool,
+    pub tags: Vec<Tag>
 }
 
 #[allow(clippy::single_match)]
-pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserData, Error> {
+pub fn parse_tagged_parameters(payload: &[u8],
+                               bssid: String,
+                               bus: Arc<Bus>,
+                               metrics: Arc<Mutex<Metrics>>) -> Result<TaggedParameterParserData, Error> {
     let mut ssid: Option<String> = Option::None;
     let mut supported_rates: Option<Vec<f32>> = Option::None;
     let mut extended_supported_rates: Option<Vec<f32>> = Option::None;
@@ -60,7 +67,8 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
     let mut extended_capabilities: Option<Vec<u8>> = Option::None;
     let mut security: Vec<SecurityInformation> = Vec::new();
     let mut security_bytes: Vec<u8> = Vec::new(); // Raw bytes for quick fingerprint calculation.
-    let mut pwnagotchi_parts: Vec<String> = vec![];
+    let mut pwnagotchi_parts: Vec<String> = Vec::new();
+    let mut tags: Vec<Tag> = Vec::new();
 
     // WPS.
     let mut has_wps = false;
@@ -184,12 +192,15 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
                         },
                         _ => {
                             // Potentially tag anything else / anything unknown.
-                            tag_advertisement_frame_tags(data);
+                            tags.extend(tag_advertisement_frame_tags(
+                                data, bssid.clone(), bus.clone(), metrics.clone())
+                            );
                         }
                     }
                 },
                 222 => {
                     // Pwnagotchi announcement parasite protocol.
+                    tags.push(Tag::Pwnagotchi);
                     pwnagotchi_parts.push(String::from_utf8_lossy(data).to_string());
                 }
                 _ => {}
@@ -235,7 +246,8 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
         tagged_parameters,
         security,
         security_bytes,
-        has_wps
+        has_wps,
+        tags
     })
 }
 

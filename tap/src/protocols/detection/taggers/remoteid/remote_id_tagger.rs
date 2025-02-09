@@ -1,11 +1,12 @@
 use anyhow::{Result, bail};
 use base64::Engine;
-use log::{error, info};
+use chrono::Utc;
+use log::error;
 use uuid::Uuid;
-use crate::protocols::detection::taggers::remoteid::messages::{BasicIdMessage, ClassificationCategory, ClassificationClass, ClassificationType, HeightType, IdType, LocationVectorMessage, OperationalStatus, OperatorIdMessage, OperatorLocationType, RemoteIdMessage, SelfIdMessage, SystemMessage, UavIdSummary, UavType};
+use crate::protocols::detection::taggers::remoteid::messages::{BasicIdMessage, ClassificationCategory, ClassificationClass, ClassificationType, HeightType, IdType, LocationVectorMessage, OperationalStatus, OperatorIdMessage, OperatorLocationType, UavRemoteIdMessage, SelfIdMessage, SystemMessage, UavIdSummary, UavType};
 use crate::tracemark;
 
-pub fn tag(data: &[u8]) -> Option<RemoteIdMessage> {
+pub fn tag(data: &[u8], bssid: String) -> Option<UavRemoteIdMessage> {
     if data.len() < 8 {
         return None
     }
@@ -23,7 +24,8 @@ pub fn tag(data: &[u8]) -> Option<RemoteIdMessage> {
         return None
     }
 
-    let mut parent_message = RemoteIdMessage::default();
+    let mut parent_message = UavRemoteIdMessage::default();
+    parent_message.timestamp = Utc::now();
 
     if message_type == 15 {
         // Message Pack. Iterate over all messages.
@@ -67,7 +69,7 @@ pub fn tag(data: &[u8]) -> Option<RemoteIdMessage> {
     }
 }
 
-fn parse_message(data: &[u8], parent_message: &mut RemoteIdMessage) -> Result<()> {
+fn parse_message(data: &[u8], parent_message: &mut UavRemoteIdMessage) -> Result<()> {
     if data.len() < 3 {
         bail!("Message too short. Length: {}", data.len());
     }

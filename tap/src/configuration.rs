@@ -104,7 +104,8 @@ pub struct Protocols {
     pub arp: ProtocolsArp,
     pub ssh: ProtocolsSsh,
     pub socks: ProtocolsSocks,
-    pub dhcpv4: ProtocolsDhcpv4
+    pub dhcpv4: ProtocolsDhcpv4,
+    pub uav_remote_id: ProtocolsUavRemoteId
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -142,6 +143,11 @@ pub struct ProtocolsSocks {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsDhcpv4 {
+    pub pipeline_size: i32,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ProtocolsUavRemoteId {
     pub pipeline_size: i32,
 }
 
@@ -259,6 +265,11 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     // DHCPv4.
     if doc.protocols.dhcpv4.pipeline_size <= 0 {
         bail!("Configuration variable `protocols.dhcpv4.pipeline_size` must be set to a value greater than 0.");
+    }
+
+    // UAV Remote ID.
+    if doc.protocols.uav_remote_id.pipeline_size <= 0 {
+        bail!("Configuration variable `protocols.uav_remote_id.pipeline_size` must be set to a value greater than 0.");
     }
 
     // Validate WiFi interfaces configuration

@@ -17,6 +17,7 @@ use crate::link::leaderlink::Leaderlink;
 use crate::messagebus::bus::Bus;
 
 use crate::metrics::Metrics;
+use crate::state::tables::uav_table::UavTable;
 
 pub struct Tables {
     pub dot11: Arc<Mutex<Dot11Table>>,
@@ -26,7 +27,8 @@ pub struct Tables {
     pub udp: Arc<Mutex<UdpTable>>,
     pub dns: Arc<Mutex<DnsTable>>,
     pub ssh: Arc<Mutex<SshTable>>,
-    pub socks: Arc<Mutex<SocksTable>>
+    pub socks: Arc<Mutex<SocksTable>>,
+    pub uav: Arc<Mutex<UavTable>>
 }
 
 impl Tables {
@@ -49,7 +51,8 @@ impl Tables {
             ))),
             udp: Arc::new(Mutex::new(UdpTable::new(leaderlink.clone(), metrics.clone()))),
             ssh: Arc::new(Mutex::new(SshTable::new(leaderlink.clone(), metrics.clone()))),
-            socks: Arc::new(Mutex::new(SocksTable::new(leaderlink, metrics)))
+            socks: Arc::new(Mutex::new(SocksTable::new(leaderlink, metrics.clone()))),
+            uav: Arc::new(Mutex::new(UavTable::new(metrics)))
         }
     }
 

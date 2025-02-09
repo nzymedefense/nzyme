@@ -61,6 +61,9 @@ pipeline_size = 1024
 [protocols.dhcpv4]
 pipeline_size = 1024
 
+[protocols.uav_remote_id]
+pipeline_size = 1024
+
 [misc]
 training_period_minutes = 5
 context_mac_ip_retention_hours = 36 

@@ -12,7 +12,7 @@ use crate::{
 };
 use crate::wireless::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
 use crate::link::payloads::{NodeHelloReport, TimerReport, WiFiSupportedFrequencyReport};
-use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, WiredChannelName};
+use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
 use crate::metrics::ChannelUtilization;
 
 use super::{payloads::{StatusReport, SystemMetricsReport, TotalWithAverage, ChannelReport, CaptureReport}};
@@ -24,7 +24,8 @@ pub struct Leaderlink {
     metrics: Arc<Mutex<Metrics>>,
     ethernet_bus: Arc<Bus>,
     dot11_bus: Arc<Bus>,
-    bluetooth_bus: Arc<Bus>
+    bluetooth_bus: Arc<Bus>,
+    generic_bus: Arc<Bus>,
 }
 
 impl Leaderlink {
@@ -32,7 +33,8 @@ impl Leaderlink {
                metrics: Arc<Mutex<Metrics>>,
                ethernet_bus: Arc<Bus>,
                dot11_bus: Arc<Bus>,
-               bluetooth_bus: Arc<Bus>)
+               bluetooth_bus: Arc<Bus>,
+               generic_bus: Arc<Bus>)
         -> anyhow::Result<Self, anyhow::Error> {
 
         let uri = match Url::parse(&configuration.general.leader_uri) {
@@ -59,7 +61,8 @@ impl Leaderlink {
             metrics,
             ethernet_bus,
             dot11_bus,
-            bluetooth_bus
+            bluetooth_bus,
+            generic_bus
         })
     }
 
@@ -161,6 +164,7 @@ impl Leaderlink {
         let mut ethernet_channels: Vec<ChannelReport> = Vec::new();
         let mut dot11_channels: Vec<ChannelReport> = Vec::new();
         let mut bluetooth_channels: Vec<ChannelReport> = Vec::new();
+        let mut generic_channels: Vec<ChannelReport> = Vec::new();
         let mut captures: Vec<CaptureReport> = Vec::new();
         let mut gauges_long: HashMap<String, i128> = HashMap::new();
         let mut timers: HashMap<String, TimerReport> = HashMap::new();
@@ -186,6 +190,12 @@ impl Leaderlink {
 
                 for c in BluetoothChannelName::iter() {
                     bluetooth_channels.push(
+                        Self::build_channel_report(metrics.select_channel(&c.to_string()), c.to_string())
+                    );
+                }
+
+                for c in GenericChannelName::iter() {
+                    generic_channels.push(
                         Self::build_channel_report(metrics.select_channel(&c.to_string()), c.to_string())
                     );
                 }
@@ -253,6 +263,10 @@ impl Leaderlink {
                     channels: bluetooth_channels,
                     name: self.bluetooth_bus.name.clone()
                 },
+                super::payloads::BusReport {
+                    channels: generic_channels,
+                    name: self.generic_bus.name.clone()
+                }
             ],
             system_metrics,
             captures,
