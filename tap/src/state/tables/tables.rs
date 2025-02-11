@@ -112,6 +112,14 @@ impl Tables {
                 },
                 Err(e) => error!("Could not acquire SOCKS table lock for report processing: {}", e)
             }
+
+            match self.uav.lock() {
+                Ok(uav) => {
+                    uav.calculate_metrics();
+                    uav.process_report();
+                },
+                Err(e) => error!("Could not acquire UAV table lock for report processing: {}", e)
+            }
         }
     }
 

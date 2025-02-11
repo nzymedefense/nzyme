@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use chrono::{DateTime, Utc};
 use log::{error, info};
+use strum_macros::Display;
 use uuid::Uuid;
 use crate::metrics::Metrics;
 use crate::protocols::detection::taggers::remoteid::messages::{LocationVectorMessage, OperationalStatus, UavRemoteIdMessage, UavType};
@@ -12,56 +13,56 @@ pub struct UavTable {
     metrics: Arc<Mutex<Metrics>>
 }
 
-#[derive(Debug)]
-enum DetectionSource {
+#[derive(Debug, Display)]
+pub enum DetectionSource {
     RemoteId
 }
 
 #[derive(Debug)]
-struct Uav {
-    uuid: Uuid,
-    detection_source: DetectionSource,
-    last_seen: DateTime<Utc>,
-    uav_type: Option<String>,
-    uav_ids: HashSet<UavId>,
-    operator_ids: HashSet<String>,
-    flight_descriptions: HashSet<String>,
-    vector_reports: Vec<VectorReport>,
-    operator_location_reports: Vec<OperatorLocationReport>,
+pub struct Uav {
+    pub uuid: Uuid,
+    pub detection_source: DetectionSource,
+    pub last_seen: DateTime<Utc>,
+    pub uav_type: Option<String>,
+    pub uav_ids: HashSet<UavId>,
+    pub operator_ids: HashSet<String>,
+    pub flight_descriptions: HashSet<String>,
+    pub vector_reports: Vec<VectorReport>,
+    pub operator_location_reports: Vec<OperatorLocationReport>,
 }
 
 #[derive(Debug, Eq, PartialEq, Hash)]
-struct UavId {
-    id_type: String,
-    id: String
+pub struct UavId {
+    pub id_type: String,
+    pub id: String
 }
 
 #[derive(Debug)]
-struct VectorReport {
-    timestamp: DateTime<Utc>,
-    operational_status: Option<String>,
-    height_type: Option<String>,
-    ground_track: Option<u16>,
-    speed: Option<f32>,
-    vertical_speed: Option<f32>,
-    latitude: Option<f64>,
-    longitude: Option<f64>,
-    altitude_pressure: Option<f32>,
-    altitude_geodetic: Option<f32>,
-    height: Option<f32>,
-    horizontal_accuracy: Option<u8>,
-    vertical_accuracy: Option<u8>,
-    barometer_accuracy: Option<u8>,
-    speed_accuracy: Option<u8>
+pub struct VectorReport {
+    pub timestamp: DateTime<Utc>,
+    pub operational_status: Option<String>,
+    pub height_type: Option<String>,
+    pub ground_track: Option<u16>,
+    pub speed: Option<f32>,
+    pub vertical_speed: Option<f32>,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
+    pub altitude_pressure: Option<f32>,
+    pub altitude_geodetic: Option<f32>,
+    pub height: Option<f32>,
+    pub horizontal_accuracy: Option<u8>,
+    pub vertical_accuracy: Option<u8>,
+    pub barometer_accuracy: Option<u8>,
+    pub speed_accuracy: Option<u8>
 }
 
 #[derive(Debug)]
-struct OperatorLocationReport {
-    timestamp: DateTime<Utc>,
-    location_types: HashSet<String>,
-    latitude: Option<f64>,
-    longitude: Option<f64>,
-    altitude: Option<f32>
+pub struct OperatorLocationReport {
+    pub timestamp: DateTime<Utc>,
+    pub location_types: HashSet<String>,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
+    pub altitude: Option<f32>
 }
 
 impl UavTable {
@@ -138,6 +139,42 @@ impl UavTable {
         }
 
         info!("UAVs: {:?}", self.uavs);
+    }
+
+    pub fn process_report(&self) {
+        match self.uavs.lock() {
+            Ok(mut uavs) => {
+                // Clean up.
+                uavs.clear();
+            },
+            Err(e) => {
+                error!("Could not acquire UAV table map mutex: {}", e);
+            }
+        }
+    }
+
+    pub fn calculate_metrics(&self) {
+        let (uavs_size, vector_reports): (i128, i128) = match self.uavs.lock() {
+            Ok(uavs) => {
+                let mut vector_reports: i128 = 0;
+                uavs.values().for_each(|s| vector_reports += s.vector_reports.len() as i128);
+
+                (uavs.len() as i128, vector_reports)
+            },
+            Err(e) => {
+                error!("Could not acquire mutex to calculate UAV table sizes: {}", e);
+
+                (-1, -1)
+            }
+        };
+
+        match self.metrics.lock() {
+            Ok(mut metrics) => {
+                metrics.set_gauge("tables.uav.uavs.size", uavs_size);
+                metrics.set_gauge("tables.uav.uavs.vector_reports", vector_reports);
+            },
+            Err(e) => error!("Could not acquire metrics mutex: {}", e)
+        }
     }
 
     fn update_uav_ids(message: &UavRemoteIdMessage, uav_ids: &mut HashSet<UavId>) {
