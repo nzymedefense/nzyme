@@ -11,15 +11,17 @@ pub struct UavsReport {
 
 #[derive(Serialize)]
 pub struct UavReport {
-    uuid: String,
+    identifier: String,
+    rssis: Vec<i8>, // XXX
     detection_source: String,
+    first_seen: DateTime<Utc>,
     last_seen: DateTime<Utc>,
     uav_type: Option<String>,
-    uav_ids: HashSet<UavIdReport>,
-    operator_ids: HashSet<String>,
-    flight_descriptions: HashSet<String>,
-    vector_reports: Vec<VectorReport>,
-    operator_location_reports: Vec<OperatorLocationReport>
+    uav_ids: HashSet<UavIdReport>, // XXX
+    operator_ids: HashSet<String>, // XXX
+    flight_descriptions: HashSet<String>, // XXX
+    vector_reports: Vec<VectorReport>, // XXX
+    operator_location_reports: Vec<OperatorLocationReport> // XXX
 }
 
 #[derive(Serialize, Eq, PartialEq, Hash)]
@@ -65,15 +67,17 @@ pub fn generate(x: &MutexGuard<HashMap<String, Uav>>) -> UavsReport {
             .collect();
 
         uavs.push(UavReport {
-            uuid: uav.uuid.to_string(),
+            identifier: uav.identifier.clone(),
+            rssis: uav.rssis.clone(),
             detection_source: uav.detection_source.to_string(),
+            first_seen: uav.first_seen,
             last_seen: uav.last_seen,
             uav_type: uav.uav_type.clone(),
             uav_ids,
             operator_ids: uav.operator_ids.clone(),
             flight_descriptions: uav.flight_descriptions.clone(),
-            vector_reports: vec![],
-            operator_location_reports: vec![],
+            vector_reports: vec![], // TODO
+            operator_location_reports: vec![], // TODO
         })
     }
 

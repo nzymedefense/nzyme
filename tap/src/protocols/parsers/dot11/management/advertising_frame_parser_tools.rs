@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 use anyhow::{bail, Error};
-use crate::wireless::dot11::frames::{CipherSuite, CipherSuites, CountryInformation, Dot11Capabilities, EncryptionProtocol, InfraStructureType, KeyManagementMode, PmfMode, PwnagotchiData, RegulatoryEnvironment, SecurityInformation, TaggedParameters};
+use crate::wireless::dot11::frames::{CipherSuite, CipherSuites, CountryInformation, Dot11Capabilities, Dot11Frame, EncryptionProtocol, InfraStructureType, KeyManagementMode, PmfMode, PwnagotchiData, RegulatoryEnvironment, SecurityInformation, TaggedParameters};
 use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{ByteOrder, LittleEndian};
 use log::{debug, trace, warn};
@@ -57,6 +57,7 @@ pub struct TaggedParameterParserData {
 #[allow(clippy::single_match)]
 pub fn parse_tagged_parameters(payload: &[u8],
                                bssid: String,
+                               rssi: Option<i8>,
                                bus: Arc<Bus>,
                                metrics: Arc<Mutex<Metrics>>) -> Result<TaggedParameterParserData, Error> {
     let mut ssid: Option<String> = Option::None;
@@ -193,7 +194,7 @@ pub fn parse_tagged_parameters(payload: &[u8],
                         _ => {
                             // Potentially tag anything else / anything unknown.
                             tags.extend(tag_advertisement_frame_tags(
-                                data, bssid.clone(), bus.clone(), metrics.clone())
+                                data, bssid.clone(), rssi, bus.clone(), metrics.clone())
                             );
                         }
                     }

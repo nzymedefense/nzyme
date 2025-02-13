@@ -22,6 +22,7 @@ import app.nzyme.core.tables.dot11.Dot11Table;
 import app.nzyme.core.tables.socks.SOCKSTable;
 import app.nzyme.core.tables.ssh.SSHTable;
 import app.nzyme.core.tables.tcp.TCPTable;
+import app.nzyme.core.tables.uav.UAVTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import app.nzyme.core.NzymeNode;
@@ -54,6 +55,7 @@ public class TablesService {
                 .put("tcp", new TCPTable(this))
                 .put("ssh", new SSHTable(this))
                 .put("socks", new SOCKSTable(this))
+                .put("uav", new UAVTable(this))
                 .build();
 
         this.processorPool = Executors.newFixedThreadPool(
@@ -103,6 +105,8 @@ public class TablesService {
     public SOCKSTable socks() {
         return (SOCKSTable) tables.get("socks");
     }
+
+    public UAVTable uav() { return (UAVTable) tables.get("uav"); }
 
     public ExecutorService getProcessorPool() {
         return processorPool;

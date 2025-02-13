@@ -16,6 +16,9 @@ public abstract class SubsystemsConfigurationResponse {
     @JsonProperty("subsystem_bluetooth_available")
     public abstract boolean bluetoothAvailable();
 
+    @JsonProperty("subsystem_uav_available")
+    public abstract boolean uavAvailable();
+
     @JsonProperty("subsystem_ethernet_enabled")
     public abstract ConfigurationEntryResponse ethernetEnabled();
 
@@ -25,14 +28,19 @@ public abstract class SubsystemsConfigurationResponse {
     @JsonProperty("subsystem_bluetooth_enabled")
     public abstract ConfigurationEntryResponse bluetoothEnabled();
 
-    public static SubsystemsConfigurationResponse create(boolean ethernetAvailable, boolean dot11Available, boolean bluetoothAvailable, ConfigurationEntryResponse ethernetEnabled, ConfigurationEntryResponse dot11Enabled, ConfigurationEntryResponse bluetoothEnabled) {
+    @JsonProperty("subsystem_uav_enabled")
+    public abstract ConfigurationEntryResponse uavEnabled();
+
+    public static SubsystemsConfigurationResponse create(boolean ethernetAvailable, boolean dot11Available, boolean bluetoothAvailable, boolean uavAvailable, ConfigurationEntryResponse ethernetEnabled, ConfigurationEntryResponse dot11Enabled, ConfigurationEntryResponse bluetoothEnabled, ConfigurationEntryResponse uavEnabled) {
         return builder()
                 .ethernetAvailable(ethernetAvailable)
                 .dot11Available(dot11Available)
                 .bluetoothAvailable(bluetoothAvailable)
+                .uavAvailable(uavAvailable)
                 .ethernetEnabled(ethernetEnabled)
                 .dot11Enabled(dot11Enabled)
                 .bluetoothEnabled(bluetoothEnabled)
+                .uavEnabled(uavEnabled)
                 .build();
     }
 
@@ -48,11 +56,15 @@ public abstract class SubsystemsConfigurationResponse {
 
         public abstract Builder bluetoothAvailable(boolean bluetoothAvailable);
 
+        public abstract Builder uavAvailable(boolean uavAvailable);
+
         public abstract Builder ethernetEnabled(ConfigurationEntryResponse ethernetEnabled);
 
         public abstract Builder dot11Enabled(ConfigurationEntryResponse dot11Enabled);
 
         public abstract Builder bluetoothEnabled(ConfigurationEntryResponse bluetoothEnabled);
+
+        public abstract Builder uavEnabled(ConfigurationEntryResponse uavEnabled);
 
         public abstract SubsystemsConfigurationResponse build();
     }

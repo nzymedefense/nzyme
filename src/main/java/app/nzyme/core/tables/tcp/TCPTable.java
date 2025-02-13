@@ -1,9 +1,5 @@
 package app.nzyme.core.tables.tcp;
 
-import app.nzyme.core.NzymeNode;
-import app.nzyme.core.database.DataCategory;
-import app.nzyme.core.database.DatabaseImpl;
-import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.ethernet.tcp.TcpSessionState;
 import app.nzyme.core.ethernet.tcp.db.TcpSessionEntry;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;

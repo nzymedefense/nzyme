@@ -106,6 +106,24 @@ export default function SubsystemsConfiguration(props) {
                               dbUpdateCallback={dbUpdateCallback}/>
         </td>
       </tr>
+      <tr>
+        <td>Is UAV (Unmanned Aerial Vehicle) enabled</td>
+        <td>
+          <ConfigurationValue value={configuration.subsystem_uav_enabled.value}
+                              configKey={configuration.subsystem_uav_enabled.key}
+                              boolean={true}/>
+        </td>
+        <td>
+          <ConfigurationModal config={configuration.subsystem_uav_enabled}
+                              disabled={!configuration.subsystem_uav_available}
+                              disabledTitle={"Subsystem is disabled system-wide."}
+                              setGlobalConfig={setConfiguration}
+                              setLocalRevision={setLocalRevision}
+                              organizationId={organizationUUID}
+                              tenantId={tenantUUID}
+                              dbUpdateCallback={dbUpdateCallback}/>
+        </td>
+      </tr>
       </tbody>
     </table>
   )

@@ -26,6 +26,7 @@ import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11TablesReport
 import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.ssh.SshSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.uav.UavsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpDatagramsReport;
 import app.nzyme.plugin.Subsystem;
 import jakarta.inject.Inject;
@@ -164,6 +165,22 @@ public class TablesResource {
 
         LOG.debug("Received SOCKS tunnels report from tap [{}]: {}", tap.getUuid(), report);
         nzyme.getTablesService().socks().handleReport(tap.getUuid(), DateTime.now(), report);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("/uav/uavs")
+    public Response uavUavs(@Context SecurityContext sc, UavsReport report) {
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
+
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.UAV, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting UAVs report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        LOG.debug("Received UAVs report from tap [{}]: {}", tap.getUuid(), report);
+        nzyme.getTablesService().uav().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

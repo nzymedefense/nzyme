@@ -207,6 +207,7 @@ public class SystemResource {
                 true,
                 true,
                 true,
+                true,
                 ConfigurationEntryResponse.create(
                         SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
                         "Ethernet is enabled",
@@ -235,6 +236,16 @@ public class SystemResource {
                         SubsystemRegistryKeys.BLUETOOTH_ENABLED.defaultValue().orElse(null),
                         SubsystemRegistryKeys.BLUETOOTH_ENABLED.requiresRestart(),
                         SubsystemRegistryKeys.BLUETOOTH_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                ),
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.UAV_ENABLED.key(),
+                        "UAV is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.UAV, null, null),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.UAV_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.UAV_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.UAV_ENABLED.constraints().orElse(Collections.emptyList()),
                         "subsystems"
                 )
         );

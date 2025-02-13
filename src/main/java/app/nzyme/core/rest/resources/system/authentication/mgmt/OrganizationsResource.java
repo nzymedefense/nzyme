@@ -174,11 +174,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         boolean ethernetAvailable = nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, null, null);
         boolean dot11Available = nzyme.getSubsystems().isEnabled(Subsystem.DOT11, null, null);
         boolean bluetoothAvailable = nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, null, null);
+        boolean uavAvailable = nzyme.getSubsystems().isEnabled(Subsystem.UAV, null, null);
 
         SubsystemsConfigurationResponse response = SubsystemsConfigurationResponse.create(
                 ethernetAvailable,
                 dot11Available,
                 bluetoothAvailable,
+                uavAvailable,
                 ConfigurationEntryResponse.create(
                         SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
                         "Ethernet is enabled",
@@ -207,6 +209,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                         SubsystemRegistryKeys.BLUETOOTH_ENABLED.defaultValue().orElse(null),
                         SubsystemRegistryKeys.BLUETOOTH_ENABLED.requiresRestart(),
                         SubsystemRegistryKeys.BLUETOOTH_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                ),
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.UAV_ENABLED.key(),
+                        "UAV is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.UAV,  org.get().uuid(), null),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.UAV_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.UAV_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.UAV_ENABLED.constraints().orElse(Collections.emptyList()),
                         "subsystems"
                 )
         );
@@ -257,6 +269,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     }
 
                     if (!nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, null, null)) {
+                        return Response.status(Response.Status.FORBIDDEN).build();
+                    }
+
+                    break;
+                case "subsystem_uav_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SubsystemRegistryKeys.UAV_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+
+                    if (!nzyme.getSubsystems().isEnabled(Subsystem.UAV, null, null)) {
                         return Response.status(Response.Status.FORBIDDEN).build();
                     }
 
@@ -681,11 +703,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         boolean ethernetAvailable = nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, organizationId, null);
         boolean dot11Available = nzyme.getSubsystems().isEnabled(Subsystem.DOT11, organizationId, null);
         boolean bluetoothAvailable = nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, organizationId, null);
+        boolean uavAvailable = nzyme.getSubsystems().isEnabled(Subsystem.UAV, organizationId, null);
 
         SubsystemsConfigurationResponse response = SubsystemsConfigurationResponse.create(
                 ethernetAvailable,
                 dot11Available,
                 bluetoothAvailable,
+                uavAvailable,
                 ConfigurationEntryResponse.create(
                         SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
                         "Ethernet is enabled",
@@ -714,6 +738,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                         SubsystemRegistryKeys.BLUETOOTH_ENABLED.defaultValue().orElse(null),
                         SubsystemRegistryKeys.BLUETOOTH_ENABLED.requiresRestart(),
                         SubsystemRegistryKeys.BLUETOOTH_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "subsystems"
+                ),
+                ConfigurationEntryResponse.create(
+                        SubsystemRegistryKeys.UAV_ENABLED.key(),
+                        "UAV is enabled",
+                        nzyme.getSubsystems().isEnabled(Subsystem.UAV,  organizationId, tenantId),
+                        ConfigurationEntryValueType.BOOLEAN,
+                        SubsystemRegistryKeys.UAV_ENABLED.defaultValue().orElse(null),
+                        SubsystemRegistryKeys.UAV_ENABLED.requiresRestart(),
+                        SubsystemRegistryKeys.UAV_ENABLED.constraints().orElse(Collections.emptyList()),
                         "subsystems"
                 )
         );
@@ -772,6 +806,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     }
 
                     if (!nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, organizationId, null)) {
+                        return Response.status(Response.Status.FORBIDDEN).build();
+                    }
+
+                    break;
+                case "subsystem_uav_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SubsystemRegistryKeys.UAV_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+
+                    if (!nzyme.getSubsystems().isEnabled(Subsystem.UAV, organizationId, null)) {
                         return Response.status(Response.Status.FORBIDDEN).build();
                     }
 

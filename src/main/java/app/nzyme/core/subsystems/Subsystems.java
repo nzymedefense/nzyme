@@ -64,6 +64,9 @@ public class Subsystems {
             case BLUETOOTH -> {
                 return SubsystemRegistryKeys.BLUETOOTH_ENABLED;
             }
+            case UAV -> {
+                return SubsystemRegistryKeys.UAV_ENABLED;
+            }
             default -> throw new RuntimeException("Subsystem [" + subsystem + "] cannot be enabled/disabled.");
         }
     }

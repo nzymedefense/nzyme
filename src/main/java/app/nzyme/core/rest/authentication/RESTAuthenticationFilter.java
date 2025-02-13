@@ -162,6 +162,14 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
                 return;
             }
 
+            if (requestPath.startsWith("api/uav")
+                    && !nzyme.getSubsystems().isEnabled(Subsystem.UAV, user.get().organizationId(), user.get().tenantId())) {
+                LOG.debug("Blocking access to disabled subsystem at [{}] for user [{}].",
+                        requestPath, user.get().uuid());
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+                return;
+            }
+
             // Check if we have the permissions required by resource.
             switch (resourcePermissionLevel) {
                 case SUPERADMINISTRATOR:

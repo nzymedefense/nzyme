@@ -5689,4 +5689,52 @@
         <addUniqueConstraint tableName="context_mac_addresses" columnNames="mac_address, organization_id, tenant_id" />
     </changeSet>
 
+    <changeSet id="add_uavs" author="lennartkoopmann">
+        <createTable tableName="uavs">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="uav_type" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="detection_source" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add_rssi_average_to_uavs" author="lennartkoopmann">
+        <addColumn tableName="uavs">
+            <column name="rssi_average" type="double">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="rename_uav_uuid_to_identifier" author="lennartkoopmann">
+        <renameColumn tableName="uavs" oldColumnName="uuid" newColumnName="identifier" />
+    </changeSet>
+
+    <changeSet id="change_type_of_uav_identifier" author="lennartkoopmann">
+        <modifyDataType tableName="uavs" columnName="identifier" newDataType="text" />
+    </changeSet>
+
 </databaseChangeLog>

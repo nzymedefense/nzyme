@@ -1,12 +1,12 @@
 use anyhow::{Result, bail};
 use base64::Engine;
 use chrono::Utc;
-use log::error;
+use log::{error, warn};
 use uuid::Uuid;
 use crate::protocols::detection::taggers::remoteid::messages::{BasicIdMessage, ClassificationCategory, ClassificationClass, ClassificationType, HeightType, IdType, LocationVectorMessage, OperationalStatus, OperatorIdMessage, OperatorLocationType, UavRemoteIdMessage, SelfIdMessage, SystemMessage, UavIdSummary, UavType};
 use crate::tracemark;
 
-pub fn tag(data: &[u8], bssid: String) -> Option<UavRemoteIdMessage> {
+pub fn tag(data: &[u8], bssid: String, rssi: Option<i8>) -> Option<UavRemoteIdMessage> {
     if data.len() < 8 {
         return None
     }
@@ -26,6 +26,12 @@ pub fn tag(data: &[u8], bssid: String) -> Option<UavRemoteIdMessage> {
 
     let mut parent_message = UavRemoteIdMessage::default();
     parent_message.timestamp = Utc::now();
+    parent_message.bssid = bssid;
+    parent_message.rssis = rssi.map(|rssi| vec![rssi])
+        .unwrap_or_else(|| { 
+            warn!("No RSSI provided to UAV Remote ID tagger.");
+            vec![-100]
+    });
 
     if message_type == 15 {
         // Message Pack. Iterate over all messages.

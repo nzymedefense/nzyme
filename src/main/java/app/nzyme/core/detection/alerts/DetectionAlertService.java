@@ -198,7 +198,8 @@ public class DetectionAlertService {
             switch (subsystem) {
                 case DOT11 -> { return "subsystem = 'DOT11'"; }
                 case ETHERNET -> { return "subsystem = 'ETHERNET'"; }
-                case BLUETOOTH -> { return"subsystem = 'BLUETOOTH'"; }
+                case BLUETOOTH -> { return "subsystem = 'BLUETOOTH'"; }
+                case UAV -> { return "subsystem = 'UAV'"; }
                 default -> { return "1=1"; }
             }
         } else {

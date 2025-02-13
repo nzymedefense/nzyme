@@ -1,16 +1,24 @@
+use sha2::Digest;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use chrono::{DateTime, Utc};
-use log::{error, info};
+use dbus::arg::Append;
+use log::error;
+use sha2::Sha256;
 use strum_macros::Display;
 use uuid::Uuid;
+use crate::helpers::timer::{record_timer, Timer};
+use crate::link::leaderlink::Leaderlink;
+use crate::link::reports::uavs_report;
 use crate::metrics::Metrics;
 use crate::protocols::detection::taggers::remoteid::messages::{LocationVectorMessage, OperationalStatus, UavRemoteIdMessage, UavType};
+use crate::state::tables::table_helpers::clear_mutex_hashmap;
 use crate::state::tables::uav_table::DetectionSource::RemoteId;
 
 pub struct UavTable {
     uavs: Mutex<HashMap<String, Uav>>,
-    metrics: Arc<Mutex<Metrics>>
+    metrics: Arc<Mutex<Metrics>>,
+    leaderlink: Arc<Mutex<Leaderlink>>,
 }
 
 #[derive(Debug, Display)]
@@ -20,8 +28,10 @@ pub enum DetectionSource {
 
 #[derive(Debug)]
 pub struct Uav {
-    pub uuid: Uuid,
+    pub identifier: String,
+    pub rssis: Vec<i8>,
     pub detection_source: DetectionSource,
+    pub first_seen: DateTime<Utc>,
     pub last_seen: DateTime<Utc>,
     pub uav_type: Option<String>,
     pub uav_ids: HashSet<UavId>,
@@ -67,17 +77,20 @@ pub struct OperatorLocationReport {
 
 impl UavTable {
 
-    pub fn new(metrics: Arc<Mutex<Metrics>>) -> Self {
+    pub fn new(leaderlink: Arc<Mutex<Leaderlink>>, metrics: Arc<Mutex<Metrics>>) -> Self {
         UavTable {
             uavs: Mutex::new(HashMap::new()),
+            leaderlink,
             metrics
         }
     }
 
     pub fn register_remote_id_message(&self, message: Arc<UavRemoteIdMessage>) {
+        let identifier = Self::build_remote_id_identifier(message.as_ref());
+
         match self.uavs.lock() {
             Ok(mut uavs) => {
-                match uavs.get_mut(&message.bssid) {
+                match uavs.get_mut(&identifier) {
                     Some(uav) => {
                         // Existing UAV.
                         uav.last_seen = message.timestamp;
@@ -85,6 +98,8 @@ impl UavTable {
                         if let Some(uav_type) = &message.uav_type {
                             uav.uav_type = Some(uav_type.to_string());
                         }
+
+                        uav.rssis.extend(message.rssis.clone());
 
                         Self::update_uav_ids(message.as_ref(), &mut uav.uav_ids);
                         Self::update_operator_ids(message.as_ref(), &mut uav.operator_ids);
@@ -120,8 +135,10 @@ impl UavTable {
                         );
 
                         uavs.insert(message.bssid.clone(), Uav {
-                            uuid: Uuid::new_v4(),
+                            identifier: identifier.clone(),
+                            rssis: message.rssis.clone(),
                             detection_source: RemoteId,
+                            first_seen: message.timestamp,
                             last_seen: message.timestamp,
                             uav_type: message.uav_type.as_ref().map(|t| t.to_string()),
                             uav_ids,
@@ -137,20 +154,73 @@ impl UavTable {
                 error!("Could not acquire UAV table map mutex: {}", e);
             }
         }
-
-        info!("UAVs: {:?}", self.uavs);
     }
 
     pub fn process_report(&self) {
         match self.uavs.lock() {
-            Ok(mut uavs) => {
-                // Clean up.
-                uavs.clear();
+            Ok(uavs) => {
+                // Generate JSON.
+                let mut timer = Timer::new();
+                let report = match serde_json::to_string(&uavs_report::generate(&uavs)) {
+                    Ok(report) => report,
+                    Err(e) => {
+                        error!("Could not serialize UAVs report: {}", e);
+                        return;
+                    }
+                };
+                timer.stop();
+                record_timer(
+                    timer.elapsed_microseconds(),
+                    "tables.uav.timer.report_generation",
+                    &self.metrics
+                );
+
+                // Send report.
+                match self.leaderlink.lock() {
+                    Ok(link) => {
+                        if let Err(e) = link.send_report("uav/uavs", report) {
+                            error!("Could not submit UAVs report: {}", e);
+                        }
+                    },
+                    Err(e) => error!("Could not acquire leader link lock for UAVs \
+                                        report submission: {}", e)
+                }
+
             },
             Err(e) => {
                 error!("Could not acquire UAV table map mutex: {}", e);
             }
         }
+
+        clear_mutex_hashmap(&self.uavs);
+    }
+
+    /*
+     * Builds a stable identifier using multiple attributes of a Remote ID message to identify
+     * a drone between table cycles.
+     */
+    fn build_remote_id_identifier(message: &UavRemoteIdMessage) -> String {
+        let mut identifier = message.bssid.clone();
+
+        identifier.push_str(&RemoteId.to_string());
+
+        if let Some(uav_type) = &message.uav_type {
+            identifier.push_str(&uav_type.to_string());
+        }
+
+        if let Some(operator_id) = &message.operator_license_id {
+            identifier.push_str(&operator_id.operator_id);
+        }
+
+        let mut sorted_ids = message.ids.clone();
+        sorted_ids.sort_by(|a, b| a.id.cmp(&b.id));
+        for id in &message.ids {
+            identifier.push_str(&id.id);
+        }
+
+        let mut hasher = Sha256::new();
+        hasher.update(identifier.as_bytes());
+        format!("{:x}", hasher.finalize())
     }
 
     pub fn calculate_metrics(&self) {

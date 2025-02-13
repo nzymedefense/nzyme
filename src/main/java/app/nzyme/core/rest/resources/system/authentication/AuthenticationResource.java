@@ -244,6 +244,9 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         if (nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, user.get().organizationId(), user.get().tenantId())) {
             subsystems.add("bluetooth");
         }
+        if (nzyme.getSubsystems().isEnabled(Subsystem.UAV, user.get().organizationId(), user.get().tenantId())) {
+            subsystems.add("uav");
+        }
 
         String healthIndicatorLevel = null;
         if (user.get().isSuperAdmin()) {

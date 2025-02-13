@@ -1,7 +1,5 @@
 package app.nzyme.core.tables.socks;
 
-import app.nzyme.core.NzymeNode;
-import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsReport;
 import app.nzyme.core.tables.DataTable;
@@ -9,8 +7,6 @@ import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
 import com.codahale.metrics.Timer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
@@ -20,8 +16,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class SOCKSTable implements DataTable {
-
-    private static final Logger LOG = LogManager.getLogger(SOCKSTable.class);
 
     private final TablesService tablesService;
 

@@ -4,6 +4,7 @@ use strum_macros::Display;
 #[derive(Default, Debug)]
 pub struct UavRemoteIdMessage {
     pub bssid: String,
+    pub rssis: Vec<i8>,
     pub operator_license_id: Option<OperatorIdMessage>,
     pub uav_type: Option<UavType>,
     pub ids: Vec<UavIdSummary>,
@@ -153,7 +154,7 @@ pub struct OperatorIdMessage {
     pub operator_id: String
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UavIdSummary {
     pub id: String,
     pub id_type: IdType
@@ -207,7 +208,7 @@ impl TryFrom<u8> for UavType {
     }
 }
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Clone)]
 pub enum IdType {
     AnsiCtaSerial,
     CaaRegistrationId,
