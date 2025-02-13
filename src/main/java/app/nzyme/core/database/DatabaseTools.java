@@ -4,6 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
+import app.nzyme.core.uav.UavRegistryKeys;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
@@ -24,17 +25,18 @@ public class DatabaseTools {
             case BLUETOOTH -> {
                 key = BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.key();
                 defaultValue = BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
-
             }
             case ETHERNET_L4 -> {
                 key = EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key();
                 defaultValue = EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
-
             }
             case ETHERNET_DNS -> {
                 key = EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.key();
                 defaultValue = EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
-
+            }
+            case UAV -> {
+                key = UavRegistryKeys.UAV_RETENTION_TIME_DAYS.key();
+                defaultValue = UavRegistryKeys.UAV_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
             }
         }
 

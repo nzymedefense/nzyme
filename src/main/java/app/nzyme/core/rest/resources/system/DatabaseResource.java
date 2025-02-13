@@ -17,6 +17,7 @@ import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
 import app.nzyme.core.rest.responses.system.database.*;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
+import app.nzyme.core.uav.UavRegistryKeys;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -285,6 +286,7 @@ public class DatabaseResource extends UserAuthenticatedResource {
             case BLUETOOTH -> key = BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.key();
             case ETHERNET_L4 -> key = EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key();
             case ETHERNET_DNS -> key = EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.key();
+            case UAV -> key = UavRegistryKeys.UAV_RETENTION_TIME_DAYS.key();
         }
 
         nzyme.getDatabaseCoreRegistry()

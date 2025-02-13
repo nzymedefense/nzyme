@@ -411,6 +411,13 @@ public class DatabaseImpl implements Database {
                         "DELETE FROM dns_statistics WHERE created_at < :since AND tap_uuid IN (<taps>)"
                 ));
             }
+            case UAV -> {
+                tables.add(new DataTableInformation(
+                        "uavs",
+                        "SELECT COUNT(*) FROM uavs WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM uavs WHERE last_seen < :since AND tap_uuid IN (<taps>)"
+                ));
+            }
         }
 
         return tables;
