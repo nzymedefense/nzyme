@@ -5736,5 +5736,81 @@
     <changeSet id="change_type_of_uav_identifier" author="lennartkoopmann">
         <modifyDataType tableName="uavs" columnName="identifier" newDataType="text" />
     </changeSet>
+    
+    <changeSet id="add_uav_fields" author="lennart koopmann">
+        <addColumn tableName="uavs">
+            <column name="operational_status" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="latitude" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="longitude" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="ground_track" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="speed" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="vertical_speed" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="altitude_pressure" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="altitude_geodetic" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="height_type" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="height" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="accuracy_horizontal" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="accuracy_vertical" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="accuracy_barometer" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="accuracy_speed" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="operator_location_type" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="operator_latitude" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="operator_longitude" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="operator_altitude" type="double">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

@@ -51,7 +51,7 @@ public abstract class UavVectorReport {
                                          @JsonProperty("altitude_pressure") Double altitudePressure,
                                          @JsonProperty("altitude_geodetic") Double altitudeGeodetic,
                                          @JsonProperty("height") Double height,
-                                         @JsonProperty("horiontal_accuracy") Integer horizontalAccuracy,
+                                         @JsonProperty("horizontal_accuracy") Integer horizontalAccuracy,
                                          @JsonProperty("vertical_accuracy") Integer verticalAccuracy,
                                          @JsonProperty("barometer_accuracy") Integer barometerAccuracy,
                                          @JsonProperty("speed_accuracy") Integer speedAccuracy) {

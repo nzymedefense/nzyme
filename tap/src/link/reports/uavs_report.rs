@@ -12,16 +12,16 @@ pub struct UavsReport {
 #[derive(Serialize)]
 pub struct UavReport {
     identifier: String,
-    rssis: Vec<i8>, // XXX
+    rssis: Vec<i8>,
     detection_source: String,
     first_seen: DateTime<Utc>,
     last_seen: DateTime<Utc>,
     uav_type: Option<String>,
-    uav_ids: HashSet<UavIdReport>, // XXX
-    operator_ids: HashSet<String>, // XXX
-    flight_descriptions: HashSet<String>, // XXX
-    vector_reports: Vec<VectorReport>, // XXX
-    operator_location_reports: Vec<OperatorLocationReport> // XXX
+    uav_ids: HashSet<UavIdReport>,
+    operator_ids: HashSet<String>,
+    flight_descriptions: HashSet<String>,
+    vector_reports: Vec<VectorReport>,
+    operator_location_reports: Vec<OperatorLocationReport>
 }
 
 #[derive(Serialize, Eq, PartialEq, Hash)]
@@ -52,9 +52,9 @@ pub struct VectorReport {
 #[derive(Serialize)]
 pub struct OperatorLocationReport {
     timestamp: DateTime<Utc>,
-    location_types: HashSet<String>,
-    latitude: Option<f64>,
-    longitude: Option<f64>,
+    location_type: String,
+    latitude: f64,
+    longitude: f64,
     altitude: Option<f32>
 }
 
@@ -66,6 +66,38 @@ pub fn generate(x: &MutexGuard<HashMap<String, Uav>>) -> UavsReport {
             .map(|id| UavIdReport { id: id.id.clone(), id_type: id.id_type.clone() })
             .collect();
 
+        let mut vector_reports = Vec::new();
+        for vector in &uav.vector_reports {
+            vector_reports.push(VectorReport {
+                timestamp: vector.timestamp,
+                operational_status: vector.operational_status.clone(),
+                height_type: vector.height_type.clone(),
+                ground_track: vector.ground_track,
+                speed: vector.speed,
+                vertical_speed: vector.vertical_speed,
+                latitude: vector.latitude,
+                longitude: vector.longitude,
+                altitude_pressure: vector.altitude_pressure,
+                altitude_geodetic: vector.altitude_geodetic,
+                height: vector.height,
+                horizontal_accuracy: vector.horizontal_accuracy,
+                vertical_accuracy: vector.vertical_accuracy,
+                barometer_accuracy: vector.barometer_accuracy,
+                speed_accuracy: vector.speed_accuracy
+            });
+        }
+
+        let mut operator_location_reports = Vec::new();
+        for operator_location in &uav.operator_location_reports {
+            operator_location_reports.push(OperatorLocationReport {
+                timestamp: operator_location.timestamp,
+                location_type: operator_location.location_type.clone(),
+                latitude: operator_location.latitude,
+                longitude: operator_location.longitude,
+                altitude: operator_location.altitude
+            });
+        }
+
         uavs.push(UavReport {
             identifier: uav.identifier.clone(),
             rssis: uav.rssis.clone(),
@@ -76,8 +108,8 @@ pub fn generate(x: &MutexGuard<HashMap<String, Uav>>) -> UavsReport {
             uav_ids,
             operator_ids: uav.operator_ids.clone(),
             flight_descriptions: uav.flight_descriptions.clone(),
-            vector_reports: vec![], // TODO
-            operator_location_reports: vec![], // TODO
+            vector_reports,
+            operator_location_reports
         })
     }
 

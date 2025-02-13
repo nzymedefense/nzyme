@@ -12,23 +12,21 @@ import java.util.List;
 public abstract class UavOperatorLocationReport {
 
     public abstract DateTime timestamp();
-    public abstract List<String> locationTypes();
-    @Nullable
+    public abstract String locationType();
     public abstract Double latitude();
-    @Nullable
     public abstract Double longitude();
     @Nullable
     public abstract Double altitude();
 
     @JsonCreator
     public static UavOperatorLocationReport create(@JsonProperty("timestamp") DateTime timestamp,
-                                                   @JsonProperty("location_types") List<String> locationTypes,
+                                                   @JsonProperty("location_type") String locationType,
                                                    @JsonProperty("latitude") Double latitude,
                                                    @JsonProperty("longitude") Double longitude,
                                                    @JsonProperty("altitude") Double altitude) {
         return builder()
                 .timestamp(timestamp)
-                .locationTypes(locationTypes)
+                .locationType(locationType)
                 .latitude(latitude)
                 .longitude(longitude)
                 .altitude(altitude)
@@ -43,7 +41,7 @@ public abstract class UavOperatorLocationReport {
     public abstract static class Builder {
         public abstract Builder timestamp(DateTime timestamp);
 
-        public abstract Builder locationTypes(List<String> locationTypes);
+        public abstract Builder locationType(String locationType);
 
         public abstract Builder latitude(Double latitude);
 

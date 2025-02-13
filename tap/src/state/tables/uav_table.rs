@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use chrono::{DateTime, Utc};
 use dbus::arg::Append;
-use log::error;
+use log::{error, info};
 use sha2::Sha256;
 use strum_macros::Display;
 use uuid::Uuid;
@@ -69,9 +69,9 @@ pub struct VectorReport {
 #[derive(Debug)]
 pub struct OperatorLocationReport {
     pub timestamp: DateTime<Utc>,
-    pub location_types: HashSet<String>,
-    pub latitude: Option<f64>,
-    pub longitude: Option<f64>,
+    pub location_type: String,
+    pub latitude: f64,
+    pub longitude: f64,
     pub altitude: Option<f32>
 }
 
@@ -134,8 +134,8 @@ impl UavTable {
                             &mut operator_location_reports
                         );
 
-                        uavs.insert(message.bssid.clone(), Uav {
-                            identifier: identifier.clone(),
+                        uavs.insert(identifier.clone(), Uav {
+                            identifier,
                             rssis: message.rssis.clone(),
                             detection_source: RemoteId,
                             first_seen: message.timestamp,
@@ -292,14 +292,11 @@ impl UavTable {
     fn update_operator_location_reports(message: &UavRemoteIdMessage,
                                         operator_location_reports: &mut Vec<OperatorLocationReport>) {
         if let Some(location) = &message.system {
-            let mut location_types = HashSet::new();
-            location_types.insert(location.operator_location_type.to_string());
-
             operator_location_reports.push(OperatorLocationReport {
                 timestamp: message.timestamp,
-                location_types,
-                latitude: Some(location.operator_location_latitude),
-                longitude: Some(location.operator_location_longitude),
+                location_type: location.operator_location_type.to_string(),
+                latitude: location.operator_location_latitude,
+                longitude: location.operator_location_longitude,
                 altitude: location.operator_altitude
             });
         }
