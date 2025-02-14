@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.uav;
 
+import app.nzyme.core.rest.responses.uav.enums.*;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
@@ -12,11 +13,11 @@ public abstract class UavDetailsResponse {
     public abstract long id();
     public abstract UUID tapUuid();
     public abstract String identifier();
-    public abstract UavType uavType();
-    public abstract UavDetectionSource detectionSource();
+    public abstract UavTypeResponse uavType();
+    public abstract UavDetectionSourceResponse detectionSource();
     public abstract double rssiAverage();
     @Nullable
-    public abstract UavOperationalStatus operationalStatus();
+    public abstract UavOperationalStatusResponse operationalStatus();
     @Nullable
     public abstract Double latitude();
     @Nullable
@@ -32,7 +33,7 @@ public abstract class UavDetailsResponse {
     @Nullable
     public abstract Double altitudeGeodetic();
     @Nullable
-    public abstract UavHeightType heightType();
+    public abstract UavHeightTypeResponse heightType();
     @Nullable
     public abstract Double height();
     @Nullable
@@ -44,7 +45,7 @@ public abstract class UavDetailsResponse {
     @Nullable
     public abstract Integer accuracySpeed();
     @Nullable
-    public abstract UavOperatorLocationType operatorLocationType();
+    public abstract UavOperatorLocationTypeResponse operatorLocationType();
     @Nullable
     public abstract Double operatorLatitude();
     @Nullable

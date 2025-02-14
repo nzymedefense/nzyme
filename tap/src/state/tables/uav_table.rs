@@ -2,16 +2,14 @@ use sha2::Digest;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use chrono::{DateTime, Utc};
-use dbus::arg::Append;
 use log::{error, info};
 use sha2::Sha256;
 use strum_macros::Display;
-use uuid::Uuid;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::uavs_report;
 use crate::metrics::Metrics;
-use crate::protocols::detection::taggers::remoteid::messages::{LocationVectorMessage, OperationalStatus, UavRemoteIdMessage, UavType};
+use crate::protocols::detection::taggers::remoteid::messages::{OperationalStatus, UavRemoteIdMessage, UavType};
 use crate::state::tables::table_helpers::clear_mutex_hashmap;
 use crate::state::tables::uav_table::DetectionSource::RemoteId;
 
