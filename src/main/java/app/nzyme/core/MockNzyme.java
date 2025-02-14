@@ -38,6 +38,7 @@ import app.nzyme.core.registry.RegistryImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.subsystems.Subsystems;
+import app.nzyme.core.uav.Uav;
 import app.nzyme.plugin.Database;
 import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Registry;
@@ -244,6 +245,11 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public Bluetooth getBluetooth() {
+        return null;
+    }
+
+    @Override
+    public Uav getUav() {
         return null;
     }
 

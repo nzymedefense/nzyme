@@ -33,6 +33,7 @@ import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.subsystems.Subsystems;
+import app.nzyme.core.uav.Uav;
 import app.nzyme.plugin.*;
 import app.nzyme.plugin.distributed.messaging.MessageBus;
 import app.nzyme.plugin.distributed.tasksqueue.TasksQueue;
@@ -68,6 +69,7 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
     Ethernet getEthernet();
     Dot11 getDot11();
     Bluetooth getBluetooth();
+    Uav getUav();
 
     ContextService getContextService();
 

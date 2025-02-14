@@ -5813,4 +5813,22 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_uav_base_migrations" author="lennartkoopmann">
+        <createIndex tableName="uavs" indexName="uavs_tap_uuid">
+            <column name="tap_uuid" />
+        </createIndex>
+
+        <createIndex tableName="uavs" indexName="uavs_identifier">
+            <column name="identifier" />
+        </createIndex>
+
+        <createIndex tableName="uavs" indexName="uavs_detection_source">
+            <column name="detection_source" />
+        </createIndex>
+
+        <createIndex tableName="uavs" indexName="uavs_last_seen">
+            <column name="last_seen" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

@@ -51,6 +51,7 @@ import app.nzyme.core.registry.RegistryChangeMonitorImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.subsystems.Subsystems;
+import app.nzyme.core.uav.Uav;
 import app.nzyme.plugin.*;
 import app.nzyme.plugin.distributed.messaging.MessageBus;
 import app.nzyme.plugin.distributed.tasksqueue.*;
@@ -124,6 +125,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final Ethernet ethernet;
     private final Dot11 dot11;
     private final Bluetooth bluetooth;
+    private final Uav uav;
 
     private final TablesService tablesService;
 
@@ -185,6 +187,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.ethernet = new Ethernet(this);
         this.dot11 = new Dot11(this);
         this.bluetooth = new Bluetooth(this);
+        this.uav = new Uav(this);
 
         this.tapManager = new TapManager(this);
 
@@ -378,6 +381,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public Bluetooth getBluetooth() {
         return bluetooth;
+    }
+
+    @Override
+    public Uav getUav() {
+        return uav;
     }
 
     @Override
