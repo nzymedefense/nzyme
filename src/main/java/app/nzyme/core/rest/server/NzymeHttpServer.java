@@ -36,6 +36,7 @@ import app.nzyme.core.rest.resources.system.integrations.SmtpIntegrationResource
 import app.nzyme.core.rest.resources.taps.StatusResource;
 import app.nzyme.core.rest.resources.taps.TablesResource;
 import app.nzyme.core.rest.resources.taps.TapsResource;
+import app.nzyme.core.rest.resources.uav.UavResource;
 import app.nzyme.core.rest.resources.user.UserProfileResource;
 import app.nzyme.plugin.distributed.messaging.*;
 import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
@@ -158,6 +159,7 @@ public class NzymeHttpServer {
         resourceConfig.register(BluetoothDevicesResource.class);
         resourceConfig.register(Dot11MonitoredProbeRequestResource.class);
         resourceConfig.register(Dot11MonitoredSSIDsResource.class);
+        resourceConfig.register(UavResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

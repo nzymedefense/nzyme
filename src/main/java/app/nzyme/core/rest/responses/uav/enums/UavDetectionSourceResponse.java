@@ -1,7 +1,25 @@
 package app.nzyme.core.rest.responses.uav.enums;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public enum UavDetectionSourceResponse {
 
-    REMOTEID
+    REMOTE_ID,
+    OTHER;
+
+    private static final Logger LOG = LogManager.getLogger(UavDetectionSourceResponse.class);
+
+    public static UavDetectionSourceResponse fromString(String value) {
+        if (value == null) return null;
+
+        return switch (value) {
+            case "RemoteId" -> REMOTE_ID;
+            default -> {
+                LOG.warn("Unknown UAV detection source type: [{}]. Returning [{}].", value, OTHER);
+                yield OTHER;
+            }
+        };
+    }
 
 }

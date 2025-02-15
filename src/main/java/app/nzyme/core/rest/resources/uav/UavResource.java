@@ -2,9 +2,14 @@ package app.nzyme.core.rest.resources.uav;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.responses.uav.UavDetailsResponse;
+import app.nzyme.core.rest.responses.uav.UavListResponse;
+import app.nzyme.core.rest.responses.uav.enums.*;
+import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.GET;
@@ -38,10 +43,39 @@ public class UavResource extends TapDataHandlingResource {
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         long total = nzyme.getUav().countAllUavs(timeRange, taps);
+        List<UavDetailsResponse> uavs = Lists.newArrayList();
 
+        for (UavEntry uav : nzyme.getUav().findAllUavs(timeRange, limit, offset, taps)) {
+            uavs.add(UavDetailsResponse.create(
+                    uav.tapUuid(),
+                    uav.identifier(),
+                    UavTypeResponse.fromString(uav.uavType()),
+                    UavDetectionSourceResponse.fromString(uav.detectionSource()),
+                    uav.rssiAverage(),
+                    UavOperationalStatusResponse.fromString(uav.operationalStatus()),
+                    uav.latitude(),
+                    uav.longitude(),
+                    uav.groundTrack(),
+                    uav.speed(),
+                    uav.verticalSpeed(),
+                    uav.altitudePressure(),
+                    uav.altitudeGeodetic(),
+                    UavHeightTypeResponse.fromString(uav.heightType()),
+                    uav.height(),
+                    uav.accuracyHorizontal(),
+                    uav.accuracyVertical(),
+                    uav.accuracyBarometer(),
+                    uav.accuracySpeed(),
+                    UavOperatorLocationTypeResponse.fromString(uav.operatorLocationType()),
+                    uav.operatorLatitude(),
+                    uav.operatorLongitude(),
+                    uav.operatorAltitude(),
+                    uav.firstSeen(),
+                    uav.lastSeen()
+            ));
+        }
 
-
-        return Response.ok().build();
+        return Response.ok(UavListResponse.create(total, uavs)).build();
     }
 
 }
