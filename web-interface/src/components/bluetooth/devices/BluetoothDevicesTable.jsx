@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import moment from "moment";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Paginator from "../../misc/Paginator";
-import SignalStrength from "../../dot11/util/SignalStrength";
+import SignalStrength from "../../shared/SignalStrength";
 import {TapContext} from "../../../App";
 import GroupedParameterList from "../../shared/GroupedParameterList";
 import BluetoothMacAddress from "../../shared/context/macs/BluetoothMacAddress";

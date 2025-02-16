@@ -1,5 +1,5 @@
 import React from "react";
-import SignalStrength from "../util/SignalStrength";
+import SignalStrength from "../../shared/SignalStrength";
 import moment from "moment/moment";
 import numeral from "numeral";
 import LoadingSpinner from "../../misc/LoadingSpinner";

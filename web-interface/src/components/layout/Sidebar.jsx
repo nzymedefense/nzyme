@@ -102,23 +102,16 @@ function Sidebar(props) {
                 href={ApiRoutes.BLUETOOTH.DEVICES.INDEX}
                 title="Devices"
                 icon={<i className="sidebar-icon fa-solid fa-mobile-screen-button"/>}/>
-
           </SidebarSubmenu>
 
-          <SidebarSubmenu title="Close Access"
-                          subhref="/close-access"
-                          icon={<i className="sidebar-icon fa-solid fa-building-shield"/>}
-                          show={userHasSubsystem(user, "dot11")
-                            || userHasSubsystem(user, "bluetooth")}>
+          <SidebarSubmenu title="UAV"
+                          subhref="/uav"
+                          icon={<i className="sidebar-icon fa-solid fa-paper-plane"/>}
+                          show={userHasSubsystem(user, "uav")}>
             <NavigationLink
-              href={ApiRoutes.CLOSE_ACCESS.MONITORING.INDEX}
-              title="Monitoring"
-              icon={<i className="sidebar-icon fa-solid fa-tower-observation"/>}/>
-            <NavigationLink
-              href={ApiRoutes.CLOSE_ACCESS.RESPONSE.INDEX}
-              title="Response"
-              icon={<i className="sidebar-icon fa-solid fa-shield-dog"/>}/>
-
+              href={ApiRoutes.UAV.UAVS.INDEX}
+              title="UAVs"
+              icon={<i className="sidebar-icon fa-solid fa-paper-plane"/>}/>
           </SidebarSubmenu>
 
           <SidebarSubmenu title="Context"

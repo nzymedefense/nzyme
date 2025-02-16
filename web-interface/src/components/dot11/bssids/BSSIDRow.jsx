@@ -2,7 +2,7 @@ import React, {useContext, useState} from "react";
 import moment from "moment";
 import numeral from "numeral";
 import SSIDsList from "../util/SSIDsList";
-import SignalStrength from "../util/SignalStrength";
+import SignalStrength from "../../shared/SignalStrength";
 import Dot11Service from "../../../services/Dot11Service";
 import {TapContext} from "../../../App";
 import BSSIDDetailsRows from "./BSSIDDetailsRows";

@@ -10,13 +10,13 @@ import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
 import com.google.common.math.Quantiles;
 import com.google.common.math.Stats;
-import org.apache.commons.lang3.NotImplementedException;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -42,7 +42,7 @@ public class UAVTable implements DataTable {
     }
 
     private void writeUavs(Handle handle, UUID tapUuid, List<UavReport> uavs) {
-        PreparedBatch batch = handle.prepareBatch("INSERT INTO uavs(tap_uuid, identifier, uav_type, " +
+        PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO uavs(tap_uuid, identifier, uav_type, " +
                 "detection_source, rssi_average, operational_status, latitude, longitude, ground_track, speed, " +
                 "vertical_speed, altitude_pressure, altitude_geodetic, height_type, height, accuracy_horizontal, " +
                 "accuracy_vertical, accuracy_barometer, accuracy_speed, operator_location_type, operator_latitude, " +
@@ -52,6 +52,16 @@ public class UAVTable implements DataTable {
                 ":height, :accuracy_horizontal, :accuracy_vertical, :accuracy_barometer, :accuracy_speed, " +
                 ":operator_location_type, :operator_latitude, :operator_longitude, :operator_altitude, " +
                 ":first_seen, :last_seen)");
+
+        PreparedBatch updateBatch = handle.prepareBatch("UPDATE uavs SET rssi_average = :rssi_average, " +
+                "operational_status = :operational_status, latitude = :latitude, longitude = :longitude, " +
+                "ground_track = :ground_track, speed = :speed, vertical_speed = :vertical_speed, " +
+                "altitude_pressure = :altitude_pressure, altitude_geodetic = :altitude_geodetic, " +
+                "height_type = :height_type, height = :height, accuracy_horizontal = :accuracy_horizontal, " +
+                "accuracy_vertical = :accuracy_vertical, accuracy_barometer = :accuracy_barometer, " +
+                "accuracy_speed = :accuracy_speed, operator_location_type = :operator_location_type, " +
+                "operator_latitude = :operator_latitude, operator_longitude = :operator_longitude, " +
+                "operator_altitude = :operator_altitude, last_seen = :last_seen WHERE id = :id");
 
         for (UavReport uav : uavs) {
             double rssiAverage = uav.rssis()
@@ -149,40 +159,75 @@ public class UAVTable implements DataTable {
                 operatorAltitude = lastReport.altitude();
             }
 
-            batch
+            Optional<Long> existingUav = handle.createQuery("SELECT id FROM uavs WHERE tap_uuid = :tap_uuid AND identifier = :identifier")
                     .bind("tap_uuid", tapUuid)
                     .bind("identifier", uav.identifier())
-                    .bind("uav_type", uav.uavType())
-                    .bind("detection_source", uav.detectionSource())
-                    .bind("rssi_average", rssiAverage)
-                    .bind("operational_status", operationalStatus)
-                    .bind("latitude", latitude)
-                    .bind("longitude", longitude)
-                    .bind("ground_track", groundTrack)
-                    .bind("speed", speed)
-                    .bind("vertical_speed", verticalSpeed)
-                    .bind("altitude_pressure", altitudePressure)
-                    .bind("altitude_geodetic", altitudeGeodetic)
-                    .bind("height_type", heightType)
-                    .bind("height", height)
-                    .bind("accuracy_horizontal", accuracyHorizontal)
-                    .bind("accuracy_vertical", accuracyVertical)
-                    .bind("accuracy_barometer", accuracyBarometer)
-                    .bind("accuracy_speed", accuracySpeed)
-                    .bind("operator_location_type", operatorLocationType)
-                    .bind("operator_latitude", operatorLatitude)
-                    .bind("operator_longitude", operatorLongitude)
-                    .bind("operator_altitude", operatorAltitude)
-                    .bind("first_seen", uav.firstSeen())
-                    .bind("last_seen", uav.lastSeen())
-                    .add();
+                    .mapTo(Long.class)
+                    .findOne();
+
+            if (existingUav.isEmpty()) {
+                // First time seeing this UAV.
+                insertBatch
+                        .bind("tap_uuid", tapUuid)
+                        .bind("identifier", uav.identifier())
+                        .bind("uav_type", uav.uavType())
+                        .bind("detection_source", uav.detectionSource())
+                        .bind("rssi_average", rssiAverage)
+                        .bind("operational_status", operationalStatus)
+                        .bind("latitude", latitude)
+                        .bind("longitude", longitude)
+                        .bind("ground_track", groundTrack)
+                        .bind("speed", speed)
+                        .bind("vertical_speed", verticalSpeed)
+                        .bind("altitude_pressure", altitudePressure)
+                        .bind("altitude_geodetic", altitudeGeodetic)
+                        .bind("height_type", heightType)
+                        .bind("height", height)
+                        .bind("accuracy_horizontal", accuracyHorizontal)
+                        .bind("accuracy_vertical", accuracyVertical)
+                        .bind("accuracy_barometer", accuracyBarometer)
+                        .bind("accuracy_speed", accuracySpeed)
+                        .bind("operator_location_type", operatorLocationType)
+                        .bind("operator_latitude", operatorLatitude)
+                        .bind("operator_longitude", operatorLongitude)
+                        .bind("operator_altitude", operatorAltitude)
+                        .bind("first_seen", uav.firstSeen())
+                        .bind("last_seen", uav.lastSeen())
+                        .add();
+            } else {
+                updateBatch
+                        .bind("id", existingUav.get())
+                        .bind("tap_uuid", tapUuid)
+                        .bind("rssi_average", rssiAverage)
+                        .bind("operational_status", operationalStatus)
+                        .bind("latitude", latitude)
+                        .bind("longitude", longitude)
+                        .bind("ground_track", groundTrack)
+                        .bind("speed", speed)
+                        .bind("vertical_speed", verticalSpeed)
+                        .bind("altitude_pressure", altitudePressure)
+                        .bind("altitude_geodetic", altitudeGeodetic)
+                        .bind("height_type", heightType)
+                        .bind("height", height)
+                        .bind("accuracy_horizontal", accuracyHorizontal)
+                        .bind("accuracy_vertical", accuracyVertical)
+                        .bind("accuracy_barometer", accuracyBarometer)
+                        .bind("accuracy_speed", accuracySpeed)
+                        .bind("operator_location_type", operatorLocationType)
+                        .bind("operator_latitude", operatorLatitude)
+                        .bind("operator_longitude", operatorLongitude)
+                        .bind("operator_altitude", operatorAltitude)
+                        .bind("last_seen", uav.lastSeen())
+                        .add();
+            }
         }
 
-        batch.execute();
+        insertBatch.execute();
+        updateBatch.execute();
     }
 
     @Override
     public void retentionClean() {
-        throw new NotImplementedException();
+        // NOOP. Remove from plugin APIs if there remains no use. Database cleaned by category/tenant independently.
     }
 }

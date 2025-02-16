@@ -1,5 +1,5 @@
 import React from "react";
-import SignalStrength from "../dot11/util/SignalStrength";
+import SignalStrength from "./SignalStrength";
 import LoadingSpinner from "../misc/LoadingSpinner";
 
 function TapBasedSignalStrengthTable(props) {

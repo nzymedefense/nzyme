@@ -20,6 +20,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,7 +34,7 @@ public class UavResource extends TapDataHandlingResource {
     private NzymeNode nzyme;
 
     @GET
-    @Path("/tunnels")
+    @Path("/uavs")
     public Response findAll(@Context SecurityContext sc,
                             @QueryParam("time_range") @Valid String timeRangeParameter,
                             @QueryParam("limit") int limit,
@@ -47,6 +48,7 @@ public class UavResource extends TapDataHandlingResource {
 
         for (UavEntry uav : nzyme.getUav().findAllUavs(timeRange, limit, offset, taps)) {
             uavs.add(UavDetailsResponse.create(
+                    uav.lastSeen().isAfter(DateTime.now().minusMinutes(5)),
                     uav.tapUuid(),
                     uav.identifier(),
                     UavTypeResponse.fromString(uav.uavType()),

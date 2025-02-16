@@ -149,6 +149,7 @@ import TenantUsersPage from "./components/system/authentication/management/tenan
 import TenantTapsPage from "./components/system/authentication/management/tenants/TenantTapsPage";
 import TenantLocationsPage from "./components/system/authentication/management/tenants/locations/TenantLocationsPage";
 import TenantDatabasePage from "./components/system/authentication/management/tenants/TenantDatabasePage";
+import UavsPage from "./components/uav/UavsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -491,6 +492,12 @@ function App() {
                                 { /* Bluetooth Clients/Devices. */}
                                 <Route path={ApiRoutes.BLUETOOTH.DEVICES.INDEX} element={<BluetoothDevicesPage />}/>
                                 <Route path={ApiRoutes.BLUETOOTH.DEVICES.DETAILS(':macParam')} element={<BluetoothDeviceDetailsPage />}/>
+                              </Route>
+
+                              { /* UAV. */ }
+                              <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "uav")} />}>
+                                { /* UAVs */}
+                                <Route path={ApiRoutes.UAV.UAVS.INDEX} element={<UavsPage />}/>
                               </Route>
 
                               { /* Context. */ }

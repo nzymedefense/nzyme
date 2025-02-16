@@ -4,7 +4,7 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import Dot11Service from "../../../../services/Dot11Service";
 import {TapContext} from "../../../../App";
-import SignalStrength from "../../util/SignalStrength";
+import SignalStrength from "../../../shared/SignalStrength";
 import InfrastructureTypes from "../../util/InfrastructureTypes";
 import WPSInformation from "../../util/WPSInformation";
 import SecuritySuites from "../../util/SecuritySuites";
