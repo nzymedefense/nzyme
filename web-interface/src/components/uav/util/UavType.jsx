@@ -9,7 +9,7 @@ export default function UavType(props) {
 
     switch (type) {
       case "MULTIROTOR_HELICOPTER":
-        return "Multirotor/Heli"
+        return "Multirotor/Helicopter"
       case "FREE_BALLOON":
         return "Free Balloon";
       case "CAPTIVE_BALLOON":

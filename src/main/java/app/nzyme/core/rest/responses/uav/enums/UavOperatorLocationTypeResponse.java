@@ -16,7 +16,7 @@ public enum UavOperatorLocationTypeResponse {
         if (value == null) return null;
 
         return switch (value) {
-            case "Takeoff" -> TAKEOFF;
+            case "TakeOff" -> TAKEOFF;
             case "Dynamic" -> DYNAMIC;
             case "Fixed" -> FIXED;
             default -> {

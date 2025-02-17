@@ -9,6 +9,8 @@ import SignalStrength from "../shared/SignalStrength";
 import UavOperationalStatus from "./util/UavOperationalStatus";
 import moment from "moment/moment";
 import UavAltitude from "./util/UavAltitude";
+import UavSpeed from "./util/UavSpeed";
+import UavVerticalSpeed from "./util/UavVerticalSpeed";
 
 export default function UavsTable(props) {
 
@@ -44,6 +46,8 @@ export default function UavsTable(props) {
             <th>Status</th>
             <th>RSSI</th>
             <th>Altitude</th>
+            <th>Speed</th>
+            <th>Vertical Speed</th>
             <th>Last Seen</th>
           </tr>
           </thead>
@@ -52,12 +56,14 @@ export default function UavsTable(props) {
             return (
               <tr key={i}>
                 <td><UavActiveIndicator active={uav.is_active} /></td>
-                <td>{uav.identifier.substring(0, 7)}</td>
+                <td><a href="#">{uav.identifier.substring(0, 7)}</a></td>
                 <td><UavDetectionSource source={uav.detection_source} /></td>
                 <td><UavType type={uav.uav_type} /></td>
                 <td><UavOperationalStatus status={uav.operational_status} /></td>
                 <td><SignalStrength strength={uav.rssi_average} selectedTapCount={selectedTaps.length}/></td>
                 <td><UavAltitude uav={uav} /></td>
+                <td><UavSpeed speed={uav.speed} /></td>
+                <td><UavVerticalSpeed verticalSpeed={uav.vertical_speed} /></td>
                 <td>{moment(uav.last_seen).fromNow()}</td>
               </tr>
             );

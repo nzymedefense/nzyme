@@ -216,7 +216,7 @@ fn parse_location_vector_message(data: &[u8]) -> Result<LocationVectorMessage> {
     }
 
     // Vertical speed can be positive or negative.
-    let vertical_speed = (data[3] as i8) as f32 * 0.25;
+    let vertical_speed = (data[3] as i8) as f32 * 0.5;
 
     if vertical_speed > 62.0 {
         bail!("Invalid vertical speed: {}", vertical_speed);
@@ -229,25 +229,25 @@ fn parse_location_vector_message(data: &[u8]) -> Result<LocationVectorMessage> {
     let altitude_geodetic = decode_altitude(&data[14..16]);
     let height = decode_altitude(&data[16..18]);
 
-    let horizontal_accuracy: u8 = (data[18] >> 4) & 0x0F;
-    let vertical_accuracy: u8 = data[18] & 0x0F;
+    let vertical_accuracy: u8 = (data[18] >> 4) & 0x0F;
+    let horizontal_accuracy: u8 = data[18] & 0x0F;
     let barometer_accuracy: u8 = (data[19] >> 4) & 0x0F;
     let speed_accuracy: u8 = data[19] & 0x0F;
+    
+    if vertical_accuracy > 15 {
+        bail!("Invalid vertical accuracy: {}", horizontal_accuracy);
+    }
 
     if horizontal_accuracy > 15 {
         bail!("Invalid horizontal accuracy: {}", horizontal_accuracy);
     }
 
-    if vertical_accuracy > 15 {
-        bail!("Invalid vertical accuracy: {}", horizontal_accuracy);
-    }
-
     if barometer_accuracy > 15 {
-        bail!("Invalid barometer accuracy: {}", horizontal_accuracy);
+        bail!("Invalid barometer accuracy: {}", barometer_accuracy);
     }
 
     if speed_accuracy > 15 {
-        bail!("Invalid speed accuracy: {}", horizontal_accuracy);
+        bail!("Invalid speed accuracy: {}", speed_accuracy);
     }
     
     let operational_status = match OperationalStatus::try_from(operational_status_num) {
