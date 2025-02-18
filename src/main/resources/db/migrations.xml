@@ -5831,4 +5831,109 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="create_uav_vectors" author="lennartkoopmann">
+        <createTable tableName="uavs_vectors">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uav_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="operational_status" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="latitude" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="longitude" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="ground_track" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="speed" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="vertical_speed" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="altitude_pressure" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="altitude_geodetic" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="height_type" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="height" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="accuracy_horizontal" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="accuracy_vertical" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="accuracy_barometer" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="accuracy_speed" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="timestamp" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_vectors2uavs"
+                                 baseTableName="uavs_vectors"
+                                 baseColumnNames="uav_id"
+                                 referencedTableName="uavs"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <createIndex tableName="uavs_vectors" indexName="uavs_vectors_timestamp">
+            <column name="timestamp" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="change_uav_vector_relation" author="lennartkoopmann">
+        <dropForeignKeyConstraint baseTableName="uavs_vectors" constraintName="link_vectors2uavs" />
+        <dropColumn tableName="uavs_vectors" columnName="uav_id" />
+
+        <addColumn tableName="uavs_vectors">
+            <column name="uav_identifier" type="text">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addUniqueConstraint tableName="uavs" columnNames="identifier" />
+
+        <addForeignKeyConstraint constraintName="link_vectors2uavs"
+                                 baseTableName="uavs_vectors"
+                                 baseColumnNames="uav_identifier"
+                                 referencedTableName="uavs"
+                                 referencedColumnNames="identifier"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
 </databaseChangeLog>
