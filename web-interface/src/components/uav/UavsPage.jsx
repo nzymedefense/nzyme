@@ -21,7 +21,7 @@ export default function UavsPage() {
   const perPage = 25;
 
   useEffect(() => {
-    uavService.findAllUav(setUavs, timeRange, selectedTaps, perPage, (page-1)*perPage)
+    uavService.findAll(setUavs, timeRange, selectedTaps, perPage, (page-1)*perPage)
   }, [selectedTaps, timeRange, page]);
 
   useEffect(() => {
@@ -37,8 +37,12 @@ export default function UavsPage() {
         <AlphaFeatureAlert />
 
         <div className="row">
-          <div className="col-md-12">
+          <div className="col-md-10">
             <h1>Unmanned Aerial Vehicles (UAVs)</h1>
+          </div>
+
+          <div className="col-md-2 text-end">
+            <a href="https://go.nzyme.org/uavs" className="btn btn-secondary">Help</a>
           </div>
         </div>
 
@@ -50,10 +54,10 @@ export default function UavsPage() {
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange} />
 
-                <UavsTable uavs={uavs}
-                                       page={page}
-                                       perPage={perPage}
-                                       setPage={setPage} />
+                <p className="text-muted mt-0">The table shows the most recent recorded values. More details and a history of values is available
+                on the UAV details pages.</p>
+
+                <UavsTable uavs={uavs} page={page} perPage={perPage} setPage={setPage} />
               </div>
             </div>
           </div>

@@ -150,6 +150,7 @@ import TenantTapsPage from "./components/system/authentication/management/tenant
 import TenantLocationsPage from "./components/system/authentication/management/tenants/locations/TenantLocationsPage";
 import TenantDatabasePage from "./components/system/authentication/management/tenants/TenantDatabasePage";
 import UavsPage from "./components/uav/UavsPage";
+import UavDetailsPage from "./components/uav/UavDetailsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -497,7 +498,8 @@ function App() {
                               { /* UAV. */ }
                               <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "uav")} />}>
                                 { /* UAVs */}
-                                <Route path={ApiRoutes.UAV.UAVS.INDEX} element={<UavsPage />}/>
+                                <Route path={ApiRoutes.UAVS.INDEX} element={<UavsPage />}/>
+                                <Route path={ApiRoutes.UAVS.DETAILS(':identifierParam')} element={<UavDetailsPage />}/>
                               </Route>
 
                               { /* Context. */ }

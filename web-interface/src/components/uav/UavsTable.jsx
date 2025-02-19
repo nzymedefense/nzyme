@@ -11,6 +11,8 @@ import moment from "moment/moment";
 import UavAltitude from "./util/UavAltitude";
 import UavSpeed from "./util/UavSpeed";
 import UavVerticalSpeed from "./util/UavVerticalSpeed";
+import ApiRoutes from "../../util/ApiRoutes";
+import Designation from "../shared/Designation";
 
 export default function UavsTable(props) {
 
@@ -41,6 +43,7 @@ export default function UavsTable(props) {
           <tr>
             <th style={{width: 25}}></th>
             <th style={{width: 70}}>ID</th>
+            <th>Designation</th>
             <th>Detection Source</th>
             <th>Type</th>
             <th>Status</th>
@@ -56,7 +59,8 @@ export default function UavsTable(props) {
             return (
               <tr key={i}>
                 <td><UavActiveIndicator active={uav.is_active} /></td>
-                <td><a href="#">{uav.identifier.substring(0, 7)}</a></td>
+                <td><a href={ApiRoutes.UAVS.DETAILS(uav.identifier)}>{uav.identifier.substring(0, 7)}</a></td>
+                <td><Designation designation={uav.designation} /></td>
                 <td><UavDetectionSource source={uav.detection_source} /></td>
                 <td><UavType type={uav.uav_type} /></td>
                 <td><UavOperationalStatus status={uav.operational_status} /></td>

@@ -16,7 +16,7 @@ public enum UavHeightTypeResponse {
 
         return switch (value) {
             case "AboveGround" -> ABOVE_GROUND;
-            case "AboveTakeOffLocation" -> ABOVE_TAKEOFF_LOCATION;
+            case "AboveTakeoffLocation" -> ABOVE_TAKEOFF_LOCATION;
             default -> {
                 LOG.warn("Unknown UAV height type: [{}]. Returning [{}].", value, OTHER);
                 yield OTHER;

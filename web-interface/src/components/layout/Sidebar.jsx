@@ -109,7 +109,7 @@ function Sidebar(props) {
                           icon={<i className="sidebar-icon fa-solid fa-paper-plane"/>}
                           show={userHasSubsystem(user, "uav")}>
             <NavigationLink
-              href={ApiRoutes.UAV.UAVS.INDEX}
+              href={ApiRoutes.UAVS.INDEX}
               title="UAVs"
               icon={<i className="sidebar-icon fa-solid fa-paper-plane"/>}/>
           </SidebarSubmenu>

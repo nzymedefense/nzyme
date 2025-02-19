@@ -6,6 +6,7 @@ import app.nzyme.core.util.TimeRange;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class Uav {
@@ -52,5 +53,21 @@ public class Uav {
                         .list()
         );
     }
+
+    public Optional<UavEntry> findUav(String identifier, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM uavs " +
+                                "WHERE identifier = :identifier AND tap_uuid IN (<taps>)")
+                        .bind("identifier", identifier)
+                        .bindList("taps", taps)
+                        .mapTo(UavEntry.class)
+                        .findOne()
+        );
+    }
+
 
 }

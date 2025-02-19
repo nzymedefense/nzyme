@@ -1,15 +1,15 @@
 package app.nzyme.core.tables.uav;
 
-import app.nzyme.core.rest.resources.taps.reports.tables.uav.UavOperatorLocationReport;
-import app.nzyme.core.rest.resources.taps.reports.tables.uav.UavReport;
-import app.nzyme.core.rest.resources.taps.reports.tables.uav.UavVectorReport;
-import app.nzyme.core.rest.resources.taps.reports.tables.uav.UavsReport;
+import app.nzyme.core.designation.Designation;
+import app.nzyme.core.rest.resources.taps.reports.tables.uav.*;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
 import com.google.common.math.Quantiles;
 import com.google.common.math.Stats;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
@@ -21,6 +21,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class UAVTable implements DataTable {
+
+    private static final Logger LOG = LogManager.getLogger(UAVTable.class);
 
     private final TablesService tablesService;
 
@@ -42,16 +44,17 @@ public class UAVTable implements DataTable {
     }
 
     private void writeUavs(Handle handle, UUID tapUuid, List<UavReport> uavs) {
-        PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO uavs(tap_uuid, identifier, uav_type, " +
-                "detection_source, rssi_average, operational_status, latitude, longitude, ground_track, speed, " +
-                "vertical_speed, altitude_pressure, altitude_geodetic, height_type, height, accuracy_horizontal, " +
-                "accuracy_vertical, accuracy_barometer, accuracy_speed, operator_location_type, operator_latitude, " +
-                "operator_longitude, operator_altitude, first_seen, last_seen) VALUES(:tap_uuid, :identifier, " +
-                ":uav_type, :detection_source, :rssi_average, :operational_status, :latitude, :longitude, " +
-                ":ground_track, :speed, :vertical_speed, :altitude_pressure, :altitude_geodetic, :height_type, " +
-                ":height, :accuracy_horizontal, :accuracy_vertical, :accuracy_barometer, :accuracy_speed, " +
-                ":operator_location_type, :operator_latitude, :operator_longitude, :operator_altitude, " +
-                ":first_seen, :last_seen)");
+        PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO uavs(tap_uuid, identifier, designation, " +
+                "uav_type, detection_source, id_serial, id_registration, id_utm, id_session, rssi_average, " +
+                "operational_status, latitude, longitude, ground_track, speed, vertical_speed, altitude_pressure, " +
+                "altitude_geodetic, height_type, height, accuracy_horizontal, accuracy_vertical, accuracy_barometer, " +
+                "accuracy_speed, operator_location_type, operator_latitude, operator_longitude, operator_altitude, " +
+                "first_seen, last_seen) VALUES(:tap_uuid, :identifier, :designation, :uav_type, :detection_source, " +
+                ":id_serial, :id_registration, :id_utm, :id_session, :rssi_average, :operational_status, " +
+                ":latitude, :longitude, :ground_track, :speed, :vertical_speed, :altitude_pressure, " +
+                ":altitude_geodetic, :height_type, :height, :accuracy_horizontal, :accuracy_vertical, " +
+                ":accuracy_barometer, :accuracy_speed, :operator_location_type, :operator_latitude, " +
+                ":operator_longitude, :operator_altitude, :first_seen, :last_seen)");
 
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE uavs SET rssi_average = :rssi_average, " +
                 "operational_status = :operational_status, latitude = :latitude, longitude = :longitude, " +
@@ -72,6 +75,7 @@ public class UAVTable implements DataTable {
                 ":accuracy_barometer, :accuracy_speed, :timestamp)");
 
         for (UavReport uav : uavs) {
+            String designation = Designation.fromSha256ShortDigest(uav.identifier().subSequence(0, 7).toString());
             double rssiAverage = uav.rssis()
                     .stream()
                     .mapToInt(Integer::intValue)
@@ -167,6 +171,29 @@ public class UAVTable implements DataTable {
                 operatorAltitude = lastReport.altitude();
             }
 
+            String idSerial = null;
+            String idRegistration = null;
+            String idUtm = null;
+            String idSession = null;
+            for (UavIdReport uavId : uav.uavIds()) {
+                switch (uavId.idType()) {
+                    case "AnsiCtaSerial":
+                        idSerial = uavId.id();
+                        break;
+                    case "CaaRegistrationId":
+                        idRegistration = uavId.id();
+                        break;
+                    case "UtmAssignedUuid":
+                        idUtm = uavId.id();
+                        break;
+                    case "SpecificSessionId":
+                        idSession = uavId.id();
+                        break;
+                    default:
+                        LOG.warn("Unknown UAV ID type [{}]", uavId.idType());
+                }
+            }
+
             Optional<Long> existingUav = handle.createQuery("SELECT id FROM uavs " +
                             "WHERE tap_uuid = :tap_uuid AND identifier = :identifier")
                     .bind("tap_uuid", tapUuid)
@@ -179,8 +206,13 @@ public class UAVTable implements DataTable {
                 insertBatch
                         .bind("tap_uuid", tapUuid)
                         .bind("identifier", uav.identifier())
+                        .bind("designation", designation)
                         .bind("uav_type", uav.uavType())
                         .bind("detection_source", uav.detectionSource())
+                        .bind("id_serial", idSerial)
+                        .bind("id_registration", idRegistration)
+                        .bind("id_utm", idUtm)
+                        .bind("id_session", idSession)
                         .bind("rssi_average", rssiAverage)
                         .bind("operational_status", operationalStatus)
                         .bind("latitude", latitude)

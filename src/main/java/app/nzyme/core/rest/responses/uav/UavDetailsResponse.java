@@ -20,11 +20,30 @@ public abstract class UavDetailsResponse {
     @JsonProperty("identifier")
     public abstract String identifier();
 
+    @JsonProperty("designation")
+    public abstract String designation();
+
     @JsonProperty("uav_type")
     public abstract UavTypeResponse uavType();
 
     @JsonProperty("detection_source")
     public abstract UavDetectionSourceResponse detectionSource();
+
+    @JsonProperty("id_serial")
+    @Nullable
+    public abstract String idSerial();
+
+    @JsonProperty("id_registration")
+    @Nullable
+    public abstract String idRegistration();
+
+    @JsonProperty("id_utm")
+    @Nullable
+    public abstract String idUtm();
+
+    @JsonProperty("id_session")
+    @Nullable
+    public abstract String idSession();
 
     @JsonProperty("rssi_average")
     public abstract double rssiAverage();
@@ -107,13 +126,18 @@ public abstract class UavDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static UavDetailsResponse create(boolean isActive, UUID tapUuid, String identifier, UavTypeResponse uavType, UavDetectionSourceResponse detectionSource, double rssiAverage, UavOperationalStatusResponse operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, UavHeightTypeResponse heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, UavOperatorLocationTypeResponse operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, DateTime firstSeen, DateTime lastSeen) {
+    public static UavDetailsResponse create(boolean isActive, UUID tapUuid, String identifier, String designation, UavTypeResponse uavType, UavDetectionSourceResponse detectionSource, String idSerial, String idRegistration, String idUtm, String idSession, double rssiAverage, UavOperationalStatusResponse operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, UavHeightTypeResponse heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, UavOperatorLocationTypeResponse operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .isActive(isActive)
                 .tapUuid(tapUuid)
                 .identifier(identifier)
+                .designation(designation)
                 .uavType(uavType)
                 .detectionSource(detectionSource)
+                .idSerial(idSerial)
+                .idRegistration(idRegistration)
+                .idUtm(idUtm)
+                .idSession(idSession)
                 .rssiAverage(rssiAverage)
                 .operationalStatus(operationalStatus)
                 .latitude(latitude)
@@ -150,9 +174,19 @@ public abstract class UavDetailsResponse {
 
         public abstract Builder identifier(String identifier);
 
+        public abstract Builder designation(String designation);
+
         public abstract Builder uavType(UavTypeResponse uavType);
 
         public abstract Builder detectionSource(UavDetectionSourceResponse detectionSource);
+
+        public abstract Builder idSerial(String idSerial);
+
+        public abstract Builder idRegistration(String idRegistration);
+
+        public abstract Builder idUtm(String idUtm);
+
+        public abstract Builder idSession(String idSession);
 
         public abstract Builder rssiAverage(double rssiAverage);
 

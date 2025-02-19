@@ -5935,5 +5935,33 @@
                                  onUpdate="NO ACTION"
                                  onDelete="CASCADE" />
     </changeSet>
+    
+    <changeSet id="add_uav_serial_ids" author="lennartkoopmann">
+        <addColumn tableName="uavs">
+            <column name="id_serial" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="id_registration" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="id_utm" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="id_session" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_uav_designation" author="lennartkoopmann">
+        <addColumn tableName="uavs">
+            <column name="designation" type="text" value="NONE">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

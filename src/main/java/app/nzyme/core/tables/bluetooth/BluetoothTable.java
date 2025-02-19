@@ -1,12 +1,8 @@
 package app.nzyme.core.tables.bluetooth;
 
-import app.nzyme.core.NzymeNode;
 import app.nzyme.core.bluetooth.db.BluetoothServiceUuidJson;
-import app.nzyme.core.database.DataCategory;
-import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDeviceReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDevicesReport;
-import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
