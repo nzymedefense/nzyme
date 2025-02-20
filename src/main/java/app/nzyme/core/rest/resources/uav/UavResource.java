@@ -3,6 +3,7 @@ package app.nzyme.core.rest.resources.uav;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.uav.UavDetailsResponse;
+import app.nzyme.core.rest.responses.uav.UavSummaryResponse;
 import app.nzyme.core.rest.responses.uav.UavListResponse;
 import app.nzyme.core.rest.responses.uav.enums.*;
 import app.nzyme.core.uav.db.UavEntry;
@@ -42,10 +43,10 @@ public class UavResource extends TapDataHandlingResource {
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         long total = nzyme.getUav().countAllUavs(timeRange, taps);
-        List<UavDetailsResponse> uavs = Lists.newArrayList();
+        List<UavSummaryResponse> uavs = Lists.newArrayList();
 
         for (UavEntry uav : nzyme.getUav().findAllUavs(timeRange, limit, offset, taps)) {
-            uavs.add(uavEntryToResponse(uav));
+            uavs.add(uavEntryToSummaryResponse(uav));
         }
 
         return Response.ok(UavListResponse.create(total, uavs)).build();
@@ -64,11 +65,14 @@ public class UavResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(uavEntryToResponse(uav.get())).build();
+        return Response.ok(UavDetailsResponse.create(
+                uavEntryToSummaryResponse(uav.get()),
+                100
+        )).build();
     }
 
-    private UavDetailsResponse uavEntryToResponse(UavEntry uav) {
-        return UavDetailsResponse.create(
+    private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav) {
+        return UavSummaryResponse.create(
                 uav.lastSeen().isAfter(DateTime.now().minusMinutes(5)),
                 uav.tapUuid(),
                 uav.identifier(),

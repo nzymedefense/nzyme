@@ -12,9 +12,9 @@ public abstract class UavListResponse {
     public abstract long count();
 
     @JsonProperty("uavs")
-    public abstract List<UavDetailsResponse> uavs();
+    public abstract List<UavSummaryResponse> uavs();
 
-    public static UavListResponse create(long count, List<UavDetailsResponse> uavs) {
+    public static UavListResponse create(long count, List<UavSummaryResponse> uavs) {
         return builder()
                 .count(count)
                 .uavs(uavs)
@@ -29,7 +29,7 @@ public abstract class UavListResponse {
     public abstract static class Builder {
         public abstract Builder count(long count);
 
-        public abstract Builder uavs(List<UavDetailsResponse> uavs);
+        public abstract Builder uavs(List<UavSummaryResponse> uavs);
 
         public abstract UavListResponse build();
     }

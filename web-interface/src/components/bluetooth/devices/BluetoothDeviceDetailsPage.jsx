@@ -13,6 +13,7 @@ import GroupedParameterList from "../../shared/GroupedParameterList";
 import {transformTag, transformTransport} from "../BluetoothTools";
 import TapBasedSignalStrengthTable from "../../shared/TapBasedSignalStrengthTable";
 import {BluetoothDeviceSignalStrengthHistogram} from "./BluetoothDeviceSignalStrengthHistogram";
+import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 
 const btService = new BluetoothService();
 
@@ -29,6 +30,14 @@ export default function BluetoothDeviceDetailsPage() {
 
   const [rssiHistogramTimerange, setRssiHistogramTimerange] = useState(Presets.RELATIVE_HOURS_24);
   const [tapRssiTimerange, setTapRssiTimerange] = useState(Presets.RELATIVE_MINUTES_15);
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
 
   useEffect(() => {
     btService.findOneDevice(setSelectedDevice, macParam, selectedTaps);
