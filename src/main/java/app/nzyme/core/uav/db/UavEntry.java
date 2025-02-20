@@ -23,6 +23,8 @@ public abstract class UavEntry {
     public abstract String idUtm();
     @Nullable
     public abstract String idSession();
+    @Nullable
+    public abstract String operatorId();
     public abstract double rssiAverage();
     @Nullable
     public abstract String operationalStatus();
@@ -60,10 +62,14 @@ public abstract class UavEntry {
     public abstract Double operatorLongitude();
     @Nullable
     public abstract Double operatorAltitude();
+    @Nullable
+    public abstract DateTime latestVectorTimestamp();
+    @Nullable
+    public abstract DateTime latestOperatorLocationTimestamp();
     public abstract DateTime firstSeen();
     public abstract DateTime lastSeen();
 
-    public static UavEntry create(long id, UUID tapUuid, String identifier, String designation, String uavType, String detectionSource, String idSerial, String idRegistration, String idUtm, String idSession, double rssiAverage, String operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, String heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, String operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, DateTime firstSeen, DateTime lastSeen) {
+    public static UavEntry create(long id, UUID tapUuid, String identifier, String designation, String uavType, String detectionSource, String idSerial, String idRegistration, String idUtm, String idSession, String operatorId, double rssiAverage, String operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, String heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, String operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, DateTime latestVectorTimestamp, DateTime latestOperatorLocationTimestamp, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .id(id)
                 .tapUuid(tapUuid)
@@ -75,6 +81,7 @@ public abstract class UavEntry {
                 .idRegistration(idRegistration)
                 .idUtm(idUtm)
                 .idSession(idSession)
+                .operatorId(operatorId)
                 .rssiAverage(rssiAverage)
                 .operationalStatus(operationalStatus)
                 .latitude(latitude)
@@ -94,6 +101,8 @@ public abstract class UavEntry {
                 .operatorLatitude(operatorLatitude)
                 .operatorLongitude(operatorLongitude)
                 .operatorAltitude(operatorAltitude)
+                .latestVectorTimestamp(latestVectorTimestamp)
+                .latestOperatorLocationTimestamp(latestOperatorLocationTimestamp)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .build();
@@ -124,6 +133,8 @@ public abstract class UavEntry {
         public abstract Builder idUtm(String idUtm);
 
         public abstract Builder idSession(String idSession);
+
+        public abstract Builder operatorId(String operatorId);
 
         public abstract Builder rssiAverage(double rssiAverage);
 
@@ -162,6 +173,10 @@ public abstract class UavEntry {
         public abstract Builder operatorLongitude(Double operatorLongitude);
 
         public abstract Builder operatorAltitude(Double operatorAltitude);
+
+        public abstract Builder latestVectorTimestamp(DateTime latestVectorTimestamp);
+
+        public abstract Builder latestOperatorLocationTimestamp(DateTime latestOperatorLocationTimestamp);
 
         public abstract Builder firstSeen(DateTime firstSeen);
 

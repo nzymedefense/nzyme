@@ -5964,4 +5964,24 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_uav_operator_id" author="lennartkoopmann">
+        <addColumn tableName="uavs">
+            <column name="operator_id" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_latest_uav_vector_and_operator_timestamps" author="lennartkoopmann">
+        <addColumn tableName="uavs">
+            <column name="latest_vector_timestamp" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="latest_operator_location_timestamp" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

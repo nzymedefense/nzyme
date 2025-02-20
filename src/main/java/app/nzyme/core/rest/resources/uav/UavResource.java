@@ -2,10 +2,12 @@ package app.nzyme.core.rest.resources.uav;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
 import app.nzyme.core.rest.responses.uav.UavDetailsResponse;
 import app.nzyme.core.rest.responses.uav.UavSummaryResponse;
 import app.nzyme.core.rest.responses.uav.UavListResponse;
 import app.nzyme.core.rest.responses.uav.enums.*;
+import app.nzyme.core.uav.UavRegistryKeys;
 import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -65,9 +67,14 @@ public class UavResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        int dataRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                .getValue(UavRegistryKeys.UAV_RETENTION_TIME_DAYS.key())
+                .orElse(UavRegistryKeys.UAV_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
+        );
+
         return Response.ok(UavDetailsResponse.create(
                 uavEntryToSummaryResponse(uav.get()),
-                100
+                dataRetentionDays
         )).build();
     }
 
@@ -83,6 +90,7 @@ public class UavResource extends TapDataHandlingResource {
                 uav.idRegistration(),
                 uav.idUtm(),
                 uav.idSession(),
+                uav.operatorId(),
                 uav.rssiAverage(),
                 UavOperationalStatusResponse.fromString(uav.operationalStatus()),
                 uav.latitude(),
@@ -102,6 +110,8 @@ public class UavResource extends TapDataHandlingResource {
                 uav.operatorLatitude(),
                 uav.operatorLongitude(),
                 uav.operatorAltitude(),
+                uav.latestVectorTimestamp(),
+                uav.latestOperatorLocationTimestamp(),
                 uav.firstSeen(),
                 uav.lastSeen()
         );

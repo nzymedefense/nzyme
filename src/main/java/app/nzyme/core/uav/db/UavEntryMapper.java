@@ -11,6 +11,11 @@ import java.util.UUID;
 public class UavEntryMapper implements RowMapper<UavEntry> {
     @Override
     public UavEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
+        DateTime latestVectorTimestamp = rs.getTimestamp("latest_vector_timestamp") == null ?
+                null : new DateTime(rs.getTimestamp("latest_vector_timestamp"));
+        DateTime latestOperatorLocationTimestamp = rs.getTimestamp("latest_operator_location_timestamp") == null ?
+                null : new DateTime(rs.getTimestamp("latest_operator_location_timestamp"));
+
         return UavEntry.create(
                 rs.getLong("id"),
                 UUID.fromString(rs.getString("tap_uuid")),
@@ -22,6 +27,7 @@ public class UavEntryMapper implements RowMapper<UavEntry> {
                 rs.getString("id_registration"),
                 rs.getString("id_utm"),
                 rs.getString("id_session"),
+                rs.getString("operator_id"),
                 rs.getDouble("rssi_average"),
                 rs.getString("operational_status"),
                 rs.getDouble("latitude"),
@@ -41,6 +47,8 @@ public class UavEntryMapper implements RowMapper<UavEntry> {
                 rs.getDouble("operator_latitude"),
                 rs.getDouble("operator_longitude"),
                 rs.getDouble("operator_altitude"),
+                latestVectorTimestamp,
+                latestOperatorLocationTimestamp,
                 new DateTime(rs.getTimestamp("first_seen")),
                 new DateTime(rs.getTimestamp("last_seen"))
         );

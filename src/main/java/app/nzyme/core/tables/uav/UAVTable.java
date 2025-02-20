@@ -45,16 +45,18 @@ public class UAVTable implements DataTable {
 
     private void writeUavs(Handle handle, UUID tapUuid, List<UavReport> uavs) {
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO uavs(tap_uuid, identifier, designation, " +
-                "uav_type, detection_source, id_serial, id_registration, id_utm, id_session, rssi_average, " +
-                "operational_status, latitude, longitude, ground_track, speed, vertical_speed, altitude_pressure, " +
-                "altitude_geodetic, height_type, height, accuracy_horizontal, accuracy_vertical, accuracy_barometer, " +
-                "accuracy_speed, operator_location_type, operator_latitude, operator_longitude, operator_altitude, " +
-                "first_seen, last_seen) VALUES(:tap_uuid, :identifier, :designation, :uav_type, :detection_source, " +
-                ":id_serial, :id_registration, :id_utm, :id_session, :rssi_average, :operational_status, " +
+                "uav_type, detection_source, id_serial, id_registration, id_utm, id_session, operator_id, " +
+                "rssi_average, operational_status, latitude, longitude, ground_track, speed, vertical_speed, " +
+                "altitude_pressure, altitude_geodetic, height_type, height, accuracy_horizontal, accuracy_vertical, " +
+                "accuracy_barometer, accuracy_speed, operator_location_type, operator_latitude, operator_longitude, " +
+                "operator_altitude, latest_vector_timestamp, latest_operator_location_timestamp, first_seen, " +
+                "last_seen) VALUES(:tap_uuid, :identifier, :designation, :uav_type, :detection_source, :id_serial, " +
+                ":id_registration, :id_utm, :id_session, :operator_id, :rssi_average, :operational_status, " +
                 ":latitude, :longitude, :ground_track, :speed, :vertical_speed, :altitude_pressure, " +
                 ":altitude_geodetic, :height_type, :height, :accuracy_horizontal, :accuracy_vertical, " +
                 ":accuracy_barometer, :accuracy_speed, :operator_location_type, :operator_latitude, " +
-                ":operator_longitude, :operator_altitude, :first_seen, :last_seen)");
+                ":operator_longitude, :operator_altitude, :latest_vector_timestamp, " +
+                ":latest_operator_location_timestamp, :first_seen, :last_seen)");
 
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE uavs SET rssi_average = :rssi_average, " +
                 "operational_status = :operational_status, latitude = :latitude, longitude = :longitude, " +
@@ -64,7 +66,9 @@ public class UAVTable implements DataTable {
                 "accuracy_vertical = :accuracy_vertical, accuracy_barometer = :accuracy_barometer, " +
                 "accuracy_speed = :accuracy_speed, operator_location_type = :operator_location_type, " +
                 "operator_latitude = :operator_latitude, operator_longitude = :operator_longitude, " +
-                "operator_altitude = :operator_altitude, last_seen = :last_seen WHERE id = :id");
+                "operator_altitude = :operator_altitude, latest_vector_timestamp = :latest_vector_timestamp, " +
+                "latest_operator_location_timestamp = :latest_operator_location_timestamp, last_seen = :last_seen " +
+                "WHERE id = :id");
 
         PreparedBatch vectorBatch = handle.prepareBatch("INSERT INTO uavs_vectors(uav_identifier, " +
                 "operational_status, latitude, longitude, ground_track, speed, vertical_speed, altitude_pressure, " +
@@ -82,6 +86,11 @@ public class UAVTable implements DataTable {
                     .average()
                     .orElse(0.0);
 
+            String operatorId = uav.operatorIds()
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
+
             // Operational Status (Latest)
             String operationalStatus = null;
             Double latitude = null;
@@ -97,6 +106,7 @@ public class UAVTable implements DataTable {
             Integer accuracyVertical = null;
             Integer accuracyBarometer = null;
             Integer accuracySpeed = null;
+            DateTime latestVectorTimestamp = null;
             if (!uav.vectorReports().isEmpty()) {
                 UavVectorReport lastReport = uav.vectorReports().get(uav.vectorReports().size() - 1);
                 operationalStatus = lastReport.operationalStatus();
@@ -107,6 +117,7 @@ public class UAVTable implements DataTable {
                 altitudeGeodetic = lastReport.altitudeGeodetic();
                 heightType = lastReport.heightType();
                 height = lastReport.height();
+                latestVectorTimestamp = lastReport.timestamp();
 
                 List<Double> speeds = uav.vectorReports().stream()
                         .map(UavVectorReport::speed)
@@ -162,6 +173,7 @@ public class UAVTable implements DataTable {
             Double operatorLatitude = null;
             Double operatorLongitude = null;
             Double operatorAltitude = null;
+            DateTime latestOperatorLocationTimestamp = null;
             if (!uav.operatorLocationReports().isEmpty()) {
                 UavOperatorLocationReport lastReport = uav.operatorLocationReports()
                         .get(uav.operatorLocationReports().size() - 1);
@@ -169,6 +181,7 @@ public class UAVTable implements DataTable {
                 operatorLatitude = lastReport.latitude();
                 operatorLongitude = lastReport.longitude();
                 operatorAltitude = lastReport.altitude();
+                latestOperatorLocationTimestamp = lastReport.timestamp();
             }
 
             String idSerial = null;
@@ -213,6 +226,7 @@ public class UAVTable implements DataTable {
                         .bind("id_registration", idRegistration)
                         .bind("id_utm", idUtm)
                         .bind("id_session", idSession)
+                        .bind("operator_id", operatorId)
                         .bind("rssi_average", rssiAverage)
                         .bind("operational_status", operationalStatus)
                         .bind("latitude", latitude)
@@ -232,6 +246,8 @@ public class UAVTable implements DataTable {
                         .bind("operator_latitude", operatorLatitude)
                         .bind("operator_longitude", operatorLongitude)
                         .bind("operator_altitude", operatorAltitude)
+                        .bind("latest_vector_timestamp", latestVectorTimestamp)
+                        .bind("latest_operator_location_timestamp", latestOperatorLocationTimestamp)
                         .bind("first_seen", uav.firstSeen())
                         .bind("last_seen", uav.lastSeen())
                         .add();
@@ -258,6 +274,8 @@ public class UAVTable implements DataTable {
                         .bind("operator_latitude", operatorLatitude)
                         .bind("operator_longitude", operatorLongitude)
                         .bind("operator_altitude", operatorAltitude)
+                        .bind("latest_vector_timestamp", latestVectorTimestamp)
+                        .bind("latest_operator_location_timestamp", latestOperatorLocationTimestamp)
                         .bind("last_seen", uav.lastSeen())
                         .add();
             }

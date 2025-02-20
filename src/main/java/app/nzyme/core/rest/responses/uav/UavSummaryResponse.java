@@ -45,6 +45,10 @@ public abstract class UavSummaryResponse {
     @Nullable
     public abstract String idSession();
 
+    @JsonProperty("operator_id")
+    @Nullable
+    public abstract String operatorId();
+
     @JsonProperty("rssi_average")
     public abstract double rssiAverage();
 
@@ -120,13 +124,21 @@ public abstract class UavSummaryResponse {
     @Nullable
     public abstract Double operatorAltitude();
 
+    @JsonProperty("latest_vector_timestamp")
+    @Nullable
+    public abstract DateTime latestVectorTimestamp();
+
+    @JsonProperty("latest_operator_location_timestamp")
+    @Nullable
+    public abstract DateTime latestOperatorLocationTimestamp();
+
     @JsonProperty("first_seen")
     public abstract DateTime firstSeen();
 
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static UavSummaryResponse create(boolean isActive, UUID tapUuid, String identifier, String designation, UavTypeResponse uavType, UavDetectionSourceResponse detectionSource, String idSerial, String idRegistration, String idUtm, String idSession, double rssiAverage, UavOperationalStatusResponse operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, UavHeightTypeResponse heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, UavOperatorLocationTypeResponse operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, DateTime firstSeen, DateTime lastSeen) {
+    public static UavSummaryResponse create(boolean isActive, UUID tapUuid, String identifier, String designation, UavTypeResponse uavType, UavDetectionSourceResponse detectionSource, String idSerial, String idRegistration, String idUtm, String idSession, String operatorId, double rssiAverage, UavOperationalStatusResponse operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, UavHeightTypeResponse heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, UavOperatorLocationTypeResponse operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, DateTime latestVectorTimestamp, DateTime latestOperatorLocationTimestamp, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .isActive(isActive)
                 .tapUuid(tapUuid)
@@ -138,6 +150,7 @@ public abstract class UavSummaryResponse {
                 .idRegistration(idRegistration)
                 .idUtm(idUtm)
                 .idSession(idSession)
+                .operatorId(operatorId)
                 .rssiAverage(rssiAverage)
                 .operationalStatus(operationalStatus)
                 .latitude(latitude)
@@ -157,6 +170,8 @@ public abstract class UavSummaryResponse {
                 .operatorLatitude(operatorLatitude)
                 .operatorLongitude(operatorLongitude)
                 .operatorAltitude(operatorAltitude)
+                .latestVectorTimestamp(latestVectorTimestamp)
+                .latestOperatorLocationTimestamp(latestOperatorLocationTimestamp)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .build();
@@ -187,6 +202,8 @@ public abstract class UavSummaryResponse {
         public abstract Builder idUtm(String idUtm);
 
         public abstract Builder idSession(String idSession);
+
+        public abstract Builder operatorId(String operatorId);
 
         public abstract Builder rssiAverage(double rssiAverage);
 
@@ -225,6 +242,10 @@ public abstract class UavSummaryResponse {
         public abstract Builder operatorLongitude(Double operatorLongitude);
 
         public abstract Builder operatorAltitude(Double operatorAltitude);
+
+        public abstract Builder latestVectorTimestamp(DateTime latestVectorTimestamp);
+
+        public abstract Builder latestOperatorLocationTimestamp(DateTime latestOperatorLocationTimestamp);
 
         public abstract Builder firstSeen(DateTime firstSeen);
 
