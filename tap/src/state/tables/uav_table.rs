@@ -9,9 +9,9 @@ use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::uavs_report;
 use crate::metrics::Metrics;
-use crate::protocols::detection::taggers::remoteid::messages::{OperationalStatus, UavRemoteIdMessage, UavType};
+use crate::protocols::detection::taggers::remoteid::messages::{RemoteIdType, UavRemoteIdMessage, UavType};
 use crate::state::tables::table_helpers::clear_mutex_hashmap;
-use crate::state::tables::uav_table::DetectionSource::RemoteId;
+use crate::state::tables::uav_table::DetectionSource::{RemoteIdBluetooth, RemoteIdWiFi};
 
 pub struct UavTable {
     uavs: Mutex<HashMap<String, Uav>>,
@@ -21,7 +21,8 @@ pub struct UavTable {
 
 #[derive(Debug, Display)]
 pub enum DetectionSource {
-    RemoteId
+    RemoteIdWiFi,
+    RemoteIdBluetooth
 }
 
 #[derive(Debug)]
@@ -132,10 +133,15 @@ impl UavTable {
                             &mut operator_location_reports
                         );
 
+                        let detection_source = match message.remote_id_type {
+                            RemoteIdType::WiFi => RemoteIdWiFi,
+                            RemoteIdType::Bluetooth => RemoteIdBluetooth
+                        };
+
                         uavs.insert(identifier.clone(), Uav {
                             identifier,
                             rssis: message.rssis.clone(),
-                            detection_source: RemoteId,
+                            detection_source,
                             first_seen: message.timestamp,
                             last_seen: message.timestamp,
                             uav_type: message.uav_type.as_ref().map(|t| t.to_string()),
@@ -199,8 +205,6 @@ impl UavTable {
      */
     fn build_remote_id_identifier(message: &UavRemoteIdMessage) -> String {
         let mut identifier = message.bssid.clone();
-
-        identifier.push_str(&RemoteId.to_string());
 
         if let Some(uav_type) = &message.uav_type {
             identifier.push_str(&uav_type.to_string());

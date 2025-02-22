@@ -5984,4 +5984,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_uav_classification" author="lennartkoopmann">
+        <addColumn tableName="uavs">
+            <column name="classification" type="text" value="UNKNOWN">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

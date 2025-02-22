@@ -3,6 +3,7 @@ use strum_macros::Display;
 
 #[derive(Default, Debug)]
 pub struct UavRemoteIdMessage {
+    pub remote_id_type: RemoteIdType,
     pub bssid: String,
     pub rssis: Vec<i8>,
     pub operator_license_id: Option<OperatorIdMessage>,
@@ -57,6 +58,12 @@ pub struct SystemMessage {
     pub classification_category: ClassificationCategory,
     pub classification_class: ClassificationClass,
     pub operator_altitude: Option<f32>
+}
+
+#[derive(Debug, Display, Default)]
+pub enum RemoteIdType {
+    #[default] WiFi,
+    Bluetooth
 }
 
 #[derive(Debug, Eq, PartialEq)]

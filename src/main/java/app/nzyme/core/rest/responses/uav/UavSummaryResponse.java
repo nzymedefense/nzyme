@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.uav;
 
+import app.nzyme.core.rest.responses.shared.ClassificationResponse;
 import app.nzyme.core.rest.responses.uav.enums.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
@@ -22,6 +23,9 @@ public abstract class UavSummaryResponse {
 
     @JsonProperty("designation")
     public abstract String designation();
+
+    @JsonProperty("classification")
+    public abstract ClassificationResponse classification();
 
     @JsonProperty("uav_type")
     public abstract UavTypeResponse uavType();
@@ -138,12 +142,13 @@ public abstract class UavSummaryResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static UavSummaryResponse create(boolean isActive, UUID tapUuid, String identifier, String designation, UavTypeResponse uavType, UavDetectionSourceResponse detectionSource, String idSerial, String idRegistration, String idUtm, String idSession, String operatorId, double rssiAverage, UavOperationalStatusResponse operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, UavHeightTypeResponse heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, UavOperatorLocationTypeResponse operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, DateTime latestVectorTimestamp, DateTime latestOperatorLocationTimestamp, DateTime firstSeen, DateTime lastSeen) {
+    public static UavSummaryResponse create(boolean isActive, UUID tapUuid, String identifier, String designation, ClassificationResponse classification, UavTypeResponse uavType, UavDetectionSourceResponse detectionSource, String idSerial, String idRegistration, String idUtm, String idSession, String operatorId, double rssiAverage, UavOperationalStatusResponse operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, UavHeightTypeResponse heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, UavOperatorLocationTypeResponse operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, DateTime latestVectorTimestamp, DateTime latestOperatorLocationTimestamp, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .isActive(isActive)
                 .tapUuid(tapUuid)
                 .identifier(identifier)
                 .designation(designation)
+                .classification(classification)
                 .uavType(uavType)
                 .detectionSource(detectionSource)
                 .idSerial(idSerial)
@@ -190,6 +195,8 @@ public abstract class UavSummaryResponse {
         public abstract Builder identifier(String identifier);
 
         public abstract Builder designation(String designation);
+
+        public abstract Builder classification(ClassificationResponse classification);
 
         public abstract Builder uavType(UavTypeResponse uavType);
 

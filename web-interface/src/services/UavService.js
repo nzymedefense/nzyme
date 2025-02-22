@@ -18,4 +18,8 @@ export default class UavService {
     )
   }
 
+  classifyUav(identifier, classification, onSuccess, onFailure) {
+    RESTClient.put(`/uav/uavs/show/${identifier}/classify/${classification}`, {}, onSuccess, onFailure);
+  }
+
 }

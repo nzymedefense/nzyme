@@ -3,7 +3,7 @@ use base64::Engine;
 use chrono::Utc;
 use log::{error, warn};
 use uuid::Uuid;
-use crate::protocols::detection::taggers::remoteid::messages::{BasicIdMessage, ClassificationCategory, ClassificationClass, ClassificationType, HeightType, IdType, LocationVectorMessage, OperationalStatus, OperatorIdMessage, OperatorLocationType, UavRemoteIdMessage, SelfIdMessage, SystemMessage, UavIdSummary, UavType};
+use crate::protocols::detection::taggers::remoteid::messages::{BasicIdMessage, ClassificationCategory, ClassificationClass, ClassificationType, HeightType, IdType, LocationVectorMessage, OperationalStatus, OperatorIdMessage, OperatorLocationType, UavRemoteIdMessage, SelfIdMessage, SystemMessage, UavIdSummary, UavType, RemoteIdType};
 use crate::tracemark;
 
 pub fn tag(data: &[u8], bssid: String, rssi: Option<i8>) -> Option<UavRemoteIdMessage> {
@@ -25,6 +25,7 @@ pub fn tag(data: &[u8], bssid: String, rssi: Option<i8>) -> Option<UavRemoteIdMe
     }
 
     let mut parent_message = UavRemoteIdMessage::default();
+    parent_message.remote_id_type = RemoteIdType::WiFi;
     parent_message.timestamp = Utc::now();
     parent_message.bssid = bssid;
     parent_message.rssis = rssi.map(|rssi| vec![rssi])

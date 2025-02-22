@@ -20,6 +20,9 @@ import UavOperatorAltitude from "./util/UavOperatorAltitude";
 import UavAltitude from "./util/UavAltitude";
 import UavSpeed from "./util/UavSpeed";
 import UavVerticalSpeed from "./util/UavVerticalSpeed";
+import DDTimestamp from "../misc/DDTimestamp";
+import UavInactiveWarning from "./util/UavInactiveWarning";
+import UavClassification from "./util/UavClassification";
 
 const uavService = new UavService();
 
@@ -32,6 +35,8 @@ export default function UavDetailsPage() {
 
   const [uav, setUav] = useState(null);
 
+  const [revision, setRevision] = useState(new Date());
+
   useEffect(() => {
     enableTapSelector(tapContext);
 
@@ -41,8 +46,9 @@ export default function UavDetailsPage() {
   }, [tapContext]);
 
   useEffect(() => {
+    setUav(null);
     uavService.findOne(setUav, identifierParam, selectedTaps);
-  }, [selectedTaps]);
+  }, [selectedTaps, revision]);
 
   if (!uav) {
     return <LoadingSpinner />
@@ -69,6 +75,8 @@ export default function UavDetailsPage() {
         </div>
       </div>
 
+      <UavInactiveWarning show={!uav.summary.is_active} />
+
       <div className="row mt-3">
         <div className="col-4">
           <div className="card">
@@ -80,7 +88,11 @@ export default function UavDetailsPage() {
                 <dt>Designation</dt>
                 <dd>{uav.summary.designation}</dd>
                 <dt>Classification</dt>
-                <dd>XXX</dd>
+                <dd>
+                  <UavClassification uav={uav.summary}
+                                     enableEditMode={true}
+                                     onChange={() => setRevision(new Date()) }/>
+                </dd>
                 <dt>Operational Status</dt>
                 <dd><UavOperationalStatus status={uav.summary.operational_status} /></dd>
                 <dt>UAV Type</dt>
@@ -158,15 +170,11 @@ export default function UavDetailsPage() {
               <CardTitleWithControls title="UAV Vector"
                                      fixedAppliedTimeRange={Presets.ALL_TIME}/>
 
-
-              TODO WRAP TIMESTAMPS IN NULL CHECK
               <dl>
                 <dt>Last Known UAV Position</dt>
                 <dd><LatitudeLongitude latitude={uav.summary.latitude} longitude={uav.summary.longitude} /></dd>
                 <dt>Timestamp</dt>
-                <dd title={moment(uav.summary.latest_vector_timestamp).format()}>
-                  {moment(uav.summary.latest_vector_timestamp).fromNow()}
-                </dd>
+                <DDTimestamp timestamp={uav.summary.latest_vector_timestamp} />
                 <dt>Altitude</dt>
                 <dd><UavAltitude uav={uav.summary} /></dd>
                 <dt>Vertical Speed</dt>
@@ -190,9 +198,7 @@ export default function UavDetailsPage() {
                   <LatitudeLongitude latitude={uav.summary.operator_latitude} longitude={uav.summary.operator_longitude} />
                 </dd>
                 <dt>Timestamp</dt>
-                <dd title={moment(uav.summary.latest_operator_location_timestamp).format()}>
-                  {moment(uav.summary.latest_operator_location_timestamp).fromNow()}
-                </dd>
+                <DDTimestamp timestamp={uav.summary.latest_operator_location_timestamp} />
                 <dt>Operator Location Type</dt>
                 <dd><UavOperatorLocationType type={uav.summary.operator_location_type} /></dd>
                 <dt>Operator Altitude</dt>

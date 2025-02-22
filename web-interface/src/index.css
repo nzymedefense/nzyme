@@ -1206,3 +1206,23 @@ div.dropdown-headline ul.dropdown-menu {
 .nav-tabs .nav-link:hover {
     color: #0c145a;
 }
+
+.classification {
+    font-weight: 600;
+}
+
+.classification.classification-unknown {
+    color: #F57328;
+}
+
+.classification.classification-neutral {
+    color: #367E18;
+}
+
+.classification.classification-friendly {
+    color: #1d30d7;
+}
+
+.classification.classification-hostile {
+    color: #CC3636;
+}

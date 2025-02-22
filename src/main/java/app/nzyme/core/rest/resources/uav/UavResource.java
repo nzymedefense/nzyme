@@ -3,6 +3,7 @@ package app.nzyme.core.rest.resources.uav;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
+import app.nzyme.core.rest.responses.shared.ClassificationResponse;
 import app.nzyme.core.rest.responses.uav.UavDetailsResponse;
 import app.nzyme.core.rest.responses.uav.UavSummaryResponse;
 import app.nzyme.core.rest.responses.uav.UavListResponse;
@@ -78,12 +79,41 @@ public class UavResource extends TapDataHandlingResource {
         )).build();
     }
 
+    @PUT
+    @Path("/uavs/show/{identifier}/classify/{classification}")
+    public Response classifyUav(@Context SecurityContext sc,
+                                @PathParam("identifier") String uavIdentifier,
+                                @PathParam("classification") String classification) {
+        // Check if UAV exists at all.
+        // Check if UAV tap
+
+
+        /*List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        Optional<UavEntry> uav = nzyme.getUav().findUav(uavIdentifier, taps);
+
+        if (uav.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }*/
+
+        // TODO TODO TODO permission checks etc
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        return Response.ok().build();
+    }
+
     private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav) {
         return UavSummaryResponse.create(
                 uav.lastSeen().isAfter(DateTime.now().minusMinutes(5)),
                 uav.tapUuid(),
                 uav.identifier(),
                 uav.designation(),
+                ClassificationResponse.valueOf(uav.classification()),
                 UavTypeResponse.fromString(uav.uavType()),
                 UavDetectionSourceResponse.fromString(uav.detectionSource()),
                 uav.idSerial(),

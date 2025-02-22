@@ -21,6 +21,7 @@ public class UavEntryMapper implements RowMapper<UavEntry> {
                 UUID.fromString(rs.getString("tap_uuid")),
                 rs.getString("identifier"),
                 rs.getString("designation"),
+                rs.getString("classification"),
                 rs.getString("uav_type"),
                 rs.getString("detection_source"),
                 rs.getString("id_serial"),

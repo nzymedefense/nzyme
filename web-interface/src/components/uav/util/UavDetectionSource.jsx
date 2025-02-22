@@ -8,8 +8,10 @@ export default function UavDetectionSource(props) {
   }
 
   switch (source) {
-    case "REMOTE_ID":
-      return "Remote ID";
+    case "REMOTE_ID_WIFI":
+      return "Remote ID (802.11)";
+    case "REMOTE_ID_BLUETOOTH":
+      return "Remote ID (Bluetooth)"
     default:
       return capitalizeFirstLetter(source.toLowerCase());
   }

@@ -14,7 +14,7 @@ impl UavRemoteIdProcessor {
 
     pub fn process(&mut self, message: Arc<UavRemoteIdMessage>) {
         match self.uav_table.lock() {
-            Ok(mut table) => table.register_remote_id_message(message),
+            Ok(table) => table.register_remote_id_message(message),
             Err(e) => {
                 error!("Could not acquire UAV table: {}", e);
             }
