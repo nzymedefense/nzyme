@@ -25,6 +25,7 @@ import UavInactiveWarning from "./util/UavInactiveWarning";
 import UavClassification from "./util/UavClassification";
 import OrganizationAndTenantSelector from "../shared/OrganizationAndTenantSelector";
 import SelectedOrganizationAndTenant from "../shared/SelectedOrganizationAndTenant";
+import UavOperatorDistanceToUav from "./util/UavOperatorDistanceToUav";
 
 const uavService = new UavService();
 
@@ -195,7 +196,7 @@ export default function UavDetailsPage() {
               <CardTitleWithControls title="Map View"
                                      fixedAppliedTimeRange={Presets.ALL_TIME}/>
 
-              <UavMap uav={uav} containerHeight={500} id="uav-last-known-position" />
+              <UavMap uav={uav} containerHeight={500} onRefresh={() => alert("not implemented") } id="uav-last-known-position" />
             </div>
           </div>
         </div>
@@ -210,15 +211,21 @@ export default function UavDetailsPage() {
 
               <dl>
                 <dt>Last Known UAV Position</dt>
-                <dd><LatitudeLongitude latitude={uav.summary.latitude} longitude={uav.summary.longitude} /></dd>
+                <dd>
+                  <LatitudeLongitude latitude={uav.summary.latitude}
+                                     longitude={uav.summary.longitude}
+                                     accuracy={uav.summary.accuracy_horizontal} />
+                </dd>
                 <dt>Timestamp</dt>
                 <DDTimestamp timestamp={uav.summary.latest_vector_timestamp} />
                 <dt>Altitude</dt>
                 <dd><UavAltitude uav={uav.summary} /></dd>
                 <dt>Vertical Speed</dt>
-                <dd><UavVerticalSpeed verticalSpeed={uav.summary.vertical_speed} /></dd>
+                <dd>
+                  <UavVerticalSpeed verticalSpeed={uav.summary.vertical_speed} accuracy={uav.summary.accuracy_speed} />
+                </dd>
                 <dt>Speed</dt>
-                <dd><UavSpeed speed={uav.summary.speed} /></dd>
+                <dd><UavSpeed speed={uav.summary.speed} accuracy={uav.summary.accuracy_speed} /></dd>
               </dl>
             </div>
           </div>
@@ -233,7 +240,9 @@ export default function UavDetailsPage() {
               <dl>
                 <dt>Last Known Operator Position</dt>
                 <dd>
-                  <LatitudeLongitude latitude={uav.summary.operator_latitude} longitude={uav.summary.operator_longitude} />
+                  <LatitudeLongitude latitude={uav.summary.operator_latitude}
+                                     longitude={uav.summary.operator_longitude}
+                                     skipAccuracy={true} />
                 </dd>
                 <dt>Timestamp</dt>
                 <DDTimestamp timestamp={uav.summary.latest_operator_location_timestamp} />
@@ -241,6 +250,8 @@ export default function UavDetailsPage() {
                 <dd><UavOperatorLocationType type={uav.summary.operator_location_type} /></dd>
                 <dt>Operator Altitude</dt>
                 <dd><UavOperatorAltitude altitude={uav.summary.operator_altitude} /></dd>
+                <dt>Operator Distance To UAV</dt>
+                <dd><UavOperatorDistanceToUav distance={uav.summary.operator_distance_to_uav} /></dd>
               </dl>
             </div>
           </div>

@@ -4,12 +4,17 @@ import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 import '../../../lib/Control.FullScreen';
 import '../../../lib/Control.FullScreen.css';
+import '../../../lib/easy-button';
+import '../../../lib/easy-button.css';
 
 export default function UavMap(props) {
 
   const uav = props.uav;
   const containerHeight = props.containerHeight;
   const id = props.id;
+
+  // Optional.
+  const onRefresh = props.onRefresh;
 
   const [map, setMap] = useState(null);
   const [mapInitialized, setMapInitialized] = useState(false);
@@ -37,6 +42,19 @@ export default function UavMap(props) {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }).addTo(map);
+
+      if (onRefresh) {
+        L.easyButton({
+          states: [{
+            stateName: "refresh",
+            icon: '<i class="fa-solid fa-refresh"></i>',
+            title: "Refresh",
+            onClick: function (btn, map) {
+              onRefresh();
+            }
+          }]
+        }).addTo(map);
+      }
     }
   }, [mapInitialized])
 

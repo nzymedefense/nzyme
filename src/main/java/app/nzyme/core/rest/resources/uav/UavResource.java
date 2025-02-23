@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.resources.uav;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.geo.HaversineDistance;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.shared.ClassificationResponse;
@@ -118,9 +119,17 @@ public class UavResource extends TapDataHandlingResource {
     }
 
     private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav) {
+        Double operatorDistanceToUav = null;
+
+        if (uav.latitude() != null && uav.longitude() != null
+                && uav.operatorLatitude() != null && uav.operatorLongitude() != null) {
+            operatorDistanceToUav = HaversineDistance.haversine(
+                    uav.latitude(), uav.longitude(), uav.operatorLatitude(), uav.operatorLongitude()
+            );
+        }
+
         return UavSummaryResponse.create(
                 uav.lastSeen().isAfter(DateTime.now().minusMinutes(5)),
-                uav.tapUuid(),
                 uav.identifier(),
                 uav.designation(),
                 ClassificationResponse.valueOf(uav.classification()),
@@ -150,6 +159,7 @@ public class UavResource extends TapDataHandlingResource {
                 uav.operatorLatitude(),
                 uav.operatorLongitude(),
                 uav.operatorAltitude(),
+                operatorDistanceToUav,
                 uav.latestVectorTimestamp(),
                 uav.latestOperatorLocationTimestamp(),
                 uav.firstSeen(),

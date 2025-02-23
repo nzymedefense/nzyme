@@ -45,13 +45,13 @@ public class UAVTable implements DataTable {
     }
 
     private void writeUavs(Handle handle, UUID tapUuid, List<UavReport> uavs) {
-        PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO uavs(tap_uuid, identifier, designation, " +
-                "classification, uav_type, detection_source, id_serial, id_registration, id_utm, id_session, " +
+        PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO uavs(tap_uuid, identifier, " +
+                "designation, uav_type, detection_source, id_serial, id_registration, id_utm, id_session, " +
                 "operator_id, rssi_average, operational_status, latitude, longitude, ground_track, speed, " +
                 "vertical_speed, altitude_pressure, altitude_geodetic, height_type, height, accuracy_horizontal, " +
                 "accuracy_vertical, accuracy_barometer, accuracy_speed, operator_location_type, operator_latitude, " +
                 "operator_longitude, operator_altitude, latest_vector_timestamp, latest_operator_location_timestamp, " +
-                "first_seen, last_seen) VALUES(:tap_uuid, :identifier, :designation, :classification, :uav_type, " +
+                "first_seen, last_seen) VALUES(:tap_uuid, :identifier, :designation, :uav_type, " +
                 ":detection_source, :id_serial, :id_registration, :id_utm, :id_session, :operator_id, :rssi_average, " +
                 ":operational_status, :latitude, :longitude, :ground_track, :speed, :vertical_speed, " +
                 ":altitude_pressure, :altitude_geodetic, :height_type, :height, :accuracy_horizontal, " +
@@ -208,12 +208,11 @@ public class UAVTable implements DataTable {
                     .findOne();
 
             if (existingUav.isEmpty()) {
-                // First time seeing this UAV.
+                // First time seeing this UAV from this tap.
                 insertBatch
                         .bind("tap_uuid", tapUuid)
                         .bind("identifier", uav.identifier())
                         .bind("designation", designation)
-                        .bind("classification", Classification.UNKNOWN)
                         .bind("uav_type", uav.uavType())
                         .bind("detection_source", uav.detectionSource())
                         .bind("id_serial", idSerial)
@@ -248,7 +247,6 @@ public class UAVTable implements DataTable {
             } else {
                 updateBatch
                         .bind("id", existingUav.get())
-                        .bind("tap_uuid", tapUuid)
                         .bind("rssi_average", rssiAverage)
                         .bind("operational_status", operationalStatus)
                         .bind("latitude", latitude)
@@ -295,8 +293,8 @@ public class UAVTable implements DataTable {
                     .mapTo(Long.class)
                     .findOne();
 
-            if (!existingUav.isPresent()) {
-                LOG.error("Could not find UAV to write vector reports. UAV identifier: {}", uav.identifier());
+            if (existingUav.isEmpty()) {
+                LOG.error("Could not find UAV to write additional data. UAV identifier: [{}]", uav.identifier());
                 continue;
             }
 

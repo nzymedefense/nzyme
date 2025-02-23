@@ -21,7 +21,6 @@ public class UavEntryMapper implements RowMapper<UavEntry> {
 
         return UavEntry.create(
                 rs.getLong("id"),
-                UUID.fromString(rs.getString("tap_uuid")),
                 rs.getString("identifier"),
                 rs.getString("designation"),
                 classification == null ? Classification.UNKNOWN.toString() : classification,

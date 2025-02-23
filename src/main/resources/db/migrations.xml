@@ -6056,4 +6056,51 @@
         <addUniqueConstraint tableName="uavs_classifications" columnNames="uav_identifier, organization_id, tenant_id" />
     </changeSet>
 
+    <changeSet id="split_uav_taps" author="lennartkoopmann">
+        <sql>DELETE FROM uavs;</sql>
+
+        <dropColumn tableName="uavs" columnName="tap_uuid" />
+
+        <createTable tableName="uavs_taps">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uav_id" type="bigint">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="uavs_taps" columnNames="uav_id, tap_uuid" />
+
+        <addForeignKeyConstraint constraintName="link_taps2uavs"
+                                 baseTableName="uavs_taps"
+                                 baseColumnNames="uav_id"
+                                 referencedTableName="uavs"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="introduce_uav_identifier_uniqueness" author="lennartkoopmann">
+        <sql>DELETE FROM uavs;</sql>
+        <addUniqueConstraint tableName="uavs" columnNames="identifier" />
+    </changeSet>
+
+    <changeSet id="move_uavs_to_multiple_tap_rows" author="lennartkoopmann">
+        <sql>DELETE FROM uavs;</sql>
+
+        <dropUniqueConstraint tableName="uavs" constraintName="uavs_identifier_key" />
+        <dropTable tableName="uavs_taps" />
+        <addColumn tableName="uavs">
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
