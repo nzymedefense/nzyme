@@ -3,12 +3,12 @@ package app.nzyme.core.rest.resources.uav;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
-import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
 import app.nzyme.core.rest.responses.shared.ClassificationResponse;
 import app.nzyme.core.rest.responses.uav.UavDetailsResponse;
 import app.nzyme.core.rest.responses.uav.UavSummaryResponse;
 import app.nzyme.core.rest.responses.uav.UavListResponse;
 import app.nzyme.core.rest.responses.uav.enums.*;
+import app.nzyme.core.shared.Classification;
 import app.nzyme.core.uav.UavRegistryKeys;
 import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.util.TimeRange;
@@ -37,19 +37,25 @@ public class UavResource extends TapDataHandlingResource {
     private NzymeNode nzyme;
 
     @GET
-    @Path("/uavs")
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}")
     public Response findAll(@Context SecurityContext sc,
                             @QueryParam("time_range") @Valid String timeRangeParameter,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset,
+                            @PathParam("organization_id") UUID organizationId,
+                            @PathParam("tenant_id") UUID tenantId,
                             @QueryParam("taps") String tapIds) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         long total = nzyme.getUav().countAllUavs(timeRange, taps);
         List<UavSummaryResponse> uavs = Lists.newArrayList();
 
-        for (UavEntry uav : nzyme.getUav().findAllUavs(timeRange, limit, offset, taps)) {
+        for (UavEntry uav : nzyme.getUav().findAllUavs(timeRange, limit, offset, organizationId, tenantId, taps)) {
             uavs.add(uavEntryToSummaryResponse(uav));
         }
 
@@ -57,13 +63,19 @@ public class UavResource extends TapDataHandlingResource {
     }
 
     @GET
-    @Path("/uavs/show/{identifier}")
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/show/{identifier}")
     public Response findAll(@Context SecurityContext sc,
                             @PathParam("identifier") String uavIdentifier,
+                            @PathParam("organization_id") UUID organizationId,
+                            @PathParam("tenant_id") UUID tenantId,
                             @QueryParam("taps") String tapIds) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
 
-        Optional<UavEntry> uav = nzyme.getUav().findUav(uavIdentifier, taps);
+        Optional<UavEntry> uav = nzyme.getUav().findUav(uavIdentifier, organizationId, tenantId, taps);
 
         if (uav.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -82,17 +94,25 @@ public class UavResource extends TapDataHandlingResource {
 
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_manage" })
-    @Path("/uavs/show/{identifier}/classify/{classification}")
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/show/{identifier}/classify/{classification}")
     public Response classifyUav(@Context SecurityContext sc,
+                                @PathParam("organization_id") UUID organizationId,
+                                @PathParam("tenant_id") UUID tenantId,
                                 @PathParam("identifier") String uavIdentifier,
-                                @PathParam("classification") String classification) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
-
-        if (!passedUavIdentifierAccessible(authenticatedUser, uavIdentifier)) {
+                                @PathParam("classification") String c) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         // Update classification.
+        Classification classification;
+        try {
+            classification = Classification.valueOf(c);
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        nzyme.getUav().setUavClassification(uavIdentifier, organizationId, tenantId, classification);
 
         return Response.ok().build();
     }

@@ -23,6 +23,8 @@ import UavVerticalSpeed from "./util/UavVerticalSpeed";
 import DDTimestamp from "../misc/DDTimestamp";
 import UavInactiveWarning from "./util/UavInactiveWarning";
 import UavClassification from "./util/UavClassification";
+import OrganizationAndTenantSelector from "../shared/OrganizationAndTenantSelector";
+import SelectedOrganizationAndTenant from "../shared/SelectedOrganizationAndTenant";
 
 const uavService = new UavService();
 
@@ -37,6 +39,10 @@ export default function UavDetailsPage() {
 
   const [revision, setRevision] = useState(new Date());
 
+  const [organizationId, setOrganizationId] = useState(null);
+  const [tenantId, setTenantId] = useState(null);
+  const [tenantSelected, setTenantSelected] = useState(false);
+
   useEffect(() => {
     enableTapSelector(tapContext);
 
@@ -47,8 +53,33 @@ export default function UavDetailsPage() {
 
   useEffect(() => {
     setUav(null);
-    uavService.findOne(setUav, identifierParam, selectedTaps);
-  }, [selectedTaps, revision]);
+    if (organizationId && tenantId) {
+      uavService.findOne(setUav, organizationId, tenantId, identifierParam, selectedTaps);
+    }
+  }, [selectedTaps, revision, organizationId, tenantId]);
+
+  const onOrganizationChange = (uuid) => {
+    setOrganizationId(uuid);
+  }
+
+  const onTenantChange = (uuid) => {
+    setTenantId(uuid);
+
+    if (uuid) {
+      setTenantSelected(true);
+    }
+  }
+
+  const resetTenantAndOrganization = () => {
+    setOrganizationId(null);
+    setTenantId(null);
+  }
+
+  if (!organizationId || !tenantId) {
+    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
+                                          onTenantChange={onTenantChange}
+                                          autoSelectCompleted={tenantSelected} />
+  }
 
   if (!uav) {
     return <LoadingSpinner />
@@ -75,6 +106,11 @@ export default function UavDetailsPage() {
         </div>
       </div>
 
+      <SelectedOrganizationAndTenant
+          organizationId={organizationId}
+          tenantId={tenantId}
+          onReset={resetTenantAndOrganization} />
+
       <UavInactiveWarning show={!uav.summary.is_active} />
 
       <div className="row mt-3">
@@ -91,6 +127,8 @@ export default function UavDetailsPage() {
                 <dd>
                   <UavClassification uav={uav.summary}
                                      enableEditMode={true}
+                                     organizationId={organizationId}
+                                     tenantId={tenantId}
                                      onChange={() => setRevision(new Date()) }/>
                 </dd>
                 <dt>Operational Status</dt>

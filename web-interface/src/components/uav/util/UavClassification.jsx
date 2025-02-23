@@ -10,7 +10,11 @@ export default function UavClassification(props) {
   const SAVE_BUTTON_TEXT = "Save";
 
   const uav = props.uav;
+
+  // Only for edit mode.
   const enableEditMode = props.enableEditMode;
+  const organizationId = props.organizationId;
+  const tenantId = props.tenantId;
   const onChange = props.onChange;
 
   const [selectedClassification, setSelectedClassification] = useState(null);
@@ -29,7 +33,7 @@ export default function UavClassification(props) {
     setIsSaving(true);
     setSaveButtonText(<span><i className="fa-solid fa-circle-notch fa-spin"></i> &nbsp;Saving ...</span>)
 
-    uavService.classifyUav(uav.identifier, selectedClassification, () => {
+    uavService.classifyUav(uav.identifier, organizationId, tenantId, selectedClassification, () => {
       // Success.
       setIsSaving(false);
       setSaveButtonText(SAVE_BUTTON_TEXT)

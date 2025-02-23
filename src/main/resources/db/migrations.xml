@@ -6014,4 +6014,46 @@
                                  onDelete="CASCADE" />
     </changeSet>
 
+    <changeSet id="add_uav_classifications_table" author="lennartkoopmann">
+        <dropColumn tableName="uavs" columnName="classification" />
+
+        <createTable tableName="uavs_classifications">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uav_identifier" type="text">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="classification" type="text" value="UNKNOWN">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="uavs_classifications" indexName="uavs_classifications_identifier">
+            <column name="uav_identifier" />
+        </createIndex>
+
+        <!-- no foreign key constraint required. also, we want to keep the classification after the UAV is
+        deleted/cleaned, so no cascade delete required either. -->
+    </changeSet>
+
+    <changeSet id="add_tenant_information_to_uav_classifications" author="lennartkoopmann">
+        <addColumn tableName="uavs_classifications">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+    
+    <changeSet id="add_uav_classification_compound_uniqueness" author="lennartkoopmann">
+        <dropUniqueConstraint tableName="uavs_classifications" constraintName="uavs_classifications_uav_identifier_key" />
+        <addUniqueConstraint tableName="uavs_classifications" columnNames="uav_identifier, organization_id, tenant_id" />
+    </changeSet>
+
 </databaseChangeLog>

@@ -1,5 +1,6 @@
 package app.nzyme.core.uav.db;
 
+import app.nzyme.core.shared.Classification;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -16,12 +17,14 @@ public class UavEntryMapper implements RowMapper<UavEntry> {
         DateTime latestOperatorLocationTimestamp = rs.getTimestamp("latest_operator_location_timestamp") == null ?
                 null : new DateTime(rs.getTimestamp("latest_operator_location_timestamp"));
 
+        String classification = rs.getString("classification");
+
         return UavEntry.create(
                 rs.getLong("id"),
                 UUID.fromString(rs.getString("tap_uuid")),
                 rs.getString("identifier"),
                 rs.getString("designation"),
-                rs.getString("classification"),
+                classification == null ? Classification.UNKNOWN.toString() : classification,
                 rs.getString("uav_type"),
                 rs.getString("detection_source"),
                 rs.getString("id_serial"),

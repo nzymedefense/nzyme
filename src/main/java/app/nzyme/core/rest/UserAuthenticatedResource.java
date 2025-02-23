@@ -38,7 +38,6 @@ public class UserAuthenticatedResource extends RestResource {
         }
 
         // Tenant user.
-
         Optional<OrganizationEntry> dbOrg = nzyme.getAuthenticationService().findOrganization(organizationId);
         if (dbOrg.isEmpty()) {
             return false;
@@ -69,14 +68,6 @@ public class UserAuthenticatedResource extends RestResource {
 
         if (ssid.organizationId().equals(user.getOrganizationId()) && ssid.tenantId().equals(user.getTenantId())) {
             return true;
-        }
-
-        return false;
-    }
-
-    protected boolean passedUavIdentifierAccessible(AuthenticatedUser user, String identifier) {
-        if (identifier == null || identifier.isEmpty()) {
-            return false;
         }
 
         return false;
