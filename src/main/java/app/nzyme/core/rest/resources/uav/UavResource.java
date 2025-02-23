@@ -2,6 +2,7 @@ package app.nzyme.core.rest.resources.uav;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
 import app.nzyme.core.rest.responses.shared.ClassificationResponse;
 import app.nzyme.core.rest.responses.uav.UavDetailsResponse;
@@ -80,29 +81,18 @@ public class UavResource extends TapDataHandlingResource {
     }
 
     @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_manage" })
     @Path("/uavs/show/{identifier}/classify/{classification}")
     public Response classifyUav(@Context SecurityContext sc,
                                 @PathParam("identifier") String uavIdentifier,
                                 @PathParam("classification") String classification) {
-        // Check if UAV exists at all.
-        // Check if UAV tap
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-
-        /*List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
-
-        Optional<UavEntry> uav = nzyme.getUav().findUav(uavIdentifier, taps);
-
-        if (uav.isEmpty()) {
+        if (!passedUavIdentifierAccessible(authenticatedUser, uavIdentifier)) {
             return Response.status(Response.Status.NOT_FOUND).build();
-        }*/
-
-        // TODO TODO TODO permission checks etc
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
+
+        // Update classification.
 
         return Response.ok().build();
     }

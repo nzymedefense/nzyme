@@ -5991,5 +5991,27 @@
             </column>
         </addColumn>
     </changeSet>
+    
+    <changeSet id="change_uav_vector_relation_to_id" author="lennartkoopmann">
+        <dropForeignKeyConstraint baseTableName="uavs_vectors" constraintName="link_vectors2uavs" />
+        <dropUniqueConstraint tableName="uavs" constraintName="uavs_identifier_key" />
+
+        <sql>DELETE FROM uavs_vectors;</sql>
+
+        <dropColumn tableName="uavs_vectors" columnName="uav_identifier" />
+        <addColumn tableName="uavs_vectors">
+            <column name="uav_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint constraintName="link_vectors2uavs"
+                                 baseTableName="uavs_vectors"
+                                 baseColumnNames="uav_id"
+                                 referencedTableName="uavs"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
 
 </databaseChangeLog>

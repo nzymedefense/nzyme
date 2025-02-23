@@ -71,14 +71,6 @@ public class UAVTable implements DataTable {
                 "latest_operator_location_timestamp = :latest_operator_location_timestamp, last_seen = :last_seen " +
                 "WHERE id = :id");
 
-        PreparedBatch vectorBatch = handle.prepareBatch("INSERT INTO uavs_vectors(uav_identifier, " +
-                "operational_status, latitude, longitude, ground_track, speed, vertical_speed, altitude_pressure, " +
-                "altitude_geodetic, height_type, height, accuracy_horizontal, accuracy_vertical, " +
-                "accuracy_barometer, accuracy_speed, timestamp) VALUES(:uav_identifier, :operational_status, " +
-                ":latitude, :longitude, :ground_track, :speed, :vertical_speed, :altitude_pressure, " +
-                ":altitude_geodetic, :height_type, :height, :accuracy_horizontal, :accuracy_vertical, " +
-                ":accuracy_barometer, :accuracy_speed, :timestamp)");
-
         for (UavReport uav : uavs) {
             String designation = Designation.fromSha256ShortDigest(uav.identifier().subSequence(0, 7).toString());
             double rssiAverage = uav.rssis()
@@ -281,10 +273,36 @@ public class UAVTable implements DataTable {
                         .bind("last_seen", uav.lastSeen())
                         .add();
             }
+        }
+
+        insertBatch.execute();
+        updateBatch.execute();
+
+        // Write vectors.
+        PreparedBatch vectorBatch = handle.prepareBatch("INSERT INTO uavs_vectors(uav_id, " +
+                "operational_status, latitude, longitude, ground_track, speed, vertical_speed, altitude_pressure, " +
+                "altitude_geodetic, height_type, height, accuracy_horizontal, accuracy_vertical, " +
+                "accuracy_barometer, accuracy_speed, timestamp) VALUES(:uav_id, :operational_status, " +
+                ":latitude, :longitude, :ground_track, :speed, :vertical_speed, :altitude_pressure, " +
+                ":altitude_geodetic, :height_type, :height, :accuracy_horizontal, :accuracy_vertical, " +
+                ":accuracy_barometer, :accuracy_speed, :timestamp)");
+
+        for (UavReport uav : uavs) {
+            Optional<Long> existingUav = handle.createQuery("SELECT id FROM uavs " +
+                            "WHERE tap_uuid = :tap_uuid AND identifier = :identifier")
+                    .bind("tap_uuid", tapUuid)
+                    .bind("identifier", uav.identifier())
+                    .mapTo(Long.class)
+                    .findOne();
+
+            if (!existingUav.isPresent()) {
+                LOG.error("Could not find UAV to write vector reports. UAV identifier: {}", uav.identifier());
+                continue;
+            }
 
             for (UavVectorReport vector : uav.vectorReports()) {
                 vectorBatch
-                        .bind("uav_identifier", uav.identifier())
+                        .bind("uav_id", existingUav.get())
                         .bind("operational_status", vector.operationalStatus())
                         .bind("latitude", vector.latitude())
                         .bind("longitude", vector.longitude())
@@ -303,9 +321,6 @@ public class UAVTable implements DataTable {
                         .add();
             }
         }
-
-        insertBatch.execute();
-        updateBatch.execute();
 
         vectorBatch.execute();
     }

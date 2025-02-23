@@ -74,4 +74,12 @@ public class UserAuthenticatedResource extends RestResource {
         return false;
     }
 
+    protected boolean passedUavIdentifierAccessible(AuthenticatedUser user, String identifier) {
+        if (identifier == null || identifier.isEmpty()) {
+            return false;
+        }
+
+        return false;
+    }
+
 }
