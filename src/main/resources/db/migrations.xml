@@ -6103,4 +6103,36 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="create_uav_timelines" author="lennartkoopmann">
+        <createTable tableName="uavs_timelines">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uav_id" type="bigint">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="seen_from" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="seen_to" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_timelines2uavs"
+                                 baseTableName="uavs_timelines"
+                                 baseColumnNames="uav_id"
+                                 referencedTableName="uavs"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="drop_uav_timeline_uav_id_uniqueness" author="lennart koopmann">
+        <dropUniqueConstraint tableName="uavs_timelines" constraintName="uavs_timelines_uav_id_key" />
+    </changeSet>
+
 </databaseChangeLog>

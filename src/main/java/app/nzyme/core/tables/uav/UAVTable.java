@@ -285,6 +285,7 @@ public class UAVTable implements DataTable {
                 ":altitude_geodetic, :height_type, :height, :accuracy_horizontal, :accuracy_vertical, " +
                 ":accuracy_barometer, :accuracy_speed, :timestamp)");
 
+
         for (UavReport uav : uavs) {
             Optional<Long> existingUav = handle.createQuery("SELECT id FROM uavs " +
                             "WHERE tap_uuid = :tap_uuid AND identifier = :identifier")
@@ -298,6 +299,8 @@ public class UAVTable implements DataTable {
                 continue;
             }
 
+            DateTime earliestVectorTimestamp = null;
+            DateTime latestVectorTimestamp = null;
             for (UavVectorReport vector : uav.vectorReports()) {
                 vectorBatch
                         .bind("uav_id", existingUav.get())
@@ -317,7 +320,47 @@ public class UAVTable implements DataTable {
                         .bind("accuracy_speed", vector.speedAccuracy())
                         .bind("timestamp", vector.timestamp())
                         .add();
+
+                if (earliestVectorTimestamp == null) {
+                    earliestVectorTimestamp = vector.timestamp();
+                } else {
+                    if (vector.timestamp().isBefore(earliestVectorTimestamp)) {
+                        earliestVectorTimestamp = vector.timestamp();
+                    }
+                }
+
+                if (latestVectorTimestamp == null) {
+                    latestVectorTimestamp = vector.timestamp();
+                } else {
+                    if (vector.timestamp().isAfter(latestVectorTimestamp)) {
+                        latestVectorTimestamp = vector.timestamp();
+                    }
+                }
             }
+
+            // Do we have an existing and active timeline for this UAV?
+            Optional<Long> timelineId = handle.createQuery("SELECT id FROM uavs_timelines " +
+                            "WHERE uav_id = :uav_id AND seen_to > NOW() - INTERVAL '5 minutes'")
+                    .bind("uav_id", existingUav.get())
+                    .mapTo(Long.class)
+                    .findOne();
+
+            if (timelineId.isPresent()) {
+                // Update existing timeline.
+                handle.createUpdate("UPDATE uavs_timelines SET seen_to = :seen_to WHERE id = :id")
+                        .bind("seen_to", latestVectorTimestamp)
+                        .bind("id", timelineId.get())
+                        .execute();
+            } else {
+                // Create new timeline.
+                handle.createUpdate("INSERT INTO uavs_timelines(uav_id, seen_from, seen_to) " +
+                                "VALUES(:uav_id, :seen_from, :seen_to)")
+                        .bind("seen_from", earliestVectorTimestamp)
+                        .bind("seen_to", latestVectorTimestamp)
+                        .bind("uav_id", existingUav.get())
+                        .execute();
+            }
+
         }
 
         vectorBatch.execute();
