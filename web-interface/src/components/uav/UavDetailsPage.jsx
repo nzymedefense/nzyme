@@ -44,6 +44,11 @@ export default function UavDetailsPage() {
   const [tenantId, setTenantId] = useState(null);
   const [tenantSelected, setTenantSelected] = useState(false);
 
+  const [timeline, setTimeline] = useState(null);
+  const [timelineTimeRange, setTimelineTimeRange] = useState(Presets.ALL_TIME);
+  const [timelinePage, setTimelinePage] = useState(1);
+  const perPageTimeline = 5;
+
   useEffect(() => {
     enableTapSelector(tapContext);
 
@@ -56,6 +61,16 @@ export default function UavDetailsPage() {
     setUav(null);
     if (organizationId && tenantId) {
       uavService.findOne(setUav, organizationId, tenantId, identifierParam, selectedTaps);
+      uavService.findTimeline(
+          setTimeline,
+          organizationId,
+          tenantId,
+          timelineTimeRange,
+          identifierParam,
+          selectedTaps,
+          perPageTimeline,
+          (timelinePage-1)*perPageTimeline
+      );
     }
   }, [selectedTaps, revision, organizationId, tenantId]);
 

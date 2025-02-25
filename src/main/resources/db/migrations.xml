@@ -6135,4 +6135,53 @@
         <dropUniqueConstraint tableName="uavs_timelines" constraintName="uavs_timelines_uav_id_key" />
     </changeSet>
 
+    <changeSet id="add_uav_timeline_uuid" author="lennartkoopmann">
+        <sql>DELETE FROM uavs_timelines;</sql>
+
+        <addColumn tableName="uavs_timelines">
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="link_uav_timelines_via_identifier_and_tenant" author="lennartkoopmann">
+        <sql>DELETE FROM uavs_timelines;</sql>
+
+        <dropForeignKeyConstraint baseTableName="uavs_timelines" constraintName="link_timelines2uavs" />
+        <dropColumn tableName="uavs_timelines" columnName="uav_id" />
+
+        <addColumn tableName="uavs_timelines">
+            <column name="uav_identifier" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <createIndex tableName="uavs_timelines" indexName="uavs_timelines_identifier_lookup">
+            <column name="uav_identifier" />
+        </createIndex>
+
+        <createIndex tableName="uavs_timelines" indexName="uavs_timelines_tenant_lookup">
+            <column name="organization_id" />
+            <column name="tenant_id" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add_uav_timeline_identifier_uniqueness" author="lennartkoopmann">
+        <addUniqueConstraint tableName="uavs_timelines" columnNames="uav_identifier" />
+    </changeSet>
+
+    <changeSet id="revert_add_uav_timeline_identifier_uniqueness" author="lennartkoopmann">
+        <dropUniqueConstraint tableName="uavs_timelines" constraintName="uavs_timelines_uav_identifier_key" />
+    </changeSet>
+
+
 </databaseChangeLog>

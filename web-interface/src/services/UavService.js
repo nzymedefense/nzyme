@@ -19,6 +19,15 @@ export default class UavService {
     )
   }
 
+  findTimeline(setTimeline, organizationId, tenantId, timeRange, identifier, taps, limit, offset) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/show/${identifier}/timelines`,
+        { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
+        (response) => setTimeline(response.data)
+    )
+  }
+
   classifyUav(identifier, organizationId, tenantId, classification, onSuccess, onFailure) {
     RESTClient.put(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/show/${identifier}/classify/${classification}`, {}, onSuccess, onFailure);
   }

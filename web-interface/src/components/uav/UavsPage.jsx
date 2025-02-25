@@ -19,17 +19,17 @@ export default function UavsPage() {
   const [uavs, setUavs] = useState(null);
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [page, setPage] = useState(1);
+  const perPage = 25;
 
   const [organizationId, setOrganizationId] = useState(null);
   const [tenantId, setTenantId] = useState(null);
   const [tenantSelected, setTenantSelected] = useState(false);
 
-  const perPage = 25;
 
   useEffect(() => {
     setUavs(null);
     if (organizationId && tenantId) {
-      uavService.findAll(setUavs, organizationId, tenantId, timeRange, selectedTaps, perPage, (page-1)*perPage)
+      uavService.findAll(setUavs, organizationId, tenantId, timeRange, selectedTaps, perPage, (page-1)*perPage);
     }
   }, [selectedTaps, timeRange, page, organizationId, tenantId]);
 

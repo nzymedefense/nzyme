@@ -3,15 +3,13 @@ package app.nzyme.core.rest.resources.uav;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.geo.HaversineDistance;
 import app.nzyme.core.rest.TapDataHandlingResource;
-import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.shared.ClassificationResponse;
-import app.nzyme.core.rest.responses.uav.UavDetailsResponse;
-import app.nzyme.core.rest.responses.uav.UavSummaryResponse;
-import app.nzyme.core.rest.responses.uav.UavListResponse;
+import app.nzyme.core.rest.responses.uav.*;
 import app.nzyme.core.rest.responses.uav.enums.*;
 import app.nzyme.core.shared.Classification;
 import app.nzyme.core.uav.UavRegistryKeys;
 import app.nzyme.core.uav.db.UavEntry;
+import app.nzyme.core.uav.db.UavTimelineEntry;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -65,7 +63,7 @@ public class UavResource extends TapDataHandlingResource {
 
     @GET
     @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/show/{identifier}")
-    public Response findAll(@Context SecurityContext sc,
+    public Response findOne(@Context SecurityContext sc,
                             @PathParam("identifier") String uavIdentifier,
                             @PathParam("organization_id") UUID organizationId,
                             @PathParam("tenant_id") UUID tenantId,
@@ -91,6 +89,29 @@ public class UavResource extends TapDataHandlingResource {
                 uavEntryToSummaryResponse(uav.get()),
                 dataRetentionDays
         )).build();
+    }
+
+    @GET
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/show/{identifier}/timelines")
+    public Response findTimelines(@Context SecurityContext sc,
+                                  @PathParam("identifier") String uavIdentifier,
+                                  @PathParam("organization_id") UUID organizationId,
+                                  @PathParam("tenant_id") UUID tenantId,
+                                  @QueryParam("time_range") @Valid String timeRangeParameter,
+                                  @QueryParam("limit") int limit,
+                                  @QueryParam("offset") int offset) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        for (UavTimelineEntry timeline : nzyme.getUav()
+                .findUavTimelines(uavIdentifier, timeRange, organizationId, tenantId, limit, offset)) {
+            System.out.println(timeline);
+        }
+
+        return Response.ok().build();
     }
 
     @PUT

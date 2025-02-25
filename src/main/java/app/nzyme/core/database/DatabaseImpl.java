@@ -40,6 +40,7 @@ import app.nzyme.core.shared.db.TapBasedSignalStrengthResultMapper;
 import app.nzyme.core.taps.db.metrics.Dot11FrequencyAndChannelWidthEntryMapper;
 import app.nzyme.core.taps.db.metrics.TapMetricsTimerMapper;
 import app.nzyme.core.uav.db.UavEntryMapper;
+import app.nzyme.core.uav.db.UavTimelineEntryMapper;
 import app.nzyme.plugin.Database;
 import app.nzyme.core.crypto.database.PGPKeyFingerprintMapper;
 import app.nzyme.core.taps.db.*;
@@ -165,7 +166,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new SSIDWithOrganizationAndTenantMapper())
                 .registerRowMapper(new Dot11KnownNetworkMapper())
                 .registerRowMapper(new Dot11KnownClientMapper())
-                .registerRowMapper(new UavEntryMapper());
+                .registerRowMapper(new UavEntryMapper())
+                .registerRowMapper(new UavTimelineEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

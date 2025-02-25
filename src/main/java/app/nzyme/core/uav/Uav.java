@@ -3,6 +3,7 @@ package app.nzyme.core.uav;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.shared.Classification;
 import app.nzyme.core.uav.db.UavEntry;
+import app.nzyme.core.uav.db.UavTimelineEntry;
 import app.nzyme.core.util.TimeRange;
 
 import java.util.Collections;
@@ -84,6 +85,31 @@ public class Uav {
                         .bindList("taps", taps)
                         .mapTo(UavEntry.class)
                         .findOne()
+        );
+    }
+
+    public List<UavTimelineEntry> findUavTimelines(String identifier,
+                                                   TimeRange timeRange,
+                                                   UUID organizationId,
+                                                   UUID tenantId,
+                                                   int limit,
+                                                   int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+            handle.createQuery("SELECT seen_from, seen_to, uuid FROM uavs_timelines " +
+                            "WHERE seen_from >= :tr_from AND seen_from <= :tr_to " +
+                            "AND uav_identifier = :identifier AND organization_id = :organization_id " +
+                            "AND tenant_id = :tenant_id " +
+                            "ORDER BY seen_to DESC " +
+                            "LIMIT :limit OFFSET :offset")
+                    .bind("identifier", identifier)
+                    .bind("organization_id", organizationId)
+                    .bind("tenant_id", tenantId)
+                    .bind("limit", limit)
+                    .bind("offset", offset)
+                    .bind("tr_from", timeRange.from())
+                    .bind("tr_to", timeRange.to())
+                    .mapTo(UavTimelineEntry.class)
+                    .list()
         );
     }
 

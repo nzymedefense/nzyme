@@ -5,6 +5,7 @@ import app.nzyme.core.rest.resources.taps.reports.tables.uav.*;
 import app.nzyme.core.shared.Classification;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
 import com.google.common.math.Quantiles;
@@ -37,14 +38,22 @@ public class UAVTable implements DataTable {
     }
 
     public void handleReport(UUID tapUuid, DateTime ignored, UavsReport report) {
+        Optional<Tap> tap = tablesService.getNzyme().getTapManager().findTap(tapUuid);
+
+        if (tap.isEmpty()) {
+            // Should be impossible.
+            LOG.error("Could not find tap [{}].", tapUuid);
+            return;
+        }
+
         tablesService.getNzyme().getDatabase().useHandle(handle -> {
             try(Timer.Context ignored2 = totalReportTimer.time()) {
-                writeUavs(handle, tapUuid, report.uavs());
+                writeUavs(handle, tap.get(), report.uavs());
             }
         });
     }
 
-    private void writeUavs(Handle handle, UUID tapUuid, List<UavReport> uavs) {
+    private void writeUavs(Handle handle, Tap tap, List<UavReport> uavs) {
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO uavs(tap_uuid, identifier, " +
                 "designation, uav_type, detection_source, id_serial, id_registration, id_utm, id_session, " +
                 "operator_id, rssi_average, operational_status, latitude, longitude, ground_track, speed, " +
@@ -202,7 +211,7 @@ public class UAVTable implements DataTable {
 
             Optional<Long> existingUav = handle.createQuery("SELECT id FROM uavs " +
                             "WHERE tap_uuid = :tap_uuid AND identifier = :identifier")
-                    .bind("tap_uuid", tapUuid)
+                    .bind("tap_uuid", tap.uuid())
                     .bind("identifier", uav.identifier())
                     .mapTo(Long.class)
                     .findOne();
@@ -210,7 +219,7 @@ public class UAVTable implements DataTable {
             if (existingUav.isEmpty()) {
                 // First time seeing this UAV from this tap.
                 insertBatch
-                        .bind("tap_uuid", tapUuid)
+                        .bind("tap_uuid", tap.uuid())
                         .bind("identifier", uav.identifier())
                         .bind("designation", designation)
                         .bind("uav_type", uav.uavType())
@@ -289,7 +298,7 @@ public class UAVTable implements DataTable {
         for (UavReport uav : uavs) {
             Optional<Long> existingUav = handle.createQuery("SELECT id FROM uavs " +
                             "WHERE tap_uuid = :tap_uuid AND identifier = :identifier")
-                    .bind("tap_uuid", tapUuid)
+                    .bind("tap_uuid", tap.uuid())
                     .bind("identifier", uav.identifier())
                     .mapTo(Long.class)
                     .findOne();
@@ -340,8 +349,12 @@ public class UAVTable implements DataTable {
 
             // Do we have an existing and active timeline for this UAV?
             Optional<Long> timelineId = handle.createQuery("SELECT id FROM uavs_timelines " +
-                            "WHERE uav_id = :uav_id AND seen_to > NOW() - INTERVAL '5 minutes'")
-                    .bind("uav_id", existingUav.get())
+                            "WHERE uav_identifier = :uav_identifier " +
+                            "AND tenant_id = :tenant_id AND organization_id = :organization_id " +
+                            "AND seen_to >= NOW() - INTERVAL '5 minutes'")
+                    .bind("uav_identifier", uav.identifier())
+                    .bind("organization_id", tap.organizationId())
+                    .bind("tenant_id", tap.tenantId())
                     .mapTo(Long.class)
                     .findOne();
 
@@ -353,14 +366,17 @@ public class UAVTable implements DataTable {
                         .execute();
             } else {
                 // Create new timeline.
-                handle.createUpdate("INSERT INTO uavs_timelines(uav_id, seen_from, seen_to) " +
-                                "VALUES(:uav_id, :seen_from, :seen_to)")
+                handle.createUpdate("INSERT INTO uavs_timelines(uav_identifier, organization_id, tenant_id, " +
+                                "uuid, seen_from, seen_to) VALUES(:uav_identifier, :organization_id, :tenant_id, " +
+                                ":uuid, :seen_from, :seen_to)")
+                        .bind("uav_identifier", uav.identifier())
+                        .bind("organization_id", tap.organizationId())
+                        .bind("tenant_id", tap.tenantId())
                         .bind("seen_from", earliestVectorTimestamp)
                         .bind("seen_to", latestVectorTimestamp)
-                        .bind("uav_id", existingUav.get())
+                        .bind("uuid", UUID.randomUUID())
                         .execute();
             }
-
         }
 
         vectorBatch.execute();
