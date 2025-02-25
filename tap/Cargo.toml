@@ -25,7 +25,7 @@ debug = true
 maintainer = "nzyme LLC <hello@nzyme.org>"
 copyright = "nzyme LLC <hello@nzyme.org>"
 license-file = ["COPYING", "0"]
-extended-description = "The nzyme Network Defense System tap"
+extended-description = "The nzyme tap"
 depends = "$auto"
 section = "net"
 priority = "optional"
@@ -41,7 +41,6 @@ conf-files = [
 ]
 
 [dependencies]
-hex = "0.4.3"
 pcap = "0.10.1"
 byteorder = "1.4.3"
 log = "0.4.0"
@@ -67,7 +66,6 @@ rand = "0.8.5"
 serde_json = "1.0.104"
 libc = "0.2.147"
 regex = "1.10.3"
-metrics = "0.22.3"
 statrs = "0.16.0"
 psl = "2"
 dbus = "0.9.7"
