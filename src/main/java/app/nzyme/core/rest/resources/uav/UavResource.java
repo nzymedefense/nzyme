@@ -106,12 +106,19 @@ public class UavResource extends TapDataHandlingResource {
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
+        long count = nzyme.getUav().countTimelines(uavIdentifier, timeRange, organizationId, tenantId);
+        List<UavTimelineDetailsResponse> timelines = Lists.newArrayList();
         for (UavTimelineEntry timeline : nzyme.getUav()
                 .findUavTimelines(uavIdentifier, timeRange, organizationId, tenantId, limit, offset)) {
-            System.out.println(timeline);
+            timelines.add(UavTimelineDetailsResponse.create(
+                    timeline.seenTo().isAfter(DateTime.now().minusMinutes(5)),
+                    timeline.uuid(),
+                    timeline.seenFrom(),
+                    timeline.seenTo()
+            ));
         }
 
-        return Response.ok().build();
+        return Response.ok(UavTimelineListResponse.create(count, timelines)).build();
     }
 
     @PUT

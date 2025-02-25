@@ -13,13 +13,13 @@ public abstract class UavTimelineListResponse {
     @JsonProperty("count")
     public abstract long count();
 
-    @JsonProperty("timelines")
-    public abstract Map<UUID, List<UavTimelineDetailsResponse>> timelines();
+    @JsonProperty("timeline")
+    public abstract List<UavTimelineDetailsResponse> timeline();
 
-    public static UavTimelineListResponse create(long count, Map<UUID, List<UavTimelineDetailsResponse>> timelines) {
+    public static UavTimelineListResponse create(long count, List<UavTimelineDetailsResponse> timeline) {
         return builder()
                 .count(count)
-                .timelines(timelines)
+                .timeline(timeline)
                 .build();
     }
 
@@ -31,7 +31,7 @@ public abstract class UavTimelineListResponse {
     public abstract static class Builder {
         public abstract Builder count(long count);
 
-        public abstract Builder timelines(Map<UUID, List<UavTimelineDetailsResponse>> timelines);
+        public abstract Builder timeline(List<UavTimelineDetailsResponse> timeline);
 
         public abstract UavTimelineListResponse build();
     }

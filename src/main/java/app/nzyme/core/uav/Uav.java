@@ -5,6 +5,7 @@ import app.nzyme.core.shared.Classification;
 import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.uav.db.UavTimelineEntry;
 import app.nzyme.core.util.TimeRange;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -88,15 +89,31 @@ public class Uav {
         );
     }
 
+    public long countTimelines(String identifier, TimeRange timeRange, @NotNull UUID organizationId, @NotNull UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM uavs_timelines " +
+                                "WHERE seen_to >= :tr_from AND seen_to <= :tr_to " +
+                                "AND uav_identifier = :identifier AND organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id")
+                        .bind("identifier", identifier)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
     public List<UavTimelineEntry> findUavTimelines(String identifier,
                                                    TimeRange timeRange,
-                                                   UUID organizationId,
-                                                   UUID tenantId,
+                                                   @NotNull UUID organizationId,
+                                                   @NotNull UUID tenantId,
                                                    int limit,
                                                    int offset) {
         return nzyme.getDatabase().withHandle(handle ->
             handle.createQuery("SELECT seen_from, seen_to, uuid FROM uavs_timelines " +
-                            "WHERE seen_from >= :tr_from AND seen_from <= :tr_to " +
+                            "WHERE seen_to >= :tr_from AND seen_to <= :tr_to " +
                             "AND uav_identifier = :identifier AND organization_id = :organization_id " +
                             "AND tenant_id = :tenant_id " +
                             "ORDER BY seen_to DESC " +

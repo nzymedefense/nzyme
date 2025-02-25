@@ -26,6 +26,7 @@ import UavClassification from "./util/UavClassification";
 import OrganizationAndTenantSelector from "../shared/OrganizationAndTenantSelector";
 import SelectedOrganizationAndTenant from "../shared/SelectedOrganizationAndTenant";
 import UavOperatorDistanceToUav from "./util/UavOperatorDistanceToUav";
+import UavTimelineTable from "./UavTimelineTable";
 
 const uavService = new UavService();
 
@@ -61,18 +62,24 @@ export default function UavDetailsPage() {
     setUav(null);
     if (organizationId && tenantId) {
       uavService.findOne(setUav, organizationId, tenantId, identifierParam, selectedTaps);
-      uavService.findTimeline(
-          setTimeline,
-          organizationId,
-          tenantId,
-          timelineTimeRange,
-          identifierParam,
-          selectedTaps,
-          perPageTimeline,
-          (timelinePage-1)*perPageTimeline
-      );
     }
   }, [selectedTaps, revision, organizationId, tenantId]);
+
+  useEffect(() => {
+    setTimeline(null);
+    if (organizationId && tenantId) {
+      uavService.findTimeline(
+        setTimeline,
+        organizationId,
+        tenantId,
+        timelineTimeRange,
+        identifierParam,
+        selectedTaps,
+        perPageTimeline,
+        (timelinePage - 1) * perPageTimeline
+      );
+    }
+  }, [revision, organizationId, tenantId, timelinePage, timelineTimeRange]);
 
   const onOrganizationChange = (uuid) => {
     setOrganizationId(uuid);
@@ -211,7 +218,24 @@ export default function UavDetailsPage() {
               <CardTitleWithControls title="Map View"
                                      fixedAppliedTimeRange={Presets.ALL_TIME}/>
 
-              <UavMap uav={uav} containerHeight={500} onRefresh={() => alert("not implemented") } id="uav-last-known-position" />
+              <UavMap uav={uav} containerHeight={500} onRefresh={() => setRevision(new Date()) } id="uav-last-known-position" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Timeline &amp; Tracks"
+                                     timeRange={timelineTimeRange}
+                                     setTimeRange={setTimelineTimeRange} />
+
+              <UavTimelineTable timeline={timeline}
+                                page={timelinePage}
+                                setPage={setTimelinePage}
+                                perPage={perPageTimeline} />
             </div>
           </div>
         </div>
