@@ -53,7 +53,7 @@ pub struct NzymeChannel<T> {
 impl<T> NzymeChannelSender<T> {
 
     pub fn send_packet(&mut self, packet: Arc<T>, packet_length: u32) {
-        if let Err(err) = self.sender.try_send(packet) {
+        match self.sender.try_send(packet) { Err(err) => {
             debug!("Could not write to channel [{:?}]: {}", self.name, err);
             
             match self.metrics.lock() {
@@ -62,7 +62,7 @@ impl<T> NzymeChannelSender<T> {
                 },
                 Err(e) => { error!("Could not acquire metrics mutex: {}", e) }
             }
-        } else {
+        } _ => {
             // Record metrics.
             match self.metrics.lock() {
                 Ok(mut metrics) => {
@@ -73,7 +73,7 @@ impl<T> NzymeChannelSender<T> {
                 },
                 Err(e) => { error!("Could not acquire metrics mutex: {}", e) }
             }
-        }
+        }}
     }
 
 }

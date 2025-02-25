@@ -52,13 +52,13 @@ impl Capture {
             });
 
             if let Err(e) = result {
-                if let Some(s) = e.downcast_ref::<&str>() {
+                match e.downcast_ref::<&str>() { Some(s) => {
                     error!("Could not discover Bluetooth devices: {}", s);
-                } else if let Some(s) = e.downcast_ref::<String>() {
+                } _ => { match e.downcast_ref::<String>() { Some(s) => {
                     error!("Could not discover Bluetooth devices: {}", s);
-                } else {
+                } _ => {
                     error!("Could not discover Bluetooth devices. Panicked with an unknown type.");
-                }
+                }}}}
             }
 
             /*
@@ -309,14 +309,14 @@ impl Capture {
     fn parse_manufacturer_data(manufacturer_data_var: &Variant<Box<dyn RefArg>>)
         -> (Option<u16>, Option<Vec<u8>>) {
 
-        let company_id = if let Some(mut iter) = manufacturer_data_var.0.as_iter() {
+        let company_id = match manufacturer_data_var.0.as_iter() { Some(mut iter) => {
             match iter.nth(0) {
                 Some(key) => key.as_u64().map(|val| val as u16),
                 None => None
             }
-        } else {
+        } _ => {
             None
-        };
+        }};
 
         let data = manufacturer_data_var.0.as_iter().and_then(|mut iter| {
             iter.nth(1)?.as_iter().and_then(|mut iter| {

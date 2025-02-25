@@ -45,7 +45,7 @@ impl Injector {
         let data_length = data.len();
         match self.capture.lock() {
             Ok(mut c) => {
-                if let Some(ref mut capture) = *c {
+                match *c { Some(ref mut capture) => {
                     match capture.sendpacket(data) {
                         Ok(()) => {
                             debug!("Injected <{}> bytes into [{}]", data_length, self.device_name);
@@ -56,9 +56,9 @@ impl Injector {
                     }
 
 
-                } else {
+                } _ => {
                     bail!("Injector is not open. You must call `open()` first.")
-                }
+                }}
             },
             Err(e) => bail!("Could not acquire capture mutex: {}", e)
         }

@@ -63,14 +63,14 @@ pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSess
                 session.tags = tags
             },
             Err(e) => {
-                if let Some(s) = e.downcast_ref::<&str>() {
+                match e.downcast_ref::<&str>() { Some(s) => {
                     error!("Could not tag TCP session {:?}: {}", session.session_key, s);
-                } else if let Some(s) = e.downcast_ref::<String>() {
+                } _ => { match e.downcast_ref::<String>() { Some(s) => {
                     error!("Could not tag TCP session {:?}: {}", session.session_key, s);
-                } else {
+                } _ => {
                     error!("Could not tag TCP session {:?}. Panicked with an unknown type.",
                         session.session_key);
-                }
+                }}}}
             }
         }
     }

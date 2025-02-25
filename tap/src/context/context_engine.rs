@@ -343,11 +343,11 @@ impl ContextEngine {
                                     dns::ptr_query(lookup_ip, transaction_id)
                                 );
 
-                                if let Err(e) = injector.inject(dns) {
+                                match injector.inject(dns) { Err(e) => {
                                     error!("Could not inject PTR DNS to [{}] on interface [{}]: {}",
                                         dns_server, injection_interface, e);
                                     continue;
-                                } else {
+                                } _ => {
                                     // Sent. No need to query other DNS servers there may be.
                                     match metrics.lock() {
                                         Ok(mut metrics) => metrics.total_ptr_queries += 1,
@@ -355,7 +355,7 @@ impl ContextEngine {
                                     }
 
                                     break;
-                                }
+                                }}
                             }
                         }
                     }

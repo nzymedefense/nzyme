@@ -104,24 +104,24 @@ impl NlSkinnyRouter {
                                     // we should never have the kernel sending an ACK request here
                                     //continue_reading = false;
                                     return Some(Err(SocketError::new("Error: ACK received")));
-                                } else if let Some(e) = m.get_err() {
+                                } else { match m.get_err() { Some(e) => {
                                     //continue_reading = false;
                                     return Some(Err(SocketError::new(format!("Error: Netlink sent a packet error: {}", e))));
-                                } else if nl_type == Nlmsg::Noop {
+                                } _ => if nl_type == Nlmsg::Noop {
                                     // just ignore the message
                                     continue;
                                 } else if nl_type == Nlmsg::Done {
                                     continue_reading = false;
                                 } else if nl_type == Nlmsg::Overrun || nl_type == Nlmsg::Error {
-                                    if let NlPayload::Ack(_) = m.nl_payload() {
+                                    match m.nl_payload() { NlPayload::Ack(_) => {
                                         // this is just a ext_ack, nothing to read, just be done
                                         continue_reading = false;
-                                    } else {
+                                    } _ => {
                                         return Some(Err(SocketError::new("Error: Netlink sent a packet error")));
-                                    }
+                                    }}
                                 } else {
                                     all_msgs.push(m);
-                                }
+                                }}}
                             }
                             Err(_) => {
                                 continue_reading = false;

@@ -44,18 +44,18 @@ impl ARPProcessor {
         match self.tables.arp.lock() {
             Ok(mut table) => {
 
-                if let Some(ips) = table.get_mut(&packet.sender_address) {
+                match table.get_mut(&packet.sender_address) { Some(ips) => {
                     match ips.get_mut(&packet.sender_mac_address) {
                         Some(count) => { *count += 1 },
                         None => {
                             ips.insert(packet.sender_mac_address.clone(), 1);
                         }
                     }
-                } else {
+                } _ => {
                     let mut mac = HashMap::new();
                     mac.insert(packet.sender_mac_address.clone(), 1);
                     table.insert(packet.sender_address.clone(), mac);
-                }
+                }}
             },
             Err(e) => {
                 error!("Could not acquire table mutex. {}", e);

@@ -44,12 +44,12 @@ pub fn tag(data: &[u8], bssid: String, rssi: Option<i8>) -> Option<UavRemoteIdMe
                 break
             }
 
-            if let Err(e) = parse_message(&data[cursor..cursor+25], &mut parent_message) {
+            match parse_message(&data[cursor..cursor+25], &mut parent_message) { Err(e) => {
                 tracemark!("Could not parse remote ID message in pack: {:?}", e);
                 // We continue with other messages in this pack.
-            } else {
+            } _ => {
                 intact_messages += 1;
-            }
+            }}
 
             cursor += 25;
         }
