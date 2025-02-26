@@ -6,12 +6,15 @@ import '../../../lib/Control.FullScreen';
 import '../../../lib/Control.FullScreen.css';
 import '../../../lib/easy-button';
 import '../../../lib/easy-button.css';
+import {latLng} from "leaflet/src/geo";
+import moment from "moment/moment";
 
 export default function UavMap(props) {
 
   const uav = props.uav;
   const containerHeight = props.containerHeight;
-  const id = props.id;
+
+  const lastKnownPosition = props.lastKnownPosition;
 
   // Optional.
   const onRefresh = props.onRefresh;
@@ -19,9 +22,20 @@ export default function UavMap(props) {
   const [map, setMap] = useState(null);
   const [mapInitialized, setMapInitialized] = useState(false);
 
+  const uavIcon = L.icon({
+    iconUrl: window.appConfig.assetsUri + 'static/uav/uav.png',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    tooltipAnchor: [0, 0]
+  });
+
+  const lastKnownPositionTooltip = (pos) => {
+    return "Last known position at " + moment(pos.timestamp).format() + " (" +  moment(pos.timestamp).fromNow() + ")";
+  }
+
   useEffect(() => {
     if (uav && uav.summary.latitude && uav.summary.longitude && !mapInitialized) {
-      setMap(L.map(id,{
+      setMap(L.map("uav-map", {
         scrollWheelZoom: false,
         fullscreenControl: true,
         fullscreenControlOptions: {
@@ -31,7 +45,7 @@ export default function UavMap(props) {
 
       setMapInitialized(true);
     }
-  }, [id, uav]);
+  }, [uav]);
 
   useEffect(() => {
     if (mapInitialized) {
@@ -49,12 +63,18 @@ export default function UavMap(props) {
             stateName: "refresh",
             icon: '<i class="fa-solid fa-refresh"></i>',
             title: "Refresh",
-            onClick: function (btn, map) {
-              onRefresh();
-            }
+            onClick: onRefresh
           }]
         }).addTo(map);
       }
+
+      const icon = L.marker(latLng(lastKnownPosition.lat, lastKnownPosition.lon), {
+        icon: uavIcon,
+        draggable: false,
+        autoPan: true
+      }).addTo(map);
+
+      icon.bindTooltip(lastKnownPositionTooltip(lastKnownPosition))
     }
   }, [mapInitialized])
 
@@ -64,7 +84,7 @@ export default function UavMap(props) {
 
   return (
     <React.Fragment>
-      <div id={props.id} style={{height: containerHeight}}/>
+      <div id="uav-map" style={{height: containerHeight}}/>
     </React.Fragment>
   )
 

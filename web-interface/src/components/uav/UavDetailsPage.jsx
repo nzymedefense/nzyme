@@ -218,7 +218,14 @@ export default function UavDetailsPage() {
               <CardTitleWithControls title="Map View"
                                      fixedAppliedTimeRange={Presets.ALL_TIME}/>
 
-              <UavMap uav={uav} containerHeight={500} onRefresh={() => setRevision(new Date()) } id="uav-last-known-position" />
+              <UavMap uav={uav}
+                      containerHeight={500}
+                      lastKnownPosition={{
+                        lat: uav.summary.latitude,
+                        lon: uav.summary.longitude,
+                        timestamp: uav.summary.latest_vector_timestamp
+                      }}
+                      onRefresh={() => setRevision(new Date()) } />
             </div>
           </div>
         </div>
