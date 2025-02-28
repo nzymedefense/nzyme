@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from "react";
-import {TapContext} from "../../App";
+import {TapContext, UserContext} from "../../App";
 import {useParams} from "react-router-dom";
 import UavService from "../../services/UavService";
 import LoadingSpinner from "../misc/LoadingSpinner";
@@ -27,6 +27,7 @@ import OrganizationAndTenantSelector from "../shared/OrganizationAndTenantSelect
 import SelectedOrganizationAndTenant from "../shared/SelectedOrganizationAndTenant";
 import UavOperatorDistanceToUav from "./util/UavOperatorDistanceToUav";
 import UavTimelineTable from "./UavTimelineTable";
+import {userHasPermission} from "../../util/Tools";
 
 const uavService = new UavService();
 
@@ -36,6 +37,8 @@ export default function UavDetailsPage() {
   const selectedTaps = tapContext.taps;
 
   const {identifierParam} = useParams();
+
+  const user = useContext(UserContext);
 
   const [uav, setUav] = useState(null);
 
@@ -114,7 +117,7 @@ export default function UavDetailsPage() {
         <div className="col-12">
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
-              <li className="breadcrumb-item"><a href={ApiRoutes.UAVS.INDEX}>UAVs</a></li>
+              <li className="breadcrumb-item"><a href={ApiRoutes.UAV.INDEX}>UAVs</a></li>
               <li className="breadcrumb-item">{uav.summary.identifier.substring(0, 7)}</li>
               <li className="breadcrumb-item active" aria-current="page">Details</li>
             </ol>
@@ -149,7 +152,7 @@ export default function UavDetailsPage() {
                 <dt>Classification</dt>
                 <dd>
                   <UavClassification uav={uav.summary}
-                                     enableEditMode={true}
+                                     enableEditMode={userHasPermission(user, "uav_monitoring_manage")}
                                      organizationId={organizationId}
                                      tenantId={tenantId}
                                      onChange={() => setRevision(new Date()) }/>

@@ -105,13 +105,25 @@ function Sidebar(props) {
           </SidebarSubmenu>
 
           <SidebarSubmenu title="UAV"
-                          subhref="/uav"
+                          subhref="/uavs"
                           icon={<i className="sidebar-icon fa-solid fa-paper-plane"/>}
                           show={userHasSubsystem(user, "uav")}>
             <NavigationLink
-              href={ApiRoutes.UAVS.INDEX}
+              href={ApiRoutes.UAV.INDEX}
               title="UAVs"
               icon={<i className="sidebar-icon fa-solid fa-paper-plane"/>}/>
+
+            <NavigationLink
+              href={ApiRoutes.UAV.TYPES.INDEX}
+              title="Types"
+              icon={<i className="sidebar-icon fa-solid fa-fingerprint"/>}
+              show={true} />
+
+            <NavigationLink
+              href={ApiRoutes.UAV.MONITORING.INDEX}
+              title="Monitoring"
+              icon={<i className="sidebar-icon fa-solid fa-shield-halved"/>}
+              show={userHasPermission(user, "uav_monitoring_manage")}/>
           </SidebarSubmenu>
 
           <SidebarSubmenu title="Context"

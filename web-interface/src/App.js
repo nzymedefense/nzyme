@@ -151,6 +151,9 @@ import TenantLocationsPage from "./components/system/authentication/management/t
 import TenantDatabasePage from "./components/system/authentication/management/tenants/TenantDatabasePage";
 import UavsPage from "./components/uav/UavsPage";
 import UavDetailsPage from "./components/uav/UavDetailsPage";
+import UavMonitoringPage from "./components/uav/monitoring/UavMonitoringPage";
+import UavTypesPage from "./components/uav/types/UavTypesPage";
+import CreateCustomTypePage from "./components/uav/types/CreateCustomTypePage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -498,8 +501,12 @@ function App() {
                               { /* UAV. */ }
                               <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "uav")} />}>
                                 { /* UAVs */}
-                                <Route path={ApiRoutes.UAVS.INDEX} element={<UavsPage />}/>
-                                <Route path={ApiRoutes.UAVS.DETAILS(':identifierParam')} element={<UavDetailsPage />}/>
+                                <Route path={ApiRoutes.UAV.INDEX} element={<UavsPage />}/>
+                                <Route path={ApiRoutes.UAV.DETAILS(':identifierParam')} element={<UavDetailsPage />}/>
+                                <Route path={ApiRoutes.UAV.TYPES.INDEX} element={<UavTypesPage />}/>
+                                <Route path={ApiRoutes.UAV.TYPES.CREATE(':organizationId', ':tenantId')} element={<CreateCustomTypePage />}/>
+
+                                <Route path={ApiRoutes.UAV.MONITORING.INDEX} element={<UavMonitoringPage />}/>
                               </Route>
 
                               { /* Context. */ }

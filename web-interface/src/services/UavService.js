@@ -32,4 +32,11 @@ export default class UavService {
     RESTClient.put(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/show/${identifier}/classify/${classification}`, {}, onSuccess, onFailure);
   }
 
+  findAllCustomTypes(setTypes, organizationId, tenantId, limit, offset) {
+    RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/types/custom`,
+      {limit: limit, offset: offset },
+      (response) => setTypes(response.data)
+    )
+  }
+
 }

@@ -61,7 +61,7 @@ export default function UavsTable(props) {
             return (
               <tr key={i}>
                 <td><UavActiveIndicator active={uav.is_active} /></td>
-                <td><a href={ApiRoutes.UAVS.DETAILS(uav.identifier)}>{uav.identifier.substring(0, 7)}</a></td>
+                <td><a href={ApiRoutes.UAV.DETAILS(uav.identifier)}>{uav.identifier.substring(0, 7)}</a></td>
                 <td><Designation designation={uav.designation} /></td>
                 <td><UavClassification uav={uav} /></td>
                 <td><UavDetectionSource source={uav.detection_source} /></td>

@@ -22,7 +22,7 @@ public class Permissions {
         put("dot11_monitoring_manage", Permission.create(
                 "dot11_monitoring_manage",
                 "Manage Monitored WiFi Networks",
-                "Allows user to create, edit and delete configurations of WiFi network monitoring, This can " +
+                "Allows user to create, edit and delete configurations of WiFi network monitoring. This can " +
                         "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
                 false
         ));
@@ -32,6 +32,14 @@ public class Permissions {
                 "Allows user to create, edit and delete MAC address aliases for all subsystems, " +
                         "e.g. 802.11/WiFi or Ethernet.",
                 true
+        ));
+        put("uav_monitoring_manage", Permission.create(
+                "uav_monitoring_manage",
+                "Manage UAV Monitoring",
+                "Allows user to create, edit and delete configurations of UAV monitoring, including UAV " +
+                        "classifications and types. This can potentially trigger alerts based on data from all taps " +
+                        "of tenant the user belongs to.",
+                false
         ));
     }};
 

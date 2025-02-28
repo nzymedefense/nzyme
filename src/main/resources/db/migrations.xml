@@ -6183,5 +6183,72 @@
         <dropUniqueConstraint tableName="uavs_timelines" constraintName="uavs_timelines_uav_identifier_key" />
     </changeSet>
 
+    <changeSet id="create_uav_types" author="lennartkoopmann">
+        <createTable tableName="uavs_types">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uav_id" type="bigint">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="match_type" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="match_value" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="default_classification" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="type" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="name" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add_uav_type_uniqueness" author="lennartkoopmann">
+        <addUniqueConstraint tableName="uavs_types" columnNames="organization_id, tenant_id, match_type, match_value" />
+    </changeSet>
+
+    <changeSet id="add_uav_type_uuid" author="lennartkoopmann">
+        <addColumn tableName="uavs_types">
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="remote_uav_type_uav_id" author="lennartkoopmann">
+        <dropColumn tableName="uavs_types" columnName="uav_id" />
+    </changeSet>
+
+    <changeSet id="make_uav_type_default_classification_nullable" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="uavs_types" columnName="default_classification" />
+    </changeSet>
 
 </databaseChangeLog>

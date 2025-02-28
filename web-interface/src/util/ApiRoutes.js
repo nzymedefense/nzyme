@@ -209,9 +209,16 @@ const ApiRoutes = {
       DETAILS: (mac) => `/bluetooth/devices/show/${mac}`
     }
   },
-  UAVS: {
-    INDEX: '/uavs',
-    DETAILS: (identifier) => `/uavs/show/${identifier}`
+  UAV: {
+    INDEX: '/uavs/all',
+    DETAILS: (identifier) => `/uavs/all/show/${identifier}`,
+    MONITORING: {
+      INDEX: '/uavs/monitoring'
+    },
+    TYPES: {
+      INDEX: '/uavs/types',
+      CREATE: (organizationId, tenantId) => `/uavs/types/organizations/show/${organizationId}/tenants/show/${tenantId}/create`
+    }
   },
   CONTEXT: {
     MAC_ADDRESSES: {

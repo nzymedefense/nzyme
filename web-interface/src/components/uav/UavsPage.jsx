@@ -25,7 +25,6 @@ export default function UavsPage() {
   const [tenantId, setTenantId] = useState(null);
   const [tenantSelected, setTenantSelected] = useState(false);
 
-
   useEffect(() => {
     setUavs(null);
     if (organizationId && tenantId) {

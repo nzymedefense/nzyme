@@ -4,6 +4,8 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.shared.Classification;
 import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.uav.db.UavTimelineEntry;
+import app.nzyme.core.uav.db.UavTypeEntry;
+import app.nzyme.core.uav.types.UavTypeMatchType;
 import app.nzyme.core.util.TimeRange;
 import jakarta.validation.constraints.NotNull;
 
@@ -89,15 +91,21 @@ public class Uav {
         );
     }
 
-    public long countTimelines(String identifier, TimeRange timeRange, @NotNull UUID organizationId, @NotNull UUID tenantId) {
+    public long countTimelines(String identifier,
+                               TimeRange timeRange,
+                               @NotNull UUID organizationId,
+                               @NotNull UUID tenantId,
+                               List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM uavs_timelines " +
-                                "WHERE seen_to >= :tr_from AND seen_to <= :tr_to " +
-                                "AND uav_identifier = :identifier AND organization_id = :organization_id " +
-                                "AND tenant_id = :tenant_id")
+                handle.createQuery("SELECT COUNT(*) FROM uavs_timelines AS t " +
+                                "LEFT JOIN uavs AS u ON u.identifier = t.uav_identifier " +
+                                "WHERE t.seen_to >= :tr_from AND t.seen_to <= :tr_to " +
+                                "AND t.uav_identifier = :identifier AND t.organization_id = :organization_id " +
+                                "AND t.tenant_id = :tenant_id AND u.tap_uuid IN (<taps>)")
                         .bind("identifier", identifier)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
+                        .bindList("taps", taps)
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .mapTo(Long.class)
@@ -109,18 +117,21 @@ public class Uav {
                                                    TimeRange timeRange,
                                                    @NotNull UUID organizationId,
                                                    @NotNull UUID tenantId,
+                                                   List<UUID> taps,
                                                    int limit,
                                                    int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-            handle.createQuery("SELECT seen_from, seen_to, uuid FROM uavs_timelines " +
-                            "WHERE seen_to >= :tr_from AND seen_to <= :tr_to " +
-                            "AND uav_identifier = :identifier AND organization_id = :organization_id " +
-                            "AND tenant_id = :tenant_id " +
-                            "ORDER BY seen_to DESC " +
+            handle.createQuery("SELECT t.seen_from, t.seen_to, t.uuid FROM uavs_timelines AS t " +
+                            "LEFT JOIN uavs AS u ON u.identifier = t.uav_identifier " +
+                            "WHERE t.seen_to >= :tr_from AND t.seen_to <= :tr_to " +
+                            "AND t.uav_identifier = :identifier AND t.organization_id = :organization_id " +
+                            "AND t.tenant_id = :tenant_id AND u.tap_uuid IN (<taps>) " +
+                            "ORDER BY t.seen_to DESC " +
                             "LIMIT :limit OFFSET :offset")
                     .bind("identifier", identifier)
                     .bind("organization_id", organizationId)
                     .bind("tenant_id", tenantId)
+                    .bindList("taps", taps)
                     .bind("limit", limit)
                     .bind("offset", offset)
                     .bind("tr_from", timeRange.from())
@@ -148,4 +159,84 @@ public class Uav {
         );
     }
 
+    public long countAllCustomTypes(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM uavs_types " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<UavTypeEntry> findAllCustomTypes(UUID organizationId, UUID tenantId, int limit, int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM uavs_types " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "ORDER BY name DESC LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(UavTypeEntry.class)
+                        .list()
+        );
+    }
+
+    public Optional<UavTypeEntry> findCustomType(UUID uuid, UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM uav_types WHERE uuid = :uuid " +
+                                "AND organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(UavTypeEntry.class)
+                        .findOne()
+        );
+    }
+
+    public void createCustomType(UUID organizationId,
+                                 UUID tenantId,
+                                 UavTypeMatchType matchType,
+                                 String matchValue,
+                                 Classification defaultClassification,
+                                 String type,
+                                 String name) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO uavs_types(uuid, organization_id, tenant_id, match_type, " +
+                                "match_value, default_classification, type, name, created_at, updated_at) " +
+                                "VALUES(:uuid, :organization_id, :tenant_id, :match_type, :match_value, " +
+                                ":default_classification, :type, :name, NOW(), NOW())")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("match_type", matchType)
+                        .bind("match_value", matchValue)
+                        .bind("default_classification", defaultClassification)
+                        .bind("type", type)
+                        .bind("name", name)
+                        .execute()
+        );
+    }
+
+    public void updateCustomType(long id,
+                                 UavTypeMatchType matchType,
+                                 String matchValue,
+                                 Classification defaultClassification,
+                                 String type,
+                                 String name) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE uavs_types SET match_type = :match_type, " +
+                                "match_value = :match_value, default_classification = :default_classification, " +
+                                "type = :type, name = :name, updated_at = NOW() WHERE id = :id")
+                        .bind("id", id)
+                        .bind("match_type", matchType)
+                        .bind("match_value", matchValue)
+                        .bind("default_classification", defaultClassification)
+                        .bind("type", type)
+                        .bind("name", name)
+                        .execute()
+        );
+    }
 }

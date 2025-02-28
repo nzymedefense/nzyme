@@ -3,13 +3,18 @@ package app.nzyme.core.rest.resources.uav;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.geo.HaversineDistance;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.requests.CreateUavCustomTypeRequest;
 import app.nzyme.core.rest.responses.shared.ClassificationResponse;
 import app.nzyme.core.rest.responses.uav.*;
 import app.nzyme.core.rest.responses.uav.enums.*;
+import app.nzyme.core.rest.responses.uav.types.UavCustomTypeDetailsResponse;
+import app.nzyme.core.rest.responses.uav.types.UavCustomTypeListResponse;
 import app.nzyme.core.shared.Classification;
 import app.nzyme.core.uav.UavRegistryKeys;
 import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.uav.db.UavTimelineEntry;
+import app.nzyme.core.uav.db.UavTypeEntry;
+import app.nzyme.core.uav.types.UavTypeMatchType;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -99,17 +104,20 @@ public class UavResource extends TapDataHandlingResource {
                                   @PathParam("tenant_id") UUID tenantId,
                                   @QueryParam("time_range") @Valid String timeRangeParameter,
                                   @QueryParam("limit") int limit,
-                                  @QueryParam("offset") int offset) {
+                                  @QueryParam("offset") int offset,
+                                  @QueryParam("taps") String tapIds) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
-        long count = nzyme.getUav().countTimelines(uavIdentifier, timeRange, organizationId, tenantId);
+        long count = nzyme.getUav().countTimelines(uavIdentifier, timeRange, organizationId, tenantId, taps);
         List<UavTimelineDetailsResponse> timelines = Lists.newArrayList();
         for (UavTimelineEntry timeline : nzyme.getUav()
-                .findUavTimelines(uavIdentifier, timeRange, organizationId, tenantId, limit, offset)) {
+                .findUavTimelines(uavIdentifier, timeRange, organizationId, tenantId, taps, limit, offset)) {
             timelines.add(UavTimelineDetailsResponse.create(
                     timeline.seenTo().isAfter(DateTime.now().minusMinutes(5)),
                     timeline.uuid(),
@@ -122,7 +130,7 @@ public class UavResource extends TapDataHandlingResource {
     }
 
     @PUT
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_manage" })
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "uav_monitoring_manage" })
     @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/show/{identifier}/classify/{classification}")
     public Response classifyUav(@Context SecurityContext sc,
                                 @PathParam("organization_id") UUID organizationId,
@@ -144,6 +152,71 @@ public class UavResource extends TapDataHandlingResource {
         nzyme.getUav().setUavClassification(uavIdentifier, organizationId, tenantId, classification);
 
         return Response.ok().build();
+    }
+
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "uav_monitoring_manage" })
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/custom")
+    public Response findAllCustomTypes(@Context SecurityContext sc,
+                                       @PathParam("organization_id") UUID organizationId,
+                                       @PathParam("tenant_id") UUID tenantId,
+                                       @QueryParam("limit") int limit,
+                                       @QueryParam("offset") int offset) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long count = nzyme.getUav().countAllCustomTypes(organizationId, tenantId);
+        List<UavCustomTypeDetailsResponse> types = Lists.newArrayList();
+        for (UavTypeEntry type : nzyme.getUav().findAllCustomTypes(organizationId, tenantId, limit, offset)) {
+            types.add(UavCustomTypeDetailsResponse.create(
+                    type.uuid(),
+                    type.organizationId(),
+                    type.tenantId(),
+                    type.matchType(),
+                    type.matchValue(),
+                    type.defaultClassification(),
+                    type.type(),
+                    type.name(),
+                    type.createdAt(),
+                    type.updatedAt()
+            ));
+        }
+
+        return Response.ok(UavCustomTypeListResponse.create(count, types)).build();
+    }
+
+    @POST
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "uav_monitoring_manage" })
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/custom")
+    public Response createCustomType(@Context SecurityContext sc,
+                                     @PathParam("organization_id") UUID organizationId,
+                                     @PathParam("tenant_id") UUID tenantId,
+                                     @Valid CreateUavCustomTypeRequest req) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        UavTypeMatchType matchType;
+        Classification defaultClassification;
+        try {
+            matchType = UavTypeMatchType.valueOf(req.matchType().toUpperCase());
+
+            if (req.defaultClassification() != null) {
+                defaultClassification = Classification.valueOf(req.defaultClassification().toUpperCase());
+            } else {
+                defaultClassification = null;
+            }
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        nzyme.getUav().createCustomType(
+                organizationId, tenantId, matchType, req.matchValue(), defaultClassification, req.type(), req.name()
+        );
+
+        return Response.status(Response.Status.CREATED).build();
     }
 
     private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav) {
