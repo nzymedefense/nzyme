@@ -203,7 +203,7 @@ public class UavResource extends TapDataHandlingResource {
         try {
             matchType = UavTypeMatchType.valueOf(req.matchType().toUpperCase());
 
-            if (req.defaultClassification() != null) {
+            if (req.defaultClassification() != null && !req.defaultClassification().isEmpty()) {
                 defaultClassification = Classification.valueOf(req.defaultClassification().toUpperCase());
             } else {
                 defaultClassification = null;
