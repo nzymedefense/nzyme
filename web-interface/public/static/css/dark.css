@@ -177,11 +177,13 @@ div.rendered-markdown pre {
     background-color: #40435e;
 }
 
-a.card-title-option {
+a.card-title-option,
+button.card-title-option {
     color: #fff;
 }
 
-a.card-title-option:hover {
+a.card-title-option:hover,
+button.card-title-option:hover {
     color: #71769F;
 }
 
