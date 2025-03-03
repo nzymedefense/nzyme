@@ -14,7 +14,7 @@ export default function BuiltInTypesTable(props) {
     return <LoadingSpinner />
   }
 
-  if (types.length === 0) {
+  if (types.count === 0) {
     return <div className="alert alert-warning mb-0">
       No build-in types found. Set up <a href="https://connect.nzyme.org/">nzyme Connect</a> if you want to use this
       feature.

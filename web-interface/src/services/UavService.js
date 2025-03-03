@@ -46,4 +46,11 @@ export default class UavService {
     )
   }
 
+  findAllBuiltInTypes(setTypes, organizationId, tenantId, limit, offset) {
+    RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/types/builtin`,
+      {limit: limit, offset: offset },
+      (response) => setTypes(response.data)
+    )
+  }
+
 }

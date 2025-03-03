@@ -7,6 +7,7 @@ import app.nzyme.core.rest.requests.CreateUavCustomTypeRequest;
 import app.nzyme.core.rest.responses.shared.ClassificationResponse;
 import app.nzyme.core.rest.responses.uav.*;
 import app.nzyme.core.rest.responses.uav.enums.*;
+import app.nzyme.core.rest.responses.uav.types.UavBuiltInTypeListResponse;
 import app.nzyme.core.rest.responses.uav.types.UavCustomTypeDetailsResponse;
 import app.nzyme.core.rest.responses.uav.types.UavCustomTypeListResponse;
 import app.nzyme.core.shared.Classification;
@@ -154,9 +155,8 @@ public class UavResource extends TapDataHandlingResource {
         return Response.ok().build();
     }
 
-
     @GET
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "uav_monitoring_manage" })
+    @RESTSecured(value = PermissionLevel.ANY)
     @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/custom")
     public Response findAllCustomTypes(@Context SecurityContext sc,
                                        @PathParam("organization_id") UUID organizationId,
@@ -225,6 +225,22 @@ public class UavResource extends TapDataHandlingResource {
         );
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY)
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/builtin")
+    public Response findAllBuiltInTypes(@Context SecurityContext sc,
+                                        @PathParam("organization_id") UUID organizationId,
+                                        @PathParam("tenant_id") UUID tenantId,
+                                        @QueryParam("limit") int limit,
+                                        @QueryParam("offset") int offset) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(UavBuiltInTypeListResponse.create(0, Lists.newArrayList())).build();
     }
 
     private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav) {

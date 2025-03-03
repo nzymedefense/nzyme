@@ -28,7 +28,13 @@ export default function UavTypesPage() {
     setCustomTypes(null);
 
     if (organizationId && tenantId) {
-      uavService.findAllCustomTypes(setCustomTypes, organizationId, tenantId, customTypesPerPage, (customTypesPage-1)*customTypesPerPage);
+      uavService.findAllCustomTypes(
+        setCustomTypes, organizationId, tenantId, customTypesPerPage, (customTypesPage-1)*customTypesPerPage
+      );
+
+      uavService.findAllBuiltInTypes(
+        setBuiltInTypes, organizationId, tenantId, customTypesPerPage, (customTypesPage-1)*customTypesPerPage
+      );
     }
   }, [organizationId, tenantId, customTypesPage]);
 
