@@ -9,9 +9,10 @@ export default function UavClassification(props) {
 
   const SAVE_BUTTON_TEXT = "Save";
 
-  const uav = props.uav;
+  const classification = props.classification;
 
   // Only for edit mode.
+  const uavIdentifier = props.uavIdentifier;
   const enableEditMode = props.enableEditMode;
   const organizationId = props.organizationId;
   const tenantId = props.tenantId;
@@ -24,8 +25,8 @@ export default function UavClassification(props) {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setSelectedClassification(uav.classification);
-  }, [uav])
+    setSelectedClassification(classification);
+  }, [classification])
 
   const saveClassification = (e) => {
     e.preventDefault();
@@ -33,7 +34,7 @@ export default function UavClassification(props) {
     setIsSaving(true);
     setSaveButtonText(<span><i className="fa-solid fa-circle-notch fa-spin"></i> &nbsp;Saving ...</span>)
 
-    uavService.classifyUav(uav.identifier, organizationId, tenantId, selectedClassification, () => {
+    uavService.classifyUav(uavIdentifier, organizationId, tenantId, selectedClassification, () => {
       // Success.
       setIsSaving(false);
       setSaveButtonText(SAVE_BUTTON_TEXT)
@@ -49,6 +50,10 @@ export default function UavClassification(props) {
 
   const format = (c) => {
     let className = "";
+
+    if (!c) {
+      return <span className="text-muted">n/a</span>
+    }
 
     switch (c) {
       case "UNKNOWN":
@@ -69,7 +74,7 @@ export default function UavClassification(props) {
   }
 
   if (!enableEditMode) {
-    return format(uav.classification);
+    return format(classification);
   } else {
     if (inEditMode) {
       return (
@@ -101,7 +106,7 @@ export default function UavClassification(props) {
     } else {
       return (
           <React.Fragment>
-            {format(uav.classification)}{' '}
+            {format(classification)}{' '}
 
             <a href="#" onClick={(e) => {
               e.preventDefault();

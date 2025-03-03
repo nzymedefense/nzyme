@@ -35,13 +35,17 @@ public abstract class UavCustomTypeDetailsResponse {
     @JsonProperty("name")
     public abstract String name();
 
+    @JsonProperty("model")
+    @Nullable
+    public abstract String model();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static UavCustomTypeDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String matchType, String matchValue, String defaultClassification, String type, String name, DateTime createdAt, DateTime updatedAt) {
+    public static UavCustomTypeDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String matchType, String matchValue, String defaultClassification, String type, String name, String model, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -51,6 +55,7 @@ public abstract class UavCustomTypeDetailsResponse {
                 .defaultClassification(defaultClassification)
                 .type(type)
                 .name(name)
+                .model(model)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -77,6 +82,8 @@ public abstract class UavCustomTypeDetailsResponse {
         public abstract Builder type(String type);
 
         public abstract Builder name(String name);
+
+        public abstract Builder model(String model);
 
         public abstract Builder createdAt(DateTime createdAt);
 

@@ -3,7 +3,6 @@ import UavService from "../../services/UavService";
 import {Presets} from "../shared/timerange/TimeRange";
 import {TapContext} from "../../App";
 import {disableTapSelector, enableTapSelector} from "../misc/TapSelector";
-import AlphaFeatureAlert from "../shared/AlphaFeatureAlert";
 import CardTitleWithControls from "../shared/CardTitleWithControls";
 import UavsTable from "./UavsTable";
 import OrganizationAndTenantSelector from "../shared/OrganizationAndTenantSelector";
@@ -65,20 +64,19 @@ export default function UavsPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
 
         <div className="row">
-          <div className="col-md-10">
+          <div className="col-10">
             <h1>Unmanned Aerial Vehicles (UAVs)</h1>
           </div>
 
-          <div className="col-md-2 text-end">
+          <div className="col-2 text-end">
             <a href="https://go.nzyme.org/uavs" className="btn btn-secondary">Help</a>
           </div>
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-12">
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="UAVs"

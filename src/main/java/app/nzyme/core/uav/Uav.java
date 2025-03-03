@@ -202,12 +202,13 @@ public class Uav {
                                  String matchValue,
                                  Classification defaultClassification,
                                  String type,
-                                 String name) {
+                                 String name,
+                                 String model) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO uavs_types(uuid, organization_id, tenant_id, match_type, " +
-                                "match_value, default_classification, type, name, created_at, updated_at) " +
+                                "match_value, default_classification, type, name, model, created_at, updated_at) " +
                                 "VALUES(:uuid, :organization_id, :tenant_id, :match_type, :match_value, " +
-                                ":default_classification, :type, :name, NOW(), NOW())")
+                                ":default_classification, :type, :name, :model, NOW(), NOW())")
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -216,6 +217,7 @@ public class Uav {
                         .bind("default_classification", defaultClassification)
                         .bind("type", type)
                         .bind("name", name)
+                        .bind("model", model)
                         .execute()
         );
     }

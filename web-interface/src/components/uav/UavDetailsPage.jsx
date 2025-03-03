@@ -151,7 +151,8 @@ export default function UavDetailsPage() {
                 <dd>{uav.summary.designation}</dd>
                 <dt>Classification</dt>
                 <dd>
-                  <UavClassification uav={uav.summary}
+                  <UavClassification classification={uav.summary.classification}
+                                     uavIdentifier={uav.summary.identifier}
                                      enableEditMode={userHasPermission(user, "uav_monitoring_manage")}
                                      organizationId={organizationId}
                                      tenantId={tenantId}

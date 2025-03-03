@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from "react";
-import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
 import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
@@ -58,8 +57,6 @@ export default function UavTypesPage() {
 
   return (
     <React.Fragment>
-      <AlphaFeatureAlert />
-
       <div className="row">
         <div className="col-md-10">
           <h1>Unmanned Aerial Vehicle (UAV) Types</h1>
@@ -76,14 +73,16 @@ export default function UavTypesPage() {
         onReset={resetTenantAndOrganization} />
 
       <div className="row mt-3">
-        <div className="col-md-12">
+        <div className="col-xl-12 col-xxl-6">
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Custom Types" />
 
               <p className="text-muted mt-0">
-                You can use custom types to associate UAVs with additional details such as name, make,
-                or model. These custom types extend any existing built-in types.
+                You can use custom types to associate UAVs with additional details, such as name, make, or model. These
+                types extend existing built-in types, allowing for more precise identification. A common use case is
+                assigning names or extra information to frequently detected UAVs, such as those in your own fleet or
+                drones that regularly appear in your area.
               </p>
 
               <CustomTypesTable types={customTypes}
@@ -102,7 +101,7 @@ export default function UavTypesPage() {
       </div>
 
       <div className="row mt-3">
-        <div className="col-md-12">
+        <div className="col-xl-12 col-xxl-6">
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Built-In Types" />

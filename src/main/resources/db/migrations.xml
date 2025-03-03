@@ -6251,4 +6251,12 @@
         <dropNotNullConstraint tableName="uavs_types" columnName="default_classification" />
     </changeSet>
 
+    <changeSet id="add_uav_type_model" author="lennartkoopmann">
+        <addColumn tableName="uavs_types">
+            <column name="model" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

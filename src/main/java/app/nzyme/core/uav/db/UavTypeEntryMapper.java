@@ -22,6 +22,7 @@ public class UavTypeEntryMapper implements RowMapper<UavTypeEntry> {
                 rs.getString("default_classification"),
                 rs.getString("type"),
                 rs.getString("name"),
+                rs.getString("model"),
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("updated_at"))
         );

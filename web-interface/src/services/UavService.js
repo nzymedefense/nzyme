@@ -39,9 +39,9 @@ export default class UavService {
     )
   }
 
-  createCustomType(organizationId, tenantId, matchType, matchValue, defaultClassification, type, name, onSuccess, onFailure) {
+  createCustomType(organizationId, tenantId, matchType, matchValue, defaultClassification, type, model, name, onSuccess, onFailure) {
     RESTClient.post(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/types/custom`,
-        { match_type: matchType, match_value: matchValue, default_classification: defaultClassification, type: type, name: name },
+        { match_type: matchType, match_value: matchValue, default_classification: defaultClassification, type: type, model: model, name: name },
         onSuccess, onFailure
     )
   }

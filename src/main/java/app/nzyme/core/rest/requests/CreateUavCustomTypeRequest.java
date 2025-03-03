@@ -19,19 +19,23 @@ public abstract class CreateUavCustomTypeRequest {
     public abstract String type();
     @NotBlank
     public abstract String name();
+    @Nullable
+    public abstract String model();
 
     @JsonCreator
     public static CreateUavCustomTypeRequest create(@JsonProperty("match_type") String matchType,
                                                     @JsonProperty("match_value") String matchValue,
                                                     @JsonProperty("default_classification") String defaultClassification,
                                                     @JsonProperty("type") String type,
-                                                    @JsonProperty("name") String name) {
+                                                    @JsonProperty("name") String name,
+                                                    @JsonProperty("model") String model) {
         return builder()
                 .matchType(matchType)
                 .matchValue(matchValue)
                 .defaultClassification(defaultClassification)
                 .type(type)
                 .name(name)
+                .model(model)
                 .build();
     }
 
@@ -50,6 +54,8 @@ public abstract class CreateUavCustomTypeRequest {
         public abstract Builder type(String type);
 
         public abstract Builder name(String name);
+
+        public abstract Builder model(String model);
 
         public abstract CreateUavCustomTypeRequest build();
     }

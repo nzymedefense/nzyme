@@ -1226,3 +1226,7 @@ div.dropdown-headline ul.dropdown-menu {
 .classification.classification-hostile {
     color: #CC3636;
 }
+
+span.serial-number-match {
+    font-family: "Geist Mono", monospace;
+}

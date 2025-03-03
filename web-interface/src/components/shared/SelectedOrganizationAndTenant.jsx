@@ -13,8 +13,24 @@ function SelectedOrganizationAndTenant(props) {
   const tenantId = props.tenantId;
   const onReset = props.onReset;
 
+  const noEdit = props.noEdit;
+
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
+
+  const editButton = () => {
+    if (noEdit) {
+      return null;
+    }
+
+    return (
+        <li>
+          <a href="#" onClick={(e) => {e.preventDefault(); onReset()}}>
+            <i className="fa-solid fa-pen-to-square"></i>
+          </a>
+        </li>
+    )
+  }
 
   useEffect(() => {
     if (organizationId && (user.is_superadmin || user.is_orgadmin)) {
@@ -39,11 +55,7 @@ function SelectedOrganizationAndTenant(props) {
           <ul className="selected-org-tenant">
             <li><span>Organization:</span> {organization.name}</li>
             <li><span>Tenant:</span> {tenant.name}</li>
-            <li>
-              <a href="#" onClick={(e) => {e.preventDefault(); onReset()}}>
-                <i className="fa-solid fa-pen-to-square"></i>
-              </a>
-            </li>
+            {editButton()}
           </ul>
         </React.Fragment>
     )
@@ -55,11 +67,7 @@ function SelectedOrganizationAndTenant(props) {
         <React.Fragment>
           <ul className="selected-org-tenant">
             <li><span>Tenant:</span> {tenant.name}</li>
-            <li>
-              <a href="#" onClick={(e) => {e.preventDefault(); onReset()}}>
-                <i className="fa-solid fa-pen-to-square"></i>
-              </a>
-            </li>
+            {editButton()}
           </ul>
         </React.Fragment>
     )

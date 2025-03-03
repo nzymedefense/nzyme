@@ -19,10 +19,12 @@ public abstract class UavTypeEntry {
     public abstract String defaultClassification();
     public abstract String type();
     public abstract String name();
+    @Nullable
+    public abstract String model();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static UavTypeEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String matchType, String matchValue, String defaultClassification, String type, String name, DateTime createdAt, DateTime updatedAt) {
+    public static UavTypeEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String matchType, String matchValue, String defaultClassification, String type, String name, String model, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -33,6 +35,7 @@ public abstract class UavTypeEntry {
                 .defaultClassification(defaultClassification)
                 .type(type)
                 .name(name)
+                .model(model)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -61,6 +64,8 @@ public abstract class UavTypeEntry {
         public abstract Builder type(String type);
 
         public abstract Builder name(String name);
+
+        public abstract Builder model(String model);
 
         public abstract Builder createdAt(DateTime createdAt);
 

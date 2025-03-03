@@ -10,6 +10,7 @@ export default function UavTypeForm(props) {
   const [matchValue, setMatchValue] = useState(props.matchValue ? props.matchValue : "");
   const [defaultClassification, setDefaultClassification] = useState(props.defaultClassification ? props.defaultClassification : "");
   const [type, setType] = useState(props.type ? props.type : "");
+  const [model, setModel] = useState(props.model ? props.model : "");
   const [name, setName] = useState(props.name ? props.name : "");
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -32,7 +33,7 @@ export default function UavTypeForm(props) {
     setIsSubmitting(true);
     setSubmitText(<span><i className="fa-solid fa-circle-notch fa-spin"></i> &nbsp;Creating ...</span>)
 
-    onSubmit(matchType, matchValue, defaultClassification, type, name, () => {
+    onSubmit(matchType, matchValue, defaultClassification, type, model, name, () => {
       // On failure.
       notify.show("Could not create custom UAV type.", "error");
 
@@ -45,7 +46,8 @@ export default function UavTypeForm(props) {
       <form>
         <div className="mb-3">
           <label htmlFor="match_type" className="form-label">Match Type</label>
-          <select className="form-control" id="match_type" value={matchType} onChange={(e) => { updateValue(e, setMatchType) }}>
+          <select className="form-control" id="match_type" value={matchType}
+                  onChange={(e) => { updateValue(e, setMatchType) }}>
             <option value="EXACT">Serial Number Exact Match</option>
             <option value="PREFIX">Serial Number Prefix Match</option>
           </select>
@@ -72,7 +74,7 @@ export default function UavTypeForm(props) {
             <option value="AERIAL_INTELLIGENCE">Aerial Intelligence</option>
             <option value="AGRICULTURAL">Agricultural</option>
             <option value="CARGO">Cargo / Heavy Lift</option>
-            <option value="DELIVERY_DRONE">Delivery</option>
+            <option value="DELIVERY">Delivery</option>
             <option value="PHOTO_VIDEO">Photography/Videography</option>
             <option value="PRO_MULTI">Professional Multi-Use</option>
             <option value="PRO_SURVEY">Professional Survey</option>
@@ -83,15 +85,24 @@ export default function UavTypeForm(props) {
         </div>
 
         <div className="mb-3">
+          <label htmlFor="model" className="form-label">Model <small>Optional</small></label>
+          <input type="text" className="form-control" id="model"
+                 value={model} onChange={(e) => { updateValue(e, setModel) }} />
+          <div className="form-text">The model of the UAV. For example <em>DJI Mavic 3 Pro.</em></div>
+        </div>
+
+        <div className="mb-3">
           <label htmlFor="name" className="form-label">Name</label>
           <input type="text" className="form-control" id="name"
                  value={name} onChange={(e) => { updateValue(e, setName) }} />
-          <div className="form-text">The type name or description of the matched UAV.</div>
+          <div className="form-text">The type name or description of the matched UAV.
+            For example <em>John's inspection drone.</em></div>
         </div>
 
         <div className="mb-3">
           <label htmlFor="default_classification" className="form-label">Default Classification</label>
-          <select className="form-control" id="default_classification" value={defaultClassification} onChange={(e) => { updateValue(e, setDefaultClassification) }}>
+          <select className="form-control" id="default_classification" value={defaultClassification}
+                  onChange={(e) => { updateValue(e, setDefaultClassification) }}>
             <option value="">None (Unknown)</option>
             <option value="NEUTRAL">Neutral</option>
             <option value="FRIENDLY">Friendly</option>

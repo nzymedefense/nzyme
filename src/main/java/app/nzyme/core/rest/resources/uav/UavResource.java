@@ -179,6 +179,7 @@ public class UavResource extends TapDataHandlingResource {
                     type.defaultClassification(),
                     type.type(),
                     type.name(),
+                    type.model(),
                     type.createdAt(),
                     type.updatedAt()
             ));
@@ -213,7 +214,14 @@ public class UavResource extends TapDataHandlingResource {
         }
 
         nzyme.getUav().createCustomType(
-                organizationId, tenantId, matchType, req.matchValue(), defaultClassification, req.type(), req.name()
+                organizationId,
+                tenantId,
+                matchType,
+                req.matchValue(),
+                defaultClassification,
+                req.type(),
+                req.name(),
+                req.model() == null || req.model().trim().isEmpty() ? null : req.model()
         );
 
         return Response.status(Response.Status.CREATED).build();
