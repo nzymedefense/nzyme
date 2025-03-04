@@ -13,6 +13,8 @@ export default function ProvidedServices(props) {
       case "geoip_ipinfofree":
         return <span>GeoIP and ASN information. (Powered
           by <a href="https://ipinfo.io" target="_blank" rel="noreferrer">IPinfo.io</a>)</span>
+      case "uav":
+        return "UAV (Unmanned Aerial Vehicle) model and classification information"
       default:
         return service;
     }
