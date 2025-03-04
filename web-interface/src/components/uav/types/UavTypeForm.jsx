@@ -70,14 +70,15 @@ export default function UavTypeForm(props) {
         <div className="mb-3">
           <label htmlFor="type" className="form-label">Type</label>
           <select className="form-control" id="type" value={type} onChange={(e) => { updateValue(e, setType) }}>
-            <option value="GENERIC">Generic</option>
-            <option value="AERIAL_INTELLIGENCE">Aerial Intelligence</option>
-            <option value="AGRICULTURAL">Agricultural</option>
-            <option value="CARGO">Cargo / Heavy Lift</option>
-            <option value="DELIVERY">Delivery</option>
-            <option value="PHOTO_VIDEO">Photography/Videography</option>
-            <option value="PRO_MULTI">Professional Multi-Use</option>
-            <option value="PRO_SURVEY">Professional Survey</option>
+            <option value="GENERIC_UNKNOWN">Generic / Unknown</option>
+            <option value="AGRICULTURE">Agriculture</option>
+            <option value="CARGO">Cargo / Delivery</option>
+            <option value="HOBBY_TOY">Hobby / Toy</option>
+            <option value="INDUSTRIAL_INSPECTION">Industrial / Inspection</option>
+            <option value="MAPPING_SURVEYING">Mapping / Surveying</option>
+            <option value="PHOTO_VIDEO">Photo / Video</option>
+            <option value="PUBLIC_SAFETY">Public Safety</option>
+            <option value="RID_MODULE">Remote ID Module</option>
           </select>
           <div className="form-text">
             Type of UAV.
