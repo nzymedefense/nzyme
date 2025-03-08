@@ -6259,4 +6259,16 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_lat_lon_to_taps" author="lennartkoopmann">
+        <addColumn tableName="taps">
+            <column name="latitude" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="longitude" type="double">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

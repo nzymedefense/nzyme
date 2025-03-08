@@ -1445,7 +1445,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 tenantId,
                 secret,
                 req.name(),
-                req.description()
+                req.description(),
+                req.latitude(),
+                req.longitude()
         );
 
         return Response.status(Response.Status.CREATED).build();
@@ -1476,7 +1478,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getAuthenticationService().editTap(organizationId, tenantId, tapId, req.name(), req.description());
+        nzyme.getAuthenticationService().editTap(
+                organizationId, tenantId, tapId, req.name(), req.description(), req.latitude(), req.longitude()
+        );
 
         return Response.ok().build();
     }
@@ -2706,6 +2710,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 tpe.tenantId(),
                 tpe.name(),
                 tpe.description(),
+                tpe.latitude(),
+                tpe.longitude(),
                 decryptedSecret,
                 tpe.floorId() != null && tpe.locationId() != null,
                 tpe.locationId(),

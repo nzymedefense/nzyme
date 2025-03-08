@@ -110,7 +110,7 @@ function TapPermissionDetailsPage() {
 
         <div className="row">
           <div className="col-md-12">
-            <h1>Authentication of Tap &quot;{tap.name}&quot;</h1>
+            <h1>Authentication and Configuration of Tap &quot;{tap.name}&quot;</h1>
           </div>
         </div>
 
@@ -164,6 +164,37 @@ function TapPermissionDetailsPage() {
                       Delete Tap
                     </button>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="row mt-3">
+            <div className="col-xl-12 col-xxl-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Location" slim={true}/>
+
+                  <div className="alert alert-info">
+                    Note that latitude/longitude are configured using the <em>Edit Tap</em> button on this page
+                    and location/floor are configured on the tenant location pages.
+                  </div>
+
+                  <dl>
+                    <dt>Location</dt>
+                    <dd>TODO</dd>
+                    <dt>Floor</dt>
+                    <dd>TODO</dd>
+                  </dl>
+
+                  <dl>
+                    <dt>Latitude</dt>
+                    <dd>TODO</dd>
+                    <dt>Longitude</dt>
+                    <dd>TODO</dd>
+                  </dl>
+
+                  MAP HERE
                 </div>
               </div>
             </div>

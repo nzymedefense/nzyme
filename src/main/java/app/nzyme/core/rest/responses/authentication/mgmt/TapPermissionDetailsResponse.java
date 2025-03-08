@@ -25,6 +25,14 @@ public abstract class TapPermissionDetailsResponse {
     @JsonProperty("description")
     public abstract String description();
 
+    @Nullable
+    @JsonProperty("latitude")
+    public abstract Double latitude();
+
+    @Nullable
+    @JsonProperty("longitude")
+    public abstract Double longitude();
+
     @JsonProperty("secret")
     public abstract String secret();
 
@@ -60,13 +68,15 @@ public abstract class TapPermissionDetailsResponse {
     @JsonProperty("active")
     public abstract boolean active();
 
-    public static TapPermissionDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, String secret, boolean isPlacedOnMap, UUID locationId, UUID floorId, Integer floorLocationX, Integer floorLocationY, DateTime createdAt, DateTime updatedAt, DateTime lastReport, boolean active) {
+    public static TapPermissionDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, Double latitude, Double longitude, String secret, boolean isPlacedOnMap, UUID locationId, UUID floorId, Integer floorLocationX, Integer floorLocationY, DateTime createdAt, DateTime updatedAt, DateTime lastReport, boolean active) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
                 .name(name)
                 .description(description)
+                .latitude(latitude)
+                .longitude(longitude)
                 .secret(secret)
                 .isPlacedOnMap(isPlacedOnMap)
                 .locationId(locationId)
@@ -95,6 +105,10 @@ public abstract class TapPermissionDetailsResponse {
         public abstract Builder name(String name);
 
         public abstract Builder description(String description);
+
+        public abstract Builder latitude(Double latitude);
+
+        public abstract Builder longitude(Double longitude);
 
         public abstract Builder secret(String secret);
 

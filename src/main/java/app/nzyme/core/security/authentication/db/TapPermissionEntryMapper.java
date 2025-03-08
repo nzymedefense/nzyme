@@ -26,6 +26,8 @@ public class TapPermissionEntryMapper implements RowMapper<TapPermissionEntry> {
                 tenantId == null ? null : UUID.fromString(tenantId),
                 rs.getString("name"),
                 rs.getString("description"),
+                rs.getDouble("latitude"),
+                rs.getDouble("longitude"),
                 rs.getString("secret"),
                 locationUuid == null ? null : UUID.fromString(locationUuid),
                 floorUuid == null ? null : UUID.fromString(floorUuid),

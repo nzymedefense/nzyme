@@ -17,6 +17,12 @@ public abstract class TapPermissionEntry {
     public abstract String name();
     public abstract String description();
 
+    @Nullable
+    public abstract Double latitude();
+
+    @Nullable
+    public abstract Double longitude();
+
     public abstract String secret();
 
     @Nullable
@@ -37,7 +43,7 @@ public abstract class TapPermissionEntry {
     @Nullable
     public abstract DateTime lastReport();
 
-    public static TapPermissionEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String name, String description, String secret, UUID locationId, UUID floorId, Integer floorLocationX, Integer floorLocationY, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
+    public static TapPermissionEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String name, String description, Double latitude, Double longitude, String secret, UUID locationId, UUID floorId, Integer floorLocationX, Integer floorLocationY, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -45,6 +51,8 @@ public abstract class TapPermissionEntry {
                 .tenantId(tenantId)
                 .name(name)
                 .description(description)
+                .latitude(latitude)
+                .longitude(longitude)
                 .secret(secret)
                 .locationId(locationId)
                 .floorId(floorId)
@@ -73,6 +81,10 @@ public abstract class TapPermissionEntry {
         public abstract Builder name(String name);
 
         public abstract Builder description(String description);
+
+        public abstract Builder latitude(Double latitude);
+
+        public abstract Builder longitude(Double longitude);
 
         public abstract Builder secret(String secret);
 

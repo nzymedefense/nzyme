@@ -869,7 +869,13 @@ public class AuthenticationService {
         );
     }
 
-    public TapPermissionEntry createTap(UUID organizationId, UUID tenantId, String secret, String name, String description) {
+    public TapPermissionEntry createTap(UUID organizationId,
+                                        UUID tenantId,
+                                        String secret,
+                                        String name,
+                                        String description,
+                                        @Nullable Double latitude,
+                                        @Nullable Double longitude) {
         String encryptedSecret;
         try {
             encryptedSecret = BaseEncoding.base64().encode(nzyme.getCrypto().encryptWithClusterKey(secret.getBytes()));
@@ -879,14 +885,17 @@ public class AuthenticationService {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO taps(uuid, organization_id, tenant_id, secret, name, " +
-                                "description, deleted, created_at, updated_at) VALUES(:uuid, :organization_id, :tenant_id, " +
-                                ":secret, :name, :description, false, :created_at, :updated_at) RETURNING *")
+                                "description, latitude, longitude, deleted, created_at, updated_at) " +
+                                "VALUES(:uuid, :organization_id, :tenant_id, :secret, :name, :description, " +
+                                ":latitude, :longitude, false, :created_at, :updated_at) RETURNING *")
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("secret", encryptedSecret)
                         .bind("name", name)
                         .bind("description", description)
+                        .bind("latitude", latitude)
+                        .bind("longitude", longitude)
                         .bind("created_at", DateTime.now())
                         .bind("updated_at", DateTime.now())
                         .mapTo(TapPermissionEntry.class)
@@ -975,12 +984,21 @@ public class AuthenticationService {
         );
     }
 
-    public void editTap(UUID organizationId, UUID tenantId, UUID tapId, String name, String description) {
+    public void editTap(UUID organizationId,
+                        UUID tenantId,
+                        UUID tapId,
+                        String name,
+                        String description,
+                        @Nullable Double latitude,
+                        @Nullable Double longitude) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE taps SET name = :name, description = :description, updated_at = NOW() " +
+                handle.createUpdate("UPDATE taps SET name = :name, description = :description, " +
+                                "latitude = :latitude, longitude = :longitude, updated_at = NOW() " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND uuid = :uuid")
                         .bind("name", name)
                         .bind("description", description)
+                        .bind("latitude", latitude)
+                        .bind("longitude", longitude)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("uuid", tapId)
