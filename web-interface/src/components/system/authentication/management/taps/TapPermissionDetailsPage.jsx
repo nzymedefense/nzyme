@@ -7,6 +7,7 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
 import TapSecret from "./TapSecret";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
+import LatitudeLongitude from "../../../../shared/LatitudeLongitude";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -182,16 +183,18 @@ function TapPermissionDetailsPage() {
 
                   <dl>
                     <dt>Location</dt>
-                    <dd>TODO</dd>
+                    <dd>{tap.location_id && tap.location_name ?
+                        <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(tap.organization_id, tap.tenant_id, tap.location_id)}>{tap.location_name}</a>
+                        : <span className="text-muted">n/a</span>}</dd>
                     <dt>Floor</dt>
-                    <dd>TODO</dd>
+                    <dd>{tap.location_id && tap.location_name && tap.floor_id && tap.floor_name ?
+                        <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(tap.organization_id, tap.tenant_id, tap.location_id, tap.floor_id)}>{tap.floor_name}</a>
+                        : <span className="text-muted">n/a</span>}</dd>
                   </dl>
 
                   <dl>
-                    <dt>Latitude</dt>
-                    <dd>TODO</dd>
-                    <dt>Longitude</dt>
-                    <dd>TODO</dd>
+                    <dt>Latitude, Longitude</dt>
+                    <dd><LatitudeLongitude latitude={tap.latitude} longitude={tap.longitude} skipAccuracy={true} /></dd>
                   </dl>
 
                   MAP HERE

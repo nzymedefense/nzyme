@@ -1383,7 +1383,17 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         List<TapPermissionDetailsResponse> taps = Lists.newArrayList();
         for (TapPermissionEntry tap : nzyme.getAuthenticationService()
                 .findAllTapsOfTenant(organizationId, tenantId, limit, offset)) {
-            taps.add(tapPermissionEntryToResponse(tap));
+            Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                    .findTenantLocation(organizationId, tenantId, tap.locationId());
+            Optional<TenantLocationFloorEntry> floor;
+            if (location.isPresent()) {
+                floor = nzyme.getAuthenticationService()
+                        .findFloorOfTenantLocation(location.get().uuid(), tap.floorId());
+            } else {
+                floor = Optional.empty();
+            }
+
+            taps.add(tapPermissionEntryToResponse(tap, location, floor));
         }
 
         long tapCount = nzyme.getAuthenticationService().countTapsOfTenant(
@@ -1417,7 +1427,17 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(tapPermissionEntryToResponse(tap.get())).build();
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(tap.get().locationId(), organizationId, tenantId);
+        Optional<TenantLocationFloorEntry> floor;
+        if (location.isPresent()) {
+            floor = nzyme.getAuthenticationService()
+                    .findFloorOfTenantLocation(location.get().uuid(), tap.get().floorId());
+        } else {
+            floor = Optional.empty();
+        }
+
+        return Response.ok(tapPermissionEntryToResponse(tap.get(), location, floor)).build();
     }
 
     @POST
@@ -1752,7 +1772,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     floor.uuid(),
                     floor.locationId(),
                     floor.number(),
-                    floor.name() == null ? "Floor " + floor.number() : floor.name(),
+                    buildFloorName(floor),
                     floor.plan() != null,
                     tapPositions.size(),
                     tapPositions,
@@ -1813,7 +1833,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 floor.uuid(),
                 floor.locationId(),
                 floor.number(),
-                floor.name() == null ? "Floor " + floor.number() : floor.name(),
+                buildFloorName(floor),
                 floor.plan() != null,
                 tapPositions.size(),
                 tapPositions,
@@ -2696,7 +2716,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         );
     }
 
-    private TapPermissionDetailsResponse tapPermissionEntryToResponse(TapPermissionEntry tpe) {
+    private TapPermissionDetailsResponse tapPermissionEntryToResponse(TapPermissionEntry tpe,
+                                                                      Optional<TenantLocationEntry> location,
+                                                                      Optional<TenantLocationFloorEntry> floor) {
         String decryptedSecret;
         try {
             decryptedSecret = new String(nzyme.getCrypto().decryptWithClusterKey(Base64.decode(tpe.secret())));
@@ -2715,7 +2737,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 decryptedSecret,
                 tpe.floorId() != null && tpe.locationId() != null,
                 tpe.locationId(),
+                location.map(TenantLocationEntry::name).orElse(null),
                 tpe.floorId(),
+                floor.map(this::buildFloorName).orElse(null),
                 tpe.floorLocationX(),
                 tpe.floorLocationY(),
                 tpe.createdAt(),
@@ -2787,6 +2811,14 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         return true;
+    }
+
+    private String buildFloorName(TenantLocationFloorEntry floor) {
+        if (floor.name() == null) {
+            return "Floor " + floor.number();
+        } else {
+            return floor.name();
+        }
     }
 
 }

@@ -13,7 +13,7 @@ public abstract class TapPermissionDetailsResponse {
     @JsonProperty("uuid")
     public abstract UUID uuid();
 
-    @JsonProperty("organization_d")
+    @JsonProperty("organization_id")
     public abstract UUID organizationId();
 
     @JsonProperty("tenant_id")
@@ -44,8 +44,16 @@ public abstract class TapPermissionDetailsResponse {
     public abstract UUID locationId();
 
     @Nullable
+    @JsonProperty("location_name")
+    public abstract String locationName();
+
+    @Nullable
     @JsonProperty("floor_id")
     public abstract UUID floorId();
+
+    @Nullable
+    @JsonProperty("floor_name")
+    public abstract String floorName();
 
     @Nullable
     @JsonProperty("floor_location_x")
@@ -68,7 +76,7 @@ public abstract class TapPermissionDetailsResponse {
     @JsonProperty("active")
     public abstract boolean active();
 
-    public static TapPermissionDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, Double latitude, Double longitude, String secret, boolean isPlacedOnMap, UUID locationId, UUID floorId, Integer floorLocationX, Integer floorLocationY, DateTime createdAt, DateTime updatedAt, DateTime lastReport, boolean active) {
+    public static TapPermissionDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, Double latitude, Double longitude, String secret, boolean isPlacedOnMap, UUID locationId, String locationName, UUID floorId, String floorName, Integer floorLocationX, Integer floorLocationY, DateTime createdAt, DateTime updatedAt, DateTime lastReport, boolean active) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -80,7 +88,9 @@ public abstract class TapPermissionDetailsResponse {
                 .secret(secret)
                 .isPlacedOnMap(isPlacedOnMap)
                 .locationId(locationId)
+                .locationName(locationName)
                 .floorId(floorId)
+                .floorName(floorName)
                 .floorLocationX(floorLocationX)
                 .floorLocationY(floorLocationY)
                 .createdAt(createdAt)
@@ -116,7 +126,11 @@ public abstract class TapPermissionDetailsResponse {
 
         public abstract Builder locationId(UUID locationId);
 
+        public abstract Builder locationName(String locationName);
+
         public abstract Builder floorId(UUID floorId);
+
+        public abstract Builder floorName(String floorName);
 
         public abstract Builder floorLocationX(Integer floorLocationX);
 

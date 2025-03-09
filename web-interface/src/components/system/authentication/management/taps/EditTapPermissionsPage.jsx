@@ -21,8 +21,8 @@ function EditTapPermissionsPage() {
 
   const [redirect, setRedirect] = useState(false);
 
-  const onFormSubmitted = function (name, description) {
-    authenticationManagementService.editTapAuthentication(organization.id, tenant.id, tap.uuid, name, description, function() {
+  const onFormSubmitted = function (name, description, latitude, longitude) {
+    authenticationManagementService.editTapPermission(organization.id, tenant.id, tap.uuid, name, description, latitude, longitude, () => {
       setRedirect(true);
       notify.show('Tap details updated.', 'success');
     })
@@ -105,6 +105,8 @@ function EditTapPermissionsPage() {
                 <TapPermissionForm onClick={onFormSubmitted}
                                    name={tap.name}
                                    description={tap.description}
+                                   latitude={tap.latitude}
+                                   longitude={tap.longitude}
                                    submitText="Edit Tap"  />
               </div>
             </div>

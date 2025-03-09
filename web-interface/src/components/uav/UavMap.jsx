@@ -49,6 +49,7 @@ export default function UavMap(props) {
 
   useEffect(() => {
     if (mapInitialized) {
+      map.invalidateSize(true);
       map.attributionControl.setPrefix("");
       map.setView([uav.summary.latitude, uav.summary.longitude], 16)
 

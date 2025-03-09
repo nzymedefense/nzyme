@@ -1,6 +1,8 @@
 import React from "react";
 import UavHorizontalAccuracy from "../uav/util/UavHorizontalAccuracy";
 
+import numeral from "numeral";
+
 export default function LatitudeLongitude(props) {
 
   const latitude = props.latitude;
@@ -16,12 +18,12 @@ export default function LatitudeLongitude(props) {
 
   if (skipAccuracy) {
     return (
-        <span>{latitude}, {longitude}</span>
+        <span>{numeral(latitude).format("0.0000")}, {numeral(longitude).format("0.0000")}</span>
     )
   }
 
   return (
-    <span>{latitude}, {longitude} (<UavHorizontalAccuracy accuracy={accuracy} />)</span>
+    <span>{numeral(latitude).format("0.0000")}, {numeral(longitude).format("0.0000")} (<UavHorizontalAccuracy accuracy={accuracy} />)</span>
   )
 
 }
