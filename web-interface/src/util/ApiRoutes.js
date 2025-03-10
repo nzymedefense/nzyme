@@ -39,6 +39,7 @@ const ApiRoutes = {
           TAPS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/taps`,
           USERS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/users`,
           LOCATIONS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/locations`,
+          INTEGRATIONS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations`,
           DATABASE_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/database`,
           CREATE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/tenants/create`,
           EDIT: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/edit`,
