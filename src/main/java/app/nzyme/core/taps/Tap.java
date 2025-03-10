@@ -67,7 +67,13 @@ public abstract class Tap {
 
     public abstract String remoteAddress();
 
-    public static Tap create(long id, UUID uuid, String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, UUID organizationId, UUID tenantId, UUID locationId, UUID floorId, Integer x, Integer y, String remoteAddress) {
+    @Nullable
+    public abstract Double latitude();
+
+    @Nullable
+    public abstract Double longitude();
+
+    public static Tap create(long id, UUID uuid, String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, UUID organizationId, UUID tenantId, UUID locationId, UUID floorId, Integer x, Integer y, String remoteAddress, Double latitude, Double longitude) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -91,6 +97,8 @@ public abstract class Tap {
                 .x(x)
                 .y(y)
                 .remoteAddress(remoteAddress)
+                .latitude(latitude)
+                .longitude(longitude)
                 .build();
     }
 
@@ -143,6 +151,10 @@ public abstract class Tap {
         public abstract Builder y(Integer y);
 
         public abstract Builder remoteAddress(String remoteAddress);
+
+        public abstract Builder latitude(Double latitude);
+
+        public abstract Builder longitude(Double longitude);
 
         public abstract Tap build();
     }

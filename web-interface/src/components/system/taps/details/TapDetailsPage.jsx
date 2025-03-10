@@ -14,6 +14,10 @@ import TapClockWarning from "./TapClockWarning";
 import {byteAverageToMbit} from "../../../../util/Tools";
 import TapDot11CoverageMap from "./TapDot11CoverageMap";
 import WithMinimumRole from "../../../misc/WithMinimumRole";
+import CardTitleWithControls from "../../../shared/CardTitleWithControls";
+import ApiRoutes from "../../../../util/ApiRoutes";
+import LatitudeLongitude from "../../../shared/LatitudeLongitude";
+import TapPositionMap from "../../authentication/management/taps/TapPositionMap";
 
 const tapsService = new TapsService()
 
@@ -147,6 +151,37 @@ function TapDetailsPage () {
           </div>
         </div>
       </div>
+
+      { tap.location_id || (tap.latitude && tap.longitude) ?
+      <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Location" slim={true}/>
+              <dl className="mb-1 tap-location-details">
+                <dt>Location</dt>
+                <dd>
+                  {tap.location_id && tap.location_name ? tap.location_name : <span className="text-muted">n/a</span>}
+                </dd>
+                <dt>Floor</dt>
+                <dd>
+                  {tap.location_id && tap.location_name && tap.floor_id && tap.floor_name ? tap.floor_name
+                    : <span className="text-muted">n/a</span>}
+                </dd>
+                <dt>Latitude, Longitude</dt>
+                <dd><LatitudeLongitude latitude={tap.latitude} longitude={tap.longitude} skipAccuracy={true} /></dd>
+              </dl>
+
+              { tap.latitude && tap.longitude ? <TapPositionMap editMode={false}
+                                                                containerHeight={300}
+                                                                defaultZoomLevel={18}
+                                                                latitude={tap.latitude}
+                                                                longitude={tap.longitude} />
+                : null }
+            </div>
+          </div>
+        </div>
+      </div> : null }
 
       <div className="row mt-3">
         <div className="col-md-12">

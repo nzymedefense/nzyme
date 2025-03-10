@@ -1,6 +1,8 @@
 package app.nzyme.core.rest.resources.taps;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.floorplans.db.TenantLocationEntry;
+import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.taps.metrics.*;
@@ -64,7 +66,22 @@ public class TapsResource extends UserAuthenticatedResource {
 
         List<TapDetailsResponse> tapsResponse = Lists.newArrayList();
         for (Tap tap : nzyme.getTapManager().findAllTapsByUUIDs(uuids)) {
-            tapsResponse.add(buildTapResponse(tap));
+            Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                    .findTenantLocation(
+                            tap.locationId(),
+                            authenticatedUser.getOrganizationId(),
+                            authenticatedUser.getTenantId()
+                    );
+
+            Optional<TenantLocationFloorEntry> floor;
+            if (location.isPresent()) {
+                floor = nzyme.getAuthenticationService()
+                        .findFloorOfTenantLocation(location.get().uuid(), tap.floorId());
+            } else {
+                floor = Optional.empty();
+            }
+
+            tapsResponse.add(buildTapResponse(tap, location, floor));
         }
 
         return Response.ok(TapListResponse.create(tapsResponse.size(), tapsResponse)).build();
@@ -85,7 +102,22 @@ public class TapsResource extends UserAuthenticatedResource {
         if (tap.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else {
-            return Response.ok(buildTapResponse(tap.get())).build();
+            Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                    .findTenantLocation(
+                            tap.get().locationId(),
+                            authenticatedUser.getOrganizationId(),
+                            authenticatedUser.getTenantId()
+                    );
+
+            Optional<TenantLocationFloorEntry> floor;
+            if (location.isPresent()) {
+                floor = nzyme.getAuthenticationService()
+                        .findFloorOfTenantLocation(location.get().uuid(), tap.get().floorId());
+            } else {
+                floor = Optional.empty();
+            }
+
+            return Response.ok(buildTapResponse(tap.get(), location, floor)).build();
         }
     }
 
@@ -209,7 +241,9 @@ public class TapsResource extends UserAuthenticatedResource {
         return Response.ok(TapMetricsHistogramResponse.create(result)).build();
     }
 
-    private TapDetailsResponse buildTapResponse(Tap tap) {
+    private TapDetailsResponse buildTapResponse(Tap tap,
+                                                Optional<TenantLocationEntry> location,
+                                                Optional<TenantLocationFloorEntry> floor) {
         List<BusDetailsResponse> busesResponse = Lists.newArrayList();
 
         Optional<List<Bus>> buses = nzyme.getTapManager().findBusesOfTap(tap.uuid());
@@ -294,7 +328,13 @@ public class TapsResource extends UserAuthenticatedResource {
                 tap.remoteAddress(),
                 dot11Frequencies,
                 tap.organizationId(),
-                tap.tenantId()
+                tap.tenantId(),
+                tap.locationId(),
+                location.map(TenantLocationEntry::name).orElse(null),
+                tap.floorId(),
+                floor.map(Tools::buildFloorName).orElse(null),
+                tap.latitude(),
+                tap.longitude()
         );
     }
 

@@ -18,6 +18,7 @@
 package app.nzyme.core.util;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.taps.Tap;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
@@ -163,6 +164,14 @@ public class Tools {
         return taps.stream()
                 .map(Tap::uuid)
                 .collect(Collectors.toList());
+    }
+
+    public static String buildFloorName(TenantLocationFloorEntry floor) {
+        if (floor.name() == null) {
+            return "Floor " + floor.number();
+        } else {
+            return floor.name();
+        }
     }
 
 }

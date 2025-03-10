@@ -1230,3 +1230,9 @@ div.dropdown-headline ul.dropdown-menu {
 span.serial-number-match {
     font-family: "Geist Mono", monospace;
 }
+
+dl.tap-location-details dt,
+dl.tap-location-details dd {
+    display: inline-block; /* or use inline if you prefer */
+    margin-right: 10px; /* adjust spacing as needed */
+}

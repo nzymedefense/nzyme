@@ -1772,7 +1772,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     floor.uuid(),
                     floor.locationId(),
                     floor.number(),
-                    buildFloorName(floor),
+                    Tools.buildFloorName(floor),
                     floor.plan() != null,
                     tapPositions.size(),
                     tapPositions,
@@ -1833,7 +1833,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 floor.uuid(),
                 floor.locationId(),
                 floor.number(),
-                buildFloorName(floor),
+                Tools.buildFloorName(floor),
                 floor.plan() != null,
                 tapPositions.size(),
                 tapPositions,
@@ -2739,7 +2739,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 tpe.locationId(),
                 location.map(TenantLocationEntry::name).orElse(null),
                 tpe.floorId(),
-                floor.map(this::buildFloorName).orElse(null),
+                floor.map(Tools::buildFloorName).orElse(null),
                 tpe.floorLocationX(),
                 tpe.floorLocationY(),
                 tpe.createdAt(),
@@ -2813,12 +2813,6 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return true;
     }
 
-    private String buildFloorName(TenantLocationFloorEntry floor) {
-        if (floor.name() == null) {
-            return "Floor " + floor.number();
-        } else {
-            return floor.name();
-        }
-    }
+
 
 }

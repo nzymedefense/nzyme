@@ -83,7 +83,31 @@ public abstract class TapDetailsResponse {
     @JsonProperty("tenant_id")
     public abstract UUID tenantId();
 
-    public static TapDetailsResponse create(UUID uuid, String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, boolean active, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures, String remoteAddress, List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies, UUID organizationId, UUID tenantId) {
+    @Nullable
+    @JsonProperty("location_id")
+    public abstract UUID locationId();
+
+    @Nullable
+    @JsonProperty("location_name")
+    public abstract String locationName();
+
+    @Nullable
+    @JsonProperty("floor_id")
+    public abstract UUID floorId();
+
+    @Nullable
+    @JsonProperty("floor_name")
+    public abstract String floorName();
+
+    @JsonProperty("latitude")
+    @Nullable
+    public abstract Double latitude();
+
+    @JsonProperty("longitude")
+    @Nullable
+    public abstract Double longitude();
+
+    public static TapDetailsResponse create(UUID uuid, String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, boolean active, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures, String remoteAddress, List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies, UUID organizationId, UUID tenantId, UUID locationId, String locationName, UUID floorId, String floorName, Double latitude, Double longitude) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -106,6 +130,12 @@ public abstract class TapDetailsResponse {
                 .dot11Frequencies(dot11Frequencies)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
+                .locationId(locationId)
+                .locationName(locationName)
+                .floorId(floorId)
+                .floorName(floorName)
+                .latitude(latitude)
+                .longitude(longitude)
                 .build();
     }
 
@@ -156,6 +186,18 @@ public abstract class TapDetailsResponse {
         public abstract Builder organizationId(UUID organizationId);
 
         public abstract Builder tenantId(UUID tenantId);
+
+        public abstract Builder locationId(UUID locationId);
+
+        public abstract Builder locationName(String locationName);
+
+        public abstract Builder floorId(UUID floorId);
+
+        public abstract Builder floorName(String floorName);
+
+        public abstract Builder latitude(Double latitude);
+
+        public abstract Builder longitude(Double longitude);
 
         public abstract TapDetailsResponse build();
     }

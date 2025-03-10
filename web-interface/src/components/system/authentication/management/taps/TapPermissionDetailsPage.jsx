@@ -8,6 +8,7 @@ import {notify} from "react-notify-toast";
 import TapSecret from "./TapSecret";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 import LatitudeLongitude from "../../../../shared/LatitudeLongitude";
+import TapPositionMap from "./TapPositionMap";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -181,7 +182,7 @@ function TapPermissionDetailsPage() {
                     and location/floor are configured on the tenant location pages.
                   </div>
 
-                  <dl>
+                  <dl className="mb-0">
                     <dt>Location</dt>
                     <dd>{tap.location_id && tap.location_name ?
                         <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(tap.organization_id, tap.tenant_id, tap.location_id)}>{tap.location_name}</a>
@@ -190,14 +191,16 @@ function TapPermissionDetailsPage() {
                     <dd>{tap.location_id && tap.location_name && tap.floor_id && tap.floor_name ?
                         <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(tap.organization_id, tap.tenant_id, tap.location_id, tap.floor_id)}>{tap.floor_name}</a>
                         : <span className="text-muted">n/a</span>}</dd>
-                  </dl>
-
-                  <dl>
                     <dt>Latitude, Longitude</dt>
                     <dd><LatitudeLongitude latitude={tap.latitude} longitude={tap.longitude} skipAccuracy={true} /></dd>
                   </dl>
 
-                  MAP HERE
+                  { tap.latitude && tap.longitude ? <TapPositionMap editMode={false}
+                                                                    containerHeight={300}
+                                                                    defaultZoomLevel={18}
+                                                                    latitude={tap.latitude}
+                                                                    longitude={tap.longitude} />
+                    : null }
                 </div>
               </div>
             </div>

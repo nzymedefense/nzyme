@@ -6,13 +6,15 @@ function TapPermissionForm(props) {
 
   const onClick = props.onClick;
   const submitText = props.submitText;
+  const defaultMapZoomLevel = props.defaultMapZoomLevel;
+
   const [name, setName] = useState(props.name ? props.name : "");
   const [description, setDescription] = useState(props.description ? props.description : "");
 
   const [longitude, setLongitude] = useState(props.longitude ? props.longitude : null);
   const [latitude, setLatitude] = useState(props.latitude ? props.latitude : null);
 
-  const [additionalToggled, setAdditionalToggled] = useState(false);
+  const [additionalToggled, setAdditionalToggled] = useState(props.longitude && props.latitude);
 
   const updateValue = function(e, setter) {
     setter(e.target.value);
@@ -55,9 +57,9 @@ function TapPermissionForm(props) {
           </a>
 
           { additionalToggled ?
-            <div className="mb-3 mt-3" id="additionalTapOptions">
+            <div className="mb-3 mt-4" id="additionalTapOptions">
               <div className="mb-3">
-                <h4>Tap Location</h4>
+                <h3>Tap Location <small>Optional</small></h3>
 
                 <p className="text-muted">
                   You can define a latitude/longitude position for this tap. Note that this configuration is independent
@@ -70,6 +72,7 @@ function TapPermissionForm(props) {
                                 editMode={true}
                                 setLatitude={setLatitude}
                                 setLongitude={setLongitude}
+                                defaultZoomLevel={defaultMapZoomLevel}
                                 toggled={additionalToggled} /* Required to redraw on visibility toggle. */ />
 
                 <div className="mt-2">

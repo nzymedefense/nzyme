@@ -15,9 +15,10 @@ export default function TapPositionMap(props) {
   const setLongitude = props.setLongitude;
   const latitude = props.latitude;
   const longitude = props.longitude;
+  const defaultZoomLevel = props.defaultZoomLevel;
 
   const [map, setMap] = useState(null);
-  const [zoomLevel, setZoomLevel] = useState(9);
+  const [zoomLevel, setZoomLevel] = useState(defaultZoomLevel ? defaultZoomLevel : 9);
   const tapIcon = L.icon({
     iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap.png',
     iconSize: [24, 16],
@@ -25,12 +26,16 @@ export default function TapPositionMap(props) {
     tooltipAnchor: [0, 0]
   });
 
-  const placeMarker = (latlng) => {
+  const removeMarker = () => {
     map.eachLayer(function (layer) {
       if (layer.options.nzymeType === "tap-marker") {
         layer.remove();
       }
     });
+  }
+
+  const placeMarker = (latlng) => {
+    removeMarker();
 
     L.marker(latlng, {
       nzymeType: "tap-marker",
@@ -39,8 +44,10 @@ export default function TapPositionMap(props) {
       autoPan: true
     }).addTo(map);
 
-    setLatitude(latlng.lat);
-    setLongitude(latlng.lng);
+    if (editMode) {
+      setLatitude(latlng.lat);
+      setLongitude(latlng.lng);
+    }
   }
 
   useEffect(() => {
@@ -86,6 +93,13 @@ export default function TapPositionMap(props) {
   return (
       <React.Fragment>
         <div id="tap-location-map" style={{height: containerHeight}}/>
+
+        { latitude && longitude && editMode ?
+          <button href="" className="btn btn-sm btn-secondary float-end mt-1"
+                  onClick={(e) => {e.preventDefault(); setLatitude(null); setLongitude(null); removeMarker()}}>
+            Remove Location
+          </button>
+          : null }
       </React.Fragment>
   )
 
