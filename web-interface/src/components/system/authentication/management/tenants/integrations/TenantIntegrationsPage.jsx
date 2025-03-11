@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
-import LoadingSpinner from "../../../../misc/LoadingSpinner";
-import Routes from "../../../../../util/ApiRoutes";
-import ApiRoutes from "../../../../../util/ApiRoutes";
-import SectionMenuBar from "../../../../shared/SectionMenuBar";
-import {TENANT_MENU_ITEMS} from "./TenantMenuItems";
-import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
-import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
+import LoadingSpinner from "../../../../../misc/LoadingSpinner";
+import Routes from "../../../../../../util/ApiRoutes";
+import ApiRoutes from "../../../../../../util/ApiRoutes";
+import SectionMenuBar from "../../../../../shared/SectionMenuBar";
+import {TENANT_MENU_ITEMS} from "../TenantMenuItems";
+import CardTitleWithControls from "../../../../../shared/CardTitleWithControls";
+import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
+import CotConnectionTable from "./cot/CotConnectionTable";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -76,12 +77,18 @@ export default function TenantIntegrationsPage() {
       </div>
 
       <div className="row mt-3">
-        <div className="col-md-12">
+        <div className="col-xl-12 col-xxl-6">
           <div className="card">
             <div className="card-body">
-              <CardTitleWithControls title="Integrations" slim={true}/>
+              <CardTitleWithControls title="Cursor on Target (CoT)" slim={true}/>
 
-              TODO TODO TODO
+              <p>
+                Cursor on Target (CoT) is an XML-based standard for real-time exchange of geospatial and targeting
+                information across different systems. Developed by The MITRE Corporation, it’s often integrated with
+                the Tactical Assault Kit (TAK) to share critical data.
+              </p>
+
+              <CotConnectionTable connections={null} />
             </div>
           </div>
         </div>

@@ -154,7 +154,7 @@ import UavDetailsPage from "./components/uav/UavDetailsPage";
 import UavMonitoringPage from "./components/uav/monitoring/UavMonitoringPage";
 import UavTypesPage from "./components/uav/types/UavTypesPage";
 import CreateCustomTypePage from "./components/uav/types/CreateCustomTypePage";
-import TenantIntegrationsPage from "./components/system/authentication/management/tenants/TenantIntegrationsPage";
+import TenantIntegrationsPage from "./components/system/authentication/management/tenants/integrations/TenantIntegrationsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
