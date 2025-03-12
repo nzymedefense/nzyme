@@ -30,6 +30,7 @@ import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.ouis.OuiService;
+import app.nzyme.core.quota.QuotaService;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.subsystems.Subsystems;
@@ -81,6 +82,8 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
     MetricRegistry getMetrics();
 
     Database getDatabase();
+
+    QuotaService getQuotaService();
 
     EventEngine getEventEngine();
 

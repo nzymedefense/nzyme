@@ -44,6 +44,14 @@ class AuthenticationManagementService {
     RESTClient.put(`/system/authentication/mgmt/organizations/show/${id}/subsystems/configuration`, { change: newConfig }, successCallback, errorCallback)
   }
 
+  getQuotasOfOrganization(id, setQuotas) {
+    RESTClient.get(`/system/authentication/mgmt/organizations/show/${id}/quotas`, {}, (response) => setQuotas(response.data))
+  }
+
+  setQuotaOfOrganization(id, quotaType, quota, successCallback, errorCallback) {
+    RESTClient.put(`/system/authentication/mgmt/organizations/show/${id}/quotas/show/${quotaType}`, { quota: quota }, successCallback, errorCallback)
+  }
+
   findAllTenantsOfOrganization(organizationId, setTenants, limit, offset, successCallback = undefined) {
     RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants',
         {limit: limit, offset: offset}, function (response) {

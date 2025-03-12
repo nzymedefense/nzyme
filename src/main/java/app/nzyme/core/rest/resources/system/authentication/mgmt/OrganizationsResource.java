@@ -10,6 +10,8 @@ import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
+import app.nzyme.core.quota.QuotaUseFactory;
+import app.nzyme.core.quota.QuotaType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.*;
@@ -287,6 +289,59 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
             nzyme.getDatabaseCoreRegistry().setValue(c.getKey(), c.getValue().toString(), org.get().uuid());
         }
+
+        return Response.ok().build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
+    @Path("/show/{id}/quotas")
+    public Response getOrganizationQuotas(@PathParam("id") UUID id) {
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<QuotaDetailsResponse> quotas = new ArrayList<>();
+        for (Map.Entry<QuotaType, Optional<Integer>> q : nzyme.getQuotaService()
+                .getAllOrganizationQuotas(org.get().uuid()).entrySet()) {
+
+            int quotaUse = QuotaUseFactory.organizationQuotaUse(nzyme, q.getKey(), org.get().uuid());
+
+            quotas.add(QuotaDetailsResponse.create(
+                    q.getKey().name(),
+                    q.getKey().getHumanReadable(),
+                    q.getValue().orElse(null),
+                    quotaUse
+            ));
+        }
+
+        return Response.ok(quotas).build();
+    }
+
+    @PUT
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
+    @Path("/show/{id}/quotas/show/{quota_type}")
+    public Response setOrganizationQuota(@PathParam("id") UUID id,
+                                         @PathParam("quota_type") String quotaTypeParam,
+                                         @Valid ConfigureQuotaRequest req) {
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        QuotaType quotaType;
+        try {
+            quotaType = QuotaType.valueOf(quotaTypeParam.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        // TODO validity checks
+
+        nzyme.getQuotaService().setOrganizationQuota(org.get().uuid(), quotaType, req.quota());
 
         return Response.ok().build();
     }

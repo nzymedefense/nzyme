@@ -155,6 +155,7 @@ import UavMonitoringPage from "./components/uav/monitoring/UavMonitoringPage";
 import UavTypesPage from "./components/uav/types/UavTypesPage";
 import CreateCustomTypePage from "./components/uav/types/CreateCustomTypePage";
 import TenantIntegrationsPage from "./components/system/authentication/management/tenants/integrations/TenantIntegrationsPage";
+import OrganizationQuotasPage from "./components/system/authentication/management/organizations/OrganizationQuotasPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -361,6 +362,7 @@ function App() {
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS_PAGE(':organizationId')} element={<OrganizationAdministratorsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS_PAGE(':organizationId')} element={<OrganizationEventsAndActionsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DATABASE_PAGE(':organizationId')} element={<OrganizationDatabasePage />}/>
+                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.QUOTAS_PAGE(':organizationId')} element={<OrganizationQuotasPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.CREATE(':organizationId')} element={<CreateOrganizationAdministratorPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.DETAILS(':organizationId', ':userId')} element={<OrganizationAdminDetailsPage />}/>

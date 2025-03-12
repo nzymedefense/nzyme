@@ -16,6 +16,7 @@ const ApiRoutes = {
           ADMINS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/administrators`,
           EVENTS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/events`,
           DATABASE_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/database`,
+          QUOTAS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/quotas`,
           CREATE: '/system/authentication/organizations/create',
           EDIT: (organizationId) => `/system/authentication/organizations/show/${organizationId}/edit`,
           ADMINS: {

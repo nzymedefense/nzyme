@@ -47,6 +47,7 @@ import app.nzyme.core.periodicals.connect.ConnectStatusReporter;
 import app.nzyme.core.context.ContextCleaner;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.periodicals.housekeeping.DatabaseRetentionCleaner;
+import app.nzyme.core.quota.QuotaService;
 import app.nzyme.core.registry.RegistryChangeMonitorImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
@@ -106,6 +107,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final RegistryChangeMonitor registryChangeMonitor;
 
     private final Subsystems subsystems;
+    private final QuotaService quotaService;
 
     private final NodeManager nodeManager;
     private final ClusterManager clusterManager;
@@ -159,6 +161,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.authenticationService = new AuthenticationService(this);
 
         this.subsystems = new Subsystems(this);
+        this.quotaService = new QuotaService(this);
 
         this.nodeManager = new NodeManager(this);
         try {
@@ -467,6 +470,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public Database getDatabase() {
         return database;
+    }
+
+    @Override
+    public QuotaService getQuotaService() {
+        return quotaService;
     }
 
     @Override
