@@ -340,8 +340,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         // TODO validity checks
-
-        nzyme.getQuotaService().setOrganizationQuota(org.get().uuid(), quotaType, req.quota());
+        if (req.quota() == null) {
+            // Reset quota.
+            nzyme.getQuotaService().eraseOrganizationQuota(id, quotaType);
+        } else {
+            // Set quota.
+            nzyme.getQuotaService().setOrganizationQuota(org.get().uuid(), quotaType, req.quota());
+        }
 
         return Response.ok().build();
     }

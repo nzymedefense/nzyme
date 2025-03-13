@@ -54,10 +54,21 @@ public class QuotaService {
                 .setValue(constructRegistryKey(quotaType), String.valueOf(quota), organizationId);
     }
 
+    public void eraseOrganizationQuota(UUID organizationId, QuotaType quotaType) {
+        nzyme.getDatabaseCoreRegistry()
+                .deleteValue(constructRegistryKey(quotaType), organizationId);
+    }
+
     public void setTenantQuota(UUID organizationId, UUID tenantId, QuotaType quotaType, int quota) {
 
         nzyme.getDatabaseCoreRegistry()
                 .setValue(constructRegistryKey(quotaType), String.valueOf(quota), organizationId, tenantId);
+    }
+
+    public void eraseTenantQuota(UUID organizationId, UUID tenantId, QuotaType quotaType) {
+
+        nzyme.getDatabaseCoreRegistry()
+                .deleteValue(constructRegistryKey(quotaType), organizationId, tenantId);
     }
 
     private String constructRegistryKey(QuotaType quotaType) {
