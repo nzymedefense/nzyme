@@ -464,14 +464,6 @@ div.bg-threatlevelmidnight div.text-overlay div.form-switch {
     transition: none !important;
 }
 
-label.form-check-label {
-   padding-top: 2px;
-}
-
-div.form-switch label.form-check-label {
-    padding-top: 0px !important;
-}
-
 div.node-metrics-gauge-summary {
     text-align: center;
 }

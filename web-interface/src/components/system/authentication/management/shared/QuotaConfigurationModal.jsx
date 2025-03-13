@@ -9,6 +9,7 @@ export default function QuotaConfigurationModal(props) {
   const onSubmit = props.onSubmit;
 
   const [value, setValue] = useState(quota.quota == null ? 0 : quota.quota);
+  const [quotaDisabled, setQuotaDisabled] = useState(quota.quota == null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedSuccessfully, setSubmittedSuccessfully] = useState(false);
@@ -30,7 +31,7 @@ export default function QuotaConfigurationModal(props) {
   }
 
   const formReady = () => {
-    return value != null && value >= 0;
+    return quotaDisabled || (value != null && value >= 0);
   }
 
   return (
@@ -52,13 +53,25 @@ export default function QuotaConfigurationModal(props) {
                    autoComplete="off"
                    id={"quota-value-" + quota.type}
                    min={0}
-                   value={value} onChange={(e) => setValue(parseInt(e.target.value, 10))} />
+                   disabled={quotaDisabled}
+                   value={quotaDisabled ? "" : value} onChange={(e) => setValue(parseInt(e.target.value, 10))}/>
+
+            <div className="mt-2">
+              <input className="form-check-input"
+                     id={"quota-config-disable-" + quota.type}
+                     type="checkbox"
+                     checked={quotaDisabled} onChange={() => { setQuotaDisabled(!quotaDisabled); setValue(null); }} />
+
+              <label className="form-check-label ms-1" htmlFor={"quota-config-disable-" + quota.type}>
+                No Quota
+              </label>
+            </div>
           </div>
 
           <div className="modal-footer">
             {submittedSuccessfully ? null :
-              <button type="button"
-                      className="btn btn-secondary"
+                <button type="button"
+                        className="btn btn-secondary"
                       data-bs-dismiss="modal"
                       disabled={isSubmitting}>
                 Cancel
