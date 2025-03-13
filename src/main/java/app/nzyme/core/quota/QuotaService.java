@@ -48,8 +48,11 @@ public class QuotaService {
         return quotas;
     }
 
-
     public void setOrganizationQuota(UUID organizationId, QuotaType quotaType, int quota) {
+        if (quota < 0) {
+            throw new IllegalArgumentException("Quota must be 0 or larger.");
+        }
+
         nzyme.getDatabaseCoreRegistry()
                 .setValue(constructRegistryKey(quotaType), String.valueOf(quota), organizationId);
     }
@@ -60,6 +63,9 @@ public class QuotaService {
     }
 
     public void setTenantQuota(UUID organizationId, UUID tenantId, QuotaType quotaType, int quota) {
+        if (quota < 0) {
+            throw new IllegalArgumentException("Quota must be 0 or larger.");
+        }
 
         nzyme.getDatabaseCoreRegistry()
                 .setValue(constructRegistryKey(quotaType), String.valueOf(quota), organizationId, tenantId);

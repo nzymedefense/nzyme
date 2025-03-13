@@ -18,10 +18,16 @@ export default function OrganizationQuotasPage() {
   const [organization, setOrganization] = useState(null);
   const [quotas, setQuotas] = useState(null);
 
+  const [revision, setRevision] = useState(new Date());
+
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
-    authenticationManagementService.getQuotasOfOrganization(organizationId, setQuotas)
   }, [organizationId])
+
+  useEffect(() => {
+    setQuotas(null);
+    authenticationManagementService.getQuotasOfOrganization(organizationId, setQuotas)
+  }, [organizationId, revision])
 
   if (!organization) {
     return <LoadingSpinner />
@@ -50,7 +56,9 @@ export default function OrganizationQuotasPage() {
               <div className="card-body">
                 <CardTitleWithControls title="Quotas" slim={true} />
 
-                <OrganizationQuotasTable quotas={quotas} organization={organization} />
+                <OrganizationQuotasTable quotas={quotas}
+                                         organization={organization}
+                                         onUpdate={() => setRevision(new Date())} />
               </div>
             </div>
           </div>

@@ -1,8 +1,9 @@
-import React from "react";
+import React, {useState} from "react";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 
 import numeral from "numeral";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
+import QuotaConfigurationModal from "../shared/QuotaConfigurationModal";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -10,9 +11,10 @@ export default function OrganizationQuotasTable(props) {
 
   const organization = props.organization;
   const quotas = props.quotas;
+  const onUpdate = props.onUpdate;
 
-  const TEST_setQuota = () => {
-    authenticationManagementService.setQuotaOfOrganization(organization.id, "TAPS", 9001, () => {}, () => {})
+  const onSave = (type, value, onSuccess, onError) => {
+    authenticationManagementService.setQuotaOfOrganization(organization.id, type, value, onSuccess, onError);
   }
 
   if (!quotas) {
@@ -20,6 +22,7 @@ export default function OrganizationQuotasTable(props) {
   }
 
   return (
+    <React.Fragment>
       <table className="table table-sm table-hover table-striped mb-0">
         <thead>
         <tr>
@@ -39,12 +42,22 @@ export default function OrganizationQuotasTable(props) {
                   {q.quota != null ? numeral(q.quota).format("0,0") :
                       <span className="text-success">No Quota / Unlimited</span>}
                 </td>
-                <td><a href="#" onClick={TEST_setQuota}>Configure Quota</a></td>
+                <td>
+                  <a href="#"
+                     data-bs-toggle="modal"
+                     data-bs-target={"#quota-config-" + q.type}>
+                    Configure Quota
+                  </a>
+
+                  <QuotaConfigurationModal quota={q} onSubmit={onSave} onFinish={onUpdate} />
+                </td>
               </tr>
           )
         })}
         </tbody>
       </table>
+
+    </React.Fragment>
   )
 
 }
