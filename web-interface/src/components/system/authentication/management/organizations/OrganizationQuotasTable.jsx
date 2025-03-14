@@ -4,6 +4,7 @@ import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import numeral from "numeral";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import QuotaConfigurationModal from "../shared/QuotaConfigurationModal";
+import WithExactRole from "../../../../misc/WithExactRole";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -15,6 +16,16 @@ export default function OrganizationQuotasTable(props) {
 
   const onSave = (type, value, onSuccess, onError) => {
     authenticationManagementService.setQuotaOfOrganization(organization.id, type, value, onSuccess, onError);
+  }
+
+  const aboveQuotaWarning = (q) => {
+    if (q.quota == null || q.use <= q.quota) {
+      return null;
+    }
+
+    return (
+        <span className="text-danger text-bold"><i className="fa fa-warning" /> Quota Exceeded</span>
+    )
   }
 
   if (!quotas) {
@@ -37,19 +48,23 @@ export default function OrganizationQuotasTable(props) {
           return (
               <tr key={i}>
                 <td>{q.type_human_readable}</td>
-                <td className={q.quota == null ? "text-muted" : ""}>{numeral(q.use).format("0,0")}</td>
+                <td className={q.quota == null ? "text-muted" : ""}>
+                  {numeral(q.use).format("0,0")} {aboveQuotaWarning(q)}
+                </td>
                 <td>
                   {q.quota != null ? numeral(q.quota).format("0,0") :
                       <span className="text-success">No Quota / Unlimited</span>}
                 </td>
                 <td>
-                  <a href="#"
-                     data-bs-toggle="modal"
-                     data-bs-target={"#quota-config-" + q.type}>
-                    Configure Quota
-                  </a>
+                  <WithExactRole role="SUPERADMIN">
+                    <a href="#"
+                       data-bs-toggle="modal"
+                       data-bs-target={"#quota-config-" + q.type}>
+                      Configure Quota
+                    </a>
 
-                  <QuotaConfigurationModal quota={q} onSubmit={onSave} onFinish={onUpdate} />
+                    <QuotaConfigurationModal quota={q} onSubmit={onSave} onFinish={onUpdate} />
+                  </WithExactRole>
                 </td>
               </tr>
           )

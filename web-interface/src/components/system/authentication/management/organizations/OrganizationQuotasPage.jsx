@@ -56,6 +56,19 @@ export default function OrganizationQuotasPage() {
               <div className="card-body">
                 <CardTitleWithControls title="Quotas" slim={true} />
 
+                <p className="text-muted">
+                  Super administrators can set organization-wide quotas for certain resource types. Organization
+                  administrators and configure additional, per-tenant quotas on the tenant configuration pages. Once a
+                  quota is reached, no new resources can be created until existing ones are deleted.
+                </p>
+
+                <p className="text-muted">
+                  It is possible to configure a quota that is lower than the current usage. In this scenario, no new
+                  resources can be created, but nzyme will not automatically delete any existing resources.
+                  Instead, you will see a warning that you are above the quota and should decide which resources
+                  to manually delete.
+                </p>
+
                 <OrganizationQuotasTable quotas={quotas}
                                          organization={organization}
                                          onUpdate={() => setRevision(new Date())} />

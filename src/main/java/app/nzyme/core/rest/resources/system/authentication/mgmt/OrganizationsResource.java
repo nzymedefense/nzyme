@@ -294,12 +294,19 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
-    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{id}/quotas")
-    public Response getOrganizationQuotas(@PathParam("id") UUID id) {
+    public Response getOrganizationQuotas(@Context SecurityContext sc, @PathParam("id") UUID id) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
 
         if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(org.get().uuid())) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
