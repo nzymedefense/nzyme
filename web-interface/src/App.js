@@ -156,6 +156,7 @@ import UavTypesPage from "./components/uav/types/UavTypesPage";
 import CreateCustomTypePage from "./components/uav/types/CreateCustomTypePage";
 import TenantIntegrationsPage from "./components/system/authentication/management/tenants/integrations/TenantIntegrationsPage";
 import OrganizationQuotasPage from "./components/system/authentication/management/organizations/OrganizationQuotasPage";
+import TenantQuotasPage from "./components/system/authentication/management/tenants/TenantQuotasPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -377,6 +378,7 @@ function App() {
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS_PAGE(':organizationId', ':tenantId')} element={<TenantLocationsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS_PAGE(':organizationId', ':tenantId')} element={<TenantIntegrationsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DATABASE_PAGE(':organizationId', ':tenantId')} element={<TenantDatabasePage />}/>
+                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.QUOTAS_PAGE(':organizationId', ':tenantId')} element={<TenantQuotasPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(':organizationId', ':tenantId')} element={<CreateLocationPage />}/>

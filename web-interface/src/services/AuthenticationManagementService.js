@@ -95,6 +95,14 @@ class AuthenticationManagementService {
         successCallback);
   }
 
+  getQuotasOfTenantOfOrganization(organizationId, tenantId, setQuotas) {
+    RESTClient.get(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/quotas`, {}, (response) => setQuotas(response.data))
+  }
+
+  setQuotaOfTenantOfOrganization(organizationId, tenantId, quotaType, quota, successCallback, errorCallback) {
+    RESTClient.put(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/quotas/show/${quotaType}`, { quota: quota }, successCallback, errorCallback)
+  }
+
   getSubsystemsConfigurationOfTenantOfOrganization(organizationId, tenantId, setConfiguration) {
     RESTClient.get(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/subsystems/configuration`, {}, (response) => setConfiguration(response.data))
   }

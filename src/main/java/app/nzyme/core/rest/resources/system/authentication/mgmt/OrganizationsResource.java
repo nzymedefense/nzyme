@@ -42,6 +42,7 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
@@ -346,7 +347,6 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        // TODO validity checks
         if (req.quota() == null) {
             // Reset quota.
             nzyme.getQuotaService().eraseOrganizationQuota(id, quotaType);
@@ -745,6 +745,102 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         nzyme.getAuthenticationService().deleteTenant(tenantId);
+
+        return Response.ok().build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/quotas")
+    public Response getTenantQuotas(@Context SecurityContext sc,
+                                    @PathParam("organizationId") UUID organizationId,
+                                    @PathParam("tenantId") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<QuotaDetailsResponse> quotas = new ArrayList<>();
+        for (Map.Entry<QuotaType, Optional<Integer>> q : nzyme.getQuotaService()
+                .getAllTenantQuotas(organizationId, tenantId).entrySet()) {
+
+            if (q.getKey().equals(QuotaType.TENANTS)) {
+                // A tenant has no tenant quota.
+                continue;
+            }
+
+            int quotaUse = QuotaUseFactory.tenantQuotaUse(nzyme, q.getKey(), organizationId, tenantId);
+
+            quotas.add(QuotaDetailsResponse.create(
+                    q.getKey().name(),
+                    q.getKey().getHumanReadable(),
+                    q.getValue().orElse(null),
+                    quotaUse
+            ));
+        }
+
+        return Response.ok(quotas).build();
+    }
+
+    @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/quotas/show/{quota_type}")
+    public Response setTenantQuota(@Context SecurityContext sc,
+                                   @PathParam("organizationId") UUID organizationId,
+                                   @PathParam("tenantId") UUID tenantId,
+                                   @PathParam("quota_type") String quotaTypeParam,
+                                   @Valid ConfigureQuotaRequest req) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        QuotaType quotaType;
+        try {
+            quotaType = QuotaType.valueOf(quotaTypeParam.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        // Get organization quota settings to decide if there is room left.
+        Integer organizationQuota = nzyme.getQuotaService()
+                .getOrganizationQuota(organizationId, quotaType)
+                .orElse(null);
+
+        if (req.quota() == null) {
+            // Reset quota.
+
+            if (organizationQuota != null) {
+                // We can only set to unlimited if underlying org quota is also unlimited.
+                return Response.status(Response.Status.FORBIDDEN)
+                        .entity(ErrorResponse.create("Cannot remove tenant quota because organization quota " +
+                                "is not unlimited."))
+                        .build();
+            }
+
+            nzyme.getQuotaService().eraseTenantQuota(organizationId, tenantId, quotaType);
+        } else {
+            // Set quota.
+
+            if (organizationQuota != null) {
+                // Add up all tenant quotas of this type if organization quota is not unlimited.
+                int orgWideQuotaUse = nzyme.getAuthenticationService()
+                        .findAllTenantsOfOrganization(organizationId)
+                        .stream()
+                        .filter(t -> !t.uuid().equals(tenantId)) // Skip our own tenant.
+                        .mapToInt(t -> nzyme.getQuotaService()
+                                .getTenantQuota(organizationId, t.uuid(), quotaType)
+                                .orElse(0))
+                        .sum();
+
+                if (orgWideQuotaUse+req.quota() > organizationQuota) {
+                    return Response.status(Response.Status.FORBIDDEN)
+                            .entity(ErrorResponse.create("Cannot set quota because it would exceed the " +
+                                    "organization quota."))
+                            .build();
+                }
+            }
+
+            nzyme.getQuotaService().setTenantQuota(organizationId, tenantId, quotaType, req.quota());
+        }
 
         return Response.ok().build();
     }
@@ -2829,7 +2925,15 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         Optional<TenantEntry> tenant = nzyme.getAuthenticationService().findTenant(tenantId);
 
-        return tenant.isPresent();
+        if (tenant.isEmpty()) {
+            return false;
+        }
+
+        if (!tenant.get().organizationUuid().equals(organizationId)) {
+            return false;
+        }
+
+        return true;
     }
 
     public static boolean validateCreateUserRequest(CreateUserRequest req) {

@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import QuotaConfigurationModalSubmitButton from "./QuotaConfigurationModalSubmitButton";
 import {notify} from "react-notify-toast";
+import FormSubmitErrorMessage from "../../../../misc/FormSubmitErrorMessage";
 
 export default function QuotaConfigurationModal(props) {
 
@@ -14,6 +15,8 @@ export default function QuotaConfigurationModal(props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedSuccessfully, setSubmittedSuccessfully] = useState(false);
 
+  const [errorMessage, setErrorMessage] = useState(null);
+
   const onSaved = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -21,8 +24,13 @@ export default function QuotaConfigurationModal(props) {
     onSubmit(quota.type, value, () => {
       setIsSubmitting(false);
       setSubmittedSuccessfully(true);
-    }, () => {
-      notify.show("Could not save quota.", 'error');
+    }, (e) => {
+      if (e.response && e.response.data && e.response.data.message) {
+        setErrorMessage(e.response.data.message);
+      } else {
+        notify.show("Could not save quota.", 'error');
+      }
+
       setIsSubmitting(false);
       setSubmittedSuccessfully(false);
     })
@@ -66,6 +74,8 @@ export default function QuotaConfigurationModal(props) {
                 No Quota
               </label>
             </div>
+
+            <FormSubmitErrorMessage message={errorMessage} />
           </div>
 
           <div className="modal-footer">
