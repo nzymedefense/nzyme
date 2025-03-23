@@ -61,7 +61,11 @@ const RESTClient = {
         }
 
         if (error.response) {
-          notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
+          if (error.response.status === 422) {
+            notify.show('Could not create entity. Quota exceeded. Please contact your administrator.', 'error')
+          } else {
+            notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
+          }
         } else {
           notify.show('REST call failed. No response. Is nzyme running?', 'error')
         }

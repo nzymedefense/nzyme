@@ -32,7 +32,12 @@ function CreateTenantUserPage() {
       callback();
     }, function (error) {
       // Error.
-      setErrorMessage(error.response.data.message);
+      if (error.response.status === 422) {
+        setErrorMessage("Quota exceeded. Please contact your administrator.");
+      } else {
+        setErrorMessage(error.response.data.message);
+      }
+
       callback();
     })
   }

@@ -71,7 +71,7 @@ export default function QuotaConfigurationModal(props) {
                      checked={quotaDisabled} onChange={() => { setQuotaDisabled(!quotaDisabled); setValue(null); }} />
 
               <label className="form-check-label ms-1" htmlFor={"quota-config-disable-" + quota.type}>
-                No Quota
+                {props.noQuotaLabel ? props.noQuotaLabel : "No Quota"}
               </label>
             </div>
 

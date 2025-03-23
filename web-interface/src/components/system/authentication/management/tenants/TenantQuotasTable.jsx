@@ -57,15 +57,14 @@ export default function TenantQuotasTable(props) {
                         <span>No Tenant Quota (Organization Quota Applies)</span>}
                   </td>
                   <td>
-                    <WithExactRole role="SUPERADMIN">
                       <a href="#"
                          data-bs-toggle="modal"
                          data-bs-target={"#quota-config-" + q.type}>
                         Configure Quota
                       </a>
 
-                      <QuotaConfigurationModal quota={q} onSubmit={onSave} onFinish={onUpdate} />
-                    </WithExactRole>
+                      <QuotaConfigurationModal quota={q} noQuotaLabel="No Tenant Quota (Organization Quota Applies)"
+                                               onSubmit={onSave} onFinish={onUpdate} />
                   </td>
                 </tr>
             )

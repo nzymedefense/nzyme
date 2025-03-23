@@ -1,6 +1,7 @@
 package app.nzyme.core.quota;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.security.authentication.db.TenantEntry;
 import com.google.common.collect.Maps;
 
 import java.util.Arrays;
@@ -75,6 +76,75 @@ public class QuotaService {
 
         nzyme.getDatabaseCoreRegistry()
                 .deleteValue(constructRegistryKey(quotaType), organizationId, tenantId);
+    }
+
+
+    public int calculateOrganizationQuotaUse(UUID organizationUuid, QuotaType type) {
+        switch (type) {
+            case TAPS:
+                return nzyme.getTapManager()
+                        .findAllTapsOfOrganization(organizationUuid).size();
+            case TENANTS:
+                return nzyme.getAuthenticationService()
+                        .findAllTenantsOfOrganization(organizationUuid).size();
+            case TENANT_USERS:
+                int users = 0;
+                for (TenantEntry tenant : nzyme.getAuthenticationService()
+                        .findAllTenantsOfOrganization(organizationUuid)) {
+                    users += nzyme.getAuthenticationService()
+                            .findAllUsersOfTenant(organizationUuid, tenant.uuid(), Integer.MAX_VALUE, 0)
+                            .size();
+                }
+
+                return users;
+            case INTEGRATIONS_COT:
+                return -1; // TODO
+        };
+
+        return -1;
+    }
+
+    public int calculateTenantQuotaUse(UUID organizationUuid, UUID tenantUuid, QuotaType type) {
+        if (type == QuotaType.TENANTS) {
+            throw new IllegalArgumentException("Tenants have no tenant quota.");
+        }
+
+        switch (type) {
+            case TAPS:
+                return nzyme.getTapManager()
+                        .findAllTapsOfTenant(organizationUuid, tenantUuid)
+                        .size();
+            case TENANT_USERS:
+                return nzyme.getAuthenticationService()
+                        .findAllUsersOfTenant(organizationUuid, tenantUuid, Integer.MAX_VALUE, 0)
+                        .size();
+            case INTEGRATIONS_COT:
+                return -1; // TODO
+        };
+
+        return -1;
+    }
+
+    public boolean isOrganizationQuotaAvailable(UUID organizationId, QuotaType quotaType) {
+        Optional<Integer> organizationQuota = getOrganizationQuota(organizationId, quotaType);
+
+        if (organizationQuota.isEmpty()) {
+            // Unlimited.
+            return true;
+        }
+
+        return calculateOrganizationQuotaUse(organizationId, quotaType) < organizationQuota.get();
+    }
+
+    public boolean isTenantQuotaAvailable(UUID organizationId, UUID tenantId, QuotaType quotaType) {
+        Optional<Integer> tenantQuota = getTenantQuota(organizationId, tenantId, quotaType);
+
+        if (tenantQuota.isEmpty()) {
+            // No tenant quota configured. The underlying organization quota applies.
+            return isOrganizationQuotaAvailable(organizationId, quotaType);
+        }
+
+        return calculateTenantQuotaUse(organizationId, tenantId, quotaType) < tenantQuota.get();
     }
 
     private String constructRegistryKey(QuotaType quotaType) {

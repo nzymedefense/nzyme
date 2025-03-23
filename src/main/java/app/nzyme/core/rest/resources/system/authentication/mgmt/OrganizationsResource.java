@@ -10,7 +10,6 @@ import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
-import app.nzyme.core.quota.QuotaUseFactory;
 import app.nzyme.core.quota.QuotaType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
@@ -315,7 +314,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         for (Map.Entry<QuotaType, Optional<Integer>> q : nzyme.getQuotaService()
                 .getAllOrganizationQuotas(org.get().uuid()).entrySet()) {
 
-            int quotaUse = QuotaUseFactory.organizationQuotaUse(nzyme, q.getKey(), org.get().uuid());
+            int quotaUse = nzyme.getQuotaService().calculateOrganizationQuotaUse(org.get().uuid(), q.getKey());
 
             quotas.add(QuotaDetailsResponse.create(
                     q.getKey().name(),
@@ -685,6 +684,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        // Check if there is room in the quota.
+        if (!nzyme.getQuotaService().isOrganizationQuotaAvailable(organizationId, QuotaType.TENANTS)) {
+            return Response.status(422).build();
+        }
+
         nzyme.getAuthenticationService().createTenant(
                 organizationId,
                 req.name(),
@@ -768,7 +772,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 continue;
             }
 
-            int quotaUse = QuotaUseFactory.tenantQuotaUse(nzyme, q.getKey(), organizationId, tenantId);
+            int quotaUse = nzyme.getQuotaService().calculateTenantQuotaUse(organizationId, tenantId, q.getKey());
 
             quotas.add(QuotaDetailsResponse.create(
                     q.getKey().name(),
@@ -805,40 +809,28 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 .getOrganizationQuota(organizationId, quotaType)
                 .orElse(null);
 
-        if (req.quota() == null) {
-            // Reset quota.
+        if (organizationQuota != null && req.quota() != null) {
+            // Add up all tenant quotas of this type if organization quota is not unlimited.
+            int orgWideQuotaUse = nzyme.getAuthenticationService()
+                    .findAllTenantsOfOrganization(organizationId)
+                    .stream()
+                    .filter(t -> !t.uuid().equals(tenantId)) // Skip our own tenant.
+                    .mapToInt(t -> nzyme.getQuotaService()
+                            .getTenantQuota(organizationId, t.uuid(), quotaType)
+                            .orElse(0))
+                    .sum();
 
-            if (organizationQuota != null) {
-                // We can only set to unlimited if underlying org quota is also unlimited.
+            if (orgWideQuotaUse+req.quota() > organizationQuota) {
                 return Response.status(Response.Status.FORBIDDEN)
-                        .entity(ErrorResponse.create("Cannot remove tenant quota because organization quota " +
-                                "is not unlimited."))
+                        .entity(ErrorResponse.create("Cannot set quota because it would exceed the " +
+                                "organization quota."))
                         .build();
             }
+        }
 
+        if (req.quota() == null) {
             nzyme.getQuotaService().eraseTenantQuota(organizationId, tenantId, quotaType);
         } else {
-            // Set quota.
-
-            if (organizationQuota != null) {
-                // Add up all tenant quotas of this type if organization quota is not unlimited.
-                int orgWideQuotaUse = nzyme.getAuthenticationService()
-                        .findAllTenantsOfOrganization(organizationId)
-                        .stream()
-                        .filter(t -> !t.uuid().equals(tenantId)) // Skip our own tenant.
-                        .mapToInt(t -> nzyme.getQuotaService()
-                                .getTenantQuota(organizationId, t.uuid(), quotaType)
-                                .orElse(0))
-                        .sum();
-
-                if (orgWideQuotaUse+req.quota() > organizationQuota) {
-                    return Response.status(Response.Status.FORBIDDEN)
-                            .entity(ErrorResponse.create("Cannot set quota because it would exceed the " +
-                                    "organization quota."))
-                            .build();
-                }
-            }
-
             nzyme.getQuotaService().setTenantQuota(organizationId, tenantId, quotaType, req.quota());
         }
 
@@ -1076,20 +1068,18 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                                        @PathParam("organizationId") UUID organizationId,
                                        @PathParam("tenantId") UUID tenantId,
                                        @Valid CreateUserRequest req) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
-
-        if (!organizationAndTenantExists(organizationId, tenantId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         if (!validateCreateUserRequest(req)) {
             LOG.info("Invalid parameters in create user request.");
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        // Check if user is org admin for this org.
-        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+        // Check if there is room in the quota.
+        if (!nzyme.getQuotaService().isTenantQuotaAvailable(organizationId, tenantId, QuotaType.TENANT_USERS)) {
+            return Response.status(422).build();
         }
 
         if (nzyme.getAuthenticationService().userWithEmailExists(req.email().toLowerCase())) {
@@ -1610,15 +1600,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                               @PathParam("organizationId") UUID organizationId,
                               @PathParam("tenantId") UUID tenantId,
                               @Valid CreateTapRequest req) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
-
-        if (!organizationAndTenantExists(organizationId, tenantId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        // Check if user is org admin for this org.
-        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+        // Check if there is room in the quota.
+        if (!nzyme.getQuotaService().isTenantQuotaAvailable(organizationId, tenantId, QuotaType.TAPS)) {
+            return Response.status(422).build();
         }
 
         String secret = RandomStringUtils.random(64, true, true);
@@ -1644,14 +1632,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                             @PathParam("tenantId") UUID tenantId,
                             @PathParam("tapUuid") UUID tapId,
                             @Valid UpdateTapRequest req) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
-
-        if (!organizationAndTenantExists(organizationId, tenantId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        // Check if user is org admin for this org.
-        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -1675,14 +1656,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                               @PathParam("organizationId") UUID organizationId,
                               @PathParam("tenantId") UUID tenantId,
                               @PathParam("tapUuid") UUID tapId) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
-
-        if (!organizationAndTenantExists(organizationId, tenantId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        // Check if user is org admin for this org.
-        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -1704,14 +1678,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                                    @PathParam("organizationId") UUID organizationId,
                                    @PathParam("tenantId") UUID tenantId,
                                    @PathParam("tapUuid") UUID tapId) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
-
-        if (!organizationAndTenantExists(organizationId, tenantId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        // Check if user is org admin for this org.
-        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
