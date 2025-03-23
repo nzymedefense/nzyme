@@ -10,7 +10,7 @@ pub struct Dot11RawFrame {
 #[derive(Debug, Clone)]
 pub struct RadiotapHeader {
     pub is_wep: Option<bool>,
-    pub data_rate: Option<u16>,
+    pub data_rate: Option<u32>,
     pub frequency: Option<u16>,
     pub channel: Option<u16>,
     pub antenna_signal: Option<i8>,
