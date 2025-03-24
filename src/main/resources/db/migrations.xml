@@ -6324,7 +6324,7 @@
 
         <addForeignKeyConstraint constraintName="link_cot2tenants"
                                  baseTableName="integrations_cot_outputs"
-                                 baseColumnNames="tenant_uuid"
+                                 baseColumnNames="uuid"
                                  referencedTableName="auth_tenants"
                                  referencedColumnNames="uuid"
                                  onUpdate="NO ACTION"
@@ -6334,6 +6334,17 @@
             <column name="organization_id" />
             <column name="tenant_id" />
         </createIndex>
+    </changeSet>
+
+    <changeSet id="fix_cots_fk_constraint" author="lennartkoopmann">
+        <dropForeignKeyConstraint baseTableName="integrations_cot_outputs" constraintName="link_cot2tenants" />
+        <addForeignKeyConstraint constraintName="link_cot2tenants"
+                                 baseTableName="integrations_cot_outputs"
+                                 baseColumnNames="tenant_id"
+                                 referencedTableName="auth_tenants"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
     </changeSet>
 
 
