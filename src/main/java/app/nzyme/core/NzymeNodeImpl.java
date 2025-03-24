@@ -41,6 +41,7 @@ import app.nzyme.core.ethernet.EthernetConnectionCleaner;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
+import app.nzyme.core.integrations.tenant.cot.CotService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.periodicals.connect.ConnectStatusReporter;
@@ -147,6 +148,8 @@ public class NzymeNodeImpl implements NzymeNode {
 
     private final List<Object> pluginRestResources;
 
+    private final CotService cotService;
+
     public NzymeNodeImpl(BaseConfiguration baseConfiguration, NodeConfiguration configuration, DatabaseImpl database) {
         this.baseConfiguration = baseConfiguration;
         this.version = new Version();
@@ -212,6 +215,8 @@ public class NzymeNodeImpl implements NzymeNode {
         this.eventEngine = new EventEngineImpl(this);
 
         this.tablesService = new TablesService(this);
+
+        this.cotService = new CotService(this);
     }
 
     @Override
@@ -485,6 +490,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public NzymeHttpServer getHttpServer() {
         return httpServer;
+    }
+
+    @Override
+    public CotService getCotService() {
+        return cotService;
     }
 
     @Override

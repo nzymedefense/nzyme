@@ -6271,4 +6271,70 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="create_cot_outputs" author="lennartkoopmann">
+        <createTable tableName="integrations_cot_outputs">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="leaf_type_tap" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="leaf_type_uav" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="address" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="port" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_cot2tenants"
+                                 baseTableName="integrations_cot_outputs"
+                                 baseColumnNames="tenant_uuid"
+                                 referencedTableName="auth_tenants"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <createIndex tableName="integrations_cot_outputs" indexName="integrations_cot_outputs_tenant_lookup">
+            <column name="organization_id" />
+            <column name="tenant_id" />
+        </createIndex>
+    </changeSet>
+
+
 </databaseChangeLog>

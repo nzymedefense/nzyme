@@ -28,6 +28,7 @@ import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.integrations.geoip.GeoIpService;
+import app.nzyme.core.integrations.tenant.cot.CotService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.quota.QuotaService;
@@ -113,5 +114,8 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
     Version getVersion();
 
     NzymeHttpServer getHttpServer();
+
+    // Integrations/Misc
+    CotService getCotService();
 
 }
