@@ -54,6 +54,11 @@ const ApiRoutes = {
               CREATE: (organizationId, tenantId, locationId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/locations/show/${locationId}/floors/create`,
               EDIT: (organizationId, tenantId, locationId, floorId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/locations/show/${locationId}/floors/show/${floorId}/edit`,
             }
+          },
+          INTEGRATIONS: {
+            COT: {
+              CREATE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations/cot/create`
+            }
           }
         },
         USERS: {

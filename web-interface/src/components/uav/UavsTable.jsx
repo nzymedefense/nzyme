@@ -71,7 +71,7 @@ export default function UavsTable(props) {
                 <td><UavAltitude uav={uav} /></td>
                 <td><UavSpeed speed={uav.speed} accuracy={uav.accuracy_speed} /></td>
                 <td><UavVerticalSpeed verticalSpeed={uav.vertical_speed} accuracy={uav.accuracy_speed} /></td>
-                <td>{moment(uav.last_seen).fromNow()}</td>
+                <td title={uav.last_seen}>{moment(uav.last_seen).fromNow()}</td>
               </tr>
             );
           })}

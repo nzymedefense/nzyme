@@ -157,6 +157,8 @@ import CreateCustomTypePage from "./components/uav/types/CreateCustomTypePage";
 import TenantIntegrationsPage from "./components/system/authentication/management/tenants/integrations/TenantIntegrationsPage";
 import OrganizationQuotasPage from "./components/system/authentication/management/organizations/OrganizationQuotasPage";
 import TenantQuotasPage from "./components/system/authentication/management/tenants/TenantQuotasPage";
+import CreateCotOutputPage
+  from "./components/system/authentication/management/tenants/integrations/cot/CreateCotOutputPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -387,6 +389,7 @@ function App() {
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.CREATE(':organizationId', ':tenantId', ':locationId')} element={<CreateFloorPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(':organizationId', ':tenantId', ':locationId', ':floorId')} element={<FloorDetailsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.EDIT(':organizationId', ':tenantId', ':locationId', ':floorId')} element={<EditFloorPage />}/>
+                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.CREATE(':organizationId', ':tenantId')} element={<CreateCotOutputPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<TenantUserDetailsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.EDIT(':organizationId', ':tenantId', ':userId')} element={<EditTenantUserPage />}/>

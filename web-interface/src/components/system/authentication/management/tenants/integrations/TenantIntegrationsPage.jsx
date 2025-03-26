@@ -7,7 +7,7 @@ import SectionMenuBar from "../../../../../shared/SectionMenuBar";
 import {TENANT_MENU_ITEMS} from "../TenantMenuItems";
 import CardTitleWithControls from "../../../../../shared/CardTitleWithControls";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
-import CotConnectionTable from "./cot/CotConnectionTable";
+import CotOutputsTable from "./cot/CotOutputsTable";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -88,7 +88,14 @@ export default function TenantIntegrationsPage() {
                 the Tactical Assault Kit (TAK) to share critical data.
               </p>
 
-              <CotConnectionTable connections={null} />
+              <CotOutputsTable organizationId={organizationId} tenantId={tenantId} />
+
+              <div className="mt-2">
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.CREATE(organization.id, tenant.id)}
+                   className="btn btn-sm btn-secondary">
+                  Create Cursor on Target Output
+                </a>
+              </div>
             </div>
           </div>
         </div>

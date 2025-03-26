@@ -20,9 +20,11 @@ public class CotOutputEntryMapper implements RowMapper<CotOutputEntry> {
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getString("leaf_type_tap"),
-                rs.getString("leaf_type_uav"),
                 rs.getString("address"),
                 rs.getInt("port"),
+                rs.getString("status"),
+                rs.getLong("sent_messages"),
+                rs.getLong("sent_bytes"),
                 new DateTime(rs.getTimestamp("updated_at")),
                 new DateTime(rs.getTimestamp("created_at"))
         );

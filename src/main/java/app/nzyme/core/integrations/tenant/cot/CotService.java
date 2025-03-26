@@ -15,7 +15,28 @@ public class CotService {
         this.nzyme = nzyme;
     }
 
-    public List<CotOutputEntry> findAllOutputs(UUID organizationId, UUID tenantId, int limit, int offset) {
+    public long countAllOutputsOfOrganization(UUID organizationId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM integrations_cot_outputs " +
+                                "WHERE organization_id = :organization_id")
+                        .bind("organization_id", organizationId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public long countAllOutputsOfTenant(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM integrations_cot_outputs " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<CotOutputEntry> findAllOutputsOfTenant(UUID organizationId, UUID tenantId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM integrations_cot_outputs " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
@@ -44,21 +65,24 @@ public class CotService {
                              String name,
                              String description,
                              String leafTypeTap,
-                             String leafTypeUav,
                              String address,
                              int port) {
+        if (description != null && description.trim().isEmpty()) {
+            description = null;
+        }
+
+        String finalDescription = description;
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO integrations_cot_outputs(uuid, organization_id, tenant_id, " +
-                                "name, description, leaf_type_tap, leaf_type_uav, address, port, updated_at, " +
-                                "created_at) VALUES(:uuid, :organization_id, :tenant_id, :name, :description, " +
-                                ":leaf_type_tap, :leaf_type_uav, :address, :port, NOW(), NOW())")
+                                "name, description, leaf_type_tap,  address, port, updated_at, created_at) " +
+                                "VALUES(:uuid, :organization_id, :tenant_id, :name, :description, :leaf_type_tap, " +
+                                ":address, :port, NOW(), NOW())")
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("name", name)
-                        .bind("description", description)
+                        .bind("description", finalDescription)
                         .bind("leaf_type_tap", leafTypeTap)
-                        .bind("leaf_type_uav", leafTypeUav)
                         .bind("address", address)
                         .bind("port", port)
                         .execute()
@@ -69,19 +93,21 @@ public class CotService {
                              String name,
                              String description,
                              String leafTypeTap,
-                             String leafTypeUav,
                              String address,
                              int port) {
+        if (description != null && description.trim().isEmpty()) {
+            description = null;
+        }
+
+        String finalDescription = description;
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE integrations_cot_outputs SET name = :name, " +
-                                "description = :description, leaf_type_tap = :leaf_type_tap, " +
-                                "leaf_type_uav = :leaf_type_uav, address = :address, port = :port, " +
-                                "updated_at = NOW() WHERE id = :id")
+                                "description = :description, leaf_type_tap = :leaf_type_tap, address = :address, " +
+                                "port = :port, updated_at = NOW() WHERE id = :id")
                         .bind("id", id)
                         .bind("name", name)
-                        .bind("description", description)
+                        .bind("description", finalDescription)
                         .bind("leaf_type_tap", leafTypeTap)
-                        .bind("leaf_type_uav", leafTypeUav)
                         .bind("address", address)
                         .bind("port", port)
                         .execute()

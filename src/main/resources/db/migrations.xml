@@ -6347,5 +6347,24 @@
                                  onDelete="CASCADE" />
     </changeSet>
 
+    <changeSet id="drop_cots_custom_uav_leaf_type" author="lennartkoopmann">
+        <dropColumn tableName="integrations_cot_outputs" columnName="leaf_type_uav" />
+    </changeSet>
+
+    <changeSet id="add_cots_status_and_statistics" author="lennartkoopmann">
+        <addColumn tableName="integrations_cot_outputs">
+            <column name="status" type="text" defaultValue="RUNNING">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="sent_messages" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="sent_bytes" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

@@ -1,5 +1,6 @@
-package app.nzyme.core.integrations.tenant.cot.db;
+package app.nzyme.core.rest.responses.integrations.tenant.cot;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
@@ -7,32 +8,50 @@ import org.joda.time.DateTime;
 import java.util.UUID;
 
 @AutoValue
-public abstract class CotOutputEntry {
+public abstract class CotOutputDetailsResponse {
 
-    public abstract long id();
+    @JsonProperty("uuid")
     public abstract UUID uuid();
+
+    @JsonProperty("organization_id")
     public abstract UUID organizationId();
+
+    @JsonProperty("tenant_id")
     public abstract UUID tenantId();
 
+    @JsonProperty("name")
     public abstract String name();
+
     @Nullable
+    @JsonProperty("description")
     public abstract String description();
 
+    @JsonProperty("leaf_type_tap")
     public abstract String leafTypeTap();
 
+    @JsonProperty("address")
     public abstract String address();
+
+    @JsonProperty("port")
     public abstract int port();
 
+    @JsonProperty("status")
     public abstract String status();
+
+    @JsonProperty("sent_messages")
     public abstract long sentMessages();
+
+    @JsonProperty("sent_bytes")
     public abstract long sentBytes();
 
+    @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
+
+    @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
-    public static CotOutputEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String name, String description, String leafTypeTap, String address, int port, String status, long sentMessages, long sentBytes, DateTime updatedAt, DateTime createdAt) {
+    public static CotOutputDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, String leafTypeTap, String address, int port, String status, long sentMessages, long sentBytes, DateTime updatedAt, DateTime createdAt) {
         return builder()
-                .id(id)
                 .uuid(uuid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
@@ -50,13 +69,11 @@ public abstract class CotOutputEntry {
     }
 
     public static Builder builder() {
-        return new AutoValue_CotOutputEntry.Builder();
+        return new AutoValue_CotOutputDetailsResponse.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(long id);
-
         public abstract Builder uuid(UUID uuid);
 
         public abstract Builder organizationId(UUID organizationId);
@@ -83,6 +100,6 @@ public abstract class CotOutputEntry {
 
         public abstract Builder createdAt(DateTime createdAt);
 
-        public abstract CotOutputEntry build();
+        public abstract CotOutputDetailsResponse build();
     }
 }
