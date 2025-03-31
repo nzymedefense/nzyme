@@ -8,6 +8,7 @@ export default function CotOutputForm(props) {
 
   const [name, setName] = useState(props.name ? props.name : "");
   const [description, setDescription] = useState(props.description ? props.description : "");
+  const [connectionType, setConnectionType] = useState("UDP_PLAINTEXT")
   const [tapLeafType, setTapLeafType] = useState(props.tapLeafType ? props.tapLeafType : "a-f-G-U-U-M-S-E");
   const [address, setAddress] = useState(props.address ? props.address : "");
   const [port, setPort] = useState(props.port ? props.port : "");
@@ -32,7 +33,7 @@ export default function CotOutputForm(props) {
     setIsSubmitting(true);
     setSubmitText(<span><i className="fa-solid fa-circle-notch fa-spin"></i> &nbsp;Creating ...</span>)
 
-    onSubmit(name, description, tapLeafType, address, port, (error) => {
+    onSubmit(name, description, connectionType, tapLeafType, address, port, (error) => {
       if (error.response) {
         if (error.response.status === 422) {
           notify.show("Could not create output. Quota exceeded. Please contact your administrator.", "error")
@@ -57,10 +58,21 @@ export default function CotOutputForm(props) {
         </div>
 
         <div className="mb-3">
-          <label htmlFor="name" className="form-label">Description <small>Optional</small></label>
+          <label htmlFor="description" className="form-label">Description <small>Optional</small></label>
           <textarea className="form-control" id="description"
                  value={description} onChange={(e) => { updateValue(e, setDescription) }} />
           <div className="form-text">An optional description that provides more detail.</div>
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="connection_type" className="form-label">Tap Leaf Type</label>
+          <select className="form-control" id="connection_type"
+                  value={connectionType} onChange={(e) => { updateValue(e, setConnectionType) }} >
+            <option value="UDP_PLAINTEXT">Plaintext (UDP)</option>
+          </select>
+          <div className="form-text">
+            The TAK transport/connection type.
+          </div>
         </div>
 
         <div className="mb-3">

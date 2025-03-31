@@ -51,10 +51,13 @@ public class CotService {
         );
     }
 
-    public Optional<CotOutputEntry> findOutput(long id) {
+    public Optional<CotOutputEntry> findOutput(UUID organizationId, UUID tenantId, UUID id) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM integrations_cot_outputs WHERE id = :id")
-                        .bind("id", id)
+                handle.createQuery("SELECT * FROM integrations_cot_outputs " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND uuid = :uuid")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("uuid", id)
                         .mapTo(CotOutputEntry.class)
                         .findOne()
         );
@@ -62,6 +65,7 @@ public class CotService {
 
     public void createOutput(UUID organizationId,
                              UUID tenantId,
+                             CotConnectionType connectionType,
                              String name,
                              String description,
                              String leafTypeTap,
@@ -74,12 +78,13 @@ public class CotService {
         String finalDescription = description;
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO integrations_cot_outputs(uuid, organization_id, tenant_id, " +
-                                "name, description, leaf_type_tap,  address, port, updated_at, created_at) " +
-                                "VALUES(:uuid, :organization_id, :tenant_id, :name, :description, :leaf_type_tap, " +
-                                ":address, :port, NOW(), NOW())")
+                                "connection_type, name, description, leaf_type_tap,  address, port, updated_at, " +
+                                "created_at) VALUES(:uuid, :organization_id, :tenant_id, :connection_type, :name, " +
+                                ":description, :leaf_type_tap, :address, :port, NOW(), NOW())")
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
+                        .bind("connection_type", connectionType)
                         .bind("name", name)
                         .bind("description", finalDescription)
                         .bind("leaf_type_tap", leafTypeTap)
@@ -90,6 +95,7 @@ public class CotService {
     }
 
     public void updateOutput(long id,
+                             CotConnectionType connectionType,
                              String name,
                              String description,
                              String leafTypeTap,
@@ -101,10 +107,11 @@ public class CotService {
 
         String finalDescription = description;
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE integrations_cot_outputs SET name = :name, " +
-                                "description = :description, leaf_type_tap = :leaf_type_tap, address = :address, " +
-                                "port = :port, updated_at = NOW() WHERE id = :id")
+                handle.createUpdate("UPDATE integrations_cot_outputs SET connection_type = :connection_type, " +
+                                "name = :name, description = :description, leaf_type_tap = :leaf_type_tap, " +
+                                "address = :address, port = :port, updated_at = NOW() WHERE id = :id")
                         .bind("id", id)
+                        .bind("connection_type", connectionType)
                         .bind("name", name)
                         .bind("description", finalDescription)
                         .bind("leaf_type_tap", leafTypeTap)
@@ -117,6 +124,22 @@ public class CotService {
     public void deleteOutput(long id) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM integrations_cot_outputs WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
+    public void pauseOutput(long id) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE integrations_cot_outputs SET status = 'PAUSED' WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
+    public void startOutput(long id) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE integrations_cot_outputs SET status = 'RUNNING' WHERE id = :id")
                         .bind("id", id)
                         .execute()
         );

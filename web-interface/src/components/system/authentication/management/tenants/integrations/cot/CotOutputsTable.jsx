@@ -3,7 +3,10 @@ import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import CotIntegrationService from "../../../../../../../services/integrations/CotIntegrationService";
 import Paginator from "../../../../../../misc/Paginator";
 import moment from "moment";
+import numeral from "numeral";
 import CotOutputStatus from "./CotOutputStatus";
+import ApiRoutes from "../../../../../../../util/ApiRoutes";
+import CotConnectionType from "./CotConnectionType";
 
 const cotService = new CotIntegrationService();
 
@@ -37,6 +40,7 @@ export default function CotOutputsTable(props) {
           <tr>
             <th>Name</th>
             <th>Address</th>
+            <th>Type</th>
             <th>Status</th>
             <th>Data Transmitted</th>
             <th>Created At</th>
@@ -47,10 +51,15 @@ export default function CotOutputsTable(props) {
           {outputs.outputs.map((output, i) => {
             return (
                 <tr key={i}>
-                  <td><a href="#">{output.name}</a></td>
+                  <td>
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.DETAILS(organizationId, tenantId, output.uuid)}>
+                      {output.name}
+                    </a>
+                  </td>
                   <td>{output.address}:{output.port}</td>
+                  <td><CotConnectionType type={output.connection_type} /></td>
                   <td><CotOutputStatus status={output.status} /></td>
-                  <td>TODO</td>
+                  <td>{numeral(output.sent_messages).format("0,0")} messages / {numeral(output.sent_bytes).format("0 b")}</td>
                   <td title={output.created_at}>{moment(output.created_at).fromNow()}</td>
                   <td title={output.updated_at}>{moment(output.updated_at).fromNow()}</td>
                 </tr>

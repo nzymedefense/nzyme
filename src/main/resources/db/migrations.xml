@@ -6367,4 +6367,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_cot_connection_type" author="lennartkoopmann">
+        <addColumn tableName="integrations_cot_outputs">
+            <column name="connection_type" type="text" defaultValue="UDP_PLAINTEXT">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

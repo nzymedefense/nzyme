@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 @AutoValue
-public abstract class CreateCotOutputRequest {
+public abstract class UpdateCotOutputRequest {
 
     @NotBlank
     public abstract String connectionType();
@@ -26,7 +26,7 @@ public abstract class CreateCotOutputRequest {
     public abstract int port();
 
     @JsonCreator
-    public static CreateCotOutputRequest create(@JsonProperty("connection_type") String connectionType,
+    public static UpdateCotOutputRequest create(@JsonProperty("connection_type") String connectionType,
                                                 @JsonProperty("name") String name,
                                                 @JsonProperty("description") String description,
                                                 @JsonProperty("leaf_type_tap") String leafTypeTap,
@@ -43,16 +43,16 @@ public abstract class CreateCotOutputRequest {
     }
 
     public static Builder builder() {
-        return new AutoValue_CreateCotOutputRequest.Builder();
+        return new AutoValue_UpdateCotOutputRequest.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder connectionType(String connectionType);
+        public abstract Builder connectionType(@NotBlank String connectionType);
 
         public abstract Builder name(@NotBlank String name);
 
-        public abstract Builder description(@NotBlank String description);
+        public abstract Builder description(String description);
 
         public abstract Builder leafTypeTap(@NotBlank String leafTypeTap);
 
@@ -60,6 +60,6 @@ public abstract class CreateCotOutputRequest {
 
         public abstract Builder port(@Min(1) @Max(65535) int port);
 
-        public abstract CreateCotOutputRequest build();
+        public abstract UpdateCotOutputRequest build();
     }
 }

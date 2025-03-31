@@ -14,6 +14,8 @@ public abstract class CotOutputEntry {
     public abstract UUID organizationId();
     public abstract UUID tenantId();
 
+    public abstract String connectionType();
+
     public abstract String name();
     @Nullable
     public abstract String description();
@@ -30,12 +32,13 @@ public abstract class CotOutputEntry {
     public abstract DateTime updatedAt();
     public abstract DateTime createdAt();
 
-    public static CotOutputEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String name, String description, String leafTypeTap, String address, int port, String status, long sentMessages, long sentBytes, DateTime updatedAt, DateTime createdAt) {
+    public static CotOutputEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String connectionType, String name, String description, String leafTypeTap, String address, int port, String status, long sentMessages, long sentBytes, DateTime updatedAt, DateTime createdAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
+                .connectionType(connectionType)
                 .name(name)
                 .description(description)
                 .leafTypeTap(leafTypeTap)
@@ -62,6 +65,8 @@ public abstract class CotOutputEntry {
         public abstract Builder organizationId(UUID organizationId);
 
         public abstract Builder tenantId(UUID tenantId);
+
+        public abstract Builder connectionType(String connectionType);
 
         public abstract Builder name(String name);
 

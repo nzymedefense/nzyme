@@ -1,44 +1,53 @@
 import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
-import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
-import Routes from "../../../../../../../util/ApiRoutes";
-import ApiRoutes from "../../../../../../../util/ApiRoutes";
-import CardTitleWithControls from "../../../../../../shared/CardTitleWithControls";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
-import {notify} from "react-notify-toast";
-import CotOutputForm from "./CotOutputForm";
 import CotIntegrationService from "../../../../../../../services/integrations/CotIntegrationService";
+import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
+import ApiRoutes from "../../../../../../../util/ApiRoutes";
+import Routes from "../../../../../../../util/ApiRoutes";
+import CardTitleWithControls from "../../../../../../shared/CardTitleWithControls";
+import CotOutputForm from "./CotOutputForm";
+import {notify} from "react-notify-toast";
 
 const authenticationManagementService = new AuthenticationManagementService();
 const cotIntegrationService = new CotIntegrationService();
 
-export default function CreateCotOutputPage() {
+export default function EditCotOutputPage() {
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();
+  const { outputId } = useParams();
 
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
+  const [output, setOutput] = useState(null);
 
-  const [redirect, setRedirect] = React.useState(false);
-
-  const onFormSubmitted = (name, description, connectionType, tapLeafType, address, port, onFailure) => {
-    cotIntegrationService.createOutput(organizationId, tenantId, name, description, connectionType, tapLeafType, address, port, () => {
-          notify.show("Cursor on Target output created.", "success");
-          setRedirect(true);
-        }, onFailure)
-  }
+  const [redirect, setRedirect] = useState(false);
 
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
-  }, [organizationId, tenantId])
 
-  if (redirect) {
-    return <Navigate to={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS_PAGE(organizationId, tenantId)} />
+    setOutput(null);
+    cotIntegrationService.findOutput(setOutput, organizationId, tenantId, outputId);
+  }, [organizationId, tenantId, outputId])
+
+  const onFormSubmitted = (name, description, connectionType, tapLeafType, address, port, onFailure) => {
+    cotIntegrationService.editOutput(organizationId, tenantId, outputId, name, description, connectionType, tapLeafType, address, port, () => {
+      notify.show("Cursor on Target output updated.", "success");
+      setRedirect(true);
+    }, onFailure)
   }
 
-  if (!organization || !tenant) {
+  if (!organization || !tenant || !output) {
+    return <LoadingSpinner />
+  }
+
+  if (redirect) {
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.DETAILS(organizationId, tenantId, outputId)} />
+  }
+
+  if (!organization || !tenant || !output) {
     return <LoadingSpinner />
   }
 
@@ -73,24 +82,29 @@ export default function CreateCotOutputPage() {
                   </a>
                 </li>
                 <li className="breadcrumb-item">Cursor on Target</li>
-                <li className="breadcrumb-item active" aria-current="page">Create Output</li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.DETAILS(organizationId, tenantId, outputId)}>
+                    {output.name}
+                  </a>
+                </li>
+                <li className="breadcrumb-item active">Edit</li>
               </ol>
             </nav>
           </div>
 
           <div className="col-md-3">
             <span className="float-end">
-              <a className="btn btn-primary"
-                 href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS_PAGE(organization.id, tenant.id)}>
+              <a className="btn btn-secondary"
+                 href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.DETAILS(organizationId, tenantId, outputId)}>
                 Back
-              </a>
+              </a>&nbsp;
             </span>
           </div>
         </div>
 
         <div className="row mt-3">
           <div className="col-md-12">
-            <h1>Create Cursor on Target Output</h1>
+            <h1>Edit Cursor on Target Output &quot;{output.name}&quot;</h1>
           </div>
         </div>
 
@@ -98,9 +112,16 @@ export default function CreateCotOutputPage() {
           <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Create Output" slim={true} />
+                <CardTitleWithControls title="Edit Output" slim={true} />
 
-                <CotOutputForm onSubmit={onFormSubmitted} submitText="Create Output" />
+                <CotOutputForm onSubmit={onFormSubmitted}
+                               name={output.name}
+                               description={output.description}
+                               connectionType={output.connection_type}
+                               tapLeafType={output.leaf_type_tap}
+                               address={output.address}
+                               port={output.port}
+                               submitText="Edit Output" />
               </div>
             </div>
           </div>

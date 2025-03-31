@@ -6,11 +6,11 @@ export default function CotOutputStatus(props) {
 
   switch (status) {
     case "RUNNING":
-      return "Running";
+      return <span className="text-success">Running</span>;
     case "PAUSED":
-      return "Paused";
+      return <span className="text-warning">Paused</span>;
     default:
-      return "Unknown/Invalid";
+      return <span className="text-error">Unknown/Invalid</span>;
   }
 
 }

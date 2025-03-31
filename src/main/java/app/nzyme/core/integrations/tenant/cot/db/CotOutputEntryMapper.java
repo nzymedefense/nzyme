@@ -17,6 +17,7 @@ public class CotOutputEntryMapper implements RowMapper<CotOutputEntry> {
                 UUID.fromString(rs.getString("uuid")),
                 UUID.fromString(rs.getString("organization_id")),
                 UUID.fromString(rs.getString("tenant_id")),
+                rs.getString("connection_type"),
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getString("leaf_type_tap"),

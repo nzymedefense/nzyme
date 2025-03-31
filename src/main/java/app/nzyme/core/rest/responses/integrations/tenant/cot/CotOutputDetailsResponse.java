@@ -19,6 +19,9 @@ public abstract class CotOutputDetailsResponse {
     @JsonProperty("tenant_id")
     public abstract UUID tenantId();
 
+    @JsonProperty("connection_type")
+    public abstract String connectionType();
+
     @JsonProperty("name")
     public abstract String name();
 
@@ -50,11 +53,12 @@ public abstract class CotOutputDetailsResponse {
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
-    public static CotOutputDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, String leafTypeTap, String address, int port, String status, long sentMessages, long sentBytes, DateTime updatedAt, DateTime createdAt) {
+    public static CotOutputDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String connectionType, String name, String description, String leafTypeTap, String address, int port, String status, long sentMessages, long sentBytes, DateTime updatedAt, DateTime createdAt) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
+                .connectionType(connectionType)
                 .name(name)
                 .description(description)
                 .leafTypeTap(leafTypeTap)
@@ -79,6 +83,8 @@ public abstract class CotOutputDetailsResponse {
         public abstract Builder organizationId(UUID organizationId);
 
         public abstract Builder tenantId(UUID tenantId);
+
+        public abstract Builder connectionType(String connectionType);
 
         public abstract Builder name(String name);
 
