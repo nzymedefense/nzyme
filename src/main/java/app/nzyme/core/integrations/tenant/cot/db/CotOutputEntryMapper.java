@@ -23,6 +23,7 @@ public class CotOutputEntryMapper implements RowMapper<CotOutputEntry> {
                 rs.getString("leaf_type_tap"),
                 rs.getString("address"),
                 rs.getInt("port"),
+                rs.getBytes("certificate"),
                 rs.getString("status"),
                 rs.getLong("sent_messages"),
                 rs.getLong("sent_bytes"),

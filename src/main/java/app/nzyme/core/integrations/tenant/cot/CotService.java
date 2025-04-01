@@ -2,6 +2,8 @@ package app.nzyme.core.integrations.tenant.cot;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.integrations.tenant.cot.db.CotOutputEntry;
+import app.nzyme.core.integrations.tenant.cot.transports.CotTransportType;
+import jakarta.annotation.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +53,14 @@ public class CotService {
         );
     }
 
+    public List<CotOutputEntry> findAllOutputsOfAllTenants() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM integrations_cot_outputs")
+                        .mapTo(CotOutputEntry.class)
+                        .list()
+        );
+    }
+
     public Optional<CotOutputEntry> findOutput(UUID organizationId, UUID tenantId, UUID id) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM integrations_cot_outputs " +
@@ -65,12 +75,13 @@ public class CotService {
 
     public void createOutput(UUID organizationId,
                              UUID tenantId,
-                             CotConnectionType connectionType,
+                             CotTransportType connectionType,
                              String name,
                              String description,
                              String leafTypeTap,
                              String address,
-                             int port) {
+                             int port,
+                             @Nullable byte[] certificate) {
         if (description != null && description.trim().isEmpty()) {
             description = null;
         }
@@ -78,9 +89,10 @@ public class CotService {
         String finalDescription = description;
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO integrations_cot_outputs(uuid, organization_id, tenant_id, " +
-                                "connection_type, name, description, leaf_type_tap,  address, port, updated_at, " +
-                                "created_at) VALUES(:uuid, :organization_id, :tenant_id, :connection_type, :name, " +
-                                ":description, :leaf_type_tap, :address, :port, NOW(), NOW())")
+                                "connection_type, name, description, leaf_type_tap,  address, port, certificate, " +
+                                "updated_at, created_at) VALUES(:uuid, :organization_id, :tenant_id, " +
+                                ":connection_type, :name, :description, :leaf_type_tap, :address, :port, " +
+                                ":certificate, NOW(), NOW())")
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -90,17 +102,19 @@ public class CotService {
                         .bind("leaf_type_tap", leafTypeTap)
                         .bind("address", address)
                         .bind("port", port)
+                        .bind("certificate", certificate)
                         .execute()
         );
     }
 
     public void updateOutput(long id,
-                             CotConnectionType connectionType,
+                             CotTransportType connectionType,
                              String name,
                              String description,
                              String leafTypeTap,
                              String address,
-                             int port) {
+                             int port,
+                             @Nullable byte[] certificate) {
         if (description != null && description.trim().isEmpty()) {
             description = null;
         }
@@ -109,7 +123,8 @@ public class CotService {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE integrations_cot_outputs SET connection_type = :connection_type, " +
                                 "name = :name, description = :description, leaf_type_tap = :leaf_type_tap, " +
-                                "address = :address, port = :port, updated_at = NOW() WHERE id = :id")
+                                "address = :address, port = :port, certificate = :certificate, updated_at = NOW() " +
+                                "WHERE id = :id")
                         .bind("id", id)
                         .bind("connection_type", connectionType)
                         .bind("name", name)
@@ -117,6 +132,7 @@ public class CotService {
                         .bind("leaf_type_tap", leafTypeTap)
                         .bind("address", address)
                         .bind("port", port)
+                        .bind("certificate", certificate)
                         .execute()
         );
     }

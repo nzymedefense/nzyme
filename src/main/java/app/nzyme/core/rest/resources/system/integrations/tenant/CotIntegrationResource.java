@@ -1,25 +1,32 @@
 package app.nzyme.core.rest.resources.system.integrations.tenant;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.integrations.tenant.cot.CotConnectionType;
+import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.integrations.tenant.cot.transports.CotTransportType;
 import app.nzyme.core.integrations.tenant.cot.db.CotOutputEntry;
 import app.nzyme.core.quota.QuotaType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
-import app.nzyme.core.rest.requests.CreateCotOutputRequest;
-import app.nzyme.core.rest.requests.UpdateCotOutputRequest;
 import app.nzyme.core.rest.responses.integrations.tenant.cot.CotOutputDetailsResponse;
 import app.nzyme.core.rest.responses.integrations.tenant.cot.CotOutputListResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,6 +35,8 @@ import java.util.UUID;
 @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
 public class CotIntegrationResource extends UserAuthenticatedResource  {
+
+    private static final Logger LOG = LogManager.getLogger(CotIntegrationResource.class);
 
     @Inject
     private NzymeNode nzyme;
@@ -108,7 +117,13 @@ public class CotIntegrationResource extends UserAuthenticatedResource  {
     public Response create(@Context SecurityContext sc,
                            @PathParam("organizationId") UUID organizationId,
                            @PathParam("tenantId") UUID tenantId,
-                           @Valid CreateCotOutputRequest req) {
+                           @NotBlank @FormDataParam("connection_type") String connectionType,
+                           @NotBlank @FormDataParam("name") String name,
+                           @Nullable @FormDataParam("description") String description,
+                           @NotBlank @FormDataParam("tap_leaf_type") String leafTypeTap,
+                           @NotBlank @FormDataParam("address") String address,
+                           @Min(1) @Max(65535) @FormDataParam("port") int port,
+                           @Nullable @FormDataParam("certificate") InputStream certificate) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -118,35 +133,54 @@ public class CotIntegrationResource extends UserAuthenticatedResource  {
             return Response.status(422).build();
         }
 
-        CotConnectionType connectionType;
+        CotTransportType transportType;
         try {
-            connectionType = CotConnectionType.valueOf(req.connectionType().toUpperCase());
+            transportType = CotTransportType.valueOf(connectionType.toUpperCase());
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        byte[] certificateData;
+        try {
+            if (certificate == null) {
+                certificateData = null;
+            } else {
+                certificateData = nzyme.getCrypto().encryptWithClusterKey(certificate.readAllBytes());
+            }
+        } catch (IOException | Crypto.CryptoOperationException e) {
+            LOG.error("Could not encrypt CoT client certificate.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
         nzyme.getCotService().createOutput(
                 organizationId,
                 tenantId,
-                connectionType,
-                req.name(),
-                req.description(),
-                req.leafTypeTap(),
-                req.address(),
-                req.port()
+                transportType,
+                name,
+                description,
+                leafTypeTap,
+                address,
+                port,
+                certificateData
         );
 
         return Response.ok(Response.Status.CREATED).build();
     }
 
 
-    @PUT
-    @Path("/show/{outputId}")
+    @POST
+    @Path("/show/{outputId}/update")
     public Response edit(@Context SecurityContext sc,
                          @PathParam("organizationId") UUID organizationId,
                          @PathParam("tenantId") UUID tenantId,
                          @PathParam("outputId") UUID outputId,
-                         @Valid UpdateCotOutputRequest req) {
+                         @NotBlank @FormDataParam("connection_type") String connectionType,
+                         @NotBlank @FormDataParam("name") String name,
+                         @Nullable @FormDataParam("description") String description,
+                         @NotBlank @FormDataParam("tap_leaf_type") String leafTypeTap,
+                         @NotBlank @FormDataParam("address") String address,
+                         @Min(1) @Max(65535) @FormDataParam("port") int port,
+                         @Nullable @FormDataParam("certificate") InputStream certificate) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -157,21 +191,34 @@ public class CotIntegrationResource extends UserAuthenticatedResource  {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        CotConnectionType connectionType;
+        CotTransportType transportType;
         try {
-            connectionType = CotConnectionType.valueOf(req.connectionType().toUpperCase());
+            transportType = CotTransportType.valueOf(connectionType.toUpperCase());
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
+        byte[] certificateData;
+        try {
+            if (certificate == null) {
+                certificateData = null;
+            } else {
+                certificateData = nzyme.getCrypto().encryptWithClusterKey(certificate.readAllBytes());
+            }
+        } catch (IOException | Crypto.CryptoOperationException e) {
+            LOG.error("Could not encrypt CoT client certificate.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
         nzyme.getCotService().updateOutput(
                 output.get().id(),
-                connectionType,
-                req.name(),
-                req.description(),
-                req.leafTypeTap(),
-                req.address(),
-                req.port()
+                transportType,
+                name,
+                description,
+                leafTypeTap,
+                address,
+                port,
+                certificateData
         );
 
         return Response.ok().build();

@@ -12,14 +12,14 @@ export default class CotIntegrationService {
         {}, (response) => setOutput(response.data));
   }
 
-  createOutput(organizationId, tenantId, name, description, connectionType, tapLeafType, address, port, successCallback, errorCallback) {
-    RESTClient.post(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations/cot`,
-        {name: name, description: description, connection_type: connectionType, leaf_type_tap: tapLeafType, address: address, port: port}, successCallback, errorCallback);
+  createOutput(organizationId, tenantId, formData, successCallback, errorCallback) {
+    RESTClient.postMultipart(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations/cot`,
+        formData, true, successCallback, errorCallback);
   }
 
-  editOutput(organizationId, tenantId, outputId, name, description, connectionType, tapLeafType, address, port, successCallback, errorCallback) {
-    RESTClient.put(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations/cot/show/${outputId}`,
-        {name: name, description: description, connection_type: connectionType, leaf_type_tap: tapLeafType, address: address, port: port}, successCallback, errorCallback);
+  editOutput(organizationId, tenantId, outputId, formData, successCallback, errorCallback) {
+    RESTClient.postMultipart(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations/cot/show/${outputId}/update`,
+        formData, true, successCallback, errorCallback);
   }
 
   deleteOutput(organizationId, tenantId, outputId, onSuccess) {

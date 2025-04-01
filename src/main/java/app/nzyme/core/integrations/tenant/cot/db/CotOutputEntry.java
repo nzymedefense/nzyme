@@ -25,6 +25,9 @@ public abstract class CotOutputEntry {
     public abstract String address();
     public abstract int port();
 
+    @Nullable
+    public abstract byte[] certificate();
+
     public abstract String status();
     public abstract long sentMessages();
     public abstract long sentBytes();
@@ -32,7 +35,7 @@ public abstract class CotOutputEntry {
     public abstract DateTime updatedAt();
     public abstract DateTime createdAt();
 
-    public static CotOutputEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String connectionType, String name, String description, String leafTypeTap, String address, int port, String status, long sentMessages, long sentBytes, DateTime updatedAt, DateTime createdAt) {
+    public static CotOutputEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String connectionType, String name, String description, String leafTypeTap, String address, int port, byte[] certificate, String status, long sentMessages, long sentBytes, DateTime updatedAt, DateTime createdAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -44,6 +47,7 @@ public abstract class CotOutputEntry {
                 .leafTypeTap(leafTypeTap)
                 .address(address)
                 .port(port)
+                .certificate(certificate)
                 .status(status)
                 .sentMessages(sentMessages)
                 .sentBytes(sentBytes)
@@ -77,6 +81,8 @@ public abstract class CotOutputEntry {
         public abstract Builder address(String address);
 
         public abstract Builder port(int port);
+
+        public abstract Builder certificate(byte[] certificate);
 
         public abstract Builder status(String status);
 

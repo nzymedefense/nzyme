@@ -22,8 +22,6 @@ import app.nzyme.core.bluetooth.sig.BluetoothSigService;
 import app.nzyme.core.cache.CacheManager;
 import app.nzyme.core.connect.ConnectService;
 import app.nzyme.core.context.ContextService;
-import app.nzyme.core.database.DataCategory;
-import app.nzyme.core.database.DataTableInformation;
 import app.nzyme.core.database.tasks.handlers.GlobalPurgeCategoryTaskHandler;
 import app.nzyme.core.database.tasks.handlers.OrganizationPurgeCategoryTaskHandler;
 import app.nzyme.core.database.tasks.handlers.TenantPurgeCategoryTaskHandler;
@@ -40,6 +38,7 @@ import app.nzyme.core.dot11.monitoring.ssids.KnownSSIDMonitor;
 import app.nzyme.core.ethernet.EthernetConnectionCleaner;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
+import app.nzyme.core.integrations.ScheduledIntegrationsManager;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.integrations.tenant.cot.CotService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
@@ -140,6 +139,8 @@ public class NzymeNodeImpl implements NzymeNode {
     private final ConnectService connect;
     private final HealthMonitor healthMonitor;
 
+    private final ScheduledIntegrationsManager scheduledIntegrationsManager;
+
     private List<String> plugins;
 
     private Optional<RetroService> retroService = Optional.empty();
@@ -217,6 +218,8 @@ public class NzymeNodeImpl implements NzymeNode {
         this.tablesService = new TablesService(this);
 
         this.cotService = new CotService(this);
+
+        this.scheduledIntegrationsManager = new ScheduledIntegrationsManager(this);
     }
 
     @Override
@@ -322,6 +325,8 @@ public class NzymeNodeImpl implements NzymeNode {
 
         CacheManager cacheManager = new CacheManager(this);
         cacheManager.initialize();
+
+        this.scheduledIntegrationsManager.initialize();
 
         // Spin up REST API and web interface.
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);

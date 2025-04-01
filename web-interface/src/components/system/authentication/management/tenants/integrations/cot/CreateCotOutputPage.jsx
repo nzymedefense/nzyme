@@ -22,8 +22,24 @@ export default function CreateCotOutputPage() {
 
   const [redirect, setRedirect] = React.useState(false);
 
-  const onFormSubmitted = (name, description, connectionType, tapLeafType, address, port, onFailure) => {
-    cotIntegrationService.createOutput(organizationId, tenantId, name, description, connectionType, tapLeafType, address, port, () => {
+  const onFormSubmitted = (name, description, connectionType, tapLeafType, address, port, certificate, onFailure) => {
+    const formData = new FormData();
+
+    formData.append("name", name);
+    formData.append("connection_type", connectionType);
+    formData.append("tap_leaf_type", tapLeafType);
+    formData.append("address", address);
+    formData.append("port", port);
+
+    if (description) {
+      formData.append("description", description);
+    }
+
+    if (certificate) {
+      formData.append("certificate", certificate);
+    }
+
+    cotIntegrationService.createOutput(organizationId, tenantId, formData, () => {
           notify.show("Cursor on Target output created.", "success");
           setRedirect(true);
         }, onFailure)
