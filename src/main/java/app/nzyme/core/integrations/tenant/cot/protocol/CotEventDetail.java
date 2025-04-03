@@ -15,6 +15,7 @@ public abstract class CotEventDetail {
     public abstract CotHeight height();
 
     @JacksonXmlProperty
+    @Nullable
     public abstract CotTrack track();
 
     @JacksonXmlProperty
