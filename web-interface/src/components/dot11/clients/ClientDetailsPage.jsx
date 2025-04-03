@@ -348,7 +348,7 @@ function ClientDetailsPage() {
                                        timeRange={discoPairsTimeRange}
                                        setTimeRange={setDiscoPairsTimeRange}/>
 
-                <DiscoPairsTable bssids={[client.mac.address]} highlightValue={client.mac}
+                <DiscoPairsTable bssids={[client.mac.address]} highlightValue={client.mac.address}
                                  timeRange={discoPairsTimeRange}/>
 
                 <p className="mb-0 mt-3 text-muted">
