@@ -24,6 +24,7 @@ public class CotOutputEntryMapper implements RowMapper<CotOutputEntry> {
                 rs.getString("address"),
                 rs.getInt("port"),
                 rs.getBytes("certificate"),
+                rs.getBytes("certificate_passphrase"),
                 rs.getString("status"),
                 rs.getLong("sent_messages"),
                 rs.getLong("sent_bytes"),

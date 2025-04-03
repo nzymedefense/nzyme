@@ -69,6 +69,31 @@ export default function CotOutputDetailsPage() {
     });
   }
 
+  const updateClientCertificateCard = () => {
+    if (output.connection_type !== "TCP_X509") {
+      return null;
+    }
+
+    return (
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Update Client Certificate Bundle" slim={true} />
+
+                <p className="help-text">You can change the client certificate bundle of TLS outputs.</p>
+
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.EDIT_CLIENT_CERTIFICATE(organizationId, tenantId, outputId)}
+                   className="btn btn-secondary">
+                  Update Client Certificate Bundle
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+    )
+  }
+
   if (deleted) {
     return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS_PAGE(organizationId, tenantId)} />
   }
@@ -190,6 +215,8 @@ export default function CotOutputDetailsPage() {
                 </div>
               </div>
             </div>
+
+            {updateClientCertificateCard()}
           </div>
         </div>
 

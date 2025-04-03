@@ -6,6 +6,8 @@ export default function CotOutputForm(props) {
   const onSubmit = props.onSubmit;
   const submitTextProp = props.submitText;
 
+  const skipCertificateInputFields = props.skipCertificateInputFields;
+
   const [name, setName] = useState(props.name ? props.name : "");
   const [description, setDescription] = useState(props.description ? props.description : "");
   const [connectionType, setConnectionType] = useState(props.connectionType ? props.connectionType : "UDP_PLAINTEXT")
@@ -14,7 +16,7 @@ export default function CotOutputForm(props) {
   const [port, setPort] = useState(props.port ? props.port : "");
 
   const [certificateFiles, setCertificateFiles] = useState([]);
-  const [certificatePassword, setCertificatePassword] = useState("");
+  const [certificatePassphrase, setCertificatePassphrase] = useState("");
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitText, setSubmitText] = useState(submitTextProp);
@@ -24,7 +26,7 @@ export default function CotOutputForm(props) {
   }
 
   const formIsReady = function() {
-    if (connectionType === "TCP_X509" && (!certificateFiles || certificateFiles.length === 0)) {
+    if (!skipCertificateInputFields && connectionType === "TCP_X509" && (!certificateFiles || certificateFiles.length === 0)) {
       return false;
     }
 
@@ -47,7 +49,7 @@ export default function CotOutputForm(props) {
       certificateFile = null;
     }
 
-    onSubmit(name, description, connectionType, tapLeafType, address, port, certificateFile, (error) => {
+    onSubmit(name, description, connectionType, tapLeafType, address, port, certificateFile, certificatePassphrase, (error) => {
       if (error.response) {
         if (error.response.status === 422) {
           notify.show("Could not create output. Quota exceeded. Please contact your administrator.", "error")
@@ -63,29 +65,37 @@ export default function CotOutputForm(props) {
 
   const clientCertInput = () => {
     if (connectionType === "TCP_X509") {
+      if (skipCertificateInputFields) {
+        return <div className="alert alert-info">
+          Please use the <em>Update Client Certificate Bundle</em> button on the output details page to update the client
+          certificate bundle.
+        </div>
+      }
+
       return (
           <React.Fragment>
             <div className="mb-3">
-              <div className="mb-3">
-                <label htmlFor="certificate" className="form-label">Client Certificate Bundle (<code>PKCS#12 / .p12</code>)</label>
-                <input className="form-control" id="certificate" type="file" accept=".p12"
-                       onChange={(e) => setCertificateFiles(e.target.files)}/>
-                <div className="form-text">
-                  Your client certificate in <code>PKCS#12 / .p12</code> format. We will automatically trust the certificate
-                  authority included in the uploaded file. The data is encrypted in the database.
-                </div>
-              </div>
-
-              <label htmlFor="certificate_password" className="form-label">Client Certificate Bundle Password</label>
-              <input type="password" className="form-control" id="certificate_password"
-                     value={certificatePassword} onChange={(e) => { updateValue(e, setCertificatePassword) }} />
+              <label htmlFor="certificate" className="form-label">Client Certificate Bundle (<code>PKCS#12 / .p12</code>)</label>
+              <input className="form-control" id="certificate" type="file" accept=".p12"
+                     onChange={(e) => setCertificateFiles(e.target.files)}/>
               <div className="form-text">
-                Password to access the uploaded <code>PKCS#12 / .p12</code> file. The password is encrypted in the
-                database.
+                Your client certificate in <code>PKCS#12 / .p12</code> format. We will automatically trust the certificate
+                authority included in the uploaded file. The data is encrypted in the database.
+              </div>
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="certificate_passphrase" className="form-label">
+                Client Certificate Bundle Passphrase <small>Optional</small>
+              </label>
+              <input type="password" className="form-control" id="certificate_passphrase"
+                     value={certificatePassphrase} onChange={(e) => { updateValue(e, setCertificatePassphrase) }} />
+              <div className="form-text">
+                Passphrase to access the uploaded <code>PKCS#12 / .p12</code> file. The password is encrypted in the
+                database. Leave empty if bundle has no passphrase.
               </div>
             </div>
           </React.Fragment>
-
       )
     }
 
@@ -113,7 +123,7 @@ export default function CotOutputForm(props) {
           <select className="form-control" id="connection_type"
                   value={connectionType} onChange={(e) => { updateValue(e, setConnectionType) }} >
             <option value="UDP_PLAINTEXT">Plaintext (UDP)</option>
-            <option value="TCP_X509">Secure Streaming (TCP) </option>
+            <option value="TCP_X509">Secure Streaming (TCP)</option>
           </select>
           <div className="form-text">
             The TAK transport/connection type.

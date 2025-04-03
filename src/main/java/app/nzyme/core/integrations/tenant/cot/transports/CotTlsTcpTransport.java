@@ -3,6 +3,7 @@ package app.nzyme.core.integrations.tenant.cot.transports;
 import app.nzyme.core.integrations.tenant.cot.protocol.CotEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import jakarta.annotation.Nullable;
 
 import javax.net.ssl.*;
 import java.io.*;
@@ -17,10 +18,12 @@ public class CotTlsTcpTransport implements CotTransport {
     private final String address;
     private final int port;
     private final byte[] certificate;
+    @Nullable
+    private final char[] certificatePassphrase;
 
     private final XmlMapper xmlMapper = new XmlMapper();
 
-    public CotTlsTcpTransport(String address, int port, byte[] certificate) {
+    public CotTlsTcpTransport(String address, int port, byte[] certificate, @Nullable String certificatePassphrase) {
         if (certificate == null || certificate.length == 0) {
             throw new IllegalArgumentException("Certificate cannot be null or empty");
         }
@@ -28,10 +31,20 @@ public class CotTlsTcpTransport implements CotTransport {
         this.address = address;
         this.port = port;
         this.certificate = certificate;
+
+        if (certificatePassphrase != null) {
+            this.certificatePassphrase = certificatePassphrase.toCharArray();
+        } else {
+            this.certificatePassphrase = null;
+        }
     }
 
     @Override
-    public void sendEvent(CotEvent event) throws CotTransportException {
+    public CotProcessingResult sendEvent(CotEvent event) throws CotTransportException {
+        if (certificate == null) {
+            throw new CotTransportException("CoT transport requires certificate to be uploaded.");
+        }
+
         String payload;
         try {
             payload = xmlMapper.writeValueAsString(event);
@@ -45,12 +58,12 @@ public class CotTlsTcpTransport implements CotTransport {
             // Load PKCS#12 file (contains cert, key, CA chain)
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
             try (InputStream is = new ByteArrayInputStream(certificate)) {
-                keyStore.load(is, "atakatak".toCharArray());
+                keyStore.load(is, certificatePassphrase);
             }
 
             // Key material for client auth.
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-            kmf.init(keyStore, "atakatak".toCharArray());
+            kmf.init(keyStore, certificatePassphrase == null ? new char[0] : certificatePassphrase);
 
             // Trust material to validate the server.
             String keyAlias = null;
@@ -85,7 +98,6 @@ public class CotTlsTcpTransport implements CotTransport {
             throw new CotTransportException("Could not prepare TLS for CoT event.", e);
         }
 
-
         // Create secure socket
         SSLSocketFactory factory = sslContext.getSocketFactory();
         try (SSLSocket socket = (SSLSocket) factory.createSocket(address, port)) {
@@ -97,6 +109,8 @@ public class CotTlsTcpTransport implements CotTransport {
         } catch (Exception e) {
             throw new CotTransportException("Could not send CoT event.", e);
         }
+
+        return CotProcessingResult.create(payload.length(), 1);
     }
 
 }

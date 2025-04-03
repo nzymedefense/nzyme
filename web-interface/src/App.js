@@ -163,6 +163,8 @@ import CotOutputDetailsPage
   from "./components/system/authentication/management/tenants/integrations/cot/CotOutputDetailsPage";
 import EditCotOutputPage
   from "./components/system/authentication/management/tenants/integrations/cot/EditCotOutputPage";
+import EditCotCertificatePage
+  from "./components/system/authentication/management/tenants/integrations/cot/EditCotCertificatePage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -396,6 +398,7 @@ function App() {
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.CREATE(':organizationId', ':tenantId')} element={<CreateCotOutputPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.DETAILS(':organizationId', ':tenantId', ':outputId')} element={<CotOutputDetailsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.EDIT(':organizationId', ':tenantId', ':outputId')} element={<EditCotOutputPage />}/>
+                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.EDIT_CLIENT_CERTIFICATE(':organizationId', ':tenantId', ':outputId')} element={<EditCotCertificatePage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<TenantUserDetailsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.EDIT(':organizationId', ':tenantId', ':userId')} element={<EditTenantUserPage />}/>

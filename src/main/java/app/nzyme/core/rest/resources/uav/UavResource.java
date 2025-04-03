@@ -60,7 +60,7 @@ public class UavResource extends TapDataHandlingResource {
         long total = nzyme.getUav().countAllUavs(timeRange, taps);
         List<UavSummaryResponse> uavs = Lists.newArrayList();
 
-        for (UavEntry uav : nzyme.getUav().findAllUavs(timeRange, limit, offset, organizationId, tenantId, taps)) {
+        for (UavEntry uav : nzyme.getUav().findAllUavsOfTenant(timeRange, limit, offset, organizationId, tenantId, taps)) {
             uavs.add(uavEntryToSummaryResponse(uav));
         }
 

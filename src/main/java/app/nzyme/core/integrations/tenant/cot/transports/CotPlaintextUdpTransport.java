@@ -20,7 +20,7 @@ public class CotPlaintextUdpTransport implements CotTransport {
     }
 
     @Override
-    public void sendEvent(CotEvent event) throws CotTransportException {
+    public CotProcessingResult sendEvent(CotEvent event) throws CotTransportException {
         String payload;
         try {
             payload = xmlMapper.writeValueAsString(event);
@@ -53,6 +53,8 @@ public class CotPlaintextUdpTransport implements CotTransport {
         } finally {
             socket.close();
         }
+
+        return CotProcessingResult.create(payload.length(), 1);
     }
 
 }

@@ -10,6 +10,7 @@ import app.nzyme.core.rest.responses.integrations.tenant.cot.CotOutputDetailsRes
 import app.nzyme.core.rest.responses.integrations.tenant.cot.CotOutputListResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
@@ -123,7 +124,8 @@ public class CotIntegrationResource extends UserAuthenticatedResource  {
                            @NotBlank @FormDataParam("tap_leaf_type") String leafTypeTap,
                            @NotBlank @FormDataParam("address") String address,
                            @Min(1) @Max(65535) @FormDataParam("port") int port,
-                           @Nullable @FormDataParam("certificate") InputStream certificate) {
+                           @Nullable @FormDataParam("certificate") InputStream certificate,
+                           @Nullable @FormDataParam("certificate_passphrase") String certificatePassphrase) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -140,12 +142,20 @@ public class CotIntegrationResource extends UserAuthenticatedResource  {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        byte[] certificateData;
+        byte[] encryptedCertificate;
+        byte[] encryptedCertificatePassphrase;
         try {
             if (certificate == null) {
-                certificateData = null;
+                encryptedCertificate = null;
+                encryptedCertificatePassphrase = null;
             } else {
-                certificateData = nzyme.getCrypto().encryptWithClusterKey(certificate.readAllBytes());
+                if (certificatePassphrase == null || certificatePassphrase.trim().isEmpty()) {
+                    encryptedCertificatePassphrase = null;
+                } else {
+                    encryptedCertificatePassphrase = nzyme.getCrypto()
+                            .encryptWithClusterKey(certificatePassphrase.getBytes(Charsets.UTF_8));
+                }
+                encryptedCertificate = nzyme.getCrypto().encryptWithClusterKey(certificate.readAllBytes());
             }
         } catch (IOException | Crypto.CryptoOperationException e) {
             LOG.error("Could not encrypt CoT client certificate.", e);
@@ -161,7 +171,8 @@ public class CotIntegrationResource extends UserAuthenticatedResource  {
                 leafTypeTap,
                 address,
                 port,
-                certificateData
+                encryptedCertificate,
+                encryptedCertificatePassphrase
         );
 
         return Response.ok(Response.Status.CREATED).build();
@@ -179,8 +190,7 @@ public class CotIntegrationResource extends UserAuthenticatedResource  {
                          @Nullable @FormDataParam("description") String description,
                          @NotBlank @FormDataParam("tap_leaf_type") String leafTypeTap,
                          @NotBlank @FormDataParam("address") String address,
-                         @Min(1) @Max(65535) @FormDataParam("port") int port,
-                         @Nullable @FormDataParam("certificate") InputStream certificate) {
+                         @Min(1) @Max(65535) @FormDataParam("port") int port) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -198,18 +208,6 @@ public class CotIntegrationResource extends UserAuthenticatedResource  {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        byte[] certificateData;
-        try {
-            if (certificate == null) {
-                certificateData = null;
-            } else {
-                certificateData = nzyme.getCrypto().encryptWithClusterKey(certificate.readAllBytes());
-            }
-        } catch (IOException | Crypto.CryptoOperationException e) {
-            LOG.error("Could not encrypt CoT client certificate.", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
-
         nzyme.getCotService().updateOutput(
                 output.get().id(),
                 transportType,
@@ -217,8 +215,66 @@ public class CotIntegrationResource extends UserAuthenticatedResource  {
                 description,
                 leafTypeTap,
                 address,
-                port,
-                certificateData
+                port
+        );
+
+        return Response.ok().build();
+    }
+
+
+    @POST
+    @Path("/show/{outputId}/certificate/update")
+    public Response editCertificate(@Context SecurityContext sc,
+                                    @PathParam("organizationId") UUID organizationId,
+                                    @PathParam("tenantId") UUID tenantId,
+                                    @PathParam("outputId") UUID outputId,
+                                    @Nullable @FormDataParam("certificate") InputStream certificate,
+                                    @Nullable @FormDataParam("certificate_passphrase") String certificatePassphrase) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<CotOutputEntry> output = nzyme.getCotService().findOutput(organizationId, tenantId, outputId);
+
+        if (output.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        CotTransportType transportType;
+        try {
+            transportType = CotTransportType.valueOf(output.get().connectionType());
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (transportType != CotTransportType.TCP_X509) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        byte[] encryptedCertificate;
+        byte[] encryptedCertificatePassphrase;
+        try {
+            if (certificate == null) {
+                encryptedCertificate = null;
+                encryptedCertificatePassphrase = null;
+            } else {
+                if (certificatePassphrase == null || certificatePassphrase.trim().isEmpty()) {
+                    encryptedCertificatePassphrase = null;
+                } else {
+                    encryptedCertificatePassphrase = nzyme.getCrypto()
+                            .encryptWithClusterKey(certificatePassphrase.getBytes(Charsets.UTF_8));
+                }
+                encryptedCertificate = nzyme.getCrypto().encryptWithClusterKey(certificate.readAllBytes());
+            }
+        } catch (IOException | Crypto.CryptoOperationException e) {
+            LOG.error("Could not encrypt CoT client certificate.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        nzyme.getCotService().updateOutputCertificate(
+                output.get().id(),
+                encryptedCertificate,
+                encryptedCertificatePassphrase
         );
 
         return Response.ok().build();

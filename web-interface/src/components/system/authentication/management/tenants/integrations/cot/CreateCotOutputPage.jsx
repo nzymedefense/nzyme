@@ -22,7 +22,7 @@ export default function CreateCotOutputPage() {
 
   const [redirect, setRedirect] = React.useState(false);
 
-  const onFormSubmitted = (name, description, connectionType, tapLeafType, address, port, certificate, onFailure) => {
+  const onFormSubmitted = (name, description, connectionType, tapLeafType, address, port, certificate, certificatePassphrase, onFailure) => {
     const formData = new FormData();
 
     formData.append("name", name);
@@ -37,6 +37,10 @@ export default function CreateCotOutputPage() {
 
     if (certificate) {
       formData.append("certificate", certificate);
+    }
+
+    if (certificatePassphrase) {
+      formData.append("certificate_passphrase", certificatePassphrase);
     }
 
     cotIntegrationService.createOutput(organizationId, tenantId, formData, () => {

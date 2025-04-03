@@ -60,6 +60,7 @@ const ApiRoutes = {
               DETAILS:  (organizationId, tenantId, outputId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations/cot/show/${outputId}`,
               CREATE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations/cot/create`,
               EDIT:  (organizationId, tenantId, outputId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations/cot/show/${outputId}/edit`,
+              EDIT_CLIENT_CERTIFICATE:  (organizationId, tenantId, outputId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations/cot/show/${outputId}/edit-client-cert`,
             }
           }
         },

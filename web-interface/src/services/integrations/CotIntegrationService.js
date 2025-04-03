@@ -22,6 +22,11 @@ export default class CotIntegrationService {
         formData, true, successCallback, errorCallback);
   }
 
+  editOutputCertificate(organizationId, tenantId, outputId, formData, successCallback, errorCallback) {
+    RESTClient.postMultipart(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations/cot/show/${outputId}/certificate/update`,
+        formData, true, successCallback, errorCallback);
+  }
+
   deleteOutput(organizationId, tenantId, outputId, onSuccess) {
     RESTClient.delete(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations/cot/show/${outputId}`, onSuccess);
   }

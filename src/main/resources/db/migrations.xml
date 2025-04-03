@@ -6383,4 +6383,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_optional_cot_certificate_passphrase" author="lennartkoopmann">
+        <addColumn tableName="integrations_cot_outputs">
+            <column name="certificate_passphrase" type="longblob">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -81,7 +81,8 @@ public class CotService {
                              String leafTypeTap,
                              String address,
                              int port,
-                             @Nullable byte[] certificate) {
+                             @Nullable byte[] certificate,
+                             @Nullable byte[] certificatePassphrase) {
         if (description != null && description.trim().isEmpty()) {
             description = null;
         }
@@ -90,9 +91,9 @@ public class CotService {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO integrations_cot_outputs(uuid, organization_id, tenant_id, " +
                                 "connection_type, name, description, leaf_type_tap,  address, port, certificate, " +
-                                "updated_at, created_at) VALUES(:uuid, :organization_id, :tenant_id, " +
-                                ":connection_type, :name, :description, :leaf_type_tap, :address, :port, " +
-                                ":certificate, NOW(), NOW())")
+                                "certificate_passphrase, updated_at, created_at) VALUES(:uuid, :organization_id, " +
+                                ":tenant_id, :connection_type, :name, :description, :leaf_type_tap, :address, :port, " +
+                                ":certificate, :certificate_passphrase, NOW(), NOW())")
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -103,6 +104,7 @@ public class CotService {
                         .bind("address", address)
                         .bind("port", port)
                         .bind("certificate", certificate)
+                        .bind("certificate_passphrase", certificatePassphrase)
                         .execute()
         );
     }
@@ -113,8 +115,7 @@ public class CotService {
                              String description,
                              String leafTypeTap,
                              String address,
-                             int port,
-                             @Nullable byte[] certificate) {
+                             int port) {
         if (description != null && description.trim().isEmpty()) {
             description = null;
         }
@@ -123,8 +124,7 @@ public class CotService {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE integrations_cot_outputs SET connection_type = :connection_type, " +
                                 "name = :name, description = :description, leaf_type_tap = :leaf_type_tap, " +
-                                "address = :address, port = :port, certificate = :certificate, updated_at = NOW() " +
-                                "WHERE id = :id")
+                                "address = :address, port = :port, updated_at = NOW() WHERE id = :id")
                         .bind("id", id)
                         .bind("connection_type", connectionType)
                         .bind("name", name)
@@ -132,7 +132,19 @@ public class CotService {
                         .bind("leaf_type_tap", leafTypeTap)
                         .bind("address", address)
                         .bind("port", port)
+                        .execute()
+        );
+    }
+
+
+    public void updateOutputCertificate(long id, byte[] certificate, byte[] certificatePassphrase) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE integrations_cot_outputs SET certificate = :certificate, " +
+                                "certificate_passphrase = :certificate_passphrase, updated_at = NOW() " +
+                                "WHERE id = :id")
+                        .bind("id", id)
                         .bind("certificate", certificate)
+                        .bind("certificate_passphrase", certificatePassphrase)
                         .execute()
         );
     }
@@ -157,6 +169,19 @@ public class CotService {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE integrations_cot_outputs SET status = 'RUNNING' WHERE id = :id")
                         .bind("id", id)
+                        .execute()
+        );
+    }
+
+    public void incrementOutputStats(long id, int bytes, int messages) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE integrations_cot_outputs " +
+                                "SET sent_bytes = sent_bytes + :sent_bytes, " +
+                                "sent_messages = sent_messages + :sent_messages " +
+                                "WHERE id = :id")
+                        .bind("id", id)
+                        .bind("sent_bytes", bytes)
+                        .bind("sent_messages", messages)
                         .execute()
         );
     }

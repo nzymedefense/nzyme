@@ -39,7 +39,7 @@ public class Uav {
         );
     }
 
-    public List<UavEntry> findAllUavs(TimeRange timeRange,
+    public List<UavEntry> findAllUavsOfTenant(TimeRange timeRange,
                                       int limit,
                                       int offset,
                                       UUID organizationId,
@@ -63,6 +63,21 @@ public class Uav {
                         .bind("tenant_id", tenantId)
                         .bind("limit", limit)
                         .bind("offset", offset)
+                        .mapTo(UavEntry.class)
+                        .list()
+        );
+    }
+
+    public List<UavEntry> findAllUavsOfTenant(TimeRange timeRange, UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT ON (u.identifier) *, c.classification AS classification FROM uavs AS u " +
+                                "LEFT JOIN uavs_classifications AS c ON c.uav_identifier = u.identifier " +
+                                "AND c.organization_id = :organization_id AND c.tenant_id = :tenant_id " +
+                                "WHERE u.last_seen >= :tr_from AND u.last_seen <= :tr_to")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
                         .mapTo(UavEntry.class)
                         .list()
         );

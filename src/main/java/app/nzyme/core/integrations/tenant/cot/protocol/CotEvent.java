@@ -15,6 +15,9 @@ public abstract class CotEvent {
     public abstract String uid();
 
     @JacksonXmlProperty(isAttribute = true)
+    public abstract String how();
+
+    @JacksonXmlProperty(isAttribute = true)
     public abstract String type();
 
     @JacksonXmlProperty(isAttribute = true)
@@ -32,10 +35,11 @@ public abstract class CotEvent {
     @JacksonXmlProperty(localName = "detail")
     public abstract  CotEventDetail detail();
 
-    public static CotEvent create(String version, String uid, String type, String time, String start, String stale, CotPoint point, CotEventDetail detail) {
+    public static CotEvent create(String version, String uid, String how, String type, String time, String start, String stale, CotPoint point, CotEventDetail detail) {
         return builder()
                 .version(version)
                 .uid(uid)
+                .how(how)
                 .type(type)
                 .time(time)
                 .start(start)
@@ -54,6 +58,8 @@ public abstract class CotEvent {
         public abstract Builder version(String version);
 
         public abstract Builder uid(String uid);
+
+        public abstract Builder how(String how);
 
         public abstract Builder type(String type);
 
