@@ -1,15 +1,11 @@
 use std::{panic::catch_unwind, sync::Arc, thread};
 
-use anyhow::{bail, Error};
-use bitvec::{order::Lsb0, view::BitView};
-use byteorder::{ByteOrder, LittleEndian};
-use log::{error, info, trace, warn};
+use log::{error, info, trace};
 
 use crate::{messagebus::bus::Bus, to_pipeline};
-use crate::helpers::network::dot11_frequency_to_channel;
 use crate::messagebus::channel_names::Dot11ChannelName;
 use crate::protocols::parsers::dot11::dot11_header_parser;
-use crate::wireless::dot11::frames::{Dot11Frame, Dot11RawFrame, FrameSubType, FrameType, FrameTypeInformation, RadiotapHeader, RadiotapHeaderFlags, RadiotapHeaderPresentFlags};
+use crate::wireless::dot11::frames::{Dot11RawFrame, FrameType, FrameTypeInformation, RadiotapHeader, RadiotapHeaderFlags, RadiotapHeaderPresentFlags};
 
 pub struct Dot11Broker {
     num_threads: usize,
@@ -54,7 +50,7 @@ impl Dot11Broker {
                 return;
             }
         };
-
+        
         // Send to processor pipeline.
         to_pipeline!(
             Dot11ChannelName::Dot11FramesPipeline,

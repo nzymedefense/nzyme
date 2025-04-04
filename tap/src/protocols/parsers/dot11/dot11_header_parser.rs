@@ -90,6 +90,8 @@ pub fn parse(data: &Arc<Dot11RawFrame>) -> Result<(Dot11Frame, u32), Error> {
 
     // Channel.
     let frequency = if present_flags.channel {
+        radiotap_buffer.align(2);
+        
         let frequency_data = match radiotap_buffer.take(2) {
             Some(a) => a,
             None => bail!("Radiotap buffer is malformed, not enough data."),
@@ -149,6 +151,7 @@ pub fn parse(data: &Arc<Dot11RawFrame>) -> Result<(Dot11Frame, u32), Error> {
     // Lock quality.
     if present_flags.lock_quality {
         // not parsing
+        radiotap_buffer.align(2);
         let _ = match radiotap_buffer.take(2) {
             Some(a) => a,
             None => bail!("Radiotap buffer is malformed, not enough data."),
@@ -158,6 +161,7 @@ pub fn parse(data: &Arc<Dot11RawFrame>) -> Result<(Dot11Frame, u32), Error> {
     // TX attenuation.
     if present_flags.tx_attenuation {
         // not parsing
+        radiotap_buffer.align(2);
         let _ = match radiotap_buffer.take(1) {
             Some(a) => a,
             None => bail!("Radiotap buffer is malformed, not enough data."),
@@ -167,6 +171,7 @@ pub fn parse(data: &Arc<Dot11RawFrame>) -> Result<(Dot11Frame, u32), Error> {
     // TX attenuation (dB)
     if present_flags.tx_attenuation_db {
         // not parsing
+        radiotap_buffer.align(2);
         let _ = match radiotap_buffer.take(2) {
             Some(a) => a,
             None => bail!("Radiotap buffer is malformed, not enough data."),
@@ -176,6 +181,7 @@ pub fn parse(data: &Arc<Dot11RawFrame>) -> Result<(Dot11Frame, u32), Error> {
     // TX power (dBm)
     if present_flags.tx_power_dbm {
         // not parsing
+        radiotap_buffer.align(1);
         let _ = match radiotap_buffer.take(1) {
             Some(a) => a,
             None => bail!("Radiotap buffer is malformed, not enough data."),
@@ -222,7 +228,7 @@ pub fn parse(data: &Arc<Dot11RawFrame>) -> Result<(Dot11Frame, u32), Error> {
         antenna
     };
 
-    let payload = radiotap_buffer.slice_from_current();
+    let payload = &data.data[header_length..data.data.len()];
 
     if payload.len() < 2 {
         trace!("Payload too short.");
