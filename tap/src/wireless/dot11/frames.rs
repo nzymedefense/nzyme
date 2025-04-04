@@ -10,7 +10,7 @@ pub struct Dot11RawFrame {
 #[derive(Debug, Clone)]
 pub struct RadiotapHeader {
     pub is_wep: Option<bool>,
-    pub data_rate: Option<u16>,
+    pub data_rate: Option<u32>,
     pub frequency: Option<u16>,
     pub channel: Option<u16>,
     pub antenna_signal: Option<i8>,
@@ -35,6 +35,7 @@ pub struct RadiotapHeaderPresentFlags {
     pub antenna_noise_db: bool,
     pub rx_flags: bool,
     pub tx_flags: bool,
+    pub rts_retries: bool,
     pub data_retries: bool,
     pub channel_plus: bool,
     pub mcs: bool,
@@ -43,6 +44,7 @@ pub struct RadiotapHeaderPresentFlags {
     pub timestamp: bool,
     pub he_info: bool,
     pub hemu_info: bool,
+    pub hemu_user_info: bool,
     pub zero_length_psdu: bool,
     pub lsig: bool,
     pub tlvs: bool,

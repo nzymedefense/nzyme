@@ -114,7 +114,11 @@ pub fn is_mac_address_multicast(mac: &String) -> bool {
 
 // this will handle supported frequencies on bands 2, 5 and 6
 pub fn dot11_frequency_to_channel(f: u32) -> Result<Channel, Error> {
-
+    // sanity check
+    if f < 2412 {
+        bail!("Invalid frequency <{}>", f);
+    }
+    
     if f == 2484 {
         Ok(Channel {
             channel: 14,
@@ -128,22 +132,22 @@ pub fn dot11_frequency_to_channel(f: u32) -> Result<Channel, Error> {
         })
     } else if f < 2484 {
         Ok(Channel {
-            channel: (f as u16 - 2407) / 5,
+            channel: ((f - 2407) / 5) as u16,
             band: Nl80211Band::Band2GHz,
         })
     } else if f >= 4910 && f <= 4980 {
         Ok(Channel {
-            channel: (f as u16 - 4000) / 5,
+            channel: ((f - 4000) / 5) as u16,
             band: Nl80211Band::Band5GHz,
         })
-    } else if f < 5950 {
+    } else if f >= 5035 && f < 5950 {
         Ok(Channel {
-            channel: (f as u16 - 5000) / 5,
+            channel: ((f - 5000) / 5) as u16,
             band: Nl80211Band::Band5GHz,
         })
     } else if f >= 5950 && f <= 7115 {
         Ok(Channel {
-            channel: (f as u16 - 5950) / 5,
+            channel: ((f - 5950) / 5) as u16,
             band: Nl80211Band::Band6GHz,
         })
     } else {
