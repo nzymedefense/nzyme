@@ -7,7 +7,7 @@ export default function FirstContextHostname(props) {
   const hostnames = props.hostnames;
 
   if (!hostnames || hostnames.length === 0) {
-    return "None"
+    return <span className="text-muted">None</span>
   }
 
   return (

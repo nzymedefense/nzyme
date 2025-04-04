@@ -13,6 +13,7 @@ const contextService = new ContextService();
 function Dot11MacAddressContextOverlay(props) {
 
   const address = props.address;
+  const oui = props.oui;
   const isRandomized = props.isRandomized;
 
   const [ctx, setCtx] = useState(null);
@@ -100,16 +101,18 @@ function Dot11MacAddressContextOverlay(props) {
           <dl>
             <dt>Device Type:</dt>
             <dd>{contextType(ctx.context_type)}</dd>
+            <dt>OUI:</dt>
+            <dd>{oui ? truncate(oui, 20) : <span className="text-muted">Unknown</span>}</dd>
             <dt>Is Monitored:</dt>
             <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
             <dt>IP Address</dt>
-            <dd>None</dd>
+            <dd><span className="text-muted">None</span></dd>
             <dt>Hostname</dt>
-            <dd>None</dd>
+            <dd><span className="text-muted">None</span></dd>
             <dt>Has Notes:</dt>
-            <dd>No</dd>
+            <dd><span className="text-muted">No</span></dd>
             <dt>Is Randomized:</dt>
-            <dd>{isRandomized === null ? "n/a" : (isRandomized ? "Yes" : "No")}</dd>
+            <dd>{isRandomized === null ? <span className="text-muted">n/a</span> : (isRandomized ? "Yes" : "No")}</dd>
           </dl>
 
           <div className="context-overlay-no-context-controls">
@@ -141,6 +144,8 @@ function Dot11MacAddressContextOverlay(props) {
         <dl>
           <dt>Device Type:</dt>
           <dd>{contextType(ctx.context_type)}</dd>
+          <dt>OUI:</dt>
+          <dd>{oui ? truncate(oui, 20) : <span className="text-muted">Unknown</span>}</dd>
           <dt>IP Address</dt>
           <dd><FirstContextIpAddress addresses={ctx.context.transparent_ip_addresses}/></dd>
           <dt>Hostname</dt>
@@ -150,7 +155,7 @@ function Dot11MacAddressContextOverlay(props) {
           <dt>Has Notes:</dt>
           <dd>{ctx.context.notes ? "Yes" : "No"}</dd>
           <dt>Is Randomized:</dt>
-          <dd>{isRandomized === null ? "n/a" : (isRandomized ? "Yes" : "No")}</dd>
+          <dd>{isRandomized === null ? <span className="text-muted">n/a</span> : (isRandomized ? "Yes" : "No")}</dd>
         </dl>
 
         <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid, ctx.context.organization_id, ctx.context.tenant_id)}

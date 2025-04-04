@@ -21,7 +21,8 @@ function Dot11MacAddress(props) {
                     addressWithContext={addressWithContext}
                     overlay={<Dot11MacAddressContextOverlay
                         address={addressWithContext ? addressWithContext.address : address}
-                        isRandomized={addressWithContext ? addressWithContext.is_randomized : address.is_randomized} />}
+                        isRandomized={addressWithContext ? addressWithContext.is_randomized : address.is_randomized}
+                        oui={addressWithContext ? addressWithContext.oui : null} />}
                     type={type}
                     showOui={showOui}
                     href={href}
