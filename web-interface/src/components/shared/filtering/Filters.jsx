@@ -9,6 +9,7 @@ import {useNavigate} from "react-router-dom";
 import validateIPAddressValid from "./validators/IPAddressValidator";
 import validateMACAddressValid from "./validators/MACAddressValidator";
 import validateNumber from "./validators/NumberValidator";
+import {filtersToQueryParameters} from "./FilterQueryParameters";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -288,7 +289,7 @@ export default function Filters(props) {
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
-    const currentFilters = queryParams.get('filters');
+    const currentFilters = queryParams.get("filters");
 
     // Stringify the filters object for comparison
     const filtersString = JSON.stringify(filters);
@@ -296,7 +297,7 @@ export default function Filters(props) {
     if (previousFiltersRef.current !== filtersString) {
       previousFiltersRef.current = filtersString;
       if (currentFilters !== filtersString) {
-        queryParams.set("filters", filtersString);
+        queryParams.set("filters", JSON.stringify(filtersToQueryParameters(filters)));
         navigate({ search: queryParams.toString() });
       }
     }

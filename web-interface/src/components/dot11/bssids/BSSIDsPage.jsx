@@ -10,6 +10,7 @@ import {Presets} from "../../shared/timerange/TimeRange";
 import Filters from "../../shared/filtering/Filters";
 import {useLocation} from "react-router-dom";
 import {BSSID_FILTER_FIELDS} from "./BssidFilterFields";
+import {queryParametersToFilters} from "../../shared/filtering/FilterQueryParameters";
 
 const dot11Service = new Dot11Service();
 
@@ -24,18 +25,6 @@ function BSSIDsPage() {
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
-  let filtersJson;
-  try {
-    if (urlQuery.get("filters")) {
-      filtersJson = JSON.parse(urlQuery.get("filters"));
-    } else {
-      filtersJson = null;
-    }
-  } catch (error) {
-    console.error("Failed to parse filter URL parameter JSON.");
-    filtersJson = null;
-  }
-
   const [bssids, setBSSIDs] = useState(null);
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
@@ -47,7 +36,7 @@ function BSSIDsPage() {
   const [ssidTimeRange, setSsidTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [ssidChartRevision, setSsidChartRevision] = useState(new Date());
 
-  const [filters, setFilters] = useState(filtersJson)
+  const [filters, setFilters] = useState(queryParametersToFilters(urlQuery.get("filters"), BSSID_FILTER_FIELDS));
 
   const PER_PAGE = 75;
   const [page, setPage] = useState(1);

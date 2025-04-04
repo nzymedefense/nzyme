@@ -12,6 +12,7 @@ import {useLocation} from "react-router-dom";
 import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {DNS_MENU_ITEMS} from "../DNSMenuItems";
+import {queryParametersToFilters} from "../../../shared/filtering/FilterQueryParameters";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -22,20 +23,8 @@ export default function DNSTransactionLogsPage() {
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
 
-  let filtersJson;
-  try {
-    if (urlQuery.get("filters")) {
-      filtersJson = JSON.parse(urlQuery.get("filters"));
-    } else {
-      filtersJson = null;
-    }
-  } catch (error) {
-    console.error("Failed to parse filter URL parameter JSON.");
-    filtersJson = null;
-  }
-
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
-  const [filters, setFilters] = useState(filtersJson);
+  const [filters, setFilters] = useState(queryParametersToFilters(urlQuery.get("filters"), DNS_FILTER_FIELDS));
   const [revision, setRevision] = useState(new Date());
 
   useEffect(() => {
