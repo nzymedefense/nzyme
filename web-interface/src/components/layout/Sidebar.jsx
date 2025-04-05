@@ -78,7 +78,7 @@ function Sidebar(props) {
                 icon={<i className="sidebar-icon fa-solid fa-tower-cell"/>}/>
 
             <NavigationLink
-                href={ApiRoutes.DOT11.CLIENTS.INDEX}
+                href={ApiRoutes.DOT11.CLIENTS.CONNECTED}
                 title="Clients"
                 icon={<i className="sidebar-icon fa-solid fa-timeline"/>}/>
 

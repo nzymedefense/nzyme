@@ -9,6 +9,8 @@ function SSIDsList(props) {
 
   // Optional.
   const setFilters = props.setFilters;
+  const filterFields = props.filterFields;
+  const filterFieldName = props.filterFieldName;
 
   const filterIcon = (value) => {
     if (!setFilters) {
@@ -16,8 +18,8 @@ function SSIDsList(props) {
     }
 
     return <FilterValueIcon setFilters={setFilters}
-                            fields={BSSID_FILTER_FIELDS}
-                            field="advertised_ssid"
+                            fields={filterFields}
+                            field={filterFieldName}
                             value={value}/>
   }
 

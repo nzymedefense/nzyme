@@ -48,8 +48,6 @@ export const queryParametersToFilters = (queryParam, fields) => {
     }
   });
 
-  console.log(filters);
-
   return filters;
 }
 

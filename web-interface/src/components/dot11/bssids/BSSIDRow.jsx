@@ -69,7 +69,7 @@ function BSSIDRow(props) {
           </td>
           <td>
             { bssid.has_hidden_ssid_advertisements || bssid.advertised_ssid_names.length === 0 ? <span className="text-muted">&lt;hidden&gt;</span> : null }{ bssid.has_hidden_ssid_advertisements && bssid.advertised_ssid_names.length > 0 ? ", " : null }
-            <SSIDsList ssids={bssid.advertised_ssid_names} setFilters={setFilters} />
+            <SSIDsList ssids={bssid.advertised_ssid_names} setFilters={setFilters} filterFields={BSSID_FILTER_FIELDS} filterFieldName="advertised_ssid" />
           </td>
           <td>
             {numeral(bssid.client_count).format("0,0")}

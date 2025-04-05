@@ -6,6 +6,9 @@ import numeral from "numeral";
 import SSIDsList from "../util/SSIDsList";
 import ApiRoutes from "../../../util/ApiRoutes";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
+import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
+import {DISCONNECTED_CLIENT_FILTER_FIELDS} from "./DisconnectedClientFilterFields";
+import {CONNECTED_CLIENT_FILTER_FIELDS} from "./ConnectedClientFilterFields";
 
 function DisconnectedClientsTable(props) {
 
@@ -14,6 +17,8 @@ function DisconnectedClientsTable(props) {
   const perPage = props.perPage;
   const page = props.page;
   const setPage = props.setPage;
+
+  const setFilters = props.setFilters;
 
   if (!clients) {
     return <LoadingSpinner />
@@ -46,11 +51,18 @@ function DisconnectedClientsTable(props) {
                 <tr key={"client-" + i}>
                   <td>
                     <Dot11MacAddress addressWithContext={client.mac} href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac.address)} />
+                    <FilterValueIcon setFilters={setFilters}
+                                     fields={DISCONNECTED_CLIENT_FILTER_FIELDS}
+                                     field="client_mac"
+                                     value={client.mac.address} />
                   </td>
                   <td>{client.mac.oui ? client.mac.oui : <span className="text-muted">Unknown</span>}</td>
                   <td>
                     { client.probe_request_ssids && client.probe_request_ssids.length > 0 ?
-                        <SSIDsList ssids={client.probe_request_ssids} /> : <span className="text-muted">None</span> }
+                        <SSIDsList ssids={client.probe_request_ssids}
+                                   filterFields={CONNECTED_CLIENT_FILTER_FIELDS}
+                                   filterFieldName="probe_request" />
+                        : <span className="text-muted">None</span> }
                   </td>
                   <td>{moment(client.last_seen).format()}</td>
                 </tr>

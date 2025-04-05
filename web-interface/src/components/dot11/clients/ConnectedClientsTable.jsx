@@ -6,6 +6,9 @@ import numeral from "numeral";
 import SSIDsList from "../util/SSIDsList";
 import ApiRoutes from "../../../util/ApiRoutes";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
+import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
+import {BSSID_FILTER_FIELDS} from "../bssids/BssidFilterFields";
+import {CONNECTED_CLIENT_FILTER_FIELDS} from "./ConnectedClientFilterFields";
 
 function ConnectedClientsTable(props) {
 
@@ -14,6 +17,8 @@ function ConnectedClientsTable(props) {
   const perPage = props.perPage;
   const page = props.page;
   const setPage = props.setPage;
+
+  const setFilters = props.setFilters;
 
   if (!clients) {
     return <LoadingSpinner />
@@ -48,17 +53,29 @@ function ConnectedClientsTable(props) {
                 <tr key={"client-" + i}>
                   <td>
                     <Dot11MacAddress addressWithContext={client.mac} href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac.address)} />
+                    <FilterValueIcon setFilters={setFilters}
+                                     fields={CONNECTED_CLIENT_FILTER_FIELDS}
+                                     field="client_mac"
+                                     value={client.mac.address} />
                   </td>
                   <td>{client.mac.oui ? client.mac.oui :
                       <span className="text-muted">Unknown</span>}</td>
                   <td>
                     <Dot11MacAddress addressWithContext={client.connected_bssid} href={ApiRoutes.DOT11.NETWORKS.BSSID(client.connected_bssid.address)} />
+                    <FilterValueIcon setFilters={setFilters}
+                                     fields={CONNECTED_CLIENT_FILTER_FIELDS}
+                                     field="connected_bssid"
+                                     value={client.connected_bssid.address} />
                   </td>
                   <td>{client.connected_bssid.oui ? client.connected_bssid.oui :
                       <span className="text-muted">Unknown</span>}</td>
                   <td>
                     { client.probe_request_ssids && client.probe_request_ssids.length > 0 ?
-                        <SSIDsList ssids={client.probe_request_ssids} /> : <span className="text-muted">None</span> }
+                        <SSIDsList ssids={client.probe_request_ssids}
+                                   setFilters={setFilters}
+                                   filterFields={CONNECTED_CLIENT_FILTER_FIELDS}
+                                   filterFieldName="probe_request" />
+                        : <span className="text-muted">None</span> }
                   </td>
                   <td>{moment(client.last_seen).format()}</td>
                 </tr>

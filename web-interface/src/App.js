@@ -165,6 +165,7 @@ import EditCotOutputPage
   from "./components/system/authentication/management/tenants/integrations/cot/EditCotOutputPage";
 import EditCotCertificatePage
   from "./components/system/authentication/management/tenants/integrations/cot/EditCotCertificatePage";
+import DisconnectedClientsPage from "./components/dot11/clients/DisconnectedClientsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -502,7 +503,8 @@ function App() {
                                 <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />
 
                                 { /* 802.11/Clients. */}
-                                <Route path={ApiRoutes.DOT11.CLIENTS.INDEX} element={<ClientsPage />}/>
+                                <Route path={ApiRoutes.DOT11.CLIENTS.CONNECTED} element={<ClientsPage />}/>
+                                <Route path={ApiRoutes.DOT11.CLIENTS.DISCONNECTED} element={<DisconnectedClientsPage />}/>
                                 <Route path={ApiRoutes.DOT11.CLIENTS.DETAILS(':macParam')} element={<ClientDetailsPage />}/>
 
                                 { /* 802.11/Disco. */}

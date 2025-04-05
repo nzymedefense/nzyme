@@ -207,7 +207,8 @@ const ApiRoutes = {
       SSID: (bssid, ssid, frequency) => `/dot11/bssids/show/${bssid}/ssids/show/${ssid}/frequencies/show/${frequency}`
     },
     CLIENTS: {
-      INDEX: '/dot11/clients',
+      CONNECTED: '/dot11/clients/connected',
+      DISCONNECTED: '/dot11/clients/disconnected',
       DETAILS: (mac) => `/dot11/clients/show/${mac}`
     },
     DISCO: {
