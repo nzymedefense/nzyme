@@ -14,9 +14,14 @@ assignees: ''
 
 *
 
+### Other Notes
+
+*
+
 ### New Optional Configuration Parameters
 
 *
+
 ### Upgrade Procedure
 
 #### `nzyme-node`
