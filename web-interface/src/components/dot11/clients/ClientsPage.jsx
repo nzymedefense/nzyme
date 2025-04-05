@@ -27,32 +27,41 @@ function ClientsPage() {
 
   const urlQuery = useQuery();
 
-  const [connectedClientsHistogramTimeRange, setConnectedClientsHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
-  const [connectedClientsHistogram, setConnectedClientsHistogram] = useState(null);
-  const [connectedClients, setConnectedClients] = useState(null);
-  const [connectedClientsTimeRange, setConnectedClientsTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
-  const [connectedClientsPage, setConnectedClientsPage] = useState(1);
+  const [histogramTimeRange, sethistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [histogram, setHistogram] = useState(null);
+  const [clients, setClients] = useState(null);
+  const [clientsTimeRange, setClientsTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [page, setPage] = useState(1);
 
-  const [connectedClientsFilters, setConnectedClientsFilters] = useState(
+  const [filters, setFilters] = useState(
       queryParametersToFilters(urlQuery.get("filters"), CONNECTED_CLIENT_FILTER_FIELDS)
   );
 
   const perPage = 25;
 
   useEffect(() => {
-    setConnectedClientsHistogram(null);
+    setHistogram(null);
 
     dot11Service.getConnectedClientsHistogram(
-        connectedClientsHistogramTimeRange, selectedTaps, setConnectedClientsHistogram
+        histogramTimeRange,
+        filters,
+        selectedTaps,
+        setHistogram
     );
-  }, [connectedClientsHistogramTimeRange, selectedTaps, connectedClientsFilters])
+  }, [histogramTimeRange, selectedTaps, filters])
 
   useEffect(() => {
-    setConnectedClients(null);
+    setClients(null);
 
-    dot11Service.findConnectedClients(connectedClientsTimeRange, selectedTaps, setConnectedClients,
-        perPage, (connectedClientsPage-1)*perPage);
-  }, [connectedClientsPage, connectedClientsTimeRange, selectedTaps, connectedClientsFilters])
+    dot11Service.findConnectedClients(
+        clientsTimeRange,
+        filters,
+        selectedTaps,
+        setClients,
+        perPage,
+        (page-1)*perPage
+    );
+  }, [page, clientsTimeRange, selectedTaps, filters])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -76,10 +85,10 @@ function ClientsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Connected Clients" slim={true}
-                                       timeRange={connectedClientsHistogramTimeRange}
-                                       setTimeRange={setConnectedClientsHistogramTimeRange} />
+                                       timeRange={histogramTimeRange}
+                                       setTimeRange={sethistogramTimeRange} />
 
-                <ClientHistogram histogram={connectedClientsHistogram} />
+                <ClientHistogram histogram={histogram} />
               </div>
             </div>
           </div>
@@ -90,11 +99,11 @@ function ClientsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Connected Clients Filters"
-                                       timeRange={connectedClientsTimeRange}
-                                       setTimeRange={setConnectedClientsTimeRange} />
+                                       timeRange={clientsTimeRange}
+                                       setTimeRange={setClientsTimeRange} />
 
-                <Filters filters={connectedClientsFilters}
-                         setFilters={setConnectedClientsFilters}
+                <Filters filters={filters}
+                         setFilters={setFilters}
                          fields={CONNECTED_CLIENT_FILTER_FIELDS} />
               </div>
             </div>
@@ -112,11 +121,11 @@ function ClientsPage() {
                   advertised SSIDs of BSSIDs are compiled from the most recent three days of available data.
                 </p>
 
-                <ConnectedClientsTable clients={connectedClients}
+                <ConnectedClientsTable clients={clients}
                                        perPage={perPage}
-                                       page={connectedClientsPage}
-                                       setPage={setConnectedClientsPage}
-                                       setFilters={setConnectedClientsFilters} />
+                                       page={page}
+                                       setPage={setPage}
+                                       setFilters={setFilters} />
               </div>
             </div>
           </div>

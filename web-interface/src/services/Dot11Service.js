@@ -107,38 +107,38 @@ class Dot11Service {
     })
   }
 
-  findConnectedClients(timeRange, taps, setClients, limit, offset) {
+  findConnectedClients(timeRange, filters, taps, setClients, limit, offset) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get("/dot11/clients/connected",
-        { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
+        { time_range: timeRange, taps: tapsList, filters: filters, limit: limit, offset: offset },
         function (response) {
           setClients(response.data);
         })
   }
 
-  findDisconnectedClients(timeRange, skipRandomized, taps, setClients, limit, offset) {
+  findDisconnectedClients(timeRange, filters, skipRandomized, taps, setClients, limit, offset) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get("/dot11/clients/disconnected",
-        { skip_randomized: skipRandomized, time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
+        { skip_randomized: skipRandomized, time_range: timeRange, filters: filters, taps: tapsList, limit: limit, offset: offset },
         function (response) {
           setClients(response.data);
         })
   }
 
-  getConnectedClientsHistogram(timeRange, taps, setHistogram) {
+  getConnectedClientsHistogram(timeRange, filters, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
-    RESTClient.get("/dot11/clients/connected/histogram", { time_range: timeRange, taps: tapsList },
+    RESTClient.get("/dot11/clients/connected/histogram", { time_range: timeRange, filters: filters, taps: tapsList },
         function (response) { setHistogram(response.data); })
   }
 
-  getDisconnectedClientsHistogram(timeRange, skipRandomized, taps, setHistogram) {
+  getDisconnectedClientsHistogram(timeRange, filters, skipRandomized, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get("/dot11/clients/disconnected/histogram",
-        { skip_randomized: skipRandomized, time_range: timeRange, taps: tapsList },
+        { skip_randomized: skipRandomized, time_range: timeRange, filters: filters, taps: tapsList },
         function (response) { setHistogram(response.data); })
   }
 

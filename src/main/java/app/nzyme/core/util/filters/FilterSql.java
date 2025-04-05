@@ -59,8 +59,6 @@ public class FilterSql {
         return FilterSqlFragment.create(whereSql, havingSql, bindings);
     }
 
-
-    // TODO return object with string and bindings. join bindings etc
     private static GeneratedFilterTypeSql generateFilterTypeSql(Map<String, List<Filter>> filters, SqlFilterProvider filterProvider) {
         Map<String, Object> bindings = Maps.newHashMap();
 

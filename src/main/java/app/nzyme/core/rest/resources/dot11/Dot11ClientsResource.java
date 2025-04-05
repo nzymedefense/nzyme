@@ -19,6 +19,7 @@ import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.Tools;
+import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -51,20 +52,21 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
     @Path("/connected")
     public Response connectedClients(@Context SecurityContext sc,
                                      @QueryParam("time_range") @Valid String timeRangeParameter,
+                                     @QueryParam("filters") String filtersParameter,
                                      @QueryParam("taps") String taps,
                                      @QueryParam("limit") int limit,
                                      @QueryParam("offset") int offset) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         // Connected clients.
-        long connectedCount = nzyme.getDot11().countBSSIDClients(timeRange, tapUuids);
+        long connectedCount = nzyme.getDot11().countBSSIDClients(timeRange, filters, tapUuids);
         List<ConnectedClientDetailsResponse> connectedClients = Lists.newArrayList();
 
         for (ConnectedClientDetails client : nzyme.getDot11().findBSSIDClients(
-                timeRange, tapUuids, limit, offset,
-                Dot11.ClientOrderColumn.LAST_SEEN, OrderDirection.DESC)) {
+                timeRange, filters, tapUuids, limit, offset, Dot11.ClientOrderColumn.LAST_SEEN, OrderDirection.DESC)) {
             Optional<MacAddressContextEntry> clientContext = nzyme.getContextService().findMacAddressContext(
                     client.clientMac(),
                     authenticatedUser.getOrganizationId(),
@@ -114,6 +116,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
     @GET
     @Path("/disconnected")
     public Response disconnectedClients(@Context SecurityContext sc,
+                                        @QueryParam("filters") String filtersParameter,
                                         @QueryParam("skip_randomized") boolean skipRandomized,
                                         @QueryParam("time_range") @Valid String timeRangeParameter,
                                         @QueryParam("taps") String taps,
@@ -122,16 +125,17 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         List<String> macAddressesOfAllConnectedClients = nzyme.getDot11()
                 .findMacAddressesOfAllBSSIDClients(timeRange, tapUuids);
 
         // Disconnected clients.
-        long disconnectedCount = nzyme.getDot11().countClients(timeRange, skipRandomized, tapUuids);
+        long disconnectedCount = nzyme.getDot11().countClients(timeRange, filters, skipRandomized, tapUuids);
         List<DisconnectedClientDetailsResponse> disconnectedClients = Lists.newArrayList();
 
         for (DisconnectedClientDetails client : nzyme.getDot11().findClients(
-                timeRange, tapUuids, macAddressesOfAllConnectedClients, skipRandomized, limit, offset,
+                timeRange, filters, tapUuids, macAddressesOfAllConnectedClients, skipRandomized, limit, offset,
                 Dot11.ClientOrderColumn.LAST_SEEN, OrderDirection.DESC)) {
             Optional<MacAddressContextEntry> clientContext = nzyme.getContextService().findMacAddressContext(
                     client.clientMac(),
@@ -163,15 +167,18 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
     @Path("/connected/histogram")
     public Response connectedHistogram(@Context SecurityContext sc,
                                        @QueryParam("time_range") @Valid String timeRangeParameter,
+                                       @QueryParam("filters") String filtersParameter,
                                        @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Map<DateTime, ClientHistogramValueResponse> connected = Maps.newTreeMap();
-        for (ClientHistogramEntry entry : nzyme.getDot11().getConnectedClientHistogram(timeRange, bucketing, tapUuids)) {
+        for (ClientHistogramEntry entry : nzyme.getDot11()
+                .getConnectedClientHistogram(timeRange, filters, bucketing, tapUuids)) {
             connected.put(entry.bucket(), ClientHistogramValueResponse.create(
                     entry.bucket(), entry.clientCount()
             ));
@@ -183,12 +190,14 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
     @GET
     @Path("/disconnected/histogram")
     public Response disconnectedHistogram(@Context SecurityContext sc,
+                                          @QueryParam("filters") String filtersParameter,
                                           @QueryParam("skip_randomized") boolean skipRandomized,
                                           @QueryParam("time_range") @Valid String timeRangeParameter,
                                           @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
@@ -197,7 +206,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
 
         Map<DateTime, ClientHistogramValueResponse> disconnected = Maps.newTreeMap();
         for (ClientHistogramEntry entry : nzyme.getDot11().getDisconnectedClientHistogram(
-                timeRange, skipRandomized, bucketing, tapUuids, macAddressesOfAllConnectedClients)) {
+                timeRange, filters, skipRandomized, bucketing, tapUuids, macAddressesOfAllConnectedClients)) {
             disconnected.put(entry.bucket(), ClientHistogramValueResponse.create(
                     entry.bucket(), entry.clientCount()
             ));;

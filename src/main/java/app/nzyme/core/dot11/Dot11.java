@@ -5,6 +5,8 @@ import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.filters.Dot11BSSIDFilters;
+import app.nzyme.core.dot11.db.filters.Dot11ConnectedClientFilters;
+import app.nzyme.core.dot11.db.filters.Dot11DisconnectedClientFilters;
 import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.dot11.db.monitoring.probereq.MonitoredProbeRequestEntry;
 import app.nzyme.core.dot11.monitoring.disco.db.Dot11DiscoMonitorMethodConfiguration;
@@ -676,26 +678,31 @@ public class Dot11 {
         }
     }
 
-    public long countBSSIDClients(TimeRange timeRange, List<UUID> taps) {
+    public long countBSSIDClients(TimeRange timeRange, Filters filters, List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new Dot11ConnectedClientFilters());
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
-                                "AND b.tap_uuid IN (<taps>)")
+                                "AND b.tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
+                                "HAVING 1=1 " + filterFragment.havingSql())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
+                        .bindMap(filterFragment.bindings())
                         .mapTo(Long.class)
                         .one()
         );
     }
 
     public List<ConnectedClientDetails> findBSSIDClients(TimeRange timeRange,
+                                                         Filters filters,
                                                          List<UUID> taps,
                                                          int limit,
                                                          int offset,
@@ -705,20 +712,23 @@ public class Dot11 {
             return Collections.emptyList();
         }
 
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new Dot11ConnectedClientFilters());
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.bssid AS bssid, c.client_mac AS client_mac, " +
                                 "MAX(b.created_at) AS last_seen " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
-                                "AND b.tap_uuid IN (<taps>) " +
+                                "AND b.tap_uuid IN (<taps>) " + filterFragment.whereSql() +
                                 "GROUP BY c.client_mac, b.bssid " +
-                                "HAVING c.client_mac IS NOT NULL " +
+                                "HAVING c.client_mac IS NOT NULL " + filterFragment.havingSql() +
                                 "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
+                        .bindMap(filterFragment.bindings())
                         .define("order_column", orderColumn.getColumnName())
                         .define("order_direction", orderDirection)
                         .bind("limit", limit)
@@ -769,26 +779,32 @@ public class Dot11 {
         return skipRandomized ? " AND client_mac_is_randomized = false " : "";
     }
 
-    public long countClients(TimeRange timeRange, boolean skipRandomized, List<UUID> taps) {
+    public long countClients(TimeRange timeRange, Filters filters, boolean skipRandomized, List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new Dot11DisconnectedClientFilters());
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) " +
                                 "FROM dot11_clients AS c " +
                                 "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
                                 "WHERE c.created_at >= :tr_from AND c.created_at <= :tr_to " +
-                                "AND c.tap_uuid IN (<taps>)" + skipRandomizedQueryFragment(skipRandomized))
+                                "AND c.tap_uuid IN (<taps>)" +
+                                skipRandomizedQueryFragment(skipRandomized) + " " + filterFragment.whereSql() +
+                                "HAVING 1=1 " + filterFragment.havingSql())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
+                        .bindMap(filterFragment.bindings())
                         .mapTo(Long.class)
                         .one()
         );
     }
 
     public List<DisconnectedClientDetails> findClients(TimeRange timeRange,
+                                                       Filters filters,
                                                        List<UUID> taps,
                                                        List<String> excludeClientMacs,
                                                        boolean skipRandomized,
@@ -800,6 +816,8 @@ public class Dot11 {
             return Collections.emptyList();
         }
 
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new Dot11DisconnectedClientFilters());
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT c.client_mac, MAX(created_at) AS last_seen, " +
                                 "ARRAY_AGG(DISTINCT(pr.ssid)) AS probe_requests " +
@@ -807,8 +825,8 @@ public class Dot11 {
                                 "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
                                 "WHERE c.created_at >= :tr_from AND c.created_at <= :tr_to " +
                                 "AND c.tap_uuid IN (<taps>) " + skipRandomizedQueryFragment(skipRandomized) +
-                                "AND NOT c.client_mac IN (<exclude_client_macs>) " +
-                                "GROUP BY c.client_mac " +
+                                "AND NOT c.client_mac IN (<exclude_client_macs>) " + filterFragment.whereSql() +
+                                "GROUP BY c.client_mac HAVING 1=1 " + filterFragment.havingSql() +
                                 "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")
                         .bind("tr_from", timeRange.from())
@@ -816,6 +834,7 @@ public class Dot11 {
                         .bindList("taps", taps)
                         .bindList("exclude_client_macs", excludeClientMacs == null || excludeClientMacs.isEmpty() ?
                                 noValuesBindList : excludeClientMacs)
+                        .bindMap(filterFragment.bindings())
                         .define("order_column", orderColumn.getColumnName())
                         .define("order_direction", orderDirection)
                         .bind("limit", limit)
@@ -829,7 +848,6 @@ public class Dot11 {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
-
 
         return handle.createQuery("SELECT b.bssid AS bssid, c.client_mac AS client_mac, " +
                         "MAX(b.created_at) AS last_seen " +
@@ -851,6 +869,7 @@ public class Dot11 {
     }
 
     public List<ClientHistogramEntry> getDisconnectedClientHistogram(TimeRange timeRange,
+                                                                     Filters filters,
                                                                      boolean skipRandomized,
                                                                      Bucketing.BucketingConfiguration bc,
                                                                      List<UUID> taps,
@@ -859,19 +878,23 @@ public class Dot11 {
             return Collections.emptyList();
         }
 
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new Dot11DisconnectedClientFilters());
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) AS client_count, " +
                                 "DATE_TRUNC(:date_trunc, c.created_at) as bucket " +
                                 "FROM dot11_clients AS c " +
+                                "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
                                 "WHERE c.created_at >= :tr_from AND c.created_at <= :tr_to " +
                                 "AND c.tap_uuid IN (<taps>) " + skipRandomizedQueryFragment(skipRandomized) +
-                                "AND NOT c.client_mac IN (<exclude_client_macs>) " +
-                                "GROUP BY bucket " +
+                                "AND NOT c.client_mac IN (<exclude_client_macs>) " + filterFragment.whereSql() +
+                                "GROUP BY bucket HAVING 1=1 " + filterFragment.havingSql() +
                                 "ORDER BY bucket DESC")
                         .bind("date_trunc", bc.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
+                        .bindMap(filterFragment.bindings())
                         .bindList("exclude_client_macs", excludeClientMacs == null || excludeClientMacs.isEmpty() ?
                                 noValuesBindList : excludeClientMacs)
                         .mapTo(ClientHistogramEntry.class)
@@ -880,11 +903,14 @@ public class Dot11 {
     }
 
     public List<ClientHistogramEntry> getConnectedClientHistogram(TimeRange timeRange,
+                                                                  Filters filters,
                                                                   Bucketing.BucketingConfiguration bc,
                                                                   List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new Dot11ConnectedClientFilters());
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) AS client_count, " +
@@ -892,13 +918,14 @@ public class Dot11 {
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
-                                "AND b.tap_uuid IN (<taps>) " +
-                                "GROUP BY bucket " +
+                                "AND b.tap_uuid IN (<taps>) " + filterFragment.whereSql() +
+                                "GROUP BY bucket HAVING 1=1 " + filterFragment.havingSql() +
                                 "ORDER BY bucket DESC")
                         .bind("date_trunc", bc.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
+                        .bindMap(filterFragment.bindings())
                         .mapTo(ClientHistogramEntry.class)
                         .list()
         );

@@ -29,36 +29,42 @@ function ClientsPage() {
 
   const urlQuery = useQuery();
 
-  const [disconnectedClientsHistogramTimeRange, setDisconnectedClientsHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
-  const [disconnectedClientsHistogram, setDisconnectedClientsHistogram] = useState(null);
+  const [histogramTimeRange, setHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [histogram, setHistogram] = useState(null);
 
-  const [disconnectedClients, setDisconnectedClients] = useState(null);
-  const [disconnectedClientsTimeRange, setDisconnectedClientsTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
-  const [disconnectedClientsPage, setDisconnectedClientsPage] = useState(1);
+  const [clients, setClients] = useState(null);
+  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [page, setPage] = useState(1);
 
-  const [disconnectedClientsSkipRandomized, setDisconnectedClientsSkipRandomized] = useState(true);
+  const [skipRandomized, setSkipRandomized] = useState(true);
 
-  const [disconnectedClientsFilters, setDisconnectedClientsFilters] = useState(
+  const [filters, setFilters] = useState(
       queryParametersToFilters(urlQuery.get("filters"), DISCONNECTED_CLIENT_FILTER_FIELDS)
   );
 
   const perPage = 25;
 
   useEffect(() => {
-    setDisconnectedClientsHistogram(null);
+    setHistogram(null);
 
     dot11Service.getDisconnectedClientsHistogram(
-        disconnectedClientsHistogramTimeRange, disconnectedClientsSkipRandomized, selectedTaps, setDisconnectedClientsHistogram
+        histogramTimeRange, filters, skipRandomized, selectedTaps, setHistogram
     );
-  }, [disconnectedClientsHistogramTimeRange, disconnectedClientsSkipRandomized, selectedTaps])
+  }, [histogramTimeRange, skipRandomized, selectedTaps, filters])
 
   useEffect(() => {
-    setDisconnectedClients(null);
+    setClients(null);
 
     dot11Service.findDisconnectedClients(
-        disconnectedClientsTimeRange, disconnectedClientsSkipRandomized, selectedTaps, setDisconnectedClients,
-        perPage, (disconnectedClientsPage-1)*perPage);
-  }, [disconnectedClientsPage, disconnectedClientsTimeRange, disconnectedClientsSkipRandomized, selectedTaps])
+        timeRange,
+        filters,
+        skipRandomized,
+        selectedTaps,
+        setClients,
+        perPage,
+        (page-1)*perPage
+    );
+  }, [page, timeRange, skipRandomized, selectedTaps, filters])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -69,7 +75,7 @@ function ClientsPage() {
   }, [tapContext]);
 
   const disconnectedTitle = () => {
-    if (disconnectedClientsSkipRandomized) {
+    if (skipRandomized) {
       return "Disconnected Clients (Excluding Randomized)"
     } else {
       return "Disconnected Clients"
@@ -77,7 +83,7 @@ function ClientsPage() {
   }
 
   const onDisconnectedClientsSkipRandomizedChange = () => {
-    setDisconnectedClientsSkipRandomized((!disconnectedClientsSkipRandomized));
+    setSkipRandomized((!skipRandomized));
   }
 
   return (
@@ -95,10 +101,10 @@ function ClientsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title={disconnectedTitle()} slim={true}
-                                       timeRange={disconnectedClientsHistogramTimeRange}
-                                       setTimeRange={setDisconnectedClientsHistogramTimeRange} />
+                                       timeRange={histogramTimeRange}
+                                       setTimeRange={setHistogramTimeRange} />
 
-                <ClientHistogram histogram={disconnectedClientsHistogram} />
+                <ClientHistogram histogram={histogram} />
               </div>
             </div>
           </div>
@@ -109,11 +115,11 @@ function ClientsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title={disconnectedTitle() + " Filters"}
-                                       timeRange={disconnectedClientsTimeRange}
-                                       setTimeRange={setDisconnectedClientsTimeRange} />
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange} />
 
-                <Filters filters={disconnectedClientsFilters}
-                         setFilters={setDisconnectedClientsFilters}
+                <Filters filters={filters}
+                         setFilters={setFilters}
                          fields={CONNECTED_CLIENT_FILTER_FIELDS} />
               </div>
             </div>
@@ -125,6 +131,11 @@ function ClientsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title={disconnectedTitle()} />
+
+                <p className="text-muted">
+                  <em>Disconnected</em> clients are currently not connected to any WiFi network but still making their
+                  presence known by transmitting probe request frames.
+                </p>
 
                 <p className="text-muted">
                   It should be noted that many modern WiFi devices utilize MAC address randomization when they are not
@@ -141,18 +152,18 @@ function ClientsPage() {
                          role="switch"
                          id="skipRandomized"
                          onChange={onDisconnectedClientsSkipRandomizedChange}
-                         checked={disconnectedClientsSkipRandomized}/>
+                         checked={skipRandomized}/>
                   <label className="form-check-label"
                          htmlFor="skipRandomized">
                     Exclude Clients with Randomized MAC Address
                   </label>
                 </div>
 
-                <DisconnectedClientsTable clients={disconnectedClients}
+                <DisconnectedClientsTable clients={clients}
                                           perPage={perPage}
-                                          page={disconnectedClientsPage}
-                                          setPage={setDisconnectedClientsPage}
-                                          setFilters={setDisconnectedClientsFilters} />
+                                          page={page}
+                                          setPage={setPage}
+                                          setFilters={setFilters} />
               </div>
             </div>
           </div>
