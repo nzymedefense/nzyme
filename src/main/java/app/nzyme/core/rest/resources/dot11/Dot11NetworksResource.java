@@ -2,6 +2,7 @@ package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.context.db.MacAddressContextEntry;
+import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.dot11.db.*;
@@ -25,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -64,15 +66,35 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                            @QueryParam("filters") String filtersParameter,
                            @QueryParam("limit") int limit,
                            @QueryParam("offset") int offset,
+                           @QueryParam("order_column") @Nullable String orderColumnParam,
+                           @QueryParam("order_direction") @Nullable String orderDirectionParam,
                            @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Filters filters = parseFiltersQueryParameter(filtersParameter);
 
+        Dot11.BssidOrderColumn orderColumn = Dot11.BssidOrderColumn.SIGNAL_STRENGTH_AVERAGE;
+        OrderDirection orderDirection = OrderDirection.DESC;
+        if (orderColumnParam != null && orderDirectionParam != null) {
+            try {
+                orderColumn = Dot11.BssidOrderColumn.valueOf(orderColumnParam.toUpperCase());
+                orderDirection = OrderDirection.valueOf(orderDirectionParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
+
         List<BSSIDSummaryDetailsResponse> bssids = Lists.newArrayList();
         long total = nzyme.getDot11().countBSSIDs(timeRange, filters, tapUuids);
-        for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(timeRange, filters, limit, offset, tapUuids)) {
+        for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(
+                timeRange,
+                filters,
+                orderColumn,
+                orderDirection,
+                limit,
+                offset,
+                tapUuids)) {
             Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
                     bssid.bssid(),
                     authenticatedUser.getOrganizationId(),

@@ -55,6 +55,25 @@ public class Dot11 {
 
     private final NzymeNode nzyme;
 
+    public enum BssidOrderColumn {
+
+        BSSID("bssid"),
+        SIGNAL_STRENGTH_AVERAGE("signal_strength_average"),
+        CLIENT_COUNT("client_count"),
+        LAST_SEEN("last_seen");
+
+        private final String columnName;
+
+        BssidOrderColumn(String columnName) {
+            this.columnName = columnName;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+    }
+
     public enum ClientOrderColumn {
 
         LAST_SEEN("last_seen");
@@ -322,6 +341,8 @@ public class Dot11 {
 
     public List<BSSIDSummary> findBSSIDs(TimeRange timeRange,
                                          Filters filters,
+                                         BssidOrderColumn orderColumn,
+                                         OrderDirection orderDirection,
                                          int limit,
                                          int offset,
                                          List<UUID> taps) {
@@ -351,11 +372,13 @@ public class Dot11 {
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "AND b.tap_uuid IN (<taps>)" + filterFragment.whereSql() +
                                 "GROUP BY b.bssid HAVING 1=1 " + filterFragment.havingSql() +
-                                "ORDER BY signal_strength_average DESC LIMIT :limit OFFSET :offset")
+                                "ORDER BY <order_column> <order_direction> LIMIT :limit OFFSET :offset")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bind("limit", limit)
                         .bind("offset", offset)
+                        .define("order_column", orderColumn.getColumnName())
+                        .define("order_direction", orderDirection)
                         .bindMap(filterFragment.bindings())
                         .bindList("taps", taps)
                         .mapTo(BSSIDSummary.class)

@@ -1228,3 +1228,14 @@ dl.tap-location-details dd {
     display: inline-block; /* or use inline if you prefer */
     margin-right: 10px; /* adjust spacing as needed */
 }
+
+th i.order-icon {
+    margin-left: 5px;
+    cursor: pointer;
+    color: #ccc;
+}
+
+th:hover i.order-icon,
+th i.order-icon-selected {
+    color: #000;
+}

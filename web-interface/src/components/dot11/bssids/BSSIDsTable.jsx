@@ -2,6 +2,7 @@ import React from "react";
 import BSSIDRow from "./BSSIDRow";
 import Paginator from "../../misc/Paginator";
 import numeral from "numeral";
+import ColumnSorting from "../../shared/ColumnSorting";
 
 function BSSIDsTable(props) {
 
@@ -12,6 +13,19 @@ function BSSIDsTable(props) {
   const page = props.page;
   const setPage = props.setPage;
   const perPage = props.perPage;
+
+  const setOrderColumn = props.setOrderColumn;
+  const orderColumn = props.orderColumn;
+  const setOrderDirection = props.setOrderDirection;
+  const orderDirection = props.orderDirection;
+
+  const columnSorting = (columnName) => {
+    return <ColumnSorting thisColumn={columnName}
+                          orderColumn={orderColumn}
+                          setOrderColumn={setOrderColumn}
+                          orderDirection={orderDirection}
+                          setOrderDirection={setOrderDirection} />
+  }
 
   if (bssids.length === 0) {
     return <div className="alert alert-info mb-0">
@@ -28,19 +42,18 @@ function BSSIDsTable(props) {
       <table className="table table-sm table-hover table-striped">
         <thead>
         <tr>
-          <th style={{width: 175}}>BSSID</th>
-          <th>Signal Strength</th>
+          <th style={{width: 175}}>BSSID {columnSorting("bssid")}</th>
+          <th>Signal Strength {columnSorting("signal_strength_average")}</th>
           <th>Mode</th>
           <th>Advertised SSIDs</th>
-          <th>Clients</th>
+          <th style={{width: 90}}>Clients {columnSorting("client_count")}</th>
           <th>Security</th>
           <th>OUI</th>
-          <th>Last Seen</th>
+          <th>Last Seen {columnSorting("last_seen")}</th>
         </tr>
         </thead>
         <tbody>
-        {Object.keys(bssids.bssids.sort((a, b) => b.signal_strength_average - a.signal_strength_average))
-          .map(function (key, i) {
+        {Object.keys(bssids.bssids).map(function (key, i) {
             return <BSSIDRow key={'bssid-' + i} bssid={bssids.bssids[key]} timeRange={timeRange} setFilters={setFilters}/>
           })}
         </tbody>

@@ -341,3 +341,14 @@ div.tap-secret label {
 .leaflet-container {
     background: #000
 }
+
+th i.order-icon {
+    margin-left: 5px;
+    cursor: pointer;
+    color: #7e7e7e;
+}
+
+th:hover i.order-icon,
+th i.order-icon-selected {
+    color: #fff;
+}

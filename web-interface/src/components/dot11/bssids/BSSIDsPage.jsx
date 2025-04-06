@@ -38,13 +38,16 @@ function BSSIDsPage() {
 
   const [filters, setFilters] = useState(queryParametersToFilters(urlQuery.get("filters"), BSSID_FILTER_FIELDS));
 
+  const [orderColumn, setOrderColumn] = useState("signal_strength_average");
+  const [orderDirection, setOrderDirection] = useState("DESC");
+
   const PER_PAGE = 75;
   const [page, setPage] = useState(1);
 
   useEffect(() => {
     setBSSIDs(null);
-    dot11Service.findAllBSSIDs(timeRange, filters, PER_PAGE, (page-1)*PER_PAGE, selectedTaps, setBSSIDs);
-  }, [selectedTaps, filters, page, timeRange, revision])
+    dot11Service.findAllBSSIDs(timeRange, filters, orderColumn, orderDirection, PER_PAGE, (page-1)*PER_PAGE, selectedTaps, setBSSIDs);
+  }, [selectedTaps, filters, page, timeRange, revision, orderColumn, orderDirection]);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -63,6 +66,10 @@ function BSSIDsPage() {
                         timeRange={timeRange}
                         setFilters={setFilters}
                         page={page}
+                        orderColumn={orderColumn}
+                        orderDirection={orderDirection}
+                        setOrderColumn={setOrderColumn}
+                        setOrderDirection={setOrderDirection}
                         setPage={setPage}
                         perPage={PER_PAGE} />
   }
