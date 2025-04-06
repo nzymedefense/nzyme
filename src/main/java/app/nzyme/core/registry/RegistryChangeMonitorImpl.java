@@ -2,6 +2,7 @@ package app.nzyme.core.registry;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.RegistryChangeMonitor;
+import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -19,7 +20,7 @@ public class RegistryChangeMonitorImpl implements RegistryChangeMonitor {
 
     private final NzymeNode nzyme;
 
-    private final Map<String, Runnable> subscribers;
+    private final Map<String, List<Runnable>> subscribers;
 
     private Map<String, String> snapshot = null;
 
@@ -95,10 +96,16 @@ public class RegistryChangeMonitorImpl implements RegistryChangeMonitor {
          * Everything can subscribe to all changes by design, including plugins.
          */
 
-        Runnable runnable = subscribers.get(key);
+        List<Runnable> reactions = subscribers.get(key);
 
-        if (runnable != null) {
-            runnable.run();
+        for (Runnable reaction : reactions) {
+            if (reaction != null) {
+                try {
+                    reaction.run();
+                } catch (Exception e) {
+                    LOG.error("Could not execute registry change reaction.", e);
+                }
+            }
         }
     }
 
@@ -130,7 +137,13 @@ public class RegistryChangeMonitorImpl implements RegistryChangeMonitor {
 
     @Override
     public void onChange(String namespace, String key, Runnable runnable) {
-        subscribers.put(RegistryImpl.buildNamespacedKey(namespace, key), runnable);
+        String namespacedKey = RegistryImpl.buildNamespacedKey(namespace, key);
+
+        if (!subscribers.containsKey(namespacedKey)) {
+            subscribers.put(namespacedKey, Lists.newArrayList());
+        }
+
+        subscribers.get(namespacedKey).add(runnable);
     }
 
 }
