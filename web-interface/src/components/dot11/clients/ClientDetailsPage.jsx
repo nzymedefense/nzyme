@@ -174,7 +174,7 @@ function ClientDetailsPage() {
                   <dt>First Seen</dt>
                   <dd>
                     {moment(client.first_seen).format()}{' '}
-                    (Note: 802.11/WiFi data retention time is {client.data_retention_days} days)
+                    <span className="text-muted">(Note: This value is affected by data retention times.)</span>
                   </dd>
                   <dt>Last Seen</dt>
                   <dd>{moment(client.last_seen).format()}</dd>

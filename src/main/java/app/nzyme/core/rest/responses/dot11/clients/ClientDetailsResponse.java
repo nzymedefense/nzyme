@@ -46,10 +46,7 @@ public abstract class ClientDetailsResponse {
     @JsonProperty("disconnected_signal_strength")
     public abstract List<TapBasedSignalStrengthResponse> disconnectedSignalStrength();
 
-    @JsonProperty("data_retention_days")
-    public abstract int dataRetentionDays();
-
-    public static ClientDetailsResponse create(Dot11MacAddressResponse mac, ConnectedBSSID connectedBSSID, List<ConnectedBSSID> connectedBSSIDHistory, DateTime firstSeen, DateTime lastSeen, List<MacAddressTransparentIpAddressResponse> transparentIpAddresses, List<MacAddressTransparentHostnameResponse> transparentHostnames, List<String> probeRequests, List<TapBasedSignalStrengthResponse> connectedSignalStrength, List<TapBasedSignalStrengthResponse> disconnectedSignalStrength, int dataRetentionDays) {
+    public static ClientDetailsResponse create(Dot11MacAddressResponse mac, ConnectedBSSID connectedBSSID, List<ConnectedBSSID> connectedBSSIDHistory, DateTime firstSeen, DateTime lastSeen, List<MacAddressTransparentIpAddressResponse> transparentIpAddresses, List<MacAddressTransparentHostnameResponse> transparentHostnames, List<String> probeRequests, List<TapBasedSignalStrengthResponse> connectedSignalStrength, List<TapBasedSignalStrengthResponse> disconnectedSignalStrength) {
         return builder()
                 .mac(mac)
                 .connectedBSSID(connectedBSSID)
@@ -61,7 +58,6 @@ public abstract class ClientDetailsResponse {
                 .probeRequests(probeRequests)
                 .connectedSignalStrength(connectedSignalStrength)
                 .disconnectedSignalStrength(disconnectedSignalStrength)
-                .dataRetentionDays(dataRetentionDays)
                 .build();
     }
 
@@ -90,8 +86,6 @@ public abstract class ClientDetailsResponse {
         public abstract Builder connectedSignalStrength(List<TapBasedSignalStrengthResponse> connectedSignalStrength);
 
         public abstract Builder disconnectedSignalStrength(List<TapBasedSignalStrengthResponse> disconnectedSignalStrength);
-
-        public abstract Builder dataRetentionDays(int dataRetentionDays);
 
         public abstract ClientDetailsResponse build();
     }

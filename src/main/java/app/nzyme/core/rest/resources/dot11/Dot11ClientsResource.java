@@ -278,11 +278,6 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
             ));
         }
 
-        int dataRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
-                .getValue(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key())
-                .orElse(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
-        );
-
         Optional<MacAddressContextEntry> macContext = nzyme.getContextService().findMacAddressContext(
                 c.mac(),
                 authenticatedUser.getOrganizationId(),
@@ -318,8 +313,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 transparentContext.hostnames(),
                 c.probeRequests(),
                 connectedSignalStrengthsByTap,
-                disconnectedSignalStrengthsByTap,
-                dataRetentionDays
+                disconnectedSignalStrengthsByTap
         )).build();
     }
 

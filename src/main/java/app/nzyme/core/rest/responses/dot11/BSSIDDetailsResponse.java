@@ -22,16 +22,12 @@ public abstract class BSSIDDetailsResponse {
     @JsonProperty("frequencies")
     public abstract List<Integer> frequencies();
 
-    @JsonProperty("data_retention_days")
-    public abstract int dataRetentionDays();
-
-    public static BSSIDDetailsResponse create(BSSIDSummaryDetailsResponse summary, List<BSSIDClientDetails> clients, List<TapBasedSignalStrengthResponse> signalStrength, List<Integer> frequencies, int dataRetentionDays) {
+    public static BSSIDDetailsResponse create(BSSIDSummaryDetailsResponse summary, List<BSSIDClientDetails> clients, List<TapBasedSignalStrengthResponse> signalStrength, List<Integer> frequencies) {
         return builder()
                 .summary(summary)
                 .clients(clients)
                 .signalStrength(signalStrength)
                 .frequencies(frequencies)
-                .dataRetentionDays(dataRetentionDays)
                 .build();
     }
 
@@ -48,8 +44,6 @@ public abstract class BSSIDDetailsResponse {
         public abstract Builder signalStrength(List<TapBasedSignalStrengthResponse> signalStrength);
 
         public abstract Builder frequencies(List<Integer> frequencies);
-
-        public abstract Builder dataRetentionDays(int dataRetentionDays);
 
         public abstract BSSIDDetailsResponse build();
     }

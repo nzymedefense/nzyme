@@ -9,13 +9,9 @@ public abstract class UavDetailsResponse {
     @JsonProperty("summary")
     public abstract UavSummaryResponse summary();
 
-    @JsonProperty("data_retention_days")
-    public abstract int dataRetentionDays();
-
-    public static UavDetailsResponse create(UavSummaryResponse summary, int dataRetentionDays) {
+    public static UavDetailsResponse create(UavSummaryResponse summary) {
         return builder()
                 .summary(summary)
-                .dataRetentionDays(dataRetentionDays)
                 .build();
     }
 
@@ -26,8 +22,6 @@ public abstract class UavDetailsResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder summary(UavSummaryResponse summary);
-
-        public abstract Builder dataRetentionDays(int dataRetentionDays);
 
         public abstract UavDetailsResponse build();
     }

@@ -152,7 +152,7 @@ export default function BluetoothDeviceDetailsPage() {
                       <dd>
                         {moment(device.device.first_seen).format()}{' '}
                         <span className="text-muted">
-                          (Note: Bluetooth data retention time is {device.data_retention_days} days)
+                          (Note: This value is affected by data retention times.)
                         </span>
                       </dd>
                       <dt>Last Seen</dt>

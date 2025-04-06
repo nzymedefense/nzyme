@@ -11,7 +11,6 @@ import app.nzyme.core.rest.responses.uav.types.UavBuiltInTypeListResponse;
 import app.nzyme.core.rest.responses.uav.types.UavCustomTypeDetailsResponse;
 import app.nzyme.core.rest.responses.uav.types.UavCustomTypeListResponse;
 import app.nzyme.core.shared.Classification;
-import app.nzyme.core.uav.UavRegistryKeys;
 import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.uav.db.UavTimelineEntry;
 import app.nzyme.core.uav.db.UavTypeEntry;
@@ -86,14 +85,8 @@ public class UavResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        int dataRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
-                .getValue(UavRegistryKeys.UAV_RETENTION_TIME_DAYS.key())
-                .orElse(UavRegistryKeys.UAV_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
-        );
-
         return Response.ok(UavDetailsResponse.create(
-                uavEntryToSummaryResponse(uav.get()),
-                dataRetentionDays
+                uavEntryToSummaryResponse(uav.get())
         )).build();
     }
 

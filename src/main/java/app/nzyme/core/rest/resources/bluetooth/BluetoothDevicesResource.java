@@ -72,13 +72,8 @@ public class BluetoothDevicesResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        int dataRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
-                .getValue(BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.key())
-                .orElse(BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
-        );
-
         return Response.ok(BluetoothDeviceDetailsResponse.create(
-                buildResponse(device.get(), authenticatedUser), dataRetentionDays
+                buildResponse(device.get(), authenticatedUser)
         )).build();
     }
 

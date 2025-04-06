@@ -204,7 +204,7 @@ export default function UavDetailsPage() {
                 <dd>
                   {moment(uav.summary.first_seen).format()}{' '}
                   <span className="text-muted">
-                    (Note: UAV data retention time is {uav.data_retention_days} days)
+                    (Note: This value is affected by data retention times.)
                   </span>
                 </dd>
                 <dt>Last Seen</dt>

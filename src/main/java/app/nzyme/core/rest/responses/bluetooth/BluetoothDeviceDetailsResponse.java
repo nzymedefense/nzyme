@@ -9,13 +9,9 @@ public abstract class BluetoothDeviceDetailsResponse {
     @JsonProperty("device")
     public abstract BluetoothDeviceSummaryDetailsResponse device();
 
-    @JsonProperty("data_retention_days")
-    public abstract int dataRetentionDays();
-
-    public static BluetoothDeviceDetailsResponse create(BluetoothDeviceSummaryDetailsResponse device, int dataRetentionDays) {
+    public static BluetoothDeviceDetailsResponse create(BluetoothDeviceSummaryDetailsResponse device) {
         return builder()
                 .device(device)
-                .dataRetentionDays(dataRetentionDays)
                 .build();
     }
 
@@ -26,8 +22,6 @@ public abstract class BluetoothDeviceDetailsResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder device(BluetoothDeviceSummaryDetailsResponse device);
-
-        public abstract Builder dataRetentionDays(int dataRetentionDays);
 
         public abstract BluetoothDeviceDetailsResponse build();
     }
