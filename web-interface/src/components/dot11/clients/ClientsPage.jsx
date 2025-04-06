@@ -33,6 +33,9 @@ function ClientsPage() {
   const [clientsTimeRange, setClientsTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
   const [page, setPage] = useState(1);
 
+  const [orderColumn, setOrderColumn] = useState("last_seen");
+  const [orderDirection, setOrderDirection] = useState("DESC");
+
   const [filters, setFilters] = useState(
       queryParametersToFilters(urlQuery.get("filters"), CONNECTED_CLIENT_FILTER_FIELDS)
   );
@@ -56,12 +59,14 @@ function ClientsPage() {
     dot11Service.findConnectedClients(
         clientsTimeRange,
         filters,
+        orderColumn,
+        orderDirection,
         selectedTaps,
         setClients,
         perPage,
         (page-1)*perPage
     );
-  }, [page, clientsTimeRange, selectedTaps, filters])
+  }, [page, clientsTimeRange, selectedTaps, filters, orderColumn, orderDirection])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -125,6 +130,10 @@ function ClientsPage() {
                                        perPage={perPage}
                                        page={page}
                                        setPage={setPage}
+                                       orderColumn={orderColumn}
+                                       orderDirection={orderDirection}
+                                       setOrderColumn={setOrderColumn}
+                                       setOrderDirection={setOrderDirection}
                                        setFilters={setFilters} />
               </div>
             </div>

@@ -9,7 +9,6 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import HelpBubble from "../../misc/HelpBubble";
 import {useLocation} from "react-router-dom";
 import {queryParametersToFilters} from "../../shared/filtering/FilterQueryParameters";
-import {CONNECTED_CLIENT_FILTER_FIELDS} from "./ConnectedClientFilterFields";
 import Filters from "../../shared/filtering/Filters";
 import {DISCONNECTED_CLIENT_FILTER_FIELDS} from "./DisconnectedClientFilterFields";
 import SectionMenuBar from "../../shared/SectionMenuBar";
@@ -36,6 +35,9 @@ function ClientsPage() {
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
   const [page, setPage] = useState(1);
 
+  const [orderColumn, setOrderColumn] = useState("last_seen");
+  const [orderDirection, setOrderDirection] = useState("DESC");
+
   const [skipRandomized, setSkipRandomized] = useState(true);
 
   const [filters, setFilters] = useState(
@@ -58,13 +60,15 @@ function ClientsPage() {
     dot11Service.findDisconnectedClients(
         timeRange,
         filters,
+        orderColumn,
+        orderDirection,
         skipRandomized,
         selectedTaps,
         setClients,
         perPage,
         (page-1)*perPage
     );
-  }, [page, timeRange, skipRandomized, selectedTaps, filters])
+  }, [page, timeRange, skipRandomized, selectedTaps, orderColumn, orderDirection, filters])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -120,7 +124,7 @@ function ClientsPage() {
 
                 <Filters filters={filters}
                          setFilters={setFilters}
-                         fields={CONNECTED_CLIENT_FILTER_FIELDS} />
+                         fields={DISCONNECTED_CLIENT_FILTER_FIELDS} />
               </div>
             </div>
           </div>
@@ -163,6 +167,10 @@ function ClientsPage() {
                                           perPage={perPage}
                                           page={page}
                                           setPage={setPage}
+                                          orderColumn={orderColumn}
+                                          orderDirection={orderDirection}
+                                          setOrderColumn={setOrderColumn}
+                                          setOrderDirection={setOrderDirection}
                                           setFilters={setFilters} />
               </div>
             </div>

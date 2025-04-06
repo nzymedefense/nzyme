@@ -25,6 +25,7 @@ import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 
 import com.google.common.collect.Maps;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -54,6 +55,8 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                                      @QueryParam("time_range") @Valid String timeRangeParameter,
                                      @QueryParam("filters") String filtersParameter,
                                      @QueryParam("taps") String taps,
+                                     @QueryParam("order_column") @Nullable String orderColumnParam,
+                                     @QueryParam("order_direction") @Nullable String orderDirectionParam,
                                      @QueryParam("limit") int limit,
                                      @QueryParam("offset") int offset) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
@@ -61,12 +64,23 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Filters filters = parseFiltersQueryParameter(filtersParameter);
 
+        Dot11.ClientOrderColumn orderColumn = Dot11.ClientOrderColumn.LAST_SEEN;
+        OrderDirection orderDirection = OrderDirection.DESC;
+        if (orderColumnParam != null && orderDirectionParam != null) {
+            try {
+                orderColumn = Dot11.ClientOrderColumn.valueOf(orderColumnParam.toUpperCase());
+                orderDirection = OrderDirection.valueOf(orderDirectionParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
+
         // Connected clients.
         long connectedCount = nzyme.getDot11().countBSSIDClients(timeRange, filters, tapUuids);
         List<ConnectedClientDetailsResponse> connectedClients = Lists.newArrayList();
 
         for (ConnectedClientDetails client : nzyme.getDot11().findBSSIDClients(
-                timeRange, filters, tapUuids, limit, offset, Dot11.ClientOrderColumn.LAST_SEEN, OrderDirection.DESC)) {
+                timeRange, filters, tapUuids, limit, offset, orderColumn, orderDirection)) {
             Optional<MacAddressContextEntry> clientContext = nzyme.getContextService().findMacAddressContext(
                     client.clientMac(),
                     authenticatedUser.getOrganizationId(),
@@ -120,12 +134,25 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                                         @QueryParam("skip_randomized") boolean skipRandomized,
                                         @QueryParam("time_range") @Valid String timeRangeParameter,
                                         @QueryParam("taps") String taps,
+                                        @QueryParam("order_column") @Nullable String orderColumnParam,
+                                        @QueryParam("order_direction") @Nullable String orderDirectionParam,
                                         @QueryParam("limit") int limit,
                                         @QueryParam("offset") int offset) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        Dot11.ClientOrderColumn orderColumn = Dot11.ClientOrderColumn.LAST_SEEN;
+        OrderDirection orderDirection = OrderDirection.DESC;
+        if (orderColumnParam != null && orderDirectionParam != null) {
+            try {
+                orderColumn = Dot11.ClientOrderColumn.valueOf(orderColumnParam.toUpperCase());
+                orderDirection = OrderDirection.valueOf(orderDirectionParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
 
         List<String> macAddressesOfAllConnectedClients = nzyme.getDot11()
                 .findMacAddressesOfAllBSSIDClients(timeRange, tapUuids);
@@ -136,7 +163,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
 
         for (DisconnectedClientDetails client : nzyme.getDot11().findClients(
                 timeRange, filters, tapUuids, macAddressesOfAllConnectedClients, skipRandomized, limit, offset,
-                Dot11.ClientOrderColumn.LAST_SEEN, OrderDirection.DESC)) {
+                orderColumn, orderDirection)) {
             Optional<MacAddressContextEntry> clientContext = nzyme.getContextService().findMacAddressContext(
                     client.clientMac(),
                     authenticatedUser.getOrganizationId(),

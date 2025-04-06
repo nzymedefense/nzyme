@@ -47,7 +47,7 @@ class Dot11Service {
   findAllBSSIDs(timeRange, filters, orderColumn, orderDirection, limit, offset, taps, setBSSIDs) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
-    RESTClient.get("/dot11/networks/bssids", { time_range: timeRange, limit: limit, order_column: orderColumn, order_direction: orderDirection, offset: offset, filters: filters, taps: tapsList },
+    RESTClient.get("/dot11/networks/bssids", { time_range: timeRange, limit: limit, offset: offset, order_column: orderColumn, order_direction: orderDirection, filters: filters, taps: tapsList },
         function (response) {
           setBSSIDs(response.data)
     })
@@ -107,21 +107,21 @@ class Dot11Service {
     })
   }
 
-  findConnectedClients(timeRange, filters, taps, setClients, limit, offset) {
+  findConnectedClients(timeRange, filters, orderColumn, orderDirection, taps, setClients, limit, offset) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get("/dot11/clients/connected",
-        { time_range: timeRange, taps: tapsList, filters: filters, limit: limit, offset: offset },
+        { time_range: timeRange, taps: tapsList, filters: filters, order_column: orderColumn, order_direction: orderDirection, limit: limit, offset: offset },
         function (response) {
           setClients(response.data);
         })
   }
 
-  findDisconnectedClients(timeRange, filters, skipRandomized, taps, setClients, limit, offset) {
+  findDisconnectedClients(timeRange, filters, orderColumn, orderDirection, skipRandomized, taps, setClients, limit, offset) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get("/dot11/clients/disconnected",
-        { skip_randomized: skipRandomized, time_range: timeRange, filters: filters, taps: tapsList, limit: limit, offset: offset },
+        { skip_randomized: skipRandomized, time_range: timeRange, filters: filters, taps: tapsList, order_column: orderColumn, order_direction: orderDirection, limit: limit, offset: offset },
         function (response) {
           setClients(response.data);
         })

@@ -76,6 +76,7 @@ public class Dot11 {
 
     public enum ClientOrderColumn {
 
+        CLIENT_MAC("client_mac"),
         LAST_SEEN("last_seen");
 
         private final String columnName;

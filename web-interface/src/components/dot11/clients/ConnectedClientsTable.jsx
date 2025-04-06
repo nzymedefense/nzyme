@@ -9,6 +9,7 @@ import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 import {BSSID_FILTER_FIELDS} from "../bssids/BssidFilterFields";
 import {CONNECTED_CLIENT_FILTER_FIELDS} from "./ConnectedClientFilterFields";
+import ColumnSorting from "../../shared/ColumnSorting";
 
 function ConnectedClientsTable(props) {
 
@@ -18,7 +19,20 @@ function ConnectedClientsTable(props) {
   const page = props.page;
   const setPage = props.setPage;
 
+  const setOrderColumn = props.setOrderColumn;
+  const orderColumn = props.orderColumn;
+  const setOrderDirection = props.setOrderDirection;
+  const orderDirection = props.orderDirection;
+
   const setFilters = props.setFilters;
+
+  const columnSorting = (columnName) => {
+    return <ColumnSorting thisColumn={columnName}
+                          orderColumn={orderColumn}
+                          setOrderColumn={setOrderColumn}
+                          orderDirection={orderDirection}
+                          setOrderDirection={setOrderDirection} />
+  }
 
   if (!clients) {
     return <LoadingSpinner />
@@ -39,12 +53,12 @@ function ConnectedClientsTable(props) {
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
-            <th>Client MAC</th>
+            <th>Client MAC {columnSorting("client_mac")}</th>
             <th>Client OUI</th>
             <th>Connected BSSID</th>
             <th>Connected BSSID OUI</th>
             <th>Probe Requests</th>
-            <th>Last Seen</th>
+            <th>Last Seen {columnSorting("last_seen")}</th>
           </tr>
           </thead>
           <tbody>
@@ -79,7 +93,7 @@ function ConnectedClientsTable(props) {
                                    filterFieldName="probe_request" />
                         : <span className="text-muted">None</span> }
                   </td>
-                  <td>{moment(client.last_seen).format()}</td>
+                  <td title={moment(client.last_seen).format()}>{moment(client.last_seen).fromNow()}</td>
                 </tr>
             )
           })}

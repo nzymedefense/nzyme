@@ -8,6 +8,7 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 import {DISCONNECTED_CLIENT_FILTER_FIELDS} from "./DisconnectedClientFilterFields";
+import ColumnSorting from "../../shared/ColumnSorting";
 
 function DisconnectedClientsTable(props) {
 
@@ -17,7 +18,20 @@ function DisconnectedClientsTable(props) {
   const page = props.page;
   const setPage = props.setPage;
 
+  const setOrderColumn = props.setOrderColumn;
+  const orderColumn = props.orderColumn;
+  const setOrderDirection = props.setOrderDirection;
+  const orderDirection = props.orderDirection;
+
   const setFilters = props.setFilters;
+
+  const columnSorting = (columnName) => {
+    return <ColumnSorting thisColumn={columnName}
+                          orderColumn={orderColumn}
+                          setOrderColumn={setOrderColumn}
+                          orderDirection={orderDirection}
+                          setOrderDirection={setOrderDirection} />
+  }
 
   if (!clients) {
     return <LoadingSpinner />
@@ -38,10 +52,10 @@ function DisconnectedClientsTable(props) {
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
-            <th>Client MAC</th>
+            <th>Client MAC {columnSorting("client_mac")}</th>
             <th>Client OUI</th>
             <th>Probe Requests</th>
-            <th>Last Seen</th>
+            <th>Last Seen {columnSorting("last_seen")}</th>
           </tr>
           </thead>
           <tbody>
@@ -65,7 +79,7 @@ function DisconnectedClientsTable(props) {
                                    filterFieldName="probe_request" />
                         : <span className="text-muted">None</span> }
                   </td>
-                  <td>{moment(client.last_seen).format()}</td>
+                  <td title={moment(client.last_seen).format()}>{moment(client.last_seen).fromNow()}</td>
                 </tr>
             )
           })}
