@@ -9,12 +9,14 @@ public abstract class ConnectedClientDetails {
     public abstract String clientMac();
     public abstract String bssid();
     public abstract DateTime lastSeen();
+    public abstract Double signalStrength();
 
-    public static ConnectedClientDetails create(String clientMac, String bssid, DateTime lastSeen) {
+    public static ConnectedClientDetails create(String clientMac, String bssid, DateTime lastSeen, Double signalStrength) {
         return builder()
                 .clientMac(clientMac)
                 .bssid(bssid)
                 .lastSeen(lastSeen)
+                .signalStrength(signalStrength)
                 .build();
     }
 
@@ -29,6 +31,8 @@ public abstract class ConnectedClientDetails {
         public abstract Builder bssid(String bssid);
 
         public abstract Builder lastSeen(DateTime lastSeen);
+
+        public abstract Builder signalStrength(Double signalStrength);
 
         public abstract ConnectedClientDetails build();
     }

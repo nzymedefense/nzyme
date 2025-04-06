@@ -14,7 +14,8 @@ public class ConnectedClientDetailsMapper implements RowMapper<ConnectedClientDe
         return ConnectedClientDetails.create(
                 rs.getString("client_mac"),
                 rs.getString("bssid"),
-                new DateTime(rs.getTimestamp("last_seen"))
+                new DateTime(rs.getTimestamp("last_seen")),
+                rs.getDouble("signal_strength_average")
         );
     }
 

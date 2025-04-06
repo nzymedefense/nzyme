@@ -120,7 +120,8 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                                             ))
                                     .orElse(null)
                     ),
-                    probeRequests
+                    probeRequests,
+                    client.signalStrength()
             ));
         }
 
@@ -183,7 +184,8 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                                     .orElse(null)
                     ),
                     client.lastSeen(),
-                    client.probeRequests()
+                    client.probeRequests(),
+                    client.signalStrength()
             ));
         }
 

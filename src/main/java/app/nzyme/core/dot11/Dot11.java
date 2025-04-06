@@ -77,6 +77,7 @@ public class Dot11 {
     public enum ClientOrderColumn {
 
         CLIENT_MAC("client_mac"),
+        SIGNAL_STRENGTH_AVERAGE("signal_strength_average"),
         LAST_SEEN("last_seen");
 
         private final String columnName;
@@ -740,8 +741,8 @@ public class Dot11 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.bssid AS bssid, c.client_mac AS client_mac, " +
-                                "MAX(b.created_at) AS last_seen " +
-                                "FROM dot11_bssids AS b " +
+                                "AVG(c.signal_strength_average) AS signal_strength_average, " +
+                                "MAX(b.created_at) AS last_seen FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "AND b.tap_uuid IN (<taps>) " + filterFragment.whereSql() +
@@ -844,6 +845,7 @@ public class Dot11 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT c.client_mac, MAX(created_at) AS last_seen, " +
+                                "AVG(c.signal_strength_average) AS signal_strength_average, " +
                                 "ARRAY_AGG(DISTINCT(pr.ssid)) AS probe_requests " +
                                 "FROM dot11_clients AS c " +
                                 "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
@@ -874,7 +876,8 @@ public class Dot11 {
         }
 
         return handle.createQuery("SELECT b.bssid AS bssid, c.client_mac AS client_mac, " +
-                        "MAX(b.created_at) AS last_seen " +
+                        "MAX(b.created_at) AS last_seen, " +
+                        "AVG(c.signal_strength_average) AS signal_strength_average " +
                         "FROM dot11_bssids AS b " +
                         "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
                         "WHERE b.bssid = :bssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +

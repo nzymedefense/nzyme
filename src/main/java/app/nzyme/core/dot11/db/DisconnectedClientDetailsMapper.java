@@ -24,7 +24,8 @@ public class DisconnectedClientDetailsMapper implements RowMapper<DisconnectedCl
         return DisconnectedClientDetails.create(
                 rs.getString("client_mac"),
                 new DateTime(rs.getTimestamp("last_seen")),
-                probeRequests
+                probeRequests,
+                rs.getDouble("signal_strength_average")
         );
     }
 

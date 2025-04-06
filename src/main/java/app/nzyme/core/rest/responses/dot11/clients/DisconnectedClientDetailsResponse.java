@@ -20,11 +20,15 @@ public abstract class DisconnectedClientDetailsResponse {
     @JsonProperty("probe_request_ssids")
     public abstract List<String> probeRequests();
 
-    public static DisconnectedClientDetailsResponse create(Dot11MacAddressResponse mac, DateTime lastSeen, List<String> probeRequests) {
+    @JsonProperty("signal_strength_average")
+    public abstract double signalStrengthAverage();
+
+    public static DisconnectedClientDetailsResponse create(Dot11MacAddressResponse mac, DateTime lastSeen, List<String> probeRequests, double signalStrengthAverage) {
         return builder()
                 .mac(mac)
                 .lastSeen(lastSeen)
                 .probeRequests(probeRequests)
+                .signalStrengthAverage(signalStrengthAverage)
                 .build();
     }
 
@@ -39,6 +43,8 @@ public abstract class DisconnectedClientDetailsResponse {
         public abstract Builder lastSeen(DateTime lastSeen);
 
         public abstract Builder probeRequests(List<String> probeRequests);
+
+        public abstract Builder signalStrengthAverage(double signalStrengthAverage);
 
         public abstract DisconnectedClientDetailsResponse build();
     }

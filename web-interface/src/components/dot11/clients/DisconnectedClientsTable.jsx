@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useContext} from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Paginator from "../../misc/Paginator";
 import moment from "moment";
@@ -9,8 +9,12 @@ import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 import {DISCONNECTED_CLIENT_FILTER_FIELDS} from "./DisconnectedClientFilterFields";
 import ColumnSorting from "../../shared/ColumnSorting";
+import SignalStrength from "../../shared/SignalStrength";
+import {TapContext} from "../../../App";
 
 function DisconnectedClientsTable(props) {
+
+  const tapContext = useContext(TapContext);
 
   const clients = props.clients;
 
@@ -24,6 +28,8 @@ function DisconnectedClientsTable(props) {
   const orderDirection = props.orderDirection;
 
   const setFilters = props.setFilters;
+
+  const selectedTaps = tapContext.taps;
 
   const columnSorting = (columnName) => {
     return <ColumnSorting thisColumn={columnName}
@@ -54,6 +60,7 @@ function DisconnectedClientsTable(props) {
           <tr>
             <th>Client MAC {columnSorting("client_mac")}</th>
             <th>Client OUI</th>
+            <th>Signal Strength {columnSorting("signal_strength_average")}</th>
             <th>Probe Requests</th>
             <th>Last Seen {columnSorting("last_seen")}</th>
           </tr>
@@ -71,6 +78,13 @@ function DisconnectedClientsTable(props) {
                                                                      value={client.mac.address} />} />
                   </td>
                   <td>{client.mac.oui ? client.mac.oui : <span className="text-muted">Unknown</span>}</td>
+                  <td>
+                    <SignalStrength strength={client.signal_strength_average} selectedTapCount={selectedTaps.length} />
+                    <FilterValueIcon setFilters={setFilters}
+                                     fields={DISCONNECTED_CLIENT_FILTER_FIELDS}
+                                     field="signal_strength"
+                                     value={Math.round(client.signal_strength_average)} />
+                  </td>
                   <td>
                     { client.probe_request_ssids && client.probe_request_ssids.length > 0 ?
                         <SSIDsList ssids={client.probe_request_ssids}

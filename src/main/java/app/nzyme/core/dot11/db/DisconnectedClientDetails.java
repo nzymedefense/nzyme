@@ -11,12 +11,14 @@ public abstract class DisconnectedClientDetails {
     public abstract String clientMac();
     public abstract DateTime lastSeen();
     public abstract List<String> probeRequests();
+    public abstract Double signalStrength();
 
-    public static DisconnectedClientDetails create(String clientMac, DateTime lastSeen, List<String> probeRequests) {
+    public static DisconnectedClientDetails create(String clientMac, DateTime lastSeen, List<String> probeRequests, Double signalStrength) {
         return builder()
                 .clientMac(clientMac)
                 .lastSeen(lastSeen)
                 .probeRequests(probeRequests)
+                .signalStrength(signalStrength)
                 .build();
     }
 
@@ -31,6 +33,8 @@ public abstract class DisconnectedClientDetails {
         public abstract Builder lastSeen(DateTime lastSeen);
 
         public abstract Builder probeRequests(List<String> probeRequests);
+
+        public abstract Builder signalStrength(Double signalStrength);
 
         public abstract DisconnectedClientDetails build();
     }
