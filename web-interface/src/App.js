@@ -205,7 +205,11 @@ function App() {
   const fetchSessionInfo = function(callback) {
     if (isAuthenticated()) {
       authenticationService.fetchSessionInfo(function (sessionInfo) {
-        setMfaRequired(sessionInfo.mfa_valid === false);
+        if (sessionInfo.user.has_mfa_disabled) {
+          setMfaRequired(false);
+        } else {
+          setMfaRequired(sessionInfo.mfa_valid === false);
+        }
         setMfaSetup(sessionInfo.mfa_setup);
         setMfaEntryExpiresAt(sessionInfo.mfa_entry_expires_at);
         setUserInformation(sessionInfo.user);

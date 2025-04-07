@@ -23,8 +23,8 @@ function EditTenantUserPage() {
 
   const [redirect, setRedirect] = useState(false);
 
-  const onEditDetailsFormSubmitted = function (email, name, callback) {
-    authenticationManagementService.editUserOfTenant(organization.id, tenant.id, user.id, name, email, function() {
+  const onEditDetailsFormSubmitted = function (email, name, disableMfa, callback) {
+    authenticationManagementService.editUserOfTenant(organization.id, tenant.id, user.id, name, email, disableMfa, function() {
       // Success.
       notify.show('User updated.', 'success');
       setRedirect(true);
@@ -126,6 +126,7 @@ function EditTenantUserPage() {
                   <EditUserForm
                       email={user.email}
                       name={user.name}
+                      disableMfa={user.mfa_disabled}
                       submitText="Edit User"
                       errorMessage={errorMessage}
                       onClick={onEditDetailsFormSubmitted} />

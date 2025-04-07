@@ -4,6 +4,7 @@ import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import moment from "moment";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import UserDetailsAdminLink from "../../misc/UserDetailsAdminLink";
+import SessionStatus from "./SessionStatus";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -75,9 +76,7 @@ function SessionsTable(props) {
                   <td title={moment(s.created_at).format()}>
                     {moment(s.created_at).fromNow()}
                   </td>
-                  <td>
-                    {s.mfa_valid ? "Passed/Active" : "Pending"}
-                  </td>
+                  <td><SessionStatus session={s} /></td>
                   <td title={s.last_activity ? moment(s.last_activity).format() : "None"}>
                     {s.last_activity ? moment(s.last_activity).fromNow() : "None" }
                   </td>

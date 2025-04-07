@@ -117,6 +117,14 @@ function OrganizationAdminDetailsPage() {
                       <dt>Full Name</dt>
                       <dd>{user.name}</dd>
 
+                      <dt>MFA</dt>
+                      <dd>
+                        {user.mfa_disabled ?
+                            <span className="text-warning">Disabled</span>
+                            : <span className="text-success">Enabled</span>
+                        }
+                      </dd>
+
                       <dt>Created At</dt>
                       <dd title={moment(user.created_at).format()}>
                         {moment(user.created_at).fromNow()}

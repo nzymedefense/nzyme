@@ -121,7 +121,7 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
             String sessionId = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
 
             // Check if session exists.
-            Optional<SessionEntry> session = nzyme.getAuthenticationService().findSessionWithPassedMFABySessionId(sessionId);
+            Optional<SessionEntry> session = nzyme.getAuthenticationService().findSessionWithOrWithoutPassedMFABySessionId(sessionId);
             if (session.isEmpty()) {
                 abortWithUnauthorized(requestContext);
                 return;
@@ -131,6 +131,12 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
 
             if (user.isEmpty()) {
                 LOG.error("Session referenced user that doesn't exist. Aborting.");
+                abortWithUnauthorized(requestContext);
+                return;
+            }
+
+            // Check if MFA has been passed if user does not have MFA disabled.
+            if (!user.get().hasMfaDisabled() && !session.get().mfaValid()) {
                 abortWithUnauthorized(requestContext);
                 return;
             }

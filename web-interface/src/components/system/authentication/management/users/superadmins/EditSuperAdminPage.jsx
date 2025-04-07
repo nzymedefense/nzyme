@@ -18,8 +18,8 @@ function EditSuperAdminPage() {
 
   const [redirect, setRedirect] = useState(false);
 
-  const onEditDetailsFormSubmitted = function (email, name, callback) {
-    authenticationManagementService.editSuperAdministrator(user.id, name, email, function() {
+  const onEditDetailsFormSubmitted = function (email, name, disableMfa, callback) {
+    authenticationManagementService.editSuperAdministrator(user.id, name, email, disableMfa, function() {
       // Success.
       notify.show('Super Administrator updated.', 'success');
       setRedirect(true);
@@ -100,6 +100,7 @@ function EditSuperAdminPage() {
                     <EditUserForm
                         email={user.email}
                         name={user.name}
+                        disableMfa={user.mfa_disabled}
                         submitText="Edit Super Administrator"
                         errorMessage={errorMessage}
                         onClick={onEditDetailsFormSubmitted} />

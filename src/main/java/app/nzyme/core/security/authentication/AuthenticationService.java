@@ -104,17 +104,21 @@ public class AuthenticationService {
         );
     }
 
-    public UserEntry createSuperAdministrator(String name, String email,PasswordHasher.GeneratedHashAndSalt password) {
+    public UserEntry createSuperAdministrator(String name,
+                                              String email,
+                                              boolean mfaDisabled,
+                                              PasswordHasher.GeneratedHashAndSalt password) {
         DateTime now = new DateTime();
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, email, password, " +
-                                "password_salt, name, created_at, updated_at, is_superadmin, is_orgadmin) " +
-                                "VALUES(NULL, NULL, :email, :password, :password_salt, :name, " +
-                                ":created_at, :updated_at, true, false) RETURNING *")
+                                "password_salt, name, mfa_disabled, created_at, updated_at, is_superadmin, " +
+                                "is_orgadmin) VALUES(NULL, NULL, :email, :password, :password_salt, :name, " +
+                                ":mfa_disabled, :created_at, :updated_at, true, false) RETURNING *")
                         .bind("email", email)
                         .bind("password", password.hash())
                         .bind("password_salt", password.salt())
                         .bind("name", name)
+                        .bind("mfa_disabled", mfaDisabled)
                         .bind("created_at", now)
                         .bind("updated_at", now)
                         .mapTo(UserEntry.class)
@@ -286,18 +290,20 @@ public class AuthenticationService {
     public UserEntry createOrganizationAdministrator(UUID organizationId,
                                                      String name,
                                                      String email,
+                                                     boolean mfaDisabled,
                                                      PasswordHasher.GeneratedHashAndSalt password) {
         DateTime now = new DateTime();
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, email, password, " +
-                                "password_salt, name, created_at, updated_at, is_superadmin, is_orgadmin) " +
-                                "VALUES(:organization_id, NULL, :email, :password, :password_salt, :name, " +
-                                ":created_at, :updated_at, false, true) RETURNING *")
+                                "password_salt, name, mfa_disabled, created_at, updated_at, is_superadmin, " +
+                                "is_orgadmin) VALUES(:organization_id, NULL, :email, :password, :password_salt, " +
+                                ":name, :mfa_disabled, :created_at, :updated_at, false, true) RETURNING *")
                         .bind("organization_id", organizationId)
                         .bind("email", email)
                         .bind("password", password.hash())
                         .bind("password_salt", password.salt())
                         .bind("name", name)
+                        .bind("mfa_disabled", mfaDisabled)
                         .bind("created_at", now)
                         .bind("updated_at", now)
                         .mapTo(UserEntry.class)
@@ -524,19 +530,21 @@ public class AuthenticationService {
                                         UUID tenantId,
                                         String name,
                                         String email,
+                                        boolean mfaDisabled,
                                         PasswordHasher.GeneratedHashAndSalt password) {
         DateTime now = new DateTime();
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, email, password, " +
-                                "password_salt, name, created_at, updated_at, is_superadmin, is_orgadmin) " +
+                                "password_salt, name, mfa_disabled, created_at, updated_at, is_superadmin, is_orgadmin) " +
                                 "VALUES(:organization_id, :tenant_id, :email, :password, :password_salt, :name, " +
-                                ":created_at, :updated_at, false, false) RETURNING *")
+                                ":mfa_disabled, :created_at, :updated_at, false, false) RETURNING *")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("email", email)
                         .bind("password", password.hash())
                         .bind("password_salt", password.salt())
                         .bind("name", name)
+                        .bind("mfa_disabled", mfaDisabled)
                         .bind("created_at", now)
                         .bind("updated_at", now)
                         .mapTo(UserEntry.class)
@@ -544,12 +552,14 @@ public class AuthenticationService {
         );
     }
 
-    public void editUser(UUID userId, String name, String email) {
+    public void editUser(UUID userId, String name, String email, boolean mfaDisabled) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET name = :name, email = :email, updated_at = NOW() " +
+                handle.createUpdate("UPDATE auth_users SET name = :name, email = :email, " +
+                                "mfa_disabled = :mfa_disabled, updated_at = NOW() " +
                                 "WHERE uuid = :user_id")
                         .bind("name", name)
                         .bind("email", email)
+                        .bind("mfa_disabled", mfaDisabled)
                         .bind("user_id", userId)
                         .execute()
         );
@@ -715,7 +725,7 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
                                 "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
-                                "s.mfa_valid, s.mfa_requested_at " +
+                                "s.mfa_valid, s.mfa_requested_at, u.mfa_disabled " +
                                 "FROM auth_sessions AS s " +
                                 "LEFT JOIN auth_users u ON s.user_id = u.uuid " +
                                 "ORDER BY u.email ASC " +
@@ -731,7 +741,7 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
                                 "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
-                                "s.mfa_valid, s.mfa_requested_at " +
+                                "s.mfa_valid, s.mfa_requested_at, u.mfa_disabled " +
                                 "FROM auth_sessions AS s " +
                                 "LEFT JOIN auth_users u ON s.user_id = u.uuid " +
                                 "WHERE u.organization_id = :organization_id " +
@@ -749,7 +759,7 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
                                 "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
-                                "s.mfa_valid, s.mfa_requested_at " +
+                                "s.mfa_valid, s.mfa_requested_at, u.mfa_disabled " +
                                 "FROM auth_sessions AS s " +
                                 "LEFT JOIN auth_users u ON s.user_id = u.uuid " +
                                 "WHERE u.organization_id = :organization_id AND u.tenant_id = :tenant_id " +
@@ -779,17 +789,6 @@ public class AuthenticationService {
                 handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at, elevated, elevated_since, " +
                                 "mfa_valid, mfa_requested_at FROM auth_sessions WHERE id = :id")
                         .bind("id", id)
-                        .mapTo(SessionEntry.class)
-                        .findOne()
-        );
-    }
-
-    public Optional<SessionEntry> findSessionWithPassedMFABySessionId(String sessionId) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at, elevated, elevated_since, " +
-                                "mfa_valid, mfa_requested_at " +
-                                "FROM auth_sessions WHERE sessionid = :sessionid AND mfa_valid = true")
-                        .bind("sessionid", sessionId)
                         .mapTo(SessionEntry.class)
                         .findOne()
         );
@@ -1347,7 +1346,8 @@ public class AuthenticationService {
                                                     "AND u.tenant_id = :tenant_id " +
                                                     "AND (s.created_at < :session_timeout OR (s.mfa_valid = true " +
                                                     "AND u.last_activity < :inactivity_timeout) " +
-                                                    "OR (s.mfa_valid = false AND s.mfa_requested_at < :mfa_timeout))")
+                                                    "OR (u.mfa_disabled = true AND s.mfa_valid = false " +
+                                                    "AND s.mfa_requested_at < :mfa_timeout))")
                                             .bind("organization_id", organization.uuid())
                                             .bind("tenant_id", tenant.uuid())
                                             .bind("session_timeout", DateTime.now().minusMinutes(tenant.sessionTimeoutMinutes()))

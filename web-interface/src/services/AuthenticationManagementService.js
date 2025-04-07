@@ -118,9 +118,9 @@ class AuthenticationManagementService {
         })
   }
 
-  createOrganizationAdministrator(organizationId, email, password, name, successCallback, errorCallback) {
+  createOrganizationAdministrator(organizationId, email, password, name, disableMfa, successCallback, errorCallback) {
     RESTClient.post('/system/authentication/mgmt/organizations/show/' + organizationId + '/administrators',
-        {email: email, password: password, name: name}, successCallback, errorCallback);
+        {email: email, password: password, name: name, disable_mfa: disableMfa}, successCallback, errorCallback);
   }
 
   findOrganizationAdmin(organizationId, userId, setUser, setIsDeletable) {
@@ -139,9 +139,9 @@ class AuthenticationManagementService {
         successCallback);
   }
 
-  editOrganizationAdministrator(organizationId, userId, name, email, successCallback, errorCallback) {
+  editOrganizationAdministrator(organizationId, userId, name, email, disableMfa, successCallback, errorCallback) {
     RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/administrators/show/' + userId,
-        {name: name, email: email}, successCallback, errorCallback);
+        {name: name, email: email, disable_mfa: disableMfa}, successCallback, errorCallback);
   }
 
   editOrganizationAdministratorPassword(organizationId, userId, password, successCallback) {
@@ -154,9 +154,9 @@ class AuthenticationManagementService {
         {}, successCallback);
   }
 
-  createUserOfTenant(organizationId, tenantId, email, password, name, successCallback, errorCallback) {
+  createUserOfTenant(organizationId, tenantId, email, password, name, disableMfa, successCallback, errorCallback) {
     RESTClient.post('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users',
-        {email: email, password: password, name: name}, successCallback, errorCallback);
+        {email: email, password: password, name: name, disable_mfa: disableMfa}, successCallback, errorCallback);
   }
 
   findAllUsersOfTenant(organizationId, tenantId, setUsers, limit, offset) {
@@ -177,9 +177,9 @@ class AuthenticationManagementService {
         });
   }
 
-  editUserOfTenant(organizationId, tenantId, userId, name, email, successCallback, errorCallback) {
+  editUserOfTenant(organizationId, tenantId, userId, name, email, disableMfa, successCallback, errorCallback) {
     RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId,
-        {name: name, email: email}, successCallback, errorCallback);
+        {name: name, email: email, disable_mfa: disableMfa}, successCallback, errorCallback);
   }
 
   editUserOfTenantTapPermissions(organizationId, tenantId, userId, allowAccessAllTenantTaps, taps, successCallback, errorCallback) {
@@ -376,14 +376,14 @@ class AuthenticationManagementService {
     })
   }
 
-  createSuperAdministrator(email, password, name, successCallback, errorCallback) {
+  createSuperAdministrator(email, password, name, disableMfa, successCallback, errorCallback) {
     RESTClient.post('/system/authentication/mgmt/organizations/superadmins',
-        {email: email, password: password, name: name}, successCallback, errorCallback);
+        {email: email, password: password, name: name, disable_mfa: disableMfa}, successCallback, errorCallback);
   }
 
-  editSuperAdministrator(userId, name, email, successCallback, errorCallback) {
+  editSuperAdministrator(userId, name, email, disableMfa, successCallback, errorCallback) {
     RESTClient.put('/system/authentication/mgmt/organizations/superadmins/show/' + userId,
-        {name: name, email: email}, successCallback, errorCallback);
+        {name: name, email: email, disable_mfa: disableMfa}, successCallback, errorCallback);
   }
 
   editSuperAdministratorPassword(userId, password, successCallback) {

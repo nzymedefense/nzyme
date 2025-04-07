@@ -289,7 +289,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                         u.defaultOrganizationId(),
                         u.defaultTenantId(),
                         featurePermissions,
-                        subsystems
+                        subsystems,
+                        u.hasMfaDisabled()
                 ),
                 session.get().mfaValid(),
                 user.get().mfaComplete(),

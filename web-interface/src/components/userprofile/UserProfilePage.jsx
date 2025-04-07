@@ -13,6 +13,8 @@ const userProfileService = new UserProfileService();
 
 function UserProfilePage(props) {
 
+  const user = useContext(UserContext);
+
   const onMfaReset = props.onMfaReset;
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
 
@@ -65,6 +67,7 @@ function UserProfilePage(props) {
               </div>
             </div>
 
+            { user.has_mfa_disabled ? null :
             <div className="row mt-3">
               <div className="col-md-12">
                 <div className="card">
@@ -107,7 +110,7 @@ function UserProfilePage(props) {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> }
 
             <WithMinimumRole role="ORGADMIN">
               <div className="row mt-3">

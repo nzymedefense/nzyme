@@ -20,18 +20,19 @@ function EditOrganizationAdminPage() {
 
   const [redirect, setRedirect] = useState(false);
 
-  const onEditDetailsFormSubmitted = function(email, name, callback) {
-    authenticationManagementService.editOrganizationAdministrator(organization.id, user.id, name, email, function() {
-      // Success.
-      notify.show('Organization Administrator updated.', 'success');
-      setRedirect(true);
-      callback();
-    }, function (error) {
-      console.log(error);
-      // Error.
-      setErrorMessage(error.response.data.message);
-      callback();
-    })
+  const onEditDetailsFormSubmitted = function(email, name, disableMfa, callback) {
+    authenticationManagementService.editOrganizationAdministrator(organization.id, user.id, name, email, disableMfa,
+        () => {
+          // Success.
+          notify.show('Organization Administrator updated.', 'success');
+          setRedirect(true);
+          callback();
+        }, function (error) {
+          console.log(error);
+          // Error.
+          setErrorMessage(error.response.data.message);
+          callback();
+        })
   }
 
   const onEditPasswordFormSubmitted = function(password, callback) {
@@ -109,6 +110,7 @@ function EditOrganizationAdminPage() {
                     <EditUserForm
                         email={user.email}
                         name={user.name}
+                        disableMfa={user.mfa_disabled}
                         submitText="Edit Organization Administrator"
                         errorMessage={errorMessage}
                         onClick={onEditDetailsFormSubmitted} />

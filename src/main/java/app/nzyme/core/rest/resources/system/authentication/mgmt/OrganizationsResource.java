@@ -487,6 +487,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 organizationId,
                 req.name(),
                 req.email().toLowerCase(),
+                req.disableMfa(),
                 hash
         );
 
@@ -527,10 +528,20 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             ).build();
         }
 
+        if (!orgAdmin.get().hasMfaDisabled() && req.disableMfa()) {
+            // System event.
+            nzyme.getEventEngine().processEvent(SystemEvent.create(
+                    SystemEventType.AUTHENTICATION_MFA_DISABLED,
+                    DateTime.now(),
+                    "MFA of organization administrator [" + orgAdmin.get().email() + "] was disabled."
+            ), organizationId, null);
+        }
+
         nzyme.getAuthenticationService().editUser(
                 userId,
                 req.name(),
-                req.email().toLowerCase()
+                req.email().toLowerCase(),
+                req.disableMfa()
         );
 
         return Response.ok().build();
@@ -1096,6 +1107,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 tenantId,
                 req.name(),
                 req.email().toLowerCase(),
+                req.disableMfa(),
                 hash
         );
 
@@ -1140,10 +1152,20 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             ).build();
         }
 
+        if (!user.get().hasMfaDisabled() && req.disableMfa()) {
+            // System event.
+            nzyme.getEventEngine().processEvent(SystemEvent.create(
+                    SystemEventType.AUTHENTICATION_MFA_DISABLED,
+                    DateTime.now(),
+                    "MFA of user [" + user.get().email() + "] was disabled."
+            ), organizationId, null);
+        }
+
         nzyme.getAuthenticationService().editUser(
                 userId,
                 req.name(),
-                req.email().toLowerCase()
+                req.email().toLowerCase(),
+                req.disableMfa()
         );
 
         return Response.ok().build();
@@ -1371,7 +1393,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     session.createdAt(),
                     session.lastActivity(),
                     session.mfaValid(),
-                    session.mfaRequestedAt()
+                    session.mfaRequestedAt(),
+                    session.mfaDisabled()
             ));
         }
 
@@ -1419,7 +1442,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     session.createdAt(),
                     session.lastActivity(),
                     session.mfaValid(),
-                    session.mfaRequestedAt()
+                    session.mfaRequestedAt(),
+                    session.mfaDisabled()
             ));
         }
 
@@ -1468,7 +1492,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     session.createdAt(),
                     session.lastActivity(),
                     session.mfaValid(),
-                    session.mfaRequestedAt()
+                    session.mfaRequestedAt(),
+                    session.mfaDisabled()
             ));
         }
 
@@ -2635,6 +2660,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         nzyme.getAuthenticationService().createSuperAdministrator(
                 req.name(),
                 req.email().toLowerCase(),
+                req.disableMfa(),
                 hash
         );
 
@@ -2672,10 +2698,20 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             ).build();
         }
 
+        if (!superAdmin.get().hasMfaDisabled() && req.disableMfa()) {
+            // System event.
+            nzyme.getEventEngine().processEvent(SystemEvent.create(
+                    SystemEventType.AUTHENTICATION_SUPERADMIN_MFA_DISABLED,
+                    DateTime.now(),
+                    "MFA for super administrator [" + req.email() + "] was disabled."
+            ), null, null);
+        }
+
         nzyme.getAuthenticationService().editUser(
                 userId,
                 req.name(),
-                req.email().toLowerCase()
+                req.email().toLowerCase(),
+                req.disableMfa()
         );
 
         return Response.ok().build();
@@ -2841,7 +2877,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 permissions,
                 u.accessAllTenantTaps(),
                 tapPermissions,
-                u.isLoginThrottled()
+                u.isLoginThrottled(),
+                u.hasMfaDisabled()
         );
     }
 

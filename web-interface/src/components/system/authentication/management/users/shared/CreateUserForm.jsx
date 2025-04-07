@@ -16,6 +16,7 @@ function CreateUserForm(props) {
   const [email, setEmail] = useState(props.email ? props.email : "");
   const [password, setPassword] = useState("");
   const [name, setName] = useState(props.name ? props.name : "");
+  const [disableMfa, setDisableMfa] = useState(props.disableMfa !== null && props.disableMfa !== undefined ? props.disableMfa : false);
 
   const [emailValidation, setEmailValidation] = useState(undefined);
   const [passwordValidation, setPasswordValidation] = useState(undefined);
@@ -61,7 +62,7 @@ function CreateUserForm(props) {
   const submit = function(e) {
     e.preventDefault();
     setFormSubmitting(true);
-    onClick(email, password, name, function() {
+    onClick(email, password, name, disableMfa, function() {
       setFormSubmitting(false);
     });
   }
@@ -96,6 +97,22 @@ function CreateUserForm(props) {
           <div className="form-text">
             The password of the new user.{' '}
             <InlineFormValidationMessage message={passwordValidation} />
+          </div>
+        </div>
+
+
+        <div className="mb-3">
+          <div className="form-check">
+            <input className="form-check-input" type="checkbox" checked={disableMfa}
+                   id="disable_mfa" onChange={(e) => setDisableMfa(e.target.checked)} />
+            <label className="form-check-label" htmlFor="disable_mfa">
+              Disable Multi-Factor Authentication (MFA)
+            </label>
+
+            <div className="form-text">
+              The user will not be able to use Multi-Factor Authentication (MFA) if this option is selected. Not
+              recommended.
+            </div>
           </div>
         </div>
 

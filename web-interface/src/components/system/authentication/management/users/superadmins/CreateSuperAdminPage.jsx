@@ -5,6 +5,7 @@ import AuthenticationManagementService from "../../../../../../services/Authenti
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import {Navigate} from "react-router-dom";
 import CreateUserForm from "../shared/CreateUserForm";
+import EditSuperAdminPage from "./EditSuperAdminPage";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -13,8 +14,8 @@ function CreateTenantUserPage() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [redirect, setRedirect] = useState(false);
 
-  const onFormSubmitted = function (email, password, name, callback) {
-    authenticationMgmtService.createSuperAdministrator(email, password, name, function() {
+  const onFormSubmitted = function (email, password, name, disableMfa, callback) {
+    authenticationMgmtService.createSuperAdministrator(email, password, name, disableMfa, function() {
       // Success.
       notify.show('Super administrator created.', 'success');
       setRedirect(true);

@@ -12,6 +12,7 @@ function EditUserForm(props) {
 
   const [email, setEmail] = useState(props.email ? props.email : "");
   const [name, setName] = useState(props.name ? props.name : "");
+  const [disableMfa, setDisableMfa] = useState(props.disableMfa !== null && props.disableMfa !== undefined ? props.disableMfa : false);
 
   const [emailValidation, setEmailValidation] = useState(undefined);
   const [formSubmitting, setFormSubmitting] = useState(false);
@@ -36,7 +37,7 @@ function EditUserForm(props) {
   const submit = function(e) {
     e.preventDefault();
     setFormSubmitting(true);
-    onClick(email, name, function() {
+    onClick(email, name, disableMfa, function() {
       setFormSubmitting(false);
     });
   }
@@ -46,17 +47,34 @@ function EditUserForm(props) {
         <div className="mb-3">
           <div className="mb-3">
             <label htmlFor="name" className="form-label">Full Name</label>
-            <input type="email" className="form-control" id="name" aria-describedby="name"
+            <input type="text" className="form-control" id="name"
                    value={name} onChange={(e) => { updateValue(e, setName) }} />
             <div className="form-text">The full name of the user.</div>
           </div>
 
-          <label htmlFor="email" className="form-label">Email Address / Username</label>
-          <input type="email" className="form-control" id="email" aria-describedby="email"
-                 value={email} onChange={(e) => { updateValue(e, setEmail) }} />
-          <div className="form-text">
-            The email address of the user. This is also the username.{' '}
-            <InlineFormValidationMessage message={emailValidation} />
+          <div className="mb-3">
+            <label htmlFor="email" className="form-label">Email Address / Username</label>
+            <input type="email" className="form-control" id="email"
+                   value={email} onChange={(e) => { updateValue(e, setEmail) }} />
+            <div className="form-text">
+              The email address of the user. This is also the username.{' '}
+              <InlineFormValidationMessage message={emailValidation} />
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <div className="form-check">
+              <input className="form-check-input" type="checkbox" checked={disableMfa}
+                     id="disable_mfa" onChange={(e) => setDisableMfa(e.target.checked)} />
+              <label className="form-check-label" htmlFor="disable_mfa">
+                Disable Multi-Factor Authentication (MFA)
+              </label>
+
+              <div className="form-text">
+                The user will not be able to use Multi-Factor Authentication (MFA) if this option is selected. Not
+                recommended.
+              </div>
+            </div>
           </div>
         </div>
 

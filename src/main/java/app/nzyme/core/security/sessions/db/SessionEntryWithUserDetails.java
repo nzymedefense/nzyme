@@ -33,7 +33,9 @@ public abstract class SessionEntryWithUserDetails {
     @Nullable
     public abstract DateTime mfaRequestedAt();
 
-    public static SessionEntryWithUserDetails create(Long id, String sessionId, UUID userId, boolean isSuperadmin, boolean isOrgadmin, String userEmail, String userName, String remoteIp, DateTime createdAt, UUID organizationId, UUID tenantId, DateTime lastActivity, boolean mfaValid, DateTime mfaRequestedAt) {
+    public abstract boolean mfaDisabled();
+
+    public static SessionEntryWithUserDetails create(Long id, String sessionId, UUID userId, boolean isSuperadmin, boolean isOrgadmin, String userEmail, String userName, String remoteIp, DateTime createdAt, UUID organizationId, UUID tenantId, DateTime lastActivity, boolean mfaValid, DateTime mfaRequestedAt, boolean mfaDisabled) {
         return builder()
                 .id(id)
                 .sessionId(sessionId)
@@ -49,6 +51,7 @@ public abstract class SessionEntryWithUserDetails {
                 .lastActivity(lastActivity)
                 .mfaValid(mfaValid)
                 .mfaRequestedAt(mfaRequestedAt)
+                .mfaDisabled(mfaDisabled)
                 .build();
     }
 
@@ -85,6 +88,8 @@ public abstract class SessionEntryWithUserDetails {
         public abstract Builder mfaValid(boolean mfaValid);
 
         public abstract Builder mfaRequestedAt(DateTime mfaRequestedAt);
+
+        public abstract Builder mfaDisabled(boolean mfaDisabled);
 
         public abstract SessionEntryWithUserDetails build();
     }

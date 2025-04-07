@@ -32,6 +32,13 @@ public enum SystemEventType {
                     "was unsuccessful."
     ),
 
+    AUTHENTICATION_MFA_DISABLED(
+            SystemEventCategory.AUTHENTICATION,
+            SystemEventScope.ORGANIZATION,
+            "A user's MFA was disabled",
+            "A user's MFA requirement was disabled."
+    ),
+
     AUTHENTICATION_USER_LOGIN_THROTTLED(
             SystemEventCategory.AUTHENTICATION,
             SystemEventScope.ORGANIZATION,
@@ -67,7 +74,7 @@ public enum SystemEventType {
             SystemEventCategory.AUTHENTICATION,
             SystemEventScope.SYSTEM,
             "A super administrator MFA recovery code was used",
-            "A user has successfully utilized one of their MFA recovery codes to log in."
+            "A super administrator has successfully utilized one of their MFA recovery codes to log in."
     ),
 
     AUTHENTICATION_SUPERADMIN_MFA_RECOVERY_CODE_REUSED(
@@ -76,6 +83,13 @@ public enum SystemEventType {
             "A super administrator MFA recovery code was re-used",
             "A user attempted to reuse one of their previously utilized MFA recovery codes for login, which " +
                     "was unsuccessful."
+    ),
+
+    AUTHENTICATION_SUPERADMIN_MFA_DISABLED(
+            SystemEventCategory.AUTHENTICATION,
+            SystemEventScope.ORGANIZATION,
+            "A super administrator MFA was disabled",
+            "A super administrator MFA requirement was disabled."
     ),
 
     AUTHENTICATION_SUPERADMIN_LOGIN_THROTTLED(

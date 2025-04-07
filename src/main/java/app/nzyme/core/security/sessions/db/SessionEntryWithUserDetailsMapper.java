@@ -35,7 +35,8 @@ public class SessionEntryWithUserDetailsMapper implements RowMapper<SessionEntry
                 tenantId == null ? null : UUID.fromString(tenantId),
                 lastActivity,
                 rs.getBoolean("mfa_valid"),
-                mfaRequestedAt
+                mfaRequestedAt,
+                rs.getBoolean("mfa_disabled")
         );
     }
 

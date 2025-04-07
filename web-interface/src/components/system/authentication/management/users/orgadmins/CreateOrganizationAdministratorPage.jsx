@@ -18,8 +18,8 @@ function CreateOrganizationAdministratorPage() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [redirect, setRedirect] = useState(false);
 
-  const onFormSubmitted = function (email, password, name, callback) {
-    authenticationMgmtService.createOrganizationAdministrator(organizationId, email, password, name, function() {
+  const onFormSubmitted = function (email, password, name, disableMfa, callback) {
+    authenticationMgmtService.createOrganizationAdministrator(organizationId, email, password, name, disableMfa, () => {
       // Success.
       notify.show('Organization administrator created.', 'success');
       setRedirect(true);

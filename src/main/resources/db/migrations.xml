@@ -6391,4 +6391,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_mfa_disabled_to_users" author="lennartkoopmann">
+        <addColumn tableName="auth_users">
+            <column name="mfa_disabled" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

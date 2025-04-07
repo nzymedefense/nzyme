@@ -24,8 +24,8 @@ function CreateTenantUserPage() {
     authenticationMgmtService.findTenantOfOrganization(organizationId, tenantId, setTenant);
   }, [organizationId, tenantId])
 
-  const onFormSubmitted = function (email, password, name, callback) {
-    authenticationMgmtService.createUserOfTenant(organizationId, tenantId, email, password, name, function() {
+  const onFormSubmitted = function (email, password, name, disableMfa, callback) {
+    authenticationMgmtService.createUserOfTenant(organizationId, tenantId, email, password, name, disableMfa, function() {
       // Success.
       notify.show('User created.', 'success');
       setRedirect(true);
@@ -101,7 +101,9 @@ function CreateTenantUserPage() {
           <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
-                <CreateUserForm onClick={onFormSubmitted} errorMessage={errorMessage} submitText="Create User" />
+                <CreateUserForm onClick={onFormSubmitted}
+                                errorMessage={errorMessage}
+                                submitText="Create User" />
               </div>
             </div>
           </div>

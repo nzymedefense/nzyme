@@ -43,7 +43,7 @@ public class TapAuthenticationFilterTest {
         String secret = RandomStringUtils.random(64, true, true);
 
        nzyme.getAuthenticationService()
-                .createTap(org.uuid(), tenant.uuid(), secret, "test tap", "test tap");
+                .createTap(org.uuid(), tenant.uuid(), secret, "test tap", "test tap", null, null);
 
        return secret;
     }

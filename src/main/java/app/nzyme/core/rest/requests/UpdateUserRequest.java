@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 @AutoValue
 public abstract class UpdateUserRequest {
@@ -14,11 +15,17 @@ public abstract class UpdateUserRequest {
     @NotEmpty
     public abstract String name();
 
+    @NotNull
+    public abstract Boolean disableMfa();
+
     @JsonCreator
-    public static UpdateUserRequest create(@JsonProperty("email") String email, @JsonProperty("name") String name) {
+    public static UpdateUserRequest create(@JsonProperty("email") String email,
+                                           @JsonProperty("name") String name,
+                                           @JsonProperty("disable_mfa") Boolean disableMfa) {
         return builder()
                 .email(email)
                 .name(name)
+                .disableMfa(disableMfa)
                 .build();
     }
 
@@ -31,6 +38,8 @@ public abstract class UpdateUserRequest {
         public abstract Builder email(String email);
 
         public abstract Builder name(String name);
+
+        public abstract Builder disableMfa(Boolean disableMfa);
 
         public abstract UpdateUserRequest build();
     }
