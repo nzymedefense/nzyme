@@ -46,6 +46,10 @@ class AuthenticationService {
     });
   }
 
+  verifyInitialMFA(code, successCallback, errorCallback) {
+    RESTClient.post('/system/authentication/mfa/setup/verify', {code: code}, successCallback, errorCallback);
+  }
+
   finishMFASetup(successCallback) {
     RESTClient.post('/system/authentication/mfa/setup/complete', {}, successCallback);
   }

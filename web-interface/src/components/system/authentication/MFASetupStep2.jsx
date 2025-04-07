@@ -14,8 +14,8 @@ function MFASetupStep2(props) {
   return (
       <React.Fragment>
         <p>
-          Please store the 8 MFA recovery codes below in a safe place that only you can access. You will need them to
-          recover your account if you lose access to your TOTP application or device.
+          Please store the 8 MFA recovery codes below in a safe place that only you can access. <strong>You will need
+          them to recover your account if you lose access to your TOTP application or device.</strong>
         </p>
 
         <ul className="mfa-recovery-codes">

@@ -406,6 +406,53 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
     @POST
     @PreMFASecured
+    @Path("/mfa/setup/verify")
+    public Response verifyMfaSetup(@Context SecurityContext sc, MFAVerificationRequest req) {
+        // THIS IS THE RESOURCE THAT VERIFIES THE INITIAL MFA SETUP, NOT THE LOGIN FLOW.
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<SessionEntry> session = nzyme.getAuthenticationService().findSessionWithOrWithoutPassedMFABySessionId(
+                authenticatedUser.getSessionId()
+        );
+
+        if (session.isEmpty() || session.get().mfaValid()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserById(session.get().userId());
+
+        if (user.isEmpty() || user.get().mfaComplete()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Compare codes.
+        TimeProvider timeProvider = new SystemTimeProvider();
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+
+        String userSecret;
+        try {
+            userSecret = new String(nzyme.getCrypto().decryptWithClusterKey(
+                    BaseEncoding.base64().decode(user.get().totpSecret())
+            ));
+        } catch (Crypto.CryptoOperationException e) {
+            LOG.error("Could not decrypt MFA data codes for initial verification.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        if (!verifier.isValidCode(userSecret, req.code())) {
+            LOG.info("User <{}> failed MFA challenge for initial verification.", user.get().email());
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        // We have a valid TOTP.
+        LOG.info("User <{}> passed MFA challenge for initial verification.", user.get().email());
+
+        return Response.ok().build();
+    }
+
+    @POST
+    @PreMFASecured
     @Path("/mfa/setup/complete")
     public Response completeMfaSetup(@Context SecurityContext sc) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);

@@ -4,7 +4,6 @@ import AssetStylesheet from "../../misc/AssetStylesheet";
 import Store from "../../../util/Store";
 import LoginFailedMessage from "./LoginFailedMessage";
 import LoginImage from "./LoginImage";
-import AssetImage from "../../misc/AssetImage";
 
 const authenticationService = new AuthenticationService();
 
