@@ -32,7 +32,7 @@ public class SubsystemRegistryKeys {
     public static final RegistryKey UAV_ENABLED = RegistryKey.create(
             "subsystem_uav_enabled",
             Optional.of(new ImmutableList.Builder().add(ConfigurationEntryConstraint.createSimpleBooleanConstraint()).build()),
-            Optional.of("false"),
+            Optional.of("true"),
             false
     );
 
