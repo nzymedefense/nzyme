@@ -6,8 +6,6 @@ labels: ''
 assignees: ''
 
 ---
-## Version [version] Meta Release Ticket
-
 * *Requires all nodes to be shut down during upgrade*: 🟢 No / ⚠️ Yes (Update `nzyme-node` upgrade procedure below)
 
 ### Breaking Changes
