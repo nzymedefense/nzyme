@@ -14,6 +14,7 @@ import app.nzyme.core.shared.Classification;
 import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.uav.db.UavTimelineEntry;
 import app.nzyme.core.uav.db.UavTypeEntry;
+import app.nzyme.core.uav.db.UavVectorEntry;
 import app.nzyme.core.uav.types.UavTypeMatchType;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.Tools;
@@ -127,6 +128,65 @@ public class UavResource extends TapDataHandlingResource {
         }
 
         return Response.ok(UavTimelineListResponse.create(count, timelines)).build();
+    }
+
+    @GET
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/show/{identifier}/timelines/show/{timeline_id}")
+    public Response getTimelineVectors(@Context SecurityContext sc,
+                                       @PathParam("identifier") String uavIdentifier,
+                                       @PathParam("timeline_id") UUID timelineId,
+                                       @PathParam("organization_id") UUID organizationId,
+                                       @PathParam("tenant_id") UUID tenantId,
+                                       @QueryParam("taps") String tapIds) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        Optional<UavEntry> uav = nzyme.getUav().findUav(uavIdentifier, organizationId, tenantId, taps);
+
+        if (uav.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Get Timeline
+        Optional<UavTimelineEntry> timeline = nzyme.getUav()
+                .findUavTimeline(uavIdentifier, timelineId, organizationId, tenantId, taps);
+
+        // Does the timeline exist?
+        if (timeline.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Query vectors for UAV during timeline duration.
+        List<UavVectorDetailsResponse> vectors =  Lists.newArrayList();
+        for (UavVectorEntry v : nzyme.getUav()
+                .findVectorsOfTimeline(uav.get().id(), timeline.get().seenFrom(), timeline.get().seenTo())) {
+            if (v.latitude() == null || v.longitude() == null) {
+                continue;
+            }
+
+            vectors.add(UavVectorDetailsResponse.create(
+                    v.timestamp(),
+                    v.latitude(),
+                    v.longitude(),
+                    v.operationalStatus(),
+                    v.groundTrack(),
+                    v.speed(),
+                    v.verticalSpeed(),
+                    v.altitudePressure(),
+                    v.altitudeGeodetic(),
+                    v.heightType(),
+                    v.height(),
+                    v.accuracyHorizontal(),
+                    v.accuracyVertical(),
+                    v.accuracyBarometer(),
+                    v.accuracySpeed()
+            ));
+        }
+
+        return Response.ok(UavVectorListResponse.create(vectors.size(), vectors)).build();
     }
 
     @PUT

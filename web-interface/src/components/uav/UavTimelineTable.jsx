@@ -8,6 +8,9 @@ import numeral from "numeral";
 export default function UavTimelineTable(props) {
 
   const timeline = props.timeline;
+  const onPlotTrack = props.onPlotTrack;
+  const plottedTrackLoading = props.plottedTrackLoading;
+
   const page = props.page;
   const perPage = props.perPage;
   const setPage = props.setPage;
@@ -39,7 +42,11 @@ export default function UavTimelineTable(props) {
             <tr key={i}>
               <td><UavActiveIndicator active={t.is_active} /></td>
               <td>{t.uuid.substring(0, 7)}</td>
-              <td><a href="#">Paint on Map</a></td>
+              <td>
+                { plottedTrackLoading && plottedTrackLoading === t.uuid
+                    ? <LoadingSpinner />
+                    : <a href="#" onClick={(e) => onPlotTrack(e, t.uuid)}>Paint on Map</a>}
+              </td>
               <td>{moment(t.seen_from).format()} <span className="text-muted">({moment(t.seen_from).fromNow()})</span></td>
               <td>{moment(t.seen_to).format()} <span className="text-muted">({moment(t.seen_to).fromNow()})</span></td>
               <td title={numeral(t.duration_seconds).format("0,0") + " sec"}>

@@ -28,6 +28,15 @@ export default class UavService {
     )
   }
 
+  findTimelineVectors(setTrack, uavIdentifier, timelineId, organizationId, tenantId, taps, onComplete) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/show/${uavIdentifier}/timelines/show/${timelineId}`,
+        { taps: tapsList },
+        (response) => { setTrack(response.data); if (onComplete) onComplete(response.data) }
+    )
+  }
+
   classifyUav(identifier, organizationId, tenantId, classification, onSuccess, onFailure) {
     RESTClient.put(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/show/${identifier}/classify/${classification}`, {}, onSuccess, onFailure);
   }

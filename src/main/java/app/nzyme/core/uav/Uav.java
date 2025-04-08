@@ -5,9 +5,11 @@ import app.nzyme.core.shared.Classification;
 import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.uav.db.UavTimelineEntry;
 import app.nzyme.core.uav.db.UavTypeEntry;
+import app.nzyme.core.uav.db.UavVectorEntry;
 import app.nzyme.core.uav.types.UavTypeMatchType;
 import app.nzyme.core.util.TimeRange;
 import jakarta.validation.constraints.NotNull;
+import org.joda.time.DateTime;
 
 import java.util.Collections;
 import java.util.List;
@@ -136,7 +138,7 @@ public class Uav {
                                                    int limit,
                                                    int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-            handle.createQuery("SELECT t.seen_from, t.seen_to, t.uuid FROM uavs_timelines AS t " +
+            handle.createQuery("SELECT t.id, t.seen_from, t.seen_to, t.uuid FROM uavs_timelines AS t " +
                             "LEFT JOIN uavs AS u ON u.identifier = t.uav_identifier " +
                             "WHERE t.seen_to >= :tr_from AND t.seen_to <= :tr_to " +
                             "AND t.uav_identifier = :identifier AND t.organization_id = :organization_id " +
@@ -153,6 +155,40 @@ public class Uav {
                     .bind("tr_to", timeRange.to())
                     .mapTo(UavTimelineEntry.class)
                     .list()
+        );
+    }
+
+    public Optional<UavTimelineEntry> findUavTimeline(String uavIdentifier,
+                                                      UUID timelineId,
+                                                      @NotNull UUID organizationId,
+                                                      @NotNull UUID tenantId,
+                                                      List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT t.id, t.seen_from, t.seen_to, t.uuid FROM uavs_timelines AS t " +
+                                "LEFT JOIN uavs AS u ON u.identifier = t.uav_identifier " +
+                                "WHERE t.uuid = :timeline_uuid AND t.uav_identifier = :identifier " +
+                                "AND t.organization_id = :organization_id " +
+                                "AND t.tenant_id = :tenant_id AND u.tap_uuid IN (<taps>)")
+                        .bind("timeline_uuid", timelineId)
+                        .bind("identifier", uavIdentifier)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bindList("taps", taps)
+                        .mapTo(UavTimelineEntry.class)
+                        .findOne()
+        );
+    }
+
+    public List<UavVectorEntry> findVectorsOfTimeline(long uavId, DateTime from, DateTime to) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM uavs_vectors WHERE uav_id = :uav_id " +
+                                "AND timestamp >= :from AND timestamp <= :to " +
+                                "ORDER BY timestamp ASC LIMIT 2000")
+                        .bind("uav_id", uavId)
+                        .bind("from", from)
+                        .bind("to", to)
+                        .mapTo(UavVectorEntry.class)
+                        .list()
         );
     }
 

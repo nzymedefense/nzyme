@@ -41,6 +41,8 @@ export default function UavDetailsPage() {
   const user = useContext(UserContext);
 
   const [uav, setUav] = useState(null);
+  const [plottedTrack, setPlottedTrack] = useState(null);
+  const [plottedTrackLoading, setPlottedTrackLoading] = useState(null);
 
   const [revision, setRevision] = useState(new Date());
 
@@ -94,6 +96,18 @@ export default function UavDetailsPage() {
     if (uuid) {
       setTenantSelected(true);
     }
+  }
+
+  const onPlotTrack = (e, timelineId) => {
+    e.preventDefault();
+
+    setPlottedTrack(null);
+    setPlottedTrackLoading(timelineId)
+    uavService.findTimelineVectors(
+        setPlottedTrack, identifierParam, timelineId, organizationId, tenantId, selectedTaps, () => {
+          setPlottedTrackLoading(null);
+        }
+    );
   }
 
   const lastKnownOperatorPosition = () => {
@@ -238,6 +252,7 @@ export default function UavDetailsPage() {
 
               <UavMap uav={uav}
                       containerHeight={500}
+                      plottedTrack={plottedTrack}
                       lastKnownUavPosition={{
                         lat: uav.summary.latitude,
                         lon: uav.summary.longitude,
@@ -260,6 +275,8 @@ export default function UavDetailsPage() {
 
               <UavTimelineTable timeline={timeline}
                                 page={timelinePage}
+                                onPlotTrack={onPlotTrack}
+                                plottedTrackLoading={plottedTrackLoading}
                                 setPage={setTimelinePage}
                                 perPage={perPageTimeline} />
             </div>

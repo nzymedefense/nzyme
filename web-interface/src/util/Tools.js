@@ -1,5 +1,6 @@
 import numeral from 'numeral'
 import moment from "moment/moment";
+import React from "react";
 
 export function byteAverageToMbit (byte) {
   const mbit = byte * 8 / 10 / 1024 / 1024
@@ -159,4 +160,58 @@ export function capitalizeFirstLetter(val) {
 
 export function metersToFeet(x) {
   return x / 0.3048;
+}
+
+export function uavHorizontalAccuracyNoHtml(x) {
+  switch (x) {
+    case 0:
+      return ">11mi"
+    case 1:
+      return "<11mi"
+    case 2:
+      return "<4.6mi"
+    case 3:
+      return "<2.3mi"
+    case 4:
+      return "<1.1mi"
+    case 5:
+      return "<0.6mi"
+    case 6:
+      return "<0.3mi"
+    case 7:
+      return "<600ft"
+    case 8:
+      return "<300ft"
+    case 9:
+      return "<100ft"
+    case 10:
+      return "<33ft"
+    case 11:
+      return "<10ft"
+    case 12:
+      return "<3ft"
+    default:
+      return "Unknown Accuracy"
+  }
+}
+
+export function uavVerticalAccuracyNoHtml(x) {
+  switch (x) {
+    case 0:
+      return ">492ft"
+    case 1:
+      return "<492ft"
+    case 2:
+      return "<148ft"
+    case 3:
+      return "<82ft"
+    case 4:
+      return "<33ft"
+    case 5:
+      return "<10ft"
+    case 6:
+      return "<3ft"
+    default:
+      return "Unknown Accuracy"
+  }
 }
