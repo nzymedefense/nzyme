@@ -279,6 +279,10 @@ span.main-active-channel {
     border-color: #d7cba5;
 }
 
+.alert-warning a {
+    color: #111;
+}
+
 .alert-info {
     background-color: #a8d5de;
 }
