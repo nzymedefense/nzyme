@@ -31,7 +31,7 @@ export default function UavTypeForm(props) {
     e.preventDefault();
 
     setIsSubmitting(true);
-    setSubmitText(<span><i className="fa-solid fa-circle-notch fa-spin"></i> &nbsp;Creating ...</span>)
+    setSubmitText(<span><i className="fa-solid fa-circle-notch fa-spin"></i> &nbsp;Please Wait ...</span>)
 
     onSubmit(matchType, matchValue, defaultClassification, type, model, name, () => {
       // On failure.

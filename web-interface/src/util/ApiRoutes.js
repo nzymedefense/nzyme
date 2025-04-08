@@ -229,7 +229,8 @@ const ApiRoutes = {
     },
     TYPES: {
       INDEX: '/uavs/types',
-      CREATE: (organizationId, tenantId) => `/uavs/types/organizations/show/${organizationId}/tenants/show/${tenantId}/create`
+      CREATE: (organizationId, tenantId) => `/uavs/types/organizations/show/${organizationId}/tenants/show/${tenantId}/create`,
+      EDIT: (uuid, organizationId, tenantId) => `/uavs/types/organizations/show/${organizationId}/tenants/show/${tenantId}/show/${uuid}/edit`,
     }
   },
   CONTEXT: {

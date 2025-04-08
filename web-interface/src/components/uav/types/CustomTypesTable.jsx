@@ -4,14 +4,20 @@ import Paginator from "../../misc/Paginator";
 import UavClassification from "../util/UavClassification";
 import UavModelType from "../util/UavModelType";
 import UavSerialNumberMatch from "../util/UavSerialNumberMatch";
+import ApiRoutes from "../../../util/ApiRoutes";
+import UavService from "../../../services/UavService";
+
+const uavService = new UavService();
 
 export default function CustomTypesTable(props) {
 
   const types = props.types;
+  const deleteType = props.onDeleteType;
 
   const page = props.page;
   const perPage = props.perPage;
   const setPage = props.setPage;
+
 
   if (types == null) {
     return <LoadingSpinner />
@@ -38,11 +44,13 @@ export default function CustomTypesTable(props) {
         {types.types.map((t, i) => {
           return (
             <tr key={i}>
-              <td><a href="#">{t.name}</a></td>
+              <td>{t.name}</td>
               <td>{t.model ? t.model : <span className="text-muted">n/a</span>}</td>
               <td><UavModelType type={t.type} /></td>
               <td><UavClassification classification={t.default_classification} /></td>
               <td><UavSerialNumberMatch matchType={t.match_type} matchValue={t.match_value} /></td>
+              <td><a href={ApiRoutes.UAV.TYPES.EDIT(t.uuid, t.organization_id, t.tenant_id)}>Edit</a></td>
+              <td><a href="#" onClick={(e) => deleteType(e, t.uuid)}>Delete</a></td>
             </tr>
           )
         })}

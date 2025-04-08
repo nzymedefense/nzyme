@@ -48,11 +48,28 @@ export default class UavService {
     )
   }
 
+  findCustomType(setType, uuid, organizationId, tenantId) {
+    RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/types/custom/show/${uuid}`, {},
+        (response) => setType(response.data)
+    )
+  }
+
   createCustomType(organizationId, tenantId, matchType, matchValue, defaultClassification, type, model, name, onSuccess, onFailure) {
     RESTClient.post(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/types/custom`,
         { match_type: matchType, match_value: matchValue, default_classification: defaultClassification, type: type, model: model, name: name },
         onSuccess, onFailure
     )
+  }
+
+  editCustomType(uuid, organizationId, tenantId, matchType, matchValue, defaultClassification, type, model, name, onSuccess, onFailure) {
+    RESTClient.put(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/types/custom/show/${uuid}`,
+        { match_type: matchType, match_value: matchValue, default_classification: defaultClassification, type: type, model: model, name: name },
+        onSuccess, onFailure
+    )
+  }
+
+  deleteCustomType(uuid, organizationId, tenantId, onSuccess) {
+    RESTClient.delete(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/types/custom/show/${uuid}`, onSuccess);
   }
 
   findAllBuiltInTypes(setTypes, organizationId, tenantId, limit, offset) {

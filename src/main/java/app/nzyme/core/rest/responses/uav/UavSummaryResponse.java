@@ -27,6 +27,18 @@ public abstract class UavSummaryResponse {
     @JsonProperty("uav_type")
     public abstract UavTypeResponse uavType();
 
+    @JsonProperty("uav_model_type")
+    @Nullable
+    public abstract String uavModelType();
+
+    @JsonProperty("uav_model_model")
+    @Nullable
+    public abstract String uavModelModel();
+
+    @JsonProperty("uav_model_name")
+    @Nullable
+    public abstract String uavModelName();
+
     @JsonProperty("detection_source")
     public abstract UavDetectionSourceResponse detectionSource();
 
@@ -143,13 +155,16 @@ public abstract class UavSummaryResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static UavSummaryResponse create(boolean isActive, String identifier, String designation, ClassificationResponse classification, UavTypeResponse uavType, UavDetectionSourceResponse detectionSource, String idSerial, String idRegistration, String idUtm, String idSession, String operatorId, double rssiAverage, UavOperationalStatusResponse operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, UavHeightTypeResponse heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, UavOperatorLocationTypeResponse operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, Double operatorDistanceToUav, DateTime latestVectorTimestamp, DateTime latestOperatorLocationTimestamp, DateTime firstSeen, DateTime lastSeen) {
+    public static UavSummaryResponse create(boolean isActive, String identifier, String designation, ClassificationResponse classification, UavTypeResponse uavType, String uavModelType, String uavModelModel, String uavModelName, UavDetectionSourceResponse detectionSource, String idSerial, String idRegistration, String idUtm, String idSession, String operatorId, double rssiAverage, UavOperationalStatusResponse operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, UavHeightTypeResponse heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, UavOperatorLocationTypeResponse operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, Double operatorDistanceToUav, DateTime latestVectorTimestamp, DateTime latestOperatorLocationTimestamp, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .isActive(isActive)
                 .identifier(identifier)
                 .designation(designation)
                 .classification(classification)
                 .uavType(uavType)
+                .uavModelType(uavModelType)
+                .uavModelModel(uavModelModel)
+                .uavModelName(uavModelName)
                 .detectionSource(detectionSource)
                 .idSerial(idSerial)
                 .idRegistration(idRegistration)
@@ -198,6 +213,12 @@ public abstract class UavSummaryResponse {
         public abstract Builder classification(ClassificationResponse classification);
 
         public abstract Builder uavType(UavTypeResponse uavType);
+
+        public abstract Builder uavModelType(String uavModelType);
+
+        public abstract Builder uavModelModel(String uavModelModel);
+
+        public abstract Builder uavModelName(String uavModelName);
 
         public abstract Builder detectionSource(UavDetectionSourceResponse detectionSource);
 

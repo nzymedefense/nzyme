@@ -7,6 +7,7 @@ import BuiltInTypesTable from "./BuiltInTypesTable";
 import ApiRoutes from "../../../util/ApiRoutes";
 import CustomTypesTable from "./CustomTypesTable";
 import UavService from "../../../services/UavService";
+import {notify} from "react-notify-toast";
 
 const uavService = new UavService();
 
@@ -24,6 +25,8 @@ export default function UavTypesPage() {
   const [customTypesPage, setCustomTypesPage] = useState(1);
   const customTypesPerPage = 25;
 
+  const [revision, setRevision] = useState(new Date());
+
   useEffect(() => {
     setCustomTypes(null);
 
@@ -36,7 +39,7 @@ export default function UavTypesPage() {
         setBuiltInTypes, organizationId, tenantId, customTypesPerPage, (customTypesPage-1)*customTypesPerPage
       );
     }
-  }, [organizationId, tenantId, customTypesPage]);
+  }, [organizationId, tenantId, customTypesPage, revision]);
 
   const onOrganizationChange = (uuid) => {
     setOrganizationId(uuid);
@@ -53,6 +56,19 @@ export default function UavTypesPage() {
   const resetTenantAndOrganization = () => {
     setOrganizationId(null);
     setTenantId(null);
+  }
+
+  const onDeleteCustomType = (e, uuid) => {
+    e.preventDefault();
+
+    if (!confirm("Really delete custom type?")) {
+      return;
+    }
+
+    uavService.deleteCustomType(uuid, organizationId, tenantId, () => {
+      notify.show("Custom UAV type deleted.", "success");
+      setRevision(new Date());
+    })
   }
 
   if (!organizationId || !tenantId) {
@@ -93,6 +109,7 @@ export default function UavTypesPage() {
 
               <CustomTypesTable types={customTypes}
                                 page={customTypesPage}
+                                onDeleteType={onDeleteCustomType}
                                 setPage={setCustomTypesPage}
                                 perPage={customTypesPerPage} />
 

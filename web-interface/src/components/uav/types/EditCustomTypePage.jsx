@@ -1,30 +1,41 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Navigate, useParams} from "react-router-dom";
-import CardTitleWithControls from "../../shared/CardTitleWithControls";
-import UavService from "../../../services/UavService";
-import Routes from "../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
-import UavTypeForm from "./UavTypeForm";
+import Routes from "../../../util/ApiRoutes";
 import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
+import CardTitleWithControls from "../../shared/CardTitleWithControls";
+import UavTypeForm from "./UavTypeForm";
+import UavService from "../../../services/UavService";
+import LoadingSpinner from "../../misc/LoadingSpinner";
 
 const uavService = new UavService();
 
-export default function CreateCustomTypePage() {
+export default function EditCustomTypePage() {
 
-  const {organizationId, tenantId} = useParams();
+  const {uuid, organizationId, tenantId} = useParams();
+
+  const [type, setType] = useState(null);
 
   const [redirect, setRedirect] = React.useState(false);
 
+  useEffect(() => {
+    uavService.findCustomType(setType, uuid, organizationId, tenantId);
+  }, [uuid, organizationId, tenantId]);
+
   const onFormSubmitted = (matchType, matchValue, defaultClassification, type, model, name, onFailure) => {
-    uavService.createCustomType(organizationId, tenantId, matchType, matchValue, defaultClassification, type, model, name,
+    uavService.editCustomType(uuid, organizationId, tenantId, matchType, matchValue, defaultClassification, type, model, name,
         () => {
-          notify.show("Custom UAV type created.", "success");
+          notify.show("Custom UAV type updated.", "success");
           setRedirect(true);
         }, onFailure)
   }
 
   if (redirect) {
     return <Navigate to={Routes.UAV.TYPES.INDEX} />
+  }
+
+  if (!type) {
+    return <LoadingSpinner />
   }
 
   return (
@@ -36,7 +47,8 @@ export default function CreateCustomTypePage() {
                 <li className="breadcrumb-item">UAVs</li>
                 <li className="breadcrumb-item"><a href={Routes.UAV.TYPES.INDEX}>Types</a></li>
                 <li className="breadcrumb-item">Custom Types</li>
-                <li className="breadcrumb-item active" aria-current="page">Create</li>
+                <li className="breadcrumb-item">{type.name}</li>
+                <li className="breadcrumb-item active">Edit</li>
               </ol>
             </nav>
           </div>
@@ -50,7 +62,7 @@ export default function CreateCustomTypePage() {
 
         <div className="row">
           <div className="col-12">
-            <h1>Create Custom Unmanned Aerial Vehicle (UAV) Type</h1>
+            <h1>Edit Custom Unmanned Aerial Vehicle (UAV) Type &quot;{type.name}&quot;</h1>
           </div>
         </div>
 
@@ -65,7 +77,14 @@ export default function CreateCustomTypePage() {
               <div className="card-body">
                 <CardTitleWithControls title="Create Type" />
 
-                <UavTypeForm onSubmit={onFormSubmitted} matchType="EXACT" type="GENERIC" submitText="Create Type" />
+                <UavTypeForm onSubmit={onFormSubmitted}
+                             matchType={type.match_type}
+                             matchValue={type.match_value}
+                             type={type.type}
+                             model={type.model}
+                             name={type.name}
+                             defaultClassification={type.default_classification}
+                             submitText="Edit Type" />
               </div>
             </div>
           </div>

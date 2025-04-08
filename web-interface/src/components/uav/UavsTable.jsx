@@ -14,6 +14,7 @@ import UavVerticalSpeed from "./util/UavVerticalSpeed";
 import ApiRoutes from "../../util/ApiRoutes";
 import Designation from "../shared/Designation";
 import UavClassification from "./util/UavClassification";
+import UavModelType from "./UavModelType";
 
 export default function UavsTable(props) {
 
@@ -48,6 +49,8 @@ export default function UavsTable(props) {
             <th>Classification</th>
             <th>Detection Source</th>
             <th>Type</th>
+            <th>Category / Model</th>
+            <th>Name</th>
             <th>Status</th>
             <th>RSSI</th>
             <th>Altitude</th>
@@ -66,6 +69,11 @@ export default function UavsTable(props) {
                 <td><UavClassification classification={uav.classification} /></td>
                 <td><UavDetectionSource source={uav.detection_source} /></td>
                 <td><UavType type={uav.uav_type} /></td>
+                <td>
+                  <UavModelType type={uav.uav_model_type} />{' '}
+                  {uav.uav_model_model ? <span>({uav.uav_model_model})</span> : null}
+                </td>
+                <td>{uav.uav_model_name ? uav.uav_model_name : <span className="text-muted">n/a</span>}</td>
                 <td><UavOperationalStatus status={uav.operational_status} /></td>
                 <td><SignalStrength strength={uav.rssi_average} selectedTapCount={selectedTaps.length}/></td>
                 <td><UavAltitude uav={uav} /></td>

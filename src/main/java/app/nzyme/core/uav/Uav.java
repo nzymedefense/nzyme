@@ -42,11 +42,11 @@ public class Uav {
     }
 
     public List<UavEntry> findAllUavsOfTenant(TimeRange timeRange,
-                                      int limit,
-                                      int offset,
-                                      UUID organizationId,
-                                      UUID tenantId,
-                                      List<UUID> taps) {
+                                              int limit,
+                                              int offset,
+                                              UUID organizationId,
+                                              UUID tenantId,
+                                              List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -235,9 +235,20 @@ public class Uav {
         );
     }
 
+    public List<UavTypeEntry> findAllCustomTypes(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM uavs_types " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(UavTypeEntry.class)
+                        .list()
+        );
+    }
+
     public Optional<UavTypeEntry> findCustomType(UUID uuid, UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM uav_types WHERE uuid = :uuid " +
+                handle.createQuery("SELECT * FROM uavs_types WHERE uuid = :uuid " +
                                 "AND organization_id = :organization_id AND tenant_id = :tenant_id")
                         .bind("uuid", uuid)
                         .bind("organization_id", organizationId)
@@ -278,18 +289,60 @@ public class Uav {
                                  String matchValue,
                                  Classification defaultClassification,
                                  String type,
-                                 String name) {
+                                 String name,
+                                 String model
+    ) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE uavs_types SET match_type = :match_type, " +
                                 "match_value = :match_value, default_classification = :default_classification, " +
-                                "type = :type, name = :name, updated_at = NOW() WHERE id = :id")
+                                "type = :type, name = :name, model = :model, updated_at = NOW() WHERE id = :id")
                         .bind("id", id)
                         .bind("match_type", matchType)
                         .bind("match_value", matchValue)
                         .bind("default_classification", defaultClassification)
                         .bind("type", type)
                         .bind("name", name)
+                        .bind("model", model)
                         .execute()
         );
+    }
+
+    public void deleteCustomType(long id) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM uavs_types WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+    
+    public Optional<UavTypeEntry> matchUavType(UavEntry uav, UUID tenantId, UUID organizationId) {
+        return matchUavType(findAllCustomTypes(organizationId, tenantId), uav);
+    }
+
+    public Optional<UavTypeEntry> matchUavType(List<UavTypeEntry> types, UavEntry uav) {
+        if (uav.idSerial() == null) {
+            return Optional.empty();
+        }
+
+        for (UavTypeEntry type : types) {
+            UavTypeMatchType matchType = UavTypeMatchType.valueOf(type.matchType());
+
+            switch (matchType) {
+                case EXACT -> {
+                    if (uav.idSerial().equals(type.matchValue())) {
+                        return Optional.of(type);
+                    }
+                }
+                case PREFIX -> {
+                    if (uav.idSerial().startsWith(type.matchValue())) {
+                        return Optional.of(type);
+                    }
+                }
+            }
+        }
+
+        // TODO ADD CONNECT MATCHING HERE
+
+        return Optional.empty();
     }
 }

@@ -28,6 +28,7 @@ import SelectedOrganizationAndTenant from "../shared/SelectedOrganizationAndTena
 import UavOperatorDistanceToUav from "./util/UavOperatorDistanceToUav";
 import UavTimelineTable from "./UavTimelineTable";
 import {userHasPermission} from "../../util/Tools";
+import UavModelType from "./UavModelType";
 
 const uavService = new UavService();
 
@@ -192,6 +193,13 @@ export default function UavDetailsPage() {
                 <dd><UavType type={uav.summary.uav_type} /></dd>
                 <dt>Signal Strength</dt>
                 <dd><SignalStrength strength={uav.summary.rssi_average} selectedTapCount={selectedTaps.length}/></dd>
+                <dt>Category / Model</dt>
+                <dd>
+                  <UavModelType type={uav.summary.uav_model_type} />{' '}
+                  {uav.summary.uav_model_model ? <span>({uav.summary.uav_model_model})</span> : null}
+                </dd>
+                <dt>Name</dt>
+                <dd>{uav.summary.uav_model_name ? uav.summary.uav_model_name : <span className="text-muted">n/a</span>}</dd>
               </dl>
             </div>
           </div>

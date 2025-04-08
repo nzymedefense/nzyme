@@ -166,6 +166,7 @@ import EditCotOutputPage
 import EditCotCertificatePage
   from "./components/system/authentication/management/tenants/integrations/cot/EditCotCertificatePage";
 import DisconnectedClientsPage from "./components/dot11/clients/DisconnectedClientsPage";
+import EditCustomTypePage from "./components/uav/types/EditCustomTypePage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -529,6 +530,7 @@ function App() {
                                 <Route path={ApiRoutes.UAV.DETAILS(':identifierParam')} element={<UavDetailsPage />}/>
                                 <Route path={ApiRoutes.UAV.TYPES.INDEX} element={<UavTypesPage />}/>
                                 <Route path={ApiRoutes.UAV.TYPES.CREATE(':organizationId', ':tenantId')} element={<CreateCustomTypePage />}/>
+                                <Route path={ApiRoutes.UAV.TYPES.EDIT(':uuid', ':organizationId', ':tenantId')} element={<EditCustomTypePage />}/>
 
                                 <Route path={ApiRoutes.UAV.MONITORING.INDEX} element={<UavMonitoringPage />}/>
                               </Route>

@@ -4,6 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.geo.HaversineDistance;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.requests.CreateUavCustomTypeRequest;
+import app.nzyme.core.rest.requests.UpdateUavCustomTypeRequest;
 import app.nzyme.core.rest.responses.shared.ClassificationResponse;
 import app.nzyme.core.rest.responses.uav.*;
 import app.nzyme.core.rest.responses.uav.enums.*;
@@ -62,8 +63,9 @@ public class UavResource extends TapDataHandlingResource {
         long total = nzyme.getUav().countAllUavs(timeRange, taps);
         List<UavSummaryResponse> uavs = Lists.newArrayList();
 
+        List<UavTypeEntry> customTypes = nzyme.getUav().findAllCustomTypes(organizationId, tenantId);
         for (UavEntry uav : nzyme.getUav().findAllUavsOfTenant(timeRange, limit, offset, organizationId, tenantId, taps)) {
-            uavs.add(uavEntryToSummaryResponse(uav));
+            uavs.add(uavEntryToSummaryResponse(uav, nzyme.getUav().matchUavType(customTypes, uav)));
         }
 
         return Response.ok(UavListResponse.create(total, uavs)).build();
@@ -88,8 +90,10 @@ public class UavResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        Optional<UavTypeEntry> uavType = nzyme.getUav().matchUavType(uav.get(), tenantId, organizationId);
+
         return Response.ok(UavDetailsResponse.create(
-                uavEntryToSummaryResponse(uav.get())
+                uavEntryToSummaryResponse(uav.get(), uavType)
         )).build();
     }
 
@@ -247,6 +251,40 @@ public class UavResource extends TapDataHandlingResource {
         return Response.ok(UavCustomTypeListResponse.create(count, types)).build();
     }
 
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY)
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/custom/show/{uuid}")
+    public Response findCustomType(@Context SecurityContext sc,
+                                   @PathParam("uuid") UUID uuid,
+                                   @PathParam("organization_id") UUID organizationId,
+                                   @PathParam("tenant_id") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<UavTypeEntry> result = nzyme.getUav().findCustomType(uuid, organizationId, tenantId);
+
+        if (result.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        UavTypeEntry type = result.get();
+
+        return Response.ok(UavCustomTypeDetailsResponse.create(
+                type.uuid(),
+                type.organizationId(),
+                type.tenantId(),
+                type.matchType(),
+                type.matchValue(),
+                type.defaultClassification(),
+                type.type(),
+                type.name(),
+                type.model(),
+                type.createdAt(),
+                type.updatedAt()
+        )).build();
+    }
+
     @POST
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "uav_monitoring_manage" })
     @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/custom")
@@ -286,6 +324,73 @@ public class UavResource extends TapDataHandlingResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY)
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/custom/show/{uuid}")
+    public Response updateCustomType(@Context SecurityContext sc,
+                                     @PathParam("uuid") UUID uuid,
+                                     @PathParam("organization_id") UUID organizationId,
+                                     @PathParam("tenant_id") UUID tenantId,
+                                     @Valid UpdateUavCustomTypeRequest req) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<UavTypeEntry> type = nzyme.getUav().findCustomType(uuid, organizationId, tenantId);
+
+        if (type.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        UavTypeMatchType matchType;
+        Classification defaultClassification;
+        try {
+            matchType = UavTypeMatchType.valueOf(req.matchType().toUpperCase());
+
+            if (req.defaultClassification() != null && !req.defaultClassification().isEmpty()) {
+                defaultClassification = Classification.valueOf(req.defaultClassification().toUpperCase());
+            } else {
+                defaultClassification = null;
+            }
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+
+        nzyme.getUav().updateCustomType(
+                type.get().id(),
+                matchType,
+                req.matchValue(),
+                defaultClassification,
+                req.type(),
+                req.name(),
+                req.model() == null || req.model().trim().isEmpty() ? null : req.model()
+        );
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY)
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/custom/show/{uuid}")
+    public Response deleteCustomType(@Context SecurityContext sc,
+                                     @PathParam("organization_id") UUID organizationId,
+                                     @PathParam("tenant_id") UUID tenantId,
+                                     @PathParam("uuid") UUID uuid) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<UavTypeEntry> type = nzyme.getUav().findCustomType(uuid, organizationId, tenantId);
+
+        if (type.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getUav().deleteCustomType(type.get().id());
+
+        return Response.ok().build();
+    }
 
     @GET
     @RESTSecured(value = PermissionLevel.ANY)
@@ -302,7 +407,7 @@ public class UavResource extends TapDataHandlingResource {
         return Response.ok(UavBuiltInTypeListResponse.create(0, Lists.newArrayList())).build();
     }
 
-    private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav) {
+    private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav, Optional<UavTypeEntry> uavType) {
         Double operatorDistanceToUav = null;
 
         if (uav.latitude() != null && uav.longitude() != null
@@ -312,12 +417,23 @@ public class UavResource extends TapDataHandlingResource {
             );
         }
 
+        ClassificationResponse classification;
+        if (uavType.isPresent() && uavType.get().defaultClassification() != null) {
+            classification = ClassificationResponse.valueOf(uavType.get().defaultClassification());
+        } else {
+            // No custom classification. Leave it at the default (UNKNOWN) classification.
+            classification = ClassificationResponse.valueOf(uav.classification());
+        }
+
         return UavSummaryResponse.create(
                 uav.lastSeen().isAfter(DateTime.now().minusMinutes(5)),
                 uav.identifier(),
                 uav.designation(),
-                ClassificationResponse.valueOf(uav.classification()),
+                classification,
                 UavTypeResponse.fromString(uav.uavType()),
+                uavType.map(UavTypeEntry::type).orElse(null),
+                uavType.map(UavTypeEntry::model).orElse(null),
+                uavType.map(UavTypeEntry::name).orElse(null),
                 UavDetectionSourceResponse.fromString(uav.detectionSource()),
                 uav.idSerial(),
                 uav.idRegistration(),
