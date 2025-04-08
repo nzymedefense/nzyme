@@ -275,6 +275,10 @@ public class NzymeNodeImpl implements NzymeNode {
         this.bluetoothSigService.initialize();
         LOG.info("Done.");
 
+        LOG.info("Initializing UAV service...");
+        this.uav.initializeConnectModels();
+        LOG.info("Done.");
+
         LOG.info("Initializing authentication service...");
         this.authenticationService.initialize();
         LOG.info("Done.");

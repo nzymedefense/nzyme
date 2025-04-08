@@ -1,27 +1,182 @@
 package app.nzyme.core.uav;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.connect.ConnectRegistryKeys;
 import app.nzyme.core.shared.Classification;
 import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.uav.db.UavTimelineEntry;
 import app.nzyme.core.uav.db.UavTypeEntry;
 import app.nzyme.core.uav.db.UavVectorEntry;
-import app.nzyme.core.uav.types.UavTypeMatchType;
+import app.nzyme.core.uav.types.*;
+import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.TimeRange;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import com.google.common.net.HttpHeaders;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import jakarta.validation.constraints.NotNull;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Uav {
 
+    private static final Logger LOG = LogManager.getLogger(Uav.class);
+
     private final NzymeNode nzyme;
+
+    private final Timer connectModelLookupTimer;
+
+    private final ScheduledExecutorService connectModelsRefresher;
+
+    private final ReentrantLock connectModelsLock = new ReentrantLock();
+    private List<ConnectUavModel> connectModels;
+
+    // Can be disabled if Connect is not set up or UAV models data source is not enabled in Connect.
+    private boolean connectModelsIsEnabled = false;
 
     public Uav(NzymeNode nzyme) {
         this.nzyme = nzyme;
+
+        this.connectModelLookupTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.UAV_CONNECT_TYPE_LOOKUP_TIMING));
+
+        // Reload connect models on configuration change.
+        nzyme.getRegistryChangeMonitor()
+                .onChange("core", ConnectRegistryKeys.CONNECT_API_KEY.key(), this::reloadConnectModels);
+        nzyme.getRegistryChangeMonitor()
+                .onChange("core", ConnectRegistryKeys.CONNECT_ENABLED.key(), this::reloadConnectModels);
+
+        // Reload if provided services by Connect change.
+        nzyme.getRegistryChangeMonitor()
+                .onChange("core", ConnectRegistryKeys.PROVIDED_SERVICES.key(), this::reloadConnectModels);
+
+        connectModelsRefresher = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setDaemon(true)
+                        .setNameFormat("uav-connect-refresher-%d")
+                        .build()
+        );
+
+        connectModelsRefresher.scheduleAtFixedRate(this::reloadConnectModels, 1, 1, TimeUnit.HOURS);
+    }
+
+    private void reloadConnectModels() {
+        // Reload with new registry settings.
+        initializeConnectModels();
+    }
+
+    public void initializeConnectModels() {
+        // IMPORTANT: This method will also be called on configuration changes.
+
+        this.connectModelsIsEnabled = nzyme.getConnect().isEnabled();
+        if (!this.connectModelsIsEnabled) {
+            return;
+        }
+
+        connectModelsLock.lock();
+
+        try {
+            Optional<ConnectUavModelListResponse> data = fetchModelsFromConnect();
+
+            // Check if UAV model data was disabled in Connect for this cluster.
+            if (data.isEmpty()) {
+                this.connectModelsIsEnabled = false;
+                return;
+            }
+
+            List<ConnectUavModel> models = Lists.newArrayList();
+            for (ConnectUavModelDetailsResponse model : data.get().models()) {
+                    models.add(ConnectUavModel.create(
+                            model.masterId(),
+                            model.make(),
+                            model.model(),
+                            model.fccId(),
+                            model.classification(),
+                            model.serialType(),
+                            model.serial()
+                    ));
+            }
+
+            this.connectModels = models;
+            this.connectModelsIsEnabled = true;
+        } catch (Exception e) {
+            LOG.error("Could not download UAV model data from Connect.", e);
+            this.connectModelsIsEnabled = false;
+        } finally {
+            connectModelsLock.unlock();
+        }
+    }
+
+
+    private Optional<ConnectUavModelListResponse> fetchModelsFromConnect() {
+        LOG.debug("Loading new UAV models from Connect.");
+
+        try {
+            OkHttpClient c = new OkHttpClient.Builder()
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(15, TimeUnit.SECONDS)
+                    .readTimeout(5, TimeUnit.MINUTES)
+                    .followRedirects(true)
+                    .build();
+
+            HttpUrl url = HttpUrl.get(nzyme.getConnect().getApiUri())
+                    .newBuilder()
+                    .addPathSegment("data")
+                    .addPathSegment("uav")
+                    .addPathSegment("models")
+                    .build();
+
+            Response response = c.newCall(new Request.Builder()
+                    .addHeader("User-Agent", "nzyme")
+                    .get()
+                    .url(url)
+                    .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + nzyme.getConnect().getApiKey())
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader(HttpHeaders.USER_AGENT, "nzyme-node")
+                    .build()
+            ).execute();
+
+            try (response) {
+                if (!response.isSuccessful()) {
+                    if (response.code() == 403) {
+                        // UAV model data disabled in Connect for this cluster.
+                        return Optional.empty();
+                    }
+
+                    throw new RuntimeException("Expected HTTP 200 or 403 but got HTTP " + response.code());
+                }
+
+
+                if (response.body() == null) {
+                    throw new RuntimeException("Empty response.");
+                }
+
+                LOG.info("UAV model data download from Connect complete.");
+
+                ObjectMapper om = new ObjectMapper();
+                om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                om.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+
+                ConnectUavModelListResponse data = om.readValue(response.body().bytes(), ConnectUavModelListResponse.class);
+                return Optional.of(data);
+            }
+        } catch (Exception e) {
+            LOG.error("Could not download UAV model data from Connect.", e);
+            return Optional.empty();
+        }
     }
 
     public long countAllUavs(TimeRange timeRange, List<UUID> taps) {
@@ -315,11 +470,11 @@ public class Uav {
         );
     }
     
-    public Optional<UavTypeEntry> matchUavType(UavEntry uav, UUID tenantId, UUID organizationId) {
+    public Optional<UavTypeMatch> matchUavType(UavEntry uav, UUID tenantId, UUID organizationId) {
         return matchUavType(findAllCustomTypes(organizationId, tenantId), uav);
     }
 
-    public Optional<UavTypeEntry> matchUavType(List<UavTypeEntry> types, UavEntry uav) {
+    public Optional<UavTypeMatch> matchUavType(List<UavTypeEntry> types, UavEntry uav) {
         if (uav.idSerial() == null) {
             return Optional.empty();
         }
@@ -330,18 +485,65 @@ public class Uav {
             switch (matchType) {
                 case EXACT -> {
                     if (uav.idSerial().equals(type.matchValue())) {
-                        return Optional.of(type);
+                        return Optional.of(UavTypeMatch.create(
+                                type.type(), type.name(), type.model(), type.defaultClassification())
+                        );
                     }
                 }
                 case PREFIX -> {
                     if (uav.idSerial().startsWith(type.matchValue())) {
-                        return Optional.of(type);
+                        return Optional.of(UavTypeMatch.create(
+                                type.type(), type.name(), type.model(), type.defaultClassification())
+                        );
                     }
                 }
             }
         }
 
-        // TODO ADD CONNECT MATCHING HERE
+        // Check Connect models.
+        try(Timer.Context ignored = connectModelLookupTimer.time()) {
+            connectModelsLock.lock();
+
+            try {
+                for (ConnectUavModel connectModel : connectModels) {
+                    switch (connectModel.serialType()) {
+                        case RANGE -> {
+                            String[] serialParts = connectModel.serial().split("-");
+
+                            if (serialParts.length != 2) {
+                                LOG.error("Unexpected RANGE type Connect serial: {}", connectModel.serial());
+                                continue;
+                            }
+
+                            String lowerBound = serialParts[0];
+                            String upperBound = serialParts[1];
+
+                            if (uav.idSerial().compareTo(lowerBound) >= 0 &&
+                                    uav.idSerial().compareTo(upperBound) <= 0) {
+                                return Optional.of(UavTypeMatch.create(
+                                        connectModel.classification() == null ? "Unknown" : connectModel.classification(),
+                                        null,
+                                        connectModel.make() + " " + connectModel.model(),
+                                        null
+                                ));
+                            }
+                        }
+                        case ANSICTA2063A -> {
+                            if (uav.idSerial().equals(connectModel.serial())) {
+                                return Optional.of(UavTypeMatch.create(
+                                        connectModel.classification() == null ? "Unknown" : connectModel.classification(),
+                                        null,
+                                        connectModel.make() + " " + connectModel.model(),
+                                        null
+                                ));
+                            }
+                        }
+                    }
+                }
+            } finally {
+                connectModelsLock.unlock();
+            }
+        }
 
         return Optional.empty();
     }

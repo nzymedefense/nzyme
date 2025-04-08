@@ -16,6 +16,7 @@ import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.uav.db.UavTimelineEntry;
 import app.nzyme.core.uav.db.UavTypeEntry;
 import app.nzyme.core.uav.db.UavVectorEntry;
+import app.nzyme.core.uav.types.UavTypeMatch;
 import app.nzyme.core.uav.types.UavTypeMatchType;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.Tools;
@@ -90,7 +91,7 @@ public class UavResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Optional<UavTypeEntry> uavType = nzyme.getUav().matchUavType(uav.get(), tenantId, organizationId);
+        Optional<UavTypeMatch> uavType = nzyme.getUav().matchUavType(uav.get(), tenantId, organizationId);
 
         return Response.ok(UavDetailsResponse.create(
                 uavEntryToSummaryResponse(uav.get(), uavType)
@@ -407,7 +408,7 @@ public class UavResource extends TapDataHandlingResource {
         return Response.ok(UavBuiltInTypeListResponse.create(0, Lists.newArrayList())).build();
     }
 
-    private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav, Optional<UavTypeEntry> uavType) {
+    private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav, Optional<UavTypeMatch> uavType) {
         Double operatorDistanceToUav = null;
 
         if (uav.latitude() != null && uav.longitude() != null
@@ -431,9 +432,9 @@ public class UavResource extends TapDataHandlingResource {
                 uav.designation(),
                 classification,
                 UavTypeResponse.fromString(uav.uavType()),
-                uavType.map(UavTypeEntry::type).orElse(null),
-                uavType.map(UavTypeEntry::model).orElse(null),
-                uavType.map(UavTypeEntry::name).orElse(null),
+                uavType.map(UavTypeMatch::type).orElse(null),
+                uavType.map(UavTypeMatch::model).orElse(null),
+                uavType.map(UavTypeMatch::name).orElse(null),
                 UavDetectionSourceResponse.fromString(uav.detectionSource()),
                 uav.idSerial(),
                 uav.idRegistration(),

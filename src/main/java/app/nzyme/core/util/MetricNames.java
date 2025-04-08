@@ -32,6 +32,7 @@ import app.nzyme.core.tables.socks.SOCKSTable;
 import app.nzyme.core.tables.ssh.SSHTable;
 import app.nzyme.core.tables.tcp.TCPTable;
 import app.nzyme.core.tables.uav.UAVTable;
+import app.nzyme.core.uav.Uav;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -73,6 +74,8 @@ public class MetricNames {
     public static final String SSH_TOTAL_REPORT_PROCESSING_TIMER = name(SSHTable.class, "total-report-processing-timing");
 
     public static final String UAV_TOTAL_REPORT_PROCESSING_TIMER = name(UAVTable.class, "total-report-processing-timing");
+
+    public static final String UAV_CONNECT_TYPE_LOOKUP_TIMING = name(Uav.class, "connect-type-lookup-timing");
 
 
 }
