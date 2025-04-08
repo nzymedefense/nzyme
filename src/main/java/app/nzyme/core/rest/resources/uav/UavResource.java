@@ -16,6 +16,7 @@ import app.nzyme.core.uav.db.UavTimelineEntry;
 import app.nzyme.core.uav.db.UavTypeEntry;
 import app.nzyme.core.uav.types.UavTypeMatchType;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -27,6 +28,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
 import java.util.List;
 import java.util.Optional;
@@ -112,11 +114,15 @@ public class UavResource extends TapDataHandlingResource {
         List<UavTimelineDetailsResponse> timelines = Lists.newArrayList();
         for (UavTimelineEntry timeline : nzyme.getUav()
                 .findUavTimelines(uavIdentifier, timeRange, organizationId, tenantId, taps, limit, offset)) {
+            Duration duration = new Duration(timeline.seenFrom(), timeline.seenTo());
+
             timelines.add(UavTimelineDetailsResponse.create(
                     timeline.seenTo().isAfter(DateTime.now().minusMinutes(5)),
                     timeline.uuid(),
                     timeline.seenFrom(),
-                    timeline.seenTo()
+                    timeline.seenTo(),
+                    duration.getStandardSeconds(),
+                    Tools.durationToHumanReadable(duration)
             ));
         }
 

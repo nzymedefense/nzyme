@@ -3,6 +3,7 @@ import LoadingSpinner from "../misc/LoadingSpinner";
 import moment from "moment";
 import Paginator from "../misc/Paginator";
 import UavActiveIndicator from "./util/UavActiveIndicator";
+import numeral from "numeral";
 
 export default function UavTimelineTable(props) {
 
@@ -29,6 +30,7 @@ export default function UavTimelineTable(props) {
           <th style={{width: 95}}>&nbsp;</th>
           <th>From</th>
           <th>To</th>
+          <th>Duration</th>
         </tr>
         </thead>
         <tbody>
@@ -40,6 +42,9 @@ export default function UavTimelineTable(props) {
               <td><a href="#">Paint on Map</a></td>
               <td>{moment(t.seen_from).format()} <span className="text-muted">({moment(t.seen_from).fromNow()})</span></td>
               <td>{moment(t.seen_to).format()} <span className="text-muted">({moment(t.seen_to).fromNow()})</span></td>
+              <td title={numeral(t.duration_seconds).format("0,0") + " sec"}>
+                {t.duration_human_readable}
+              </td>
             </tr>
           )
         })}

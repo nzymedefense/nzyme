@@ -21,12 +21,20 @@ public abstract class UavTimelineDetailsResponse {
     @JsonProperty("seen_to")
     public abstract DateTime seenTo();
 
-    public static UavTimelineDetailsResponse create(boolean isActive, UUID uuid, DateTime seenFrom, DateTime seenTo) {
+    @JsonProperty("duration_seconds")
+    public abstract Long durationSeconds();
+
+    @JsonProperty("duration_human_readable")
+    public abstract String durationHumanReadable();
+
+    public static UavTimelineDetailsResponse create(boolean isActive, UUID uuid, DateTime seenFrom, DateTime seenTo, Long durationSeconds, String durationHumanReadable) {
         return builder()
                 .isActive(isActive)
                 .uuid(uuid)
                 .seenFrom(seenFrom)
                 .seenTo(seenTo)
+                .durationSeconds(durationSeconds)
+                .durationHumanReadable(durationHumanReadable)
                 .build();
     }
 
@@ -43,6 +51,10 @@ public abstract class UavTimelineDetailsResponse {
         public abstract Builder seenFrom(DateTime seenFrom);
 
         public abstract Builder seenTo(DateTime seenTo);
+
+        public abstract Builder durationSeconds(Long durationSeconds);
+
+        public abstract Builder durationHumanReadable(String durationHumanReadable);
 
         public abstract UavTimelineDetailsResponse build();
     }

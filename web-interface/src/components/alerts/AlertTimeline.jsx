@@ -3,6 +3,7 @@ import DetectionAlertsService from "../../services/DetectionAlertsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import Paginator from "../misc/Paginator";
 
+import numeral from "numeral";
 import moment from "moment";
 
 const detectionAlertService = new DetectionAlertsService();
@@ -45,7 +46,7 @@ function AlertTimeline(props) {
                   <td title={moment(entry.seen_to).fromNow()}>
                     {moment(entry.seen_to).format()}
                   </td>
-                  <td title={entry.duration_seconds + " sec"}>
+                  <td title={numeral(entry.duration_seconds).format("0,0") + " sec"}>
                     {entry.duration_human_readable}
                   </td>
                 </tr>
