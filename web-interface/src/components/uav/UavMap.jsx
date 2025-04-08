@@ -14,10 +14,11 @@ export default function UavMap(props) {
   const uav = props.uav;
   const containerHeight = props.containerHeight;
 
-  const lastKnownPosition = props.lastKnownPosition;
+  const lastKnownUavPosition = props.lastKnownUavPosition;
 
   // Optional.
   const onRefresh = props.onRefresh;
+  const lastKnownOperatorPosition = props.lastKnownOperatorPosition;
 
   const [map, setMap] = useState(null);
   const [mapInitialized, setMapInitialized] = useState(false);
@@ -29,8 +30,19 @@ export default function UavMap(props) {
     tooltipAnchor: [0, 0]
   });
 
-  const lastKnownPositionTooltip = (pos) => {
-    return "Last known position at " + moment(pos.timestamp).format() + " (" +  moment(pos.timestamp).fromNow() + ")";
+  const operatorIcon = L.icon({
+    iconUrl: window.appConfig.assetsUri + 'static/uav/operator.png',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    tooltipAnchor: [0, 0]
+  });
+
+  const lastKnownUavPositionTooltip = (pos) => {
+    return "Last known UAV position at " + moment(pos.timestamp).format() + " (" +  moment(pos.timestamp).fromNow() + ")";
+  }
+
+  const lastKnownOperatorPositionTooltip = (pos) => {
+    return "Last known operator position at " + moment(pos.timestamp).format() + " (" +  moment(pos.timestamp).fromNow() + ")";
   }
 
   useEffect(() => {
@@ -69,13 +81,23 @@ export default function UavMap(props) {
         }).addTo(map);
       }
 
-      const icon = L.marker(latLng(lastKnownPosition.lat, lastKnownPosition.lon), {
+      if (lastKnownOperatorPosition) {
+        const lastKnownOperatorPositionIcon = L.marker(latLng(lastKnownOperatorPosition.lat, lastKnownOperatorPosition.lon), {
+          icon: operatorIcon,
+          draggable: false,
+          autoPan: true
+        }).addTo(map);
+
+        lastKnownOperatorPositionIcon.bindTooltip(lastKnownOperatorPositionTooltip(lastKnownOperatorPosition))
+      }
+
+      const lastKnownUavPositionIcon = L.marker(latLng(lastKnownUavPosition.lat, lastKnownUavPosition.lon), {
         icon: uavIcon,
         draggable: false,
         autoPan: true
       }).addTo(map);
 
-      icon.bindTooltip(lastKnownPositionTooltip(lastKnownPosition))
+      lastKnownUavPositionIcon.bindTooltip(lastKnownUavPositionTooltip(lastKnownUavPosition))
     }
   }, [mapInitialized])
 

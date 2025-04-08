@@ -96,6 +96,20 @@ export default function UavDetailsPage() {
     }
   }
 
+  const lastKnownOperatorPosition = () => {
+    if (!uav.summary.operator_latitude
+        || !uav.summary.operator_longitude
+        || !uav.summary.latest_operator_location_timestamp) {
+      return null;
+    }
+
+    return {
+      lat: uav.summary.operator_latitude,
+      lon: uav.summary.operator_longitude,
+      timestamp: uav.summary.latest_operator_location_timestamp
+    }
+  }
+
   const resetTenantAndOrganization = () => {
     setOrganizationId(null);
     setTenantId(null);
@@ -224,11 +238,12 @@ export default function UavDetailsPage() {
 
               <UavMap uav={uav}
                       containerHeight={500}
-                      lastKnownPosition={{
+                      lastKnownUavPosition={{
                         lat: uav.summary.latitude,
                         lon: uav.summary.longitude,
                         timestamp: uav.summary.latest_vector_timestamp
                       }}
+                      lastKnownOperatorPosition={lastKnownOperatorPosition()}
                       onRefresh={() => setRevision(new Date()) } />
             </div>
           </div>
