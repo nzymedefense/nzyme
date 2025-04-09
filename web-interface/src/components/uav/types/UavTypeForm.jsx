@@ -35,7 +35,7 @@ export default function UavTypeForm(props) {
 
     onSubmit(matchType, matchValue, defaultClassification, type, model, name, () => {
       // On failure.
-      notify.show("Could not create custom UAV type.", "error");
+      notify.show("Could not create or update custom UAV type.", "error");
 
       setIsSubmitting(false);
       setSubmitText(submitTextProp);

@@ -350,7 +350,7 @@ public class UavResource extends TapDataHandlingResource {
     }
 
     @PUT
-    @RESTSecured(value = PermissionLevel.ANY)
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "uav_monitoring_manage" })
     @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/custom/show/{uuid}")
     public Response updateCustomType(@Context SecurityContext sc,
                                      @PathParam("uuid") UUID uuid,
@@ -396,7 +396,7 @@ public class UavResource extends TapDataHandlingResource {
     }
 
     @DELETE
-    @RESTSecured(value = PermissionLevel.ANY)
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "uav_monitoring_manage" })
     @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/custom/show/{uuid}")
     public Response deleteCustomType(@Context SecurityContext sc,
                                      @PathParam("organization_id") UUID organizationId,

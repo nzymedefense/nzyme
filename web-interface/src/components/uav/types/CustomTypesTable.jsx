@@ -6,6 +6,7 @@ import UavModelType from "../util/UavModelType";
 import UavSerialNumberMatch from "../util/UavSerialNumberMatch";
 import ApiRoutes from "../../../util/ApiRoutes";
 import UavService from "../../../services/UavService";
+import WithPermission from "../../misc/WithPermission";
 
 const uavService = new UavService();
 
@@ -38,6 +39,11 @@ export default function CustomTypesTable(props) {
           <th>Type</th>
           <th>Default Classification</th>
           <th>Serial Number</th>
+
+          <WithPermission permission="uav_monitoring_manage">
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+          </WithPermission>
         </tr>
         </thead>
         <tbody>
@@ -49,8 +55,11 @@ export default function CustomTypesTable(props) {
               <td><UavModelType type={t.type} /></td>
               <td><UavClassification classification={t.default_classification} /></td>
               <td><UavSerialNumberMatch matchType={t.match_type} matchValue={t.match_value} /></td>
-              <td><a href={ApiRoutes.UAV.TYPES.EDIT(t.uuid, t.organization_id, t.tenant_id)}>Edit</a></td>
-              <td><a href="#" onClick={(e) => deleteType(e, t.uuid)}>Delete</a></td>
+
+              <WithPermission permission="uav_monitoring_manage">
+                <td><a href={ApiRoutes.UAV.TYPES.EDIT(t.uuid, t.organization_id, t.tenant_id)}>Edit</a></td>
+                <td><a href="#" onClick={(e) => deleteType(e, t.uuid)}>Delete</a></td>
+              </WithPermission>
             </tr>
           )
         })}
