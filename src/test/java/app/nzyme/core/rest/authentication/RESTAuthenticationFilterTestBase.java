@@ -40,7 +40,7 @@ public class RESTAuthenticationFilterTestBase {
                 5
         );
 
-        UserEntry user = nzyme.getAuthenticationService().createUserOfTenant(org.uuid(), tenant.uuid(), "test user", email, hash);
+        UserEntry user = nzyme.getAuthenticationService().createUserOfTenant(org.uuid(), tenant.uuid(), "test user", email, false, hash);
 
         nzyme.getAuthenticationService().setUserMFAComplete(user.uuid(), true);
 
