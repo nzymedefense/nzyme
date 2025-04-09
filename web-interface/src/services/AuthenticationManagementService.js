@@ -2,9 +2,9 @@ import RESTClient from '../util/RESTClient'
 
 class AuthenticationManagementService {
 
-  createInitialUser(email, password, name, successCallback, errorCallback) {
+  createInitialUser(email, password, name, disableMfa, successCallback, errorCallback) {
     RESTClient.post('/system/authentication/mgmt/initialuser',
-        {email: email, password: password, name: name}, successCallback, errorCallback);
+        {email: email, password: password, name: name, disable_mfa: disableMfa}, successCallback, errorCallback);
   }
 
   findAllOrganizations(setOrganizations, limit, offset, successCallback = undefined) {

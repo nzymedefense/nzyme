@@ -71,6 +71,11 @@ section.start label {
     margin-left: 3px;
 }
 
+section.start label.form-check-label {
+    margin-top: 0px !important;
+}
+
+
 section.start input {
     font-size: 12px;
     font-family: sans-serif;

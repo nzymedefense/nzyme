@@ -11,8 +11,8 @@ function SetupWizardPage(props) {
   const onActionCompleted = props.onActionCompleted;
   const [errorMessage, setErrorMessage] = useState(null);
 
-  const onCreateUserClick = function (email, password, name, callback) {
-    authenticationMgmtService.createInitialUser(email, password, name, function() {
+  const onCreateUserClick = function (email, password, name, disableMfa, callback) {
+    authenticationMgmtService.createInitialUser(email, password, name, disableMfa, function() {
       // Success.
       notify.show('First Super Administrator created. Please log in.', 'success');
       callback();
@@ -45,13 +45,7 @@ function SetupWizardPage(props) {
 
                         <hr />
 
-                        <h2>First Super Administrator User</h2>
-
-                        <p>
-                          Super Administrators possess unrestricted access to all features and data within this nzyme
-                          installation. While this role is ideal for initial setup, it is recommended to transition
-                          to a user with tailored permissions for your everyday tasks.
-                        </p>
+                        <h2 className="mb-3">First Super Administrator User</h2>
 
                         <CreateUserForm onClick={onCreateUserClick}
                                         errorMessage={errorMessage}

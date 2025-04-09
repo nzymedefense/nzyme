@@ -42,7 +42,7 @@ public class InitialUserResource {
         nzyme.getAuthenticationService().createSuperAdministrator(
                 req.name(),
                 req.email().toLowerCase(),
-                false,
+                req.disableMfa(),
                 hash
         );
 
