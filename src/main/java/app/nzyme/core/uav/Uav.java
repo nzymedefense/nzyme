@@ -503,10 +503,10 @@ public class Uav {
 
         // Check Connect models.
         try(Timer.Context ignored = connectModelLookupTimer.time()) {
-            connectModelsLock.lock();
+            Optional<List<ConnectUavModel>> models = findAllConnectUavModels();
 
-            try {
-                for (ConnectUavModel connectModel : connectModels) {
+            if (models.isPresent()) {
+                for (ConnectUavModel connectModel : models.get()) {
                     switch (connectModel.serialType()) {
                         case RANGE -> {
                             String[] serialParts = connectModel.serial().split("-");
@@ -541,33 +541,53 @@ public class Uav {
                         }
                     }
                 }
-            } finally {
-                connectModelsLock.unlock();
             }
         }
 
         return Optional.empty();
     }
 
-    public int countAllConnectUavModels() {
+    public Optional<Integer> countAllConnectUavModels() {
+        if (!connectModelsIsEnabled || connectModels == null) {
+            return Optional.empty();
+        }
+
         connectModelsLock.lock();
 
         try {
-            return connectModels.size();
+            return Optional.of(connectModels.size());
         } finally {
             connectModelsLock.unlock();
         }
     }
 
-    public List<ConnectUavModel> findAllConnectUavModels(int limit, int offset) {
+    public Optional<List<ConnectUavModel>> findAllConnectUavModels() {
+        if (!connectModelsIsEnabled || connectModels == null) {
+            return Optional.empty();
+        }
+
         connectModelsLock.lock();
 
         try {
-            return connectModels.stream()
+            return Optional.of(Lists.newArrayList(connectModels));
+        } finally {
+            connectModelsLock.unlock();
+        }
+    }
+
+    public Optional<List<ConnectUavModel>> findAllConnectUavModels(int limit, int offset) {
+        if (!connectModelsIsEnabled || connectModels == null) {
+            return Optional.empty();
+        }
+
+        connectModelsLock.lock();
+
+        try {
+            return Optional.of(connectModels.stream()
                     .sorted(Comparator.comparing(ConnectUavModel::make))
                     .skip(offset)
                     .limit(limit)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()));
         } finally {
             connectModelsLock.unlock();
         }

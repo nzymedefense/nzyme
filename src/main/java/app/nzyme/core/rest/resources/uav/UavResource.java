@@ -262,11 +262,21 @@ public class UavResource extends TapDataHandlingResource {
     @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/connect")
     public Response findAllConnectTypes(@QueryParam("limit") int limit,
                                         @QueryParam("offset") int offset) {
-        int count = nzyme.getUav().countAllConnectUavModels();
+        Optional<Integer> count = nzyme.getUav().countAllConnectUavModels();
+
+        if (count.isEmpty()) {
+            return Response.ok(UavConnectTypeListResponse.create(0, Lists.newArrayList())).build();
+        }
 
         List<UavConnectTypeDetailsResponse> types = Lists.newArrayList();
 
-        for (ConnectUavModel model : nzyme.getUav().findAllConnectUavModels(limit, offset)) {
+        Optional<List<ConnectUavModel>> models = nzyme.getUav().findAllConnectUavModels(limit, offset);
+
+        if (models.isEmpty()) {
+            return Response.ok(UavConnectTypeListResponse.create(0, Lists.newArrayList())).build();
+        }
+
+        for (ConnectUavModel model : models.get()) {
             types.add(UavConnectTypeDetailsResponse.create(
                     model.classification() == null ? "Unknown" : model.classification(),
                     model.make() + " " + model.model(),
@@ -275,8 +285,7 @@ public class UavResource extends TapDataHandlingResource {
             ));
         }
 
-
-        return Response.ok(UavConnectTypeListResponse.create(count, types)).build();
+        return Response.ok(UavConnectTypeListResponse.create(count.get(), types)).build();
     }
 
     @GET
