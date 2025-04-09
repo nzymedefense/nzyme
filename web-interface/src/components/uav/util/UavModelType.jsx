@@ -1,25 +1,24 @@
 import React from "react";
-import {capitalizeFirstLetter} from "../../../util/Tools";
 
 export default function UavModelType(props) {
 
   const type = props.type;
 
   if (!type) {
-    return "Unknown";
+    return <span className="text-muted">n/a</span>
   }
 
   switch (type) {
-    case "AERIAL_INTELLIGENCE":
-      return "Aerial Intelligence"
-    case "PHOTO_VIDEO":
-      return "Photo/Video";
-    case "PRO_MULTI":
-      return "Professional Multi-Use";
-    case "PRO_SURVEY":
-      return "Professional Survey";
-    default:
-      return capitalizeFirstLetter(type.toLowerCase());
+    case "GENERIC_UNKNOWN": return "Generic/Unknown";
+    case "AGRICULTURE": return "Agriculture";
+    case "CARGO": return "Cargo/Delivery";
+    case "HOBBY_TOY": return "Hobby/Toy";
+    case "INDUSTRIAL_INSPECTION": return "Industrial/Inspection";
+    case "MAPPING_SURVEYING": return "Mapping/Surveying";
+    case "PHOTO_VIDEO": return "Photo/Video";
+    case "PUBLIC_SAFETY": return "Public Safety";
+    case "RID_MODULE": return "Remote ID Module";
+    default: return type
   }
 
 }

@@ -14,7 +14,7 @@ import UavVerticalSpeed from "./util/UavVerticalSpeed";
 import ApiRoutes from "../../util/ApiRoutes";
 import Designation from "../shared/Designation";
 import UavClassification from "./util/UavClassification";
-import UavModelType from "./UavModelType";
+import UavModelType from "./util/UavModelType";
 
 export default function UavsTable(props) {
 

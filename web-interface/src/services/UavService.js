@@ -72,8 +72,8 @@ export default class UavService {
     RESTClient.delete(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/types/custom/show/${uuid}`, onSuccess);
   }
 
-  findAllBuiltInTypes(setTypes, organizationId, tenantId, limit, offset) {
-    RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/types/builtin`,
+  findAllConnectTypes(setTypes, organizationId, tenantId, limit, offset) {
+    RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/types/connect`,
       {limit: limit, offset: offset },
       (response) => setTypes(response.data)
     )

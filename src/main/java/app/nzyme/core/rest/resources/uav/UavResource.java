@@ -8,7 +8,8 @@ import app.nzyme.core.rest.requests.UpdateUavCustomTypeRequest;
 import app.nzyme.core.rest.responses.shared.ClassificationResponse;
 import app.nzyme.core.rest.responses.uav.*;
 import app.nzyme.core.rest.responses.uav.enums.*;
-import app.nzyme.core.rest.responses.uav.types.UavBuiltInTypeListResponse;
+import app.nzyme.core.rest.responses.uav.types.UavConnectTypeDetailsResponse;
+import app.nzyme.core.rest.responses.uav.types.UavConnectTypeListResponse;
 import app.nzyme.core.rest.responses.uav.types.UavCustomTypeDetailsResponse;
 import app.nzyme.core.rest.responses.uav.types.UavCustomTypeListResponse;
 import app.nzyme.core.shared.Classification;
@@ -16,6 +17,7 @@ import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.uav.db.UavTimelineEntry;
 import app.nzyme.core.uav.db.UavTypeEntry;
 import app.nzyme.core.uav.db.UavVectorEntry;
+import app.nzyme.core.uav.types.ConnectUavModel;
 import app.nzyme.core.uav.types.UavTypeMatch;
 import app.nzyme.core.uav.types.UavTypeMatchType;
 import app.nzyme.core.util.TimeRange;
@@ -254,6 +256,28 @@ public class UavResource extends TapDataHandlingResource {
 
     @GET
     @RESTSecured(value = PermissionLevel.ANY)
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/connect")
+    public Response findAllConnectTypes(@QueryParam("limit") int limit,
+                                        @QueryParam("offset") int offset) {
+        int count = nzyme.getUav().countAllConnectUavModels();
+
+        List<UavConnectTypeDetailsResponse> types = Lists.newArrayList();
+
+        for (ConnectUavModel model : nzyme.getUav().findAllConnectUavModels(limit, offset)) {
+            types.add(UavConnectTypeDetailsResponse.create(
+                    model.classification() == null ? "Unknown" : model.classification(),
+                    model.make() + " " + model.model(),
+                    model.serialType().toString(),
+                    model.serial()
+            ));
+        }
+
+
+        return Response.ok(UavConnectTypeListResponse.create(count, types)).build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY)
     @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/custom/show/{uuid}")
     public Response findCustomType(@Context SecurityContext sc,
                                    @PathParam("uuid") UUID uuid,
@@ -391,21 +415,6 @@ public class UavResource extends TapDataHandlingResource {
         nzyme.getUav().deleteCustomType(type.get().id());
 
         return Response.ok().build();
-    }
-
-    @GET
-    @RESTSecured(value = PermissionLevel.ANY)
-    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/builtin")
-    public Response findAllBuiltInTypes(@Context SecurityContext sc,
-                                        @PathParam("organization_id") UUID organizationId,
-                                        @PathParam("tenant_id") UUID tenantId,
-                                        @QueryParam("limit") int limit,
-                                        @QueryParam("offset") int offset) {
-        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        return Response.ok(UavBuiltInTypeListResponse.create(0, Lists.newArrayList())).build();
     }
 
     private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav, Optional<UavTypeMatch> uavType) {

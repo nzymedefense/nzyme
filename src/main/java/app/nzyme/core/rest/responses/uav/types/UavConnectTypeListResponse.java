@@ -6,15 +6,15 @@ import com.google.auto.value.AutoValue;
 import java.util.List;
 
 @AutoValue
-public abstract class UavBuiltInTypeListResponse {
+public abstract class UavConnectTypeListResponse {
 
     @JsonProperty("count")
     public abstract long count();
 
     @JsonProperty("types")
-    public abstract List<UavBuiltInTypeDetailsResponse> types();
+    public abstract List<UavConnectTypeDetailsResponse> types();
 
-    public static UavBuiltInTypeListResponse create(long count, List<UavBuiltInTypeDetailsResponse> types) {
+    public static UavConnectTypeListResponse create(long count, List<UavConnectTypeDetailsResponse> types) {
         return builder()
                 .count(count)
                 .types(types)
@@ -22,15 +22,15 @@ public abstract class UavBuiltInTypeListResponse {
     }
 
     public static Builder builder() {
-        return new AutoValue_UavBuiltInTypeListResponse.Builder();
+        return new AutoValue_UavConnectTypeListResponse.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder count(long count);
 
-        public abstract Builder types(List<UavBuiltInTypeDetailsResponse> types);
+        public abstract Builder types(List<UavConnectTypeDetailsResponse> types);
 
-        public abstract UavBuiltInTypeListResponse build();
+        public abstract UavConnectTypeListResponse build();
     }
 }

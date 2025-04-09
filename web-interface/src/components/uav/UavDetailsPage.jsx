@@ -28,7 +28,7 @@ import SelectedOrganizationAndTenant from "../shared/SelectedOrganizationAndTena
 import UavOperatorDistanceToUav from "./util/UavOperatorDistanceToUav";
 import UavTimelineTable from "./UavTimelineTable";
 import {userHasPermission} from "../../util/Tools";
-import UavModelType from "./UavModelType";
+import UavModelType from "./util/UavModelType";
 
 const uavService = new UavService();
 

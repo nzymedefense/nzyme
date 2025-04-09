@@ -3,7 +3,7 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
 import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
 import WithPermission from "../../misc/WithPermission";
-import BuiltInTypesTable from "./BuiltInTypesTable";
+import ConnectTypesTable from "./ConnectTypesTable";
 import ApiRoutes from "../../../util/ApiRoutes";
 import CustomTypesTable from "./CustomTypesTable";
 import UavService from "../../../services/UavService";
@@ -17,9 +17,9 @@ export default function UavTypesPage() {
   const [tenantId, setTenantId] = useState(null);
   const [tenantSelected, setTenantSelected] = useState(false);
 
-  const [builtInTypes, setBuiltInTypes] = useState(null);
-  const [builtInTypesPage, setBuiltInTypesPage] = useState(1);
-  const builtInTypesPerPage = 25;
+  const [connectTypes, setConnectTypes] = useState(null);
+  const [connectTypesPage, setConnectTypesPage] = useState(1);
+  const connectTypesPerPage = 25;
 
   const [customTypes, setCustomTypes] = useState(null);
   const [customTypesPage, setCustomTypesPage] = useState(1);
@@ -34,12 +34,16 @@ export default function UavTypesPage() {
       uavService.findAllCustomTypes(
         setCustomTypes, organizationId, tenantId, customTypesPerPage, (customTypesPage-1)*customTypesPerPage
       );
-
-      uavService.findAllBuiltInTypes(
-        setBuiltInTypes, organizationId, tenantId, customTypesPerPage, (customTypesPage-1)*customTypesPerPage
-      );
     }
   }, [organizationId, tenantId, customTypesPage, revision]);
+
+  useEffect(() => {
+    setConnectTypes(null);
+
+    uavService.findAllConnectTypes(
+        setConnectTypes, organizationId, tenantId, connectTypesPerPage, (connectTypesPage-1)*connectTypesPerPage
+    );
+  }, [connectTypesPage, revision]);
 
   const onOrganizationChange = (uuid) => {
     setOrganizationId(uuid);
@@ -133,10 +137,10 @@ export default function UavTypesPage() {
                 Built-in types, provided through nzyme Connect, cover a wide range of known UAV models.
               </p>
 
-              <BuiltInTypesTable types={builtInTypes}
-                                 page={builtInTypesPage}
-                                 setPage={setBuiltInTypesPage}
-                                 perPage={builtInTypesPerPage} />
+              <ConnectTypesTable types={connectTypes}
+                                 page={connectTypesPage}
+                                 setPage={setConnectTypesPage}
+                                 perPage={connectTypesPerPage} />
             </div>
           </div>
         </div>

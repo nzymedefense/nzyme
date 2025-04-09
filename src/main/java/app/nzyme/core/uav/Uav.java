@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public class Uav {
 
@@ -546,5 +547,29 @@ public class Uav {
         }
 
         return Optional.empty();
+    }
+
+    public int countAllConnectUavModels() {
+        connectModelsLock.lock();
+
+        try {
+            return connectModels.size();
+        } finally {
+            connectModelsLock.unlock();
+        }
+    }
+
+    public List<ConnectUavModel> findAllConnectUavModels(int limit, int offset) {
+        connectModelsLock.lock();
+
+        try {
+            return connectModels.stream()
+                    .sorted(Comparator.comparing(ConnectUavModel::make))
+                    .skip(offset)
+                    .limit(limit)
+                    .collect(Collectors.toList());
+        } finally {
+            connectModelsLock.unlock();
+        }
     }
 }
