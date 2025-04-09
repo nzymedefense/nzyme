@@ -13,6 +13,7 @@ import RestrictedSSIDSubstringAlertDetails from "./dot11/RestrictedSSIDSubstring
 import MonitoredProbeRequestAlertDetails from "./dot11/MonitoredProbeRequestAlertDetails";
 import UnapprovedSSIDAlertDetails from "./dot11/UnapprovedSSIDAlertDetails";
 import UnapprovedClientAlertDetails from "./dot11/UnapprovedClientAlertDetails";
+import UavDetectedAlertDetails from "./uav/UavDetectedAlertDetails";
 
 function AlertDetails(props) {
 
@@ -47,6 +48,11 @@ function AlertDetails(props) {
       return <UnapprovedSSIDAlertDetails alert={alert} />
     case "DOT11_UNAPPROVED_CLIENT":
       return <UnapprovedClientAlertDetails alert={alert} />
+    case "UAV_DETECTED_CLASSIFICATION_UNKNOWN":
+    case "UAV_DETECTED_CLASSIFICATION_FRIENDLY":
+    case "UAV_DETECTED_CLASSIFICATION_NEUTRAL":
+    case "UAV_DETECTED_CLASSIFICATION_HOSTILE":
+      return <UavDetectedAlertDetails alert={alert} />
     default:
       return <GenericAlertDetails alert={alert} />
   }

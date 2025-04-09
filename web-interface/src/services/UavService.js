@@ -79,4 +79,20 @@ export default class UavService {
     )
   }
 
+  getMonitoringConfig(setConfig, organizationId, tenantId) {
+    RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/monitoring`, {},
+        (response) => setConfig(response.data)
+    )
+  }
+
+  setMonitoringConfig(alertOnUnknown, alertOnFriendly, alertOnNeutral, alertOnHostile, organizationId, tenantId, successCallback) {
+    RESTClient.put(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/monitoring`,
+        { alert_on_unknown: alertOnUnknown,
+          alert_on_friendly: alertOnFriendly,
+          alert_on_neutral: alertOnNeutral,
+          alert_on_hostile: alertOnHostile
+        }, successCallback
+    )
+  }
+
 }

@@ -20,6 +20,12 @@ public enum DetectionType {
     DOT11_UNAPPROVED_SSID("Unapproved SSID detected", Subsystem.DOT11),
     DOT11_UNAPPROVED_CLIENT("Unapproved WiFi Client detected", Subsystem.DOT11),
 
+    // UAV alerts.
+    UAV_DETECTED_CLASSIFICATION_UNKNOWN("UAV with unknown classification detected", Subsystem.UAV),
+    UAV_DETECTED_CLASSIFICATION_FRIENDLY("UAV with friendly classification detected", Subsystem.UAV),
+    UAV_DETECTED_CLASSIFICATION_NEUTRAL("UAV with neutral classification detected", Subsystem.UAV),
+    UAV_DETECTED_CLASSIFICATION_HOSTILE("UAV with hostile classification detected", Subsystem.UAV),
+
     // Wildcard subscription.
     WILDCARD("Subscribed to all detection alerts. (Wildcard)", Subsystem.GENERIC);
 

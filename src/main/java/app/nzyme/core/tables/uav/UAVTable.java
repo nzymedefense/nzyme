@@ -1,13 +1,20 @@
 package app.nzyme.core.tables.uav;
 
 import app.nzyme.core.designation.Designation;
+import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.rest.resources.taps.reports.tables.uav.*;
 import app.nzyme.core.shared.Classification;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.uav.UavRegistryKeys;
+import app.nzyme.core.uav.db.UavEntry;
+import app.nzyme.core.uav.db.UavTypeEntry;
+import app.nzyme.core.uav.types.UavTypeMatch;
 import app.nzyme.core.util.MetricNames;
+import app.nzyme.plugin.Subsystem;
 import com.codahale.metrics.Timer;
+import com.google.common.collect.Maps;
 import com.google.common.math.Quantiles;
 import com.google.common.math.Stats;
 import org.apache.logging.log4j.LogManager;
@@ -16,10 +23,7 @@ import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class UAVTable implements DataTable {
@@ -49,6 +53,7 @@ public class UAVTable implements DataTable {
         tablesService.getNzyme().getDatabase().useHandle(handle -> {
             try(Timer.Context ignored2 = totalReportTimer.time()) {
                 writeUavs(handle, tap.get(), report.uavs());
+                alertUavs(tap.get(), report.uavs());
             }
         });
     }
@@ -380,6 +385,107 @@ public class UAVTable implements DataTable {
         }
 
         vectorBatch.execute();
+    }
+
+    private void alertUavs(Tap tap, List<UavReport> uavs) {
+        boolean alertOnUnknown = tablesService.getNzyme().getDatabaseCoreRegistry()
+                .getValue(UavRegistryKeys.MONITORING_ALERT_ON_UNKNOWN.key(), tap.organizationId(), tap.tenantId())
+                .map(Boolean::parseBoolean).orElse(false);
+
+        boolean alertOnFriendly = tablesService.getNzyme().getDatabaseCoreRegistry()
+                .getValue(UavRegistryKeys.MONITORING_ALERT_ON_FRIENDLY.key(), tap.organizationId(), tap.tenantId())
+                .map(Boolean::parseBoolean).orElse(false);
+
+        boolean alertOnNeutral = tablesService.getNzyme().getDatabaseCoreRegistry()
+                .getValue(UavRegistryKeys.MONITORING_ALERT_ON_NEUTRAL.key(), tap.organizationId(), tap.tenantId())
+                .map(Boolean::parseBoolean).orElse(false);
+
+        boolean alertOnHostile = tablesService.getNzyme().getDatabaseCoreRegistry()
+                .getValue(UavRegistryKeys.MONITORING_ALERT_ON_HOSTILE.key(), tap.organizationId(), tap.tenantId())
+                .map(Boolean::parseBoolean).orElse(false);
+
+        List<UavTypeEntry> customTypes = tablesService.getNzyme().getUav()
+                .findAllCustomTypes(tap.organizationId(), tap.tenantId());
+
+        for (UavReport uav : uavs) {
+            String serial = null;
+            for (UavIdReport id : uav.uavIds()) {
+                if (id.idType().equals("AnsiCtaSerial")) {
+                    serial = id.id();
+                }
+            }
+
+            Classification classification = null;
+            if (serial != null) {
+                Optional<UavTypeMatch> typeMatch = tablesService.getNzyme().getUav().matchUavType(customTypes, serial);
+
+                if (typeMatch.isPresent() && typeMatch.get().defaultClassification() != null) {
+                    classification = Classification.valueOf(typeMatch.get().defaultClassification());
+                }
+            }
+
+            // No custom classification or no UAV serial. Pull custom classification.
+            if (classification == null) {
+                Optional<UavEntry> dbUav = tablesService.getNzyme().getUav()
+                        .findUav(uav.identifier(), tap.organizationId(), tap.tenantId(), List.of(tap.uuid()));
+
+                if (dbUav.isEmpty()) {
+                    LOG.error("Skipping UAV with identifier [{}] not found in database for tap [{}].",
+                            uav.identifier(), tap.uuid());
+                    continue;
+                }
+
+                classification = Classification.valueOf(dbUav.get().classification());
+            }
+
+            DetectionType detectionType;
+            boolean doAlert;
+            switch (classification) {
+                case UNKNOWN -> {
+                    detectionType = DetectionType.UAV_DETECTED_CLASSIFICATION_UNKNOWN;
+                    doAlert = alertOnUnknown;
+                }
+                case FRIENDLY -> {
+                    detectionType = DetectionType.UAV_DETECTED_CLASSIFICATION_FRIENDLY;
+                    doAlert = alertOnFriendly;
+                }
+                case HOSTILE -> {
+                    detectionType = DetectionType.UAV_DETECTED_CLASSIFICATION_HOSTILE;
+                    doAlert = alertOnHostile;
+                }
+                case NEUTRAL -> {
+                    detectionType = DetectionType.UAV_DETECTED_CLASSIFICATION_NEUTRAL;
+                    doAlert = alertOnNeutral;
+                }
+                default -> throw new IllegalStateException("Unexpected value: " + classification);
+            }
+
+            if (doAlert) {
+                raiseUavAlert(tap, uav.identifier(), uav.detectionSource(), classification.toString(), detectionType);
+            }
+        }
+    }
+
+    private void raiseUavAlert(Tap tap, String identifier, String detectionSource, String classification, DetectionType detectionType) {
+        Map<String, String> attributes = Maps.newHashMap();
+        attributes.put("identifier", identifier);
+        attributes.put("classification", classification);
+        attributes.put("detection_source", detectionSource);
+
+        String designation = Designation.fromSha256ShortDigest(identifier.subSequence(0, 7).toString());
+
+        tablesService.getNzyme().getDetectionAlertService().raiseAlert(
+                tap.organizationId(),
+                tap.tenantId(),
+                null,
+                tap.uuid(),
+                detectionType,
+                Subsystem.UAV,
+                "UAV with " + classification + " classification and designation [" + designation + "] detected in range.",
+                attributes,
+                new String[]{"identifier", "classification"},
+                null
+        );
     }
 
     @Override

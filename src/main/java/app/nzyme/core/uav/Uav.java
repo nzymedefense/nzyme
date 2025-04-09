@@ -471,12 +471,12 @@ public class Uav {
         );
     }
     
-    public Optional<UavTypeMatch> matchUavType(UavEntry uav, UUID tenantId, UUID organizationId) {
-        return matchUavType(findAllCustomTypes(organizationId, tenantId), uav);
+    public Optional<UavTypeMatch> matchUavType(String serial, UUID tenantId, UUID organizationId) {
+        return matchUavType(findAllCustomTypes(organizationId, tenantId), serial);
     }
 
-    public Optional<UavTypeMatch> matchUavType(List<UavTypeEntry> types, UavEntry uav) {
-        if (uav.idSerial() == null) {
+    public Optional<UavTypeMatch> matchUavType(List<UavTypeEntry> types, String serial) {
+        if (serial  == null) {
             return Optional.empty();
         }
 
@@ -485,14 +485,14 @@ public class Uav {
 
             switch (matchType) {
                 case EXACT -> {
-                    if (uav.idSerial().equals(type.matchValue())) {
+                    if (serial.equals(type.matchValue())) {
                         return Optional.of(UavTypeMatch.create(
                                 type.type(), type.name(), type.model(), type.defaultClassification())
                         );
                     }
                 }
                 case PREFIX -> {
-                    if (uav.idSerial().startsWith(type.matchValue())) {
+                    if (serial.startsWith(type.matchValue())) {
                         return Optional.of(UavTypeMatch.create(
                                 type.type(), type.name(), type.model(), type.defaultClassification())
                         );
@@ -519,8 +519,8 @@ public class Uav {
                             String lowerBound = serialParts[0];
                             String upperBound = serialParts[1];
 
-                            if (uav.idSerial().compareTo(lowerBound) >= 0 &&
-                                    uav.idSerial().compareTo(upperBound) <= 0) {
+                            if (serial.compareTo(lowerBound) >= 0 &&
+                                    serial.compareTo(upperBound) <= 0) {
                                 return Optional.of(UavTypeMatch.create(
                                         connectModel.classification() == null ? "Unknown" : connectModel.classification(),
                                         null,
@@ -530,7 +530,7 @@ public class Uav {
                             }
                         }
                         case ANSICTA2063A -> {
-                            if (uav.idSerial().equals(connectModel.serial())) {
+                            if (serial.equals(connectModel.serial())) {
                                 return Optional.of(UavTypeMatch.create(
                                         connectModel.classification() == null ? "Unknown" : connectModel.classification(),
                                         null,

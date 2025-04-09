@@ -4,15 +4,18 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.geo.HaversineDistance;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.requests.CreateUavCustomTypeRequest;
+import app.nzyme.core.rest.requests.UavMonitoringConfigurationRequest;
 import app.nzyme.core.rest.requests.UpdateUavCustomTypeRequest;
 import app.nzyme.core.rest.responses.shared.ClassificationResponse;
 import app.nzyme.core.rest.responses.uav.*;
 import app.nzyme.core.rest.responses.uav.enums.*;
+import app.nzyme.core.rest.responses.uav.monitoring.UavMonitoringSettingsResponse;
 import app.nzyme.core.rest.responses.uav.types.UavConnectTypeDetailsResponse;
 import app.nzyme.core.rest.responses.uav.types.UavConnectTypeListResponse;
 import app.nzyme.core.rest.responses.uav.types.UavCustomTypeDetailsResponse;
 import app.nzyme.core.rest.responses.uav.types.UavCustomTypeListResponse;
 import app.nzyme.core.shared.Classification;
+import app.nzyme.core.uav.UavRegistryKeys;
 import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.uav.db.UavTimelineEntry;
 import app.nzyme.core.uav.db.UavTypeEntry;
@@ -68,7 +71,7 @@ public class UavResource extends TapDataHandlingResource {
 
         List<UavTypeEntry> customTypes = nzyme.getUav().findAllCustomTypes(organizationId, tenantId);
         for (UavEntry uav : nzyme.getUav().findAllUavsOfTenant(timeRange, limit, offset, organizationId, tenantId, taps)) {
-            uavs.add(uavEntryToSummaryResponse(uav, nzyme.getUav().matchUavType(customTypes, uav)));
+            uavs.add(uavEntryToSummaryResponse(uav, nzyme.getUav().matchUavType(customTypes, uav.idSerial())));
         }
 
         return Response.ok(UavListResponse.create(total, uavs)).build();
@@ -93,7 +96,7 @@ public class UavResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Optional<UavTypeMatch> uavType = nzyme.getUav().matchUavType(uav.get(), tenantId, organizationId);
+        Optional<UavTypeMatch> uavType = nzyme.getUav().matchUavType(uav.get().idSerial(), tenantId, organizationId);
 
         return Response.ok(UavDetailsResponse.create(
                 uavEntryToSummaryResponse(uav.get(), uavType)
@@ -417,6 +420,83 @@ public class UavResource extends TapDataHandlingResource {
         return Response.ok().build();
     }
 
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "uav_monitoring_manage" })
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/monitoring")
+    public Response getMonitoringConfiguration(@Context SecurityContext sc,
+                                               @PathParam("organization_id") UUID organizationId,
+                                               @PathParam("tenant_id") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        boolean alertOnUnknown = nzyme.getDatabaseCoreRegistry()
+                .getValue(UavRegistryKeys.MONITORING_ALERT_ON_UNKNOWN.key(), organizationId, tenantId)
+                .map(Boolean::parseBoolean).orElse(false);
+
+        boolean alertOnFriendly = nzyme.getDatabaseCoreRegistry()
+                .getValue(UavRegistryKeys.MONITORING_ALERT_ON_FRIENDLY.key(), organizationId, tenantId)
+                .map(Boolean::parseBoolean).orElse(false);
+
+        boolean alertOnNeutral = nzyme.getDatabaseCoreRegistry()
+                .getValue(UavRegistryKeys.MONITORING_ALERT_ON_NEUTRAL.key(), organizationId, tenantId)
+                .map(Boolean::parseBoolean).orElse(false);
+
+        boolean alertOnHostile = nzyme.getDatabaseCoreRegistry()
+                .getValue(UavRegistryKeys.MONITORING_ALERT_ON_HOSTILE.key(), organizationId, tenantId)
+                .map(Boolean::parseBoolean).orElse(false);
+
+        return Response.ok(UavMonitoringSettingsResponse.create(
+                alertOnUnknown,
+                alertOnFriendly,
+                alertOnNeutral,
+                alertOnHostile
+        )).build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "uav_monitoring_manage" })
+    @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/monitoring")
+    public Response getMonitoringConfiguration(@Context SecurityContext sc,
+                                               @PathParam("organization_id") UUID organizationId,
+                                               @PathParam("tenant_id") UUID tenantId,
+                                               UavMonitoringConfigurationRequest req) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+
+        nzyme.getDatabaseCoreRegistry().setValue(
+                UavRegistryKeys.MONITORING_ALERT_ON_UNKNOWN.key(),
+                String.valueOf(req.alertOnUnknown()),
+                organizationId,
+                tenantId
+        );
+
+        nzyme.getDatabaseCoreRegistry().setValue(
+                UavRegistryKeys.MONITORING_ALERT_ON_FRIENDLY.key(),
+                String.valueOf(req.alertOnFriendly()),
+                organizationId,
+                tenantId
+        );
+
+        nzyme.getDatabaseCoreRegistry().setValue(
+                UavRegistryKeys.MONITORING_ALERT_ON_NEUTRAL.key(),
+                String.valueOf(req.alertOnNeutral()),
+                organizationId,
+                tenantId
+        );
+
+        nzyme.getDatabaseCoreRegistry().setValue(
+                UavRegistryKeys.MONITORING_ALERT_ON_HOSTILE.key(),
+                String.valueOf(req.alertOnHostile()),
+                organizationId,
+                tenantId
+        );
+
+        return Response.ok().build();
+    }
+
     private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav, Optional<UavTypeMatch> uavType) {
         Double operatorDistanceToUav = null;
 
@@ -431,7 +511,7 @@ public class UavResource extends TapDataHandlingResource {
         if (uavType.isPresent() && uavType.get().defaultClassification() != null) {
             classification = ClassificationResponse.valueOf(uavType.get().defaultClassification());
         } else {
-            // No custom classification. Leave it at the default (UNKNOWN) classification.
+            // No custom classification. Leave it at the manual classification.
             classification = ClassificationResponse.valueOf(uav.classification());
         }
 
