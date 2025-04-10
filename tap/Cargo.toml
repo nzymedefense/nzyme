@@ -2,7 +2,7 @@
 name = "nzyme-tap"
 description = "The nzyme Network Defense System tap"
 license = "SSPL-1.0"
-version = "2.0.0-alpha.16"
+version = "2.0.0-alpha.17-SNAPSHOT"
 edition = "2024"
 readme = "README.md"
 
