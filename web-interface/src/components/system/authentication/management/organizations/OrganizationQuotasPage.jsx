@@ -69,6 +69,10 @@ export default function OrganizationQuotasPage() {
                   to manually delete.
                 </p>
 
+                <p className="text-muted">
+                  You can <a href="https://go.nzyme.org/quotas">learn more about quotas in the documentation</a>.
+                </p>
+
                 <OrganizationQuotasTable quotas={quotas}
                                          organization={organization}
                                          onUpdate={() => setRevision(new Date())} />

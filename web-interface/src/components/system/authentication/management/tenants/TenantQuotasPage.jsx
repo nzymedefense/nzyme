@@ -103,6 +103,10 @@ export default function TenantQuotasPage() {
                   to manually delete.
                 </p>
 
+                <p className="text-muted">
+                  You can <a href="https://go.nzyme.org/quotas">learn more about quotas in the documentation</a>.
+                </p>
+
                 <TenantQuotasTable organization={organization}
                                    tenant={tenant}
                                    quotas={quotas}
