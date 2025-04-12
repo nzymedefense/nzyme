@@ -38,6 +38,7 @@ function OrganizationAdminTable(props) {
           <tr>
             <th>Name</th>
             <th>Email</th>
+            <th>MFA</th>
             <th>Last Activity</th>
           </tr>
           </thead>

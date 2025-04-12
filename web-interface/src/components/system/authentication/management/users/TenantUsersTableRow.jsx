@@ -17,6 +17,8 @@ function TenantUsersTableRow(props) {
           </a>
         </td>
         <td>{user.email}</td>
+        <td>{user.mfa_disabled ? <span className="text-warning">Disabled</span>
+            : <span className="text-success">Enabled</span> }</td>
         <td>
           {user.tap_permissions && user.tap_permissions.length > 0 ? user.tap_permissions.length : "All"}
         </td>

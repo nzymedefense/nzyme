@@ -58,7 +58,11 @@ function CreateOrganizationAdministratorPage() {
                     {organization.name}
                   </a>
                 </li>
-                <li className="breadcrumb-item">Organization Administrators</li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS_PAGE(organization.id)}>
+                    Organization Administrators
+                  </a>
+                </li>
                 <li className="breadcrumb-item active" aria-current="page">Create</li>
               </ol>
             </nav>
