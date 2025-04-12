@@ -331,7 +331,7 @@ public class Dot11 {
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "AND b.tap_uuid IN (<taps>)" + filterFragment.whereSql() +
-                                "GROUP BY b.bssid HAVING 1=1 " + filterFragment.havingSql() + ")")
+                                "GROUP BY b.bssid HAVING 1=1 " + filterFragment.havingSql() + ") AS ignored")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindMap(filterFragment.bindings())
