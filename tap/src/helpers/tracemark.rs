@@ -1,9 +1,9 @@
 #[macro_export]
 macro_rules! tracemark {
-    ($msg:expr_2021) => {
+    ($msg:expr) => {
         log::trace!("TRACEMARK {}:{}: {}", file!(), line!(), $msg);
     };
-    ($fmt:expr_2021, $($arg:tt)*) => {
+    ($fmt:expr, $($arg:tt)*) => {
         log::trace!(concat!("TRACEMARK {}:{} -> ", $fmt), file!(), line!(), $($arg)*);
     };
 }
