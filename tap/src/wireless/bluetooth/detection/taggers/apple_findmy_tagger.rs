@@ -4,7 +4,8 @@ use crate::wireless::bluetooth::bluetooth_device_advertisement::BluetoothDeviceA
 use crate::wireless::bluetooth::detection::device_tagger::TagValue;
 use crate::wireless::bluetooth::detection::taggers::tagger_utils;
 
-pub fn tag(advertisement: &Arc<BluetoothDeviceAdvertisement>) -> Option<(String, HashMap<String, TagValue>)> {
+pub fn tag(advertisement: &Arc<BluetoothDeviceAdvertisement>) 
+    -> Option<(String, HashMap<String, TagValue>)> {
     // We check for locally administered OR multicast because some AirTags are using only multicast.
     if tagger_utils::mac_is_locally_administered_or_multicast(&advertisement.mac)
         && advertisement.company_id.is_some()

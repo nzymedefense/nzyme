@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use crate::wireless::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
-use crate::wireless::bluetooth::detection::taggers::apple_findmy_tagger;
+use crate::wireless::bluetooth::detection::taggers::{apple_findmy_tagger, meshtastic_node_tagger};
 
 #[derive(Debug, Clone)]
 pub enum TagValue {
@@ -15,6 +15,10 @@ pub fn tag_device_advertisement(advertisement: &Arc<BluetoothDeviceAdvertisement
     let mut tags: HashMap<String, HashMap<String, TagValue>> = HashMap::new();
 
     if let Some((tag, params)) = apple_findmy_tagger::tag(advertisement) {
+        tags.insert(tag, params);
+    }
+
+    if let Some((tag, params)) = meshtastic_node_tagger::tag(advertisement) {
         tags.insert(tag, params);
     }
 

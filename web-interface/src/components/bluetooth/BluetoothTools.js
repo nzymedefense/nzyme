@@ -16,6 +16,7 @@ export const transformTag = (tag) => {
   switch (tag) {
     case "apple_find_my_paired": return "Apple \"Find My\" (Paired)";
     case "apple_find_my_unpaired": return "Apple \"Find My\" (Unpaired)";
+    case "meshtastic_node": return "Meshtastic Node";
     default: return tag;
   }
 }
