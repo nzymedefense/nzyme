@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use byteorder::{BigEndian, ByteOrder};
+use log::info;
 use serde::__private::from_utf8_lossy;
 use crate::wired::packets::{DHCPv4Packet, Datagram};
 use crate::wired::types::{DHCPv4MessageType, DHCPv4OpCode, HardwareType};
@@ -76,6 +77,7 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DHCPv4Packet> {
     let mut message_type = DHCPv4MessageType::Unknown;
     let mut requested_ip_address = None;
     let mut hostname = None;
+    let mut parameter_request_list = Vec::new();
 
     let mut cursor: usize = 240;
     loop {
@@ -106,6 +108,12 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DHCPv4Packet> {
         }
 
         match option_id {
+            12 => {
+                // Client hostname. (variable length)
+                hostname = Some(
+                    from_utf8_lossy(&udp.payload[cursor..cursor+length]).to_string()
+                );
+            },
             50 => {
                 // Requested IP address.
                 if length != 4 {
@@ -130,11 +138,13 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DHCPv4Packet> {
                     }
                 };
             },
-            12 => {
-                // Client hostname. (variable length)
-                hostname = Some(
-                    from_utf8_lossy(&udp.payload[cursor..cursor+length]).to_string()
-                );
+            55 => {
+                // Parameter request list.
+                let mut plist_cursor = 0;
+                while plist_cursor < length {
+                    parameter_request_list.push(udp.payload[cursor+plist_cursor]);
+                    plist_cursor += 1;
+                }
             },
             255 => break, // End tag.
             _ => { /* NOOP */}
@@ -142,7 +152,7 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DHCPv4Packet> {
 
         cursor += length;
     }
-
+    
     Some(DHCPv4Packet { 
         source_mac: udp.source_mac.clone(),
         destination_mac: udp.destination_mac.clone(),
@@ -159,6 +169,7 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DHCPv4Packet> {
         client_mac_address,
         message_type,
         requested_ip_address,
-        hostname
+        hostname,
+        parameter_request_list
     })
 }

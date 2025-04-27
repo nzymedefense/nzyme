@@ -167,6 +167,7 @@ import EditCotCertificatePage
   from "./components/system/authentication/management/tenants/integrations/cot/EditCotCertificatePage";
 import DisconnectedClientsPage from "./components/dot11/clients/DisconnectedClientsPage";
 import EditCustomTypePage from "./components/uav/types/EditCustomTypePage";
+import EthernetAssetsPage from "./components/ethernet/assets/EthernetAssetsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -460,6 +461,9 @@ function App() {
                                 { /* Ethernet/L4. */}
                                 <Route path={ApiRoutes.ETHERNET.L4.OVERVIEW} element={<L4OverviewPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.L4.IP(':ipParam')} element={<IPDetailsPage />}/>
+
+                                { /* Ethernet/Assets. */}
+                                <Route path={ApiRoutes.ETHERNET.ASSETS.INDEX} element={<EthernetAssetsPage />}/>
 
                                 { /* Ethernet/Hostnames. */}
                                 <Route path={ApiRoutes.ETHERNET.HOSTNAMES.HOSTNAME(':hostnameParam')} element={<HostnameDetailsPage />}/>

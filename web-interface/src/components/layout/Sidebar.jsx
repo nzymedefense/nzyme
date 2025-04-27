@@ -42,6 +42,10 @@ function Sidebar(props) {
                 title="Overview"
                 icon={<i className="sidebar-icon fa-solid fa-ranking-star"/>}/>
             <NavigationLink
+                href={ApiRoutes.ETHERNET.ASSETS.INDEX}
+                title="Assets"
+                icon={<i className="sidebar-icon fa-solid fa-list"/>}/>
+            <NavigationLink
                 href={ApiRoutes.ETHERNET.L4.OVERVIEW}
                 title="Layer 4"
                 icon={<i className="sidebar-icon fa-solid fa-road"/>}/>

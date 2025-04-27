@@ -326,7 +326,8 @@ pub struct DHCPv4Packet {
     // From DHCP options.
     pub message_type: DHCPv4MessageType,
     pub requested_ip_address: Option<IpAddr>,
-    pub hostname: Option<String>
+    pub hostname: Option<String>,
+    pub parameter_request_list: Vec<u8>
 }
 
 impl DHCPv4Packet {
