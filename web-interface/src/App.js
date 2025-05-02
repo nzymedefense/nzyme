@@ -168,6 +168,7 @@ import EditCotCertificatePage
 import DisconnectedClientsPage from "./components/dot11/clients/DisconnectedClientsPage";
 import EditCustomTypePage from "./components/uav/types/EditCustomTypePage";
 import EthernetAssetsPage from "./components/ethernet/assets/EthernetAssetsPage";
+import BluetoothMonitoringPage from "./components/bluetooth/monitoring/BluetoothMonitoringPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -525,6 +526,9 @@ function App() {
                                 { /* Bluetooth Clients/Devices. */}
                                 <Route path={ApiRoutes.BLUETOOTH.DEVICES.INDEX} element={<BluetoothDevicesPage />}/>
                                 <Route path={ApiRoutes.BLUETOOTH.DEVICES.DETAILS(':macParam')} element={<BluetoothDeviceDetailsPage />}/>
+
+                                { /* Bluetooth Monitoring. */}
+                                <Route path={ApiRoutes.BLUETOOTH.MONITORING.INDEX} element={<BluetoothMonitoringPage />}/>
                               </Route>
 
                               { /* UAV. */ }

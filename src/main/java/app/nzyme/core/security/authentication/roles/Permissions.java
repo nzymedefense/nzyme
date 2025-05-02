@@ -41,6 +41,13 @@ public class Permissions {
                         "of tenant the user belongs to.",
                 false
         ));
+        put("bluetooth_monitoring_manage", Permission.create(
+                "bluetooth_monitoring_manage",
+                "Manage Bluetooth Monitoring",
+                "Allows user to create, edit and delete configurations of Bluetooth monitoring, This can " +
+                        "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
+                false
+        ));
     }};
 
 }
