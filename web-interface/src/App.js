@@ -169,6 +169,7 @@ import DisconnectedClientsPage from "./components/dot11/clients/DisconnectedClie
 import EditCustomTypePage from "./components/uav/types/EditCustomTypePage";
 import EthernetAssetsPage from "./components/ethernet/assets/EthernetAssetsPage";
 import BluetoothMonitoringPage from "./components/bluetooth/monitoring/BluetoothMonitoringPage";
+import CreateBluetoothMonitoringRulePage from "./components/bluetooth/monitoring/CreateBluetoothMonitoringRulePage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -529,6 +530,7 @@ function App() {
 
                                 { /* Bluetooth Monitoring. */}
                                 <Route path={ApiRoutes.BLUETOOTH.MONITORING.INDEX} element={<BluetoothMonitoringPage />}/>
+                                <Route path={ApiRoutes.BLUETOOTH.MONITORING.RULES.CREATE(':organizationId', ':tenantId')} element={<CreateBluetoothMonitoringRulePage />}/>
                               </Route>
 
                               { /* UAV. */ }

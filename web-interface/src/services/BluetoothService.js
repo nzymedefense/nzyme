@@ -34,6 +34,11 @@ class BluetoothService {
     )
   }
 
+  findAllRules(setRules, limit, offset) {
+    RESTClient.get("/bluetooth/monitoring/rules", { limit: limit, offset: offset },
+      (response) => setRules(response.data)
+    )
+  }
 }
 
 export default BluetoothService;

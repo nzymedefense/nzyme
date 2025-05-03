@@ -13,6 +13,7 @@ import app.nzyme.core.rest.resources.*;
 import app.nzyme.core.rest.resources.alerts.AlertsResource;
 import app.nzyme.core.rest.resources.assets.WebInterfaceAssetsResource;
 import app.nzyme.core.rest.resources.bluetooth.BluetoothDevicesResource;
+import app.nzyme.core.rest.resources.bluetooth.BluetoothMonitoringResource;
 import app.nzyme.core.rest.resources.context.AssetContextResource;
 import app.nzyme.core.rest.resources.dot11.*;
 import app.nzyme.core.rest.resources.dot11.BanditsResource;
@@ -162,6 +163,7 @@ public class NzymeHttpServer {
         resourceConfig.register(Dot11MonitoredSSIDsResource.class);
         resourceConfig.register(UavResource.class);
         resourceConfig.register(CotIntegrationResource.class);
+        resourceConfig.register(BluetoothMonitoringResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

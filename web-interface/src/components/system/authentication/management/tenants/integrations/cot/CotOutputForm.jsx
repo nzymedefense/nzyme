@@ -108,7 +108,7 @@ export default function CotOutputForm(props) {
           <label htmlFor="name" className="form-label">Name</label>
           <input type="text" className="form-control" id="name"
                  value={name} onChange={(e) => { updateValue(e, setName) }} />
-          <div className="form-text">A descriptive name of the new output.</div>
+          <div className="form-text">A descriptive name of the output.</div>
         </div>
 
         <div className="mb-3">

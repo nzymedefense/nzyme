@@ -83,8 +83,10 @@ export default function UavsPage() {
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange} />
 
-                <p className="text-muted mt-0">The table shows the most recent recorded values. More details and a history of values is available
-                on the UAV details pages.</p>
+                <p className="text-muted mt-0">
+                  The table shows the most recent recorded values. More details and a history of values is available on
+                  the UAV details pages.
+                </p>
 
                 <SelectedOrganizationAndTenant
                     organizationId={organizationId}

@@ -224,7 +224,10 @@ const ApiRoutes = {
       DETAILS: (mac) => `/bluetooth/devices/show/${mac}`
     },
     MONITORING: {
-      INDEX: '/bluetooth/monitoring'
+      INDEX: '/bluetooth/monitoring',
+      RULES: {
+        CREATE: (organizationId, tenantId) => `/bluetooth/monitoring/rules/organizations/show/${organizationId}/tenants/show/${tenantId}/create`
+      }
     }
   },
   UAV: {
