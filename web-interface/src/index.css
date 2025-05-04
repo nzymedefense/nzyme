@@ -1239,3 +1239,8 @@ th:hover i.order-icon,
 th i.order-icon-selected {
     color: #000;
 }
+
+div.condition-form {
+    padding: 25px;
+    border: 1px solid #ccc;
+}

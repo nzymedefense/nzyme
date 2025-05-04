@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import TapsService from "../../../services/TapsService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
+import BluetoothMacAddressConditionForm from "./conditions/BluetoothMacAddressConditionForm";
 
 const tapsService = new TapsService();
 
@@ -11,8 +12,12 @@ export default function BluetoothMonitoringRuleForm(props) {
 
   const [name, setName] = useState(props.name ? props.name : "");
   const [description, setDescription] = useState(props.description ? props.description : "");
+
   const [tapLimiterType, setTapLimiterType] = useState(props.tapLimiterType ? props.tapLimiterType : "");
   const [selectedTaps, setSelectedTaps] = useState(props.selectedTaps ? props.selectedTaps : [])
+
+  const [selectedConditionType, setSelectedConditionType] = useState("MAC_ADDRESS");
+  const [conditionFormType, setConditionFormType] = useState(null);
 
   const [availableTaps, setAvailableTaps] = useState(null);
 
@@ -95,6 +100,19 @@ export default function BluetoothMonitoringRuleForm(props) {
     return null;
   }
 
+  const newConditionForm = () => {
+    if (!conditionFormType) {
+      return null;
+    }
+
+    let form = null;
+    switch (conditionFormType) {
+      case "MAC_ADDRESS": form = <BluetoothMacAddressConditionForm />
+    }
+
+    return <div className="condition-form mb-3">{form}</div>
+  }
+
   if (availableTaps == null) {
     return <LoadingSpinner />
   }
@@ -133,6 +151,32 @@ export default function BluetoothMonitoringRuleForm(props) {
       </div>
 
       {tapLimiterForm()}
+
+      <hr />
+
+      <h3>Conditions</h3>
+
+      <p>
+        Conditions of the same type are <code>OR</code> connected, all other conditions are <code>AND</code> connected.
+      </p>
+
+      <div className="input-group mb-3">
+        <select className="form-control"
+                id="new_condition"
+                value={selectedConditionType}
+                onChange={(e) => updateValue(e, setSelectedConditionType)}>
+          <option value="MAC_ADDRESS">MAC Address</option>
+          <option value="DEVICE_TYPE">Device Type</option>
+          <option value="SIGNAL_STRENGTH">Signal Strength</option>
+          <option value="TIME">Time &amp; Day</option>
+        </select>
+        <button className="btn btn-secondary"
+                onClick={(e) => { e.preventDefault(); setConditionFormType(selectedConditionType) }}>
+          Create Condition
+        </button>
+      </div>
+
+      {newConditionForm()}
 
       <button className="btn btn-primary" onClick={submit} disabled={!formIsReady() || isSubmitting}>
         {submitText}
