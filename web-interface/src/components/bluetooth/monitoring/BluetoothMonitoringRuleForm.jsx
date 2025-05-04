@@ -1,7 +1,9 @@
 import React, {useEffect, useState} from "react";
 import TapsService from "../../../services/TapsService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import BluetoothMacAddressConditionForm from "./conditions/BluetoothMacAddressConditionForm";
+import BluetoothMacAddressConditionForm from "./conditions/forms/BluetoothMacAddressConditionForm";
+import BluetoothDeviceTypeConditionForm from "./conditions/forms/BluetoothDeviceTypeConditionForm";
+import BluetoothSignalStrengthConditionForm from "./conditions/forms/BluetoothSignalStrengthConditionForm";
 
 const tapsService = new TapsService();
 
@@ -18,6 +20,8 @@ export default function BluetoothMonitoringRuleForm(props) {
 
   const [selectedConditionType, setSelectedConditionType] = useState("MAC_ADDRESS");
   const [conditionFormType, setConditionFormType] = useState(null);
+
+  const [conditions, setConditions] = useState({});
 
   const [availableTaps, setAvailableTaps] = useState(null);
 
@@ -39,13 +43,27 @@ export default function BluetoothMonitoringRuleForm(props) {
     setter(e.target.value);
   }
 
+  const onConditionAdded = (c) => {
+    setConditions(prev => {
+      const existing = prev[conditionFormType] || [];
+      return {
+        ...prev,
+        [conditionFormType]: [...existing, c]
+      };
+    });
+
+
+    // Reset form.
+    setConditionFormType(null);
+  }
+
   const onTapSelected = (uuid) => {
     setSelectedTaps(prev => {
       if (prev.includes(uuid)) {
         // Remove tap.
         return prev.filter(id => id !== uuid);
       } else {
-        // Add tao.
+        // Add tap.
         return [...prev, uuid];
       }
     });
@@ -107,7 +125,15 @@ export default function BluetoothMonitoringRuleForm(props) {
 
     let form = null;
     switch (conditionFormType) {
-      case "MAC_ADDRESS": form = <BluetoothMacAddressConditionForm />
+      case "MAC_ADDRESS":
+        form = <BluetoothMacAddressConditionForm onConditionAdded={onConditionAdded} />;
+        break;
+      case "DEVICE_TYPE":
+        form = <BluetoothDeviceTypeConditionForm onConditionAdded={onConditionAdded} />
+        break;
+      case "RSSI":
+        form = <BluetoothSignalStrengthConditionForm onConditionAdded={onConditionAdded} />
+        break;
     }
 
     return <div className="condition-form mb-3">{form}</div>
@@ -167,7 +193,7 @@ export default function BluetoothMonitoringRuleForm(props) {
                 onChange={(e) => updateValue(e, setSelectedConditionType)}>
           <option value="MAC_ADDRESS">MAC Address</option>
           <option value="DEVICE_TYPE">Device Type</option>
-          <option value="SIGNAL_STRENGTH">Signal Strength</option>
+          <option value="RSSI">Signal Strength</option>
           <option value="TIME">Time &amp; Day</option>
         </select>
         <button className="btn btn-secondary"
