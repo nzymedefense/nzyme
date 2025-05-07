@@ -46,7 +46,7 @@ export default function BluetoothMacAddressConditionForm(props) {
         <div className="form-text">{matchType === "EXACT"
           ? <span>The <strong>full</strong> MAC address to match.</span>
           : <span>The <strong>prefix</strong> of the MAC address to match. For example: The
-            prefix <code>0C:FA:22</code> would match the MAC address <code>0C:FA:22:8A:37:1C</code>.</span>} </div>
+            prefix <code>0C:FA:22</code> would match the MAC address <code>0C:FA:22:8A:37:1C</code>.</span>}</div>
       </div>
 
       <div className="mt-2">
