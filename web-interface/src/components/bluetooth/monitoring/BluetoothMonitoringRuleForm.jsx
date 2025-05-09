@@ -198,7 +198,7 @@ export default function BluetoothMonitoringRuleForm(props) {
         </select>
         <button className="btn btn-secondary"
                 onClick={(e) => { e.preventDefault(); setConditionFormType(selectedConditionType) }}>
-          Create Condition
+          Create Rule
         </button>
       </div>
 
