@@ -17,7 +17,7 @@ pub fn parse(data: &Arc<Dot11RawFrame>) -> Result<(Dot11Frame, u32), Error> {
 
     let header_length = LittleEndian::read_u16(&data.data[2..4]) as usize;
 
-    if header_length <= 0 {
+    if header_length == 0 {
         trace!("Header length is 0 or negative. Malformed radiotap header.");
         bail!("Malformed radiotap header.");
     }

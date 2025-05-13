@@ -35,7 +35,7 @@ impl TcpSessionKey {
 impl PartialEq for TcpSessionKey {
     fn eq(&self, other: &Self) -> bool {
         self.address_high == other.address_high
-            && self.address_high == other.address_high
+            && self.address_low == other.address_low
             && self.port_low == other.port_low
             && self.port_high == other.port_high
     }
