@@ -7,7 +7,7 @@ use crate::protocols::detection::l7_tagger::L7SessionTag;
 use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
 use crate::wired::traffic_direction::TrafficDirection;
 
-use crate::wired::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass, DNSDataType, DHCPv4MessageType, DHCPv4OpCode};
+use crate::wired::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass, DNSDataType, Dhcpv4MessageType, Dhcpv4OpCode};
 
 #[derive(Debug)]
 pub struct EthernetData {
@@ -307,7 +307,7 @@ impl SshSession {
 }
 
 #[derive(Debug)]
-pub struct DHCPv4Packet {
+pub struct Dhcpv4Packet {
     pub source_mac: Option<String>,
     pub destination_mac: Option<String>,
     pub source_address: IpAddr,
@@ -315,7 +315,7 @@ pub struct DHCPv4Packet {
     pub source_port: u16,
     pub destination_port: u16,
 
-    pub op_code: DHCPv4OpCode,
+    pub op_code: Dhcpv4OpCode,
     pub hardware_type: HardwareType,
     pub transaction_id: u32,
     pub seconds_elapsed: u16,
@@ -324,21 +324,21 @@ pub struct DHCPv4Packet {
     pub client_mac_address: String,
 
     // From DHCP options.
-    pub message_type: DHCPv4MessageType,
+    pub message_type: Dhcpv4MessageType,
     pub requested_ip_address: Option<IpAddr>,
     pub hostname: Option<String>,
     pub parameter_request_list: Vec<u8>
 }
 
-impl DHCPv4Packet {
+impl Dhcpv4Packet {
 
     pub fn estimate_struct_size(&self) -> u32 {
         // Fixed size types
         let mut size = mem::size_of::<u16>() as u32 * 3 // source_port, destination_port, seconds_elapsed
             + mem::size_of::<u32>() as u32              // transaction_id
-            + mem::size_of::<DHCPv4OpCode>() as u32     // op_code
+            + mem::size_of::<Dhcpv4OpCode>() as u32     // op_code
             + mem::size_of::<HardwareType>() as u32     // hardware_type
-            + mem::size_of::<DHCPv4MessageType>() as u32 // message_type
+            + mem::size_of::<Dhcpv4MessageType>() as u32 // message_type
             + mem::size_of::<IpAddr>() as u32 * 2;      // source_address, destination_address
 
         // Strings (including client_mac_address)

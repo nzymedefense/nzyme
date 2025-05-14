@@ -6,7 +6,7 @@ use log::{debug, error};
 use crate::metrics::Metrics;
 use crate::wireless::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
 use crate::configuration::Configuration;
-use crate::wired::packets::{DHCPv4Packet, SocksTunnel, SshSession};
+use crate::wired::packets::{Dhcpv4Packet, SocksTunnel, SshSession};
 use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
 use crate::protocols::detection::taggers::remoteid::messages::UavRemoteIdMessage;
 use crate::wired::packets::{
@@ -34,7 +34,7 @@ pub struct Bus {
     pub dns_pipeline: NzymeChannel<DNSPacket>,
     pub ssh_pipeline: NzymeChannel<SshSession>,
     pub socks_pipeline: NzymeChannel<SocksTunnel>,
-    pub dhcpv4_pipeline: NzymeChannel<DHCPv4Packet>,
+    pub dhcpv4_pipeline: NzymeChannel<Dhcpv4Packet>,
     
     pub uav_remote_id_pipeline: NzymeChannel<UavRemoteIdMessage>
 }

@@ -7,3 +7,4 @@ pub mod dot11_table;
 pub mod tables;
 pub mod table_helpers;
 pub mod uav_table;
+pub mod dhcp_table;

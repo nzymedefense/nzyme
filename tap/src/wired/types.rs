@@ -219,13 +219,13 @@ impl TryFrom<u16> for DNSClass {
 }
 
 #[derive(Debug)]
-pub enum DHCPv4OpCode {
+pub enum Dhcpv4OpCode {
     Request,
     Reply
 }
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum DHCPv4MessageType {
+pub enum Dhcpv4MessageType {
     Discover,
     Offer,
     Request,
@@ -246,28 +246,28 @@ pub enum DHCPv4MessageType {
 }
 
 
-impl TryFrom<u8> for DHCPv4MessageType {
+impl TryFrom<u8> for Dhcpv4MessageType {
     type Error = ();
 
     fn try_from(val: u8) -> Result<Self, Self::Error> {
         match val {
-            1  => Ok(DHCPv4MessageType::Discover),
-            2  => Ok(DHCPv4MessageType::Offer),
-            3  => Ok(DHCPv4MessageType::Request),
-            4  => Ok(DHCPv4MessageType::Decline),
-            5  => Ok(DHCPv4MessageType::Ack),
-            6  => Ok(DHCPv4MessageType::Nack),
-            7  => Ok(DHCPv4MessageType::Release),
-            8  => Ok(DHCPv4MessageType::Inform),
-            9  => Ok(DHCPv4MessageType::ForceRenew),
-            10 => Ok(DHCPv4MessageType::LeaseQuery),
-            11 => Ok(DHCPv4MessageType::LeaseUnassigned),
-            12 => Ok(DHCPv4MessageType::LeaseUnknown),
-            13 => Ok(DHCPv4MessageType::LeaseActive),
-            14 => Ok(DHCPv4MessageType::BulkLeaseQuery),
-            15 => Ok(DHCPv4MessageType::LeaseQueryDone),
-            16 => Ok(DHCPv4MessageType::LeaseQueryData),
-            _  => Ok(DHCPv4MessageType::Unknown),
+            1  => Ok(Dhcpv4MessageType::Discover),
+            2  => Ok(Dhcpv4MessageType::Offer),
+            3  => Ok(Dhcpv4MessageType::Request),
+            4  => Ok(Dhcpv4MessageType::Decline),
+            5  => Ok(Dhcpv4MessageType::Ack),
+            6  => Ok(Dhcpv4MessageType::Nack),
+            7  => Ok(Dhcpv4MessageType::Release),
+            8  => Ok(Dhcpv4MessageType::Inform),
+            9  => Ok(Dhcpv4MessageType::ForceRenew),
+            10 => Ok(Dhcpv4MessageType::LeaseQuery),
+            11 => Ok(Dhcpv4MessageType::LeaseUnassigned),
+            12 => Ok(Dhcpv4MessageType::LeaseUnknown),
+            13 => Ok(Dhcpv4MessageType::LeaseActive),
+            14 => Ok(Dhcpv4MessageType::BulkLeaseQuery),
+            15 => Ok(Dhcpv4MessageType::LeaseQueryDone),
+            16 => Ok(Dhcpv4MessageType::LeaseQueryData),
+            _  => Ok(Dhcpv4MessageType::Unknown),
         }
     }
 }

@@ -5,7 +5,7 @@ use crate::wired::packets::SshSession;
 use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
-use crate::link::reports::{socks_tunnels_report, ssh_sessions_report};
+use crate::link::reports::ssh_sessions_report;
 use crate::metrics::Metrics;
 use crate::state::tables::table_helpers::clear_mutex_hashmap;
 

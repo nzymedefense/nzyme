@@ -17,12 +17,14 @@ use crate::link::leaderlink::Leaderlink;
 use crate::messagebus::bus::Bus;
 
 use crate::metrics::Metrics;
+use crate::state::tables::dhcp_table::DhcpTable;
 use crate::state::tables::uav_table::UavTable;
 
 pub struct Tables {
     pub dot11: Arc<Mutex<Dot11Table>>,
     pub bluetooth: Arc<Mutex<BluetoothTable>>,
     pub arp: Arc<Mutex<HashMap<IpAddr, HashMap<String, u128>>>>,
+    pub dhcp: Arc<Mutex<DhcpTable>>,
     pub tcp: Arc<Mutex<TcpTable>>,
     pub udp: Arc<Mutex<UdpTable>>,
     pub dns: Arc<Mutex<DnsTable>>,
@@ -41,6 +43,7 @@ impl Tables {
             dot11: Arc::new(Mutex::new(Dot11Table::new(leaderlink.clone()))),
             bluetooth: Arc::new(Mutex::new(BluetoothTable::new(metrics.clone(), leaderlink.clone()))),
             arp: Arc::new(Mutex::new(HashMap::new())),
+            dhcp: Arc::new(Mutex::new(DhcpTable::new(leaderlink.clone(), metrics.clone()))),
             dns: Arc::new(Mutex::new(DnsTable::new(metrics.clone(), leaderlink.clone()))),
             tcp: Arc::new(Mutex::new(TcpTable::new(
                 leaderlink.clone(),
@@ -72,7 +75,15 @@ impl Tables {
                 },
                 Err(e) => error!("Could not acquire Bluetooth table lock for report processing: {}", e)
             }
-
+            
+            match self.dhcp.lock() {
+                Ok(dhcp) => {
+                    dhcp.calculate_metrics();
+                    dhcp.process_report();
+                },
+                Err(e) => error!("Could not acquire DHCP table lock for report processing: {}", e)
+            }
+            
             match self.tcp.lock() {
                 Ok(tcp) => {
                     tcp.calculate_metrics();

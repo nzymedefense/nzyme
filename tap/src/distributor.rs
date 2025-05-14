@@ -32,8 +32,12 @@ pub fn spawn(ethernet_bus: Arc<Bus>,
 
     spawn_base_bluetooth(bluetooth_bus.clone(), tables.clone());
 
+    spawn_base_arp(ethernet_bus.clone(), tables.clone(), state.clone(), context.clone());
+    spawn_base_dhcpv4(ethernet_bus.clone(), tables.clone(), state.clone(), context.clone());
+    
     spawn_base_tcp(ethernet_bus.clone(), tables.clone());
     spawn_base_udp(ethernet_bus.clone(), tables.clone(), metrics.clone());
+    
     spawn_base_dns(ethernet_bus.clone(), 
                    tables.clone(), 
                    context.clone(),
@@ -43,8 +47,7 @@ pub fn spawn(ethernet_bus: Arc<Bus>,
                    configuration);
     spawn_base_ssh(ethernet_bus.clone(), tables.clone(), metrics.clone());
     spawn_base_socks(ethernet_bus.clone(), tables.clone(), metrics.clone());
-    spawn_base_arp(ethernet_bus.clone(), tables.clone(), state.clone(), context.clone());
-    spawn_base_dhcpv4(ethernet_bus, state, context);
+    
     spawn_base_uav_remote_id(generic_bus.clone(), tables.clone());
 }
 
@@ -89,6 +92,22 @@ fn spawn_base_arp(bus: Arc<Bus>,
         }
 
         error!("ARP receiver disconnected.");
+        exit(exit_code::EX_UNAVAILABLE);
+    });
+}
+
+fn spawn_base_dhcpv4(bus: Arc<Bus>, 
+                     tables: Arc<Tables>,
+                     state: Arc<State>, 
+                     context: Arc<ContextEngine>) {
+    let mut processor = Dhcpv4Processor::new(state, tables.dhcp.clone(), context);
+
+    thread::spawn(move || {
+        for packet in bus.dhcpv4_pipeline.receiver.iter() {
+            processor.process(packet);
+        }
+
+        error!("DHCPv4 receiver disconnected.");
         exit(exit_code::EX_UNAVAILABLE);
     });
 }
@@ -169,19 +188,6 @@ fn spawn_base_socks(bus: Arc<Bus>,
         }
 
         error!("SOCKS receiver disconnected.");
-        exit(exit_code::EX_UNAVAILABLE);
-    });
-}
-
-fn spawn_base_dhcpv4(bus: Arc<Bus>, state: Arc<State>, context: Arc<ContextEngine>) {
-    let mut processor = Dhcpv4Processor::new(state, context);
-
-    thread::spawn(move || {
-        for packet in bus.dhcpv4_pipeline.receiver.iter() {
-            processor.process(packet);
-        }
-
-        error!("DHCPv4 receiver disconnected.");
         exit(exit_code::EX_UNAVAILABLE);
     });
 }

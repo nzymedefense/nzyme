@@ -2,12 +2,12 @@ use std::sync::Arc;
 use byteorder::{BigEndian, ByteOrder};
 use log::info;
 use serde::__private::from_utf8_lossy;
-use crate::wired::packets::{DHCPv4Packet, Datagram};
-use crate::wired::types::{DHCPv4MessageType, DHCPv4OpCode, HardwareType};
+use crate::wired::packets::{Dhcpv4Packet, Datagram};
+use crate::wired::types::{Dhcpv4MessageType, Dhcpv4OpCode, HardwareType};
 use crate::helpers::network::{to_ipv4_address, to_mac_address_string};
 use crate::tracemark;
 
-pub fn parse(udp: &Arc<Datagram>) -> Option<DHCPv4Packet> {
+pub fn parse(udp: &Arc<Datagram>) -> Option<Dhcpv4Packet> {
     if udp.payload.len() < 240 {
         tracemark!("DHCP");
         return None;
@@ -15,8 +15,8 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DHCPv4Packet> {
 
     // BOOTP op code.
     let op_code = match udp.payload[0] {
-        1 => DHCPv4OpCode::Request,
-        2 => DHCPv4OpCode::Reply,
+        1 => Dhcpv4OpCode::Request,
+        2 => Dhcpv4OpCode::Reply,
         _ => {
             // Invalid OP code.
             tracemark!("DHCP");
@@ -74,7 +74,7 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DHCPv4Packet> {
     // Skipping padding, server hostname, BOOTP file name, magic cookie.
 
     // Iterate over options.
-    let mut message_type = DHCPv4MessageType::Unknown;
+    let mut message_type = Dhcpv4MessageType::Unknown;
     let mut requested_ip_address = None;
     let mut hostname = None;
     let mut parameter_request_list = Vec::new();
@@ -130,7 +130,7 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DHCPv4Packet> {
                     break;
                 }
 
-                message_type = match DHCPv4MessageType::try_from(udp.payload[cursor]) {
+                message_type = match Dhcpv4MessageType::try_from(udp.payload[cursor]) {
                     Ok(t) => t,
                     Err(_) => {
                         tracemark!("DHCP");
@@ -153,7 +153,7 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<DHCPv4Packet> {
         cursor += length;
     }
     
-    Some(DHCPv4Packet { 
+    Some(Dhcpv4Packet { 
         source_mac: udp.source_mac.clone(),
         destination_mac: udp.destination_mac.clone(),
         source_address: udp.source_address,
