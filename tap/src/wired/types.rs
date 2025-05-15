@@ -246,6 +246,7 @@ pub enum Dhcpv4MessageType {
 }
 
 
+
 impl TryFrom<u8> for Dhcpv4MessageType {
     type Error = ();
 

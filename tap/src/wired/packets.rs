@@ -363,3 +363,9 @@ impl Dhcpv4Packet {
         size
     }
 }
+
+#[derive(Debug)]
+pub struct Dhcpv4Transaction {
+    pub source_mac: Option<String>,
+
+}

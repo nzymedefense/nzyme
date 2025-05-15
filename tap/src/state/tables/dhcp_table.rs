@@ -3,12 +3,12 @@ use std::sync::{Arc, Mutex};
 use log::info;
 use crate::link::leaderlink::Leaderlink;
 use crate::metrics::Metrics;
-use crate::wired::packets::Dhcpv4Packet;
+use crate::wired::packets::{Dhcpv4Packet, Dhcpv4Transaction};
 
 pub struct DhcpTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
     metrics: Arc<Mutex<Metrics>>,
-    macs4: Mutex<HashMap<String, Dhcpv4Packet>>
+    macs4: Mutex<HashMap<String, Dhcpv4Transaction>>
 }
 
 impl DhcpTable {
