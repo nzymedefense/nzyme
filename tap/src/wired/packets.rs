@@ -1,13 +1,15 @@
+use std::collections::{HashMap, HashSet};
 use std::mem;
 use std::net::IpAddr;
 use std::sync::Mutex;
 use chrono::{DateTime, Utc};
+use log::warn;
 use strum_macros::Display;
 use crate::protocols::detection::l7_tagger::L7SessionTag;
 use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
 use crate::wired::traffic_direction::TrafficDirection;
 
-use crate::wired::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass, DNSDataType, Dhcpv4MessageType, Dhcpv4OpCode};
+use crate::wired::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass, DNSDataType, Dhcpv4MessageType, Dhcpv4OpCode, Dhcp4TransactionType};
 
 #[derive(Debug)]
 pub struct EthernetData {
@@ -332,6 +334,17 @@ pub struct Dhcpv4Packet {
 
 impl Dhcpv4Packet {
 
+    pub fn calculate_fingerprint(&self) -> Option<String> {
+        if !self.message_type.eq(&Dhcpv4MessageType::Discover) &&
+            !self.message_type.eq(&Dhcpv4MessageType::Request) &&
+            !self.message_type.eq(&Dhcpv4MessageType::Inform) {
+
+            return None
+        }
+
+        Some("FOO".to_string())
+    }
+
     pub fn estimate_struct_size(&self) -> u32 {
         // Fixed size types
         let mut size = mem::size_of::<u16>() as u32 * 3 // source_port, destination_port, seconds_elapsed
@@ -366,6 +379,99 @@ impl Dhcpv4Packet {
 
 #[derive(Debug)]
 pub struct Dhcpv4Transaction {
-    pub source_mac: Option<String>,
+    pub transaction_type: Dhcp4TransactionType,
+    pub transaction_id: u32,
+    pub client_mac: String,
+    pub additional_client_macs: HashSet<String>,
+    pub server_mac: Option<String>,
+    pub additional_server_macs: HashSet<String>,
+    pub offered_ip_addresses: HashSet<IpAddr>,
+    pub requested_ip_address: Option<IpAddr>,
+    pub options_fingerprint: Option<String>,
+    pub additional_options_fingerprints: HashSet<String>,
+    pub timestamps: HashMap<Dhcpv4MessageType, Vec<DateTime<Utc>>>,
+    pub latest_packet: DateTime<Utc>,
+    pub notes: HashSet<Dhcpv4TransactionNote>,
+    pub complete: bool
+}
 
+impl Dhcpv4Transaction {
+    // Handles `server_mac` and `additional_server_macs`.
+    pub fn record_server_mac(&mut self, new_mac: Option<String>) {
+        match (&self.server_mac, new_mac) {
+            // No server yet, take the first one we see.
+            (None, Some(mac)) => {
+                self.server_mac = Some(mac);
+            }
+
+            // We already have one, and we got a new, different one.
+            (Some(existing), Some(mac)) if existing != &mac => {
+                // Avoid duplicates in the “additional” list
+                if !self.additional_server_macs.iter().any(|m| m == &mac) {
+                    self.additional_server_macs.insert(mac);
+                }
+
+                // Note that there are multiple server MACs.
+                self.notes.insert(Dhcpv4TransactionNote::ServerMacChanged);
+            }
+
+            // Either new_mac is None, or it’s the same as what we already have—do nothing.
+            _ => {}
+        }
+    }
+
+    // Handles `client_mac` and `additional_client_macs`.
+    pub fn record_client_mac(&mut self, new_mac: Option<String>) {
+        if new_mac.is_none() {
+            return;
+        }
+
+        if !self.client_mac.eq(new_mac.as_ref().unwrap()) {
+            self.additional_client_macs.insert(new_mac.unwrap());
+            self.notes.insert(Dhcpv4TransactionNote::ClientMacChanged);
+        } else {
+            self.client_mac = new_mac.unwrap();
+        }
+    }
+
+    pub fn record_timestamp(&mut self, msg_type: Dhcpv4MessageType, time: DateTime<Utc>) {
+        self.timestamps
+            .entry(msg_type)
+            .or_default()
+            .push(time);
+    }
+
+    // Handles `options_fingerprint` and `additional_options_fingerprints`.
+    pub fn record_fingerprint(&mut self, dhcp: &Dhcpv4Packet) {
+        // Bail out if there's no fingerprint at all. (Likely a packet that doesn't generate one)
+        let new_fp = match dhcp.calculate_fingerprint() {
+            Some(fp) => fp,
+            None     => return,
+        };
+
+        match &self.options_fingerprint {
+            // First time seeing a fingerprint. Record it as primary, nothing additional.
+            None => {
+                self.options_fingerprint = Some(new_fp);
+            }
+
+            // Fingerprint did not change.
+            Some(existing) if existing == &new_fp => { /* Nothing to do. */ }
+
+            // Fingerprint changed.
+            Some(_) => {
+                self.additional_options_fingerprints.insert(new_fp.clone());
+                self.notes.insert(Dhcpv4TransactionNote::OptionsFingerprintChanged);
+            }
+        }
+    }
+
+}
+
+#[derive(Debug, Display, Hash, Eq, PartialEq)]
+pub enum Dhcpv4TransactionNote {
+    OfferNoYiaddr,
+    ClientMacChanged,
+    ServerMacChanged,
+    OptionsFingerprintChanged
 }

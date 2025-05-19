@@ -21,6 +21,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
 import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDevicesReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.dhcp.DhcpTransactionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsTablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11TablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsReport;
@@ -181,6 +182,22 @@ public class TablesResource {
 
         LOG.debug("Received UAVs report from tap [{}]: {}", tap.getUuid(), report);
         nzyme.getTablesService().uav().handleReport(tap.getUuid(), DateTime.now(), report);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("/dhcp/transactions")
+    public Response dhcpTransactions(@Context SecurityContext sc, DhcpTransactionsReport report) {
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
+
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting DHCP transactions report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        LOG.info("Received DHCP transactions report from tap [{}]: {}", tap.getUuid(), report);
+        //nzyme.getTablesService().dhcp().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

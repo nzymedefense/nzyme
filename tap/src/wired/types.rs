@@ -224,7 +224,7 @@ pub enum Dhcpv4OpCode {
     Reply
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Display, Clone, Eq, PartialEq, Hash)]
 pub enum Dhcpv4MessageType {
     Discover,
     Offer,
@@ -234,6 +234,8 @@ pub enum Dhcpv4MessageType {
     Nack,
     Release,
     Inform,
+
+    // RFC 4388, RFC 6926 Lease/Bulk Lease
     ForceRenew,
     LeaseQuery,
     LeaseUnassigned,
@@ -244,8 +246,6 @@ pub enum Dhcpv4MessageType {
     LeaseQueryData,
     Unknown
 }
-
-
 
 impl TryFrom<u8> for Dhcpv4MessageType {
     type Error = ();
@@ -271,4 +271,15 @@ impl TryFrom<u8> for Dhcpv4MessageType {
             _  => Ok(Dhcpv4MessageType::Unknown),
         }
     }
+}
+
+#[derive(Debug, Display, Hash, Eq, PartialEq)]
+pub enum Dhcp4TransactionType {
+    Initial,
+    Renew,
+    Reboot,
+    Rebind,
+    Release,
+    Inform,
+    Unknown
 }

@@ -1,14 +1,19 @@
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::{Arc, Mutex};
-use log::info;
+use chrono::{Duration, Utc};
+use log::{error, warn};
+use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
+use crate::link::reports::{dhcp_transactions_report, socks_tunnels_report};
 use crate::metrics::Metrics;
-use crate::wired::packets::{Dhcpv4Packet, Dhcpv4Transaction};
+use crate::tracemark;
+use crate::wired::packets::{Dhcpv4Packet, Dhcpv4Transaction, Dhcpv4TransactionNote};
+use crate::wired::types::{Dhcp4TransactionType, Dhcpv4MessageType};
 
 pub struct DhcpTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
     metrics: Arc<Mutex<Metrics>>,
-    macs4: Mutex<HashMap<String, Dhcpv4Transaction>>
+    transactions: Mutex<HashMap<u32, Dhcpv4Transaction>>
 }
 
 impl DhcpTable {
@@ -17,20 +22,225 @@ impl DhcpTable {
         DhcpTable {
             leaderlink,
             metrics,
-            macs4: Mutex::new(HashMap::new())
+            transactions: Mutex::new(HashMap::new())
         }
     }
 
     pub fn register_dhcpv4_packet(&self, dhcp: Arc<Dhcpv4Packet>) {
-        info!("DHCP: {:?}", dhcp)
+        let now = Utc::now();
+
+        match self.transactions.lock() {
+            Ok(mut txs) => {
+                match txs.get_mut(&dhcp.transaction_id) {
+                    Some(tx) => {
+                        // Existing transaction. Update.
+                        tracemark!("New packet for existing DHCP transaction <{}>: {:?}",
+                            dhcp.transaction_id, tx);
+
+                        tx.record_fingerprint(&dhcp);
+
+                        match tx.transaction_type {
+                            Dhcp4TransactionType::Initial |
+                            Dhcp4TransactionType::Renew |
+                            Dhcp4TransactionType::Reboot |
+                            Dhcp4TransactionType::Rebind => {
+                                match dhcp.message_type {
+                                    Dhcpv4MessageType::Offer => {
+                                        // DHCP server responded with an offer.
+                                        tx.latest_packet = now;
+                                        tx.record_timestamp(Dhcpv4MessageType::Offer, now);
+                                        tx.record_server_mac(dhcp.source_mac.clone());
+
+                                        match dhcp.assigned_address {
+                                            Some(address) => {
+                                                tx.offered_ip_addresses.insert(address);
+                                            },
+                                            None => {
+                                                warn!("DHCP offer in transaction <{}> includes no \
+                                                offered IP address.", dhcp.transaction_id);
+                                                tx.notes.insert(Dhcpv4TransactionNote::OfferNoYiaddr);
+                                            }
+                                        }
+                                    }
+                                    Dhcpv4MessageType::Request => {
+                                        // Client requests IP based on previous offer.
+                                        tx.latest_packet = now;
+                                        tx.record_timestamp(Dhcpv4MessageType::Request, now);
+                                        tx.requested_ip_address = dhcp.requested_ip_address;
+                                        tx.record_client_mac(dhcp.source_mac.clone());
+                                        tx.record_server_mac(dhcp.destination_mac.clone());
+                                        tx.record_fingerprint(&dhcp);
+                                    }
+                                    Dhcpv4MessageType::Ack => {
+                                        // Server confirmed the lease. Transaction complete.
+                                        tx.latest_packet = now;
+                                        tx.record_timestamp(Dhcpv4MessageType::Ack, now);
+                                        tx.record_server_mac(dhcp.source_mac.clone());
+                                        tx.complete = true;
+                                    }
+                                    Dhcpv4MessageType::Nack => {
+                                        // Server declined the lease. Transaction complete.
+                                        tx.latest_packet = now;
+                                        tx.record_timestamp(Dhcpv4MessageType::Nack, now);
+                                        tx.record_server_mac(dhcp.source_mac.clone());
+                                        tx.complete = true;
+                                    }
+                                    Dhcpv4MessageType::Decline => {
+                                        // Client declined the lease. Transaction complete.
+                                        tx.latest_packet = now;
+                                        tx.record_timestamp(Dhcpv4MessageType::Decline, now);
+                                        tx.record_client_mac(dhcp.source_mac.clone());
+                                        tx.record_server_mac(dhcp.destination_mac.clone());
+
+                                        tx.complete = true;
+                                    }
+                                    _ => {
+                                        warn!("Unexpected DHCP packet for existing transaction: \
+                                            {:?} (TX: {:?})", dhcp, tx)
+                                    }
+                                }
+                            }
+                            _ => {
+                                // We ignore some types that would never make it here.
+                            }
+                        }
+                    },
+                    None => {
+                        // We have not seen this transaction before.
+
+                        /*
+                         * Only create a new transaction if this packet is an initial packet.
+                         * We prefer missing a transaction over an incomplete one. Incomplete
+                         * transactions could happen if the tap starts recording in the middle
+                         * of an ongoing transaction or if we have packet loss or some sort
+                         * of capture sampling enabled on another layer.
+                         */
+
+                        let broadcast_mac = "FF:FF:FF:FF:FF:FF";
+
+                        let (tx_type, server_mac) = match dhcp.message_type {
+                            Dhcpv4MessageType::Discover => (Dhcp4TransactionType::Initial, None),
+                            Dhcpv4MessageType::Release  => (Dhcp4TransactionType::Release, None),
+                            Dhcpv4MessageType::Inform   => (Dhcp4TransactionType::Inform, None),
+
+                            Dhcpv4MessageType::Request => {
+                                // Match ciaddr (None == 0.0.0.0) and destination_mac (Option<String>)
+                                match (dhcp.dhcp_client_address, dhcp.destination_mac.as_deref()) {
+                                    // INIT-REBOOT: no ciaddr, broadcast, with requested IP.
+                                    (None, Some(dest)) if dest.eq(broadcast_mac)
+                                        && dhcp.requested_ip_address.is_some() =>
+                                        (Dhcp4TransactionType::Reboot, None),
+
+                                    // RENEW: has ciaddr, unicast (dest != broadcast).
+                                    (Some(_), Some(dest)) if !dest.eq(broadcast_mac) =>
+                                        (Dhcp4TransactionType::Renew, Some(dest.to_string())),
+
+                                    // REBIND: has ciaddr, broadcast.
+                                    (Some(_), Some(dest)) if dest.eq(broadcast_mac) =>
+                                        (Dhcp4TransactionType::Rebind, None),
+
+                                    // Any other combination is not a recognized new-txn packet.
+                                    _ =>
+                                    (Dhcp4TransactionType::Unknown, None)
+                                }
+                            }
+
+                            _ => (Dhcp4TransactionType::Unknown, None)
+                        };
+
+                        if tx_type == Dhcp4TransactionType::Unknown {
+                            tracemark!("DHCP transaction <{}> is not a new transaction. Skipping.",
+                                dhcp.transaction_id);
+                            return;
+                        }
+
+                        // Release is terminal with no more messages in transaction.
+                        let complete = tx_type == Dhcp4TransactionType::Release;
+
+                        let mut timestamps = HashMap::new();
+                        timestamps.insert(dhcp.message_type.clone(), vec![now]);
+
+                        let tx = Dhcpv4Transaction {
+                            transaction_type: tx_type,
+                            transaction_id: dhcp.transaction_id,
+                            client_mac: dhcp.client_mac_address.clone(),
+                            additional_client_macs: HashSet::new(),
+                            server_mac,
+                            additional_server_macs: HashSet::new(),
+                            offered_ip_addresses: HashSet::new(),
+                            requested_ip_address: dhcp.requested_ip_address,
+                            options_fingerprint: dhcp.calculate_fingerprint(),
+                            additional_options_fingerprints: HashSet::new(),
+                            timestamps,
+                            latest_packet: now,
+                            notes: HashSet::new(),
+                            complete
+                        };
+
+                        tracemark!("New DHCP transaction started: {:?}", tx);
+
+                        txs.insert(dhcp.transaction_id, tx);
+                    }
+                }
+            },
+            Err(e) => error!("Could not acquire DHCPv4 transactions table: {}", e)
+        }
     }
 
     pub fn process_report(&self) {
-        // TODO
+        let incomplete_cutoff = Utc::now() - Duration::minutes(1);
+        match self.transactions.lock() {
+            Ok(mut txs) => {
+                // Generate JSON.
+                let mut timer = Timer::new();
+                let report = match serde_json::to_string(&dhcp_transactions_report::generate(&txs)) {
+                    Ok(report) => report,
+                    Err(e) => {
+                        error!("Could not serialize DHCP transactions report: {}", e);
+                        return;
+                    }
+                };
+                timer.stop();
+                record_timer(
+                    timer.elapsed_microseconds(),
+                    "tables.dhcp.timer.report_generation",
+                    &self.metrics
+                );
+
+                // Send report.
+                match self.leaderlink.lock() {
+                    Ok(link) => {
+                        if let Err(e) = link.send_report("dhcp/transactions", report) {
+                            error!("Could not submit DHCP transactions report: {}", e);
+                        }
+                    },
+                    Err(e) => error!("Could not acquire leader link lock for DHCP transactions \
+                        report submission: {}", e)
+                }
+
+                // Clean up completed or expired transactions.
+                txs.retain(|_, tx| !tx.complete && tx.latest_packet >= incomplete_cutoff);
+            },
+            Err(e) => error!("Could not acquire DHCP table lock: {}", e)
+        }
     }
 
     pub fn calculate_metrics(&self) {
-        // TODO
+        let table_size: i128 = match self.transactions.lock() {
+            Ok(d) => d.len() as i128,
+            Err(e) => {
+                error!("Could not acquire mutex to calculate DHCP transactions table size: {}", e);
+
+                -1
+            }
+        };
+
+        match self.metrics.lock() {
+            Ok(mut metrics) => {
+                metrics.set_gauge("tables.dhcp.transactions.size", table_size);
+            },
+            Err(e) => error!("Could not acquire metrics mutex: {}", e)
+        }
     }
 
 }
