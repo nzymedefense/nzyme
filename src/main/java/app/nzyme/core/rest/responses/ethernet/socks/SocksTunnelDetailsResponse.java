@@ -11,9 +11,6 @@ import java.util.UUID;
 @AutoValue
 public abstract class SocksTunnelDetailsResponse {
 
-    @JsonProperty("uuid")
-    public abstract UUID uuid();
-
     @Nullable
     @JsonProperty("client")
     public abstract L4AddressResponse client();
@@ -65,15 +62,8 @@ public abstract class SocksTunnelDetailsResponse {
     @JsonProperty("most_recent_segment_time")
     public abstract DateTime mostRecentSegmentTime();
 
-    @JsonProperty("updated_at")
-    public abstract DateTime updatedAt();
-
-    @JsonProperty("created_at")
-    public abstract DateTime createdAt();
-
-    public static SocksTunnelDetailsResponse create(UUID uuid, L4AddressResponse client, L4AddressResponse socksServer, String tcpSessionKey, String socksType, String authenticationStatus, String handshakeStatus, String connectionStatus, String username, int tunneledBytes, String tunneledDestinationAddress, String tunneledDestinationHost, int tunneledDestinationPort, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime, DateTime updatedAt, DateTime createdAt) {
+    public static SocksTunnelDetailsResponse create(L4AddressResponse client, L4AddressResponse socksServer, String tcpSessionKey, String socksType, String authenticationStatus, String handshakeStatus, String connectionStatus, String username, int tunneledBytes, String tunneledDestinationAddress, String tunneledDestinationHost, int tunneledDestinationPort, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime) {
         return builder()
-                .uuid(uuid)
                 .client(client)
                 .socksServer(socksServer)
                 .tcpSessionKey(tcpSessionKey)
@@ -89,8 +79,6 @@ public abstract class SocksTunnelDetailsResponse {
                 .establishedAt(establishedAt)
                 .terminatedAt(terminatedAt)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
-                .updatedAt(updatedAt)
-                .createdAt(createdAt)
                 .build();
     }
 
@@ -100,8 +88,6 @@ public abstract class SocksTunnelDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder uuid(UUID uuid);
-
         public abstract Builder client(L4AddressResponse client);
 
         public abstract Builder socksServer(L4AddressResponse socksServer);
@@ -131,10 +117,6 @@ public abstract class SocksTunnelDetailsResponse {
         public abstract Builder terminatedAt(DateTime terminatedAt);
 
         public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
-
-        public abstract Builder updatedAt(DateTime updatedAt);
-
-        public abstract Builder createdAt(DateTime createdAt);
 
         public abstract SocksTunnelDetailsResponse build();
     }

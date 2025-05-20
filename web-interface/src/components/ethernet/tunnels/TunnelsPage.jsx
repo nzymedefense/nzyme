@@ -1,12 +1,25 @@
-import React, {useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
 import SocksTunnelsTable from "./socks/SocksTunnelsTable";
 import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
+import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
+import {TapContext} from "../../../App";
 
 export default function TunnelsPage() {
 
+  const tapContext = useContext(TapContext);
+
   const [socksTunnelsTimeRange, setSocksTunnelsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
+
 
   return (
       <React.Fragment>

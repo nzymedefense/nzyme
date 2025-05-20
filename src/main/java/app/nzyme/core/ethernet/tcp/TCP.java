@@ -22,13 +22,14 @@ public class TCP {
                                                              List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
             handle.createQuery("SELECT * FROM l4_sessions WHERE session_key = :session_key " +
-                            "AND start_time >= :tr_from AND start_time <= :tr_to AND tap_uuid IN (<taps>)")
+                            "AND start_time >= :tr_from AND start_time <= :tr_to AND tap_uuid IN (<taps>) " +
+                            "ORDER BY most_recent_segment_time DESC LIMIT 1")
                     .bind("session_key", sessionKey)
                     .bind("tr_from", sessionStartTime.minusMinutes(1))
                     .bind("tr_to", sessionStartTime.plusMinutes(1))
                     .bindList("taps", taps)
                     .mapTo(TcpSessionEntry.class)
-                    .findOne()
+                    .findOne() // In case of the sane session recorded by multiple taps, we take the most recent one.
         );
     }
 

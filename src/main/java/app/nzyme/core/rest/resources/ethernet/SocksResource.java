@@ -62,7 +62,6 @@ public class SocksResource extends TapDataHandlingResource {
             }
 
             tunnels.add(SocksTunnelDetailsResponse.create(
-                    t.uuid(),
                     client,
                     socksServer,
                     t.tcpSessionKey(),
@@ -78,9 +77,7 @@ public class SocksResource extends TapDataHandlingResource {
                     t.tunneledDestinationPort(),
                     t.establishedAt(),
                     t.terminatedAt(),
-                    t.mostRecentSegmentTime(),
-                    t.updatedAt(),
-                    t.createdAt()
+                    t.mostRecentSegmentTime()
             ));
         }
 

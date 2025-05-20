@@ -11,8 +11,8 @@ import java.util.UUID;
 @AutoValue
 public abstract class SSHSessionDetailsResponse {
 
-    @JsonProperty("uuid")
-    public abstract UUID uuid();
+    @JsonProperty("tcp_session_key")
+    public abstract String tcpSessionKey();
 
     @Nullable
     @JsonProperty("client")
@@ -44,15 +44,9 @@ public abstract class SSHSessionDetailsResponse {
     @JsonProperty("most_recent_segment_time")
     public abstract DateTime mostRecentSegmentTime();
 
-    @JsonProperty("updated_at")
-    public abstract DateTime updatedAt();
-
-    @JsonProperty("created_at")
-    public abstract DateTime createdAt();
-
-    public static SSHSessionDetailsResponse create(UUID uuid, L4AddressResponse client, L4AddressResponse server, SSHVersionResponse clientVersion, SSHVersionResponse serverVersion, String connectionStatus, int tunneledBytes, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime, DateTime updatedAt, DateTime createdAt) {
+    public static SSHSessionDetailsResponse create(String tcpSessionKey, L4AddressResponse client, L4AddressResponse server, SSHVersionResponse clientVersion, SSHVersionResponse serverVersion, String connectionStatus, int tunneledBytes, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime) {
         return builder()
-                .uuid(uuid)
+                .tcpSessionKey(tcpSessionKey)
                 .client(client)
                 .server(server)
                 .clientVersion(clientVersion)
@@ -62,8 +56,6 @@ public abstract class SSHSessionDetailsResponse {
                 .establishedAt(establishedAt)
                 .terminatedAt(terminatedAt)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
-                .updatedAt(updatedAt)
-                .createdAt(createdAt)
                 .build();
     }
 
@@ -73,7 +65,7 @@ public abstract class SSHSessionDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder uuid(UUID uuid);
+        public abstract Builder tcpSessionKey(String tcpSessionKey);
 
         public abstract Builder client(L4AddressResponse client);
 
@@ -92,10 +84,6 @@ public abstract class SSHSessionDetailsResponse {
         public abstract Builder terminatedAt(DateTime terminatedAt);
 
         public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
-
-        public abstract Builder updatedAt(DateTime updatedAt);
-
-        public abstract Builder createdAt(DateTime createdAt);
 
         public abstract SSHSessionDetailsResponse build();
     }

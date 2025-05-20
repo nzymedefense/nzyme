@@ -36,7 +36,7 @@ export default function SocksTunnelsTableRow(props) {
 
   return (
       <tr>
-        <td><SocksTunnelIdLink tunnelId={tunnel.uuid} /></td>
+        <td><SocksTunnelIdLink tunnelId={tunnel.tcp_session_key} /></td>
         <td><L4Address address={tunnel.client}/></td>
         <td><L4Address address={tunnel.socks_server}/></td>
         <td>{destination()}</td>

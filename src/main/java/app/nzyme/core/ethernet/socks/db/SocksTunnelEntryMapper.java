@@ -13,9 +13,6 @@ public class SocksTunnelEntryMapper implements RowMapper<SocksTunnelEntry> {
     @Override
     public SocksTunnelEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return SocksTunnelEntry.create(
-                rs.getLong("id"),
-                UUID.fromString(rs.getString("uuid")),
-                UUID.fromString(rs.getString("tap_uuid")),
                 rs.getString("tcp_session_key"),
                 rs.getString("socks_type"),
                 rs.getString("authentication_status"),
@@ -28,9 +25,7 @@ public class SocksTunnelEntryMapper implements RowMapper<SocksTunnelEntry> {
                 rs.getInt("tunneled_destination_port"),
                 new DateTime(rs.getTimestamp("established_at")),
                 rs.getTimestamp("terminated_at") == null ? null : new DateTime(rs.getTimestamp("terminated_at")),
-                new DateTime(rs.getTimestamp("most_recent_segment_time")),
-                new DateTime(rs.getTimestamp("updated_at")),
-                new DateTime(rs.getTimestamp("created_at"))
+                new DateTime(rs.getTimestamp("most_recent_segment_time"))
         );
     }
 

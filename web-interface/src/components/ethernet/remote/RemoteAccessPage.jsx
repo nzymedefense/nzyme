@@ -1,12 +1,24 @@
-import React, {useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
 import SSHSessionsTable from "./ssh/SSHSessionsTable";
 import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
+import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
+import {TapContext} from "../../../App";
 
 export default function RemoteAccessPage() {
 
+  const tapContext = useContext(TapContext);
+
   const [sshSessionsTimeRange, setSshSessionsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
 
   return (
       <React.Fragment>

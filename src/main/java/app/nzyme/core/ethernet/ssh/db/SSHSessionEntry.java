@@ -9,9 +9,6 @@ import java.util.UUID;
 @AutoValue
 public abstract class SSHSessionEntry {
 
-    public abstract long id();
-    public abstract UUID uuid();
-    public abstract UUID tapUUID();
     public abstract String tcpSessionKey();
     public abstract String clientVersionVersion();
     public abstract String clientVersionSoftware();
@@ -27,14 +24,9 @@ public abstract class SSHSessionEntry {
     @Nullable
     public abstract DateTime terminatedAt();
     public abstract DateTime mostRecentSegmentTime();
-    public abstract DateTime updatedAt();
-    public abstract DateTime createdAt();
 
-    public static SSHSessionEntry create(long id, UUID uuid, UUID tapUUID, String tcpSessionKey, String clientVersionVersion, String clientVersionSoftware, String clientVersionComments, String serverVersionVersion, String serverVersionSoftware, String serverVersionComments, String connectionStatus, int tunneledBytes, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime, DateTime updatedAt, DateTime createdAt) {
+    public static SSHSessionEntry create(String tcpSessionKey, String clientVersionVersion, String clientVersionSoftware, String clientVersionComments, String serverVersionVersion, String serverVersionSoftware, String serverVersionComments, String connectionStatus, int tunneledBytes, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime) {
         return builder()
-                .id(id)
-                .uuid(uuid)
-                .tapUUID(tapUUID)
                 .tcpSessionKey(tcpSessionKey)
                 .clientVersionVersion(clientVersionVersion)
                 .clientVersionSoftware(clientVersionSoftware)
@@ -47,8 +39,6 @@ public abstract class SSHSessionEntry {
                 .establishedAt(establishedAt)
                 .terminatedAt(terminatedAt)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
-                .updatedAt(updatedAt)
-                .createdAt(createdAt)
                 .build();
     }
 
@@ -58,12 +48,6 @@ public abstract class SSHSessionEntry {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(long id);
-
-        public abstract Builder uuid(UUID uuid);
-
-        public abstract Builder tapUUID(UUID tapUUID);
-
         public abstract Builder tcpSessionKey(String tcpSessionKey);
 
         public abstract Builder clientVersionVersion(String clientVersionVersion);
@@ -87,10 +71,6 @@ public abstract class SSHSessionEntry {
         public abstract Builder terminatedAt(DateTime terminatedAt);
 
         public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
-
-        public abstract Builder updatedAt(DateTime updatedAt);
-
-        public abstract Builder createdAt(DateTime createdAt);
 
         public abstract SSHSessionEntry build();
     }

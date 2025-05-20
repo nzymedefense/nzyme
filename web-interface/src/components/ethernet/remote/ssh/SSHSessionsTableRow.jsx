@@ -13,7 +13,7 @@ export default function SSHSessionsTableRow(props) {
 
   return (
       <tr>
-        <td><SSHSessionKeyLink sessionKey={session.uuid} /></td>
+        <td><SSHSessionKeyLink sessionKey={session.tcp_session_key} /></td>
         <td>
           <L4Address address={session.client} hidePort={true} />{' '}
           <span className="text-muted"><SSHVersion version={session.client_version} /></span>

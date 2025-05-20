@@ -13,9 +13,6 @@ public class SSHSessionEntryMapper implements RowMapper<SSHSessionEntry> {
     @Override
     public SSHSessionEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return SSHSessionEntry.create(
-                rs.getLong("id"),
-                UUID.fromString(rs.getString("uuid")),
-                UUID.fromString(rs.getString("tap_uuid")),
                 rs.getString("tcp_session_key"),
                 rs.getString("client_version_version"),
                 rs.getString("client_version_software"),
@@ -27,9 +24,7 @@ public class SSHSessionEntryMapper implements RowMapper<SSHSessionEntry> {
                 rs.getInt("tunneled_bytes"),
                 new DateTime(rs.getTimestamp("established_at")),
                 rs.getTimestamp("terminated_at") == null ? null : new DateTime(rs.getTimestamp("terminated_at")),
-                new DateTime(rs.getTimestamp("most_recent_segment_time")),
-                new DateTime(rs.getTimestamp("updated_at")),
-                new DateTime(rs.getTimestamp("created_at"))
+                new DateTime(rs.getTimestamp("most_recent_segment_time"))
         );
     }
 

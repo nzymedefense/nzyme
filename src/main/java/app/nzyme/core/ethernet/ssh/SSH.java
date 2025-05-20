@@ -24,7 +24,7 @@ public class SSH {
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM ssh_sessions " +
+                handle.createQuery("SELECT COUNT(DISTINCT tcp_session_key) FROM ssh_sessions " +
                                 "WHERE most_recent_segment_time >= :tr_from AND most_recent_segment_time <= :tr_to " +
                                 "AND tap_uuid IN (<taps>)")
                         .bindList("taps", taps)
@@ -41,9 +41,21 @@ public class SSH {
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM ssh_sessions " +
-                                "WHERE most_recent_segment_time >= :tr_from AND most_recent_segment_time <= :tr_to " +
+                handle.createQuery("SELECT tcp_session_key, " +
+                                "ANY_VALUE(client_version_version) AS client_version_version, " +
+                                "ANY_VALUE(client_version_software) AS client_version_software, " +
+                                "ANY_VALUE(client_version_comments) AS client_version_comments, " +
+                                "ANY_VALUE(server_version_version) AS server_version_version, " +
+                                "ANY_VALUE(server_version_software) AS server_version_software, " +
+                                "ANY_VALUE(server_version_comments) AS server_version_comments, " +
+                                "ANY_VALUE(connection_status) AS connection_status, " +
+                                "MAX(tunneled_bytes) AS tunneled_bytes, " +
+                                "MIN(established_at) AS established_at, " +
+                                "MAX(terminated_at) AS terminated_at, " +
+                                "MAX(most_recent_segment_time) AS most_recent_segment_time " +
+                                "FROM ssh_sessions WHERE most_recent_segment_time >= :tr_from AND most_recent_segment_time <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
+                                "GROUP BY tcp_session_key " +
                                 "ORDER BY most_recent_segment_time DESC " +
                                 "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)

@@ -63,7 +63,7 @@ public class SSHResource extends TapDataHandlingResource {
             }
 
             sessions.add(SSHSessionDetailsResponse.create(
-                    s.uuid(),
+                    s.tcpSessionKey(),
                     client,
                     server,
                     SSHVersionResponse.create(
@@ -81,9 +81,7 @@ public class SSHResource extends TapDataHandlingResource {
                     s.tunneledBytes(),
                     s.establishedAt(),
                     s.terminatedAt(),
-                    s.mostRecentSegmentTime(),
-                    s.updatedAt(),
-                    s.createdAt()
+                    s.mostRecentSegmentTime()
             ));
         }
 
