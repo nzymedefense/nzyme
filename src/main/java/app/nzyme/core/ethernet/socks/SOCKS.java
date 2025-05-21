@@ -9,11 +9,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public class Socks {
+public class SOCKS {
 
     private final NzymeNode nzyme;
 
-    public Socks(Ethernet ethernet) {
+    public SOCKS(Ethernet ethernet) {
         this.nzyme = ethernet.getNzyme();
     }
 

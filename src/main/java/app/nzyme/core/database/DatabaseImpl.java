@@ -20,6 +20,7 @@ import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.dot11.db.monitoring.probereq.MonitoredProbeRequestEntryMapper;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfigMapper;
+import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionMapper;
 import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.ethernet.socks.db.SocksTunnelEntryMapper;
 import app.nzyme.core.ethernet.ssh.db.SSHSessionEntryMapper;
@@ -173,7 +174,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new UavTimelineEntryMapper())
                 .registerRowMapper(new UavTypeEntryMapper())
                 .registerRowMapper(new CotOutputEntryMapper())
-                .registerRowMapper(new UavVectorEntryMapper());
+                .registerRowMapper(new UavVectorEntryMapper())
+                .registerRowMapper(new DHCPTransactionMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());
@@ -379,6 +381,12 @@ public class DatabaseImpl implements Database {
             }
             case ETHERNET_L4 -> {
                 tables.add(new DataTableInformation(
+                        "dhcp_transactions",
+                        "SELECT COUNT(*) FROM dhcp_transactions WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM dhcp_transactions WHERE latest_packet < :since AND tap_uuid IN (<taps>)"
+                ));
+
+                tables.add(new DataTableInformation(
                         "l4_sessions",
                         "SELECT COUNT(*) FROM l4_sessions WHERE tap_uuid IN (<taps>)",
                         "DELETE FROM l4_sessions WHERE created_at < :since AND tap_uuid IN (<taps>)"
@@ -386,13 +394,13 @@ public class DatabaseImpl implements Database {
 
                 tables.add(new DataTableInformation(
                         "ssh_sessions",
-                        "SELECT COUNT(*) FROM ssh_sessions LEFT JOIN l4_sessions ON l4_sessions.session_key = ssh_sessions.tcp_session_key WHERE l4_sessions.tap_uuid IN (<taps>)",
+                        "SELECT COUNT(*) FROM ssh_sessions WHERE tap_uuid IN (<taps>)",
                         "DELETE FROM ssh_sessions WHERE created_at < :since AND tap_uuid IN (<taps>)"
                 ));
 
                 tables.add(new DataTableInformation(
                         "socks_tunnels",
-                        "SELECT COUNT(*) FROM socks_tunnels LEFT JOIN l4_sessions ON l4_sessions.session_key = socks_tunnels.tcp_session_key WHERE l4_sessions.tap_uuid IN (<taps>)",
+                        "SELECT COUNT(*) FROM socks_tunnels WHERE tap_uuid IN (<taps>)",
                         "DELETE FROM socks_tunnels WHERE created_at < :since AND tap_uuid IN (<taps>)"
                 ));
             }
