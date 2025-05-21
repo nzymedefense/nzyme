@@ -27,6 +27,7 @@ public abstract class Dhcpv4TransactionReport {
     public abstract String optionsFingerprint();
     public abstract Set<String> additionalOptionsFingerprints();
     public abstract Map<String, List<DateTime>> timestamps();
+    public abstract DateTime firstPacket();
     public abstract DateTime latestPacket();
     public abstract Set<String> notes();
     public abstract boolean complete();
@@ -43,6 +44,7 @@ public abstract class Dhcpv4TransactionReport {
                                                  @JsonProperty("options_fingerprint") String optionsFingerprint,
                                                  @JsonProperty("additional_options_fingerprints") Set<String> additionalOptionsFingerprints,
                                                  @JsonProperty("timestamps") Map<String, List<DateTime>> timestamps,
+                                                 @JsonProperty("first_packet") DateTime firstPacket,
                                                  @JsonProperty("latest_packet") DateTime latestPacket,
                                                  @JsonProperty("notes") Set<String> notes,
                                                  @JsonProperty("complete") boolean complete) {
@@ -58,6 +60,7 @@ public abstract class Dhcpv4TransactionReport {
                 .optionsFingerprint(optionsFingerprint)
                 .additionalOptionsFingerprints(additionalOptionsFingerprints)
                 .timestamps(timestamps)
+                .firstPacket(firstPacket)
                 .latestPacket(latestPacket)
                 .notes(notes)
                 .complete(complete)
@@ -91,6 +94,8 @@ public abstract class Dhcpv4TransactionReport {
         public abstract Builder additionalOptionsFingerprints(Set<String> additionalOptionsFingerprints);
 
         public abstract Builder timestamps(Map<String, List<DateTime>> timestamps);
+
+        public abstract Builder firstPacket(DateTime firstPacket);
 
         public abstract Builder latestPacket(DateTime latestPacket);
 

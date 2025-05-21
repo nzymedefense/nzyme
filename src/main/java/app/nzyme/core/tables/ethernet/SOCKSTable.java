@@ -1,4 +1,4 @@
-package app.nzyme.core.tables.socks;
+package app.nzyme.core.tables.ethernet;
 
 import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsReport;

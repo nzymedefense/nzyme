@@ -6399,4 +6399,108 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_dhcp_transactions" author="lennartkoopmann">
+        <createTable tableName="dhcp_transactions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="transaction_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="transaction_type" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="client_mac" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="additional_client_macs" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_mac" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="additional_server_macs" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="offered_ip_addresses" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="requested_ip_address" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="options_fingerprint" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="additional_options_fingerprints" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="timestamps" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="latest_packet" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="notes" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="is_complete" type="bool">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        
+        <createIndex tableName="dhcp_transactions" indexName="dhcptx_tap">
+            <column name="tap_uuid" />
+        </createIndex>
+
+        <createIndex tableName="dhcp_transactions" indexName="dhcptx_tx_id">
+            <column name="transaction_id" />
+        </createIndex>
+
+        <createIndex tableName="dhcp_transactions" indexName="dhcptx_ts">
+            <column name="latest_packet" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add_dhcp_transactions_first_packet" author="lennartkoopmann">
+        <addColumn tableName="dhcp_transactions">
+            <column name="first_packet" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <createIndex tableName="dhcp_transactions" indexName="dhcptx_first_packet">
+            <column name="first_packet" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

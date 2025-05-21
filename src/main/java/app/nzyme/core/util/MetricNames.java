@@ -26,11 +26,8 @@ import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.rest.interceptors.TapTableSizeInterceptor;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.tables.bluetooth.BluetoothTable;
-import app.nzyme.core.tables.dns.DNSTable;
+import app.nzyme.core.tables.ethernet.*;
 import app.nzyme.core.tables.dot11.Dot11Table;
-import app.nzyme.core.tables.socks.SOCKSTable;
-import app.nzyme.core.tables.ssh.SSHTable;
-import app.nzyme.core.tables.tcp.TCPTable;
 import app.nzyme.core.tables.uav.UAVTable;
 import app.nzyme.core.uav.Uav;
 
@@ -70,11 +67,10 @@ public class MetricNames {
     public static final String TCP_SESSION_DISCOVERY_QUERY_TIMER = name(TCPTable.class, "session-discovery-query-timing");
 
     public static final String SOCKS_TOTAL_REPORT_PROCESSING_TIMER = name(SOCKSTable.class, "total-report-processing-timing");
-
     public static final String SSH_TOTAL_REPORT_PROCESSING_TIMER = name(SSHTable.class, "total-report-processing-timing");
+    public static final String DHCP_TOTAL_REPORT_PROCESSING_TIMER = name(DHCPTable.class, "total-report-processing-timing");
 
     public static final String UAV_TOTAL_REPORT_PROCESSING_TIMER = name(UAVTable.class, "total-report-processing-timing");
-
     public static final String UAV_CONNECT_TYPE_LOOKUP_TIMING = name(Uav.class, "connect-type-lookup-timing");
 
 

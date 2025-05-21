@@ -1,7 +1,5 @@
-package app.nzyme.core.tables.ssh;
+package app.nzyme.core.tables.ethernet;
 
-import app.nzyme.core.NzymeNode;
-import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.rest.resources.taps.reports.tables.ssh.SshSessionReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.ssh.SshSessionsReport;
 import app.nzyme.core.tables.DataTable;

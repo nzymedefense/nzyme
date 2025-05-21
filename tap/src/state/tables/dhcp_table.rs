@@ -172,6 +172,7 @@ impl DhcpTable {
                             options_fingerprint: dhcp.calculate_fingerprint(),
                             additional_options_fingerprints: HashSet::new(),
                             timestamps,
+                            first_packet: now,
                             latest_packet: now,
                             notes: HashSet::new(),
                             complete

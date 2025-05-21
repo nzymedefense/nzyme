@@ -1,4 +1,4 @@
-package app.nzyme.core.tables.tcp;
+package app.nzyme.core.tables.ethernet;
 
 import app.nzyme.core.ethernet.tcp.TcpSessionState;
 import app.nzyme.core.ethernet.tcp.db.TcpSessionEntry;

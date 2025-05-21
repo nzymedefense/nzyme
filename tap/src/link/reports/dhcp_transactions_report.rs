@@ -22,6 +22,7 @@ pub struct Dhcpv4TransactionReport {
     pub options_fingerprint: Option<String>,
     pub additional_options_fingerprints: HashSet<String>,
     pub timestamps: HashMap<String, Vec<DateTime<Utc>>>,
+    pub first_packet: DateTime<Utc>,
     pub latest_packet: DateTime<Utc>,
     pub notes: HashSet<String>,
     pub complete: bool
@@ -43,6 +44,7 @@ pub fn generate(txs: &MutexGuard<HashMap<u32, Dhcpv4Transaction>>) -> DhcpTransa
             options_fingerprint: tx.options_fingerprint.clone(),
             additional_options_fingerprints: tx.additional_options_fingerprints.clone(),
             timestamps: tx.timestamps.iter().map(|(k, v)| (k.to_string(), v.clone())).collect(),
+            first_packet: tx.first_packet,
             latest_packet: tx.latest_packet,
             notes: tx.notes.iter().map(|note| note.to_string()).collect(),
             complete: tx.complete,

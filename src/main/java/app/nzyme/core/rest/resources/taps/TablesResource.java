@@ -197,7 +197,7 @@ public class TablesResource {
         }
 
         LOG.info("Received DHCP transactions report from tap [{}]: {}", tap.getUuid(), report);
-        //nzyme.getTablesService().dhcp().handleReport(tap.getUuid(), DateTime.now(), report);
+        nzyme.getTablesService().dhcp().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

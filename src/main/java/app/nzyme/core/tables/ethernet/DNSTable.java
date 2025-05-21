@@ -15,11 +15,8 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package app.nzyme.core.tables.dns;
+package app.nzyme.core.tables.ethernet;
 
-import app.nzyme.core.database.DataCategory;
-import app.nzyme.core.database.DatabaseImpl;
-import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsEntropyLogReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsIpStatisticsReport;
@@ -45,8 +42,6 @@ import java.util.UUID;
 import static app.nzyme.core.util.Tools.stringtoInetAddress;
 
 public class DNSTable implements DataTable {
-
-    private static final Logger LOG = LogManager.getLogger(DNSTable.class);
 
     private final TablesService tablesService;
 

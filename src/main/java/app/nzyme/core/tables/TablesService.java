@@ -19,14 +19,11 @@ package app.nzyme.core.tables;
 
 import app.nzyme.core.tables.bluetooth.BluetoothTable;
 import app.nzyme.core.tables.dot11.Dot11Table;
-import app.nzyme.core.tables.socks.SOCKSTable;
-import app.nzyme.core.tables.ssh.SSHTable;
-import app.nzyme.core.tables.tcp.TCPTable;
+import app.nzyme.core.tables.ethernet.*;
 import app.nzyme.core.tables.uav.UAVTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.tables.dns.DNSTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -56,6 +53,7 @@ public class TablesService {
                 .put("ssh", new SSHTable(this))
                 .put("socks", new SOCKSTable(this))
                 .put("uav", new UAVTable(this))
+                .put("dhcp", new DHCPTable(this))
                 .build();
 
         this.processorPool = Executors.newFixedThreadPool(
@@ -89,6 +87,8 @@ public class TablesService {
     public BluetoothTable bluetooth() {
         return (BluetoothTable) tables.get("bluetooth");
     }
+
+    public DHCPTable dhcp() { return (DHCPTable) tables.get("dhcp"); }
 
     public DNSTable dns() {
         return (DNSTable) tables.get("dns");

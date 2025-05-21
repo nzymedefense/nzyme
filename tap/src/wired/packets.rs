@@ -390,6 +390,7 @@ pub struct Dhcpv4Transaction {
     pub options_fingerprint: Option<String>,
     pub additional_options_fingerprints: HashSet<String>,
     pub timestamps: HashMap<Dhcpv4MessageType, Vec<DateTime<Utc>>>,
+    pub first_packet: DateTime<Utc>,
     pub latest_packet: DateTime<Utc>,
     pub notes: HashSet<Dhcpv4TransactionNote>,
     pub complete: bool
