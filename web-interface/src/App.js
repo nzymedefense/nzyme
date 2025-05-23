@@ -170,6 +170,8 @@ import EditCustomTypePage from "./components/uav/types/EditCustomTypePage";
 import EthernetAssetsPage from "./components/ethernet/assets/EthernetAssetsPage";
 import BluetoothMonitoringPage from "./components/bluetooth/monitoring/BluetoothMonitoringPage";
 import CreateBluetoothMonitoringRulePage from "./components/bluetooth/monitoring/CreateBluetoothMonitoringRulePage";
+import DHCPTransactions from "./components/ethernet/assets/dhcp/DHCPTransactionsPage";
+import DHCPTransactionsPage from "./components/ethernet/assets/dhcp/DHCPTransactionsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -466,6 +468,7 @@ function App() {
 
                                 { /* Ethernet/Assets. */}
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.INDEX} element={<EthernetAssetsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.ASSETS.DHCP.INDEX} element={<DHCPTransactionsPage />}/>
 
                                 { /* Ethernet/Hostnames. */}
                                 <Route path={ApiRoutes.ETHERNET.HOSTNAMES.HOSTNAME(':hostnameParam')} element={<HostnameDetailsPage />}/>

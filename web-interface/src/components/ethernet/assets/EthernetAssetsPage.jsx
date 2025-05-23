@@ -2,6 +2,9 @@ import React, {useState} from "react";
 import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
+import SectionMenuBar from "../../shared/SectionMenuBar";
+import ApiRoutes from "../../../util/ApiRoutes";
+import {ASSETS_MENU_ITEMS} from "./AssetsMenuItems";
 
 export default function EthernetAssetsPage() {
 
@@ -13,7 +16,8 @@ export default function EthernetAssetsPage() {
 
         <div className="row">
           <div className="col-md-12">
-            <h1>Tunnels</h1>
+            <SectionMenuBar items={ASSETS_MENU_ITEMS}
+                            activeRoute={ApiRoutes.ETHERNET.ASSETS.INDEX} />
           </div>
         </div>
 

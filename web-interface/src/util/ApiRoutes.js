@@ -151,6 +151,9 @@ const ApiRoutes = {
     },
     ASSETS: {
       INDEX: '/ethernet/assets',
+      DHCP: {
+        INDEX: '/ethernet/assets/dhcp'
+      }
     },
     HOSTNAMES: {
       HOSTNAME: hostname => `/ethernet/hostnames/show/${hostname}`

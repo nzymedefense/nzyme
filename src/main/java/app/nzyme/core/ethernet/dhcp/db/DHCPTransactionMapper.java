@@ -15,14 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DHCPTransactionMapper implements RowMapper<DHCPTransaction> {
+public class DHCPTransactionMapper implements RowMapper<DHCPTransactionEntry> {
 
     private final ObjectMapper om = new ObjectMapper()
             .registerModule(new JodaModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @Override
-    public DHCPTransaction map(ResultSet rs, StatementContext ctx) throws SQLException {
+    public DHCPTransactionEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         DateTime firstPacket = rs.getTimestamp("first_packet") == null ?
                 null : new DateTime(rs.getTimestamp("first_packet").getTime());
 
@@ -45,7 +45,7 @@ public class DHCPTransactionMapper implements RowMapper<DHCPTransaction> {
             throw new RuntimeException("Failed to parse JSON from DHCP transaction database object.", e);
         }
 
-        return DHCPTransaction.create(
+        return DHCPTransactionEntry.create(
                 rs.getLong("transaction_id"),
                 rs.getString("transaction_type"),
                 rs.getString("client_mac"),

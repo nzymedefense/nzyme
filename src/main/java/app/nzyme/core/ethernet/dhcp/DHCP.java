@@ -2,7 +2,7 @@ package app.nzyme.core.ethernet.dhcp;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.ethernet.dhcp.db.DHCPTransaction;
+import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionEntry;
 import app.nzyme.core.util.TimeRange;
 
 import java.util.Collections;
@@ -34,13 +34,14 @@ public class DHCP {
         );
     }
 
-    public List<DHCPTransaction> findAllTransactions(TimeRange timeRange, int limit, int offset, List<UUID> taps) {
+    public List<DHCPTransactionEntry> findAllTransactions(TimeRange timeRange, int limit, int offset, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT  transaction_id, ANY_VALUE(transaction_type) AS transaction_type, " +
+                handle.createQuery("SELECT transaction_id, ANY_VALUE(transaction_type) AS transaction_type, " +
+                                "FLOOR(EXTRACT(EPOCH FROM first_packet)::numeric / 30) AS time_bucket, " +
                                 "ANY_VALUE(client_mac) AS client_mac, " +
                                 "ANY_VALUE(additional_client_macs) AS additional_client_macs, " +
                                 "ANY_VALUE(server_mac) AS server_mac, " +
@@ -53,9 +54,9 @@ public class DHCP {
                                 "MAX(latest_packet) AS latest_packet, ANY_VALUE(notes) AS notes, " +
                                 "BOOL_OR(is_complete) AS is_complete " +
                                 "FROM dhcp_transactions " +
-                                "WHERE most_recent_segment_time >= :tr_from AND most_recent_segment_time <= :tr_to " +
+                                "WHERE latest_packet >= :tr_from AND latest_packet <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
-                                "GROUP BY transaction_id " +
+                                "GROUP BY transaction_id, time_bucket " +
                                 "ORDER BY latest_packet DESC " +
                                 "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)
@@ -63,7 +64,7 @@ public class DHCP {
                         .bind("tr_to", timeRange.to())
                         .bind("limit", limit)
                         .bind("offset", offset)
-                        .mapTo(DHCPTransaction.class)
+                        .mapTo(DHCPTransactionEntry.class)
                         .list()
         );
     }

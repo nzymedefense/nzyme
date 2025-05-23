@@ -16,6 +16,8 @@ import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
 import app.nzyme.core.rest.requests.UpdateMacAddressContextRequest;
 import app.nzyme.core.rest.responses.context.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
+import app.nzyme.core.security.authentication.db.OrganizationEntry;
+import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.distributed.messaging.ClusterMessage;
 import app.nzyme.plugin.distributed.messaging.MessageType;
@@ -250,6 +252,15 @@ public class AssetContextResource extends UserAuthenticatedResource {
 
     private MacAddressContextDetailsResponse entryToResponse(MacAddressContextEntry m,
                                                              List<MacAddressTransparentContextEntry> transparent) {
+        String organizationName = nzyme.getAuthenticationService()
+                .findOrganization(m.organizationId())
+                .map(o -> o.name())
+                .orElse("Unknown");
+        String tenantName = nzyme.getAuthenticationService()
+                .findTenant(m.tenantId())
+                .map(t -> t.name())
+                .orElse("Unknown");
+
         CategorizedTransparentContextData transparentData = RestHelpers.transparentContextDataToResponses(transparent);
         return MacAddressContextDetailsResponse.create(
                 m.uuid(),
@@ -261,9 +272,9 @@ public class AssetContextResource extends UserAuthenticatedResource {
                 transparentData.ipAddresses(),
                 transparentData.hostnames(),
                 m.organizationId(),
-                null,
+                organizationName,
                 m.tenantId(),
-                null,
+                tenantName,
                 m.createdAt(),
                 m.updatedAt()
         );

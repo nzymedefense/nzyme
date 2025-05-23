@@ -838,7 +838,8 @@ a.asn-number, span.asn-number {
 a.ip-address, span.ip-address,
 a.hostname, span.hostname,
 a.ssh-session-key, span.ssh-session-key,
-a.socks-tunnel-id, span.socks-tunnel-id {
+a.socks-tunnel-id, span.socks-tunnel-id,
+a.dhcp-transaction-id, span.dhcp-transaction-id {
     font-family: 'B612 Mono', monospace;
     font-size: 12px;
 }
