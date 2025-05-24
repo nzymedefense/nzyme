@@ -25,6 +25,7 @@ pub struct Dhcpv4TransactionReport {
     pub first_packet: DateTime<Utc>,
     pub latest_packet: DateTime<Utc>,
     pub notes: HashSet<String>,
+    pub successful: Option<bool>,
     pub complete: bool
 }
 
@@ -47,6 +48,7 @@ pub fn generate(txs: &MutexGuard<HashMap<u32, Dhcpv4Transaction>>) -> DhcpTransa
             first_packet: tx.first_packet,
             latest_packet: tx.latest_packet,
             notes: tx.notes.iter().map(|note| note.to_string()).collect(),
+            successful: tx.successful,
             complete: tx.complete,
         })
     }

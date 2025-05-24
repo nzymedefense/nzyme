@@ -1,4 +1,5 @@
 use std::collections::{BTreeSet, HashMap, HashSet};
+use std::net::IpAddr;
 use std::sync::{Arc, Mutex};
 use chrono::{Duration, Utc};
 use log::{error, warn};
@@ -27,8 +28,6 @@ impl DhcpTable {
     }
 
     pub fn register_dhcpv4_packet(&self, dhcp: Arc<Dhcpv4Packet>) {
-        let now = Utc::now();
-
         match self.transactions.lock() {
             Ok(mut txs) => {
                 match txs.get_mut(&dhcp.transaction_id) {
@@ -47,8 +46,8 @@ impl DhcpTable {
                                 match dhcp.message_type {
                                     Dhcpv4MessageType::Offer => {
                                         // DHCP server responded with an offer.
-                                        tx.latest_packet = now;
-                                        tx.record_timestamp(Dhcpv4MessageType::Offer, now);
+                                        tx.latest_packet = dhcp.timestamp;
+                                        tx.record_timestamp(Dhcpv4MessageType::Offer, dhcp.timestamp);
                                         tx.record_server_mac(dhcp.source_mac.clone());
 
                                         match dhcp.assigned_address {
@@ -64,34 +63,46 @@ impl DhcpTable {
                                     }
                                     Dhcpv4MessageType::Request => {
                                         // Client requests IP based on previous offer.
-                                        tx.latest_packet = now;
-                                        tx.record_timestamp(Dhcpv4MessageType::Request, now);
-                                        tx.requested_ip_address = dhcp.requested_ip_address;
+                                        tx.latest_packet = dhcp.timestamp;
+                                        tx.record_timestamp(Dhcpv4MessageType::Request, dhcp.timestamp);
+
+                                        let requested_ip_address = match (dhcp.dhcp_client_address, 
+                                                                          dhcp.requested_ip_address) {
+                                            (Some(_), Some(_)) => dhcp.requested_ip_address,
+                                            (Some(_), None) => dhcp.dhcp_client_address,
+                                            (None, Some(_)) => dhcp.requested_ip_address,
+                                            (None, None) => None
+                                        };
+
+                                        tx.requested_ip_address = requested_ip_address;
+                                        
                                         tx.record_client_mac(dhcp.source_mac.clone());
                                         tx.record_server_mac(dhcp.destination_mac.clone());
                                         tx.record_fingerprint(&dhcp);
                                     }
                                     Dhcpv4MessageType::Ack => {
                                         // Server confirmed the lease. Transaction complete.
-                                        tx.latest_packet = now;
-                                        tx.record_timestamp(Dhcpv4MessageType::Ack, now);
+                                        tx.latest_packet = dhcp.timestamp;
+                                        tx.record_timestamp(Dhcpv4MessageType::Ack, dhcp.timestamp);
                                         tx.record_server_mac(dhcp.source_mac.clone());
+                                        tx.successful = Some(true);
                                         tx.complete = true;
                                     }
                                     Dhcpv4MessageType::Nack => {
                                         // Server declined the lease. Transaction complete.
-                                        tx.latest_packet = now;
-                                        tx.record_timestamp(Dhcpv4MessageType::Nack, now);
+                                        tx.latest_packet = dhcp.timestamp;
+                                        tx.record_timestamp(Dhcpv4MessageType::Nack, dhcp.timestamp);
                                         tx.record_server_mac(dhcp.source_mac.clone());
+                                        tx.successful = Some(false);
                                         tx.complete = true;
                                     }
                                     Dhcpv4MessageType::Decline => {
                                         // Client declined the lease. Transaction complete.
-                                        tx.latest_packet = now;
-                                        tx.record_timestamp(Dhcpv4MessageType::Decline, now);
+                                        tx.latest_packet = dhcp.timestamp;
+                                        tx.record_timestamp(Dhcpv4MessageType::Decline, dhcp.timestamp);
                                         tx.record_client_mac(dhcp.source_mac.clone());
                                         tx.record_server_mac(dhcp.destination_mac.clone());
-
+                                        tx.successful = Some(false);
                                         tx.complete = true;
                                     }
                                     _ => {
@@ -158,7 +169,7 @@ impl DhcpTable {
                         let complete = tx_type == Dhcp4TransactionType::Release;
 
                         let mut timestamps = HashMap::new();
-                        timestamps.insert(dhcp.message_type.clone(), vec![now]);
+                        timestamps.insert(dhcp.message_type.clone(), vec![dhcp.timestamp]);
 
                         let tx = Dhcpv4Transaction {
                             transaction_type: tx_type,
@@ -172,9 +183,10 @@ impl DhcpTable {
                             options_fingerprint: dhcp.calculate_fingerprint(),
                             additional_options_fingerprints: HashSet::new(),
                             timestamps,
-                            first_packet: now,
-                            latest_packet: now,
+                            first_packet: dhcp.timestamp,
+                            latest_packet: dhcp.timestamp,
                             notes: HashSet::new(),
+                            successful: None,
                             complete
                         };
 

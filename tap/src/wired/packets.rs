@@ -3,7 +3,6 @@ use std::mem;
 use std::net::IpAddr;
 use std::sync::Mutex;
 use chrono::{DateTime, Utc};
-use log::warn;
 use strum_macros::Display;
 use crate::protocols::detection::l7_tagger::L7SessionTag;
 use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
@@ -14,6 +13,7 @@ use crate::wired::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass,
 #[derive(Debug)]
 pub struct EthernetData {
     pub data: Vec<u8>,
+    pub timestamp: DateTime<Utc>
 }
 
 #[derive(Debug)]
@@ -310,6 +310,7 @@ impl SshSession {
 
 #[derive(Debug)]
 pub struct Dhcpv4Packet {
+    pub timestamp: DateTime<Utc>,
     pub source_mac: Option<String>,
     pub destination_mac: Option<String>,
     pub source_address: IpAddr,
@@ -393,12 +394,18 @@ pub struct Dhcpv4Transaction {
     pub first_packet: DateTime<Utc>,
     pub latest_packet: DateTime<Utc>,
     pub notes: HashSet<Dhcpv4TransactionNote>,
+    pub successful: Option<bool>,
     pub complete: bool
 }
 
 impl Dhcpv4Transaction {
     // Handles `server_mac` and `additional_server_macs`.
     pub fn record_server_mac(&mut self, new_mac: Option<String>) {
+        if new_mac == Some("FF:FF:FF:FF:FF:FF".to_string()) {
+            // Ignore broadcast packets.
+            return;
+        }
+        
         match (&self.server_mac, new_mac) {
             // No server yet, take the first one we see.
             (None, Some(mac)) => {

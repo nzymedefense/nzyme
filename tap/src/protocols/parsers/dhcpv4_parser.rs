@@ -154,6 +154,7 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<Dhcpv4Packet> {
     }
     
     Some(Dhcpv4Packet { 
+        timestamp: udp.timestamp,
         source_mac: udp.source_mac.clone(),
         destination_mac: udp.destination_mac.clone(),
         source_address: udp.source_address,

@@ -87,7 +87,7 @@ impl EthernetBroker {
             data: data.data[data_cursor..].to_vec(),
             packet_type: find_ethertype(packet_type),
             size: len as u32,
-            timestamp: Utc::now()
+            timestamp: data.timestamp
         });
 
         if packet.packet_type == EtherType::IPv4 {

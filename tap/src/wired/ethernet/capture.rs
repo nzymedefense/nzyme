@@ -1,5 +1,5 @@
 use std::sync::{Arc, Mutex};
-
+use chrono::Utc;
 use log::{debug, error, info};
 use pcap::Device;
 
@@ -82,10 +82,10 @@ impl Capture<> {
                 debug!("Packet too small. Wouldn't even fit Ethernet header. Skipping.");
                 continue;
             }
-
             
             let data = EthernetData {
-                data: packet.data.to_vec()
+                data: packet.data.to_vec(),
+                timestamp: Utc::now()
             };
 
             // Write to Ethernet broker pipeline.

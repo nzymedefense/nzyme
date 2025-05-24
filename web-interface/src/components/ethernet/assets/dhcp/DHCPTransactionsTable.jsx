@@ -9,6 +9,9 @@ import DHCPTransactionId from "./DHCPTransactionId";
 import DHCPDuration from "./DHCPDuration";
 import moment from "moment";
 import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress";
+import DHCPTransactionSuccess from "./DHCPTransactionSuccess";
+import numeral from "numeral";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
 const assetsService = new AssetsService();
 
@@ -38,6 +41,10 @@ export default function DHCPTransactionsTable(props) {
 
   return (
       <React.Fragment>
+        <p className="mb-2 mt-0">
+          <strong>Total:</strong> {numeral(data.total).format("0,0")}
+        </p>
+
         <table className="table table-sm table-hover table-striped mb-4 mt-3">
           <thead>
           <tr>
@@ -47,6 +54,7 @@ export default function DHCPTransactionsTable(props) {
             <th>Client MAC</th>
             <th>Server MAC</th>
             <th>Requested IP</th>
+            <th>Success</th>
             <th>Complete</th>
             <th>Duration</th>
             <th>Notes</th>
@@ -56,12 +64,17 @@ export default function DHCPTransactionsTable(props) {
           {data.transactions.map((t, i) => {
             return (
                 <tr key={i}>
-                  <td><a href="#"><DHCPTransactionId id={t.transaction_id} /></a></td>
+                  <td>
+                    <a href={ApiRoutes.ETHERNET.ASSETS.DHCP.TRANSACTION_DETAILS(t.transaction_id) + "?transaction_time=" + encodeURIComponent(t.first_packet)}>
+                      <DHCPTransactionId id={t.transaction_id} />
+                    </a>
+                  </td>
                   <td>{moment(t.first_packet).format()}</td>
                   <td>{t.transaction_type}</td>
                   <td><EthernetMacAddress addressWithContext={t.client_mac} /></td>
                   <td>{t.server_mac ? <EthernetMacAddress addressWithContext={t.server_mac} /> : <span className="text-muted">n/a</span> }</td>
                   <td><IPAddress ip={t.requested_ip_address} /></td>
+                  <td><DHCPTransactionSuccess success={t.is_successful} /></td>
                   <td>{t.is_complete ? <span className="text-success">Complete</span>
                       : <span className="text-warning">Incomplete</span>}</td>
                   <td><DHCPDuration duration={t.duration_ms} /></td>

@@ -172,6 +172,7 @@ import BluetoothMonitoringPage from "./components/bluetooth/monitoring/Bluetooth
 import CreateBluetoothMonitoringRulePage from "./components/bluetooth/monitoring/CreateBluetoothMonitoringRulePage";
 import DHCPTransactions from "./components/ethernet/assets/dhcp/DHCPTransactionsPage";
 import DHCPTransactionsPage from "./components/ethernet/assets/dhcp/DHCPTransactionsPage";
+import DHCPTransactionDetailsPage from "./components/ethernet/assets/dhcp/DHCPTransactionDetailsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -469,6 +470,7 @@ function App() {
                                 { /* Ethernet/Assets. */}
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.INDEX} element={<EthernetAssetsPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.DHCP.INDEX} element={<DHCPTransactionsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.ASSETS.DHCP.TRANSACTION_DETAILS(':transactionId')} element={<DHCPTransactionDetailsPage />}/>
 
                                 { /* Ethernet/Hostnames. */}
                                 <Route path={ApiRoutes.ETHERNET.HOSTNAMES.HOSTNAME(':hostnameParam')} element={<HostnameDetailsPage />}/>

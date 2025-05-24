@@ -6503,4 +6503,16 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_dhcp_transactions_successful" author="lennartkoopmann">
+        <addColumn tableName="dhcp_transactions">
+            <column name="successful" type="bool">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="rename_dhcp_transactions_successful" author="lennartkoopmann">
+        <renameColumn tableName="dhcp_transactions" oldColumnName="successful" newColumnName="is_successful" />
+    </changeSet>
+
 </databaseChangeLog>

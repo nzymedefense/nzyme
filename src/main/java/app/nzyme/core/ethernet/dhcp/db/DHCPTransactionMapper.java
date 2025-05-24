@@ -60,6 +60,7 @@ public class DHCPTransactionMapper implements RowMapper<DHCPTransactionEntry> {
                 firstPacket,
                 new DateTime(rs.getTimestamp("latest_packet")),
                 notes,
+                rs.getBoolean("is_successful"),
                 rs.getBoolean("is_complete")
         );
     }

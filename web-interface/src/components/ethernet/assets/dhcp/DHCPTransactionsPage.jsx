@@ -39,8 +39,9 @@ export default function DHCPTransactionsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="DHCP Transactions"
+                                       helpLink="https://go.nzyme.org/ethernet-dhcp"
                                        timeRange={timeRange}
-                                       setTimeRange={setTimeRange}/>
+                                       setTimeRange={setTimeRange} />
 
                 <DHCPTransactionsTable timeRange={timeRange} />
               </div>

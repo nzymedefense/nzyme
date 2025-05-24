@@ -53,12 +53,12 @@ public class DHCPTable implements DataTable {
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO dhcp_transactions(uuid, tap_uuid, " +
                 "transaction_id, transaction_type, client_mac, additional_client_macs, server_mac, " +
                 "additional_server_macs, offered_ip_addresses, requested_ip_address, options_fingerprint, " +
-                "additional_options_fingerprints, timestamps, first_packet, latest_packet, notes, is_complete," +
-                " updated_at, created_at) VALUES(:uuid, :tap_uuid, :transaction_id, :transaction_type, :client_mac, " +
-                ":additional_client_macs::jsonb, :server_mac, :additional_server_macs::jsonb, " +
+                "additional_options_fingerprints, timestamps, first_packet, latest_packet, notes, is_successful, " +
+                "is_complete, updated_at, created_at) VALUES(:uuid, :tap_uuid, :transaction_id, :transaction_type, " +
+                ":client_mac, :additional_client_macs::jsonb, :server_mac, :additional_server_macs::jsonb, " +
                 ":offered_ip_addresses::jsonb, :requested_ip_address, :options_fingerprint, " +
                 ":additional_options_fingerprints::jsonb, :timestamps::jsonb, :first_packet, :latest_packet, " +
-                ":notes::jsonb, :is_complete, NOW(), NOW())");
+                ":notes::jsonb, :is_successful, :is_complete, NOW(), NOW())");
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE dhcp_transactions " +
                 "SET additional_client_macs = :additional_client_macs::jsonb, server_mac = :server_mac, " +
                 "additional_server_macs = :additional_server_macs::jsonb, " +
@@ -67,7 +67,7 @@ public class DHCPTable implements DataTable {
                 "additional_options_fingerprints = :additional_options_fingerprints::jsonb, " +
                 "timestamps = :timestamps::jsonb, " +
                 "latest_packet = :latest_packet, notes = :notes::jsonb, is_complete = :is_complete, " +
-                "updated_at = NOW()");
+                "is_successful = :is_successful, updated_at = NOW()");
 
         for (Dhcpv4TransactionReport tx : txs) {
             String additionalClientMacs;
@@ -117,6 +117,7 @@ public class DHCPTable implements DataTable {
                         .bind("first_packet", tx.firstPacket())
                         .bind("latest_packet", tx.latestPacket())
                         .bind("notes", notes)
+                        .bind("is_successful", tx.successful())
                         .bind("is_complete", tx.complete())
                         .add();
             } else {
@@ -131,6 +132,7 @@ public class DHCPTable implements DataTable {
                         .bind("timestamps", timestamps)
                         .bind("latest_packet", tx.latestPacket())
                         .bind("notes", notes)
+                        .bind("is_successful", tx.successful())
                         .bind("is_complete", tx.complete())
                         .add();
             }

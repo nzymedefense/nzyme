@@ -28,9 +28,10 @@ public abstract class DHCPTransactionEntry {
     public abstract DateTime firstPacket();
     public abstract DateTime latestPacket();
     public abstract List<String> notes();
+    public abstract boolean isSuccessful();
     public abstract boolean isComplete();
 
-    public static DHCPTransactionEntry create(long transactionId, String transactionType, String clientMac, List<String> additionalClientMacs, String serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, String optionsFingerprint, List<String> additionalOptionsFingerprints, Map<String, List<DateTime>> timestamps, DateTime firstPacket, DateTime latestPacket, List<String> notes, boolean isComplete) {
+    public static DHCPTransactionEntry create(long transactionId, String transactionType, String clientMac, List<String> additionalClientMacs, String serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, String optionsFingerprint, List<String> additionalOptionsFingerprints, Map<String, List<DateTime>> timestamps, DateTime firstPacket, DateTime latestPacket, List<String> notes, boolean isSuccessful, boolean isComplete) {
         return builder()
                 .transactionId(transactionId)
                 .transactionType(transactionType)
@@ -46,6 +47,7 @@ public abstract class DHCPTransactionEntry {
                 .firstPacket(firstPacket)
                 .latestPacket(latestPacket)
                 .notes(notes)
+                .isSuccessful(isSuccessful)
                 .isComplete(isComplete)
                 .build();
     }
@@ -83,6 +85,8 @@ public abstract class DHCPTransactionEntry {
         public abstract Builder latestPacket(DateTime latestPacket);
 
         public abstract Builder notes(List<String> notes);
+
+        public abstract Builder isSuccessful(boolean isSuccessful);
 
         public abstract Builder isComplete(boolean isComplete);
 

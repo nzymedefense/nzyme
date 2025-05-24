@@ -58,13 +58,17 @@ public abstract class DHCPTransactionDetailsResponse {
     @JsonProperty("notes")
     public abstract List<String> notes();
 
+    @JsonProperty("is_successful")
+    @Nullable
+    public abstract Boolean isSuccessful();
+
     @JsonProperty("is_complete")
     public abstract boolean isComplete();
 
     @JsonProperty("duration_ms")
     public abstract Long durationMs();
 
-    public static DHCPTransactionDetailsResponse create(long transactionId, String transactionType, EthernetMacAddressResponse clientMac, List<String> additionalClientMacs, EthernetMacAddressResponse serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, String optionsFingerprint, List<String> additionalOptionsFingerprints, Map<String, List<DateTime>> timestamps, DateTime firstPacket, DateTime latestPacket, List<String> notes, boolean isComplete, Long durationMs) {
+    public static DHCPTransactionDetailsResponse create(long transactionId, String transactionType, EthernetMacAddressResponse clientMac, List<String> additionalClientMacs, EthernetMacAddressResponse serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, String optionsFingerprint, List<String> additionalOptionsFingerprints, Map<String, List<DateTime>> timestamps, DateTime firstPacket, DateTime latestPacket, List<String> notes, Boolean isSuccessful, boolean isComplete, Long durationMs) {
         return builder()
                 .transactionId(transactionId)
                 .transactionType(transactionType)
@@ -80,6 +84,7 @@ public abstract class DHCPTransactionDetailsResponse {
                 .firstPacket(firstPacket)
                 .latestPacket(latestPacket)
                 .notes(notes)
+                .isSuccessful(isSuccessful)
                 .isComplete(isComplete)
                 .durationMs(durationMs)
                 .build();
@@ -118,6 +123,8 @@ public abstract class DHCPTransactionDetailsResponse {
         public abstract Builder latestPacket(DateTime latestPacket);
 
         public abstract Builder notes(List<String> notes);
+
+        public abstract Builder isSuccessful(Boolean isSuccessful);
 
         public abstract Builder isComplete(boolean isComplete);
 

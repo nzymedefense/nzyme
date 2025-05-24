@@ -30,6 +30,7 @@ public abstract class Dhcpv4TransactionReport {
     public abstract DateTime firstPacket();
     public abstract DateTime latestPacket();
     public abstract Set<String> notes();
+    public abstract boolean successful();
     public abstract boolean complete();
 
     @JsonCreator
@@ -47,6 +48,7 @@ public abstract class Dhcpv4TransactionReport {
                                                  @JsonProperty("first_packet") DateTime firstPacket,
                                                  @JsonProperty("latest_packet") DateTime latestPacket,
                                                  @JsonProperty("notes") Set<String> notes,
+                                                 @JsonProperty("successful") boolean successful,
                                                  @JsonProperty("complete") boolean complete) {
         return builder()
                 .transactionType(transactionType)
@@ -63,6 +65,7 @@ public abstract class Dhcpv4TransactionReport {
                 .firstPacket(firstPacket)
                 .latestPacket(latestPacket)
                 .notes(notes)
+                .successful(successful)
                 .complete(complete)
                 .build();
     }
@@ -100,6 +103,8 @@ public abstract class Dhcpv4TransactionReport {
         public abstract Builder latestPacket(DateTime latestPacket);
 
         public abstract Builder notes(Set<String> notes);
+
+        public abstract Builder successful(boolean successful);
 
         public abstract Builder complete(boolean complete);
 

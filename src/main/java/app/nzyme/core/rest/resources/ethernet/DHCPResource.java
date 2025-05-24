@@ -15,14 +15,13 @@ import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.jetbrains.annotations.Nullable;
+import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import java.util.List;
@@ -51,70 +50,106 @@ public class DHCPResource extends TapDataHandlingResource {
         long total = nzyme.getEthernet().dhcp().countAllTransactions(timeRange, taps);
         List<DHCPTransactionDetailsResponse> txs = Lists.newArrayList();
         for (DHCPTransactionEntry tx : nzyme.getEthernet().dhcp().findAllTransactions(timeRange, limit, offset, taps)) {
-            Long duration = null;
+            txs.add(buildTransactionResponse(tx, authenticatedUser));
+        }
 
-            if (tx.isComplete()) {
-                duration = new Duration(tx.firstPacket(), tx.latestPacket()).getMillis();
-            }
+        return Response.ok(DHCPTransactionsListResponse.create(total, txs)).build();
+    }
 
-            Optional<MacAddressContextEntry> clientMacContext = nzyme.getContextService().findMacAddressContext(
-                    tx.clientMac(),
-                    authenticatedUser.getOrganizationId(),
-                    authenticatedUser.getTenantId()
-            );
+    @GET
+    @Path("/transactions/show/{transaction_id}")
+    public Response transaction(@Context SecurityContext sc,
+                                @PathParam("transaction_id") long transactionId,
+                                @QueryParam("transaction_time") String transactionTimeP,
+                                @QueryParam("taps") String tapIds) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        DateTime transactionTime;
 
-            Optional<MacAddressContextEntry> serverMacContext;
-            EthernetMacAddressResponse serverMacResponse;
-            if (tx.serverMac() != null) {
-                serverMacContext = nzyme.getContextService().findMacAddressContext(
-                        tx.serverMac(),
-                        authenticatedUser.getOrganizationId(),
-                        authenticatedUser.getTenantId()
-                );
-                serverMacResponse = EthernetMacAddressResponse.create(
-                        tx.serverMac(),
-                        nzyme.getOuiService().lookup(tx.serverMac()).orElse(null),
-                        serverMacContext.map(macAddressContextEntry ->
+        try {
+            transactionTime = DateTime.parse(transactionTimeP);
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Optional<DHCPTransactionEntry> txe = nzyme.getEthernet().dhcp()
+                .findTransaction(transactionId, transactionTime, taps);
+
+        if (txe.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(buildTransactionResponse(txe.get(), authenticatedUser)).build();
+    }
+
+    private DHCPTransactionDetailsResponse buildTransactionResponse(DHCPTransactionEntry tx,
+                                                                    AuthenticatedUser authenticatedUser) {
+        Long duration = null;
+        if (tx.isComplete()) {
+            duration = new Duration(tx.firstPacket(), tx.latestPacket()).getMillis();
+        }
+
+        Optional<MacAddressContextEntry> clientMacContext = nzyme.getContextService().findMacAddressContext(
+                tx.clientMac(),
+                authenticatedUser.getOrganizationId(),
+                authenticatedUser.getTenantId()
+        );
+
+        return DHCPTransactionDetailsResponse.create(
+                tx.transactionId(),
+                tx.transactionType(),
+                EthernetMacAddressResponse.create(
+                        tx.clientMac(),
+                        nzyme.getOuiService().lookup(tx.clientMac()).orElse(null),
+                        clientMacContext.map(macAddressContextEntry ->
                                         EthernetMacAddressContextResponse.create(
                                                 macAddressContextEntry.name(),
                                                 macAddressContextEntry.description()
                                         ))
                                 .orElse(null)
-                );
-            } else {
-                serverMacResponse = null;
-            }
-
-            txs.add(DHCPTransactionDetailsResponse.create(
-                    tx.transactionId(),
-                    tx.transactionType(),
-                    EthernetMacAddressResponse.create(
-                            tx.clientMac(),
-                            nzyme.getOuiService().lookup(tx.clientMac()).orElse(null),
-                            clientMacContext.map(macAddressContextEntry ->
-                                            EthernetMacAddressContextResponse.create(
-                                                    macAddressContextEntry.name(),
-                                                    macAddressContextEntry.description()
-                                            ))
-                                    .orElse(null)
-                    ),
-                    tx.additionalClientMacs(),
-                    serverMacResponse,
-                    tx.additionalServerMacs(),
-                    tx.offeredIpAddresses(),
-                    tx.requestedIpAddress(),
-                    tx.optionsFingerprint(),
-                    tx.additionalOptionsFingerprints(),
-                    tx.timestamps(),
-                    tx.firstPacket(),
-                    tx.latestPacket(),
-                    tx.notes(),
-                    tx.isComplete(),
-                    duration
-            ));
-        }
-
-        return Response.ok(DHCPTransactionsListResponse.create(total, txs)).build();
+                ),
+                tx.additionalClientMacs(),
+                buildServerMacResponse(tx, authenticatedUser),
+                tx.additionalServerMacs(),
+                tx.offeredIpAddresses(),
+                tx.requestedIpAddress(),
+                tx.optionsFingerprint(),
+                tx.additionalOptionsFingerprints(),
+                tx.timestamps(),
+                tx.firstPacket(),
+                tx.latestPacket(),
+                tx.notes(),
+                tx.isSuccessful(),
+                tx.isComplete(),
+                duration
+        );
     }
+
+    @Nullable
+    private EthernetMacAddressResponse buildServerMacResponse(DHCPTransactionEntry tx,
+                                                              AuthenticatedUser authenticatedUser) {
+        if (tx.serverMac() != null) {
+            Optional<MacAddressContextEntry> serverMacContext = nzyme.getContextService().findMacAddressContext(
+                    tx.serverMac(),
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
+            );
+
+            return EthernetMacAddressResponse.create(
+                    tx.serverMac(),
+                    nzyme.getOuiService().lookup(tx.serverMac()).orElse(null),
+                    serverMacContext.map(macAddressContextEntry ->
+                                    EthernetMacAddressContextResponse.create(
+                                            macAddressContextEntry.name(),
+                                            macAddressContextEntry.description()
+                                    ))
+                            .orElse(null)
+            );
+        } else {
+            return null;
+        }
+    }
+
+
 
 }
