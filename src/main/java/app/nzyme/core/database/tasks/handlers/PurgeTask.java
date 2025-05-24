@@ -32,17 +32,6 @@ public class PurgeTask {
                                 .bind("since", since)
                                 .execute();
                     }
-
-                    // Clean up all category tables, no matter if they had a purge query or not.
-                    handle.createUpdate("VACUUM FULL <table_name>")
-                            .define("table_name", table.getTableName())
-                            .execute();
-                    handle.createUpdate("REINDEX TABLE <table_name>")
-                            .define("table_name", table.getTableName())
-                            .execute();
-                    handle.createUpdate("ANALYZE <table_name>")
-                            .define("table_name", table.getTableName())
-                            .execute();
                 }
             });
         } catch (Exception e) {
