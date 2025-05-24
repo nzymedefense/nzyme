@@ -208,11 +208,12 @@ public class Uav {
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DISTINCT ON (u.identifier) *, c.classification AS classification FROM uavs AS u " +
+                handle.createQuery("SELECT * FROM (SELECT DISTINCT ON (u.identifier) *, " +
+                                "c.classification AS classification FROM uavs AS u " +
                                 "LEFT JOIN uavs_classifications AS c ON c.uav_identifier = u.identifier " +
                                 "AND c.organization_id = :organization_id AND c.tenant_id = :tenant_id " +
                                 "WHERE u.last_seen >= :tr_from AND u.last_seen <= :tr_to AND u.tap_uuid IN (<taps>) " +
-                                "ORDER BY u.identifier, u.last_seen DESC " +
+                                "ORDER BY u.identifier, u.last_seen DESC) AS sub ORDER BY sub.last_seen DESC " +
                                 "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)
                         .bind("tr_from", timeRange.from())
