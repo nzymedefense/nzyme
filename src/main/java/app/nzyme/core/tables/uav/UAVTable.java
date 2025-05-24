@@ -313,78 +313,80 @@ public class UAVTable implements DataTable {
                 continue;
             }
 
-            DateTime earliestVectorTimestamp = null;
-            DateTime latestVectorTimestamp = null;
-            for (UavVectorReport vector : uav.vectorReports()) {
-                vectorBatch
-                        .bind("uav_id", existingUav.get())
-                        .bind("operational_status", vector.operationalStatus())
-                        .bind("latitude", vector.latitude())
-                        .bind("longitude", vector.longitude())
-                        .bind("ground_track", vector.groundTrack())
-                        .bind("speed", vector.speed())
-                        .bind("vertical_speed", vector.verticalSpeed())
-                        .bind("altitude_pressure", vector.altitudePressure())
-                        .bind("altitude_geodetic", vector.altitudeGeodetic())
-                        .bind("height_type", vector.heightType())
-                        .bind("height", vector.height())
-                        .bind("accuracy_horizontal", vector.horizontalAccuracy())
-                        .bind("accuracy_vertical", vector.verticalAccuracy())
-                        .bind("accuracy_barometer", vector.barometerAccuracy())
-                        .bind("accuracy_speed", vector.speedAccuracy())
-                        .bind("timestamp", vector.timestamp())
-                        .add();
+            if (!uav.vectorReports().isEmpty()) {
+                DateTime earliestVectorTimestamp = null;
+                DateTime latestVectorTimestamp = null;
+                for (UavVectorReport vector : uav.vectorReports()) {
+                    vectorBatch
+                            .bind("uav_id", existingUav.get())
+                            .bind("operational_status", vector.operationalStatus())
+                            .bind("latitude", vector.latitude())
+                            .bind("longitude", vector.longitude())
+                            .bind("ground_track", vector.groundTrack())
+                            .bind("speed", vector.speed())
+                            .bind("vertical_speed", vector.verticalSpeed())
+                            .bind("altitude_pressure", vector.altitudePressure())
+                            .bind("altitude_geodetic", vector.altitudeGeodetic())
+                            .bind("height_type", vector.heightType())
+                            .bind("height", vector.height())
+                            .bind("accuracy_horizontal", vector.horizontalAccuracy())
+                            .bind("accuracy_vertical", vector.verticalAccuracy())
+                            .bind("accuracy_barometer", vector.barometerAccuracy())
+                            .bind("accuracy_speed", vector.speedAccuracy())
+                            .bind("timestamp", vector.timestamp())
+                            .add();
 
-                if (earliestVectorTimestamp == null) {
-                    earliestVectorTimestamp = vector.timestamp();
-                } else {
-                    if (vector.timestamp().isBefore(earliestVectorTimestamp)) {
+                    if (earliestVectorTimestamp == null) {
                         earliestVectorTimestamp = vector.timestamp();
+                    } else {
+                        if (vector.timestamp().isBefore(earliestVectorTimestamp)) {
+                            earliestVectorTimestamp = vector.timestamp();
+                        }
                     }
-                }
 
-                if (latestVectorTimestamp == null) {
-                    latestVectorTimestamp = vector.timestamp();
-                } else {
-                    if (vector.timestamp().isAfter(latestVectorTimestamp)) {
+                    if (latestVectorTimestamp == null) {
                         latestVectorTimestamp = vector.timestamp();
+                    } else {
+                        if (vector.timestamp().isAfter(latestVectorTimestamp)) {
+                            latestVectorTimestamp = vector.timestamp();
+                        }
                     }
                 }
-            }
 
-            // Do we have an existing and active timeline for this UAV?
-            Optional<Long> timelineId = handle.createQuery("SELECT id FROM uavs_timelines " +
-                            "WHERE uav_identifier = :uav_identifier " +
-                            "AND tenant_id = :tenant_id AND organization_id = :organization_id " +
-                            "AND seen_to >= NOW() - INTERVAL '5 minutes'")
-                    .bind("uav_identifier", uav.identifier())
-                    .bind("organization_id", tap.organizationId())
-                    .bind("tenant_id", tap.tenantId())
-                    .mapTo(Long.class)
-                    .findOne();
-
-            if (timelineId.isPresent()) {
-                // Update existing timeline.
-                handle.createUpdate("UPDATE uavs_timelines SET seen_to = :seen_to WHERE id = :id")
-                        .bind("seen_to", latestVectorTimestamp)
-                        .bind("id", timelineId.get())
-                        .execute();
-            } else {
-                // Create new timeline.
-                handle.createUpdate("INSERT INTO uavs_timelines(uav_identifier, organization_id, tenant_id, " +
-                                "uuid, seen_from, seen_to) VALUES(:uav_identifier, :organization_id, :tenant_id, " +
-                                ":uuid, :seen_from, :seen_to)")
+                // Do we have an existing and active timeline for this UAV?
+                Optional<Long> timelineId = handle.createQuery("SELECT id FROM uavs_timelines " +
+                                "WHERE uav_identifier = :uav_identifier " +
+                                "AND tenant_id = :tenant_id AND organization_id = :organization_id " +
+                                "AND seen_to >= NOW() - INTERVAL '5 minutes'")
                         .bind("uav_identifier", uav.identifier())
                         .bind("organization_id", tap.organizationId())
                         .bind("tenant_id", tap.tenantId())
-                        .bind("seen_from", earliestVectorTimestamp)
-                        .bind("seen_to", latestVectorTimestamp)
-                        .bind("uuid", UUID.randomUUID())
-                        .execute();
-            }
-        }
+                        .mapTo(Long.class)
+                        .findOne();
 
-        vectorBatch.execute();
+                if (timelineId.isPresent()) {
+                    // Update existing timeline.
+                    handle.createUpdate("UPDATE uavs_timelines SET seen_to = :seen_to WHERE id = :id")
+                            .bind("seen_to", latestVectorTimestamp)
+                            .bind("id", timelineId.get())
+                            .execute();
+                } else {
+                    // Create new timeline.
+                    handle.createUpdate("INSERT INTO uavs_timelines(uav_identifier, organization_id, tenant_id, " +
+                                    "uuid, seen_from, seen_to) VALUES(:uav_identifier, :organization_id, :tenant_id, " +
+                                    ":uuid, :seen_from, :seen_to)")
+                            .bind("uav_identifier", uav.identifier())
+                            .bind("organization_id", tap.organizationId())
+                            .bind("tenant_id", tap.tenantId())
+                            .bind("seen_from", earliestVectorTimestamp)
+                            .bind("seen_to", latestVectorTimestamp)
+                            .bind("uuid", UUID.randomUUID())
+                            .execute();
+                }
+            }
+
+            vectorBatch.execute();
+        }
     }
 
     private void alertUavs(Tap tap, List<UavReport> uavs) {
