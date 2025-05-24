@@ -164,12 +164,20 @@ export default function UavMap(props) {
   }, [mapInitialized])
 
   useEffect(() => {
-    if (mapInitialized && plottedTrack) {
+    if (mapInitialized && plottedTrack && plottedTrack.vectors.length > 0) {
+      // Delete any existing track markers.
+      map.eachLayer(function (layer) {
+        if (layer.options.nzymeType === "track-position") {
+          layer.remove();
+        }
+      });
+
       const trackLatLngs = [];
       plottedTrack.vectors.forEach(vector => {
         trackLatLngs.push([vector.latitude, vector.longitude]);
 
         const pos = L.marker(latLng(vector.latitude, vector.longitude), {
+          nzymeType: "track-position",
           icon: vectorPositionIcon,
           draggable: false,
           autoPan: true
@@ -178,7 +186,7 @@ export default function UavMap(props) {
         pos.bindTooltip(vectorPositionTooltip(vector));
       })
 
-      var track = L.polyline(trackLatLngs, {color: "#1d30d7"})
+      var track = L.polyline(trackLatLngs, {nzymeType: "track-position", color: "#1d30d7"})
           .addTo(map);
       map.fitBounds(track.getBounds());
     }
@@ -190,7 +198,7 @@ export default function UavMap(props) {
 
   return (
     <React.Fragment>
-      <div id="uav-map" style={{height: containerHeight}}/>
+      <div id="uav-map" style={{height: containerHeight}} />
     </React.Fragment>
   )
 

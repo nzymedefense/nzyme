@@ -8,14 +8,12 @@ import java.util.UUID;
 @AutoValue
 public abstract class UavTimelineEntry {
 
-    public abstract long id();
     public abstract UUID uuid();
     public abstract DateTime seenFrom();
     public abstract DateTime seenTo();
 
-    public static UavTimelineEntry create(long id, UUID uuid, DateTime seenFrom, DateTime seenTo) {
+    public static UavTimelineEntry create(UUID uuid, DateTime seenFrom, DateTime seenTo) {
         return builder()
-                .id(id)
                 .uuid(uuid)
                 .seenFrom(seenFrom)
                 .seenTo(seenTo)
@@ -28,8 +26,6 @@ public abstract class UavTimelineEntry {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(long id);
-
         public abstract Builder uuid(UUID uuid);
 
         public abstract Builder seenFrom(DateTime seenFrom);

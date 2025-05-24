@@ -267,18 +267,15 @@ public class Uav {
     public long countTimelines(String identifier,
                                TimeRange timeRange,
                                @NotNull UUID organizationId,
-                               @NotNull UUID tenantId,
-                               List<UUID> taps) {
+                               @NotNull UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM uavs_timelines AS t " +
-                                "LEFT JOIN uavs AS u ON u.identifier = t.uav_identifier " +
                                 "WHERE t.seen_to >= :tr_from AND t.seen_to <= :tr_to " +
                                 "AND t.uav_identifier = :identifier AND t.organization_id = :organization_id " +
-                                "AND t.tenant_id = :tenant_id AND u.tap_uuid IN (<taps>)")
+                                "AND t.tenant_id = :tenant_id")
                         .bind("identifier", identifier)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
-                        .bindList("taps", taps)
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .mapTo(Long.class)
@@ -290,21 +287,17 @@ public class Uav {
                                                    TimeRange timeRange,
                                                    @NotNull UUID organizationId,
                                                    @NotNull UUID tenantId,
-                                                   List<UUID> taps,
                                                    int limit,
                                                    int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-            handle.createQuery("SELECT t.id, t.seen_from, t.seen_to, t.uuid FROM uavs_timelines AS t " +
-                            "LEFT JOIN uavs AS u ON u.identifier = t.uav_identifier " +
+            handle.createQuery("SELECT t.seen_from, t.seen_to, t.uuid FROM uavs_timelines AS t " +
                             "WHERE t.seen_to >= :tr_from AND t.seen_to <= :tr_to " +
                             "AND t.uav_identifier = :identifier AND t.organization_id = :organization_id " +
-                            "AND t.tenant_id = :tenant_id AND u.tap_uuid IN (<taps>) " +
-                            "ORDER BY t.seen_to DESC " +
-                            "LIMIT :limit OFFSET :offset")
+                            "AND t.tenant_id = :tenant_id " +
+                            "ORDER BY t.seen_to DESC LIMIT :limit OFFSET :offset")
                     .bind("identifier", identifier)
                     .bind("organization_id", organizationId)
                     .bind("tenant_id", tenantId)
-                    .bindList("taps", taps)
                     .bind("limit", limit)
                     .bind("offset", offset)
                     .bind("tr_from", timeRange.from())
@@ -317,30 +310,39 @@ public class Uav {
     public Optional<UavTimelineEntry> findUavTimeline(String uavIdentifier,
                                                       UUID timelineId,
                                                       @NotNull UUID organizationId,
-                                                      @NotNull UUID tenantId,
-                                                      List<UUID> taps) {
+                                                      @NotNull UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT t.id, t.seen_from, t.seen_to, t.uuid FROM uavs_timelines AS t " +
-                                "LEFT JOIN uavs AS u ON u.identifier = t.uav_identifier " +
                                 "WHERE t.uuid = :timeline_uuid AND t.uav_identifier = :identifier " +
-                                "AND t.organization_id = :organization_id " +
-                                "AND t.tenant_id = :tenant_id AND u.tap_uuid IN (<taps>)")
+                                "AND t.organization_id = :organization_id AND t.tenant_id = :tenant_id " +
+                                "ORDER BY t.seen_to DESC LIMIT 1")
                         .bind("timeline_uuid", timelineId)
                         .bind("identifier", uavIdentifier)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
-                        .bindList("taps", taps)
                         .mapTo(UavTimelineEntry.class)
                         .findOne()
         );
     }
 
-    public List<UavVectorEntry> findVectorsOfTimeline(long uavId, DateTime from, DateTime to) {
+    public List<UavVectorEntry> findVectorsOfTimeline(String uavIdentifier,
+                                                      @NotNull UUID organizationId,
+                                                      @NotNull UUID tenantId,
+                                                      DateTime from,
+                                                      DateTime to) {
+
+
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM uavs_vectors WHERE uav_id = :uav_id " +
-                                "AND timestamp >= :from AND timestamp <= :to " +
-                                "ORDER BY timestamp ASC LIMIT 2000")
-                        .bind("uav_id", uavId)
+                handle.createQuery("SELECT * FROM uavs_vectors AS v " +
+                                "LEFT JOIN uavs AS u ON v.uav_id = u.id " +
+                                "LEFT JOIN taps AS t ON u.tap_uuid = t.uuid " +
+                                "WHERE u.identifier = :identifier AND " +
+                                "t.organization_id = :organization_id AND t.tenant_id = :tenant_id AND " +
+                                "v.timestamp >= :from AND v.timestamp <= :to " +
+                                "ORDER BY v.timestamp ASC LIMIT 2000")
+                        .bind("identifier", uavIdentifier)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
                         .bind("from", from)
                         .bind("to", to)
                         .mapTo(UavVectorEntry.class)

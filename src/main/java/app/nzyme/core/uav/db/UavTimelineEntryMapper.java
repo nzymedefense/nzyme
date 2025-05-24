@@ -13,7 +13,6 @@ public class UavTimelineEntryMapper implements RowMapper<UavTimelineEntry> {
     @Override
     public UavTimelineEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return UavTimelineEntry.create(
-                rs.getLong("id"),
                 UUID.fromString(rs.getString("uuid")),
                 new DateTime(rs.getTimestamp("seen_from")),
                 new DateTime(rs.getTimestamp("seen_to"))

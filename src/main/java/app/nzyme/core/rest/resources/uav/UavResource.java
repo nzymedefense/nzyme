@@ -111,20 +111,17 @@ public class UavResource extends TapDataHandlingResource {
                                   @PathParam("tenant_id") UUID tenantId,
                                   @QueryParam("time_range") @Valid String timeRangeParameter,
                                   @QueryParam("limit") int limit,
-                                  @QueryParam("offset") int offset,
-                                  @QueryParam("taps") String tapIds) {
+                                  @QueryParam("offset") int offset) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
-
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
-        long count = nzyme.getUav().countTimelines(uavIdentifier, timeRange, organizationId, tenantId, taps);
+        long count = nzyme.getUav().countTimelines(uavIdentifier, timeRange, organizationId, tenantId);
         List<UavTimelineDetailsResponse> timelines = Lists.newArrayList();
         for (UavTimelineEntry timeline : nzyme.getUav()
-                .findUavTimelines(uavIdentifier, timeRange, organizationId, tenantId, taps, limit, offset)) {
+                .findUavTimelines(uavIdentifier, timeRange, organizationId, tenantId, limit, offset)) {
             Duration duration = new Duration(timeline.seenFrom(), timeline.seenTo());
 
             timelines.add(UavTimelineDetailsResponse.create(
@@ -152,17 +149,9 @@ public class UavResource extends TapDataHandlingResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
-
-        Optional<UavEntry> uav = nzyme.getUav().findUav(uavIdentifier, organizationId, tenantId, taps);
-
-        if (uav.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
         // Get Timeline
         Optional<UavTimelineEntry> timeline = nzyme.getUav()
-                .findUavTimeline(uavIdentifier, timelineId, organizationId, tenantId, taps);
+                .findUavTimeline(uavIdentifier, timelineId, organizationId, tenantId);
 
         // Does the timeline exist?
         if (timeline.isEmpty()) {
@@ -172,7 +161,8 @@ public class UavResource extends TapDataHandlingResource {
         // Query vectors for UAV during timeline duration.
         List<UavVectorDetailsResponse> vectors =  Lists.newArrayList();
         for (UavVectorEntry v : nzyme.getUav()
-                .findVectorsOfTimeline(uav.get().id(), timeline.get().seenFrom(), timeline.get().seenTo())) {
+                .findVectorsOfTimeline(uavIdentifier, organizationId, tenantId,
+                        timeline.get().seenFrom(), timeline.get().seenTo())) {
             if (v.latitude() == null || v.longitude() == null) {
                 continue;
             }

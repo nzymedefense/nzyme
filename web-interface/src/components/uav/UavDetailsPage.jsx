@@ -80,7 +80,6 @@ export default function UavDetailsPage() {
         tenantId,
         timelineTimeRange,
         identifierParam,
-        selectedTaps,
         perPageTimeline,
         (timelinePage - 1) * perPageTimeline
       );
@@ -105,7 +104,7 @@ export default function UavDetailsPage() {
     setPlottedTrack(null);
     setPlottedTrackLoading(timelineId)
     uavService.findTimelineVectors(
-        setPlottedTrack, identifierParam, timelineId, organizationId, tenantId, selectedTaps, () => {
+        setPlottedTrack, identifierParam, timelineId, organizationId, tenantId, () => {
           setPlottedTrackLoading(null);
         }
     );

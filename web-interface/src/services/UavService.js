@@ -19,20 +19,15 @@ export default class UavService {
     )
   }
 
-  findTimeline(setTimeline, organizationId, tenantId, timeRange, identifier, taps, limit, offset) {
-    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
-
+  findTimeline(setTimeline, organizationId, tenantId, timeRange, identifier, limit, offset) {
     RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/show/${identifier}/timelines`,
-        { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
+        { time_range: timeRange, limit: limit, offset: offset },
         (response) => setTimeline(response.data)
     )
   }
 
-  findTimelineVectors(setTrack, uavIdentifier, timelineId, organizationId, tenantId, taps, onComplete) {
-    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
-
-    RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/show/${uavIdentifier}/timelines/show/${timelineId}`,
-        { taps: tapsList },
+  findTimelineVectors(setTrack, uavIdentifier, timelineId, organizationId, tenantId, onComplete) {
+    RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/show/${uavIdentifier}/timelines/show/${timelineId}`, { },
         (response) => { setTrack(response.data); if (onComplete) onComplete(response.data) }
     )
   }

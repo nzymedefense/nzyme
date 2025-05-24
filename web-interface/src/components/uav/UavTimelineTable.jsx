@@ -25,6 +25,11 @@ export default function UavTimelineTable(props) {
 
   return (
     <React.Fragment>
+      <p className="text-muted">
+        Timeline &amp; Tracks always use data from all taps of your selected tenants and override a possible manual
+        tap selection.
+      </p>
+
       <table className="table table-sm table-hover table-striped">
         <thead>
         <tr>
