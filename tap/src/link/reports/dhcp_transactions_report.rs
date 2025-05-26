@@ -1,8 +1,9 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::MutexGuard;
 use chrono::{DateTime, Utc};
-use serde::Serialize;
-use crate::wired::packets::{Dhcpv4Transaction, SocksTunnel};
+use serde::{Serialize, Serializer};
+use serde::ser::SerializeMap;
+use crate::wired::packets::Dhcpv4Transaction;
 
 #[derive(Serialize)]
 pub struct DhcpTransactionsReport {
@@ -21,12 +22,35 @@ pub struct Dhcpv4TransactionReport {
     pub requested_ip_address: Option<String>,
     pub options_fingerprint: Option<String>,
     pub additional_options_fingerprints: HashSet<String>,
+    #[serde(serialize_with = "serialize_timestamps")] // We need microsecond resolution.
     pub timestamps: HashMap<String, Vec<DateTime<Utc>>>,
     pub first_packet: DateTime<Utc>,
     pub latest_packet: DateTime<Utc>,
     pub notes: HashSet<String>,
     pub successful: Option<bool>,
     pub complete: bool
+}
+
+fn serialize_timestamps<S>(
+    timestamps: &HashMap<String, Vec<DateTime<Utc>>>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let mut map = serializer.serialize_map(Some(timestamps.len()))?;
+    for (key, vec) in timestamps {
+        let strs: Vec<String> = vec
+            .iter()
+            .map(|dt| {
+                let whole     = dt.format("%Y-%m-%dT%H:%M:%S");
+                let frac4     = dt.timestamp_subsec_nanos() / 100_000;
+                format!("{}.{:04}Z", whole, frac4)
+            })
+            .collect();
+        map.serialize_entry(key, &strs)?;
+    }
+    map.end()
 }
 
 pub fn generate(txs: &MutexGuard<HashMap<u32, Dhcpv4Transaction>>) -> DhcpTransactionsReport {

@@ -2,7 +2,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::net::IpAddr;
 use std::sync::{Arc, Mutex};
 use chrono::{Duration, Utc};
-use log::{error, warn};
+use log::{error, info, warn};
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::{dhcp_transactions_report, socks_tunnels_report};
@@ -66,7 +66,7 @@ impl DhcpTable {
                                         tx.latest_packet = dhcp.timestamp;
                                         tx.record_timestamp(Dhcpv4MessageType::Request, dhcp.timestamp);
 
-                                        let requested_ip_address = match (dhcp.dhcp_client_address, 
+                                        let requested_ip_address = match (dhcp.dhcp_client_address,
                                                                           dhcp.requested_ip_address) {
                                             (Some(_), Some(_)) => dhcp.requested_ip_address,
                                             (Some(_), None) => dhcp.dhcp_client_address,
@@ -75,7 +75,7 @@ impl DhcpTable {
                                         };
 
                                         tx.requested_ip_address = requested_ip_address;
-                                        
+
                                         tx.record_client_mac(dhcp.source_mac.clone());
                                         tx.record_server_mac(dhcp.destination_mac.clone());
                                         tx.record_fingerprint(&dhcp);
@@ -167,6 +167,10 @@ impl DhcpTable {
 
                         // Release is terminal with no more messages in transaction.
                         let complete = tx_type == Dhcp4TransactionType::Release;
+                        let successful = match tx_type == Dhcp4TransactionType::Release {
+                            true => Some(true),
+                            false => None
+                        };
 
                         let mut timestamps = HashMap::new();
                         timestamps.insert(dhcp.message_type.clone(), vec![dhcp.timestamp]);
@@ -186,7 +190,7 @@ impl DhcpTable {
                             first_packet: dhcp.timestamp,
                             latest_packet: dhcp.timestamp,
                             notes: HashSet::new(),
-                            successful: None,
+                            successful,
                             complete
                         };
 

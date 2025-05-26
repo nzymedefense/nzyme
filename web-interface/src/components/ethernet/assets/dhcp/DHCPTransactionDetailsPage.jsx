@@ -10,10 +10,12 @@ import AssetsService from "../../../../services/ethernet/AssetsService";
 import moment from "moment";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
-import {Presets} from "../../../shared/timerange/TimeRange";
 import DHCPTransactionSuccess from "./DHCPTransactionSuccess";
 import DHCPDuration from "./DHCPDuration";
 import DHCPNotes from "./DHCPNotes";
+import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress";
+import IPAddress from "../../shared/IPAddress";
+import DHCPOfferedIpAddresses from "./DHCPOfferedIpAddresses";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -78,10 +80,10 @@ export default function DHCPTransactionDetailsPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-md-4">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Transaction Information" />
+                <CardTitleWithControls title="Transaction" />
 
                 <dl>
                   <dt>ID</dt>
@@ -98,7 +100,22 @@ export default function DHCPTransactionDetailsPage() {
             </div>
           </div>
 
-          <div className="col-md-6">
+          <div className="col-md-4">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Devices" />
+
+                <dl>
+                  <dt>Client</dt>
+                  <dd><EthernetMacAddress addressWithContext={tx.client_mac} /></dd>
+                  <dt>Server</dt>
+                  <dd>{tx.server_mac ? <EthernetMacAddress addressWithContext={tx.server_mac} /> : <span className="text-muted">n/a</span>}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-4">
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Timing" />
@@ -126,7 +143,7 @@ export default function DHCPTransactionDetailsPage() {
               <div className="card-body">
                 <CardTitleWithControls title="Notes" />
 
-                <DHCPNotes notes={tx.notes} />
+                <DHCPNotes tx={tx} />
               </div>
             </div>
           </div>
@@ -138,7 +155,31 @@ export default function DHCPTransactionDetailsPage() {
               <div className="card-body">
                 <CardTitleWithControls title="Transaction Steps" />
 
+                <dl>
+                  <dt>Offered IP Addresses</dt>
+                  <dd><DHCPOfferedIpAddresses ips={tx.offered_ip_addresses} /></dd>
+                  <dt>Requested IP Address</dt>
+                  <dd><IPAddress ip={tx.requested_ip_address} /></dd>
+                </dl>
 
+                <table className="table table-sm table-hover table-striped">
+                  <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Step</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {tx.timeline.map((t, i) => {
+                    return (
+                        <tr key={i}>
+                          <td>{moment(t.timestamp).format("YYYY-MM-DDTHH:mm:ss.SSSZ")}</td>
+                          <td>{t.step}</td>
+                        </tr>
+                    )
+                  })}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

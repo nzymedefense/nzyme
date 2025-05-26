@@ -45,8 +45,8 @@ public abstract class DHCPTransactionDetailsResponse {
     @JsonProperty("additional_options_fingerprints")
     public abstract List<String> additionalOptionsFingerprints();
 
-    @JsonProperty("timestamps")
-    public abstract Map<String, List<DateTime>> timestamps();
+    @JsonProperty("timeline")
+    public abstract List<DHCPTimelineStepResponse> timeline();
 
     @JsonProperty("first_packet")
     @Nullable
@@ -66,9 +66,10 @@ public abstract class DHCPTransactionDetailsResponse {
     public abstract boolean isComplete();
 
     @JsonProperty("duration_ms")
+    @Nullable
     public abstract Long durationMs();
 
-    public static DHCPTransactionDetailsResponse create(long transactionId, String transactionType, EthernetMacAddressResponse clientMac, List<String> additionalClientMacs, EthernetMacAddressResponse serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, String optionsFingerprint, List<String> additionalOptionsFingerprints, Map<String, List<DateTime>> timestamps, DateTime firstPacket, DateTime latestPacket, List<String> notes, Boolean isSuccessful, boolean isComplete, Long durationMs) {
+    public static DHCPTransactionDetailsResponse create(long transactionId, String transactionType, EthernetMacAddressResponse clientMac, List<String> additionalClientMacs, EthernetMacAddressResponse serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, String optionsFingerprint, List<String> additionalOptionsFingerprints, List<DHCPTimelineStepResponse> timeline, DateTime firstPacket, DateTime latestPacket, List<String> notes, Boolean isSuccessful, boolean isComplete, Long durationMs) {
         return builder()
                 .transactionId(transactionId)
                 .transactionType(transactionType)
@@ -80,7 +81,7 @@ public abstract class DHCPTransactionDetailsResponse {
                 .requestedIpAddress(requestedIpAddress)
                 .optionsFingerprint(optionsFingerprint)
                 .additionalOptionsFingerprints(additionalOptionsFingerprints)
-                .timestamps(timestamps)
+                .timeline(timeline)
                 .firstPacket(firstPacket)
                 .latestPacket(latestPacket)
                 .notes(notes)
@@ -116,7 +117,7 @@ public abstract class DHCPTransactionDetailsResponse {
 
         public abstract Builder additionalOptionsFingerprints(List<String> additionalOptionsFingerprints);
 
-        public abstract Builder timestamps(Map<String, List<DateTime>> timestamps);
+        public abstract Builder timeline(List<DHCPTimelineStepResponse> timeline);
 
         public abstract Builder firstPacket(DateTime firstPacket);
 

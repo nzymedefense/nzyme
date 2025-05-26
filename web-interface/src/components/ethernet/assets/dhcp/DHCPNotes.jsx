@@ -1,9 +1,52 @@
 import React from "react";
+import MacAddress from "../../../shared/context/macs/MacAddress";
 
 export default function DHCPNotes(props) {
 
-  const notes = props.notes;
-  
+  const notes = props.tx.notes;
+  const additionalServerMacs = props.tx.additional_server_macs;
+  const additionalClientMacs = props.tx.additional_client_macs;
+  const additionalOptionsFingerprints = props.tx.additional_options_fingerprints;
+
+  const macList = (data, title) => {
+    if (data == null || data.length === 0) {
+      return null;
+    }
+
+    return (
+        <div className="mt-3 mb-0">
+          <h3>{title}</h3>
+          <ul>
+            {data.map((x, i) => {
+              return (
+                  <li key={i}><MacAddress address={x} /></li>
+              )
+            })}
+          </ul>
+        </div>
+    )
+  }
+
+  const fingerprintList = (data, title) => {
+    if (data == null || data.length === 0) {
+      return null;
+    }
+
+    return (
+        <div className="mt-3 mb-0">
+          <h3>{title}</h3>
+
+          <ul>
+            {data.map((x, i) => {
+              return (
+                  <li key={i}><span className="dhcp-options-fingerprint">{x}</span></li>
+              )
+            })}
+          </ul>
+        </div>
+    )
+  }
+
   if (notes == null || notes.length === 0) {
     return <div className="alert alert-success mb-0">No notes for this transaction. Everything looks OK!</div>
   }
@@ -45,6 +88,10 @@ export default function DHCPNotes(props) {
               <div className="alert alert-danger" key={index}>{text}</div>
           );
         })}
+
+        {macList(additionalServerMacs, "Additional Server MAC Addresses")}
+        {macList(additionalClientMacs, "Additional Client MAC Addresses")}
+        {fingerprintList(additionalOptionsFingerprints, "Additional Options Fingerprints")}
       </React.Fragment>
   )
 

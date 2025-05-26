@@ -31,7 +31,7 @@ public class DHCPTransactionMapper implements RowMapper<DHCPTransactionEntry> {
         List<String> offeredIpAddresses;
         List<String> additionalOptionsFingerprints;
         List<String> notes;
-        Map<String, List<DateTime>> timestamps;
+        Map<String, List<String>> timestamps;
 
         try {
             additionalClientMacs = jsonbStringList(rs, "additional_client_macs");

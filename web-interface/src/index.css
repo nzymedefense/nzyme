@@ -839,7 +839,8 @@ a.ip-address, span.ip-address,
 a.hostname, span.hostname,
 a.ssh-session-key, span.ssh-session-key,
 a.socks-tunnel-id, span.socks-tunnel-id,
-a.dhcp-transaction-id, span.dhcp-transaction-id {
+a.dhcp-transaction-id, span.dhcp-transaction-id,
+a.dhcp-options-fingerprint, span.dhcp-options-fingerprint {
     font-family: 'B612 Mono', monospace;
     font-size: 12px;
 }

@@ -23,7 +23,7 @@ public abstract class DHCPTransactionEntry {
     @Nullable
     public abstract String optionsFingerprint();
     public abstract List<String> additionalOptionsFingerprints();
-    public abstract Map<String, List<DateTime>> timestamps();
+    public abstract Map<String, List<String>> timestamps(); // String not DateTime, because we need microsecond resolution.
     @Nullable
     public abstract DateTime firstPacket();
     public abstract DateTime latestPacket();
@@ -31,7 +31,7 @@ public abstract class DHCPTransactionEntry {
     public abstract boolean isSuccessful();
     public abstract boolean isComplete();
 
-    public static DHCPTransactionEntry create(long transactionId, String transactionType, String clientMac, List<String> additionalClientMacs, String serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, String optionsFingerprint, List<String> additionalOptionsFingerprints, Map<String, List<DateTime>> timestamps, DateTime firstPacket, DateTime latestPacket, List<String> notes, boolean isSuccessful, boolean isComplete) {
+    public static DHCPTransactionEntry create(long transactionId, String transactionType, String clientMac, List<String> additionalClientMacs, String serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, String optionsFingerprint, List<String> additionalOptionsFingerprints, Map<String, List<String>> timestamps, DateTime firstPacket, DateTime latestPacket, List<String> notes, boolean isSuccessful, boolean isComplete) {
         return builder()
                 .transactionId(transactionId)
                 .transactionType(transactionType)
@@ -78,7 +78,7 @@ public abstract class DHCPTransactionEntry {
 
         public abstract Builder additionalOptionsFingerprints(List<String> additionalOptionsFingerprints);
 
-        public abstract Builder timestamps(Map<String, List<DateTime>> timestamps);
+        public abstract Builder timestamps(Map<String, List<String>> timestamps);
 
         public abstract Builder firstPacket(DateTime firstPacket);
 

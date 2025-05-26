@@ -26,7 +26,7 @@ public abstract class Dhcpv4TransactionReport {
     @Nullable
     public abstract String optionsFingerprint();
     public abstract Set<String> additionalOptionsFingerprints();
-    public abstract Map<String, List<DateTime>> timestamps();
+    public abstract Map<String, List<String>> timestamps(); // String not DateTime, because we need microsecond resolution.
     public abstract DateTime firstPacket();
     public abstract DateTime latestPacket();
     public abstract Set<String> notes();
@@ -44,7 +44,7 @@ public abstract class Dhcpv4TransactionReport {
                                                  @JsonProperty("requested_ip_address") String requestedIpAddress,
                                                  @JsonProperty("options_fingerprint") String optionsFingerprint,
                                                  @JsonProperty("additional_options_fingerprints") Set<String> additionalOptionsFingerprints,
-                                                 @JsonProperty("timestamps") Map<String, List<DateTime>> timestamps,
+                                                 @JsonProperty("timestamps") Map<String, List<String>> timestamps,
                                                  @JsonProperty("first_packet") DateTime firstPacket,
                                                  @JsonProperty("latest_packet") DateTime latestPacket,
                                                  @JsonProperty("notes") Set<String> notes,
@@ -96,7 +96,7 @@ public abstract class Dhcpv4TransactionReport {
 
         public abstract Builder additionalOptionsFingerprints(Set<String> additionalOptionsFingerprints);
 
-        public abstract Builder timestamps(Map<String, List<DateTime>> timestamps);
+        public abstract Builder timestamps(Map<String, List<String>> timestamps);
 
         public abstract Builder firstPacket(DateTime firstPacket);
 

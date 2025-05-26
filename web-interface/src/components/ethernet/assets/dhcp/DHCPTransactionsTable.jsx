@@ -72,7 +72,7 @@ export default function DHCPTransactionsTable(props) {
                   <td>{moment(t.first_packet).format()}</td>
                   <td>{t.transaction_type}</td>
                   <td><EthernetMacAddress addressWithContext={t.client_mac} /></td>
-                  <td>{t.server_mac ? <EthernetMacAddress addressWithContext={t.server_mac} /> : <span className="text-muted">n/a</span> }</td>
+                  <td>{t.server_mac ? <EthernetMacAddress addressWithContext={t.server_mac} /> : <span className="text-muted">n/a</span>}</td>
                   <td><IPAddress ip={t.requested_ip_address} /></td>
                   <td><DHCPTransactionSuccess success={t.is_successful} /></td>
                   <td>{t.is_complete ? <span className="text-success">Complete</span>

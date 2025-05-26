@@ -7,6 +7,7 @@ import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
+import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTimelineStepResponse;
 import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTransactionDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTransactionsListResponse;
 import app.nzyme.core.util.TimeRange;
@@ -24,9 +25,8 @@ import org.jetbrains.annotations.Nullable;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Path("/api/ethernet/dhcp")
 @Produces(MediaType.APPLICATION_JSON)
@@ -95,6 +95,20 @@ public class DHCPResource extends TapDataHandlingResource {
                 authenticatedUser.getTenantId()
         );
 
+        // We change the structure of the timestamps to be easier to use in the client.
+        List<DHCPTimelineStepResponse> unsortedTimeline = Lists.newArrayList();
+        for (Map.Entry<String, List<String>> step : tx.timestamps().entrySet()) {
+            for (String timestamp : step.getValue()) {
+                unsortedTimeline.add(DHCPTimelineStepResponse.create(step.getKey(), timestamp));
+            }
+        }
+
+        List<DHCPTimelineStepResponse> sortedTimeline = tx.timestamps().entrySet().stream()
+                .flatMap(e -> e.getValue().stream()
+                        .map(ts -> DHCPTimelineStepResponse.create(e.getKey(), ts)))
+                .sorted(Comparator.comparing(DHCPTimelineStepResponse::timestamp))
+                .toList();
+
         return DHCPTransactionDetailsResponse.create(
                 tx.transactionId(),
                 tx.transactionType(),
@@ -115,7 +129,7 @@ public class DHCPResource extends TapDataHandlingResource {
                 tx.requestedIpAddress(),
                 tx.optionsFingerprint(),
                 tx.additionalOptionsFingerprints(),
-                tx.timestamps(),
+                sortedTimeline,
                 tx.firstPacket(),
                 tx.latestPacket(),
                 tx.notes(),

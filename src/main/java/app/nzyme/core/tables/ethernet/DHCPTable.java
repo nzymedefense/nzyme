@@ -89,15 +89,23 @@ public class DHCPTable implements DataTable {
                 continue;
             }
 
-            Optional<Long> existingTx = handle.createQuery("SELECT id FROM dhcp_transactions " +
-                            "WHERE transaction_id = :transaction_id AND first_packet = :first_packet " +
-                            "AND tap_uuid = :tap_uuid AND is_complete = :is_complete")
-                    .bind("transaction_id", tx.transactionId())
-                    .bind("first_packet", tx.firstPacket())
-                    .bind("tap_uuid", tapUuid)
-                    .bind("is_complete", false)
-                    .mapTo(Long.class)
-                    .findOne();
+            Optional<Long> existingTx;
+
+            try {
+                existingTx = handle.createQuery("SELECT id FROM dhcp_transactions " +
+                                "WHERE transaction_id = :transaction_id AND first_packet = :first_packet " +
+                                "AND tap_uuid = :tap_uuid AND is_complete = :is_complete")
+                        .bind("transaction_id", tx.transactionId())
+                        .bind("first_packet", tx.firstPacket())
+                        .bind("tap_uuid", tapUuid)
+                        .bind("is_complete", false)
+                        .mapTo(Long.class)
+                        .findOne();
+            } catch (IllegalStateException e) {
+                LOG.error("Multiple existing DHCP transactions with transaction ID <{}> found. Skipping.",
+                        tx.transactionId());
+                continue;
+            }
 
             if (existingTx.isEmpty()) {
                 insertBatch
