@@ -71,7 +71,7 @@ export default function DHCPTransactionDetailsPage() {
 
         <div className="row mt-3">
           <div className="col-md-8">
-            <h1>DHCP Transaction &quot;{transactionId}&quot; <small>at {moment(transactionTime).format()}</small></h1>
+            <h1>DHCP Transaction <span className="machine-data">{transactionId}</span> <small>at {moment(transactionTime).format()}</small></h1>
           </div>
 
           <div className="col-md-4 text-end">
@@ -144,6 +144,28 @@ export default function DHCPTransactionDetailsPage() {
                 <CardTitleWithControls title="Notes" />
 
                 <DHCPNotes tx={tx} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Fingerprint" />
+
+                <dl className="mb-0">
+                  <dt>Device Fingerprint</dt>
+                  <dd><span className="dhcp-options-fingerprint">{tx.fingerprint}</span></dd>
+                  <dt>DHCP Options</dt>
+                  <dd>{tx.options != null && tx.options.length > 0 ?
+                      <span className="machine-data">{tx.options.join(",")}</span>
+                      : <span className="text-muted">None</span>}</dd>
+                  <dt>Vendor Class</dt>
+                  <dd>{tx.vendor_class ? <span className="machine-data">{tx.vendor_class}</span>
+                      : <span className="text-muted">None</span>}</dd>
+                </dl>
               </div>
             </div>
           </div>

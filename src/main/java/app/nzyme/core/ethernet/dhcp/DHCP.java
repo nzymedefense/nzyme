@@ -50,8 +50,11 @@ public class DHCP {
                                 "ANY_VALUE(additional_server_macs) AS additional_server_macs, " +
                                 "ANY_VALUE(offered_ip_addresses) AS offered_ip_addresses, " +
                                 "ANY_VALUE(requested_ip_address) AS requested_ip_address, " +
-                                "ANY_VALUE(options_fingerprint) AS options_fingerprint, " +
-                                "ANY_VALUE(additional_options_fingerprints) AS additional_options_fingerprints, " +
+                                "ANY_VALUE(options) AS options, ANY_VALUE(additional_options) AS additional_options, " +
+                                "ANY_VALUE(fingerprint) AS fingerprint, " +
+                                "ANY_VALUE(additional_fingerprints) AS additional_fingerprints, " +
+                                "ANY_VALUE(vendor_class) AS vendor_class, " +
+                                "ANY_VALUE(additional_vendor_classes) AS additional_vendor_classes, " +
                                 "ANY_VALUE(timestamps) AS timestamps, MAX(first_packet) AS first_packet, " +
                                 "MAX(latest_packet) AS latest_packet, ANY_VALUE(notes) AS notes, " +
                                 "BOOL_OR(is_successful) AS is_successful, BOOL_OR(is_complete) AS is_complete " +
@@ -84,8 +87,11 @@ public class DHCP {
                                 "ANY_VALUE(additional_server_macs) AS additional_server_macs, " +
                                 "ANY_VALUE(offered_ip_addresses) AS offered_ip_addresses, " +
                                 "ANY_VALUE(requested_ip_address) AS requested_ip_address, " +
-                                "ANY_VALUE(options_fingerprint) AS options_fingerprint, " +
-                                "ANY_VALUE(additional_options_fingerprints) AS additional_options_fingerprints, " +
+                                "ANY_VALUE(options) AS options, ANY_VALUE(additional_options) AS additional_options, " +
+                                "ANY_VALUE(fingerprint) AS fingerprint, " +
+                                "ANY_VALUE(additional_fingerprints) AS additional_fingerprints, " +
+                                "ANY_VALUE(vendor_class) AS vendor_class, " +
+                                "ANY_VALUE(additional_vendor_classes) AS additional_vendor_classes, " +
                                 "ANY_VALUE(timestamps) AS timestamps, MAX(first_packet) AS first_packet, " +
                                 "MAX(latest_packet) AS latest_packet, ANY_VALUE(notes) AS notes, " +
                                 "BOOL_OR(is_successful) AS is_successful, BOOL_OR(is_complete) AS is_complete " +

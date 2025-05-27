@@ -11,7 +11,6 @@ import org.joda.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,17 +28,22 @@ public class DHCPTransactionMapper implements RowMapper<DHCPTransactionEntry> {
         List<String> additionalClientMacs;
         List<String> additionalServerMacs;
         List<String> offeredIpAddresses;
-        List<String> additionalOptionsFingerprints;
+        List<Integer> options;
+        List<List<Integer>> additionalOptions;
+        List<String> additionalFingerprints;
+        List<String> additionalVendorClasses;
         List<String> notes;
         Map<String, List<String>> timestamps;
 
         try {
-            additionalClientMacs = jsonbStringList(rs, "additional_client_macs");
-            additionalServerMacs = jsonbStringList(rs, "additional_server_macs");
-            offeredIpAddresses = jsonbStringList(rs, "offered_ip_addresses");
-            additionalOptionsFingerprints = jsonbStringList(rs, "additional_options_fingerprints");
-            notes = jsonbStringList(rs, "notes");
-
+            additionalClientMacs = om.readValue(rs.getString("additional_client_macs"), new TypeReference<>() {});
+            additionalServerMacs = om.readValue(rs.getString("additional_server_macs"), new TypeReference<>() {});
+            offeredIpAddresses = om.readValue(rs.getString("offered_ip_addresses"), new TypeReference<>() {});
+            options = om.readValue(rs.getString("options"), new TypeReference<>() {});
+            additionalOptions = om.readValue(rs.getString("additional_options"), new TypeReference<>() {});
+            additionalFingerprints = om.readValue(rs.getString("additional_fingerprints"), new TypeReference<>() {});
+            additionalVendorClasses = om.readValue(rs.getString("additional_vendor_classes"), new TypeReference<>() {});
+            notes = om.readValue(rs.getString("notes"), new TypeReference<>() {});
             timestamps = om.readValue(rs.getString("timestamps"), new TypeReference<>() {});
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to parse JSON from DHCP transaction database object.", e);
@@ -54,8 +58,12 @@ public class DHCPTransactionMapper implements RowMapper<DHCPTransactionEntry> {
                 additionalServerMacs,
                 offeredIpAddresses,
                 rs.getString("requested_ip_address"),
-                rs.getString("options_fingerprint"),
-                additionalOptionsFingerprints,
+                options,
+                additionalOptions,
+                rs.getString("fingerprint"),
+                additionalFingerprints,
+                rs.getString("vendor_class"),
+                additionalVendorClasses,
                 timestamps,
                 firstPacket,
                 new DateTime(rs.getTimestamp("latest_packet")),
@@ -65,8 +73,5 @@ public class DHCPTransactionMapper implements RowMapper<DHCPTransactionEntry> {
         );
     }
 
-    private List<String> jsonbStringList(ResultSet rs, String columnName) throws SQLException, JsonProcessingException {
-        return om.readValue(rs.getString(columnName), new TypeReference<ArrayList<String>>() {});
-    }
 
 }

@@ -24,8 +24,13 @@ public abstract class Dhcpv4TransactionReport {
     @Nullable
     public abstract String requestedIpAddress();
     @Nullable
-    public abstract String optionsFingerprint();
-    public abstract Set<String> additionalOptionsFingerprints();
+    public abstract List<Integer> options();
+    @Nullable
+    public abstract Set<List<Integer>> additionalOptions();
+    @Nullable
+    public abstract String vendorClass();
+    public abstract Set<String> additionalVendorClasses();
+    @Nullable
     public abstract Map<String, List<String>> timestamps(); // String not DateTime, because we need microsecond resolution.
     public abstract DateTime firstPacket();
     public abstract DateTime latestPacket();
@@ -42,8 +47,10 @@ public abstract class Dhcpv4TransactionReport {
                                                  @JsonProperty("additional_server_macs") Set<String> additionalServerMacs,
                                                  @JsonProperty("offered_ip_addresses") Set<String> offeredIpAddresses,
                                                  @JsonProperty("requested_ip_address") String requestedIpAddress,
-                                                 @JsonProperty("options_fingerprint") String optionsFingerprint,
-                                                 @JsonProperty("additional_options_fingerprints") Set<String> additionalOptionsFingerprints,
+                                                 @JsonProperty("options") List<Integer> options,
+                                                 @JsonProperty("additional_options") Set<List<Integer>> additionalOptions,
+                                                 @JsonProperty("vendor_class") String vendorClass,
+                                                 @JsonProperty("additional_vendor_classes") List<String> additionalVendorClasses,
                                                  @JsonProperty("timestamps") Map<String, List<String>> timestamps,
                                                  @JsonProperty("first_packet") DateTime firstPacket,
                                                  @JsonProperty("latest_packet") DateTime latestPacket,
@@ -59,8 +66,10 @@ public abstract class Dhcpv4TransactionReport {
                 .additionalServerMacs(additionalServerMacs)
                 .offeredIpAddresses(offeredIpAddresses)
                 .requestedIpAddress(requestedIpAddress)
-                .optionsFingerprint(optionsFingerprint)
-                .additionalOptionsFingerprints(additionalOptionsFingerprints)
+                .options(options)
+                .additionalOptions(additionalOptions)
+                .vendorClass(vendorClass)
+                .additionalVendorClasses(additionalVendorClasses)
                 .timestamps(timestamps)
                 .firstPacket(firstPacket)
                 .latestPacket(latestPacket)
@@ -92,9 +101,13 @@ public abstract class Dhcpv4TransactionReport {
 
         public abstract Builder requestedIpAddress(String requestedIpAddress);
 
-        public abstract Builder optionsFingerprint(String optionsFingerprint);
+        public abstract Builder options(List<Integer> options);
 
-        public abstract Builder additionalOptionsFingerprints(Set<String> additionalOptionsFingerprints);
+        public abstract Builder additionalOptions(Set<List<Integer>> additionalOptions);
+
+        public abstract Builder vendorClass(String vendorClass);
+
+        public abstract Builder additionalVendorClasses(List<String> additionalVendorClasses);
 
         public abstract Builder timestamps(Map<String, List<String>> timestamps);
 

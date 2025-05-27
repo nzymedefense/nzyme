@@ -1,11 +1,10 @@
 use std::collections::{BTreeSet, HashMap, HashSet};
-use std::net::IpAddr;
 use std::sync::{Arc, Mutex};
 use chrono::{Duration, Utc};
-use log::{error, info, warn};
+use log::{error, warn};
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
-use crate::link::reports::{dhcp_transactions_report, socks_tunnels_report};
+use crate::link::reports::dhcp_transactions_report;
 use crate::metrics::Metrics;
 use crate::tracemark;
 use crate::wired::packets::{Dhcpv4Packet, Dhcpv4Transaction, Dhcpv4TransactionNote};
@@ -36,8 +35,6 @@ impl DhcpTable {
                         tracemark!("New packet for existing DHCP transaction <{}>: {:?}",
                             dhcp.transaction_id, tx);
 
-                        tx.record_fingerprint(&dhcp);
-
                         match tx.transaction_type {
                             Dhcp4TransactionType::Initial |
                             Dhcp4TransactionType::Renew |
@@ -65,6 +62,7 @@ impl DhcpTable {
                                         // Client requests IP based on previous offer.
                                         tx.latest_packet = dhcp.timestamp;
                                         tx.record_timestamp(Dhcpv4MessageType::Request, dhcp.timestamp);
+                                        tx.record_options(dhcp.options.clone());
 
                                         let requested_ip_address = match (dhcp.dhcp_client_address,
                                                                           dhcp.requested_ip_address) {
@@ -77,9 +75,7 @@ impl DhcpTable {
                                         tx.requested_ip_address = requested_ip_address;
 
                                         tx.record_client_mac(dhcp.source_mac.clone());
-                                        tx.record_server_mac(dhcp.destination_mac.clone());
-                                        tx.record_fingerprint(&dhcp);
-                                    }
+                                        tx.record_server_mac(dhcp.destination_mac.clone()); }
                                     Dhcpv4MessageType::Ack => {
                                         // Server confirmed the lease. Transaction complete.
                                         tx.latest_packet = dhcp.timestamp;
@@ -129,10 +125,10 @@ impl DhcpTable {
 
                         let broadcast_mac = "FF:FF:FF:FF:FF:FF";
 
-                        let (tx_type, server_mac, requested_ip_address) = match dhcp.message_type {
-                            Dhcpv4MessageType::Discover => (Dhcp4TransactionType::Initial, None, None),
-                            Dhcpv4MessageType::Release  => (Dhcp4TransactionType::Release, None, None),
-                            Dhcpv4MessageType::Inform   => (Dhcp4TransactionType::Inform, None, None),
+                        let (tx_type, server_mac, requested_ip_address, options) = match dhcp.message_type {
+                            Dhcpv4MessageType::Discover => (Dhcp4TransactionType::Initial, None, None, None),
+                            Dhcpv4MessageType::Release  => (Dhcp4TransactionType::Release, None, None, None),
+                            Dhcpv4MessageType::Inform   => (Dhcp4TransactionType::Inform, None, None, None),
 
                             Dhcpv4MessageType::Request => {
                                 // Match ciaddr (None == 0.0.0.0) and destination_mac (Option<String>)
@@ -140,23 +136,22 @@ impl DhcpTable {
                                     // INIT-REBOOT: no ciaddr, broadcast, with requested IP.
                                     (None, Some(dest)) if dest.eq(broadcast_mac)
                                         && dhcp.requested_ip_address.is_some() =>
-                                        (Dhcp4TransactionType::Reboot, None, dhcp.requested_ip_address),
+                                        (Dhcp4TransactionType::Reboot, None, dhcp.requested_ip_address, Some(dhcp.options.clone())),
 
                                     // RENEW: has ciaddr, unicast (dest != broadcast).
                                     (Some(_), Some(dest)) if !dest.eq(broadcast_mac) =>
-                                        (Dhcp4TransactionType::Renew, Some(dest.to_string()), dhcp.dhcp_client_address),
+                                        (Dhcp4TransactionType::Renew, Some(dest.to_string()), dhcp.dhcp_client_address, Some(dhcp.options.clone())),
 
                                     // REBIND: has ciaddr, broadcast.
                                     (Some(_), Some(dest)) if dest.eq(broadcast_mac) =>
-                                        (Dhcp4TransactionType::Rebind, None,  dhcp.dhcp_client_address),
+                                        (Dhcp4TransactionType::Rebind, None,  dhcp.dhcp_client_address, Some(dhcp.options.clone())),
 
                                     // Any other combination is not a recognized new-txn packet.
-                                    _ =>
-                                    (Dhcp4TransactionType::Unknown, None, None)
+                                    _ => (Dhcp4TransactionType::Unknown, None, None, None)
                                 }
                             }
 
-                            _ => (Dhcp4TransactionType::Unknown, None, None)
+                            _ => (Dhcp4TransactionType::Unknown, None, None, None)
                         };
 
                         if tx_type == Dhcp4TransactionType::Unknown {
@@ -184,12 +179,14 @@ impl DhcpTable {
                             additional_server_macs: HashSet::new(),
                             offered_ip_addresses: HashSet::new(),
                             requested_ip_address,
-                            options_fingerprint: dhcp.calculate_fingerprint(),
-                            additional_options_fingerprints: HashSet::new(),
                             timestamps,
                             first_packet: dhcp.timestamp,
                             latest_packet: dhcp.timestamp,
                             notes: HashSet::new(),
+                            options: options.unwrap_or_else(Vec::new),
+                            additional_options: HashSet::new(),
+                            vendor_class: dhcp.vendor_class.clone(),
+                            additional_vendor_classes: HashSet::new(),
                             successful,
                             complete
                         };

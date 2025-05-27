@@ -1,5 +1,6 @@
 package app.nzyme.core.tables.ethernet;
 
+import app.nzyme.core.ethernet.dhcp.DHCPFingerprint;
 import app.nzyme.core.rest.resources.taps.reports.tables.dhcp.DhcpTransactionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dhcp.Dhcpv4TransactionReport;
 import app.nzyme.core.tables.DataTable;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
@@ -52,19 +54,19 @@ public class DHCPTable implements DataTable {
     private void writeV4Transactions(Handle handle, UUID tapUuid, List<Dhcpv4TransactionReport> txs) {
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO dhcp_transactions(uuid, tap_uuid, " +
                 "transaction_id, transaction_type, client_mac, additional_client_macs, server_mac, " +
-                "additional_server_macs, offered_ip_addresses, requested_ip_address, options_fingerprint, " +
-                "additional_options_fingerprints, timestamps, first_packet, latest_packet, notes, is_successful, " +
+                "additional_server_macs, offered_ip_addresses, requested_ip_address, options, additional_options, " +
+                "fingerprint, additional_fingerprints, vendor_class, additional_vendor_classes, timestamps, first_packet, latest_packet, notes, is_successful, " +
                 "is_complete, updated_at, created_at) VALUES(:uuid, :tap_uuid, :transaction_id, :transaction_type, " +
                 ":client_mac, :additional_client_macs::jsonb, :server_mac, :additional_server_macs::jsonb, " +
-                ":offered_ip_addresses::jsonb, :requested_ip_address, :options_fingerprint, " +
-                ":additional_options_fingerprints::jsonb, :timestamps::jsonb, :first_packet, :latest_packet, " +
+                ":offered_ip_addresses::jsonb, :requested_ip_address, :options::jsonb, :additional_options::jsonb, :fingerprint, " +
+                ":additional_fingerprints::jsonb, :vendor_class, :additional_vendor_classes::jsonb, :timestamps::jsonb, :first_packet, :latest_packet, " +
                 ":notes::jsonb, :is_successful, :is_complete, NOW(), NOW())");
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE dhcp_transactions " +
                 "SET additional_client_macs = :additional_client_macs::jsonb, server_mac = :server_mac, " +
                 "additional_server_macs = :additional_server_macs::jsonb, " +
                 "offered_ip_addresses = :offered_ip_addresses::jsonb, " +
-                "requested_ip_address = :requested_ip_address, options_fingerprint = :options_fingerprint, " +
-                "additional_options_fingerprints = :additional_options_fingerprints::jsonb, " +
+                "requested_ip_address = :requested_ip_address, options = :options::jsonb, additional_options = :additional_options::jsonb, " +
+                "fingerprint = :fingerprint, additional_fingerprints = :additional_fingerprints::jsonb, vendor_class = :vendor_class, additional_vendor_classes = :additional_vendor_classes::jsonb, " +
                 "timestamps = :timestamps::jsonb, " +
                 "latest_packet = :latest_packet, notes = :notes::jsonb, is_complete = :is_complete, " +
                 "is_successful = :is_successful, updated_at = NOW()");
@@ -73,7 +75,10 @@ public class DHCPTable implements DataTable {
             String additionalClientMacs;
             String additionalServerMacs;
             String offeredIpAddresses;
-            String additionalOptionsFingerprints;
+            String options;
+            String additionalOptions;
+            String additionalFingerprints;
+            String additionalVendorClasses;
             String timestamps;
             String notes;
 
@@ -81,16 +86,20 @@ public class DHCPTable implements DataTable {
                 additionalClientMacs = om.writeValueAsString(tx.additionalClientMacs());
                 additionalServerMacs = om.writeValueAsString(tx.additionalServerMacs());
                 offeredIpAddresses = om.writeValueAsString(tx.offeredIpAddresses());
-                additionalOptionsFingerprints = om.writeValueAsString(tx.additionalOptionsFingerprints());
+                options = om.writeValueAsString(tx.options());
+                additionalOptions = om.writeValueAsString(tx.additionalOptions());
                 timestamps = om.writeValueAsString(tx.timestamps());
+                additionalFingerprints = "[]";
+                additionalVendorClasses = om.writeValueAsString(tx.additionalVendorClasses());
                 notes = om.writeValueAsString(tx.notes());
             } catch (JsonProcessingException e) {
                 LOG.error("Could not serialize DHCP transaction data. Skipping transaction.", e);
                 continue;
             }
 
-            Optional<Long> existingTx;
+            Optional<String> fingerprint = new DHCPFingerprint(tx.options(), tx.vendorClass()).generate();
 
+            Optional<Long> existingTx;
             try {
                 existingTx = handle.createQuery("SELECT id FROM dhcp_transactions " +
                                 "WHERE transaction_id = :transaction_id AND first_packet = :first_packet " +
@@ -119,8 +128,12 @@ public class DHCPTable implements DataTable {
                         .bind("additional_server_macs", additionalServerMacs)
                         .bind("offered_ip_addresses", offeredIpAddresses)
                         .bind("requested_ip_address", tx.requestedIpAddress())
-                        .bind("options_fingerprint", tx.optionsFingerprint())
-                        .bind("additional_options_fingerprints", additionalOptionsFingerprints)
+                        .bind("options", options)
+                        .bind("additional_options", additionalOptions)
+                        .bind("fingerprint", fingerprint)
+                        .bind("additional_fingerprints", additionalFingerprints)
+                        .bind("vendor_class", tx.vendorClass())
+                        .bind("additional_vendor_classes", additionalVendorClasses)
                         .bind("timestamps", timestamps)
                         .bind("first_packet", tx.firstPacket())
                         .bind("latest_packet", tx.latestPacket())
@@ -135,8 +148,12 @@ public class DHCPTable implements DataTable {
                         .bind("additional_server_macs", additionalServerMacs)
                         .bind("offered_ip_addresses", offeredIpAddresses)
                         .bind("requested_ip_address", tx.requestedIpAddress())
-                        .bind("options_fingerprint", tx.optionsFingerprint())
-                        .bind("additional_options_fingerprints", additionalOptionsFingerprints)
+                        .bind("options", options)
+                        .bind("additional_options", additionalOptions)
+                        .bind("fingerprint", fingerprint)
+                        .bind("additional_fingerprints", additionalFingerprints)
+                        .bind("vendor_class", tx.vendorClass())
+                        .bind("additional_vendor_classes", additionalVendorClasses)
                         .bind("timestamps", timestamps)
                         .bind("latest_packet", tx.latestPacket())
                         .bind("notes", notes)

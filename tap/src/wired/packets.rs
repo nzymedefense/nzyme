@@ -326,6 +326,9 @@ pub struct Dhcpv4Packet {
     pub assigned_address: Option<IpAddr>,
     pub client_mac_address: String,
 
+    pub options: Vec<u8>,
+    pub vendor_class: Option<String>,
+
     // From DHCP options.
     pub message_type: Dhcpv4MessageType,
     pub requested_ip_address: Option<IpAddr>,
@@ -334,18 +337,7 @@ pub struct Dhcpv4Packet {
 }
 
 impl Dhcpv4Packet {
-
-    pub fn calculate_fingerprint(&self) -> Option<String> {
-        if !self.message_type.eq(&Dhcpv4MessageType::Discover) &&
-            !self.message_type.eq(&Dhcpv4MessageType::Request) &&
-            !self.message_type.eq(&Dhcpv4MessageType::Inform) {
-
-            return None
-        }
-
-        Some("FOO".to_string())
-    }
-
+    
     pub fn estimate_struct_size(&self) -> u32 {
         // Fixed size types
         let mut size = mem::size_of::<u16>() as u32 * 3 // source_port, destination_port, seconds_elapsed
@@ -388,12 +380,14 @@ pub struct Dhcpv4Transaction {
     pub additional_server_macs: HashSet<String>,
     pub offered_ip_addresses: HashSet<IpAddr>,
     pub requested_ip_address: Option<IpAddr>,
-    pub options_fingerprint: Option<String>,
-    pub additional_options_fingerprints: HashSet<String>,
     pub timestamps: HashMap<Dhcpv4MessageType, Vec<DateTime<Utc>>>,
     pub first_packet: DateTime<Utc>,
     pub latest_packet: DateTime<Utc>,
     pub notes: HashSet<Dhcpv4TransactionNote>,
+    pub options: Vec<u8>,
+    pub additional_options: HashSet<Vec<u8>>,
+    pub vendor_class: Option<String>,
+    pub additional_vendor_classes: HashSet<String>,
     pub successful: Option<bool>,
     pub complete: bool
 }
@@ -442,36 +436,53 @@ impl Dhcpv4Transaction {
         }
     }
 
+    // Handles `vendor_classs` and `additional_vendor_classes`.
+    pub fn record_vendor_class(&mut self, new_class: Option<String>) {
+        if new_class.is_none() {
+            return;
+        }
+
+        match &self.vendor_class {
+            None => {
+                // First time seeing the class. Record.
+                self.vendor_class = new_class
+            },
+            Some(existing) => {
+                if existing != &new_class.clone().unwrap() {
+                    // Vendor class changed.
+                    self.additional_vendor_classes.insert(new_class.unwrap());
+                    self.notes.insert(Dhcpv4TransactionNote::VendorClassChanged);
+                }
+            },
+        }
+    }
+
+    // Handles `options` and `additional_client_options`.
+    pub fn record_options(&mut self, new_options: Vec<u8>) {
+        if new_options.is_empty() {
+            return;
+        }
+
+        match &self.options.is_empty() {
+            true => {
+                // First time seeing the options. Record.
+                self.options = new_options;
+            },
+            false => {
+                if !self.options.eq(&new_options) {
+                    // Options changed.
+                    self.additional_options.insert(new_options.clone());
+                    self.notes.insert(Dhcpv4TransactionNote::OptionsChanged);
+                }
+            },
+        }
+    }
+
     pub fn record_timestamp(&mut self, msg_type: Dhcpv4MessageType, time: DateTime<Utc>) {
         self.timestamps
             .entry(msg_type)
             .or_default()
             .push(time);
-    }
-
-    // Handles `options_fingerprint` and `additional_options_fingerprints`.
-    pub fn record_fingerprint(&mut self, dhcp: &Dhcpv4Packet) {
-        // Bail out if there's no fingerprint at all. (Likely a packet that doesn't generate one)
-        let new_fp = match dhcp.calculate_fingerprint() {
-            Some(fp) => fp,
-            None     => return,
-        };
-
-        match &self.options_fingerprint {
-            // First time seeing a fingerprint. Record it as primary, nothing additional.
-            None => {
-                self.options_fingerprint = Some(new_fp);
-            }
-
-            // Fingerprint did not change.
-            Some(existing) if existing == &new_fp => { /* Nothing to do. */ }
-
-            // Fingerprint changed.
-            Some(_) => {
-                self.additional_options_fingerprints.insert(new_fp.clone());
-                self.notes.insert(Dhcpv4TransactionNote::OptionsFingerprintChanged);
-            }
-        }
     }
 
 }
@@ -481,5 +492,6 @@ pub enum Dhcpv4TransactionNote {
     OfferNoYiaddr,
     ClientMacChanged,
     ServerMacChanged,
-    OptionsFingerprintChanged
+    OptionsChanged,
+    VendorClassChanged
 }

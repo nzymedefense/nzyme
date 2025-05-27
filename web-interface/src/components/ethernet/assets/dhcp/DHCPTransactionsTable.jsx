@@ -48,12 +48,12 @@ export default function DHCPTransactionsTable(props) {
         <table className="table table-sm table-hover table-striped mb-4 mt-3">
           <thead>
           <tr>
-            <th style={{width: 100}} title="Transaction ID">ID</th>
             <th style={{width: 200}}>Initiated At</th>
             <th>Type</th>
             <th>Client MAC</th>
             <th>Server MAC</th>
             <th>Requested IP</th>
+            <th>Fingerprint</th>
             <th>Success</th>
             <th>Complete</th>
             <th>Duration</th>
@@ -66,14 +66,14 @@ export default function DHCPTransactionsTable(props) {
                 <tr key={i}>
                   <td>
                     <a href={ApiRoutes.ETHERNET.ASSETS.DHCP.TRANSACTION_DETAILS(t.transaction_id) + "?transaction_time=" + encodeURIComponent(t.first_packet)}>
-                      <DHCPTransactionId id={t.transaction_id} />
+                      {moment(t.first_packet).format()}
                     </a>
                   </td>
-                  <td>{moment(t.first_packet).format()}</td>
                   <td>{t.transaction_type}</td>
                   <td><EthernetMacAddress addressWithContext={t.client_mac} /></td>
                   <td>{t.server_mac ? <EthernetMacAddress addressWithContext={t.server_mac} /> : <span className="text-muted">n/a</span>}</td>
                   <td><IPAddress ip={t.requested_ip_address} /></td>
+                  <td>{t.fingerprint ? <span className="dhcp-options-fingerprint" title={t.fingerprint}>{t.fingerprint.substr(0,6)}</span> : <span className="text-muted">None</span>}</td>
                   <td><DHCPTransactionSuccess success={t.is_successful} /></td>
                   <td>{t.is_complete ? <span className="text-success">Complete</span>
                       : <span className="text-warning">Incomplete</span>}</td>

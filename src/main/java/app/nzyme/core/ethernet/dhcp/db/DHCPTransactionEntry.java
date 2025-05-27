@@ -20,9 +20,14 @@ public abstract class DHCPTransactionEntry {
     public abstract List<String> offeredIpAddresses();
     @Nullable
     public abstract String requestedIpAddress();
+    public abstract List<Integer> options();
+    public abstract List<List<Integer>> additionalOptions();
     @Nullable
-    public abstract String optionsFingerprint();
-    public abstract List<String> additionalOptionsFingerprints();
+    public abstract String fingerprint();
+    public abstract List<String> additionalFingerprints();
+    @Nullable
+    public abstract String vendorClass();
+    public abstract List<String> additionalVendorClasses();
     public abstract Map<String, List<String>> timestamps(); // String not DateTime, because we need microsecond resolution.
     @Nullable
     public abstract DateTime firstPacket();
@@ -31,7 +36,7 @@ public abstract class DHCPTransactionEntry {
     public abstract boolean isSuccessful();
     public abstract boolean isComplete();
 
-    public static DHCPTransactionEntry create(long transactionId, String transactionType, String clientMac, List<String> additionalClientMacs, String serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, String optionsFingerprint, List<String> additionalOptionsFingerprints, Map<String, List<String>> timestamps, DateTime firstPacket, DateTime latestPacket, List<String> notes, boolean isSuccessful, boolean isComplete) {
+    public static DHCPTransactionEntry create(long transactionId, String transactionType, String clientMac, List<String> additionalClientMacs, String serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, List<Integer> options, List<List<Integer>> additionalOptions, String fingerprint, List<String> additionalFingerprints, String vendorClass, List<String> additionalVendorClasses, Map<String, List<String>> timestamps, DateTime firstPacket, DateTime latestPacket, List<String> notes, boolean isSuccessful, boolean isComplete) {
         return builder()
                 .transactionId(transactionId)
                 .transactionType(transactionType)
@@ -41,8 +46,12 @@ public abstract class DHCPTransactionEntry {
                 .additionalServerMacs(additionalServerMacs)
                 .offeredIpAddresses(offeredIpAddresses)
                 .requestedIpAddress(requestedIpAddress)
-                .optionsFingerprint(optionsFingerprint)
-                .additionalOptionsFingerprints(additionalOptionsFingerprints)
+                .options(options)
+                .additionalOptions(additionalOptions)
+                .fingerprint(fingerprint)
+                .additionalFingerprints(additionalFingerprints)
+                .vendorClass(vendorClass)
+                .additionalVendorClasses(additionalVendorClasses)
                 .timestamps(timestamps)
                 .firstPacket(firstPacket)
                 .latestPacket(latestPacket)
@@ -74,9 +83,17 @@ public abstract class DHCPTransactionEntry {
 
         public abstract Builder requestedIpAddress(String requestedIpAddress);
 
-        public abstract Builder optionsFingerprint(String optionsFingerprint);
+        public abstract Builder options(List<Integer> options);
 
-        public abstract Builder additionalOptionsFingerprints(List<String> additionalOptionsFingerprints);
+        public abstract Builder additionalOptions(List<List<Integer>> additionalOptions);
+
+        public abstract Builder fingerprint(String fingerprint);
+
+        public abstract Builder additionalFingerprints(List<String> additionalFingerprints);
+
+        public abstract Builder vendorClass(String vendorClass);
+
+        public abstract Builder additionalVendorClasses(List<String> additionalVendorClasses);
 
         public abstract Builder timestamps(Map<String, List<String>> timestamps);
 

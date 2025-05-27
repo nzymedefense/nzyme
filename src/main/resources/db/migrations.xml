@@ -6515,4 +6515,39 @@
         <renameColumn tableName="dhcp_transactions" oldColumnName="successful" newColumnName="is_successful" />
     </changeSet>
 
+    <changeSet id="dhcp_transaction_options_and_fingerprints" author="lennartkoopmann">
+        <dropColumn tableName="dhcp_transactions" columnName="options_fingerprint" />
+        <dropColumn tableName="dhcp_transactions" columnName="additional_options_fingerprints" />
+
+        <addColumn tableName="dhcp_transactions">
+            <column name="options" type="jsonb" defaultValue="[]">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="additional_options" type="jsonb" defaultValue="[]">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="fingerprint" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="additional_fingerprints" type="jsonb" defaultValue="[]">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_dhcp_transaction_vendor_class" author="lennartkoopmann">
+        <addColumn tableName="dhcp_transactions">
+            <column name="vendor_class" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="additional_vendor_classes" type="jsonb" defaultValue="[]">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

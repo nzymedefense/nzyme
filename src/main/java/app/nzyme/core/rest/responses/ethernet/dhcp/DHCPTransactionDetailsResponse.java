@@ -38,12 +38,25 @@ public abstract class DHCPTransactionDetailsResponse {
     @Nullable
     public abstract String requestedIpAddress();
 
-    @JsonProperty("options_fingerprint")
-    @Nullable
-    public abstract String optionsFingerprint();
+    @JsonProperty("options")
+    public abstract List<Integer> options();
 
-    @JsonProperty("additional_options_fingerprints")
-    public abstract List<String> additionalOptionsFingerprints();
+    @JsonProperty("additional_options")
+    public abstract List<List<Integer>> additionalOptions();
+
+    @JsonProperty("fingerprint")
+    @Nullable
+    public abstract String fingerprint();
+
+    @JsonProperty("additional_fingerprints")
+    public abstract List<String> additionalFingerprints();
+
+    @JsonProperty("vendor_class")
+    @Nullable
+    public abstract String vendorClass();
+
+    @JsonProperty("additional_vendor_classes")
+    public abstract List<String> additionalVendorClasses();
 
     @JsonProperty("timeline")
     public abstract List<DHCPTimelineStepResponse> timeline();
@@ -69,7 +82,7 @@ public abstract class DHCPTransactionDetailsResponse {
     @Nullable
     public abstract Long durationMs();
 
-    public static DHCPTransactionDetailsResponse create(long transactionId, String transactionType, EthernetMacAddressResponse clientMac, List<String> additionalClientMacs, EthernetMacAddressResponse serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, String optionsFingerprint, List<String> additionalOptionsFingerprints, List<DHCPTimelineStepResponse> timeline, DateTime firstPacket, DateTime latestPacket, List<String> notes, Boolean isSuccessful, boolean isComplete, Long durationMs) {
+    public static DHCPTransactionDetailsResponse create(long transactionId, String transactionType, EthernetMacAddressResponse clientMac, List<String> additionalClientMacs, EthernetMacAddressResponse serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, List<Integer> options, List<List<Integer>> additionalOptions, String fingerprint, List<String> additionalFingerprints, String vendorClass, List<String> additionalVendorClasses, List<DHCPTimelineStepResponse> timeline, DateTime firstPacket, DateTime latestPacket, List<String> notes, Boolean isSuccessful, boolean isComplete, Long durationMs) {
         return builder()
                 .transactionId(transactionId)
                 .transactionType(transactionType)
@@ -79,8 +92,12 @@ public abstract class DHCPTransactionDetailsResponse {
                 .additionalServerMacs(additionalServerMacs)
                 .offeredIpAddresses(offeredIpAddresses)
                 .requestedIpAddress(requestedIpAddress)
-                .optionsFingerprint(optionsFingerprint)
-                .additionalOptionsFingerprints(additionalOptionsFingerprints)
+                .options(options)
+                .additionalOptions(additionalOptions)
+                .fingerprint(fingerprint)
+                .additionalFingerprints(additionalFingerprints)
+                .vendorClass(vendorClass)
+                .additionalVendorClasses(additionalVendorClasses)
                 .timeline(timeline)
                 .firstPacket(firstPacket)
                 .latestPacket(latestPacket)
@@ -113,9 +130,17 @@ public abstract class DHCPTransactionDetailsResponse {
 
         public abstract Builder requestedIpAddress(String requestedIpAddress);
 
-        public abstract Builder optionsFingerprint(String optionsFingerprint);
+        public abstract Builder options(List<Integer> options);
 
-        public abstract Builder additionalOptionsFingerprints(List<String> additionalOptionsFingerprints);
+        public abstract Builder additionalOptions(List<List<Integer>> additionalOptions);
+
+        public abstract Builder fingerprint(String fingerprint);
+
+        public abstract Builder additionalFingerprints(List<String> additionalFingerprints);
+
+        public abstract Builder vendorClass(String vendorClass);
+
+        public abstract Builder additionalVendorClasses(List<String> additionalVendorClasses);
 
         public abstract Builder timeline(List<DHCPTimelineStepResponse> timeline);
 

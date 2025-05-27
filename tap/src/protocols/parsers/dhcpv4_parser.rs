@@ -1,6 +1,5 @@
 use std::sync::Arc;
 use byteorder::{BigEndian, ByteOrder};
-use log::info;
 use serde::__private::from_utf8_lossy;
 use crate::wired::packets::{Dhcpv4Packet, Datagram};
 use crate::wired::types::{Dhcpv4MessageType, Dhcpv4OpCode, HardwareType};
@@ -78,6 +77,8 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<Dhcpv4Packet> {
     let mut requested_ip_address = None;
     let mut hostname = None;
     let mut parameter_request_list = Vec::new();
+    let mut options: Vec<u8> = Vec::new();
+    let mut vendor_class = None;
 
     let mut cursor: usize = 240;
     loop {
@@ -87,6 +88,8 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<Dhcpv4Packet> {
         }
 
         let option_id = &udp.payload[cursor];
+        options.push(*option_id);
+
         cursor += 1;
 
         if udp.payload.len() <= cursor {
@@ -146,13 +149,19 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<Dhcpv4Packet> {
                     plist_cursor += 1;
                 }
             },
+            60 => {
+                // Vendor class identifier. (variable length)
+                vendor_class = Some(
+                    from_utf8_lossy(&udp.payload[cursor..cursor+length]).to_string()
+                );
+            }
             255 => break, // End tag.
             _ => { /* NOOP */}
         }
 
         cursor += length;
     }
-    
+
     Some(Dhcpv4Packet { 
         timestamp: udp.timestamp,
         source_mac: udp.source_mac.clone(),
@@ -161,6 +170,8 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<Dhcpv4Packet> {
         destination_address: udp.destination_address,
         source_port: udp.source_port,
         destination_port: udp.destination_port,
+        options,
+        vendor_class,
         op_code,
         hardware_type,
         transaction_id,

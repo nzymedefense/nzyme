@@ -6,7 +6,8 @@ export default function DHCPNotes(props) {
   const notes = props.tx.notes;
   const additionalServerMacs = props.tx.additional_server_macs;
   const additionalClientMacs = props.tx.additional_client_macs;
-  const additionalOptionsFingerprints = props.tx.additional_options_fingerprints;
+  const additionalOptions = props.tx.additional_options;
+  const additionalVendorClasses = props.tx.additional_vendor_classes;
 
   const macList = (data, title) => {
     if (data == null || data.length === 0) {
@@ -27,7 +28,7 @@ export default function DHCPNotes(props) {
     )
   }
 
-  const fingerprintList = (data, title) => {
+  const optionsList = (data, title) => {
     if (data == null || data.length === 0) {
       return null;
     }
@@ -36,10 +37,30 @@ export default function DHCPNotes(props) {
         <div className="mt-3 mb-0">
           <h3>{title}</h3>
 
-          <ul>
+          <ul className="mb-0">
             {data.map((x, i) => {
               return (
-                  <li key={i}><span className="dhcp-options-fingerprint">{x}</span></li>
+                  <li key={i}><span className="machine-data">{x.join(",")}</span></li>
+              )
+            })}
+          </ul>
+        </div>
+    )
+  }
+
+  const stringList = (data, title) => {
+    if (data == null || data.length === 0) {
+      return null;
+    }
+
+    return (
+        <div className="mt-3 mb-0">
+          <h3>{title}</h3>
+
+          <ul className="mb-0">
+            {data.map((x, i) => {
+              return (
+                  <li key={i}><span className="machine-data">{x}</span></li>
               )
             })}
           </ul>
@@ -70,18 +91,19 @@ export default function DHCPNotes(props) {
                 mid-transaction can disrupt lease tracking, complicate attribution, and may signal attempts to evade
                 monitoring or impersonate other hosts.</span>
               break;
-              case "ServerMacChanged":
-                text = <span>A changing server MAC address during a DHCP transaction is abnormal and may indicate rogue
+            case "ServerMacChanged":
+              text = <span>A changing server MAC address during a DHCP transaction is abnormal and may indicate rogue
                   DHCP servers, or spoofing attempts. The server MAC should remain consistent to ensure reliable lease
                   attribution and client trust. Mid-transaction changes can break expected behavior, confuse clients,
                   and may signal malicious activity or infrastructure issues.</span>
               break;
-              case "OptionsFingerprintChanged":
-                text = <span>Changing DHCP options mid-transaction is unexpected and may indicate inconsistent server
-                  behavior, misconfiguration, or potential tampering. DHCP options&mdash;such as DNS servers, lease
-                  time, or router settings&mdash;should remain stable between offer and acknowledgment. Variations can lead to
-                  unreliable client configuration, operational issues, or signal an attempt to manipulate network
-                  behavior.</span>
+            case "OptionsChanged":
+            case "VendorClassChanged":
+              text = <span>Changing DHCP options or vendor class mid-transaction is unexpected and may indicate
+                inconsistent server behavior, misconfiguration, or potential tampering. DHCP options&mdash;such as
+                DNS servers, lease time, or router settings&mdash;should remain stable between offer and
+                acknowledgment. Variations can lead to unreliable client configuration, operational issues, or signal
+                an attempt to manipulate network behavior.</span>
               break;
           }
           return (
@@ -91,7 +113,8 @@ export default function DHCPNotes(props) {
 
         {macList(additionalServerMacs, "Additional Server MAC Addresses")}
         {macList(additionalClientMacs, "Additional Client MAC Addresses")}
-        {fingerprintList(additionalOptionsFingerprints, "Additional Options Fingerprints")}
+        {optionsList(additionalOptions, "Additional Options")}
+        {stringList(additionalVendorClasses, "Additional Vendor Classes")}
       </React.Fragment>
   )
 

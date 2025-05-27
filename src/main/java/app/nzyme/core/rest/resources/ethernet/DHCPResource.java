@@ -26,7 +26,6 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Path("/api/ethernet/dhcp")
 @Produces(MediaType.APPLICATION_JSON)
@@ -127,8 +126,12 @@ public class DHCPResource extends TapDataHandlingResource {
                 tx.additionalServerMacs(),
                 tx.offeredIpAddresses(),
                 tx.requestedIpAddress(),
-                tx.optionsFingerprint(),
-                tx.additionalOptionsFingerprints(),
+                tx.options(),
+                tx.additionalOptions(),
+                tx.fingerprint(),
+                tx.additionalFingerprints(),
+                tx.vendorClass(),
+                tx.additionalVendorClasses(),
                 sortedTimeline,
                 tx.firstPacket(),
                 tx.latestPacket(),
