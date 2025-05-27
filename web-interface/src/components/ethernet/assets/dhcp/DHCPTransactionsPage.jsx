@@ -8,12 +8,37 @@ import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
 import {TapContext} from "../../../../App";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import DHCPTransactionsTable from "./DHCPTransactionsTable";
+import {queryParametersToFilters} from "../../../shared/filtering/FilterQueryParameters";
+import {DHCP_FILTER_FIELDS} from "./DHCPFilterFields";
+import {useLocation} from "react-router-dom";
+import Filters from "../../../shared/filtering/Filters";
+import AssetsService from "../../../../services/ethernet/AssetsService";
+
+const assetsService = new AssetsService();
+
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+}
 
 export default function DHCPTransactionsPage() {
 
+  const urlQuery = useQuery();
   const tapContext = useContext(TapContext);
+  const selectedTaps = tapContext.taps;
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+
+  const [data, setData] = useState(null);
+
+  const [orderColumn, setOrderColumn] = useState("initiated_at");
+  const [orderDirection, setOrderDirection] = useState("DESC");
+
+  const perPage = 25;
+  const [page, setPage] = useState(1);
+
+  const [filters, setFilters] = useState(
+      queryParametersToFilters(urlQuery.get("filters"), DHCP_FILTER_FIELDS)
+  );
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -22,6 +47,11 @@ export default function DHCPTransactionsPage() {
       disableTapSelector(tapContext);
     }
   }, [tapContext]);
+
+  useEffect(() => {
+    setData(null);
+    assetsService.findAllDHCPTransactions(timeRange, orderColumn, orderDirection, selectedTaps,  perPage, (page-1)*perPage, setData);
+  }, [selectedTaps, timeRange, orderColumn, orderDirection, page]);
 
   return (
       <React.Fragment>
@@ -38,12 +68,35 @@ export default function DHCPTransactionsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="DHCP Transactions"
-                                       helpLink="https://go.nzyme.org/ethernet-dhcp"
+                <CardTitleWithControls title="DHCP Transactions Filters"
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange} />
 
-                <DHCPTransactionsTable timeRange={timeRange} />
+                <Filters filters={filters}
+                         setFilters={setFilters}
+                         fields={DHCP_FILTER_FIELDS} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="DHCP Transactions"
+                                       helpLink="https://go.nzyme.org/ethernet-dhcp" />
+
+                <DHCPTransactionsTable data={data}
+                                       timeRange={timeRange}
+                                       page={page}
+                                       setPage={setPage}
+                                       perPage={perPage}
+                                       orderColumn={orderColumn}
+                                       orderDirection={orderDirection}
+                                       setOrderColumn={setOrderColumn}
+                                       setOrderDirection={setOrderDirection}
+                                       setFilters={setFilters} />
               </div>
             </div>
           </div>

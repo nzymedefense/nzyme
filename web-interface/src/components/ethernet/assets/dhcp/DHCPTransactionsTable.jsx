@@ -1,35 +1,34 @@
-import React, {useContext, useEffect, useState} from "react";
-import {TapContext} from "../../../../App";
-import AssetsService from "../../../../services/ethernet/AssetsService";
+import React, {useState} from "react";
 import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSpinner";
 import Paginator from "../../../misc/Paginator";
 import IPAddress from "../../shared/IPAddress";
 import DHCPTransactionNotesCount from "./DHCPTransactionNotesCount";
-import DHCPTransactionId from "./DHCPTransactionId";
 import DHCPDuration from "./DHCPDuration";
 import moment from "moment";
 import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress";
 import DHCPTransactionSuccess from "./DHCPTransactionSuccess";
 import numeral from "numeral";
 import ApiRoutes from "../../../../util/ApiRoutes";
-
-const assetsService = new AssetsService();
+import ColumnSorting from "../../../shared/ColumnSorting";
 
 export default function DHCPTransactionsTable(props) {
 
-  const timeRange = props.timeRange;
-  const [data, setData] = useState(null);
+  const data = props.data;
+  const page = props.page;
+  const setPage = props.setPage;
+  const perPage = props.perPage;
+  const setOrderColumn = props.setOrderColumn;
+  const orderColumn = props.orderColumn;
+  const setOrderDirection = props.setOrderDirection;
+  const orderDirection = props.orderDirection;
 
-  const tapContext = useContext(TapContext);
-  const selectedTaps = tapContext.taps;
-
-  const perPage = 25;
-  const [page, setPage] = useState(1);
-
-  useEffect(() => {
-    setData(null);
-    assetsService.findAllDHCPTransactions(timeRange, selectedTaps,  perPage, (page-1)*perPage, setData);
-  }, [selectedTaps, timeRange, page]);
+  const columnSorting = (columnName) => {
+    return <ColumnSorting thisColumn={columnName}
+                          orderColumn={orderColumn}
+                          setOrderColumn={setOrderColumn}
+                          orderDirection={orderDirection}
+                          setOrderDirection={setOrderDirection} />
+  }
 
   if (!data) {
     return <GenericWidgetLoadingSpinner height={150} />
@@ -48,12 +47,12 @@ export default function DHCPTransactionsTable(props) {
         <table className="table table-sm table-hover table-striped mb-4 mt-3">
           <thead>
           <tr>
-            <th style={{width: 200}}>Initiated At</th>
-            <th>Type</th>
-            <th>Client MAC</th>
-            <th>Server MAC</th>
-            <th>Requested IP</th>
-            <th>Fingerprint</th>
+            <th style={{width: 200}}>Initiated At {columnSorting("initiated_at")}</th>
+            <th>Type {columnSorting("transaction_type")}</th>
+            <th>Client MAC {columnSorting("client_mac")}</th>
+            <th>Server MAC {columnSorting("server_mac")}</th>
+            <th>Requested IP {columnSorting("requested_ip_address")}</th>
+            <th>Fingerprint {columnSorting("fingerprint")}</th>
             <th>Success</th>
             <th>Complete</th>
             <th>Duration</th>

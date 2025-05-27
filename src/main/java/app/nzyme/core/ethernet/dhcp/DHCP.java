@@ -1,6 +1,7 @@
 package app.nzyme.core.ethernet.dhcp;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionEntry;
 import app.nzyme.core.util.TimeRange;
@@ -12,6 +13,27 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class DHCP {
+
+    public enum OrderColumn {
+
+        INITIATED_AT("first_packet"),
+        TRANSACTION_TYPE("transaction_type"),
+        CLIENT_MAC("client_mac"),
+        SERVER_MAC("server_mac"),
+        REQUESTED_IP_ADDRESS("requested_ip_address"),
+        FINGERPRINT("fingerprint");
+
+        private final String columnName;
+
+        OrderColumn(String columnName) {
+            this.columnName = columnName;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+    }
 
     private final NzymeNode nzyme;
 
@@ -36,7 +58,12 @@ public class DHCP {
         );
     }
 
-    public List<DHCPTransactionEntry> findAllTransactions(TimeRange timeRange, int limit, int offset, List<UUID> taps) {
+    public List<DHCPTransactionEntry> findAllTransactions(TimeRange timeRange,
+                                                          int limit,
+                                                          int offset,
+                                                          OrderColumn orderColumn,
+                                                          OrderDirection orderDirection,
+                                                          List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -62,13 +89,15 @@ public class DHCP {
                                 "WHERE latest_packet >= :tr_from AND latest_packet <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY transaction_id, time_bucket " +
-                                "ORDER BY latest_packet DESC " +
+                                "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bind("limit", limit)
                         .bind("offset", offset)
+                        .define("order_column", orderColumn.getColumnName())
+                        .define("order_direction", orderDirection)
                         .mapTo(DHCPTransactionEntry.class)
                         .list()
         );

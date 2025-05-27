@@ -2,6 +2,8 @@ package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.context.db.MacAddressContextEntry;
+import app.nzyme.core.database.OrderDirection;
+import app.nzyme.core.ethernet.dhcp.DHCP;
 import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionEntry;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
@@ -14,6 +16,7 @@ import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -21,7 +24,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import org.jetbrains.annotations.Nullable;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
@@ -39,6 +41,8 @@ public class DHCPResource extends TapDataHandlingResource {
     @Path("/transactions")
     public Response transactions(@Context SecurityContext sc,
                                  @QueryParam("time_range") @Valid String timeRangeParameter,
+                                 @QueryParam("order_column") @Nullable String orderColumnParam,
+                                 @QueryParam("order_direction") @Nullable String orderDirectionParam,
                                  @QueryParam("limit") int limit,
                                  @QueryParam("offset") int offset,
                                  @QueryParam("taps") String tapIds) {
@@ -46,9 +50,21 @@ public class DHCPResource extends TapDataHandlingResource {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
+        DHCP.OrderColumn orderColumn = DHCP.OrderColumn.INITIATED_AT;
+        OrderDirection orderDirection = OrderDirection.DESC;
+        if (orderColumnParam != null && orderDirectionParam != null) {
+            try {
+                orderColumn = DHCP.OrderColumn.valueOf(orderColumnParam.toUpperCase());
+                orderDirection = OrderDirection.valueOf(orderDirectionParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
+
         long total = nzyme.getEthernet().dhcp().countAllTransactions(timeRange, taps);
         List<DHCPTransactionDetailsResponse> txs = Lists.newArrayList();
-        for (DHCPTransactionEntry tx : nzyme.getEthernet().dhcp().findAllTransactions(timeRange, limit, offset, taps)) {
+        for (DHCPTransactionEntry tx : nzyme.getEthernet().dhcp()
+                .findAllTransactions(timeRange, limit, offset, orderColumn, orderDirection, taps)) {
             txs.add(buildTransactionResponse(tx, authenticatedUser));
         }
 
