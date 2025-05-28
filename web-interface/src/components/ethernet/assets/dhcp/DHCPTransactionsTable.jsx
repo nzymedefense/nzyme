@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React from "react";
 import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSpinner";
 import Paginator from "../../../misc/Paginator";
 import IPAddress from "../../shared/IPAddress";
