@@ -13,6 +13,7 @@ function CreateActionSelect(props) {
                 value={type} onChange={(e) => setType(e.target.value)}>
           <option value="">Please select an action type</option>
           <option value="email">Send email</option>
+          <option value="webhook">Call Webhook</option>
         </select>
       </React.Fragment>
   )
