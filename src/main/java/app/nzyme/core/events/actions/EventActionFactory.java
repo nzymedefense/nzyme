@@ -3,6 +3,8 @@ package app.nzyme.core.events.actions;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.events.actions.email.EmailAction;
 import app.nzyme.core.events.actions.email.EmailActionConfiguration;
+import app.nzyme.core.events.actions.webhook.WebhookAction;
+import app.nzyme.core.events.actions.webhook.WebhookActionConfiguration;
 import app.nzyme.core.events.db.EventActionEntry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,8 +17,9 @@ public class EventActionFactory {
 
         switch (ea.actionType()) {
             case "EMAIL":
-                EmailActionConfiguration config = om.readValue(ea.configuration(), EmailActionConfiguration.class);
-                return new EmailAction(nzyme, config);
+                return new EmailAction(nzyme, om.readValue(ea.configuration(), EmailActionConfiguration.class));
+            case "WEBHOOK":
+                return new WebhookAction(nzyme, om.readValue(ea.configuration(), WebhookActionConfiguration.class));
             default:
                 throw new NoSuchActionTypeException();
         }

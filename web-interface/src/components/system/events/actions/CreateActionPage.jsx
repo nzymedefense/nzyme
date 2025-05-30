@@ -3,6 +3,7 @@ import {Navigate, Routes} from "react-router-dom";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import CreateActionSelect from "../shared/forms/CreateActionSelect";
 import CreateActionProxy from "../shared/forms/CreateActionProxy";
+import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 
 function CreateActionPage() {
 
@@ -32,11 +33,11 @@ function CreateActionPage() {
           </div>
         </div>
 
-        <div className="row">
+        <div className="row mt-3">
           <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
-                <h3>Create Action</h3>
+                <CardTitleWithControls title="Create Action" helpLink="https://go.nzyme.org/alerting-action-types"/>
 
                 <CreateActionSelect type={type} setType={setType} />
                 <CreateActionProxy type={type} setComplete={setComplete} />

@@ -1,5 +1,6 @@
 import React from "react";
 import EmailActionDetails from "./email/EmailActionDetails";
+import WebhookActionDetails from "./webhook/WebhookActionDetails";
 
 function ActionDetailsProxy(props) {
 
@@ -8,6 +9,8 @@ function ActionDetailsProxy(props) {
   switch(action.action_type) {
     case "EMAIL":
       return <EmailActionDetails action={action} />
+    case "WEBHOOK":
+      return <WebhookActionDetails action={action} />
     default:
       return <span>Not supported: {action.action_type}</span>;
   }

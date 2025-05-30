@@ -5,7 +5,7 @@ import {notify} from "react-notify-toast";
 
 const eventActionsService = new EventActionsService();
 
-function editEmailAction(props) {
+export default function EditEmailAction(props) {
 
   const setComplete = props.setComplete;
   const action = props.action;
@@ -19,5 +19,3 @@ function editEmailAction(props) {
 
   return <EmailActionForm action={action} onSubmit={onSubmit} buttonText={"Update Action"} />
 }
-
-export default editEmailAction;

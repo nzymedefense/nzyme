@@ -1,5 +1,6 @@
 import React from "react";
 import EditEmailAction from "./email/EditEmailAction";
+import EditWebhookAction from "./webhook/EditWebhookAction";
 
 function EditActionProxy(props) {
 
@@ -10,6 +11,8 @@ function EditActionProxy(props) {
   switch(type) {
     case "EMAIL":
       return <EditEmailAction action={action} setComplete={setComplete} />
+    case "WEBHOOK":
+      return <EditWebhookAction action={action} setComplete={setComplete} />
     default:
       return <span>Form not implemented.</span>
   }

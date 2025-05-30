@@ -11,23 +11,25 @@ export default function WebhookActionForm(props) {
   // Fields.
   const [name, setName] = useState(action && action.name ? action.name : "");
   const [description, setDescription] = useState(action && action.description ? action.description : "");
-  const [url, setUrl] = useState(action && action.url ? action.url : "");
-  const [allowInsecure, setAllowInsecure] = useState(action && action.allowInsecure ? action.allowInsecure : false);
-  const [bearerToken, setBearerToken] = useState(action && action.bearerToken ? action.bearerToken : "");
+  const [url, setUrl] = useState(action && action.configuration.url ? action.configuration.url : "");
+  const [allowInsecure, setAllowInsecure] = useState(action && action.configuration.allow_insecure ? action.configuration.allow_insecure : false);
+  const [bearerToken, setBearerToken] = useState("");
 
   const [submitText, setSubmitText] = useState(buttonText);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const formReady = function() {
+  const formReady = () => {
     return !isSubmitting
-      && false
+        && name && name !== ""
+        && description && description !== ""
+        && url && ((url.startsWith("http://") && url.length > 7) || (url.startsWith("https://") && url.length > 8))
   }
 
-  const submit = function() {
+  const submit = () => {
     setIsSubmitting(true);
     setSubmitText("Submitting ... Please Wait")
 
-    //onSubmit(name, description, subjectPrefix, receivers);
+    onSubmit(name, description, url, allowInsecure, bearerToken);
   }
 
   return (
@@ -62,6 +64,7 @@ export default function WebhookActionForm(props) {
                onChange={(e) => setUrl(e.target.value)} />
         <div className="form-text">
           Event payloads will be sent to this URL via HTTP POST request.
+          Must start with <code>http://</code> or <code>https://</code>.
         </div>
       </div>
 
@@ -80,16 +83,18 @@ export default function WebhookActionForm(props) {
       </div>
 
       <div className="mb-3">
-        <label htmlFor="bearerToken" className="form-label">Bearer Token</label>
+        <label htmlFor="bearerToken" className="form-label">Bearer Token <small>Optional</small></label>
         <input type="text"
                className="form-control"
                id="bearerToken"
-               value={bearerToken}
                onChange={(e) => setBearerToken(e.target.value)} />
         <div className="form-text">
-          Optional Bearer token for authentication. Sent as HTTP header: <code>Authorization: Bearer &lt;token&gt;</code>.
+          Bearer token for authentication. Sent as HTTP header: <code>Authorization: Bearer &lt;token&gt;</code>.
+          This value is encrypted in the Nzyme database.
         </div>
       </div>
+
+      { action ? <div className="alert alert-warning">For security reasons, and, because the bearer token is encrypted in the Nzyme database, you must re-enter the token. Leaving the field blank will remove the token from this action.</div> : null}
 
       <button type="button"
               className="btn btn-primary"

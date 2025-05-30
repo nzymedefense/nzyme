@@ -104,6 +104,27 @@ class EventActionsService {
     }, successCallback);
   }
 
+  createWebhookAction(organizationId, name, description, url, allowInsecure, bearerToken, successCallback) {
+    RESTClient.post("/system/events/actions/webhook", {
+      "organization_id": organizationId,
+      "name": name,
+      "description": description,
+      "url": url,
+      "allow_insecure": allowInsecure,
+      "bearer_token": bearerToken
+    }, successCallback);
+  }
+
+  updateWebhookAction(actionId, name, description, url, allowInsecure, bearerToken, successCallback) {
+    RESTClient.put("/system/events/actions/webhook/" + actionId, {
+      "name": name,
+      "description": description,
+      "url": url,
+      "allow_insecure": allowInsecure,
+      "bearer_token": bearerToken
+    }, successCallback);
+  }
+
 }
 
 export default EventActionsService;
