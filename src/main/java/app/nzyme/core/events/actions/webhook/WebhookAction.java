@@ -13,6 +13,9 @@ import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,7 +33,6 @@ public class WebhookAction implements Action {
     private final OkHttpClient httpClient;
 
     private final URL url;
-    private final boolean allowInsecure;
     private final Optional<String> bearerToken;
 
     public WebhookAction(NzymeNode nzyme, WebhookActionConfiguration configuration) {
@@ -38,11 +40,29 @@ public class WebhookAction implements Action {
 
         this.om = new ObjectMapper();
 
-        this.httpClient = new OkHttpClient.Builder()
-                .connectTimeout(15, TimeUnit.SECONDS)
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(15, TimeUnit.SECONDS)
-                .writeTimeout(15, TimeUnit.SECONDS)
-                .build();
+                .writeTimeout(15, TimeUnit.SECONDS);
+
+        if (configuration.allowInsecure()) {
+            try {
+                TrustManager[] insecureTrustManager = buildInsecureTrustManager();
+                SSLContext insecureSSLContext = SSLContext.getInstance("SSL");
+                insecureSSLContext.init(null, insecureTrustManager, new java.security.SecureRandom());
+
+                builder.sslSocketFactory(
+                        insecureSSLContext.getSocketFactory(),
+                        (X509TrustManager) insecureTrustManager[0]
+                );
+
+                builder.hostnameVerifier((hostname, session) -> true);
+            } catch(Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        httpClient = builder.build();
 
         try {
             this.url = new URL(configuration.url());
@@ -50,7 +70,6 @@ public class WebhookAction implements Action {
             throw new RuntimeException("Invalid webhook URL: " + configuration.url());
         }
 
-        this.allowInsecure = configuration.allowInsecure();
         this.bearerToken = Optional.ofNullable(configuration.bearerToken());
     }
 
@@ -93,7 +112,7 @@ public class WebhookAction implements Action {
                     .post(RequestBody.create(body))
                     .url(this.url);
 
-            if (bearerToken.isPresent()) {
+            if (bearerToken.isPresent() && !bearerToken.get().isEmpty()) {
                 byte[] decrypted = nzyme.getCrypto().decryptWithClusterKey(bearerToken.get().getBytes());
                 requestBuilder.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + new String(decrypted));
             }
@@ -110,6 +129,25 @@ public class WebhookAction implements Action {
             LOG.error("Could not execute Webhook.", e);
             return ActionExecutionResult.FAILURE;
         }
+    }
+
+    private TrustManager[] buildInsecureTrustManager() {
+        return new TrustManager[]{
+                new X509TrustManager() {
+                    @Override
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                    }
+
+                    @Override
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                    }
+
+                    @Override
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return new java.security.cert.X509Certificate[]{};
+                    }
+                }
+        };
     }
 
 }
