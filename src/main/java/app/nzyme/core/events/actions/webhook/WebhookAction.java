@@ -110,7 +110,8 @@ public class WebhookAction implements Action {
 
             Request.Builder requestBuilder = new Request.Builder()
                     .post(RequestBody.create(body))
-                    .url(this.url);
+                    .url(this.url)
+                    .addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 
             if (bearerToken.isPresent() && !bearerToken.get().isEmpty()) {
                 byte[] decrypted = nzyme.getCrypto().decryptWithClusterKey(bearerToken.get().getBytes());
