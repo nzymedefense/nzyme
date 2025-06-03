@@ -9,7 +9,7 @@ function EmailActionDetails(props) {
 
   return (
       <React.Fragment>
-        <dl>
+        <dl className="mb-0">
           <dt>Subject Prefix</dt>
           <dd>{config.subject_prefix}</dd>
         </dl>

@@ -125,6 +125,29 @@ class EventActionsService {
     }, successCallback);
   }
 
+  createSyslogAction(organizationId, name, description, protocol, syslogHostname, host, port, successCallback) {
+    RESTClient.post("/system/events/actions/syslog", {
+      "organization_id": organizationId,
+      "name": name,
+      "description": description,
+      "protocol": protocol,
+      "syslog_hostname": syslogHostname,
+      "host": host,
+      "port": port
+    }, successCallback);
+  }
+
+  updateSyslogAction(actionId, name, description, protocol, syslogHostname, host, port, successCallback) {
+    RESTClient.put("/system/events/actions/syslog/" + actionId, {
+      "name": name,
+      "description": description,
+      "protocol": protocol,
+      "syslog_hostname": syslogHostname,
+      "host": host,
+      "port": port
+    }, successCallback);
+  }
+
 }
 
 export default EventActionsService;

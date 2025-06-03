@@ -27,7 +27,7 @@ public abstract class CreateWebhookEventActionRequest {
     @Nullable
     public abstract String bearerToken();
 
-    @javax.annotation.Nullable
+    @Nullable
     public abstract UUID organizationId();
 
     @JsonCreator

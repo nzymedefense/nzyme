@@ -1,6 +1,7 @@
 import React from "react";
 import EmailActionDetails from "./email/EmailActionDetails";
 import WebhookActionDetails from "./webhook/WebhookActionDetails";
+import SyslogActionDetails from "./syslog/SyslogActionDetails";
 
 function ActionDetailsProxy(props) {
 
@@ -11,6 +12,8 @@ function ActionDetailsProxy(props) {
       return <EmailActionDetails action={action} />
     case "WEBHOOK":
       return <WebhookActionDetails action={action} />
+    case "SYSLOG":
+      return <SyslogActionDetails action={action} />
     default:
       return <span>Not supported: {action.action_type}</span>;
   }

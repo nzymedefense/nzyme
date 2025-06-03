@@ -6,16 +6,14 @@ import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.events.actions.EventActionUtilities;
 import app.nzyme.core.events.actions.email.EmailActionConfiguration;
+import app.nzyme.core.events.actions.syslog.SyslogActionConfiguration;
 import app.nzyme.core.events.actions.webhook.WebhookActionConfiguration;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.types.EventActionType;
 import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
-import app.nzyme.core.rest.requests.CreateEmailEventActionRequest;
-import app.nzyme.core.rest.requests.CreateWebhookEventActionRequest;
-import app.nzyme.core.rest.requests.UpdateEmailEventActionRequest;
-import app.nzyme.core.rest.requests.UpdateWebhookEventActionRequest;
+import app.nzyme.core.rest.requests.*;
 import app.nzyme.core.rest.responses.events.EventActionDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventActionsListResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -230,8 +228,9 @@ public class EventActionsResource extends UserAuthenticatedResource {
         String config;
         try {
             config = om.writeValueAsString(WebhookActionConfiguration.create(
-                    req.url(), req.allowInsecure(), encryptedBearerToken)
-            );
+                    req.url(), req.allowInsecure(), encryptedBearerToken
+
+            ));
         } catch (JsonProcessingException e) {
             LOG.error("Could not create action configuration.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -284,9 +283,9 @@ public class EventActionsResource extends UserAuthenticatedResource {
 
         String config;
         try {
-            config = om.writeValueAsString(
-                    WebhookActionConfiguration.create(req.url(), req.allowInsecure(), encryptedBearerToken)
-            );
+            config = om.writeValueAsString(WebhookActionConfiguration.create(
+                    req.url(), req.allowInsecure(), encryptedBearerToken
+            ));
         } catch (JsonProcessingException e) {
             LOG.error("Could not create action configuration.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -301,5 +300,91 @@ public class EventActionsResource extends UserAuthenticatedResource {
 
         return Response.ok().build();
     }
+
+    @POST
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/syslog")
+    public Response createSyslogAction(@Context SecurityContext sc, @Valid CreateSyslogEventActionRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        // Check permissions.
+        if (!authenticatedUser.isSuperAdministrator()) {
+            if (req.organizationId() == null || !req.organizationId().equals(authenticatedUser.getOrganizationId())) {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
+        }
+
+        String config;
+        try {
+            config = om.writeValueAsString(SyslogActionConfiguration.create(
+                    req.protocol(), req.syslogHostname(), req.host(), req.port()
+            ));
+        } catch (JsonProcessingException e) {
+            LOG.error("Could not create action configuration.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        ((EventEngineImpl) nzyme.getEventEngine()).createEventAction(
+                req.organizationId(),
+                EventActionType.SYSLOG,
+                req.name(),
+                req.description(),
+                config
+        );
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/syslog/{actionId}")
+    public Response updateSyslogAction(@Context SecurityContext sc,
+                                       @Valid UpdateSyslogEventActionRequest req,
+                                       @PathParam("actionId") UUID actionId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        // Find action.
+        Optional<EventActionEntry> action = ((EventEngineImpl) nzyme.getEventEngine()).findEventAction(actionId);
+
+        if (action.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check permissions.
+        if (!authenticatedUser.isSuperAdministrator()) {
+            if (!action.get().organizationId().equals(authenticatedUser.getOrganizationId())) {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
+        }
+
+        String config;
+        try {
+            config = om.writeValueAsString(SyslogActionConfiguration.create(
+                    req.protocol(), req.syslogHostname(), req.host(), req.port()
+            ));
+        } catch (JsonProcessingException e) {
+            LOG.error("Could not create action configuration.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        ((EventEngineImpl) nzyme.getEventEngine()).updateAction(
+                action.get().uuid(),
+                req.name(),
+                req.description(),
+                config
+        );
+
+        return Response.ok().build();
+    }
+
+
+
+
+
+
+
+
+
+
 
 }

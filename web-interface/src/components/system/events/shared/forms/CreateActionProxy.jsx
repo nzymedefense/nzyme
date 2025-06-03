@@ -1,6 +1,7 @@
 import React from "react";
 import CreateEmailAction from "../forms/email/CreateEmailAction";
 import CreateWebhookAction from "./webhook/CreateWebhookAction";
+import CreateSyslogAction from "./syslog/CreateSyslogAction";
 
 function CreateActionProxy(props) {
 
@@ -17,6 +18,8 @@ function CreateActionProxy(props) {
       return <CreateEmailAction setComplete={setComplete} organizationId={organizationId} />
     case "webhook":
       return <CreateWebhookAction setComplete={setComplete} organizationId={organizationId} />
+    case "syslog":
+      return <CreateSyslogAction setComplete={setComplete} organizationId={organizationId} />
     default:
       return "TYPE NOT IMPLEMENTED."
   }

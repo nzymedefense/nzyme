@@ -14,6 +14,7 @@ function CreateActionSelect(props) {
           <option value="">Please select an action type</option>
           <option value="email">Send email</option>
           <option value="webhook">Call Webhook</option>
+          <option value="syslog">Send Syslog Message</option>
         </select>
       </React.Fragment>
   )

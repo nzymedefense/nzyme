@@ -3,7 +3,8 @@ package app.nzyme.core.events.types;
 public enum EventActionType {
 
     EMAIL("Email"),
-    WEBHOOK("Webhook");
+    WEBHOOK("Webhook"),
+    SYSLOG("Syslog");
 
     private final String humanReadable;
 
