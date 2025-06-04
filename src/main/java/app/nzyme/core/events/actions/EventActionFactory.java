@@ -3,6 +3,8 @@ package app.nzyme.core.events.actions;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.events.actions.email.EmailAction;
 import app.nzyme.core.events.actions.email.EmailActionConfiguration;
+import app.nzyme.core.events.actions.syslog.SyslogAction;
+import app.nzyme.core.events.actions.syslog.SyslogActionConfiguration;
 import app.nzyme.core.events.actions.webhook.WebhookAction;
 import app.nzyme.core.events.actions.webhook.WebhookActionConfiguration;
 import app.nzyme.core.events.db.EventActionEntry;
@@ -20,6 +22,8 @@ public class EventActionFactory {
                 return new EmailAction(nzyme, om.readValue(ea.configuration(), EmailActionConfiguration.class));
             case "WEBHOOK":
                 return new WebhookAction(nzyme, om.readValue(ea.configuration(), WebhookActionConfiguration.class));
+            case "SYSLOG":
+                return new SyslogAction(om.readValue(ea.configuration(), SyslogActionConfiguration.class));
             default:
                 throw new NoSuchActionTypeException();
         }
