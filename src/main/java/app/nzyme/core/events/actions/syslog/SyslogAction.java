@@ -7,7 +7,12 @@ import app.nzyme.core.events.types.SystemEvent;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class SyslogAction implements Action {
@@ -35,11 +40,9 @@ public class SyslogAction implements Action {
         payload.put("event_supertype", "system");
         payload.put("event_type", event.type().name());
         payload.put("event_type_category", event.type().getCategory());
-        payload.put("event_type_description", event.type().getDescription());
         payload.put("event_type_human_readable", event.type().getHumanReadableName());
-        payload.put("details", event.details());
 
-        return execute(payload);
+        return execute(payload, "system", event.details());
     }
 
     @Override
@@ -52,13 +55,93 @@ public class SyslogAction implements Action {
         payload.put("event_type", event.detectionType().name());
         payload.put("event_type_subsystem", event.detectionType().getSubsystem().name());
         payload.put("event_type_human_readable", event.detectionType().getTitle());
-        payload.put("details", event.details());
 
-        return execute(payload);
+        return execute(payload, "detection", event.details());
     }
 
-    private ActionExecutionResult execute(Map<String, Object> payload) {
-        return ActionExecutionResult.FAILURE;
+    private ActionExecutionResult execute(Map<String, Object> payload, String eventIdentifier, String messageDetails) {
+        if (!protocol.equals("UDP_RFC5424")) {
+            throw new IllegalArgumentException("Unsupported protocol: " + protocol);
+        }
+
+        if (messageDetails.isEmpty()) {
+            throw new IllegalArgumentException("Message details are empty");
+        }
+
+        int facility = 16; // Local0.
+        int severity = 5;  // Notice.
+        int pri = facility * 8 + severity;
+
+        String version = "1";
+        String timestamp = DateTime.now().toString();
+        String appName = "nzyme";
+        String procId = "-";
+        String msgId = "-";
+
+        // Structured data.
+        StringBuilder sb = new StringBuilder();
+        sb.append("[").append(eventIdentifier).append("@99999");
+        for (Map.Entry<String, Object> entry : payload.entrySet()) {
+            String key = sanitizeSDName(entry.getKey());
+            String value = sanitizeSDValue(entry.getValue().toString());
+            sb.append(" ").append(key).append("=\"").append(value).append("\"");
+        }
+        sb.append("]");
+        String structuredData = sb.toString();
+
+        // Assemble header.
+        String header = String.format("<%d>%s %s %s %s %s %s %s ",
+                pri,
+                version,
+                timestamp,
+                sanitizeHostname(syslogHostname),
+                appName,
+                procId,
+                msgId,
+                structuredData
+        );
+        String fullMessage = header + messageDetails;
+
+        // Send via UDP.
+        try {
+            byte[] data = fullMessage.getBytes(StandardCharsets.UTF_8);
+            InetAddress serverAddr = InetAddress.getByName(host);
+
+            try (DatagramSocket socket = new DatagramSocket()) {
+                DatagramPacket packet = new DatagramPacket(data, data.length, serverAddr, port);
+                socket.send(packet);
+            }
+        } catch (Exception e) {
+            LOG.error("Could not send syslog action message.", e);
+            return ActionExecutionResult.FAILURE;
+        }
+
+        return ActionExecutionResult.SUCCESS;
+    }
+
+    private String sanitizeSDName(String name) {
+        return name.replaceAll("[\\]\\[\\s=\"]", "_")
+                .substring(0, Math.min(name.length(), 32));
+    }
+
+    private String sanitizeSDValue(String val) {
+        return val.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("]", "\\]");
+    }
+
+    public static String sanitizeHostname(String hostname) {
+        if (hostname == null || hostname.isEmpty()) {
+            return "-";
+        }
+
+        String replaced = hostname.replaceAll("[^A-Za-z0-9\\-\\.]", "_");
+
+        if (replaced.length() > 255) {
+            return replaced.substring(0, 255);
+        }
+
+        return replaced;
     }
 
 }
