@@ -25,7 +25,7 @@ public class DHCPFingerprint {
 
         StringBuilder fingerprint = new StringBuilder();
         for (Integer option : options) {
-            fingerprint.append(String.valueOf(option));
+            fingerprint.append(option);
         }
 
         if (vendorClass != null && !vendorClass.trim().isEmpty()) {

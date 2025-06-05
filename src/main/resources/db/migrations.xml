@@ -6550,4 +6550,64 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_assets" author="lennartkoopmann">
+        <createTable tableName="assets">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="mac" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="dhcp_fingerprint" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="assets" indexName="assets_single_lookup">
+            <column name="uuid" />
+        </createIndex>
+
+        <createIndex tableName="assets" indexName="assets_mac_lookup">
+            <column name="mac" />
+        </createIndex>
+
+        <createIndex tableName="assets" indexName="assets_org_lookup">
+            <column name="organization_id" />
+        </createIndex>
+
+        <createIndex tableName="assets" indexName="assets_tenant_lookup">
+            <column name="tenant_id" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

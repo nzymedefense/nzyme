@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.assets.Assets;
 import app.nzyme.core.bluetooth.Bluetooth;
 import app.nzyme.core.bluetooth.sig.BluetoothSigService;
 import app.nzyme.core.configuration.base.BaseConfiguration;
@@ -72,6 +73,8 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
     Dot11 getDot11();
     Bluetooth getBluetooth();
     Uav getUav();
+
+    Assets getAssets();
 
     ContextService getContextService();
 

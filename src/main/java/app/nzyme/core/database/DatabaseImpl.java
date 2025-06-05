@@ -1,5 +1,6 @@
 package app.nzyme.core.database;
 
+import app.nzyme.core.assets.db.AssetEntryMapper;
 import app.nzyme.core.bluetooth.db.BluetoothDeviceEntryMapper;
 import app.nzyme.core.bluetooth.db.BluetoothDeviceSummaryMapper;
 import app.nzyme.core.configuration.node.NodeConfiguration;
@@ -175,7 +176,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new UavTypeEntryMapper())
                 .registerRowMapper(new CotOutputEntryMapper())
                 .registerRowMapper(new UavVectorEntryMapper())
-                .registerRowMapper(new DHCPTransactionMapper());
+                .registerRowMapper(new DHCPTransactionMapper())
+                .registerRowMapper(new AssetEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

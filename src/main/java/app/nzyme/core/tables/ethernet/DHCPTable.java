@@ -1,17 +1,18 @@
 package app.nzyme.core.tables.ethernet;
 
+import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.ethernet.dhcp.DHCPFingerprint;
 import app.nzyme.core.rest.resources.taps.reports.tables.dhcp.DhcpTransactionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dhcp.Dhcpv4TransactionReport;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
@@ -46,12 +47,18 @@ public class DHCPTable implements DataTable {
     public void handleReport(UUID tapUuid, DateTime timestamp, DhcpTransactionsReport report) {
         tablesService.getNzyme().getDatabase().useHandle(handle -> {
             try (Timer.Context ignored = totalReportTimer.time()) {
-                writeV4Transactions(handle, tapUuid, report.four());
+                Optional<Tap> tap = tablesService.getNzyme().getTapManager().findTap(tapUuid);
+                if (tap.isEmpty()) {
+                    throw new RuntimeException("Reporting tap [" + tapUuid + "] not found. Not processing report.");
+                }
+
+                writeV4Transactions(handle, tap.get(), report.four());
+                registerAssets(handle, tap.get(), report.four());
             }
         });
     }
 
-    private void writeV4Transactions(Handle handle, UUID tapUuid, List<Dhcpv4TransactionReport> txs) {
+    private void writeV4Transactions(Handle handle, Tap tap, List<Dhcpv4TransactionReport> txs) {
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO dhcp_transactions(uuid, tap_uuid, " +
                 "transaction_id, transaction_type, client_mac, additional_client_macs, server_mac, " +
                 "additional_server_macs, offered_ip_addresses, requested_ip_address, options, additional_options, " +
@@ -106,7 +113,7 @@ public class DHCPTable implements DataTable {
                                 "AND tap_uuid = :tap_uuid AND is_complete = :is_complete")
                         .bind("transaction_id", tx.transactionId())
                         .bind("first_packet", tx.firstPacket())
-                        .bind("tap_uuid", tapUuid)
+                        .bind("tap_uuid", tap.uuid())
                         .bind("is_complete", false)
                         .mapTo(Long.class)
                         .findOne();
@@ -119,7 +126,7 @@ public class DHCPTable implements DataTable {
             if (existingTx.isEmpty()) {
                 insertBatch
                         .bind("uuid", UUID.randomUUID())
-                        .bind("tap_uuid", tapUuid)
+                        .bind("tap_uuid", tap.uuid())
                         .bind("transaction_id", tx.transactionId())
                         .bind("transaction_type", tx.transactionType())
                         .bind("client_mac", tx.clientMac())
@@ -159,6 +166,45 @@ public class DHCPTable implements DataTable {
                         .bind("notes", notes)
                         .bind("is_successful", tx.successful())
                         .bind("is_complete", tx.complete())
+                        .add();
+            }
+        }
+
+        insertBatch.execute();
+        updateBatch.execute();
+    }
+
+    private void registerAssets(Handle handle, Tap tap, List<Dhcpv4TransactionReport> txs) {
+        PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO assets(uuid, organization_id, tenant_id, " +
+                "mac, dhcp_fingerprint, first_seen, last_seen, updated_at, created_at) VALUES(:uuid, " +
+                ":organization_id, :tenant_id, :mac, :dhcp_fingerprint, :first_seen, :last_seen, NOW(), NOW())");
+        PreparedBatch updateBatch = handle.prepareBatch("UPDATE assets SET last_seen = :last_seen, " +
+                "updated_at = NOW() WHERE id = :id");
+
+        for (Dhcpv4TransactionReport tx : txs) {
+            Optional<String> fingerprint = new DHCPFingerprint(tx.options(), tx.vendorClass()).generate();
+
+            Optional<AssetEntry> existing = tablesService.getNzyme().getAssets()
+                    .findAssetByMac(tx.clientMac(), tap.organizationId(), tap.tenantId());
+
+            if (existing.isPresent()) {
+                // We have an existing asset.
+                updateBatch
+                        .bind("id", existing.get().id())
+                        .bind("last_seen", tx.latestPacket())
+                        .add();
+
+                // SPOOF CHECKS in engine
+            } else {
+                // First time we are seeing this asset.
+                insertBatch
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("organization_id", tap.organizationId())
+                        .bind("tenant_id", tap.tenantId())
+                        .bind("mac", tx.clientMac())
+                        .bind("dhcp_fingerprint", fingerprint.orElse(null))
+                        .bind("first_seen", tx.firstPacket())
+                        .bind("last_seen", tx.latestPacket())
                         .add();
             }
         }
