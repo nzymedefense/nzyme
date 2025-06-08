@@ -1,6 +1,7 @@
 package app.nzyme.core.assets.db;
 
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
 import java.util.UUID;
@@ -13,6 +14,7 @@ public abstract class AssetEntry {
     public abstract UUID organizationId();
     public abstract UUID tenantId();
     public abstract String mac();
+    @Nullable
     public abstract String dhcpFingerprint();
     public abstract DateTime firstSeen();
     public abstract DateTime lastSeen();

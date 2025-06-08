@@ -65,10 +65,13 @@ public class MetricNames {
     public static final String TCP_TOTAL_REPORT_PROCESSING_TIMER = name(TCPTable.class, "total-report-processing-timing");
     public static final String TCP_SESSIONS_REPORT_PROCESSING_TIMER = name(TCPTable.class, "sessions-report-processing-timing");
     public static final String TCP_SESSION_DISCOVERY_QUERY_TIMER = name(TCPTable.class, "session-discovery-query-timing");
+    public static final String TCP_ASSET_REGISTRATION_PROCESSING_TIMER = name(TCPTable.class, "asset-registration-processing-timing");
 
     public static final String SOCKS_TOTAL_REPORT_PROCESSING_TIMER = name(SOCKSTable.class, "total-report-processing-timing");
     public static final String SSH_TOTAL_REPORT_PROCESSING_TIMER = name(SSHTable.class, "total-report-processing-timing");
     public static final String DHCP_TOTAL_REPORT_PROCESSING_TIMER = name(DHCPTable.class, "total-report-processing-timing");
+    public static final String DHCP_TRANSACTIONS_FOUR_REPORT_PROCESSING_TIMER = name(DHCPTable.class, "txs-four-report-processing-timing");
+    public static final String DHCP_ASSET_REGISTRATION_PROCESSING_TIMER = name(DHCPTable.class, "asset-registration-processing-timing");
 
     public static final String UAV_TOTAL_REPORT_PROCESSING_TIMER = name(UAVTable.class, "total-report-processing-timing");
     public static final String UAV_CONNECT_TYPE_LOOKUP_TIMING = name(Uav.class, "connect-type-lookup-timing");

@@ -1,5 +1,6 @@
 package app.nzyme.core.tables.ethernet;
 
+import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.ethernet.tcp.TcpSessionState;
 import app.nzyme.core.ethernet.tcp.db.TcpSessionEntry;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
@@ -8,17 +9,21 @@ import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
+import app.nzyme.plugin.Subsystem;
 import com.codahale.metrics.Timer;
+import com.google.auto.value.AutoValue;
+import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Handle;
+import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
 import java.net.InetAddress;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
+import java.util.*;
 
 import static app.nzyme.core.util.Tools.stringtoInetAddress;
 
@@ -31,6 +36,7 @@ public class TCPTable implements DataTable {
     private final Timer totalReportTimer;
     private final Timer sessionsReportTimer;
     private final Timer sessionDiscoveryTimer;
+    private final Timer assetRegistrationTimer;
 
     private final GeoIpService geoIp;
 
@@ -47,103 +53,101 @@ public class TCPTable implements DataTable {
 
         this.sessionDiscoveryTimer = tablesService.getNzyme().getMetrics()
                 .timer(MetricNames.TCP_SESSION_DISCOVERY_QUERY_TIMER);
+
+        this.assetRegistrationTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.TCP_ASSET_REGISTRATION_PROCESSING_TIMER);
     }
 
     public void handleReport(UUID tapUuid, DateTime timestamp, TcpSessionsReport report) {
         try (Timer.Context ignored = totalReportTimer.time()) {
-            try (Timer.Context ignored2 = sessionsReportTimer.time()) {
-                CountDownLatch latch = new CountDownLatch(report.sessions().size());
-                for (TcpSessionReport session : report.sessions()) {
-                    tablesService.getProcessorPool().submit(() -> {
-                        writeSession(tapUuid, timestamp, session);
-
-                        latch.countDown();
-                    });
+            tablesService.getProcessorPool().submit(() -> {
+                Optional<Tap> tap = tablesService.getNzyme().getTapManager().findTap(tapUuid);
+                if (tap.isEmpty()) {
+                    throw new RuntimeException("Reporting tap [" + tapUuid + "] not found. Not processing report.");
                 }
 
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    LOG.error("TCP sessions writer process interrupted.", e);
-                }
-            }
+                tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                    try (Timer.Context ignored2 = sessionsReportTimer.time()) {
+                        writeSessions(handle, tap.get(), timestamp, report.sessions());
+                    }
+
+                    try (Timer.Context ignored2 = assetRegistrationTimer.time()) {
+                        registerAssets(handle, tap.get(), timestamp, report.sessions());
+                    }
+                });
+            });
         }
     }
 
-    private void writeSession(UUID tapUuid, DateTime timestamp, TcpSessionReport session) {
-        try {
-            String sessionKey = Tools.buildTcpSessionKey(
-                    session.startTime(),
-                    session.sourceAddress(),
-                    session.destinationAddress(),
-                    session.sourcePort(),
-                    session.destinationPort()
-            );
+    private void writeSessions(Handle handle, Tap tap, DateTime timestamp, List<TcpSessionReport> sessions) {
+        PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO l4_sessions(tap_uuid, l4_type, " +
+                "session_key, source_mac, source_address, source_address_is_site_local, " +
+                "source_address_is_loopback, source_address_is_multicast, source_port, destination_mac, " +
+                "destination_address, destination_address_is_site_local, destination_address_is_loopback, " +
+                "destination_address_is_multicast, destination_port, bytes_count, segments_count, " +
+                "start_time, end_time, most_recent_segment_time, state, source_address_geo_asn_number, " +
+                "source_address_geo_asn_name, source_address_geo_asn_domain, source_address_geo_city, " +
+                "source_address_geo_country_code, source_address_geo_latitude, " +
+                "source_address_geo_longitude, destination_address_geo_asn_number, " +
+                "destination_address_geo_asn_name, destination_address_geo_asn_domain, " +
+                "destination_address_geo_city, destination_address_geo_country_code, " +
+                "destination_address_geo_latitude, destination_address_geo_longitude, created_at) " +
+                "VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, :source_address::inet, " +
+                ":source_address_is_site_local, :source_address_is_loopback, :source_address_is_multicast, " +
+                ":source_port, :destination_mac, :destination_address::inet, " +
+                ":destination_address_is_site_local, :destination_address_is_loopback, " +
+                ":destination_address_is_multicast, :destination_port, :bytes_count, :segments_count, " +
+                ":start_time, :end_time, :most_recent_segment_time, :state, " +
+                ":source_address_geo_asn_number, :source_address_geo_asn_name, " +
+                ":source_address_geo_asn_domain, :source_address_geo_city, " +
+                ":source_address_geo_country_code, :source_address_geo_latitude, " +
+                ":source_address_geo_longitude, :destination_address_geo_asn_number, " +
+                ":destination_address_geo_asn_name, :destination_address_geo_asn_domain, " +
+                ":destination_address_geo_city, :destination_address_geo_country_code, " +
+                ":destination_address_geo_latitude, :destination_address_geo_longitude, :created_at)");
+        PreparedBatch updateBatch = handle.prepareBatch("UPDATE l4_sessions SET state = :state, " +
+                "bytes_count = :bytes_count, segments_count = :segments_count, end_time = :end_time, " +
+                "most_recent_segment_time = :most_recent_segment_time WHERE id = :id");
 
-            InetAddress sourceAddress = stringtoInetAddress(session.sourceAddress());
-            InetAddress destinationAddress = stringtoInetAddress(session.destinationAddress());
-            Optional<GeoIpLookupResult> sourceGeo = geoIp.lookup(sourceAddress);
-            Optional<GeoIpLookupResult> destinationGeo = geoIp.lookup(destinationAddress);
+        for (TcpSessionReport session : sessions) {
+            try {
+                String sessionKey = Tools.buildTcpSessionKey(
+                        session.startTime(),
+                        session.sourceAddress(),
+                        session.destinationAddress(),
+                        session.sourcePort(),
+                        session.destinationPort()
+                );
 
-            tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                InetAddress sourceAddress = stringtoInetAddress(session.sourceAddress());
+                InetAddress destinationAddress = stringtoInetAddress(session.destinationAddress());
+                Optional<GeoIpLookupResult> sourceGeo = geoIp.lookup(sourceAddress);
+                Optional<GeoIpLookupResult> destinationGeo = geoIp.lookup(destinationAddress);
+
                 Optional<TcpSessionEntry> existingSession;
                 try (Timer.Context ignored = sessionDiscoveryTimer.time()) {
                     existingSession = handle.createQuery("SELECT * FROM l4_sessions " +
                                     "WHERE session_key = :session_key AND end_time IS NULL AND tap_uuid = :tap_uuid")
                             .bind("session_key", sessionKey)
-                            .bind("tap_uuid", tapUuid)
+                            .bind("tap_uuid", tap.uuid())
                             .mapTo(TcpSessionEntry.class)
                             .findOne();
                 }
 
                 if (existingSession.isPresent()) {
                     // Existing session. Update.
-                    handle.createUpdate("UPDATE l4_sessions SET state = :state, " +
-                                    "bytes_count = :bytes_count, segments_count = :segments_count, " +
-                                    "end_time = :end_time, most_recent_segment_time = :most_recent_segment_time " +
-                                    "WHERE id = :id")
+                    updateBatch
                             .bind("state", TcpSessionState.valueOf(session.state().toUpperCase()))
                             .bind("bytes_count", session.bytesCount())
                             .bind("segments_count", session.segmentsCount())
                             .bind("end_time", session.endTime())
                             .bind("most_recent_segment_time", session.mostRecentSegmentTime())
                             .bind("id", existingSession.get().id())
-                            .execute();
+                            .add();
                 } else {
                     // This is a new session.
-                    handle.createUpdate("INSERT INTO l4_sessions(tap_uuid, l4_type, session_key, " +
-                                    "source_mac, source_address, source_address_is_site_local, " +
-                                    "source_address_is_loopback, source_address_is_multicast, source_port, " +
-                                    "destination_mac, destination_address, destination_address_is_site_local, " +
-                                    "destination_address_is_loopback, destination_address_is_multicast," +
-                                    " destination_port, bytes_count, segments_count, " +
-                                    "start_time, end_time, most_recent_segment_time, state, " +
-                                    "source_address_geo_asn_number, source_address_geo_asn_name, " +
-                                    "source_address_geo_asn_domain, source_address_geo_city, " +
-                                    "source_address_geo_country_code, " +
-                                    "source_address_geo_latitude, source_address_geo_longitude, " +
-                                    "destination_address_geo_asn_number, destination_address_geo_asn_name, " +
-                                    "destination_address_geo_asn_domain, destination_address_geo_city, " +
-                                    "destination_address_geo_country_code, " +
-                                    "destination_address_geo_latitude, destination_address_geo_longitude, " +
-                                    "created_at) VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, " +
-                                    ":source_address::inet, " +
-                                    ":source_address_is_site_local, :source_address_is_loopback, " +
-                                    ":source_address_is_multicast, :source_port, :destination_mac, " +
-                                    ":destination_address::inet, :destination_address_is_site_local, " +
-                                    ":destination_address_is_loopback, :destination_address_is_multicast, " +
-                                    ":destination_port, :bytes_count, :segments_count, :start_time, " +
-                                    ":end_time, :most_recent_segment_time, :state, " +
-                                    ":source_address_geo_asn_number, :source_address_geo_asn_name, " +
-                                    ":source_address_geo_asn_domain, :source_address_geo_city, " +
-                                    ":source_address_geo_country_code, " +
-                                    ":source_address_geo_latitude, :source_address_geo_longitude, " +
-                                    ":destination_address_geo_asn_number, :destination_address_geo_asn_name, " +
-                                    ":destination_address_geo_asn_domain, :destination_address_geo_city, " +
-                                    ":destination_address_geo_country_code, " +
-                                    ":destination_address_geo_latitude, :destination_address_geo_longitude, " +
-                                    ":created_at)")
-                            .bind("tap_uuid", tapUuid)
+                    insertBatch
+                            .bind("tap_uuid", tap.uuid())
                             .bind("l4_type", "TCP")
                             .bind("session_key", sessionKey)
                             .bind("source_mac", session.sourceMac())
@@ -179,11 +183,106 @@ public class TCPTable implements DataTable {
                             .bind("destination_address_geo_latitude", destinationGeo.map(g -> g.geo().latitude()).orElse(null))
                             .bind("destination_address_geo_longitude", destinationGeo.map(g -> g.geo().longitude()).orElse(null))
                             .bind("created_at", timestamp)
-                            .execute();
+                            .add();
                 }
-            });
+            } catch(Exception e) {
+                LOG.error("Could not handle TCP session.", e);
+            }
+        }
+
+        try {
+            updateBatch.execute();
+            insertBatch.execute();
+        } catch (Exception e) {
+            LOG.error("Could not write TCP sessions.", e);
+        }
+    }
+
+    private void registerAssets(Handle handle, Tap tap, DateTime timestamp, List<TcpSessionReport> sessions) {
+        PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO assets(uuid, organization_id, tenant_id, " +
+                "mac, first_seen, last_seen, seen_tcp, updated_at, created_at) VALUES(:uuid, " +
+                ":organization_id, :tenant_id, :mac, :first_seen, :last_seen, true, NOW(), NOW())");
+        PreparedBatch updateBatch = handle.prepareBatch("UPDATE assets SET last_seen = :last_seen, " +
+                "seen_tcp = true, updated_at = NOW() WHERE id = :id");
+
+        // We may have multiple sessions from the same client MAC. Pre-process and aggregate.
+        Map<String, AssetInformation> assets = Maps.newHashMap();
+        for (TcpSessionReport session : sessions) {
+            if (session.sourceMac() == null) {
+                continue;
+            }
+
+            AssetInformation existingAsset = assets.get(session.sourceMac());
+            if (existingAsset != null) {
+                // We have already seen this asset. Update timestamps.
+                DateTime firstSeen;
+                DateTime lastSeen;
+
+                if (session.startTime().isBefore(existingAsset.firstSeen())) {
+                    firstSeen = session.startTime();
+                } else {
+                    firstSeen = existingAsset.firstSeen();
+                }
+
+                if (session.mostRecentSegmentTime().isAfter(existingAsset.lastSeen())) {
+                    lastSeen = session.mostRecentSegmentTime();
+                } else {
+                    lastSeen = existingAsset.lastSeen();
+                }
+
+                assets.put(session.sourceMac(), AssetInformation.create(session.sourceMac(), firstSeen, lastSeen));
+            } else {
+                // Not seen before.
+                assets.put(session.sourceMac(), AssetInformation.create(
+                        session.sourceMac(), session.startTime(), session.mostRecentSegmentTime()
+                ));
+            }
+        }
+
+        for (AssetInformation assetInfo : assets.values()) {
+            try {
+                Optional<AssetEntry> asset = tablesService.getNzyme().getAssetsManager()
+                        .findAssetByMac(assetInfo.mac(), tap.organizationId(), tap.tenantId());
+
+                if (asset.isPresent()) {
+                    // We have an existing asset.
+                    updateBatch
+                            .bind("id", asset.get().id())
+                            .bind("last_seen", assetInfo.lastSeen());
+
+                    updateBatch.add();
+                } else {
+                    // First time we are seeing this asset.
+                    UUID uuid = UUID.randomUUID();
+                    insertBatch
+                            .bind("uuid", uuid)
+                            .bind("organization_id", tap.organizationId())
+                            .bind("tenant_id", tap.tenantId())
+                            .bind("mac", assetInfo.mac())
+                            .bind("first_seen", assetInfo.firstSeen())
+                            .bind("last_seen", assetInfo.lastSeen())
+                            .add();
+
+                    // Handle new asset.
+                    tablesService.getNzyme().getAssetsManager().onNewAsset(
+                            Subsystem.ETHERNET,
+                            uuid,
+                            assetInfo.mac(),
+                            tap.organizationId(),
+                            tap.tenantId(),
+                            tap.uuid()
+                    );
+                }
+            } catch (Exception e) {
+                LOG.error("Could not register asset from TCP session.", e);
+            }
+        }
+
+        try {
+            updateBatch.execute();
+            insertBatch.execute();
         } catch(Exception e) {
-            LOG.error("Could not write TCP session.", e);
+            LOG.error("Could not write assets from TCP sessions.", e);
         }
     }
 
@@ -191,4 +290,36 @@ public class TCPTable implements DataTable {
     public void retentionClean() {
         // NOOP. Remove from plugin APIs if there remains no use. Database cleaned by category/tenant independently.
     }
+
+    @AutoValue
+    public static abstract class AssetInformation {
+
+        public abstract String mac();
+        public abstract DateTime firstSeen();
+        public abstract DateTime lastSeen();
+
+        public static AssetInformation create(String mac, DateTime firstSeen, DateTime lastSeen) {
+            return builder()
+                    .mac(mac)
+                    .firstSeen(firstSeen)
+                    .lastSeen(lastSeen)
+                    .build();
+        }
+
+        public static Builder builder() {
+            return new AutoValue_TCPTable_AssetInformation.Builder();
+        }
+
+        @AutoValue.Builder
+        public abstract static class Builder {
+            public abstract Builder mac(String mac);
+
+            public abstract Builder firstSeen(DateTime firstSeen);
+
+            public abstract Builder lastSeen(DateTime lastSeen);
+
+            public abstract AssetInformation build();
+        }
+    }
+
 }

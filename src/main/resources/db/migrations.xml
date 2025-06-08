@@ -6610,4 +6610,30 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_tcp_sources_to_assets" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="assets" columnName="dhcp_fingerprint" />
+
+        <addColumn tableName="assets">
+            <column name="tcp_fingerprint" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_seen_flags_to_assets" author="lennartkoopmann">
+        <addColumn tableName="assets">
+            <column name="seen_dhcp" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="seen_tcp" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_asset_uniqueness" author="lennartkoopmann">
+        <addUniqueConstraint tableName="assets" columnNames="mac,organization_id,tenant_id" />
+    </changeSet>
+
 </databaseChangeLog>

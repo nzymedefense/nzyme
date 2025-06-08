@@ -1,6 +1,7 @@
 package app.nzyme.core.tables.ethernet;
 
 import app.nzyme.core.assets.db.AssetEntry;
+import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.ethernet.dhcp.DHCPFingerprint;
 import app.nzyme.core.rest.resources.taps.reports.tables.dhcp.DhcpTransactionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dhcp.Dhcpv4TransactionReport;
@@ -8,11 +9,13 @@ import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.MetricNames;
+import app.nzyme.plugin.Subsystem;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
@@ -20,6 +23,7 @@ import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,6 +32,8 @@ public class DHCPTable implements DataTable {
     private static final Logger LOG = LogManager.getLogger(DHCPTable.class);
 
     private final Timer totalReportTimer;
+    private final Timer transactionsV4ReportTimer;
+    private final Timer assetRegistrationTimer;
 
     private final TablesService tablesService;
 
@@ -38,6 +44,10 @@ public class DHCPTable implements DataTable {
 
         this.totalReportTimer = tablesService.getNzyme().getMetrics()
                 .timer(MetricNames.DHCP_TOTAL_REPORT_PROCESSING_TIMER);
+        this.transactionsV4ReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DHCP_TRANSACTIONS_FOUR_REPORT_PROCESSING_TIMER);
+        this.assetRegistrationTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.DHCP_ASSET_REGISTRATION_PROCESSING_TIMER);
 
         this.om = new ObjectMapper()
                 .registerModule(new JodaModule())
@@ -46,14 +56,19 @@ public class DHCPTable implements DataTable {
 
     public void handleReport(UUID tapUuid, DateTime timestamp, DhcpTransactionsReport report) {
         tablesService.getNzyme().getDatabase().useHandle(handle -> {
-            try (Timer.Context ignored = totalReportTimer.time()) {
+            try (Timer.Context ignored1 = totalReportTimer.time()) {
                 Optional<Tap> tap = tablesService.getNzyme().getTapManager().findTap(tapUuid);
                 if (tap.isEmpty()) {
                     throw new RuntimeException("Reporting tap [" + tapUuid + "] not found. Not processing report.");
                 }
 
-                writeV4Transactions(handle, tap.get(), report.four());
-                registerAssets(handle, tap.get(), report.four());
+                try (Timer.Context ignored2 = transactionsV4ReportTimer.time()) {
+                    writeV4Transactions(handle, tap.get(), report.four());
+                }
+
+                try (Timer.Context ignored3 = assetRegistrationTimer.time()) {
+                    registerAssets(handle, tap.get(), report.four());
+                }
             }
         });
     }
@@ -176,29 +191,37 @@ public class DHCPTable implements DataTable {
 
     private void registerAssets(Handle handle, Tap tap, List<Dhcpv4TransactionReport> txs) {
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO assets(uuid, organization_id, tenant_id, " +
-                "mac, dhcp_fingerprint, first_seen, last_seen, updated_at, created_at) VALUES(:uuid, " +
-                ":organization_id, :tenant_id, :mac, :dhcp_fingerprint, :first_seen, :last_seen, NOW(), NOW())");
+                "mac, dhcp_fingerprint, first_seen, last_seen, seen_dhcp, updated_at, created_at) VALUES(:uuid, " +
+                ":organization_id, :tenant_id, :mac, :dhcp_fingerprint, :first_seen, :last_seen, true,  NOW(), NOW())");
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE assets SET last_seen = :last_seen, " +
-                "updated_at = NOW() WHERE id = :id");
+                "dhcp_fingerprint = :dhcp_fingerprint, seen_dhcp = true, updated_at = NOW() WHERE id = :id");
 
         for (Dhcpv4TransactionReport tx : txs) {
             Optional<String> fingerprint = new DHCPFingerprint(tx.options(), tx.vendorClass()).generate();
 
-            Optional<AssetEntry> existing = tablesService.getNzyme().getAssets()
+            Optional<AssetEntry> asset = tablesService.getNzyme().getAssetsManager()
                     .findAssetByMac(tx.clientMac(), tap.organizationId(), tap.tenantId());
 
-            if (existing.isPresent()) {
+            if (asset.isPresent()) {
                 // We have an existing asset.
                 updateBatch
-                        .bind("id", existing.get().id())
-                        .bind("last_seen", tx.latestPacket())
-                        .add();
+                        .bind("id", asset.get().id())
+                        .bind("last_seen", tx.latestPacket());
 
-                // SPOOF CHECKS in engine
+                // Add fingerprint if we have one but asset does not.
+                if (fingerprint.isPresent() && asset.get().dhcpFingerprint() == null) {
+                    updateBatch.bind("dhcp_fingerprint", fingerprint.get());
+                }
+
+                updateBatch.add();
+
+                // Spoof checks.
+                checkFingerprint(tap, asset.get(), tx);
             } else {
                 // First time we are seeing this asset.
+                UUID uuid = UUID.randomUUID();
                 insertBatch
-                        .bind("uuid", UUID.randomUUID())
+                        .bind("uuid", uuid)
                         .bind("organization_id", tap.organizationId())
                         .bind("tenant_id", tap.tenantId())
                         .bind("mac", tx.clientMac())
@@ -206,11 +229,53 @@ public class DHCPTable implements DataTable {
                         .bind("first_seen", tx.firstPacket())
                         .bind("last_seen", tx.latestPacket())
                         .add();
+
+                // Handle new asset.
+                tablesService.getNzyme().getAssetsManager().onNewAsset(
+                        Subsystem.ETHERNET,
+                        uuid,
+                        tx.clientMac(),
+                        tap.organizationId(),
+                        tap.tenantId(),
+                        tap.uuid()
+                );
             }
         }
 
         insertBatch.execute();
         updateBatch.execute();
+    }
+
+    private void checkFingerprint(Tap tap, AssetEntry asset, Dhcpv4TransactionReport tx) {
+        Optional<String> fingerprint = new DHCPFingerprint(tx.options(), tx.vendorClass()).generate();
+
+        if (fingerprint.isEmpty() || asset.dhcpFingerprint() == null) {
+            return;
+        }
+
+        if (!fingerprint.get().equals(asset.dhcpFingerprint())) {
+            // Fingerprint differs.
+            // TODO only trigger if alert enabled for this asset.
+            Map<String, String> attributes = Maps.newHashMap();
+            attributes.put("asset_uuid", asset.uuid().toString());
+            attributes.put("mac", tx.clientMac());
+            attributes.put("existing_fingerprint", asset.dhcpFingerprint());
+            attributes.put("new_fingerprint", fingerprint.get());
+
+            tablesService.getNzyme().getDetectionAlertService().raiseAlert(
+                    tap.organizationId(),
+                    tap.tenantId(),
+                    null,
+                    tap.uuid(),
+                    DetectionType.ASSETS_DHCP_FINGERPRINT_NEW,
+                    Subsystem.ETHERNET,
+                    "MAC address \"" + tx.clientMac() + "\" is presenting new DHCP fingerprint " +
+                            " \"" + fingerprint.get() + "\"",
+                    attributes,
+                    new String[]{"asset_uuid", "new_fingerprint"},
+                    null
+            );
+        }
     }
 
     @Override

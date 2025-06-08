@@ -17,7 +17,7 @@
 
 package app.nzyme.core;
 
-import app.nzyme.core.assets.Assets;
+import app.nzyme.core.assets.AssetManager;
 import app.nzyme.core.bluetooth.Bluetooth;
 import app.nzyme.core.bluetooth.sig.BluetoothSigService;
 import app.nzyme.core.cache.CacheManager;
@@ -130,7 +130,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final Bluetooth bluetooth;
     private final Uav uav;
 
-    private final Assets assets;
+    private final AssetManager assets;
 
     private final TablesService tablesService;
 
@@ -199,7 +199,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.bluetooth = new Bluetooth(this);
         this.uav = new Uav(this);
 
-        this.assets = new Assets(this);
+        this.assets = new AssetManager(this);
 
         this.tapManager = new TapManager(this);
 
@@ -411,7 +411,7 @@ public class NzymeNodeImpl implements NzymeNode {
     }
 
     @Override
-    public Assets getAssets() {
+    public AssetManager getAssetsManager() {
         return assets;
     }
 

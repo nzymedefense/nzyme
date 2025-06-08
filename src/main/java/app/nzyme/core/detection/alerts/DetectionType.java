@@ -4,6 +4,10 @@ import app.nzyme.plugin.Subsystem;
 
 public enum DetectionType {
 
+    // Assets.
+    ASSETS_NEW("New asset detected", Subsystem.ETHERNET),
+    ASSETS_DHCP_FINGERPRINT_NEW("Asset is presenting a new DHCP fingerprint", Subsystem.ETHERNET),
+
     // Dot11 Monitor alerts.
     DOT11_MONITOR_BSSID("WiFi Network Monitor: Unexpected BSSID detected", Subsystem.DOT11),
     DOT11_MONITOR_CHANNEL("WiFi Network Monitor: Unexpected channel usage detected", Subsystem.DOT11),

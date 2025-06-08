@@ -17,7 +17,7 @@
 
 package app.nzyme.core;
 
-import app.nzyme.core.assets.Assets;
+import app.nzyme.core.assets.AssetManager;
 import app.nzyme.core.bluetooth.Bluetooth;
 import app.nzyme.core.bluetooth.sig.BluetoothSigService;
 import app.nzyme.core.configuration.base.BaseConfiguration;
@@ -257,7 +257,7 @@ public class MockNzyme implements NzymeNode {
     }
 
     @Override
-    public Assets getAssets() {
+    public AssetManager getAssetsManager() {
         return null;
     }
 

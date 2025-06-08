@@ -3,6 +3,7 @@ package app.nzyme.core.ethernet.dhcp;
 import com.google.common.hash.Hashing;
 import jakarta.annotation.Nullable;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +26,13 @@ public class DHCPFingerprint {
 
         StringBuilder fingerprint = new StringBuilder();
         for (Integer option : options) {
-            fingerprint.append(option);
+            String c;
+            if (option == 51 || option == 54) {
+                c = "X";
+            } else {
+                c = String.valueOf(option);
+            }
+            fingerprint.append(c).append("|");
         }
 
         if (vendorClass != null && !vendorClass.trim().isEmpty()) {
@@ -34,7 +41,7 @@ public class DHCPFingerprint {
 
         return Optional.of(
                 Hashing.sha256()
-                        .hashBytes(fingerprint.toString().getBytes())
+                        .hashBytes(fingerprint.toString().getBytes(StandardCharsets.UTF_8))
                         .toString());
     }
 
