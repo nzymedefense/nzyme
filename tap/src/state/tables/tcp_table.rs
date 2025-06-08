@@ -42,6 +42,10 @@ pub struct TcpSession {
     pub bytes_count: u64,
     pub segments_client_to_server: BTreeMap<u32, Vec<u8>>,
     pub segments_server_to_client: BTreeMap<u32, Vec<u8>>,
+    pub syn_window_size: u16,
+    pub syn_maximum_segment_size: Option<u16>,
+    pub syn_window_scale_multiplier: Option<u8>,
+    pub syn_options: Vec<u8>,
     pub tags: Vec<L7SessionTag>
 }
 
@@ -142,6 +146,10 @@ impl TcpTable {
                                 bytes_count: segment.size as u64,
                                 segments_client_to_server: BTreeMap::new(),
                                 segments_server_to_client: BTreeMap::new(),
+                                syn_window_size: segment.window_size,
+                                syn_maximum_segment_size: segment.maximum_segment_size,
+                                syn_window_scale_multiplier: segment.window_scale_multiplier,
+                                syn_options: segment.options.clone(),
                                 tags: vec![]
                             };
 

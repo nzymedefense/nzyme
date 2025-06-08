@@ -14,6 +14,8 @@ import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.Subsystem;
 import com.codahale.metrics.Timer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
@@ -80,6 +82,8 @@ public class TCPTable implements DataTable {
     }
 
     private void writeSessions(Handle handle, Tap tap, DateTime timestamp, List<TcpSessionReport> sessions) {
+        ObjectMapper om = new ObjectMapper();
+
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO l4_sessions(tap_uuid, l4_type, " +
                 "session_key, source_mac, source_address, source_address_is_site_local, " +
                 "source_address_is_loopback, source_address_is_multicast, source_port, destination_mac, " +
@@ -91,7 +95,7 @@ public class TCPTable implements DataTable {
                 "source_address_geo_longitude, destination_address_geo_asn_number, " +
                 "destination_address_geo_asn_name, destination_address_geo_asn_domain, " +
                 "destination_address_geo_city, destination_address_geo_country_code, " +
-                "destination_address_geo_latitude, destination_address_geo_longitude, created_at) " +
+                "destination_address_geo_latitude, destination_address_geo_longitude, tcp_syn_window_size, tcp_syn_maximum_segment_size, tcp_syn_window_scale_multiplier, tcp_syn_options, created_at) " +
                 "VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, :source_address::inet, " +
                 ":source_address_is_site_local, :source_address_is_loopback, :source_address_is_multicast, " +
                 ":source_port, :destination_mac, :destination_address::inet, " +
@@ -104,7 +108,7 @@ public class TCPTable implements DataTable {
                 ":source_address_geo_longitude, :destination_address_geo_asn_number, " +
                 ":destination_address_geo_asn_name, :destination_address_geo_asn_domain, " +
                 ":destination_address_geo_city, :destination_address_geo_country_code, " +
-                ":destination_address_geo_latitude, :destination_address_geo_longitude, :created_at)");
+                ":destination_address_geo_latitude, :destination_address_geo_longitude, :tcp_syn_window_size, :tcp_syn_maximum_segment_size, :tcp_syn_window_scale_multiplier, :tcp_syn_options::jsonb, :created_at)");
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE l4_sessions SET state = :state, " +
                 "bytes_count = :bytes_count, segments_count = :segments_count, end_time = :end_time, " +
                 "most_recent_segment_time = :most_recent_segment_time WHERE id = :id");
@@ -145,6 +149,13 @@ public class TCPTable implements DataTable {
                             .bind("id", existingSession.get().id())
                             .add();
                 } else {
+                    String synOptions;
+                    try {
+                        synOptions = om.writeValueAsString(session.synOptions());
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException("Could not serialize SYN options: " + session.synOptions(), e);
+                    }
+
                     // This is a new session.
                     insertBatch
                             .bind("tap_uuid", tap.uuid())
@@ -182,6 +193,10 @@ public class TCPTable implements DataTable {
                             .bind("destination_address_geo_country_code", destinationGeo.map(g -> g.geo().countryCode()).orElse(null))
                             .bind("destination_address_geo_latitude", destinationGeo.map(g -> g.geo().latitude()).orElse(null))
                             .bind("destination_address_geo_longitude", destinationGeo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("tcp_syn_window_size", session.synWindowSize())
+                            .bind("tcp_syn_maximum_segment_size", session.synMaximumSegmentSize())
+                            .bind("tcp_syn_window_scale_multiplier", session.synMaximumScaleMultiplier())
+                            .bind("tcp_syn_options", synOptions)
                             .bind("created_at", timestamp)
                             .add();
                 }

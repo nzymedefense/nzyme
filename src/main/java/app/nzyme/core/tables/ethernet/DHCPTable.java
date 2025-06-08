@@ -22,6 +22,7 @@ import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -74,25 +75,6 @@ public class DHCPTable implements DataTable {
     }
 
     private void writeV4Transactions(Handle handle, Tap tap, List<Dhcpv4TransactionReport> txs) {
-        PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO dhcp_transactions(uuid, tap_uuid, " +
-                "transaction_id, transaction_type, client_mac, additional_client_macs, server_mac, " +
-                "additional_server_macs, offered_ip_addresses, requested_ip_address, options, additional_options, " +
-                "fingerprint, additional_fingerprints, vendor_class, additional_vendor_classes, timestamps, first_packet, latest_packet, notes, is_successful, " +
-                "is_complete, updated_at, created_at) VALUES(:uuid, :tap_uuid, :transaction_id, :transaction_type, " +
-                ":client_mac, :additional_client_macs::jsonb, :server_mac, :additional_server_macs::jsonb, " +
-                ":offered_ip_addresses::jsonb, :requested_ip_address, :options::jsonb, :additional_options::jsonb, :fingerprint, " +
-                ":additional_fingerprints::jsonb, :vendor_class, :additional_vendor_classes::jsonb, :timestamps::jsonb, :first_packet, :latest_packet, " +
-                ":notes::jsonb, :is_successful, :is_complete, NOW(), NOW())");
-        PreparedBatch updateBatch = handle.prepareBatch("UPDATE dhcp_transactions " +
-                "SET additional_client_macs = :additional_client_macs::jsonb, server_mac = :server_mac, " +
-                "additional_server_macs = :additional_server_macs::jsonb, " +
-                "offered_ip_addresses = :offered_ip_addresses::jsonb, " +
-                "requested_ip_address = :requested_ip_address, options = :options::jsonb, additional_options = :additional_options::jsonb, " +
-                "fingerprint = :fingerprint, additional_fingerprints = :additional_fingerprints::jsonb, vendor_class = :vendor_class, additional_vendor_classes = :additional_vendor_classes::jsonb, " +
-                "timestamps = :timestamps::jsonb, " +
-                "latest_packet = :latest_packet, notes = :notes::jsonb, is_complete = :is_complete, " +
-                "is_successful = :is_successful, updated_at = NOW()");
-
         for (Dhcpv4TransactionReport tx : txs) {
             String additionalClientMacs;
             String additionalServerMacs;
@@ -139,7 +121,15 @@ public class DHCPTable implements DataTable {
             }
 
             if (existingTx.isEmpty()) {
-                insertBatch
+                handle.createUpdate("INSERT INTO dhcp_transactions(uuid, tap_uuid, " +
+                                "transaction_id, transaction_type, client_mac, additional_client_macs, server_mac, " +
+                                "additional_server_macs, offered_ip_addresses, requested_ip_address, options, additional_options, " +
+                                "fingerprint, additional_fingerprints, vendor_class, additional_vendor_classes, timestamps, first_packet, latest_packet, notes, is_successful, " +
+                                "is_complete, updated_at, created_at) VALUES(:uuid, :tap_uuid, :transaction_id, :transaction_type, " +
+                                ":client_mac, :additional_client_macs::jsonb, :server_mac, :additional_server_macs::jsonb, " +
+                                ":offered_ip_addresses::jsonb, :requested_ip_address, :options::jsonb, :additional_options::jsonb, :fingerprint, " +
+                                ":additional_fingerprints::jsonb, :vendor_class, :additional_vendor_classes::jsonb, :timestamps::jsonb, :first_packet, :latest_packet, " +
+                                ":notes::jsonb, :is_successful, :is_complete, NOW(), NOW())")
                         .bind("uuid", UUID.randomUUID())
                         .bind("tap_uuid", tap.uuid())
                         .bind("transaction_id", tx.transactionId())
@@ -162,9 +152,17 @@ public class DHCPTable implements DataTable {
                         .bind("notes", notes)
                         .bind("is_successful", tx.successful())
                         .bind("is_complete", tx.complete())
-                        .add();
+                        .execute();
             } else {
-                updateBatch
+                handle.createUpdate("UPDATE dhcp_transactions " +
+                                "SET additional_client_macs = :additional_client_macs::jsonb, server_mac = :server_mac, " +
+                                "additional_server_macs = :additional_server_macs::jsonb, " +
+                                "offered_ip_addresses = :offered_ip_addresses::jsonb, " +
+                                "requested_ip_address = :requested_ip_address, options = :options::jsonb, additional_options = :additional_options::jsonb, " +
+                                "fingerprint = :fingerprint, additional_fingerprints = :additional_fingerprints::jsonb, vendor_class = :vendor_class, additional_vendor_classes = :additional_vendor_classes::jsonb, " +
+                                "timestamps = :timestamps::jsonb, " +
+                                "latest_packet = :latest_packet, notes = :notes::jsonb, is_complete = :is_complete, " +
+                                "is_successful = :is_successful, updated_at = NOW()")
                         .bind("additional_client_macs", additionalClientMacs)
                         .bind("server_mac", tx.serverMac())
                         .bind("additional_server_macs", additionalServerMacs)
@@ -181,12 +179,9 @@ public class DHCPTable implements DataTable {
                         .bind("notes", notes)
                         .bind("is_successful", tx.successful())
                         .bind("is_complete", tx.complete())
-                        .add();
+                        .execute();
             }
         }
-
-        insertBatch.execute();
-        updateBatch.execute();
     }
 
     private void registerAssets(Handle handle, Tap tap, List<Dhcpv4TransactionReport> txs) {
@@ -211,6 +206,8 @@ public class DHCPTable implements DataTable {
                 // Add fingerprint if we have one but asset does not.
                 if (fingerprint.isPresent() && asset.get().dhcpFingerprint() == null) {
                     updateBatch.bind("dhcp_fingerprint", fingerprint.get());
+                } else {
+                    updateBatch.bindNull("dhcp_fingerprint", Types.VARCHAR);
                 }
 
                 updateBatch.add();

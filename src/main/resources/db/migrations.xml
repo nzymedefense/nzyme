@@ -6636,4 +6636,24 @@
         <addUniqueConstraint tableName="assets" columnNames="mac,organization_id,tenant_id" />
     </changeSet>
 
+    <changeSet id="add_tcp_syn_options" author="lennartkoopmann">
+        <addColumn tableName="l4_sessions">
+            <column name="tcp_syn_window_size" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tcp_syn_maximum_segment_size" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tcp_syn_window_scale_multiplier" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tcp_syn_options" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+    
 </databaseChangeLog>

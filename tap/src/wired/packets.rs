@@ -71,6 +71,10 @@ pub struct TcpSegment {
     pub session_key: TcpSessionKey,
     pub flags: TcpFlags,
     pub payload: Vec<u8>,
+    pub window_size: u16,
+    pub maximum_segment_size: Option<u16>,
+    pub window_scale_multiplier: Option<u8>,
+    pub options: Vec<u8>,
     pub size: u32,
     pub timestamp: DateTime<Utc>
 }

@@ -24,6 +24,10 @@ pub struct TcpSessionReport {
     pub most_recent_segment_time: DateTime<Utc>,
     pub segments_count: u64,
     pub bytes_count: u64,
+    pub syn_window_size: u16,
+    pub syn_maximum_segment_size: Option<u16>,
+    pub syn_window_scale_multiplier: Option<u8>,
+    pub syn_options: Vec<u8>,
     pub tags: Vec<String>
 }
 
@@ -44,6 +48,10 @@ pub fn generate(s: &MutexGuard<HashMap<TcpSessionKey, TcpSession>>) -> TcpSessio
             most_recent_segment_time: session.most_recent_segment_time,
             segments_count: session.segments_count,
             bytes_count: session.bytes_count,
+            syn_window_size: session.syn_window_size,
+            syn_maximum_segment_size: session.syn_maximum_segment_size,
+            syn_window_scale_multiplier: session.syn_window_scale_multiplier,
+            syn_options: session.syn_options.clone(),
             tags: session.tags.clone().into_iter()
                         .map(|t| t.to_string())
                         .collect()

@@ -1,6 +1,4 @@
 use anyhow::{Result, bail};
-use bitvec::order::Lsb0;
-use bitvec::view::BitView;
 use byteorder::{BigEndian, ByteOrder};
 use chrono::Utc;
 use crate::wired::packets::{IPv4Packet, TcpFlags, TcpSegment};
@@ -8,7 +6,7 @@ use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
 
 #[allow(clippy::cast_possible_truncation)]
 pub fn parse(packet: IPv4Packet) -> Result<TcpSegment> {
-    if packet.payload.len() < 15 {
+    if packet.payload.len() < 20 {
         bail!("Payload too short for TCP packet.");
     }
 
@@ -22,16 +20,79 @@ pub fn parse(packet: IPv4Packet) -> Result<TcpSegment> {
     let sequence_number = BigEndian::read_u32(&packet.payload[4..8]);
     let ack_number = BigEndian::read_u32(&packet.payload[8..12]);
 
-    let header_length: usize = ((&packet.payload[12] >> 4)*4) as usize;
+    let header_length: usize = ((packet.payload[12] >> 4)*4) as usize;
 
-    let flags = &packet.payload[13..15].view_bits::<Lsb0>();
-    let ack = *flags.get(4).unwrap();
-    let reset = *flags.get(2).unwrap();
-    let syn = *flags.get(1).unwrap();
-    let fin = *flags.get(0).unwrap();
+    // Data_offset must be at least 5 words (20 bytes), and no more than what we actually have.
+    if header_length < 20 || header_length > packet.payload.len() {
+        bail!("Invalid TCP header length: <{}> (payload is <{}> bytes)",
+            header_length,packet.payload.len());
+    }
+    
+    let flags_byte = packet.payload[13];
+    let ack = flags_byte & 0x10 != 0;
+    let reset = flags_byte & 0x04 != 0;
+    let syn = flags_byte & 0x02 != 0;
+    let fin = flags_byte & 0x01 != 0;
 
     let flags = TcpFlags { ack, reset, syn, fin };
 
+    let window_size = BigEndian::read_u16(&packet.payload[14..16]);
+
+    let mut cursor = 20;
+    let mut options = Vec::new();
+    let mut maximum_segment_size: Option<u16> = None;
+    let mut window_scale_multiplier: Option<u8> = None;
+
+    while cursor < header_length {
+        let kind = packet.payload[cursor];
+        options.push(kind);
+
+        match kind {
+            0 => {
+                // End of Option List.
+                break;
+            }
+            1 => {
+                // No-Operation.
+                cursor += 1;
+            }
+            _ => {
+                // Need at least 2 bytes for kind + length.
+                if cursor + 1 >= header_length {
+                    break;
+                }
+                
+                let length = packet.payload[cursor + 1] as usize;
+                
+                // Length must be >= 2 and not run past the header.
+                if length < 2 || cursor + length > header_length {
+                    break;
+                }
+
+                match kind {
+                    2 if length == 4 => {
+                        // Maximum Segment Size: 2 bytes after kind+len.
+                        let start = cursor + 2;
+                        maximum_segment_size = Some(
+                            BigEndian::read_u16(&packet.payload[start..start + 2])
+                        );
+                    }
+                    3 if length == 3 => {
+                        // Window Scale: 1 byte after kind+len.
+                        let shift = packet.payload[cursor + 2];
+                        window_scale_multiplier = Some(shift);
+                    }
+                    _ => {
+                        // Other options - NOOP.
+                    }
+                }
+
+                // Advance past this entire option
+                cursor += length;
+            }
+        }
+    }
+    
     if packet.payload.len() < header_length {
         bail!("Payload shorter than header length.");
     }
@@ -40,7 +101,7 @@ pub fn parse(packet: IPv4Packet) -> Result<TcpSegment> {
         bail!("Total length less than combined header lengths.");
     }
 
-    let payload = packet.payload[header_length..packet.total_length-packet.header_length].to_vec();
+    let payload = packet.payload[header_length..].to_vec();
 
     // This payload + this header + IPv4 (20) + ethernet (14)
     let size = (payload.len() + header_length + 34) as u32;
@@ -57,6 +118,10 @@ pub fn parse(packet: IPv4Packet) -> Result<TcpSegment> {
         ack_number,
         flags,
         payload,
+        window_size,
+        maximum_segment_size,
+        window_scale_multiplier,
+        options,
         size, 
         timestamp: Utc::now() 
     })

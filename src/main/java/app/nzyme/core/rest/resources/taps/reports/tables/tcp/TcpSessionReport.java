@@ -26,6 +26,12 @@ public abstract class TcpSessionReport {
     public abstract DateTime mostRecentSegmentTime();
     public abstract long segmentsCount();
     public abstract long bytesCount();
+    public abstract int synWindowSize();
+    @Nullable
+    public abstract Integer synMaximumSegmentSize();
+    @Nullable
+    public abstract Integer synMaximumScaleMultiplier();
+    public abstract List<Integer> synOptions();
     @Nullable
     public abstract List<String> tags();
 
@@ -42,6 +48,10 @@ public abstract class TcpSessionReport {
                                           @JsonProperty("most_recent_segment_time") DateTime mostRecentSegmentTime,
                                           @JsonProperty("segments_count") long segmentsCount,
                                           @JsonProperty("bytes_count") long bytesCount,
+                                          @JsonProperty("syn_window_size") int synWindowSize,
+                                          @JsonProperty("syn_maximum_segment_size") Integer synMaximumSegmentSize,
+                                          @JsonProperty("syn_window_scale_multiplier") Integer synMaximumScaleMultiplier,
+                                          @JsonProperty("syn_options") List<Integer> synOptions,
                                           @JsonProperty("tags") List<String> tags) {
         return builder()
                 .state(state)
@@ -56,6 +66,10 @@ public abstract class TcpSessionReport {
                 .mostRecentSegmentTime(mostRecentSegmentTime)
                 .segmentsCount(segmentsCount)
                 .bytesCount(bytesCount)
+                .synWindowSize(synWindowSize)
+                .synMaximumSegmentSize(synMaximumSegmentSize)
+                .synMaximumScaleMultiplier(synMaximumScaleMultiplier)
+                .synOptions(synOptions)
                 .tags(tags)
                 .build();
     }
@@ -89,6 +103,14 @@ public abstract class TcpSessionReport {
         public abstract Builder segmentsCount(long segmentCount);
 
         public abstract Builder bytesCount(long bytesCount);
+
+        public abstract Builder synWindowSize(int synWindowSize);
+
+        public abstract Builder synMaximumSegmentSize(Integer synMaximumSegmentSize);
+
+        public abstract Builder synMaximumScaleMultiplier(Integer synMaximumScaleMultiplier);
+
+        public abstract Builder synOptions(List<Integer> synOptions);
 
         public abstract Builder tags(List<String> tags);
 

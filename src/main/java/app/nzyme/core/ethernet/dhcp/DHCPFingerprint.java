@@ -39,6 +39,11 @@ public class DHCPFingerprint {
             fingerprint.append(vendorClass);
         }
 
+        // In case we only had filtered out options.
+        if (fingerprint.isEmpty()) {
+            return Optional.empty();
+        }
+
         return Optional.of(
                 Hashing.sha256()
                         .hashBytes(fingerprint.toString().getBytes(StandardCharsets.UTF_8))
