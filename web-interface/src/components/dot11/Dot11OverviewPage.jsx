@@ -118,7 +118,7 @@ export default function Dot11OverviewPage() {
                                        slim={true}
                                        internalLink={ApiRoutes.ALERTS.INDEX} />
 
-                <AlertsTable perPage={5} hideControls={true}/>
+                <AlertsTable perPage={5} hideControls={true} subsystem="DOT11" />
               </div>
             </div>
           </div>

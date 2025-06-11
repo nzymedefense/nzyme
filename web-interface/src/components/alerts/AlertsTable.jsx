@@ -13,8 +13,8 @@ import RenderConditionally from "../misc/RenderConditionally";
 
 const detectionAlertsService = new DetectionAlertsService();
 
-const loadData = function(setAlerts, page, perPage) {
-  detectionAlertsService.findAllAlerts(setAlerts, perPage, (page-1)*perPage);
+const loadData = function(setAlerts, subsystem, page, perPage) {
+  detectionAlertsService.findAllAlerts(setAlerts, perPage, (page-1)*perPage, subsystem);
 }
 
 function AlertsTable(props) {
@@ -23,6 +23,9 @@ function AlertsTable(props) {
 
   const perPage = props.perPage ? props.perPage : 25;
   const hideControls = props.hideControls ? props.hideControls : false;
+
+  // Optional.
+  const subsystem = props.subsystem;
 
   const [alerts, setAlerts] = useState(null);
   const [isAutoRefresh, setIsAutoRefresh] = useState(false);
@@ -95,11 +98,11 @@ function AlertsTable(props) {
 
   useEffect(() => {
     setAlerts(null);
-    loadData(setAlerts, page, perPage);
+    loadData(setAlerts, subsystem, page, perPage);
 
     const timer = setInterval(() => {
       if (isAutoRefresh) {
-        loadData(setAlerts, page, perPage);
+        loadData(setAlerts, subsystem, page, perPage);
       }
     }, 15000);
 
