@@ -1,6 +1,7 @@
 package app.nzyme.core.tables.ethernet;
 
 import app.nzyme.core.assets.db.AssetEntry;
+import app.nzyme.core.ethernet.tcp.TCPFingerprint;
 import app.nzyme.core.ethernet.tcp.TcpSessionState;
 import app.nzyme.core.ethernet.tcp.db.TcpSessionEntry;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
@@ -95,7 +96,9 @@ public class TCPTable implements DataTable {
                 "source_address_geo_longitude, destination_address_geo_asn_number, " +
                 "destination_address_geo_asn_name, destination_address_geo_asn_domain, " +
                 "destination_address_geo_city, destination_address_geo_country_code, " +
-                "destination_address_geo_latitude, destination_address_geo_longitude, tcp_syn_window_size, tcp_syn_maximum_segment_size, tcp_syn_window_scale_multiplier, tcp_syn_options, created_at) " +
+                "destination_address_geo_latitude, destination_address_geo_longitude, ip_ttl, ip_tos, ip_df, " +
+                "tcp_syn_window_size, tcp_syn_maximum_segment_size, tcp_syn_window_scale_multiplier, tcp_syn_cwr, " +
+                "tcp_syn_ece, tcp_syn_options, tcp_fingerprint, created_at) " +
                 "VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, :source_address::inet, " +
                 ":source_address_is_site_local, :source_address_is_loopback, :source_address_is_multicast, " +
                 ":source_port, :destination_mac, :destination_address::inet, " +
@@ -108,7 +111,9 @@ public class TCPTable implements DataTable {
                 ":source_address_geo_longitude, :destination_address_geo_asn_number, " +
                 ":destination_address_geo_asn_name, :destination_address_geo_asn_domain, " +
                 ":destination_address_geo_city, :destination_address_geo_country_code, " +
-                ":destination_address_geo_latitude, :destination_address_geo_longitude, :tcp_syn_window_size, :tcp_syn_maximum_segment_size, :tcp_syn_window_scale_multiplier, :tcp_syn_options::jsonb, :created_at)");
+                ":destination_address_geo_latitude, :destination_address_geo_longitude, :ip_ttl, :ip_tos, :ip_df, " +
+                ":tcp_syn_window_size, :tcp_syn_maximum_segment_size, :tcp_syn_window_scale_multiplier, " +
+                ":tcp_syn_cwr, :tcp_syn_ece, :tcp_syn_options::jsonb, :tcp_fingerprint, :created_at)");
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE l4_sessions SET state = :state, " +
                 "bytes_count = :bytes_count, segments_count = :segments_count, end_time = :end_time, " +
                 "most_recent_segment_time = :most_recent_segment_time WHERE id = :id");
@@ -156,6 +161,16 @@ public class TCPTable implements DataTable {
                         throw new RuntimeException("Could not serialize SYN options: " + session.synOptions(), e);
                     }
 
+                    String fingerprint = new TCPFingerprint(
+                            session.synIpTtl(),
+                            session.synIpTos(),
+                            session.synIpDf(),
+                            session.synWindowSize(),
+                            session.synMaximumSegmentSize(),
+                            session.synMaximumScaleMultiplier(),
+                            session.synOptions()
+                    ).generate();
+
                     // This is a new session.
                     insertBatch
                             .bind("tap_uuid", tap.uuid())
@@ -193,10 +208,16 @@ public class TCPTable implements DataTable {
                             .bind("destination_address_geo_country_code", destinationGeo.map(g -> g.geo().countryCode()).orElse(null))
                             .bind("destination_address_geo_latitude", destinationGeo.map(g -> g.geo().latitude()).orElse(null))
                             .bind("destination_address_geo_longitude", destinationGeo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("ip_ttl", session.synIpTtl())
+                            .bind("ip_tos", session.synIpTos())
+                            .bind("ip_df", session.synIpDf())
                             .bind("tcp_syn_window_size", session.synWindowSize())
                             .bind("tcp_syn_maximum_segment_size", session.synMaximumSegmentSize())
                             .bind("tcp_syn_window_scale_multiplier", session.synMaximumScaleMultiplier())
+                            .bind("tcp_syn_cwr", session.synCwr())
+                            .bind("tcp_syn_ece", session.synEce())
                             .bind("tcp_syn_options", synOptions)
+                            .bind("tcp_fingerprint", fingerprint)
                             .bind("created_at", timestamp)
                             .add();
                 }
@@ -226,6 +247,16 @@ public class TCPTable implements DataTable {
             if (session.sourceMac() == null) {
                 continue;
             }
+
+            String fingerprint = new TCPFingerprint(
+                    session.synIpTtl(),
+                    session.synIpTos(),
+                    session.synIpDf(),
+                    session.synWindowSize(),
+                    session.synMaximumSegmentSize(),
+                    session.synMaximumScaleMultiplier(),
+                    session.synOptions()
+            ).generate();
 
             AssetInformation existingAsset = assets.get(session.sourceMac());
             if (existingAsset != null) {

@@ -156,7 +156,7 @@ export default function DHCPTransactionDetailsPage() {
                 <CardTitleWithControls title="Fingerprint" />
 
                 <dl className="mb-0">
-                  <dt>Device Fingerprint</dt>
+                  <dt>Transaction Fingerprint</dt>
                   <dd><span className="dhcp-options-fingerprint">{tx.fingerprint}</span></dd>
                   <dt>DHCP Options</dt>
                   <dd>{tx.options != null && tx.options.length > 0 ?

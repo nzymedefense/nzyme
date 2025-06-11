@@ -6655,5 +6655,59 @@
             </column>
         </addColumn>
     </changeSet>
-    
+
+    <changeSet id="add_more_tcp_syn_parameters" author="lennartkoopmann">
+        <addColumn tableName="l4_sessions">
+            <column name="ip_ttl" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="ip_tos" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="ip_df" type="boolean">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tcp_syn_cwr" type="boolean">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tcp_syn_ece" type="boolean">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+
+    <changeSet id="add_l4_tcp_fingerprint" author="lennartkoopmann">
+        <addColumn tableName="l4_sessions">
+            <column name="tcp_fingerprint" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="give_assets_dhcp_fingerprints_types" author="lennartkoopmann">
+        <dropColumn tableName="assets" columnName="dhcp_fingerprint" />
+
+        <addColumn tableName="assets">
+            <column name="dhcp_fingerprint_initial" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="dhcp_fingerprint_renew" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="dhcp_fingerprint_reboot" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="dhcp_fingerprint_rebind" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

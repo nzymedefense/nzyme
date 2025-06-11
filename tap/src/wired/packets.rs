@@ -52,6 +52,8 @@ pub struct IPv4Packet {
     pub source_address: IpAddr,
     pub destination_address: IpAddr,
     pub ttl: u8,
+    pub ip_tos: u8,
+    pub df: bool,
     pub protocol: u8,
     pub payload: Vec<u8>,
     pub size: u32,
@@ -71,6 +73,9 @@ pub struct TcpSegment {
     pub session_key: TcpSessionKey,
     pub flags: TcpFlags,
     pub payload: Vec<u8>,
+    pub ip_ttl: u8,
+    pub ip_tos: u8,
+    pub ip_df: bool,
     pub window_size: u16,
     pub maximum_segment_size: Option<u16>,
     pub window_scale_multiplier: Option<u8>,
@@ -95,7 +100,9 @@ pub struct TcpFlags {
     pub ack: bool,
     pub reset: bool,
     pub syn: bool,
-    pub fin: bool
+    pub fin: bool,
+    pub ece: bool,
+    pub cwr: bool
 }
 
 #[derive(Debug)]

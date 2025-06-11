@@ -33,8 +33,10 @@ pub fn parse(packet: IPv4Packet) -> Result<TcpSegment> {
     let reset = flags_byte & 0x04 != 0;
     let syn = flags_byte & 0x02 != 0;
     let fin = flags_byte & 0x01 != 0;
-
-    let flags = TcpFlags { ack, reset, syn, fin };
+    let ece = flags_byte & 0x40 != 0;
+    let cwr = flags_byte & 0x80 != 0;
+    
+    let flags = TcpFlags { ack, reset, syn, fin, ece, cwr };
 
     let window_size = BigEndian::read_u16(&packet.payload[14..16]);
 
@@ -107,6 +109,9 @@ pub fn parse(packet: IPv4Packet) -> Result<TcpSegment> {
     let size = (payload.len() + header_length + 34) as u32;
 
     Ok(TcpSegment {
+        ip_ttl: packet.ttl,
+        ip_tos: packet.ip_tos,
+        ip_df: packet.df,
         source_mac: packet.source_mac,
         destination_mac: packet.destination_mac,
         source_address: packet.source_address,

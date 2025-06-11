@@ -20,13 +20,10 @@ import app.nzyme.core.rest.resources.dot11.BanditsResource;
 import app.nzyme.core.rest.resources.dot11.Dot11ClientsResource;
 import app.nzyme.core.rest.resources.dot11.Dot11MonitoredNetworksResource;
 import app.nzyme.core.rest.resources.dot11.Dot11NetworksResource;
-import app.nzyme.core.rest.resources.ethernet.DHCPResource;
-import app.nzyme.core.rest.resources.ethernet.SSHResource;
-import app.nzyme.core.rest.resources.ethernet.SocksResource;
+import app.nzyme.core.rest.resources.ethernet.*;
 import app.nzyme.core.rest.resources.system.authentication.AuthenticationResource;
 import app.nzyme.core.rest.resources.system.authentication.mgmt.InitialUserResource;
 import app.nzyme.core.rest.resources.system.authentication.mgmt.OrganizationsResource;
-import app.nzyme.core.rest.resources.ethernet.DNSResource;
 import app.nzyme.core.rest.resources.monitoring.MonitoringResource;
 import app.nzyme.core.rest.resources.monitoring.PrometheusResource;
 import app.nzyme.core.rest.resources.system.*;
@@ -166,6 +163,7 @@ public class NzymeHttpServer {
         resourceConfig.register(CotIntegrationResource.class);
         resourceConfig.register(BluetoothMonitoringResource.class);
         resourceConfig.register(DHCPResource.class);
+        resourceConfig.register(AssetsResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

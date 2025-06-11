@@ -26,6 +26,11 @@ public abstract class TcpSessionReport {
     public abstract DateTime mostRecentSegmentTime();
     public abstract long segmentsCount();
     public abstract long bytesCount();
+    public abstract int synIpTtl();
+    public abstract int synIpTos();
+    public abstract boolean synIpDf();
+    public abstract boolean synCwr();
+    public abstract boolean synEce();
     public abstract int synWindowSize();
     @Nullable
     public abstract Integer synMaximumSegmentSize();
@@ -48,6 +53,11 @@ public abstract class TcpSessionReport {
                                           @JsonProperty("most_recent_segment_time") DateTime mostRecentSegmentTime,
                                           @JsonProperty("segments_count") long segmentsCount,
                                           @JsonProperty("bytes_count") long bytesCount,
+                                          @JsonProperty("syn_ip_ttl") int synIpTtl,
+                                          @JsonProperty("syn_ip_tos") int synIpTos,
+                                          @JsonProperty("syn_ip_df") boolean synIpDf,
+                                          @JsonProperty("syn_cwr") boolean synCwr,
+                                          @JsonProperty("syn_ece") boolean synEce,
                                           @JsonProperty("syn_window_size") int synWindowSize,
                                           @JsonProperty("syn_maximum_segment_size") Integer synMaximumSegmentSize,
                                           @JsonProperty("syn_window_scale_multiplier") Integer synMaximumScaleMultiplier,
@@ -66,6 +76,11 @@ public abstract class TcpSessionReport {
                 .mostRecentSegmentTime(mostRecentSegmentTime)
                 .segmentsCount(segmentsCount)
                 .bytesCount(bytesCount)
+                .synIpTtl(synIpTtl)
+                .synIpTos(synIpTos)
+                .synIpDf(synIpDf)
+                .synCwr(synCwr)
+                .synEce(synEce)
                 .synWindowSize(synWindowSize)
                 .synMaximumSegmentSize(synMaximumSegmentSize)
                 .synMaximumScaleMultiplier(synMaximumScaleMultiplier)
@@ -103,6 +118,16 @@ public abstract class TcpSessionReport {
         public abstract Builder segmentsCount(long segmentCount);
 
         public abstract Builder bytesCount(long bytesCount);
+
+        public abstract Builder synIpTtl(int synIpTtl);
+
+        public abstract Builder synIpTos(int synIpTos);
+
+        public abstract Builder synIpDf(boolean synIpDf);
+
+        public abstract Builder synCwr(boolean synCwr);
+
+        public abstract Builder synEce(boolean synEce);
 
         public abstract Builder synWindowSize(int synWindowSize);
 

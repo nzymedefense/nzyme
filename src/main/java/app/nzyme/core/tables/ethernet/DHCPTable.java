@@ -186,10 +186,10 @@ public class DHCPTable implements DataTable {
 
     private void registerAssets(Handle handle, Tap tap, List<Dhcpv4TransactionReport> txs) {
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO assets(uuid, organization_id, tenant_id, " +
-                "mac, dhcp_fingerprint, first_seen, last_seen, seen_dhcp, updated_at, created_at) VALUES(:uuid, " +
-                ":organization_id, :tenant_id, :mac, :dhcp_fingerprint, :first_seen, :last_seen, true,  NOW(), NOW())");
+                "mac, dhcp_fingerprint_initial, dhcp_fingerprint_renew, dhcp_fingerprint_reboot, dhcp_fingerprint_rebind, first_seen, last_seen, seen_dhcp, updated_at, created_at) VALUES(:uuid, " +
+                ":organization_id, :tenant_id, :mac, :dhcp_fingerprint_initial, :dhcp_fingerprint_renew, :dhcp_fingerprint_reboot, :dhcp_fingerprint_rebind, :first_seen, :last_seen, true,  NOW(), NOW())");
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE assets SET last_seen = :last_seen, " +
-                "dhcp_fingerprint = :dhcp_fingerprint, seen_dhcp = true, updated_at = NOW() WHERE id = :id");
+                "dhcp_fingerprint_initial = :dhcp_fingerprint_initial, dhcp_fingerprint_renew = :dhcp_fingerprint_renew, dhcp_fingerprint_reboot = :dhcp_fingerprint_reboot, dhcp_fingerprint_rebind = :dhcp_fingerprint_rebind, seen_dhcp = true, updated_at = NOW() WHERE id = :id");
 
         for (Dhcpv4TransactionReport tx : txs) {
             Optional<String> fingerprint = new DHCPFingerprint(tx.options(), tx.vendorClass()).generate();
@@ -203,11 +203,36 @@ public class DHCPTable implements DataTable {
                         .bind("id", asset.get().id())
                         .bind("last_seen", tx.latestPacket());
 
-                // Add fingerprint if we have one but asset does not.
-                if (fingerprint.isPresent() && asset.get().dhcpFingerprint() == null) {
-                    updateBatch.bind("dhcp_fingerprint", fingerprint.get());
-                } else {
-                    updateBatch.bindNull("dhcp_fingerprint", Types.VARCHAR);
+                // By default, keep all fingerprints as they are.
+                updateBatch.bind("dhcp_fingerprint_initial", asset.get().dhcpFingerprintInitial());
+                updateBatch.bind("dhcp_fingerprint_renew", asset.get().dhcpFingerprintRenew());
+                updateBatch.bind("dhcp_fingerprint_reboot", asset.get().dhcpFingerprintReboot());
+                updateBatch.bind("dhcp_fingerprint_rebind", asset.get().dhcpFingerprintRebind());
+
+                // Add fingerprint if we have one but asset does not. (Overwrites defaults above.)
+                if (fingerprint.isPresent()) {
+                    switch (tx.transactionType()) {
+                        case "Initial":
+                            if (asset.get().dhcpFingerprintInitial() == null) {
+                                updateBatch.bind("dhcp_fingerprint_initial", fingerprint.get());
+                            }
+                            break;
+                        case "Renew":
+                            if (asset.get().dhcpFingerprintRenew() == null) {
+                                updateBatch.bind("dhcp_fingerprint_renew", fingerprint.get());
+                            }
+                            break;
+                        case "Reboot":
+                            if (asset.get().dhcpFingerprintReboot() == null) {
+                                updateBatch.bind("dhcp_fingerprint_reboot", fingerprint.get());
+                            }
+                            break;
+                        case "Rebind":
+                            if (asset.get().dhcpFingerprintRebind() == null) {
+                                updateBatch.bind("dhcp_fingerprint_rebind", fingerprint.get());
+                            }
+                            break;
+                    }
                 }
 
                 updateBatch.add();
@@ -216,13 +241,35 @@ public class DHCPTable implements DataTable {
                 checkFingerprint(tap, asset.get(), tx);
             } else {
                 // First time we are seeing this asset.
+
+                insertBatch.bindNull("dhcp_fingerprint_initial", Types.NULL);
+                insertBatch.bindNull("dhcp_fingerprint_renew", Types.NULL);
+                insertBatch.bindNull("dhcp_fingerprint_reboot", Types.NULL);
+                insertBatch.bindNull("dhcp_fingerprint_rebind", Types.NULL);
+                if (fingerprint.isPresent()) {
+                    switch (tx.transactionType()) {
+                        case "Initial":
+                            insertBatch.bind("dhcp_fingerprint_initial", fingerprint.get());
+                            break;
+                        case "Renew":
+                            insertBatch.bind("dhcp_fingerprint_renew", fingerprint.get());
+                            break;
+                        case "Reboot":
+                            insertBatch.bind("dhcp_fingerprint_reboot", fingerprint.get());
+                            break;
+                        case "Rebind":
+                            insertBatch.bind("dhcp_fingerprint_rebind", fingerprint.get());
+                            break;
+                        default:
+                    }
+                }
+
                 UUID uuid = UUID.randomUUID();
                 insertBatch
                         .bind("uuid", uuid)
                         .bind("organization_id", tap.organizationId())
                         .bind("tenant_id", tap.tenantId())
                         .bind("mac", tx.clientMac())
-                        .bind("dhcp_fingerprint", fingerprint.orElse(null))
                         .bind("first_seen", tx.firstPacket())
                         .bind("last_seen", tx.latestPacket())
                         .add();
@@ -246,17 +293,36 @@ public class DHCPTable implements DataTable {
     private void checkFingerprint(Tap tap, AssetEntry asset, Dhcpv4TransactionReport tx) {
         Optional<String> fingerprint = new DHCPFingerprint(tx.options(), tx.vendorClass()).generate();
 
-        if (fingerprint.isEmpty() || asset.dhcpFingerprint() == null) {
+        String existingFingerprint;
+        switch (tx.transactionType()) {
+            case "Initial":
+                existingFingerprint = asset.dhcpFingerprintInitial();
+                break;
+            case "Renew":
+                existingFingerprint = asset.dhcpFingerprintRenew();
+                break;
+            case "Reboot":
+                existingFingerprint = asset.dhcpFingerprintReboot();
+                break;
+            case "Rebind":
+                existingFingerprint = asset.dhcpFingerprintRebind();
+                break;
+            default:
+                return;
+        }
+
+        if (fingerprint.isEmpty() || existingFingerprint == null) {
             return;
         }
 
-        if (!fingerprint.get().equals(asset.dhcpFingerprint())) {
+        if (!fingerprint.get().equals(existingFingerprint)) {
             // Fingerprint differs.
             // TODO only trigger if alert enabled for this asset.
             Map<String, String> attributes = Maps.newHashMap();
             attributes.put("asset_uuid", asset.uuid().toString());
             attributes.put("mac", tx.clientMac());
-            attributes.put("existing_fingerprint", asset.dhcpFingerprint());
+            attributes.put("transaction_type", tx.transactionType());
+            attributes.put("existing_fingerprint", existingFingerprint);
             attributes.put("new_fingerprint", fingerprint.get());
 
             tablesService.getNzyme().getDetectionAlertService().raiseAlert(
