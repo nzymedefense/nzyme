@@ -59,7 +59,7 @@ public class AssetManager {
                                           OrderColumn orderColumn,
                                           OrderDirection orderDirection) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM assets WHERE organization_id = :organization_id " +
+                handle.createQuery("SELECT * FROM assets WHERE organization_id = :organization_id " +
                                 "AND tenant_id = :tenant_id AND last_seen >= :tr_from AND last_seen <= :tr_to " +
                                 "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")

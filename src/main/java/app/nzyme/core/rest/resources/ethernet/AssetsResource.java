@@ -4,12 +4,15 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.assets.AssetManager;
 import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.context.db.MacAddressContextEntry;
+import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.assets.AssetDetailsResponse;
+import app.nzyme.core.rest.responses.ethernet.assets.AssetHostnameResponse;
+import app.nzyme.core.rest.responses.ethernet.assets.AssetIpAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.assets.AssetsListResponse;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -78,28 +81,56 @@ public class AssetsResource extends TapDataHandlingResource {
     }
 
     private AssetDetailsResponse buildAssetDetailsResponse(AssetEntry asset, AuthenticatedUser authenticatedUser) {
-        Optional<MacAddressContextEntry> macContext = nzyme.getContextService().findMacAddressContext(
+        Optional<MacAddressContextEntry> context = nzyme.getContextService().findMacAddressContext(
                 asset.mac(),
                 authenticatedUser.getOrganizationId(),
                 authenticatedUser.getTenantId()
         );
+
+        List<AssetHostnameResponse> hostnames = Lists.newArrayList();
+        List<AssetIpAddressResponse> ipAddresses = Lists.newArrayList();
+        if (context.isPresent()) {
+            for (MacAddressTransparentContextEntry tpx : nzyme.getContextService()
+                    .findTransparentMacAddressContext(context.get().id())) {
+                switch (tpx.type()) {
+                    case "HOSTNAME":
+                        hostnames.add(AssetHostnameResponse.create(
+                                tpx.hostname(),
+                                tpx.source(),
+                                tpx.lastSeen()
+                        ));
+                        break;
+                    case "IP_ADDRESS":
+                        ipAddresses.add(AssetIpAddressResponse.create(
+                                tpx.ipAddress().getHostAddress(),
+                                tpx.source(),
+                                tpx.lastSeen()
+                        ));
+                        break;
+                }
+            }
+        }
 
         return AssetDetailsResponse.create(
                 asset.uuid(),
                 EthernetMacAddressResponse.create(
                         asset.mac(),
                         nzyme.getOuiService().lookup(asset.mac()).orElse(null),
-                        macContext.map(macAddressContextEntry ->
+                        context.map(ctx ->
                                         EthernetMacAddressContextResponse.create(
-                                                macAddressContextEntry.name(),
-                                                macAddressContextEntry.description()
-                                        ))
-                                .orElse(null)
+                                                ctx.name(),
+                                                ctx.description()
+                                        )
+                                ).orElse(null)
                 ),
+                nzyme.getOuiService().lookup(asset.mac()).orElse(null),
+                context.map(MacAddressContextEntry::name).orElse(null),
                 asset.dhcpFingerprintInitial(),
                 asset.dhcpFingerprintRenew(),
                 asset.dhcpFingerprintReboot(),
                 asset.dhcpFingerprintRebind(),
+                hostnames,
+                ipAddresses,
                 asset.firstSeen(),
                 asset.lastSeen()
         );
