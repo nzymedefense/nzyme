@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex};
 use log::error;
-
+use crate::context::context_engine::ContextEngine;
+use crate::context::context_source::ContextSource;
 use crate::to_pipeline;
 use crate::protocols::detection::l7_tagger::L7SessionTag;
 use crate::protocols::detection::l7_tagger::L7SessionTag::{Dhcpv4, Dns, Unencrypted};
@@ -15,13 +16,17 @@ use crate::wired::packets::Datagram;
 pub struct UDPProcessor {
     bus: Arc<Bus>,
     metrics: Arc<Mutex<Metrics>>,
-    udp_table: Arc<Mutex<UdpTable>>
+    udp_table: Arc<Mutex<UdpTable>>,
+    context: Arc<ContextEngine>
 }
 
 impl UDPProcessor {
 
-    pub fn new(bus: Arc<Bus>, metrics: Arc<Mutex<Metrics>>, udp_table: Arc<Mutex<UdpTable>>) -> Self {
-        Self { bus, metrics, udp_table }
+    pub fn new(bus: Arc<Bus>, 
+               metrics: Arc<Mutex<Metrics>>, 
+               udp_table: Arc<Mutex<UdpTable>>, 
+               context: Arc<ContextEngine>) -> Self {
+        Self { bus, metrics, udp_table, context }
     }
 
     pub fn process(&mut self, datagram: Arc<Datagram>) {
@@ -45,6 +50,14 @@ impl UDPProcessor {
             Err(e) => {
                 error!("Could not acquire UDP table mutex: {}", e);
             }
+        }
+
+        if let Some(source_mac) = &datagram.source_mac {
+            self.context.register_mac_address_ip(
+                source_mac.clone(),
+                datagram.source_address,
+                ContextSource::Udp
+            );
         }
     }
 

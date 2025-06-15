@@ -4,5 +4,7 @@ use strum_macros::Display;
 pub enum ContextSource {
     PtrDns,
     Dhcp,
-    Arp
+    Arp,
+    Tcp,
+    Udp
 }

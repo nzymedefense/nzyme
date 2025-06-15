@@ -58,7 +58,7 @@ export default function AssetsTable(props) {
           {assets.assets.map((a, i) => {
             return (
                 <tr key={i}>
-                  <td><EthernetMacAddress addressWithContext={a.mac} /></td>
+                  <td><EthernetMacAddress addressWithContext={a.mac} href="#" /></td>
                   <td><td>{a.oui ? truncate(a.oui, 30, false) : <span className="text-muted">Unknown</span>}</td></td>
                   <td><AssetName name={a.name} /></td>
                   <td><AssetHostnames hostnames={a.hostnames} /></td>

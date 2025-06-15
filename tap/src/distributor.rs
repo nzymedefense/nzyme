@@ -35,8 +35,8 @@ pub fn spawn(ethernet_bus: Arc<Bus>,
     spawn_base_arp(ethernet_bus.clone(), tables.clone(), state.clone(), context.clone());
     spawn_base_dhcpv4(ethernet_bus.clone(), tables.clone(), state.clone(), context.clone());
     
-    spawn_base_tcp(ethernet_bus.clone(), tables.clone());
-    spawn_base_udp(ethernet_bus.clone(), tables.clone(), metrics.clone());
+    spawn_base_tcp(ethernet_bus.clone(), tables.clone(), context.clone());
+    spawn_base_udp(ethernet_bus.clone(), tables.clone(), metrics.clone(), context.clone());
     
     spawn_base_dns(ethernet_bus.clone(), 
                    tables.clone(), 
@@ -112,8 +112,8 @@ fn spawn_base_dhcpv4(bus: Arc<Bus>,
     });
 }
 
-fn spawn_base_tcp(bus: Arc<Bus>, tables: Arc<Tables>) {
-    let mut processor = TcpProcessor::new(tables.tcp.clone());
+fn spawn_base_tcp(bus: Arc<Bus>, tables: Arc<Tables>, context: Arc<ContextEngine>) {
+    let mut processor = TcpProcessor::new(tables.tcp.clone(), context);
 
     thread::spawn(move || {
         for segment in bus.tcp_pipeline.receiver.iter() {
@@ -125,8 +125,10 @@ fn spawn_base_tcp(bus: Arc<Bus>, tables: Arc<Tables>) {
     });
 }
 
-fn spawn_base_udp(bus: Arc<Bus>, tables: Arc<Tables>, metrics: Arc<Mutex<Metrics>>) {
-    let mut processor = UDPProcessor::new(bus.clone(), metrics.clone(), tables.udp.clone());
+fn spawn_base_udp(bus: Arc<Bus>, tables: Arc<Tables>, metrics: Arc<Mutex<Metrics>>, context: Arc<ContextEngine>) {
+    let mut processor = UDPProcessor::new(
+        bus.clone(), metrics.clone(), tables.udp.clone(), context
+    );
 
     thread::spawn(move || {
         for datagram in bus.udp_pipeline.receiver.iter() {

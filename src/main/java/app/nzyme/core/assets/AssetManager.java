@@ -76,6 +76,18 @@ public class AssetManager {
         );
     }
 
+    public Optional<AssetEntry> findAsset(UUID uuid, UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM assets WHERE uuid = :uuid, organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id")
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(AssetEntry.class)
+                        .findOne()
+        );
+    }
+
     public Optional<AssetEntry> findAssetByMac(String mac, UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM assets WHERE mac = :mac " +

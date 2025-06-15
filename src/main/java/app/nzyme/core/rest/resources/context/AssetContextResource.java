@@ -71,7 +71,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
             filter = "%" + addressFilter.trim().toUpperCase() + "%";
         }
 
-        long count = nzyme.getContextService().countMacAddressContext(organizationId, tenantId);
+        long count = nzyme.getContextService().countMacAddressContext(organizationId, tenantId, filter);
 
         List<MacAddressContextDetailsResponse> addresses = Lists.newArrayList();
 

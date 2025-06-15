@@ -123,6 +123,13 @@ impl ContextEngine {
      */
 
     pub fn register_mac_address_ip(&self, mac: String, ip_addr: IpAddr, source: ContextSource) {
+        if ip_addr.is_unspecified() 
+            || ip_addr.is_multicast()
+            || ip_addr.is_loopback() 
+            || ip_addr == Ipv4Addr::new(255, 255, 255, 255) {
+            return;
+        }
+
         match self.macs.lock() {
             Ok(mut macs) => {
                 let entry = macs

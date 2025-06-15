@@ -7,7 +7,6 @@ import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.rest.TapDataHandlingResource;
-import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.assets.AssetDetailsResponse;
@@ -21,10 +20,7 @@ import com.google.common.collect.Lists;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -51,7 +47,6 @@ public class AssetsResource extends TapDataHandlingResource {
                               @QueryParam("order_direction") @Nullable String orderDirectionParam,
                               @QueryParam("limit") int limit,
                               @QueryParam("offset") int offset) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
@@ -74,17 +69,34 @@ public class AssetsResource extends TapDataHandlingResource {
         List<AssetDetailsResponse> assets = Lists.newArrayList();
         for (AssetEntry asset : nzyme.getAssetsManager()
                 .findAllAssets(organizationId, tenantId, timeRange, limit, offset, orderColumn, orderDirection)) {
-            assets.add(buildAssetDetailsResponse(asset, authenticatedUser));
+            assets.add(buildAssetDetailsResponse(asset, organizationId, tenantId));
         }
 
         return Response.ok(AssetsListResponse.create(total, assets)).build();
     }
 
-    private AssetDetailsResponse buildAssetDetailsResponse(AssetEntry asset, AuthenticatedUser authenticatedUser) {
+    @GET
+    @Path("/show/{asset_id}")
+    public Response one(@Context SecurityContext sc,
+                        @PathParam("asset_id") UUID assetId,
+                        @QueryParam("organization_id") UUID organizationId,
+                        @QueryParam("tenant_id") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<AssetEntry> asset = nzyme.getAssetsManager().findAsset(assetId, organizationId, tenantId);
+
+        if (asset.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(buildAssetDetailsResponse(asset.get(), organizationId, tenantId)).build();
+    }
+
+    private AssetDetailsResponse buildAssetDetailsResponse(AssetEntry asset, UUID organizationId, UUID tenantId) {
         Optional<MacAddressContextEntry> context = nzyme.getContextService().findMacAddressContext(
-                asset.mac(),
-                authenticatedUser.getOrganizationId(),
-                authenticatedUser.getTenantId()
+                asset.mac(), organizationId, tenantId
         );
 
         List<AssetHostnameResponse> hostnames = Lists.newArrayList();

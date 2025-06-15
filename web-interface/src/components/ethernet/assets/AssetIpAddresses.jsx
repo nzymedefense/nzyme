@@ -2,14 +2,19 @@ import React from "react";
 
 export default function AssetIpAddresses(props) {
 
-  const addresses = props.addresses;
+  // Deduplicate.
+  const addresses = Array.from(
+      new Map(props.addresses.map(item => [item.address, item])).values()
+  )
+
+  console.log(addresses)
 
   const additional = () => {
     if (addresses.length < 2) {
       return null
     }
 
-    return <span>(+{addresses.length-1})</span>
+    return <span>[+{addresses.length-1}]</span>
   }
 
   if (addresses === null || addresses.length === 0) {
@@ -17,7 +22,9 @@ export default function AssetIpAddresses(props) {
   }
 
   return (
-      <span className="ip-address">{addresses[0].address} {additional()}</span>
+      <span title={addresses.map(item => item.address).join(", ")}>
+        <span className="ip-address">{addresses[0].address}</span>{' '}{additional()}
+      </span>
   )
 
 }

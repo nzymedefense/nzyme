@@ -8,6 +8,12 @@ export default class AssetsService {
     )
   }
 
+  findAsset(uuid, organizationId, tenantId, setAsset) {
+    RESTClient.get(`/ethernet/assets/show/${uuid}`, { organization_id: organizationId, tenant_id: tenantId },
+        (response) => setAsset(response.data)
+    )
+  }
+
   findAllDHCPTransactions(timeRange, orderColumn, orderDirection, taps, limit, offset, setTransactions) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 

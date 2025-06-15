@@ -116,8 +116,8 @@ public class ContextService {
     }
 
     public Optional<MacAddressContextEntry> findMacAddressContextNoCache(String mac,
-                                                                          @Nullable UUID organizationId,
-                                                                          @Nullable UUID tenantId) {
+                                                                         @Nullable UUID organizationId,
+                                                                         @Nullable UUID tenantId) {
         try(Timer.Context ignored = macLookupTimer.time()) {
             if (organizationId != null && tenantId != null) {
                 // Tenant data.
@@ -170,12 +170,14 @@ public class ContextService {
         );
     }
 
-    public Long countMacAddressContext(UUID organizationId, UUID tenantId) {
+    public Long countMacAddressContext(UUID organizationId, UUID tenantId, String addressFilter) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM context_mac_addresses " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND mac_address LIKE :address_filter")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
+                        .bind("address_filter", addressFilter)
                         .mapTo(Long.class)
                         .one()
         );
