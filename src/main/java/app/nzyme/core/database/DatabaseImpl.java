@@ -218,7 +218,7 @@ public class DatabaseImpl implements Database {
             routeLiquibaseLogging(liquibase);
 
             if (!liquibase.listUnrunChangeSets(new Contexts(), new LabelExpression()).isEmpty()) {
-                throw new RuntimeException("There are un-run database changesets. Please run migrations.");
+                throw new RuntimeException("There are pending database changesets. Please run migrations.");
             }
         } finally {
             if (liquibase != null) {
