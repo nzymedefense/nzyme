@@ -33,14 +33,6 @@ public abstract class SessionUserInformationDetailsResponse {
     @JsonProperty("tenant_id")
     public abstract UUID tenantId();
 
-    @Nullable
-    @JsonProperty("default_organization")
-    public abstract UUID defaultOrganization();
-
-    @Nullable
-    @JsonProperty("default_tenant")
-    public abstract UUID defaultTenant();
-
     @JsonProperty("feature_permissions")
     public abstract List<String> featurePermissions();
 
@@ -50,7 +42,7 @@ public abstract class SessionUserInformationDetailsResponse {
     @JsonProperty("has_mfa_disabled")
     public abstract boolean hasMfaDisabled();
 
-    public static SessionUserInformationDetailsResponse create(UUID id, String email, String name, boolean isSuperAdmin, boolean isOrgAdmin, UUID organizationId, UUID tenantId, UUID defaultOrganization, UUID defaultTenant, List<String> featurePermissions, List<String> subsystems, boolean hasMfaDisabled) {
+    public static SessionUserInformationDetailsResponse create(UUID id, String email, String name, boolean isSuperAdmin, boolean isOrgAdmin, UUID organizationId, UUID tenantId, List<String> featurePermissions, List<String> subsystems, boolean hasMfaDisabled) {
         return builder()
                 .id(id)
                 .email(email)
@@ -59,8 +51,6 @@ public abstract class SessionUserInformationDetailsResponse {
                 .isOrgAdmin(isOrgAdmin)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
-                .defaultOrganization(defaultOrganization)
-                .defaultTenant(defaultTenant)
                 .featurePermissions(featurePermissions)
                 .subsystems(subsystems)
                 .hasMfaDisabled(hasMfaDisabled)
@@ -86,10 +76,6 @@ public abstract class SessionUserInformationDetailsResponse {
         public abstract Builder organizationId(UUID organizationId);
 
         public abstract Builder tenantId(UUID tenantId);
-
-        public abstract Builder defaultOrganization(UUID defaultOrganization);
-
-        public abstract Builder defaultTenant(UUID defaultTenant);
 
         public abstract Builder featurePermissions(List<String> featurePermissions);
 

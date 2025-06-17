@@ -135,19 +135,4 @@ public class UserProfileResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
-    @PUT
-    @Path("/defaults/tenant")
-    public Response setDefaultTenant(@Context SecurityContext sc, @Valid SetDefaultTenantRequest req) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
-
-        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserById(authenticatedUser.getUserId());
-        if (user.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        nzyme.getAuthenticationService().setUserDefaultTenant(user.get().uuid(), req.organizationId(), req.tenantId());
-
-        return Response.ok().build();
-    }
-
 }

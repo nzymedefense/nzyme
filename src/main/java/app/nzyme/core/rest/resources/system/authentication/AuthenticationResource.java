@@ -286,8 +286,6 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                         u.isOrganizationAdmin(),
                         u.organizationId(),
                         u.tenantId(),
-                        u.defaultOrganizationId(),
-                        u.defaultTenantId(),
                         featurePermissions,
                         subsystems,
                         u.hasMfaDisabled()

@@ -17,8 +17,6 @@ public class UserEntryMapper implements RowMapper<UserEntry> {
 
         String organizationId = rs.getString("organization_id");
         String tenantId = rs.getString("tenant_id");
-        String defaultOrganizationId = rs.getString("default_organization");
-        String defaultTenantId = rs.getString("default_tenant");
 
         return UserEntry.create(
                 UUID.fromString(rs.getString("uuid")),
@@ -40,8 +38,6 @@ public class UserEntryMapper implements RowMapper<UserEntry> {
                 rs.getString("last_geo_city"),
                 rs.getString("last_geo_country"),
                 rs.getString("last_geo_asn"),
-                defaultOrganizationId == null ? null : UUID.fromString(defaultOrganizationId),
-                defaultTenantId == null ? null : UUID.fromString(defaultTenantId),
                 rs.getBoolean("access_all_tenant_taps"),
                 rs.getLong("failed_login_count"),
                 rs.getLong("failed_login_count") >= 5,

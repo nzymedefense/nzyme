@@ -2,6 +2,8 @@ import React from 'react'
 import DarkModeButton from './DarkModeButton'
 import TapSelector from "../misc/TapSelector";
 import ApiRoutes from "../../util/ApiRoutes";
+import GlobalTenantSelectorButton from "../system/tenantselector/GlobalTenantSelectorButton";
+import WithMinimumRole from "../misc/WithMinimumRole";
 
 function NavigationBar(props) {
 
@@ -35,6 +37,9 @@ function NavigationBar(props) {
              target="_blank">
             Help
           </a>
+          <WithMinimumRole role="ORGADMIN">
+            <GlobalTenantSelectorButton />
+          </WithMinimumRole>
           <button className="btn btn-outline-secondary" title="Sign out" onClick={onLogout} >
             Sign Out &nbsp;<i className="fa-solid fa-arrow-right-from-bracket" />
           </button>

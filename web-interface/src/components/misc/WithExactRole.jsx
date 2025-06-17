@@ -8,7 +8,7 @@ function WithExactRole(props) {
   const role = props.role;
 
   let show = false;
-  switch(role) {
+  switch (role) {
     case "SUPERADMIN":
       show = user.is_superadmin;
       break;

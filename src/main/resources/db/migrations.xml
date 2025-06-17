@@ -6710,4 +6710,9 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="remove_user_default_tenant" author="lennartkoopmann">
+        <dropColumn tableName="auth_users" columnName="default_organization" />
+        <dropColumn tableName="auth_users" columnName="default_tenant" />
+    </changeSet>
 </databaseChangeLog>
