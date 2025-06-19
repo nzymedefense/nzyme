@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -114,11 +115,17 @@ public class AssetContextResource extends UserAuthenticatedResource {
     @GET
     @Path("/mac/show/{mac}")
     public Response mac(@Context SecurityContext sc,
+                        @QueryParam("organization_id") @NotNull UUID organizationId,
+                        @QueryParam("tenant_id") @NotNull UUID tenantId,
                         @PathParam("mac") @MacAddress String mac) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         Optional<MacAddressContextEntry> ctx = nzyme.getContextService().findMacAddressContext(
-                mac, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId()
+                mac, organizationId, tenantId
         );
 
         MacAddressContextDetailsResponse contextDetails;
@@ -156,7 +163,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
         // Find the first monitored SSID this MAC address may be part of. Unlikely to be more than one.
         Dot11MonitoredNetworkContextResponse servesMonitoredNetwork = null;
         for (MonitoredSSID monitoredNetwork : nzyme.getDot11()
-                .findAllMonitoredSSIDs(authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId())) {
+                .findAllMonitoredSSIDs(organizationId, tenantId)) {
             for (MonitoredBSSID bssid : nzyme.getDot11().findMonitoredBSSIDsOfMonitoredNetwork(monitoredNetwork.id())) {
                 if (bssid.bssid().equalsIgnoreCase(mac)) {
                     servesMonitoredNetwork = Dot11MonitoredNetworkContextResponse.create(

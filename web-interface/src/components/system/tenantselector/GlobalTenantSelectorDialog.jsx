@@ -1,11 +1,29 @@
-import React from "react";
+import React, {useContext, useState} from "react";
 import GlobalTenantSelectorForm from "./GlobalTenantSelectorForm";
+
+import Store from "../../../util/Store";
+import {AppContext} from "../../../App";
 
 export default function GlobalTenantSelectorDialog() {
 
-  const onSelectionMade = (org, tenant) => {
-    console.log("onSelectionMade", org, tenant);
+  const app = useContext(AppContext);
+
+  const [selectedOrganization, setSelectedOrganization] = useState(null);
+  const [selectedTenant, setSelectedTenant] = useState(false);
+
+  const onSelectionMade = (organization, tenant) => {
+    setSelectedOrganization(organization);
+    setSelectedTenant(tenant);
   }
+
+  const save = () => {
+    Store.set("selected_organization", selectedOrganization);
+    Store.set("selected_tenant", selectedTenant);
+
+    app.setRevision(new Date());
+  }
+
+  // IMPORTANT: The forced selector that shows when no org/tenant selection has been made has its own callbacks.
 
   return (
     <div className="modal" id="global-tenant-selector">
@@ -25,7 +43,10 @@ export default function GlobalTenantSelectorDialog() {
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" className="btn btn-primary">Select Tenant</button>
+
+            {selectedOrganization && selectedTenant ?
+              <button type="button" className="btn btn-primary" data-bs-dismiss="modal" onClick={save}>Select Tenant</button>
+            : <button type="button" className="btn btn-primary" disabled={true}>Select Tenant</button> }
           </div>
         </div>
       </div>

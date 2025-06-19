@@ -5,7 +5,6 @@ import Routes from "../../util/ApiRoutes";
 import InlineFormValidationMessage from "../misc/InlineFormValidationMessage";
 import FormSubmitErrorMessage from "../misc/FormSubmitErrorMessage";
 import {notify} from "react-notify-toast";
-import {Navigate} from "react-router-dom";
 import {AppContext} from "../../App";
 
 const userProfileService = new UserProfileService();

@@ -3,11 +3,13 @@ import ContextService from "../../../../../services/ContextService";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import WithPermission from "../../../../misc/WithPermission";
 import AssetImage from "../../../../misc/AssetImage";
-import ContextOwnerInformation from "../../../../context/ContextOwnerInformation";
+import useSelectedTenant from "../../../../system/tenantselector/useSelectedTenant";
 
 const contextService = new ContextService();
 
 function BluetoothMacAddressContextOverlay(props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const address = props.address;
   const isRandomized = props.isRandomized;
@@ -16,7 +18,7 @@ function BluetoothMacAddressContextOverlay(props) {
 
   useEffect(() => {
     setCtx(null);
-    contextService.findMacAddressContext(address, setCtx);
+    contextService.findMacAddressContext(address, organizationId, tenantId, setCtx);
   }, [address]);
 
   if (!ctx) {
@@ -89,8 +91,6 @@ function BluetoothMacAddressContextOverlay(props) {
            className="btn btn-sm btn-outline-primary">
           Context Details
         </a>{' '}
-
-        <ContextOwnerInformation context={ctx.context} />
       </React.Fragment>
   )
 

@@ -5,6 +5,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import OrganizationSelector from "../../shared/OrganizationSelector";
 import RefreshGears from "../../misc/RefreshGears";
 import TenantSelector from "../../shared/TenantSelector";
+import Store from "../../../util/Store";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -13,8 +14,11 @@ export default function GlobalTenantSelectorForm(props) {
   const user = useContext(UserContext);
   const onSelectionMade = props.onSelectionMade;
 
-  const [organization, setOrganization] = useState("");
-  const [tenant, setTenant] = useState("");
+  const selectedOrganization = Store.get("selected_organization");
+  const selectedTenant = Store.get("selected_tenant");
+
+  const [organization, setOrganization] = useState(selectedOrganization ? selectedOrganization : "");
+  const [tenant, setTenant] = useState(selectedTenant ? selectedTenant : "");
 
   const [organizations, setOrganizations] = useState(null);
   const [tenants, setTenants] = useState(null);
@@ -67,6 +71,7 @@ export default function GlobalTenantSelectorForm(props) {
       authenticationManagementService.findAllTenantsOfOrganization(organization, setTenants,
         250, 0, function () {
           setTenantsLoading(false);
+          setTenant(null);
         });
     } else {
       if (loaded) {

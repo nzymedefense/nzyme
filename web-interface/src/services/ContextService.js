@@ -2,8 +2,8 @@ import RESTClient from '../util/RESTClient'
 
 class ContextService {
 
-  findMacAddressContext(macAddress, setContext) {
-    RESTClient.get("/context/mac/show/" + macAddress, {}, (response) => setContext(response.data))
+  findMacAddressContext(macAddress, organizationId, tenantId, setContext) {
+    RESTClient.get("/context/mac/show/" + macAddress, { organization_id: organizationId, tenant_id: tenantId }, (response) => setContext(response.data))
   }
 
   findMacAddressContextByUuid(uuid, organizationId, tenantId, setContext) {

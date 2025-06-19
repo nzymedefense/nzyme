@@ -4,13 +4,15 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import WithPermission from "../../../../misc/WithPermission";
 import AssetImage from "../../../../misc/AssetImage";
 import {truncate} from "../../../../../util/Tools";
-import ContextOwnerInformation from "../../../../context/ContextOwnerInformation";
 import FirstContextIpAddress from "./FirstContextIpAddress";
 import FirstContextHostname from "./FirstContextHostname";
+import useSelectedTenant from "../../../../system/tenantselector/useSelectedTenant";
 
 const contextService = new ContextService();
 
 function Dot11MacAddressContextOverlay(props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const address = props.address;
   const oui = props.oui;
@@ -20,7 +22,7 @@ function Dot11MacAddressContextOverlay(props) {
 
   useEffect(() => {
     setCtx(null);
-    contextService.findMacAddressContext(address, setCtx);
+    contextService.findMacAddressContext(address, organizationId, tenantId, setCtx);
   }, [address]);
 
   const contextType = (type) => {
@@ -163,8 +165,6 @@ function Dot11MacAddressContextOverlay(props) {
           Context Details
         </a>{' '}
         {typeDetailsLink(ctx.context_type, address)}{' '}
-
-        <ContextOwnerInformation context={ctx.context} />
       </React.Fragment>
   )
 

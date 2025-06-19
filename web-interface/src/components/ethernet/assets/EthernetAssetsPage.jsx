@@ -9,6 +9,7 @@ import AssetsService from "../../../services/ethernet/AssetsService";
 import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
 import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
 import AssetsTable from "./AssetsTable";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const assetsService = new AssetsService();
 
@@ -23,9 +24,7 @@ export default function EthernetAssetsPage() {
   const [orderColumn, setOrderColumn] = useState("last_seen");
   const [orderDirection, setOrderDirection] = useState("DESC");
 
-  const [organizationId, setOrganizationId] = useState(null);
-  const [tenantId, setTenantId] = useState(null);
-  const [tenantSelected, setTenantSelected] = useState(false);
+  const [organizationId, tenantId] = useSelectedTenant();
 
   useEffect(() => {
     setAssets(null);
@@ -33,29 +32,6 @@ export default function EthernetAssetsPage() {
       assetsService.findAllAssets(organizationId, tenantId, timeRange, orderColumn, orderDirection, perPage, (page-1)*perPage, setAssets);
     }
   }, [organizationId, tenantId, timeRange, orderColumn, orderDirection, page]);
-
-  const onOrganizationChange = (uuid) => {
-    setOrganizationId(uuid);
-  }
-
-  const onTenantChange = (uuid) => {
-    setTenantId(uuid);
-
-    if (uuid) {
-      setTenantSelected(true);
-    }
-  }
-
-  const resetTenantAndOrganization = () => {
-    setOrganizationId(null);
-    setTenantId(null);
-  }
-
-  if (!organizationId || !tenantId) {
-    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
-                                          onTenantChange={onTenantChange}
-                                          autoSelectCompleted={tenantSelected} />
-  }
 
   return (
       <React.Fragment>
@@ -86,11 +62,6 @@ export default function EthernetAssetsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Assets" />
-
-                <SelectedOrganizationAndTenant
-                    organizationId={organizationId}
-                    tenantId={tenantId}
-                    onReset={resetTenantAndOrganization} />
 
                 <AssetsTable assets={assets}
                              page={page}

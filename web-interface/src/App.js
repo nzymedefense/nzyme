@@ -173,6 +173,7 @@ import CreateBluetoothMonitoringRulePage from "./components/bluetooth/monitoring
 import DHCPTransactions from "./components/ethernet/assets/dhcp/DHCPTransactionsPage";
 import DHCPTransactionsPage from "./components/ethernet/assets/dhcp/DHCPTransactionsPage";
 import DHCPTransactionDetailsPage from "./components/ethernet/assets/dhcp/DHCPTransactionDetailsPage";
+import GlobalTenantSelectorForm from "./components/system/tenantselector/GlobalTenantSelectorForm";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -206,6 +207,20 @@ function App() {
   const [plugins, setPlugins] = useState([]); // TODO
   const [selectedTaps, setSelectedTaps] = useState(Store.get("selected_taps"));
   const [tapSelectorEnabled, setTapSelectorEnabled] = useState(false);
+
+  const [selectedOrganization, setSelectedOrganization] = useState(null);
+  const [selectedTenant, setSelectedTenant] = useState(false);
+
+  const onTenantSelectionMade = (organization, tenant) => {
+    setSelectedOrganization(organization);
+    setSelectedTenant(tenant);
+  }
+
+  const saveTenantSelection = () => {
+    Store.set("selected_organization", selectedOrganization);
+    Store.set("selected_tenant", selectedTenant);
+    setRevision(new Date());
+  }
 
   const [fullyLoaded, setFullyLoaded] = useState(false);
 
@@ -341,13 +356,50 @@ function App() {
         )
       }
     } else {
-      // Connected, authenticated and MFA'd. Show full interface.
+
+      if (!Store.get("selected_organization") || !Store.get("selected_tenant")) {
+        return (
+          <div className="nzyme">
+            <UserContext.Provider value={userInformation}>
+              <div className="container">
+                <div className="row mt-5">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-body">
+                        <h1>Select Tenant</h1>
+
+                        <p>
+                          Select the tenant you want to use the web interface as. This does not affect your user&apos;s
+                          privileges but is required to access tenant-specific dialogs and pages.
+                        </p>
+
+                        <p>
+                          <strong>You can change the tenant at any time using the top navigation bar later.</strong>
+                        </p>
+
+                        <GlobalTenantSelectorForm onSelectionMade={onTenantSelectionMade} />
+
+                        {selectedOrganization && selectedTenant ?
+                          <button type="button" className="btn btn-primary" data-bs-dismiss="modal" onClick={saveTenantSelection}>Select Tenant</button>
+                          : <button type="button" className="btn btn-primary" disabled={true}>Select Tenant</button> }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </UserContext.Provider>
+          </div>
+        )
+      }
+
+      // Connected, authenticated and MFA'd. Tenant and Org selected. Show full interface.
       return (
           <Router>
             <DarkMode enabled={darkModeEnabled} />
 
             <div className="nzyme d-flex">
-              <AppContext.Provider value={{logout: logout}}>
+              <AppContext.Provider value={{logout: logout, setRevision: setRevision}}>
                 <UserContext.Provider value={userInformation}>
                   <TapContext.Provider value={{set: setSelectedTaps, taps: selectedTaps, selectorEnabled: tapSelectorEnabled, setSelectorEnabled: setTapSelectorEnabled}}>
                     <AlertContext.Provider value={alertInformation}>

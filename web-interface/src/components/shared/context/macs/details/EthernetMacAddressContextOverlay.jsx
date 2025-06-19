@@ -2,15 +2,17 @@ import React, {useEffect, useState} from "react";
 import AssetImage from "../../../../misc/AssetImage";
 import WithPermission from "../../../../misc/WithPermission";
 import ApiRoutes from "../../../../../util/ApiRoutes";
-import ContextOwnerInformation from "../../../../context/ContextOwnerInformation";
 import ContextService from "../../../../../services/ContextService";
 import {truncate} from "../../../../../util/Tools";
 import FirstContextIpAddress from "./FirstContextIpAddress";
 import FirstContextHostname from "./FirstContextHostname";
+import useSelectedTenant from "../../../../system/tenantselector/useSelectedTenant";
 
 const contextService = new ContextService();
 
 export default function EthernetMacAddressContextOverlay(props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const address = props.address;
   const oui = props.oui;
@@ -19,7 +21,7 @@ export default function EthernetMacAddressContextOverlay(props) {
 
   useEffect(() => {
     setCtx(null);
-    contextService.findMacAddressContext(address, setCtx);
+    contextService.findMacAddressContext(address, organizationId, tenantId, setCtx);
   }, [address]);
 
   if (!ctx) {
@@ -96,8 +98,6 @@ export default function EthernetMacAddressContextOverlay(props) {
            className="btn btn-sm btn-outline-primary">
           Context Details
         </a>{' '}
-
-        <ContextOwnerInformation context={ctx.context} />
       </React.Fragment>
   )
 
