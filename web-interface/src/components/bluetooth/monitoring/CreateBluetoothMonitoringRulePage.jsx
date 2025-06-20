@@ -4,7 +4,6 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../services/AuthenticationManagementService";
 import ApiRoutes from "../../../util/ApiRoutes";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
-import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
 import BluetoothMonitoringRuleForm from "./BluetoothMonitoringRuleForm";
 
 const authenticationManagementService = new AuthenticationManagementService();
@@ -59,11 +58,6 @@ export default function CreateBluetoothMonitoringRulePage() {
           <h1>Create Bluetooth Monitoring Rule</h1>
         </div>
       </div>
-
-      <SelectedOrganizationAndTenant
-        organizationId={organizationId}
-        tenantId={tenantId}
-        noEdit={true} />
 
       <div className="row mt-3">
         <div className="col-xl-12 col-xxl-6">

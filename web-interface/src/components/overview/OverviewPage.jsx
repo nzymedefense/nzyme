@@ -17,6 +17,7 @@ import DiscoHistogram from "../dot11/disco/DiscoHistogram";
 import {disableTapSelector, enableTapSelector} from "../misc/TapSelector";
 import DNSService from "../../services/ethernet/DNSService";
 import DNSStatisticsChart from "../ethernet/dns/DNSStatisticsChart";
+import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 
 const alertsService = new DetectionAlertsService();
 const systemService = new SystemService();
@@ -27,6 +28,8 @@ function byteConversion (x) {
 }
 
 export default function OverviewPage() {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -54,7 +57,7 @@ export default function OverviewPage() {
     }
 
     if (userHasPermission(user, "alerts_view")) {
-      alertsService.findAllAlerts(setAlerts, 10, 0);
+      alertsService.findAllAlerts(setAlerts, organizationId, tenantId, 10, 0);
     }
 
     if (userHasSubsystem(user, "ethernet")) {
@@ -63,7 +66,7 @@ export default function OverviewPage() {
       dnsService.getGlobalChart(Presets.RELATIVE_HOURS_24, selectedTaps, "nxdomain_count", setDnsNxdomainStats);
 
     }
-  }, [])
+  }, [organizationId, tenantId, user, selectedTaps])
 
   const noContentInfo = () => {
     if (!user.is_superadmin && !userHasPermission(user, "alerts_view")

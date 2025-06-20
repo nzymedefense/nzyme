@@ -5,16 +5,19 @@ import Dot11Service from "../../../services/Dot11Service";
 import moment from "moment";
 import ApiRoutes from "../../../util/ApiRoutes";
 import MonitoredNetworkStatus from "./MonitoredNetworkStatus";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const dot11Service = new Dot11Service();
 
 function MonitoredNetworksTable() {
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const [ssids, setSSIDs] = useState(null);
 
   useEffect(() => {
-    dot11Service.findAllMonitoredSSIDs(setSSIDs);
-  }, [])
+    dot11Service.findAllMonitoredSSIDs(organizationId, tenantId, setSSIDs);
+  }, [organizationId, tenantId]);
 
   if (!ssids) {
     return <LoadingSpinner />

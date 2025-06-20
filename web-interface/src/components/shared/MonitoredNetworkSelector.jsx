@@ -2,6 +2,7 @@ import React, {useContext, useEffect, useState} from "react";
 import Dot11Service from "../../services/Dot11Service";
 import {MonitoredNetworkContext} from "../dot11/disco/DiscoPage";
 import {useSearchParams} from "react-router-dom";
+import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 
 const dot11Service = new Dot11Service();
 
@@ -10,14 +11,15 @@ export const SEARCHPARAM_KEY = "monitored-network-id";
 function MonitoredNetworkSelector(props) {
 
   const [searchParams, setSearchParams] = useSearchParams();
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const monitoredNetworkContext = useContext(MonitoredNetworkContext);
 
   const [networks, setNetworks] = useState(null);
 
   useEffect(() => {
-    dot11Service.findAllMonitoredSSIDs(setNetworks);
-  }, [])
+    dot11Service.findAllMonitoredSSIDs(organizationId, tenantId, setNetworks);
+  }, [organizationId, tenantId])
 
   const deleteMonitoredNetworkSearchParam = () => {
     searchParams.delete(SEARCHPARAM_KEY);

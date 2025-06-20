@@ -1,37 +1,11 @@
-import React, {useState} from "react";
-import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
-import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
+import React from "react";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import UavAlertSettings from "./UavAlertSettings";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 export default function UavMonitoringPage() {
 
-  const [organizationId, setOrganizationId] = useState(null);
-  const [tenantId, setTenantId] = useState(null);
-  const [tenantSelected, setTenantSelected] = useState(false);
-
-  const onOrganizationChange = (uuid) => {
-    setOrganizationId(uuid);
-  }
-
-  const onTenantChange = (uuid) => {
-    setTenantId(uuid);
-
-    if (uuid) {
-      setTenantSelected(true);
-    }
-  }
-
-  const resetTenantAndOrganization = () => {
-    setOrganizationId(null);
-    setTenantId(null);
-  }
-
-  if (!organizationId || !tenantId) {
-    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
-                                          onTenantChange={onTenantChange}
-                                          autoSelectCompleted={tenantSelected} />
-  }
+  const [organizationId, tenantId] = useSelectedTenant();
 
   return (
       <React.Fragment>
@@ -44,11 +18,6 @@ export default function UavMonitoringPage() {
             <a href="https://go.nzyme.org/uav-monitoring" className="btn btn-secondary">Help</a>
           </div>
         </div>
-
-        <SelectedOrganizationAndTenant
-            organizationId={organizationId}
-            tenantId={tenantId}
-            onReset={resetTenantAndOrganization} />
 
         <div className="row mt-3">
           <div className="col-xl-12 col-xxl-6">

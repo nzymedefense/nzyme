@@ -4,16 +4,16 @@ import Dot11Service from "../../../services/Dot11Service";
 import SSIDSuggestions from "./SSIDSuggestions";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {Navigate} from "react-router-dom";
-import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const dot11Service = new Dot11Service();
 
 function CreateMonitoredNetworkPage() {
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const [ssidNames, setSSIDNames] = useState(null);
   const [ssid, setSSID] = useState("");
-  const [organization, setOrganization] = useState(null);
-  const [tenant, setTenant] = useState(null);
 
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [submittedSuccessfully, setSubmittedSuccessfully] = useState(false);
@@ -22,18 +22,10 @@ function CreateMonitoredNetworkPage() {
     setSSID(ssid);
   }
 
-  const onOrganizationChange = function (organizationUUID) {
-    setOrganization(organizationUUID);
-  }
-
-  const onTenantChange = function (tenantUUID) {
-    setTenant(tenantUUID);
-  }
-
   const onSubmitForm = function () {
     setFormSubmitting(true);
 
-    dot11Service.createMonitoredSSID(ssid, tenant, organization,function (){
+    dot11Service.createMonitoredSSID(ssid, organizationId, tenantId, function () {
       setSubmittedSuccessfully(true);
     }, function () {
       setFormSubmitting(false);
@@ -41,12 +33,12 @@ function CreateMonitoredNetworkPage() {
   }
 
   const formIsReady = function() {
-    return organization && tenant && ssid;
+    return ssid && ssid.trim().length > 0;
   }
 
   useEffect(() => {
-    dot11Service.findAllSSIDNames(setSSIDNames);
-  }, [])
+    dot11Service.findAllSSIDNames(setSSIDNames, organizationId, tenantId);
+  }, [organizationId, tenantId])
 
   if (submittedSuccessfully) {
     return <Navigate to={ApiRoutes.DOT11.MONITORING.INDEX} />
@@ -81,9 +73,6 @@ function CreateMonitoredNetworkPage() {
 
                   <form className="mt-3">
                     <div className="mb-3">
-                      <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
-                                                     onTenantChange={onTenantChange} />
-
                       <label htmlFor="ssid" className="form-label">
                         SSID{' '}
                         <span className="badge bg-warning" style={{position: "relative", top: -2, right: -3}}>

@@ -1,11 +1,14 @@
 import React from "react";
 import BuiltinBanditsTable from "./BuiltinBanditsTable";
-import CustomBanditsTableProxy from "./CustomBanditsTableProxy";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import {MONITORING_MENU_ITEMS} from "../Dot11MenuItems";
+import CustomBanditsTable from "./CustomBanditsTable";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 export default function BanditsPage() {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   return (
       <React.Fragment>
@@ -61,7 +64,12 @@ export default function BanditsPage() {
                   You can define and manage your own bandit definitions.
                 </p>
 
-                <CustomBanditsTableProxy />
+                <CustomBanditsTable />
+
+                <a href={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(organizationId, tenantId)}
+                   className="btn btn-sm btn-secondary">
+                  Create Custom Bandit
+                </a>
               </div>
             </div>
           </div>

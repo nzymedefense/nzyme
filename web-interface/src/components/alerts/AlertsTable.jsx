@@ -10,14 +10,17 @@ import AlertActionMultiSelector from "./AlertActionMultiSelector";
 import {userHasPermission} from "../../util/Tools";
 import {UserContext} from "../../App";
 import RenderConditionally from "../misc/RenderConditionally";
+import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 
 const detectionAlertsService = new DetectionAlertsService();
 
-const loadData = function(setAlerts, subsystem, page, perPage) {
-  detectionAlertsService.findAllAlerts(setAlerts, perPage, (page-1)*perPage, subsystem);
+const loadData = function(setAlerts, organizationId, tenantId, subsystem, page, perPage) {
+  detectionAlertsService.findAllAlerts(setAlerts, organizationId, tenantId, perPage, (page-1)*perPage, subsystem);
 }
 
 function AlertsTable(props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const user = useContext(UserContext);
 
@@ -98,16 +101,16 @@ function AlertsTable(props) {
 
   useEffect(() => {
     setAlerts(null);
-    loadData(setAlerts, subsystem, page, perPage);
+    loadData(setAlerts, organizationId, tenantId, subsystem, page, perPage);
 
     const timer = setInterval(() => {
       if (isAutoRefresh) {
-        loadData(setAlerts, subsystem, page, perPage);
+        loadData(setAlerts, organizationId, tenantId, subsystem, page, perPage);
       }
     }, 15000);
 
     return () => clearInterval(timer);
-  }, [isAutoRefresh, page, revision])
+  }, [isAutoRefresh, page, revision, organizationId, tenantId])
 
   if (!alerts) {
     return <LoadingSpinner />

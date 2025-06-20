@@ -6,8 +6,8 @@ class TapService {
     RESTClient.get('/taps/highlevel', {}, successCallback);
   }
 
-  findAllTaps(setTaps) {
-    RESTClient.get('/taps', {}, function (response) {
+  findAllTaps(organizationId, tenantId, setTaps) {
+    RESTClient.get('/taps', { organization_id: organizationId, tenant_id: tenantId }, function (response) {
       setTaps(response.data.taps)
     })
   }

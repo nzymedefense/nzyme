@@ -64,6 +64,7 @@ export default function GlobalTenantSelectorForm(props) {
   useEffect(() => {
     if (loaded) {
       setTenants(null);
+      setTenant(null);
     }
 
     if (organization) {
@@ -71,12 +72,7 @@ export default function GlobalTenantSelectorForm(props) {
       authenticationManagementService.findAllTenantsOfOrganization(organization, setTenants,
         250, 0, function () {
           setTenantsLoading(false);
-          setTenant(null);
         });
-    } else {
-      if (loaded) {
-        setTenant(null);
-      }
     }
   }, [organization]);
 

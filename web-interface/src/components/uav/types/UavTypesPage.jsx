@@ -1,21 +1,18 @@
 import React, {useEffect, useState} from "react";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
-import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
-import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
 import WithPermission from "../../misc/WithPermission";
 import ConnectTypesTable from "./ConnectTypesTable";
 import ApiRoutes from "../../../util/ApiRoutes";
 import CustomTypesTable from "./CustomTypesTable";
 import UavService from "../../../services/UavService";
 import {notify} from "react-notify-toast";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const uavService = new UavService();
 
 export default function UavTypesPage() {
 
-  const [organizationId, setOrganizationId] = useState(null);
-  const [tenantId, setTenantId] = useState(null);
-  const [tenantSelected, setTenantSelected] = useState(false);
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [connectTypes, setConnectTypes] = useState(null);
   const [connectTypesPage, setConnectTypesPage] = useState(1);
@@ -30,11 +27,9 @@ export default function UavTypesPage() {
   useEffect(() => {
     setCustomTypes(null);
 
-    if (organizationId && tenantId) {
-      uavService.findAllCustomTypes(
-        setCustomTypes, organizationId, tenantId, customTypesPerPage, (customTypesPage-1)*customTypesPerPage
-      );
-    }
+    uavService.findAllCustomTypes(
+      setCustomTypes, organizationId, tenantId, customTypesPerPage, (customTypesPage-1)*customTypesPerPage
+    );
   }, [organizationId, tenantId, customTypesPage, revision]);
 
   useEffect(() => {
@@ -43,24 +38,7 @@ export default function UavTypesPage() {
     uavService.findAllConnectTypes(
         setConnectTypes, organizationId, tenantId, connectTypesPerPage, (connectTypesPage-1)*connectTypesPerPage
     );
-  }, [connectTypesPage, revision]);
-
-  const onOrganizationChange = (uuid) => {
-    setOrganizationId(uuid);
-  }
-
-  const onTenantChange = (uuid) => {
-    setTenantId(uuid);
-
-    if (uuid) {
-      setTenantSelected(true);
-    }
-  }
-
-  const resetTenantAndOrganization = () => {
-    setOrganizationId(null);
-    setTenantId(null);
-  }
+  }, [connectTypesPage, revision, organizationId, tenantId]);
 
   const onDeleteCustomType = (e, uuid) => {
     e.preventDefault();
@@ -75,12 +53,6 @@ export default function UavTypesPage() {
     })
   }
 
-  if (!organizationId || !tenantId) {
-    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
-                                          onTenantChange={onTenantChange}
-                                          autoSelectCompleted={tenantSelected} />
-  }
-
   return (
     <React.Fragment>
       <div className="row">
@@ -92,11 +64,6 @@ export default function UavTypesPage() {
           <a href="https://go.nzyme.org/uav-types" className="btn btn-secondary">Help</a>
         </div>
       </div>
-
-      <SelectedOrganizationAndTenant
-        organizationId={organizationId}
-        tenantId={tenantId}
-        onReset={resetTenantAndOrganization} />
 
       <div className="row mt-3">
         <div className="col-xl-12 col-xxl-6">

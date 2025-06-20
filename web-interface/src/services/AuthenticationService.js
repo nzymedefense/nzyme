@@ -32,8 +32,8 @@ class AuthenticationService {
         .catch(() => { console.log("Could not touch session."); })
   }
 
-  fetchSessionInfo(successCallback, errorCallback) {
-    RESTClient.get('/system/authentication/session', {}, function(response) {
+  fetchSessionInfo(selectedOrganization, selectedTenant, successCallback, errorCallback) {
+    RESTClient.get('/system/authentication/session', { organization_id: selectedOrganization, tenant_id: selectedTenant}, function(response) {
       successCallback(response.data);
     }, errorCallback);
   }

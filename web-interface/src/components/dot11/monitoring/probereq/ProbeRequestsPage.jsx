@@ -1,10 +1,43 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import ApiRoutes from "../../../../util/ApiRoutes";
-import ProbeRequestsTableProxy from "./ProbeRequestsTableProxy";
 import {MONITORING_MENU_ITEMS} from "../Dot11MenuItems";
+import Dot11Service from "../../../../services/Dot11Service";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import ProbeRequestsTable from "./ProbeRequestsTable";
+import {notify} from "react-notify-toast";
+
+const dot11Service = new Dot11Service();
 
 export default function ProbeRequestsPage() {
+
+  const [organizationId, tenantId] = useSelectedTenant();
+  const [probeRequests, setProbeRequests] = useState(null);
+
+  const [revision, setRevision] = useState(new Date());
+
+  const perPage = 25;
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setProbeRequests(null);
+    dot11Service.findAllMonitoredProbeRequests(
+      organizationId, tenantId, perPage, (page-1)*perPage, setProbeRequests
+    )
+  }, [organizationId, tenantId, page, revision]);
+
+  const onDelete = (e, id) => {
+    e.preventDefault();
+
+    if (!confirm("Really delete monitored probe request?")) {
+      return;
+    }
+
+    dot11Service.deleteMonitoredProbeRequest(id, () => {
+      notify.show('Monitored probe request deleted.', 'success');
+      setRevision(new Date());
+    });
+  }
 
   return (
       <React.Fragment>
@@ -44,7 +77,18 @@ export default function ProbeRequestsPage() {
               <div className="card-body">
                 <h3>Monitored Probe Requests</h3>
 
-                <ProbeRequestsTableProxy />
+                <ProbeRequestsTable probeRequests={probeRequests}
+                                    onDelete={onDelete}
+                                    page={page}
+                                    setPage={setPage}
+                                    perPage={perPage} />
+
+
+                <a href={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE(organizationId, tenantId)}
+                   className="btn btn-sm btn-secondary">
+                  Create Monitored Probe Request
+                </a>
+
               </div>
             </div>
           </div>

@@ -1,18 +1,16 @@
 import React, {useEffect, useState} from "react";
-import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
-import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import BluetoothService from "../../../services/BluetoothService";
 import BluetoothMonitoringRulesTable from "./BluetoothMonitoringRulesTable";
 import ApiRoutes from "../../../util/ApiRoutes";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const bluetoothService = new BluetoothService();
 
 export default function BluetoothMonitoringPage() {
 
-  const [organizationId, setOrganizationId] = useState(null);
-  const [tenantId, setTenantId] = useState(null);
-  const [tenantSelected, setTenantSelected] = useState(false);
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const [rules, setRules] = useState(null);
 
   const [page, setPage] = useState(1);
@@ -20,30 +18,7 @@ export default function BluetoothMonitoringPage() {
 
   useEffect(() => {
     bluetoothService.findAllRules(setRules, perPage, (page-1)*perPage)
-  }, [organizationId, tenantId]);
-
-  const onOrganizationChange = (uuid) => {
-    setOrganizationId(uuid);
-  }
-
-  const onTenantChange = (uuid) => {
-    setTenantId(uuid);
-
-    if (uuid) {
-      setTenantSelected(true);
-    }
-  }
-
-  const resetTenantAndOrganization = () => {
-    setOrganizationId(null);
-    setTenantId(null);
-  }
-
-  if (!organizationId || !tenantId) {
-    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
-                                          onTenantChange={onTenantChange}
-                                          autoSelectCompleted={tenantSelected} />
-  }
+  }, [organizationId, tenantId, page]);
 
   return (
       <React.Fragment>
@@ -56,11 +31,6 @@ export default function BluetoothMonitoringPage() {
             <a href="https://go.nzyme.org/bluetooth-monitoring" className="btn btn-secondary">Help</a>
           </div>
         </div>
-
-        <SelectedOrganizationAndTenant
-            organizationId={organizationId}
-            tenantId={tenantId}
-            onReset={resetTenantAndOrganization} />
 
         <div className="row mt-3">
           <div className="col-xl-12 col-xxl-6">

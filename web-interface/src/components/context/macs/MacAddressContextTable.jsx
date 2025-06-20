@@ -1,57 +1,29 @@
 import React, {useEffect, useState} from "react";
-import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
-import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
 import Paginator from "../../misc/Paginator";
 import ContextService from "../../../services/ContextService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import ApiRoutes from "../../../util/ApiRoutes";
 import FirstContextIpAddress from "../../shared/context/macs/details/FirstContextIpAddress";
 import FirstContextHostname from "../../shared/context/macs/details/FirstContextHostname";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const contextService = new ContextService();
 
 function MacAddressContextTable() {
 
-  const [organizationId, setOrganizationId] = useState(null);
-  const [tenantId, setTenantId] = useState(null);
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [context, setContext] = useState(null);
 
   const [addressFilter, setAddressFilter] = useState("");
   const [addressFilterRevision, setAddressFilterRevision] = useState(0);
-  const [tenantSelected, setTenantSelected] = useState(false);
 
   const perPage = 25;
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    if (organizationId && tenantId) {
-      contextService.findAllMacAddressContext(organizationId, tenantId, addressFilter, setContext, perPage, (page - 1) * perPage);
-    }
+    contextService.findAllMacAddressContext(organizationId, tenantId, addressFilter, setContext, perPage, (page - 1) * perPage);
   }, [page, organizationId, tenantId, addressFilterRevision]);
-
-  const onOrganizationChange = (uuid) => {
-    setOrganizationId(uuid);
-  }
-
-  const onTenantChange = (uuid) => {
-    setTenantId(uuid);
-
-    if (uuid) {
-      setTenantSelected(true);
-    }
-  }
-
-  const resetTenantAndOrganization = () => {
-    setOrganizationId(null);
-    setTenantId(null);
-  }
-
-  if (!organizationId || !tenantId) {
-    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
-                                          onTenantChange={onTenantChange}
-                                          autoSelectCompleted={tenantSelected} />
-  }
 
   if (!context) {
     return <LoadingSpinner />
@@ -60,11 +32,6 @@ function MacAddressContextTable() {
   if (context.total === 0) {
     return (
         <React.Fragment>
-          <SelectedOrganizationAndTenant
-              organizationId={organizationId}
-              tenantId={tenantId}
-              onReset={resetTenantAndOrganization} />
-
           <div className="alert alert-info mb-0">No context has been created yet.</div>
         </React.Fragment>
 
@@ -73,11 +40,6 @@ function MacAddressContextTable() {
 
   return (
       <React.Fragment>
-        <SelectedOrganizationAndTenant
-            organizationId={organizationId}
-            tenantId={tenantId}
-            onReset={resetTenantAndOrganization} />
-
         <div className="row mb-3">
           <div className="col-xl-12 col-xxl-8">
             <div className="input-group">

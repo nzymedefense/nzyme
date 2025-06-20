@@ -102,7 +102,6 @@ import EditCustomBanditPage from "./components/dot11/monitoring/bandits/EditCust
 import DiscoPage from "./components/dot11/disco/DiscoPage";
 import ConfigureDiscoDetectionMethodPage
   from "./components/dot11/monitoring/disco/configuration/ConfigureDiscoDetectionMethodPage";
-import AddTapProxyPage from "./components/system/taps/AddTapProxyPage";
 import AuthenticationSettingsPage from "./components/system/authentication/management/AuthenticationSettingsPage";
 import MacAddressContextPage from "./components/context/macs/MacAddressContextPage";
 import CreateMacAddressContextPage from "./components/context/macs/CreateMacAddressContextPage";
@@ -170,7 +169,6 @@ import EditCustomTypePage from "./components/uav/types/EditCustomTypePage";
 import EthernetAssetsPage from "./components/ethernet/assets/EthernetAssetsPage";
 import BluetoothMonitoringPage from "./components/bluetooth/monitoring/BluetoothMonitoringPage";
 import CreateBluetoothMonitoringRulePage from "./components/bluetooth/monitoring/CreateBluetoothMonitoringRulePage";
-import DHCPTransactions from "./components/ethernet/assets/dhcp/DHCPTransactionsPage";
 import DHCPTransactionsPage from "./components/ethernet/assets/dhcp/DHCPTransactionsPage";
 import DHCPTransactionDetailsPage from "./components/ethernet/assets/dhcp/DHCPTransactionDetailsPage";
 import GlobalTenantSelectorForm from "./components/system/tenantselector/GlobalTenantSelectorForm";
@@ -204,7 +202,6 @@ function App() {
   const [userInformation, setUserInformation] = useState(null);
   const [alertInformation, setAlertInformation] = useState(null);
   const [branding, setBranding] = useState(null);
-  const [plugins, setPlugins] = useState([]); // TODO
   const [selectedTaps, setSelectedTaps] = useState(Store.get("selected_taps"));
   const [tapSelectorEnabled, setTapSelectorEnabled] = useState(false);
 
@@ -226,7 +223,8 @@ function App() {
 
   const fetchSessionInfo = function(callback) {
     if (isAuthenticated()) {
-      authenticationService.fetchSessionInfo(function (sessionInfo) {
+      authenticationService.fetchSessionInfo(Store.get("selected_organization"), Store.get("selected_tenant"),
+        function (sessionInfo) {
         if (sessionInfo.user.has_mfa_disabled) {
           setMfaRequired(false);
         } else {
@@ -472,7 +470,6 @@ function App() {
 
                               { /* System/Taps. */}
                               <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>
-                              <Route path={ApiRoutes.SYSTEM.TAPS.PROXY_ADD} element={<AddTapProxyPage />} />
                               <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':uuid')} element={<TapDetailsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':uuid', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
 

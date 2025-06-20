@@ -57,10 +57,14 @@ public class AlertsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_view" })
     public Response findAll(@Context SecurityContext sc,
+                            @QueryParam("organization_id") @NotNull UUID organizationId,
+                            @QueryParam("tenant_id") @NotNull UUID tenantId,
                             @QueryParam("subsystem") @Nullable String subsystemParam,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
@@ -78,22 +82,22 @@ public class AlertsResource extends UserAuthenticatedResource {
         }
 
         List<DetectionAlertEntry> alerts = nzyme.getDetectionAlertService().findAllAlerts(
-                authenticatedUser.getOrganizationId(),
-                authenticatedUser.getTenantId(),
+                organizationId,
+                tenantId,
                 subsystem,
                 limit,
                 offset
         );
 
         long total = nzyme.getDetectionAlertService().countAlerts(
-                authenticatedUser.getOrganizationId(),
-                authenticatedUser.getTenantId(),
+                organizationId,
+                tenantId,
                 subsystem
         );
 
         long totalActive = nzyme.getDetectionAlertService().countActiveAlerts(
-                authenticatedUser.getOrganizationId(),
-                authenticatedUser.getTenantId(),
+                organizationId,
+                tenantId,
                 subsystem
         );
 

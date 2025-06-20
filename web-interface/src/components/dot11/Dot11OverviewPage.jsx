@@ -14,11 +14,14 @@ import Dot11Service from "../../services/Dot11Service";
 import Dot11OverviewMonitoredNetworkSummary from "./Dot11OverviewMonitoredNetworkSummary";
 import CardTitleWithControls from "../shared/CardTitleWithControls";
 import {disableTapSelector, enableTapSelector} from "../misc/TapSelector";
+import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 
 const alertsService = new DetectionAlertsService();
 const dot11Service = new Dot11Service();
 
 export default function Dot11OverviewPage() {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const tapContext = useContext(TapContext);
   const user = useContext(UserContext);
@@ -36,13 +39,13 @@ export default function Dot11OverviewPage() {
 
   useEffect(() => {
     if (userHasPermission(user, "alerts_view")) {
-      alertsService.findAllAlerts(setAlerts, 10, 0, "DOT11");
+      alertsService.findAllAlerts(setAlerts, organizationId, tenantId, 10, 0, "DOT11");
     }
 
     if (userHasPermission(user, "dot11_monitoring_manage")) {
-      dot11Service.findAllMonitoredSSIDs(setMonitoredNetworks);
+      dot11Service.findAllMonitoredSSIDs(organizationId, tenantId, setMonitoredNetworks);
     }
-  }, []);
+  }, [organizationId, tenantId, user]);
 
   if ((userHasPermission(user, "alerts_view") && !alerts) || (userHasPermission(user, "dot11_monitoring_manage") && !monitoredNetworks)) {
     return <LoadingSpinner />

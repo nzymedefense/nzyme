@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import {Navigate, useParams} from "react-router-dom";
 import {notify} from "react-notify-toast";
 import Routes from "../../../util/ApiRoutes";
-import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import UavTypeForm from "./UavTypeForm";
 import UavService from "../../../services/UavService";
@@ -65,11 +64,6 @@ export default function EditCustomTypePage() {
             <h1>Edit Custom Unmanned Aerial Vehicle (UAV) Type &quot;{type.name}&quot;</h1>
           </div>
         </div>
-
-        <SelectedOrganizationAndTenant
-            organizationId={organizationId}
-            tenantId={tenantId}
-            noEdit={true} />
 
         <div className="row mt-3">
           <div className="col-xl-12 col-xxl-6">

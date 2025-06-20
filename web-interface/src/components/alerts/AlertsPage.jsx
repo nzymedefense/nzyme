@@ -2,25 +2,27 @@ import React, {useEffect, useState} from "react";
 import AlertsTable from "./AlertsTable";
 import DetectionAlertsService from "../../services/DetectionAlertsService";
 
-import numeral from "numeral";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import NumberCard from "../widgets/presentation/NumberCard";
+import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 
 const alertsService = new DetectionAlertsService();
 
 function AlertsPage() {
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const [alerts, setAlerts] = useState(null);
 
   useEffect(() => {
-    alertsService.findAllAlerts(setAlerts, 0, 0);
+    alertsService.findAllAlerts(setAlerts, organizationId, tenantId, 0, 0);
 
     const timer = setInterval(() => {
-      alertsService.findAllAlerts(setAlerts, 0, 0)
+      alertsService.findAllAlerts(setAlerts, organizationId, tenantId, 0, 0)
     }, 15000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [organizationId, tenantId]);
 
   if (!alerts) {
     return <LoadingSpinner />
@@ -59,7 +61,7 @@ function AlertsPage() {
                   re-activate if they are considered to be triggered from the same source or for the same reason.
                 </p>
 
-                <AlertsTable/>
+                <AlertsTable />
               </div>
             </div>
           </div>

@@ -38,7 +38,7 @@ function AlertSubscriptionsPage() {
 
                 <p className="text-muted">
                   You can use <i>Wildcard Alert Subscriptions</i> to subscribe an action to all detection alert
-                  types. By using this method, you don't have to manually assign the action to all alert types.
+                  types. By using this method, you don&apos;t have to manually assign the action to all alert types.
                 </p>
 
                 <WildcardAlertSubscriptions />

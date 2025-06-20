@@ -9,8 +9,8 @@ class DetectionAlertsService {
     })
   }
 
-  findAllAlerts(setAlerts, limit, offset, subsystem = undefined) {
-    RESTClient.get('/alerts', {limit: limit, offset: offset, subsystem: subsystem}, function (response) {
+  findAllAlerts(setAlerts, organizationId, tenantId, limit, offset, subsystem = undefined) {
+    RESTClient.get('/alerts', {organization_id: organizationId, tenant_id: tenantId, limit: limit, offset: offset, subsystem: subsystem}, function (response) {
       setAlerts(response.data)
     })
   }

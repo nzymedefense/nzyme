@@ -1,70 +1,34 @@
-import React, {useContext, useEffect, useState} from "react";
-import {UserContext} from "../../../App";
+import React, {useEffect, useState} from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import AuthenticationManagementService from "../../../services/AuthenticationManagementService";
-import OrganizationSelector from "../../shared/OrganizationSelector";
 import DetectionAlertsService from "../../../services/DetectionAlertsService";
 import Paginator from "../../misc/Paginator";
 import Subsystem from "../../misc/Subsystem";
 import ApiRoutes from "../../../util/ApiRoutes";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
-const authenticationManagementService = new AuthenticationManagementService();
 const detectionAlertService = new DetectionAlertsService();
 
 function AlertSubscriptionsTable() {
 
-  const user = useContext(UserContext);
-
-  const [organizationUUID, setOrganizationUUID] = useState(null);
-  const [organization, setOrganization] = useState(null);
-  const [organizations, setOrganizations] = useState(null);
+  // eslint-disable-next-line no-unused-vars
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [types, setTypes] = useState(null);
 
   const perPage = 25;
   const [page, setPage] = useState(1);
 
-  const resetOrganization = (e) => {
-    e.preventDefault();
-    setOrganizationUUID(null);
-  }
-
   useEffect(() => {
-    // If user is not orgadmin, they are super admin and have to select org manually.
-    if (user.is_orgadmin) {
-      setOrganizationUUID(user.organization_id);
-      setOrganizations([]);
-    } else {
-      // Superadmin.
-      authenticationManagementService.findAllOrganizations(setOrganizations, 250, 0);
-    }
-  }, []);
+    setTypes(null);
+    detectionAlertService.findAllAlertTypes(setTypes, organizationId, perPage, (page-1)*perPage)
+  }, [organizationId, page]);
 
-  useEffect(() => {
-    if (organizationUUID) {
-      authenticationManagementService.findOrganization(organizationUUID, setOrganization);
-      detectionAlertService.findAllAlertTypes(setTypes, organizationUUID, perPage, (page-1)*perPage)
-    }
-  }, [organizationUUID]);
-
-  if (!organizations) {
-    return <LoadingSpinner />
-  }
-
-  if (!organizationUUID) {
-    return <OrganizationSelector organizations={organizations}
-                                organization={organizationUUID}
-                                setOrganization={setOrganizationUUID} />
-  }
-
-  if (!types || !organization) {
+  if (!types) {
     return <LoadingSpinner />
   }
 
   return (
       <React.Fragment>
-        {user.is_superadmin ? <div className="mb-2"><strong>Organization:</strong> {organization.name} <a href="#" onClick={resetOrganization}>Change</a></div> : null}
-
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
@@ -78,7 +42,7 @@ function AlertSubscriptionsTable() {
             return (
                 <tr key={"at-" + i}>
                   <td>
-                    <a href={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(organization.id, type.name.toLowerCase())}>
+                    <a href={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(organizationId, type.name.toLowerCase())}>
                       {type.title}
                     </a>
                   </td>

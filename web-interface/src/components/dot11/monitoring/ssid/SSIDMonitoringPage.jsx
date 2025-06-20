@@ -1,10 +1,48 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {MONITORING_MENU_ITEMS} from "../Dot11MenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
-import SSIDMonitoringProxy from "./SSIDMonitoringProxy";
+import Dot11Service from "../../../../services/Dot11Service";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import {notify} from "react-notify-toast";
+import SSIDMonitoringConfiguration from "./SSIDMonitoringConfiguration";
+import KnownNetworksTable from "./KnownNetworksTable";
+
+const dot11Service = new Dot11Service();
 
 export default function SSIDMonitoringPage() {
+
+  const [organizationId, tenantId] = useSelectedTenant();
+
+  const [networks, setNetworks] = useState(null);
+
+  const [revision, setRevision] = useState(new Date());
+
+  const perPage = 25;
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setNetworks(null);
+    dot11Service.findAllKnownNetworks(organizationId, tenantId, perPage, (page-1)*perPage, setNetworks)
+  }, [page, organizationId, tenantId, revision])
+
+  const onDeleteAll = (e) => {
+    e.preventDefault();
+
+    if (!confirm("Really delete all known networks? Each will reappear as unapproved network " +
+      "next time nzyme records it.")) {
+      return;
+    }
+
+    dot11Service.deleteAllKnownNetworks(organizationId, tenantId, () => {
+      notify.show('All known networks deleted.', 'success');
+      onChange();
+    });
+  }
+
+  const onChange = () => {
+    setRevision(new Date());
+  }
 
   return (
       <React.Fragment>
@@ -43,7 +81,39 @@ export default function SSIDMonitoringPage() {
           </div>
         </div>
 
-        <SSIDMonitoringProxy />
+        <React.Fragment>
+          <div className="row mt-3">
+            <div className="col-xl-12 col-xxl-6">
+              <div className="card">
+                <div className="card-body">
+                  <h3>Monitor Configuration</h3>
+
+                  <SSIDMonitoringConfiguration organizationUUID={organizationId}
+                                               tenantUUID={tenantId} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="row mt-3">
+            <div className="col-xl-12 col-xxl-6">
+              <div className="card">
+                <div className="card-body">
+                  <h3 style={{display: "inline-block"}}>Known SSIDs/Networks</h3>
+
+                  <button className="btn btn-danger btn-sm float-end" onClick={onDeleteAll}>Delete All</button>
+                  <br style={{clear: "both"}}/>
+
+                  <KnownNetworksTable networks={networks}
+                                      onChange={onChange}
+                                      page={page}
+                                      setPage={setPage}
+                                      perPage={perPage}/>
+                </div>
+              </div>
+            </div>
+          </div>
+        </React.Fragment>
       </React.Fragment>
 )
 

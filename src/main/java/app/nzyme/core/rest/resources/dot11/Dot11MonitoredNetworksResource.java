@@ -32,6 +32,7 @@ import info.debatty.java.stringsimilarity.JaroWinkler;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -55,12 +56,15 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
     @GET
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/ssids")
-    public Response findAll(@Context SecurityContext sc) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+    public Response findAll(@Context SecurityContext sc,
+                            @QueryParam("organization_id") @NotNull UUID organizationId,
+                            @QueryParam("tenant_id") @NotNull UUID tenantId) {
+        if (!passedTenantDataAccessible(sc,  organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         List<MonitoredSSIDSummaryResponse> ssids = Lists.newArrayList();
-        for (MonitoredSSID ssid : nzyme.getDot11().findAllMonitoredSSIDs(
-                authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId())) {
+        for (MonitoredSSID ssid : nzyme.getDot11().findAllMonitoredSSIDs(organizationId, tenantId)) {
 
             boolean isAlerted = false;
             for (DetectionAlertEntry alert : nzyme.getDetectionAlertService()

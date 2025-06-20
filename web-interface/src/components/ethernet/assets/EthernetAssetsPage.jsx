@@ -6,8 +6,6 @@ import SectionMenuBar from "../../shared/SectionMenuBar";
 import ApiRoutes from "../../../util/ApiRoutes";
 import {ASSETS_MENU_ITEMS} from "./AssetsMenuItems";
 import AssetsService from "../../../services/ethernet/AssetsService";
-import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
-import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
 import AssetsTable from "./AssetsTable";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 

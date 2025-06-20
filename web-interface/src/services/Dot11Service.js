@@ -2,8 +2,8 @@ import RESTClient from '../util/RESTClient'
 
 class Dot11Service {
 
-  findAllSSIDNames(setSSIDs) {
-    RESTClient.get("/dot11/networks/ssids/names", {}, function (response) {
+  findAllSSIDNames(setSSIDs, organizationId, tenantId) {
+    RESTClient.get("/dot11/networks/ssids/names", { organization_id: organizationId, tenant_id: tenantId }, function (response) {
       setSSIDs(response.data)
     })
   }
@@ -180,8 +180,8 @@ class Dot11Service {
         })
   }
 
-  findAllMonitoredSSIDs(setMonitoredSSIDs) {
-    RESTClient.get("/dot11/monitoring/ssids", {}, function (response) {
+  findAllMonitoredSSIDs(organizationId, tenantId, setMonitoredSSIDs) {
+    RESTClient.get("/dot11/monitoring/ssids", { organization_id: organizationId, tenant_id: tenantId}, function (response) {
       setMonitoredSSIDs(response.data.ssids);
     })
   }
@@ -193,7 +193,7 @@ class Dot11Service {
     }, errorCallback)
   }
 
-  createMonitoredSSID(ssid, tenantId, organizationId, successCallback, errorCallback) {
+  createMonitoredSSID(ssid, organizationId, tenantId, successCallback, errorCallback) {
     RESTClient.post("/dot11/monitoring/ssids",
         {ssid: ssid, tenant_id: tenantId, organization_id: organizationId}, successCallback, errorCallback);
   }

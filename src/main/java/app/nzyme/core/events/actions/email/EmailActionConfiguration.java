@@ -9,12 +9,14 @@ import java.util.List;
 @AutoValue
 public abstract class EmailActionConfiguration {
 
+    @JsonProperty("subject_prefix")
     public abstract String subjectPrefix();
+    @JsonProperty("receivers")
     public abstract List<String> receivers();
 
     @JsonCreator
     public static EmailActionConfiguration create(@JsonProperty("subject_prefix") String subjectPrefix,
-                                                  @JsonProperty("receivers")List<String> receivers) {
+                                                  @JsonProperty("receivers") List<String> receivers) {
         return builder()
                 .subjectPrefix(subjectPrefix)
                 .receivers(receivers)

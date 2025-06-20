@@ -83,7 +83,6 @@ const ApiRoutes = {
     },
     TAPS: {
       INDEX: '/system/taps',
-      PROXY_ADD: '/system/taps/add',
       DETAILS: uuid => `/system/taps/show/${uuid}`,
       METRICDETAILS: (uuid, metricType, metricName) => `/system/taps/show/${uuid}/metrics/show/${metricType}/${metricName}`
     },

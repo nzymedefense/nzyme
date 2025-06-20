@@ -1,35 +1,24 @@
-import React, {useContext, useEffect, useState} from "react";
-import AuthenticationManagementService from "../../../services/AuthenticationManagementService";
+import React, {useEffect, useState} from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import OrganizationSelector from "../../shared/OrganizationSelector";
-import {UserContext} from "../../../App";
 import EventSubscriptionsTable from "../../system/events/shared/subscriptions/EventSubscriptionsTable";
 import {notify} from "react-notify-toast";
 import EventSubscriptionActionSelector from "../../system/events/shared/subscriptions/EventSubscriptionActionSelector";
 import EventActionsService from "../../../services/EventActionsService";
 import WithExactRole from "../../misc/WithExactRole";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
-const authenticationManagementService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
 
 function WildcardAlertSubscriptions() {
 
-  const user = useContext(UserContext);
-
-  const [organizationUUID, setOrganizationUUID] = useState(null);
-  const [organization, setOrganization] = useState(null);
-  const [organizations, setOrganizations] = useState(null);
+  // eslint-disable-next-line no-unused-vars
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [subscriptions, setSubscriptions] = useState(null);
   const [actions, setActions] = useState(null);
 
   const [revision, setRevision] = useState(0);
   const [subscriptionError, setSubscriptionError] = useState(null);
-
-  const resetOrganization = (e) => {
-    e.preventDefault();
-    setOrganizationUUID(null);
-  }
 
   const onUnsubscribeClick = function(subscriptionId) {
     if (!confirm("Really unsubscribe wildcard action?")) {
@@ -43,7 +32,7 @@ function WildcardAlertSubscriptions() {
   }
 
   const onActionSelect = function(actionId) {
-    eventActionsService.subscribeWildcardAction(actionId, organizationUUID,function() {
+    eventActionsService.subscribeWildcardAction(actionId, organizationId,function() {
       notify.show("Subscribed wildcard action.", "success");
       setRevision(revision+1);
     }, function(error) {
@@ -52,43 +41,19 @@ function WildcardAlertSubscriptions() {
   }
 
   useEffect(() => {
-    // If user is not orgadmin, they are super admin and have to select org manually.
-    if (user.is_orgadmin) {
-      setOrganizationUUID(user.organization_id);
-      setOrganizations([]);
-    } else {
-      // Superadmin.
-      authenticationManagementService.findAllOrganizations(setOrganizations, 250, 0);
-    }
-  }, []);
+    setSubscriptions(null);
+    setActions(null);
+    eventActionsService.findAllDetectionAlertWildcardSubscriptions(organizationId, setSubscriptions);
+    eventActionsService.findAllActionsOfOrganization(organizationId, setActions, 9999999, 0);
+  }, [organizationId, revision]);
 
-  useEffect(() => {
-    if (organizationUUID) {
-      authenticationManagementService.findOrganization(organizationUUID, setOrganization);
-      eventActionsService.findAllDetectionAlertWildcardSubscriptions(organizationUUID, setSubscriptions);
-      eventActionsService.findAllActionsOfOrganization(organizationUUID, setActions, 9999999, 0);
-    }
-  }, [organizationUUID, revision]);
-
-  if (!organizations) {
-    return <LoadingSpinner />
-  }
-
-  if (!organizationUUID) {
-    return <OrganizationSelector organizations={organizations}
-                                 organization={organizationUUID}
-                                 setOrganization={setOrganizationUUID} />
-  }
-
-  if (!subscriptions || !actions || !organization) {
+  if (!subscriptions || !actions) {
     return <LoadingSpinner />
   }
 
   return (
       <React.Fragment>
-        {user.is_superadmin ? <div className="mb-2"><strong>Organization:</strong> {organization.name} <a href="#" onClick={resetOrganization}>Change</a></div> : null}
-
-        <EventSubscriptionsTable organizationId={organizationUUID}
+        <EventSubscriptionsTable organizationId={organizationId}
                                  subscriptions={subscriptions}
                                  onUnsubscribeClick={onUnsubscribeClick} />
 

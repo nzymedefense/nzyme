@@ -58,6 +58,7 @@ import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
 import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
@@ -72,10 +73,8 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 
 @Path("/api/system/authentication")
 @Produces(MediaType.APPLICATION_JSON)
@@ -182,8 +181,19 @@ public class AuthenticationResource extends UserAuthenticatedResource {
     @GET
     @PreMFASecured
     @Path("/session")
-    public Response getSessionInformation(@Context SecurityContext sc) {
+    public Response getSessionInformation(@Context SecurityContext sc,
+                                          @QueryParam("selected_organization") @Nullable UUID organizationId,
+                                          @QueryParam("selected_tenant") @Nullable UUID tenantId) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        /*
+         * The selected tenant is optional because there is a phase where the user is logged in, but the tenant
+         * selection has not been made yet. In that case, we let the request pass, but not use the selected tenant
+         * in this logic.
+         */
+        if (organizationId != null && tenantId != null && !passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         Optional<SessionEntry> session = nzyme.getAuthenticationService().findSessionWithOrWithoutPassedMFABySessionId(
                 authenticatedUser.getSessionId()
@@ -225,15 +235,17 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
         // Fetch current alert info if user has permission to see alert.
         boolean hasActiveAlerts = false;
-        List<String> userPermissions = nzyme.getAuthenticationService().findPermissionsOfUser(user.get().uuid());
-        if (user.get().isSuperAdmin() || user.get().isOrganizationAdmin() || userPermissions.contains("alerts_view")) {
-            hasActiveAlerts = nzyme.getDetectionAlertService().countActiveAlerts(
-                    authenticatedUser.getOrganizationId(),
-                    authenticatedUser.getTenantId(),
-                    null
-            ) > 0;
+        if (tenantId != null && organizationId != null) {
+            List<String> userPermissions = nzyme.getAuthenticationService().findPermissionsOfUser(user.get().uuid());
+            if (user.get().isSuperAdmin() || user.get().isOrganizationAdmin() || userPermissions.contains("alerts_view")) {
+                hasActiveAlerts = nzyme.getDetectionAlertService().countActiveAlerts(
+                        organizationId,
+                        tenantId,
+                        null
+                ) > 0;
+            }
         }
-
+        
         List<String> subsystems = Lists.newArrayList();
         if (nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, user.get().organizationId(), user.get().tenantId())) {
             subsystems.add("ethernet");

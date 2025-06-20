@@ -23,16 +23,17 @@ import UavVerticalSpeed from "./util/UavVerticalSpeed";
 import DDTimestamp from "../misc/DDTimestamp";
 import UavInactiveWarning from "./util/UavInactiveWarning";
 import UavClassification from "./util/UavClassification";
-import OrganizationAndTenantSelector from "../shared/OrganizationAndTenantSelector";
-import SelectedOrganizationAndTenant from "../shared/SelectedOrganizationAndTenant";
 import UavOperatorDistanceToUav from "./util/UavOperatorDistanceToUav";
 import UavTimelineTable from "./UavTimelineTable";
 import {userHasPermission} from "../../util/Tools";
 import UavModelType from "./util/UavModelType";
+import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 
 const uavService = new UavService();
 
 export default function UavDetailsPage() {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -46,10 +47,6 @@ export default function UavDetailsPage() {
   const [plottedTrackLoading, setPlottedTrackLoading] = useState(null);
 
   const [revision, setRevision] = useState(new Date());
-
-  const [organizationId, setOrganizationId] = useState(null);
-  const [tenantId, setTenantId] = useState(null);
-  const [tenantSelected, setTenantSelected] = useState(false);
 
   const [timeline, setTimeline] = useState(null);
   const [timelineTimeRange, setTimelineTimeRange] = useState(Presets.ALL_TIME);
@@ -69,7 +66,7 @@ export default function UavDetailsPage() {
     if (organizationId && tenantId) {
       uavService.findOne(setUav, organizationId, tenantId, identifierParam, selectedTaps);
     }
-  }, [selectedTaps, revision, organizationId, tenantId]);
+  }, [selectedTaps, revision, organizationId, tenantId, identifierParam]);
 
   useEffect(() => {
     setTimeline(null);
@@ -84,19 +81,7 @@ export default function UavDetailsPage() {
         (timelinePage - 1) * perPageTimeline
       );
     }
-  }, [revision, organizationId, tenantId, timelinePage, timelineTimeRange]);
-
-  const onOrganizationChange = (uuid) => {
-    setOrganizationId(uuid);
-  }
-
-  const onTenantChange = (uuid) => {
-    setTenantId(uuid);
-
-    if (uuid) {
-      setTenantSelected(true);
-    }
-  }
+  }, [revision, organizationId, tenantId, timelinePage, timelineTimeRange, identifierParam]);
 
   const onPlotTrack = (e, timelineId) => {
     e.preventDefault();
@@ -124,17 +109,6 @@ export default function UavDetailsPage() {
     }
   }
 
-  const resetTenantAndOrganization = () => {
-    setOrganizationId(null);
-    setTenantId(null);
-  }
-
-  if (!organizationId || !tenantId) {
-    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
-                                          onTenantChange={onTenantChange}
-                                          autoSelectCompleted={tenantSelected} />
-  }
-
   if (!uav) {
     return <LoadingSpinner />
   }
@@ -159,11 +133,6 @@ export default function UavDetailsPage() {
           </h1>
         </div>
       </div>
-
-      <SelectedOrganizationAndTenant
-          organizationId={organizationId}
-          tenantId={tenantId}
-          onReset={resetTenantAndOrganization} />
 
       <UavInactiveWarning show={!uav.summary.is_active} />
 

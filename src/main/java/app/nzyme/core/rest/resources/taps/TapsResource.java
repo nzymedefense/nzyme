@@ -17,6 +17,7 @@ import app.nzyme.core.taps.Bus;
 import app.nzyme.core.taps.Capture;
 import app.nzyme.core.taps.Channel;
 import app.nzyme.core.taps.Tap;
+import jakarta.validation.constraints.NotNull;
 import org.joda.time.DateTime;
 
 import jakarta.inject.Inject;
@@ -58,20 +59,20 @@ public class TapsResource extends UserAuthenticatedResource {
 
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
-    public Response findAll(@Context SecurityContext sc) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+    public Response findAll(@Context SecurityContext sc,
+                            @QueryParam("organization_id") @NotNull UUID organizationId,
+                            @QueryParam("tenant_id") @NotNull UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         // Get all UUIDs of taps the user can access.
-        List<UUID> uuids = nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser);
+        List<UUID> uuids = nzyme.getTapManager().allTapUUIDsAccessibleByScope(organizationId, tenantId);
 
         List<TapDetailsResponse> tapsResponse = Lists.newArrayList();
         for (Tap tap : nzyme.getTapManager().findAllTapsByUUIDs(uuids)) {
             Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
-                    .findTenantLocation(
-                            tap.locationId(),
-                            authenticatedUser.getOrganizationId(),
-                            authenticatedUser.getTenantId()
-                    );
+                    .findTenantLocation(tap.locationId(), organizationId, tenantId);
 
             Optional<TenantLocationFloorEntry> floor;
             if (location.isPresent()) {

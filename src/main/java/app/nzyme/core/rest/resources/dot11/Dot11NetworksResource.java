@@ -30,6 +30,7 @@ import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -636,9 +637,14 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
     @GET
     @Path("/ssids/names")
-    public Response allSSIDNamesFromAllAccessibleTaps(@Context SecurityContext sc) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
-        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, "*");
+    public Response allSSIDNames(@Context SecurityContext sc,
+                                 @QueryParam("organization_id") @NotNull UUID organizationId,
+                                 @QueryParam("tenant_id") @NotNull UUID tenantId) {
+        if (!passedTenantDataAccessible(sc,  organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<UUID> tapUuids = nzyme.getTapManager().allTapUUIDsAccessibleByScope(organizationId, tenantId);
 
         return Response.ok(nzyme.getDot11().findAllSSIDNames(tapUuids)).build();
     }

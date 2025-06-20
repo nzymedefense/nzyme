@@ -2,21 +2,19 @@ import React, { useEffect, useState } from 'react'
 import TapsService from '../../../services/TapsService'
 import TapsTable from './TapsTable'
 import ApiRoutes from "../../../util/ApiRoutes";
+import useSelectedTenant from "../tenantselector/useSelectedTenant";
 
 const tapsService = new TapsService()
 
-function fetchData(setTaps) {
-  tapsService.findAllTaps(setTaps)
-}
-
 function TapsPage () {
+
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const [taps, setTaps] = useState(null)
 
   useEffect(() => {
-    fetchData(setTaps)
-    const id = setInterval(() => fetchData(setTaps), 5000)
-    return () => clearInterval(id)
-  }, [setTaps])
+    tapsService.findAllTaps(organizationId, tenantId, setTaps)
+  }, [organizationId, tenantId])
 
   return (
     <React.Fragment>
@@ -25,7 +23,10 @@ function TapsPage () {
           <h1>Taps</h1>
         </div>
         <div className="col-md-2">
-          <a href={ApiRoutes.SYSTEM.TAPS.PROXY_ADD} className="btn btn-primary float-end">Add Tap</a>
+          <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(organizationId, tenantId)}
+             className="btn btn-primary float-end">
+            Add Tap
+          </a>
         </div>
       </div>
 

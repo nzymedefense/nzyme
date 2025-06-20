@@ -1,11 +1,26 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import {truncate} from "../../../../util/Tools";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import Paginator from "../../../misc/Paginator";
+import Dot11Service from "../../../../services/Dot11Service";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
-function CustomBanditsTable(props) {
+const dot11Service = new Dot11Service();
 
-  const bandits = props.bandits;
+function CustomBanditsTable() {
+
+  const [organizationId, tenantId] = useSelectedTenant();
+
+  const [bandits, setBandits] = useState(null);
+
+  const perPage = 25;
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setBandits(null);
+    dot11Service.findCustomBandits(organizationId, tenantId, perPage, (page-1)*perPage, setBandits)
+  }, [page, organizationId, tenantId]);
 
   if (!bandits) {
     return <LoadingSpinner />
@@ -35,6 +50,8 @@ function CustomBanditsTable(props) {
           })}
           </tbody>
         </table>
+
+        <Paginator itemCount={bandits.total} perPage={perPage} setPage={setPage} page={page} />
       </React.Fragment>
   )
 

@@ -5,7 +5,6 @@ import UavService from "../../../services/UavService";
 import Routes from "../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
 import UavTypeForm from "./UavTypeForm";
-import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
 
 const uavService = new UavService();
 
@@ -53,11 +52,6 @@ export default function CreateCustomTypePage() {
             <h1>Create Custom Unmanned Aerial Vehicle (UAV) Type</h1>
           </div>
         </div>
-
-        <SelectedOrganizationAndTenant
-            organizationId={organizationId}
-            tenantId={tenantId}
-            noEdit={true} />
 
         <div className="row mt-3">
           <div className="col-xl-12 col-xxl-6">

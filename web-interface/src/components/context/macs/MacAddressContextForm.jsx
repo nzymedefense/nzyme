@@ -1,19 +1,16 @@
 import React, {useState} from "react";
 import {isValidMACAddress} from "../../../util/Tools";
-import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
-import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
 import FormSubmitErrorMessage from "../../misc/FormSubmitErrorMessage";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 function MacAddressContextForm(props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const submitText = props.submitText;
   const onSubmit = props.onSubmit;
   const errorMessage = props.errorMessage;
   const macAddressDisabled = props.macAddressDisabled;
-  const organizationAndTenantPassed = props.organizationId || props.tenantId;
-
-  const [organizationId, setOrganizationId] = useState(props.organizationId ? props.organizationId : null);
-  const [tenantId, setTenantId] = useState(props.tenantId ? props.tenantId : null);
 
   const formatName = (name) => {
     return name.toUpperCase().replace(/[^a-z0-9_]/gi, '');
@@ -28,25 +25,6 @@ function MacAddressContextForm(props) {
 
   const [formSubmitting, setFormSubmitting] = useState(false);
 
-  const [tenantSelected, setTenantSelected] = useState(false);
-
-  const onOrganizationChange = (uuid) => {
-    setOrganizationId(uuid);
-  }
-
-  const onTenantChange = (uuid) => {
-    setTenantId(uuid);
-
-    if (uuid) {
-      setTenantSelected(true);
-    }
-  }
-
-  const resetTenantAndOrganization = () => {
-    setOrganizationId(null);
-    setTenantId(null);
-  }
-
   const formIsReady = () => {
     return isValidMACAddress(macAddress)
   }
@@ -59,28 +37,8 @@ function MacAddressContextForm(props) {
     });
   }
 
-  const selectedOrganizationAndTenant = () => {
-    if (organizationAndTenantPassed) {
-      // Don't show org and tenant selector if passed in from the outside, like in edit form.
-      return null;
-    }
-
-    return <SelectedOrganizationAndTenant
-        organizationId={organizationId}
-        tenantId={tenantId}
-        onReset={resetTenantAndOrganization} />
-  }
-
-  if (!organizationId || !tenantId) {
-    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
-                                          onTenantChange={onTenantChange}
-                                          autoSelectCompleted={tenantSelected} />
-  }
-
   return (
     <React.Fragment>
-      {selectedOrganizationAndTenant()}
-
       <div className="mb-3">
         <label htmlFor="macAddress" className="form-label">MAC Address <small>Required</small></label>
         <input type="text" className="form-control" id="macAddress"

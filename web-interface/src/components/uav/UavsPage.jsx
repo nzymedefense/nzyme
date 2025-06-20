@@ -5,12 +5,13 @@ import {TapContext} from "../../App";
 import {disableTapSelector, enableTapSelector} from "../misc/TapSelector";
 import CardTitleWithControls from "../shared/CardTitleWithControls";
 import UavsTable from "./UavsTable";
-import OrganizationAndTenantSelector from "../shared/OrganizationAndTenantSelector";
-import SelectedOrganizationAndTenant from "../shared/SelectedOrganizationAndTenant";
+import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 
 const uavService = new UavService();
 
 export default function UavsPage() {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -20,15 +21,9 @@ export default function UavsPage() {
   const [page, setPage] = useState(1);
   const perPage = 25;
 
-  const [organizationId, setOrganizationId] = useState(null);
-  const [tenantId, setTenantId] = useState(null);
-  const [tenantSelected, setTenantSelected] = useState(false);
-
   useEffect(() => {
     setUavs(null);
-    if (organizationId && tenantId) {
-      uavService.findAll(setUavs, organizationId, tenantId, timeRange, selectedTaps, perPage, (page-1)*perPage);
-    }
+    uavService.findAll(setUavs, organizationId, tenantId, timeRange, selectedTaps, perPage, (page-1)*perPage);
   }, [selectedTaps, timeRange, page, organizationId, tenantId]);
 
   useEffect(() => {
@@ -38,29 +33,6 @@ export default function UavsPage() {
       disableTapSelector(tapContext);
     }
   }, [tapContext]);
-
-  const onOrganizationChange = (uuid) => {
-    setOrganizationId(uuid);
-  }
-
-  const onTenantChange = (uuid) => {
-    setTenantId(uuid);
-
-    if (uuid) {
-      setTenantSelected(true);
-    }
-  }
-
-  const resetTenantAndOrganization = () => {
-    setOrganizationId(null);
-    setTenantId(null);
-  }
-
-  if (!organizationId || !tenantId) {
-    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
-                                          onTenantChange={onTenantChange}
-                                          autoSelectCompleted={tenantSelected} />
-  }
 
   return (
       <React.Fragment>
@@ -87,11 +59,6 @@ export default function UavsPage() {
                   The table shows the most recent recorded values. More details and a history of values is available on
                   the UAV details pages.
                 </p>
-
-                <SelectedOrganizationAndTenant
-                    organizationId={organizationId}
-                    tenantId={tenantId}
-                    onReset={resetTenantAndOrganization} />
 
                 <UavsTable uavs={uavs} page={page} perPage={perPage} setPage={setPage} />
               </div>
