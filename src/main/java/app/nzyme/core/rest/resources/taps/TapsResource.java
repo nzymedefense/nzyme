@@ -41,11 +41,15 @@ public class TapsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(PermissionLevel.ANY)
     @Path("/highlevel")
-    public Response findAllWithHighLevelInformation(@Context SecurityContext sc) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+    public Response findAllWithHighLevelInformation(@Context SecurityContext sc,
+                                                    @QueryParam("organization_id") @NotNull UUID organizationId,
+                                                    @QueryParam("tenant_id") @NotNull UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         // Get all UUIDs of taps the user can access.
-        List<UUID> uuids = nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser);
+        List<UUID> uuids = nzyme.getTapManager().allTapUUIDsAccessibleByScope(organizationId, tenantId);
 
         List<TapHighLevelInformationDetailsResponse> tapsResponse = Lists.newArrayList();
         for (Tap tap : nzyme.getTapManager().findAllTapsByUUIDs(uuids)) {

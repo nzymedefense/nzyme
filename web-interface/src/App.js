@@ -216,6 +216,10 @@ function App() {
   const saveTenantSelection = () => {
     Store.set("selected_organization", selectedOrganization);
     Store.set("selected_tenant", selectedTenant);
+
+    // Reset taps as well.
+    Store.delete("selected_taps");
+
     setRevision(new Date());
   }
 
@@ -320,6 +324,11 @@ function App() {
 
   if (!authenticated) {
     // API connected but not authenticated. Show login page.
+
+    // Clean up local storage.
+    Store.delete("selected_organization");
+    Store.delete("selected_tenant");
+
     return (
         <div className="nzyme">
           <DarkMode enabled={false} />
@@ -354,41 +363,47 @@ function App() {
         )
       }
     } else {
-
+      // Show tenant selector for super- and org admins if no tenant selected.
       if (!Store.get("selected_organization") || !Store.get("selected_tenant")) {
-        return (
-          <div className="nzyme">
-            <UserContext.Provider value={userInformation}>
-              <div className="container">
-                <div className="row mt-5">
-                  <div className="col-12">
-                    <div className="card">
-                      <div className="card-body">
-                        <h1>Select Tenant</h1>
+        if (userInformation.is_superadmin || userInformation.is_orgadmin) {
+          return (
+              <div className="nzyme">
+                <UserContext.Provider value={userInformation}>
+                  <div className="container">
+                    <div className="row mt-5">
+                      <div className="col-12">
+                        <div className="card">
+                          <div className="card-body">
+                            <h1>Select Tenant</h1>
 
-                        <p>
-                          Select the tenant you want to use the web interface as. This does not affect your user&apos;s
-                          privileges but is required to access tenant-specific dialogs and pages.
-                        </p>
+                            <p>
+                              Select the tenant you want to use the web interface as. This does not affect your user&apos;s
+                              privileges but is required to access tenant-specific dialogs and pages.
+                            </p>
 
-                        <p>
-                          <strong>You can change the tenant at any time using the top navigation bar later.</strong>
-                        </p>
+                            <p>
+                              <strong>You can change the tenant at any time using the top navigation bar later.</strong>
+                            </p>
 
-                        <GlobalTenantSelectorForm onSelectionMade={onTenantSelectionMade} />
+                            <GlobalTenantSelectorForm onSelectionMade={onTenantSelectionMade} />
 
-                        {selectedOrganization && selectedTenant ?
-                          <button type="button" className="btn btn-primary" data-bs-dismiss="modal" onClick={saveTenantSelection}>Select Tenant</button>
-                          : <button type="button" className="btn btn-primary" disabled={true}>Select Tenant</button> }
+                            {selectedOrganization && selectedTenant ?
+                                <button type="button" className="btn btn-primary" data-bs-dismiss="modal" onClick={saveTenantSelection}>Select Tenant</button>
+                                : <button type="button" className="btn btn-primary" disabled={true}>Select Tenant</button> }
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
+                  </div>
+                </UserContext.Provider>
               </div>
-            </UserContext.Provider>
-          </div>
-        )
+          )
+        } else {
+          setSelectedOrganization(userInformation.organization_id);
+          setSelectedTenant(userInformation.tenant_id);
+          saveTenantSelection();
+        }
       }
 
       // Connected, authenticated and MFA'd. Tenant and Org selected. Show full interface.

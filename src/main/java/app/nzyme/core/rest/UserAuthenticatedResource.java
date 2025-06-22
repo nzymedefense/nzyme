@@ -32,12 +32,6 @@ public class UserAuthenticatedResource extends RestResource {
             return true;
         }
 
-        // Org admin?
-        if (user.isOrganizationAdministrator() && user.getOrganizationId().equals(organizationId)) {
-            return true;
-        }
-
-        // Tenant user.
         Optional<OrganizationEntry> dbOrg = nzyme.getAuthenticationService().findOrganization(organizationId);
         if (dbOrg.isEmpty()) {
             return false;
@@ -48,13 +42,18 @@ public class UserAuthenticatedResource extends RestResource {
             return false;
         }
 
-        // Check if tenant is part of org.
+        // Is tenant part of organization?
         if (!dbTenant.get().organizationUuid().equals(organizationId)) {
             return false;
         }
 
-        return user.getOrganizationId().equals(organizationId)
-                && user.getTenantId().equals(tenantId);
+        // Organization admin of the requested organization?
+        if (user.isOrganizationAdministrator() && user.getOrganizationId().equals(organizationId)) {
+            return true;
+        }
+
+        // User of tenant and organization that was requested?
+        return user.getOrganizationId().equals(organizationId) && user.getTenantId().equals(tenantId);
     }
 
     protected boolean passedMonitoredNetworkAccessible(AuthenticatedUser user, MonitoredSSID ssid) {

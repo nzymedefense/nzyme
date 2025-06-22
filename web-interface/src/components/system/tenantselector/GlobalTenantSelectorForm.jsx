@@ -55,6 +55,7 @@ export default function GlobalTenantSelectorForm(props) {
     }
 
     // Tenant user.
+    onSelectionMade(user.organization_id, user.tenant_id);
     setUserOrganization(user.organization_id);
     setUserTenant(user.tenant_id);
 
@@ -78,7 +79,14 @@ export default function GlobalTenantSelectorForm(props) {
 
   useEffect(() => {
     if (tenant) {
-      onSelectionMade(organization, tenant);
+      if (!organization) {
+        // Selection made as org admin. Use user org.
+        onSelectionMade(userOrganization, tenant);
+      } else {
+        // Superadmin made selection.
+        onSelectionMade(organization, tenant);
+      }
+
     } else {
       if (loaded) {
         onSelectionMade(null, null);

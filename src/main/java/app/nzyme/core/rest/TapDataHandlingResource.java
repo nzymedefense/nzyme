@@ -8,7 +8,6 @@ import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,7 +21,7 @@ public class TapDataHandlingResource extends UserAuthenticatedResource {
         List<UUID> userAccessibleTaps = nzyme.getTapManager().allTapUUIDsAccessibleByUser(requestingUser);
 
         if (Strings.isNullOrEmpty(queryParamDataCsv)) {
-            throw new InvalidParameterException("Malformed tap list in query.");
+            return Lists.newArrayList();
         }
 
         if (queryParamDataCsv.equals("*")) {

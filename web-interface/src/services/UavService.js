@@ -3,7 +3,7 @@ import RESTClient from "../util/RESTClient";
 export default class UavService {
 
   findAll(setUavs, organizationId, tenantId, timeRange, taps, limit, offset) {
-    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}`,
         { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
@@ -12,7 +12,7 @@ export default class UavService {
   }
 
   findOne(setUav, organizationId, tenantId, identifier, taps) {
-    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/show/${identifier}`, { taps: tapsList },
       (response) => setUav(response.data)

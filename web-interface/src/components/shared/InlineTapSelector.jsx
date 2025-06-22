@@ -1,21 +1,23 @@
 import React, {useEffect, useState} from "react";
 import TapsService from "../../services/TapsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
+import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 
 const tapsService = new TapsService();
 
 function InlineTapSelector(props) {
 
+  const [organizationId, tenantId] = useSelectedTenant();
   const onTapSelected = props.onTapSelected;
 
   const [selectedTapUuid, setSelectedTapUuid] = useState("");
   const [taps, setTaps] = useState(null);
 
   useEffect(() => {
-    tapsService.findAllTapsHighLevel((response) => {
+    tapsService.findAllTapsHighLevel(organizationId, tenantId, (response) => {
       setTaps(response.data.taps);
     })
-  }, []);
+  }, [organizationId, tenantId]);
 
   useEffect(() => {
     if (taps && taps.length > 0) {
@@ -27,7 +29,7 @@ function InlineTapSelector(props) {
   if (taps && taps.length === 0) {
     return (
         <div className="alert alert-warning mt-3 mb-0">
-          You have no nzyme taps. You need nzyme taps to perform the selected action.
+          You have no Nzyme taps. You need Nzyme taps to perform the selected action.
         </div>
     )
   }

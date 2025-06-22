@@ -3,7 +3,7 @@ import RESTClient from '../util/RESTClient'
 class BluetoothService {
 
   findAllDevices(setDevices, timeRange, taps, limit, offset) {
-    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get("/bluetooth/devices", { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
         (response) => setDevices(response.data)
@@ -11,7 +11,7 @@ class BluetoothService {
   }
 
   findOneDevice(setDevice, mac, taps) {
-    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get(`/bluetooth/devices/show/${mac}`, { taps: tapsList },
         (response) => setDevice(response.data)
@@ -19,7 +19,7 @@ class BluetoothService {
   }
 
   getRssiHistogramOfDevice(setData, mac, timeRange, taps) {
-    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get(`/bluetooth/devices/show/${mac}/rssi/histogram`, { time_range: timeRange, taps: tapsList },
         (response) => setData(response.data)
@@ -27,7 +27,7 @@ class BluetoothService {
   }
 
   getRssiOfDeviceByTap(setData, mac, timeRange, taps) {
-    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get(`/bluetooth/devices/show/${mac}/rssi/bytap`, { time_range: timeRange, taps: tapsList },
         (response) => setData(response.data)

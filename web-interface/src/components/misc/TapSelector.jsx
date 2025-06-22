@@ -3,6 +3,7 @@ import Store from "../../util/Store";
 import TapsService from "../../services/TapsService";
 import {TapContext} from "../../App";
 import {arraysAreEqual, compareArray} from "../../util/Tools";
+import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 
 export const enableTapSelector = (ctx) => {
   if(ctx) {
@@ -20,6 +21,7 @@ const tapsService = new TapsService();
 
 function TapSelector() {
 
+  const [organizationId, tenantId] = useSelectedTenant();
   const tapContext = useContext(TapContext);
 
   const selectedTaps = tapContext.taps;
@@ -48,10 +50,10 @@ function TapSelector() {
   }
 
   useEffect(() => {
-    tapsService.findAllTapsHighLevel(function (response) {
+    tapsService.findAllTapsHighLevel(organizationId, tenantId, function (response) {
       setAvailableTaps(response.data.taps);
     });
-  }, [])
+  }, [organizationId, tenantId])
 
   useEffect(() => {
     const lsTaps = Store.get("selected_taps");
@@ -62,8 +64,8 @@ function TapSelector() {
     }
 
     if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
-      setSelectedTapsProtected("*");
-      setPreSelectedTaps("*");
+      setSelectedTapsProtected([]);
+      setPreSelectedTaps([]);
 
       if (availableTaps && availableTaps.length > 0) {
         setButtonText("All Taps Selected");
@@ -112,9 +114,9 @@ function TapSelector() {
             });
 
             if (invalidTapFound) {
-              Store.set("selected_taps", "*");
-              setSelectedTapsProtected("*");
-              setPreSelectedTaps("*");
+              Store.set("selected_taps", []);
+              setSelectedTapsProtected([]);
+              setPreSelectedTaps([]);
             }
 
             // Is any of the selected taps currently offline?
@@ -127,10 +129,14 @@ function TapSelector() {
             });
           }
 
-          if (selectedTaps && selectedTaps.length > 1) {
-            setButtonText(selectedTaps.length + " Taps Selected");
+          if (selectedTaps !== null && selectedTaps.length > 0) {
+            if (selectedTaps.length > 1) {
+              setButtonText(selectedTaps.length + " Taps Selected");
+            } else {
+              setButtonText("1 Tap Selected");
+            }
           } else {
-            setButtonText("1 Tap Selected");
+            setButtonText(<span className="text-warning"><i className="fa-solid fa-triangle-exclamation text-warning"></i> No Taps Selected</span>);
           }
         }
       }
@@ -155,19 +161,23 @@ function TapSelector() {
 
   const handleTapSelection = function(e, uuid) {
     e.preventDefault();
-
+    console.log("REMOVE XXX")
     const taps = preSelectedTaps === "*" ? [] : [...preSelectedTaps];
     if (taps.includes(uuid)) {
       // Remove a tap.
       if (taps.length > 1) {
+        console.log("REMOVE 1")
         const idx = taps.indexOf(uuid);
         taps.splice(idx, 1);
+        console.log("setPreSelectedTaps", taps);
         setPreSelectedTaps(taps);
       } else {
+        console.log("REMOVE 2")
         // Removed last tap.
         setPreSelectedTaps("*");
       }
     } else {
+      console.log("REMOVE 3")
       // Add a new tap.
       taps.push(uuid);
       setPreSelectedTaps(taps);
@@ -231,7 +241,7 @@ function TapSelector() {
           {availableTaps.map(function(tap, i) {
             return (
                 <li key={"tapselector-tap-" + i}>
-                  <a className={"dropdown-item " + (preSelectedTaps.includes(tap.uuid) ? "active" : null)}
+                  <a className={"dropdown-item " + (preSelectedTaps.includes(tap.uuid) ? "active" : "")}
                      href="#"
                      onClick={(e) => handleTapSelection(e, tap.uuid)}>
                     {tap.name}

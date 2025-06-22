@@ -4,10 +4,13 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import BluetoothMacAddressConditionForm from "./conditions/forms/BluetoothMacAddressConditionForm";
 import BluetoothDeviceTypeConditionForm from "./conditions/forms/BluetoothDeviceTypeConditionForm";
 import BluetoothSignalStrengthConditionForm from "./conditions/forms/BluetoothSignalStrengthConditionForm";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const tapsService = new TapsService();
 
 export default function BluetoothMonitoringRuleForm(props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const onSubmit = props.onSubmit;
   const submitTextProp = props.submitText;
@@ -29,8 +32,8 @@ export default function BluetoothMonitoringRuleForm(props) {
   const [submitText, setSubmitText] = useState(submitTextProp);
 
   useEffect(() => {
-    tapsService.findAllTapsHighLevel((r) => setAvailableTaps(r.data.taps))
-  }, []);
+    tapsService.findAllTapsHighLevel(organizationId, tenantId, (r) => setAvailableTaps(r.data.taps))
+  }, [organizationId, tenantId]);
 
   useEffect(() => {
     if (tapLimiterType === "ALL") {
@@ -79,6 +82,14 @@ export default function BluetoothMonitoringRuleForm(props) {
 
   const tapLimiterForm = () => {
     if (tapLimiterType === "SELECTED") {
+      if (availableTaps.length === 0) {
+        return (
+            <div className="alert alert-warning mb-3">
+              You have no Nzyme taps. You need Nzyme taps to perform the selected action.
+            </div>
+        )
+      }
+
       return (
         <div className="mb-3">
           <label className="form-label">Selected Taps</label>

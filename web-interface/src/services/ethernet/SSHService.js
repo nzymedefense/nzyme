@@ -3,7 +3,7 @@ import RESTClient from '../../util/RESTClient'
 export default class SSHService {
 
   findAllTunnels(timeRange, taps, limit, offset, setSessions) {
-    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get("/ethernet/ssh/sessions", { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
         (response) => setSessions(response.data)

@@ -20,6 +20,9 @@ export default function GlobalTenantSelectorDialog() {
     Store.set("selected_organization", selectedOrganization);
     Store.set("selected_tenant", selectedTenant);
 
+    // Reset taps as well.
+    Store.delete("selected_taps");
+
     app.setRevision(new Date());
   }
 
