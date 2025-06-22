@@ -122,7 +122,7 @@ div.tap-selector ul li a:hover {
 
 div.tap-selector ul li a:focus {
     color: #F9F9F9;
-    background-color: #373737;
+    background-color: #262626;
 }
 
 div.tap-selector ul li a.active:focus {
