@@ -3,10 +3,7 @@ import {truncate} from "../../../util/Tools";
 
 export default function AssetHostnames(props) {
 
-  // Deduplicate.
-  const hostnames = Array.from(
-      new Map(props.hostnames.map(item => [item.hostname, item])).values()
-  )
+  const hostnames = props.hostnames;
 
   const additional = () => {
     if (hostnames.length < 2) {
@@ -21,8 +18,8 @@ export default function AssetHostnames(props) {
   }
 
   return (
-      <span title={hostnames.map(item => item.hostname).join(", ")}>
-        <span className="hostname">{truncate(hostnames[0].hostname, 35, false)}</span>{' '}{additional()}
+      <span title={hostnames.join(", ")}>
+        <span className="hostname">{truncate(hostnames[0], 35, false)}</span>{' '}{additional()}
       </span>
   )
 
