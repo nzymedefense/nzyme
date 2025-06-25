@@ -13,6 +13,8 @@ const assetsService = new AssetsService();
 
 export default function EthernetAssetsPage() {
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   const [assets, setAssets] = useState(null);
@@ -22,14 +24,14 @@ export default function EthernetAssetsPage() {
   const [orderColumn, setOrderColumn] = useState("last_seen");
   const [orderDirection, setOrderDirection] = useState("DESC");
 
-  const [organizationId, tenantId] = useSelectedTenant();
+  const [revision, setRevision] = useState(new Date());
 
   useEffect(() => {
     setAssets(null);
     if (organizationId && tenantId) {
       assetsService.findAllAssets(organizationId, tenantId, timeRange, orderColumn, orderDirection, perPage, (page-1)*perPage, setAssets);
     }
-  }, [organizationId, tenantId, timeRange, orderColumn, orderDirection, page]);
+  }, [organizationId, tenantId, timeRange, orderColumn, orderDirection, page, revision]);
 
   return (
       <React.Fragment>
@@ -59,7 +61,8 @@ export default function EthernetAssetsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Assets" />
+                <CardTitleWithControls title="Assets"
+                                       refreshAction={() => setRevision(new Date())} />
 
                 <AssetsTable assets={assets}
                              page={page}

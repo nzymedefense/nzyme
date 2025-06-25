@@ -3,16 +3,14 @@ package app.nzyme.core.rest.resources.ethernet;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.assets.AssetManager;
 import app.nzyme.core.assets.db.AssetEntry;
+import app.nzyme.core.assets.db.AssetHostnameEntry;
+import app.nzyme.core.assets.db.AssetIpAddressEntry;
 import app.nzyme.core.context.db.MacAddressContextEntry;
-import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
-import app.nzyme.core.rest.responses.ethernet.assets.AssetDetailsResponse;
-import app.nzyme.core.rest.responses.ethernet.assets.AssetHostnameResponse;
-import app.nzyme.core.rest.responses.ethernet.assets.AssetIpAddressResponse;
-import app.nzyme.core.rest.responses.ethernet.assets.AssetsListResponse;
+import app.nzyme.core.rest.responses.ethernet.assets.*;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -94,34 +92,111 @@ public class AssetsResource extends TapDataHandlingResource {
         return Response.ok(buildAssetDetailsResponse(asset.get(), organizationId, tenantId)).build();
     }
 
+    @GET
+    @Path("/show/{asset_id}/hostnames")
+    public Response hostnames(@Context SecurityContext sc,
+                              @PathParam("asset_id") UUID assetId,
+                              @QueryParam("organization_id") UUID organizationId,
+                              @QueryParam("tenant_id") UUID tenantId,
+                              @QueryParam("time_range") @Valid String timeRangeParameter,
+                              @QueryParam("order_column") @Nullable String orderColumnParam,
+                              @QueryParam("order_direction") @Nullable String orderDirectionParam,
+                              @QueryParam("limit") int limit,
+                              @QueryParam("offset") int offset) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        AssetManager.HostnameOrderColumn orderColumn = AssetManager.HostnameOrderColumn.LAST_SEEN;
+        OrderDirection orderDirection = OrderDirection.DESC;
+        if (orderColumnParam != null && orderDirectionParam != null) {
+            try {
+                orderColumn = AssetManager.HostnameOrderColumn.valueOf(orderColumnParam.toUpperCase());
+                orderDirection = OrderDirection.valueOf(orderDirectionParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
+
+        Optional<AssetEntry> asset = nzyme.getAssetsManager().findAsset(assetId, organizationId, tenantId);
+
+        if (asset.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total =  nzyme.getAssetsManager().countHostnamesOfAsset(asset.get().id(), timeRange);
+
+        List<AssetHostnameDetailsResponse> hostnames = Lists.newArrayList();
+        for (AssetHostnameEntry h : nzyme.getAssetsManager()
+                .findHostnamesOfAsset(asset.get().id(), timeRange, limit, offset, orderColumn, orderDirection)) {
+            hostnames.add(AssetHostnameDetailsResponse.create(
+                    h.hostname(),
+                    h.source(),
+                    h.firstSeen(),
+                    h.lastSeen()
+            ));
+        }
+
+        return Response.ok(AssetHostnamesListResponse.create(total, hostnames)).build();
+    }
+
+
+    @GET
+    @Path("/show/{asset_id}/ip_addresses")
+    public Response ipAddresses(@Context SecurityContext sc,
+                                @PathParam("asset_id") UUID assetId,
+                                @QueryParam("organization_id") UUID organizationId,
+                                @QueryParam("tenant_id") UUID tenantId,
+                                @QueryParam("time_range") @Valid String timeRangeParameter,
+                                @QueryParam("order_column") @Nullable String orderColumnParam,
+                                @QueryParam("order_direction") @Nullable String orderDirectionParam,
+                                @QueryParam("limit") int limit,
+                                @QueryParam("offset") int offset) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        AssetManager.IpAddressOrderColumn orderColumn = AssetManager.IpAddressOrderColumn.LAST_SEEN;
+        OrderDirection orderDirection = OrderDirection.DESC;
+        if (orderColumnParam != null && orderDirectionParam != null) {
+            try {
+                orderColumn = AssetManager.IpAddressOrderColumn.valueOf(orderColumnParam.toUpperCase());
+                orderDirection = OrderDirection.valueOf(orderDirectionParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
+
+        Optional<AssetEntry> asset = nzyme.getAssetsManager().findAsset(assetId, organizationId, tenantId);
+
+        if (asset.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total =  nzyme.getAssetsManager().countIpAddressesOfAsset(asset.get().id(), timeRange);
+
+        List<AssetIpAddressDetailsResponse> addresses = Lists.newArrayList();
+        for (AssetIpAddressEntry i : nzyme.getAssetsManager()
+                .findIpAddressesOfAsset(asset.get().id(), timeRange, limit, offset, orderColumn, orderDirection)) {
+            addresses.add(AssetIpAddressDetailsResponse.create(
+                    i.address(),
+                    i.source(),
+                    i.firstSeen(),
+                    i.lastSeen()
+            ));
+        }
+
+        return Response.ok(AssetIpAddressesListResponse.create(total, addresses)).build();
+    }
+
     private AssetDetailsResponse buildAssetDetailsResponse(AssetEntry asset, UUID organizationId, UUID tenantId) {
         Optional<MacAddressContextEntry> context = nzyme.getContextService().findMacAddressContext(
                 asset.mac(), organizationId, tenantId
         );
-
-        List<AssetHostnameResponse> hostnames = Lists.newArrayList();
-        List<AssetIpAddressResponse> ipAddresses = Lists.newArrayList();
-        if (context.isPresent()) {
-            for (MacAddressTransparentContextEntry tpx : nzyme.getContextService()
-                    .findTransparentMacAddressContext(context.get().id())) {
-                switch (tpx.type()) {
-                    case "HOSTNAME":
-                        hostnames.add(AssetHostnameResponse.create(
-                                tpx.hostname(),
-                                tpx.source(),
-                                tpx.lastSeen()
-                        ));
-                        break;
-                    case "IP_ADDRESS":
-                        ipAddresses.add(AssetIpAddressResponse.create(
-                                tpx.ipAddress().getHostAddress(),
-                                tpx.source(),
-                                tpx.lastSeen()
-                        ));
-                        break;
-                }
-            }
-        }
 
         return AssetDetailsResponse.create(
                 asset.uuid(),
@@ -141,8 +216,6 @@ public class AssetsResource extends TapDataHandlingResource {
                 asset.dhcpFingerprintRenew(),
                 asset.dhcpFingerprintReboot(),
                 asset.dhcpFingerprintRebind(),
-                hostnames,
-                ipAddresses,
                 asset.firstSeen(),
                 asset.lastSeen()
         );

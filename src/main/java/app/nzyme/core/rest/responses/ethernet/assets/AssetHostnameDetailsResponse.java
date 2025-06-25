@@ -5,25 +5,28 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 @AutoValue
-public abstract class AssetHostnameResponse {
+public abstract class AssetHostnameDetailsResponse {
 
     @JsonProperty("hostname")
     public abstract String hostname();
     @JsonProperty("source")
     public abstract String source();
+    @JsonProperty("first_seen")
+    public abstract DateTime firstSeen();
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static AssetHostnameResponse create(String hostname, String source, DateTime lastSeen) {
+    public static AssetHostnameDetailsResponse create(String hostname, String source, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .hostname(hostname)
                 .source(source)
+                .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_AssetHostnameResponse.Builder();
+        return new AutoValue_AssetHostnameDetailsResponse.Builder();
     }
 
     @AutoValue.Builder
@@ -32,8 +35,10 @@ public abstract class AssetHostnameResponse {
 
         public abstract Builder source(String source);
 
+        public abstract Builder firstSeen(DateTime firstSeen);
+
         public abstract Builder lastSeen(DateTime lastSeen);
 
-        public abstract AssetHostnameResponse build();
+        public abstract AssetHostnameDetailsResponse build();
     }
 }

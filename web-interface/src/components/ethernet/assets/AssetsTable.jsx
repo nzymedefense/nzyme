@@ -9,6 +9,7 @@ import AssetIpAddresses from "./AssetIpAddresses";
 import Paginator from "../../misc/Paginator";
 import AssetName from "./AssetName";
 import {truncate} from "../../../util/Tools";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 export default function AssetsTable(props) {
 
@@ -58,7 +59,7 @@ export default function AssetsTable(props) {
           {assets.assets.map((a, i) => {
             return (
                 <tr key={i}>
-                  <td><EthernetMacAddress addressWithContext={a.mac} href="#" /></td>
+                  <td><EthernetMacAddress addressWithContext={a.mac} href={ApiRoutes.ETHERNET.ASSETS.DETAILS(a.uuid)} /></td>
                   <td><td>{a.oui ? truncate(a.oui, 30, false) : <span className="text-muted">Unknown</span>}</td></td>
                   <td><AssetName name={a.name} /></td>
                   <td><AssetHostnames hostnames={a.hostnames} /></td>

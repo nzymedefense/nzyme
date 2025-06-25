@@ -4,28 +4,29 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
-import java.util.List;
-
 @AutoValue
-public abstract class AssetIpAddressResponse {
+public abstract class AssetIpAddressDetailsResponse {
 
     @JsonProperty("address")
     public abstract String address();
     @JsonProperty("source")
     public abstract String source();
+    @JsonProperty("first_seen")
+    public abstract DateTime firstSeen();
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static AssetIpAddressResponse create(String address, String source, DateTime lastSeen) {
+    public static AssetIpAddressDetailsResponse create(String address, String source, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .address(address)
                 .source(source)
+                .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_AssetIpAddressResponse.Builder();
+        return new AutoValue_AssetIpAddressDetailsResponse.Builder();
     }
 
     @AutoValue.Builder
@@ -34,8 +35,10 @@ public abstract class AssetIpAddressResponse {
 
         public abstract Builder source(String source);
 
+        public abstract Builder firstSeen(DateTime firstSeen);
+
         public abstract Builder lastSeen(DateTime lastSeen);
 
-        public abstract AssetIpAddressResponse build();
+        public abstract AssetIpAddressDetailsResponse build();
     }
 }

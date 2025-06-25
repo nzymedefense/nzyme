@@ -6715,4 +6715,86 @@
         <dropColumn tableName="auth_users" columnName="default_organization" />
         <dropColumn tableName="auth_users" columnName="default_tenant" />
     </changeSet>
+
+    <changeSet id="add_persistent_asset_hostnames_and_ip_addresses" author="lennartkoopmann">
+        <createTable tableName="assets_hostnames">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="asset_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="hostname" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="source" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="assets_hostnames" columnNames="asset_id,hostname,source" />
+
+        <addForeignKeyConstraint constraintName="link_hostnames2assets"
+                                 baseTableName="assets_hostnames"
+                                 baseColumnNames="asset_id"
+                                 referencedTableName="assets"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <createTable tableName="assets_ip_addresses">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="asset_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="address" type="inet">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="source" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="assets_ip_addresses" columnNames="asset_id,address,source" />
+
+        <addForeignKeyConstraint constraintName="link_ips2assets"
+                                 baseTableName="assets_ip_addresses"
+                                 baseColumnNames="asset_id"
+                                 referencedTableName="assets"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
 </databaseChangeLog>

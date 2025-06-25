@@ -36,6 +36,8 @@ export default function DHCPTransactionsPage() {
   const perPage = 25;
   const [page, setPage] = useState(1);
 
+  const [revision, setRevision] = useState(new Date());
+
   const [filters, setFilters] = useState(
       queryParametersToFilters(urlQuery.get("filters"), DHCP_FILTER_FIELDS)
   );
@@ -50,8 +52,8 @@ export default function DHCPTransactionsPage() {
 
   useEffect(() => {
     setData(null);
-    assetsService.findAllDHCPTransactions(timeRange, orderColumn, orderDirection, selectedTaps,  perPage, (page-1)*perPage, setData);
-  }, [selectedTaps, timeRange, orderColumn, orderDirection, page]);
+    assetsService.findAllDHCPTransactions(timeRange, orderColumn, orderDirection, selectedTaps, perPage, (page-1)*perPage, setData);
+  }, [selectedTaps, timeRange, orderColumn, orderDirection, page, revision]);
 
   return (
       <React.Fragment>
@@ -85,6 +87,7 @@ export default function DHCPTransactionsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="DHCP Transactions"
+                                       refreshAction={() => setRevision(new Date())}
                                        helpLink="https://go.nzyme.org/ethernet-dhcp" />
 
                 <DHCPTransactionsTable data={data}

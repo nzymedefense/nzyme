@@ -463,6 +463,16 @@ public class TapManager {
                                     ip.lastSeen()
                             );
                         }
+
+                        // Attach hostname to asset.
+                        nzyme.getAssetsManager().attachTransparentContextIpAddress(
+                                mac.mac(),
+                                tap.get().organizationId(),
+                                tap.get().tenantId(),
+                                ipAddr,
+                                ip.source(),
+                                ip.lastSeen()
+                        );
                     } catch (UnknownHostException e) {
                         LOG.error("Could not parse IP address [{}] for context <{}>.",
                                 ip.value(), contextId, e);
@@ -500,6 +510,16 @@ public class TapManager {
                                 hostname.lastSeen()
                         );
                     }
+
+                    // Attach hostname to asset.
+                    nzyme.getAssetsManager().attachTransparentContextHostname(
+                            mac.mac(),
+                            tap.get().organizationId(),
+                            tap.get().tenantId(),
+                            hostname.value(),
+                            hostname.source(),
+                            hostname.lastSeen()
+                    );
                 }
             });
         }

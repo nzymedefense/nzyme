@@ -150,6 +150,7 @@ const ApiRoutes = {
     },
     ASSETS: {
       INDEX: '/ethernet/assets',
+      DETAILS: uuid => `/ethernet/assets/${uuid}`,
       DHCP: {
         INDEX: '/ethernet/assets/dhcp',
         TRANSACTION_DETAILS: transactionId => `/ethernet/assets/dhcp/show/${transactionId}`

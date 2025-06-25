@@ -14,6 +14,18 @@ export default class AssetsService {
     )
   }
 
+  findAssetHostnames(assetId, organizationId, tenantId, timeRange, orderColumn, orderDirection, limit, offset, setHostnames) {
+    RESTClient.get(`/ethernet/assets/show/${assetId}/hostnames`, { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, limit: limit, offset: offset },
+        (response) => setHostnames(response.data)
+    )
+  }
+
+  findAssetIpAddresses(assetId, organizationId, tenantId, timeRange, orderColumn, orderDirection, limit, offset, setIpAddresses) {
+    RESTClient.get(`/ethernet/assets/show/${assetId}/ip_addresses`, { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, limit: limit, offset: offset },
+        (response) => setIpAddresses(response.data)
+    )
+  }
+
   findAllDHCPTransactions(timeRange, orderColumn, orderDirection, taps, limit, offset, setTransactions) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 

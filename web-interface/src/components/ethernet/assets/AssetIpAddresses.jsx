@@ -7,8 +7,6 @@ export default function AssetIpAddresses(props) {
       new Map(props.addresses.map(item => [item.address, item])).values()
   )
 
-  console.log(addresses)
-
   const additional = () => {
     if (addresses.length < 2) {
       return null
