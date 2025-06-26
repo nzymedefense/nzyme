@@ -76,7 +76,7 @@ function MacAddressContextDetailsPage() {
 
           <div className="col-md-4">
             <span className="float-end">
-              <WithPermission permission="mac_aliases_manage">
+              <WithPermission permission="mac_context_manage">
                 <a className="btn btn-danger" href="#" onClick={onDelete}>Delete</a>&nbsp;
                 <a className="btn btn-secondary"
                    href={ApiRoutes.CONTEXT.MAC_ADDRESSES.EDIT(context.uuid, context.organization_id, context.tenant_id)}>

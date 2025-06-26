@@ -11,7 +11,7 @@ export default function MacAddressContextLine(props) {
     return (
         <React.Fragment>
           No Context Configured{' '}
-          <WithPermission permission="mac_aliases_manage">
+          <WithPermission permission="mac_context_manage">
             (<a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE + "?address=" + encodeURIComponent(address)}>
               Add Context
             </a>)

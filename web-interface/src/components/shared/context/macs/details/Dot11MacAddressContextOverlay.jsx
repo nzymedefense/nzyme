@@ -118,7 +118,7 @@ function Dot11MacAddressContextOverlay(props) {
           </dl>
 
           <div className="context-overlay-no-context-controls">
-            <WithPermission permission="mac_aliases_manage">
+            <WithPermission permission="mac_context_manage">
               <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE + "?address=" + encodeURIComponent(address)}
                  className="btn btn-sm btn-outline-primary">
                 Add Context

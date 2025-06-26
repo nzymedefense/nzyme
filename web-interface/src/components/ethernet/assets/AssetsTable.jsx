@@ -60,7 +60,7 @@ export default function AssetsTable(props) {
             return (
                 <tr key={i}>
                   <td><EthernetMacAddress addressWithContext={a.mac} href={ApiRoutes.ETHERNET.ASSETS.DETAILS(a.uuid)} /></td>
-                  <td><td>{a.oui ? truncate(a.oui, 30, false) : <span className="text-muted">Unknown</span>}</td></td>
+                  <td>{a.oui ? truncate(a.oui, 30, false) : <span className="text-muted">Unknown</span>}</td>
                   <td><AssetName name={a.name} /></td>
                   <td><AssetHostnames hostnames={a.hostnames} /></td>
                   <td><AssetIpAddresses addresses={a.ip_addresses} /></td>

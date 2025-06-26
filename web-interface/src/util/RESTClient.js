@@ -113,7 +113,7 @@ const RESTClient = {
       })
   },
 
-  delete (uri, successCallback, errorCallback = undefined) {
+  delete(uri, successCallback, errorCallback = undefined) {
     axios.delete(this.buildUri(uri), { headers: this.getAuthHeaders() })
       .then(function (response) {
         successCallback(response)

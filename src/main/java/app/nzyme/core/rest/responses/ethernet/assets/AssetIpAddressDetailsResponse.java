@@ -4,9 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.UUID;
+
 @AutoValue
 public abstract class AssetIpAddressDetailsResponse {
 
+    @JsonProperty("id")
+    public abstract UUID id();
     @JsonProperty("address")
     public abstract String address();
     @JsonProperty("source")
@@ -16,8 +20,9 @@ public abstract class AssetIpAddressDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static AssetIpAddressDetailsResponse create(String address, String source, DateTime firstSeen, DateTime lastSeen) {
+    public static AssetIpAddressDetailsResponse create(UUID id, String address, String source, DateTime firstSeen, DateTime lastSeen) {
         return builder()
+                .id(id)
                 .address(address)
                 .source(source)
                 .firstSeen(firstSeen)
@@ -31,6 +36,8 @@ public abstract class AssetIpAddressDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder id(UUID id);
+
         public abstract Builder address(String address);
 
         public abstract Builder source(String source);

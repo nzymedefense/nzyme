@@ -27,7 +27,7 @@ function MacAddressContextPage() {
 
           <div className="col-md-4 text-end">
             <a href="https://go.nzyme.org/context" className="btn btn-secondary">Help</a>{' '}
-            <WithPermission permission="mac_aliases_manage">
+            <WithPermission permission="mac_context_manage">
               <a className="btn btn-primary" href={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE}>Create Context</a>
             </WithPermission>
           </div>

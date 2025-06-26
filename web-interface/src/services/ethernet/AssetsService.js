@@ -20,10 +20,18 @@ export default class AssetsService {
     )
   }
 
+  deleteAssetHostname(hostnameId, assetId, organizationId, tenantId, onSuccess) {
+    RESTClient.delete(`/ethernet/assets/show/${assetId}/hostnames/${hostnameId}/organization/${organizationId}/tenant/${tenantId}`, onSuccess)
+  }
+
   findAssetIpAddresses(assetId, organizationId, tenantId, timeRange, orderColumn, orderDirection, limit, offset, setIpAddresses) {
     RESTClient.get(`/ethernet/assets/show/${assetId}/ip_addresses`, { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, limit: limit, offset: offset },
         (response) => setIpAddresses(response.data)
     )
+  }
+
+  deleteAssetIpAddress(addressId, assetId, organizationId, tenantId, onSuccess) {
+    RESTClient.delete(`/ethernet/assets/show/${assetId}/ip_addresses/${addressId}/organization/${organizationId}/tenant/${tenantId}`, onSuccess)
   }
 
   findAllDHCPTransactions(timeRange, orderColumn, orderDirection, taps, limit, offset, setTransactions) {

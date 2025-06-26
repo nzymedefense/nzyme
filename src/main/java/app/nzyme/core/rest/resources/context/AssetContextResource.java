@@ -181,7 +181,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
     }
 
     @POST
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_aliases_manage" })
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_context_manage" })
     @Path("/mac")
     public Response createMac(@Context SecurityContext sc, @Valid CreateMacAddressContextRequest req) {
         if (!passedTenantDataAccessible(sc, req.organizationId(), req.tenantId())) {
@@ -212,7 +212,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
     }
 
     @PUT
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_aliases_manage" })
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_context_manage" })
     @Path("/mac/organization/show/{organization_id}/tenant/show/{tenant_id}/uuid/{uuid}")
     public Response updateMac(@Context SecurityContext sc,
                               @Valid UpdateMacAddressContextRequest req,
@@ -239,7 +239,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
     }
 
     @DELETE
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_aliases_manage" })
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_context_manage" })
     @Path("/mac/organization/show/{organization_id}/tenant/show/{tenant_id}/uuid/{uuid}")
     public Response deleteMac(@Context SecurityContext sc,
                               @PathParam("organization_id") UUID organizationId,

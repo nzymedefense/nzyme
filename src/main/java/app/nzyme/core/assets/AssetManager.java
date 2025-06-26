@@ -263,6 +263,15 @@ public class AssetManager {
         );
     }
 
+    public void deleteHostnameOfAsset(long assetId, UUID hostnameId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM assets_hostnames WHERE asset_id = :asset_id AND uuid = :uuid")
+                        .bind("asset_id", assetId)
+                        .bind("uuid", hostnameId)
+                        .execute()
+        );
+    }
+
     public long countIpAddressesOfAsset(long assetId, TimeRange timeRange) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM assets_ip_addresses " +
@@ -295,6 +304,15 @@ public class AssetManager {
                         .define("order_direction", orderDirection)
                         .mapTo(AssetIpAddressEntry.class)
                         .list()
+        );
+    }
+
+    public void deleteIpAddressOfAsset(long assetId, UUID addressId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM assets_ip_addresses WHERE asset_id = :asset_id AND uuid = :uuid")
+                        .bind("asset_id", assetId)
+                        .bind("uuid", addressId)
+                        .execute()
         );
     }
 

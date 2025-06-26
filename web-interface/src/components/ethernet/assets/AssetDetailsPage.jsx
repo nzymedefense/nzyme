@@ -12,6 +12,8 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import AssetHostnamesTable from "./AssetHostnamesTable";
 import {Presets} from "../../shared/timerange/TimeRange";
 import AssetIpAddressesTable from "./AssetIpAddressesTable";
+import {notify} from "react-notify-toast";
+import AssetSourceProtocols from "./AssetSourceProtocols";
 
 const assetsService = new AssetsService();
 
@@ -37,10 +39,12 @@ export default function AssetDetailsPage() {
   const ipAddressesPerPage = 10;
   const [ipAddressesPage, setIpAddressesPage] = useState(1);
 
+  const [revision, setRevision] = useState(new Date());
+
   useEffect(() => {
     setAsset(null);
     assetsService.findAsset(uuid, organizationId, tenantId, setAsset);
-  }, [organizationId, tenantId]);
+  }, [uuid, organizationId, tenantId, revision]);
 
   useEffect(() => {
     setHostnames(null);
@@ -55,7 +59,7 @@ export default function AssetDetailsPage() {
         (hostnamesPage-1)*hostnamesPerPage,
         setHostnames
     );
-  }, [organizationId, tenantId, hostnamesTimeRange, hostnamesOrderColumn, hostnamesOrderDirection, hostnamesPage])
+  }, [organizationId, tenantId, hostnamesTimeRange, hostnamesOrderColumn, hostnamesOrderDirection, hostnamesPage, revision])
 
   useEffect(() => {
     setIpAddresses(null);
@@ -70,7 +74,33 @@ export default function AssetDetailsPage() {
         (ipAddressesPage-1)*ipAddressesPerPage,
         setIpAddresses
     );
-  }, [organizationId, tenantId, ipAddressesTimeRange, ipAddressesOrderColumn, ipAddressesOrderDirection, ipAddressesPage])
+  }, [organizationId, tenantId, ipAddressesTimeRange, ipAddressesOrderColumn, ipAddressesOrderDirection, ipAddressesPage, revision])
+
+  const onDeleteHostname = (e, id) => {
+    e.preventDefault();
+
+    if (!confirm("Really delete hostname?")) {
+      return;
+    }
+
+    assetsService.deleteAssetHostname(id, uuid, organizationId, tenantId, () => {
+      setRevision(new Date());
+      notify.show("Hostname deleted.", "success");
+    })
+  }
+
+  const onDeleteIpAddress = (e, id) => {
+    e.preventDefault();
+
+    if (!confirm("Really delete IP address?")) {
+      return;
+    }
+
+    assetsService.deleteAssetIpAddress(id, uuid, organizationId, tenantId, () => {
+      setRevision(new Date());
+      notify.show("IP address deleted.", "success");
+    })
+  }
 
   if (!asset) {
     return <LoadingSpinner />
@@ -138,6 +168,8 @@ export default function AssetDetailsPage() {
                   <dd>
                     {moment(asset.last_seen).format("YYYY-MM-DDTHH:mm:ss.SSSZ")} ({moment(asset.last_seen).fromNow()})
                   </dd>
+                  <dt>Source Protocols</dt>
+                  <dd><AssetSourceProtocols asset={asset} /></dd>
                 </dl>
               </div>
             </div>
@@ -158,7 +190,8 @@ export default function AssetDetailsPage() {
                                        setOrderColumn={setHostnamesOrderColumn}
                                        orderColumn={hostnamesOrderColumn}
                                        setOrderDirection={setHostnamesOrderDirection}
-                                       orderDirection={hostnamesOrderDirection} />
+                                       orderDirection={hostnamesOrderDirection}
+                                       onDeleteHostname={onDeleteHostname} />
                 </div>
               </div>
             </div>
@@ -177,7 +210,8 @@ export default function AssetDetailsPage() {
                                          setOrderColumn={setIpAddressesOrderColumn}
                                          orderColumn={ipAddressesOrderColumn}
                                          setOrderDirection={setIpAddressesOrderDirection}
-                                         orderDirection={ipAddressesOrderDirection} />
+                                         orderDirection={ipAddressesOrderDirection}
+                                         onDeleteIpAddress={onDeleteIpAddress} />
                 </div>
               </div>
             </div>

@@ -16,6 +16,7 @@ export default function AssetIpAddressesTable(props) {
   const orderColumn = props.orderColumn;
   const setOrderDirection = props.setOrderDirection;
   const orderDirection = props.orderDirection;
+  const onDeleteIpAddress = props.onDeleteIpAddress;
 
   const columnSorting = (columnName) => {
     return <ColumnSorting thisColumn={columnName}
@@ -46,6 +47,7 @@ export default function AssetIpAddressesTable(props) {
             <th>Source {columnSorting("source")}</th>
             <th>First Seen {columnSorting("first_seen")}</th>
             <th>Last Seen {columnSorting("last_seen")}</th>
+            <th>&nbsp;</th>
           </tr>
           </thead>
           <tbody>
@@ -59,6 +61,11 @@ export default function AssetIpAddressesTable(props) {
                   </td>
                   <td title={moment(address.last_seen).format()}>
                     {moment(address.last_seen).fromNow()}
+                  </td>
+                  <td>
+                    <a href="#" onClick={(e) => onDeleteIpAddress(e, address.id)}>
+                      <i className="fa fa-trash-alt text-danger" title="Delete IP Address"></i>
+                    </a>
                   </td>
                 </tr>
             )

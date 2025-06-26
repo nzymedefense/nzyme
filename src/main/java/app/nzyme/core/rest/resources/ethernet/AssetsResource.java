@@ -156,6 +156,8 @@ public class AssetsResource extends TapDataHandlingResource {
                 asset.get().dhcpFingerprintRenew(),
                 asset.get().dhcpFingerprintReboot(),
                 asset.get().dhcpFingerprintRebind(),
+                asset.get().seenDhcp(),
+                asset.get().seenTcp(),
                 asset.get().firstSeen(),
                 asset.get().lastSeen()
         )).build();
@@ -195,12 +197,13 @@ public class AssetsResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        long total =  nzyme.getAssetsManager().countHostnamesOfAsset(asset.get().id(), timeRange);
+        long total = nzyme.getAssetsManager().countHostnamesOfAsset(asset.get().id(), timeRange);
 
         List<AssetHostnameDetailsResponse> hostnames = Lists.newArrayList();
         for (AssetHostnameEntry h : nzyme.getAssetsManager()
                 .findHostnamesOfAsset(asset.get().id(), timeRange, limit, offset, orderColumn, orderDirection)) {
             hostnames.add(AssetHostnameDetailsResponse.create(
+                    h.uuid(),
                     h.hostname(),
                     h.source(),
                     h.firstSeen(),
@@ -246,12 +249,13 @@ public class AssetsResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        long total =  nzyme.getAssetsManager().countIpAddressesOfAsset(asset.get().id(), timeRange);
+        long total = nzyme.getAssetsManager().countIpAddressesOfAsset(asset.get().id(), timeRange);
 
         List<AssetIpAddressDetailsResponse> addresses = Lists.newArrayList();
         for (AssetIpAddressEntry i : nzyme.getAssetsManager()
                 .findIpAddressesOfAsset(asset.get().id(), timeRange, limit, offset, orderColumn, orderDirection)) {
             addresses.add(AssetIpAddressDetailsResponse.create(
+                    i.uuid(),
                     i.address(),
                     i.source(),
                     i.firstSeen(),
@@ -260,6 +264,52 @@ public class AssetsResource extends TapDataHandlingResource {
         }
 
         return Response.ok(AssetIpAddressesListResponse.create(total, addresses)).build();
+    }
+
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "ethernet_assets_manage" })
+    @Path("/show/{asset_id}/hostnames/{hostname_id}/organization/{organization_id}/tenant/{tenant_id}")
+    public Response deleteHostname(@Context SecurityContext sc,
+                                   @PathParam("asset_id") UUID assetId,
+                                   @PathParam("hostname_id") UUID hostnameId,
+                                   @PathParam("organization_id") UUID organizationId,
+                                   @PathParam("tenant_id") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<AssetEntry> asset = nzyme.getAssetsManager().findAsset(assetId, organizationId, tenantId);
+
+        if (asset.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAssetsManager().deleteHostnameOfAsset(asset.get().id(), hostnameId);
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "ethernet_assets_manage" })
+    @Path("/show/{asset_id}/ip_addresses/{address_id}/organization/{organization_id}/tenant/{tenant_id}")
+    public Response deleteIpAddress(@Context SecurityContext sc,
+                                    @PathParam("asset_id") UUID assetId,
+                                    @PathParam("address_id") UUID addressId,
+                                    @PathParam("organization_id") UUID organizationId,
+                                    @PathParam("tenant_id") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<AssetEntry> asset = nzyme.getAssetsManager().findAsset(assetId, organizationId, tenantId);
+
+        if (asset.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAssetsManager().deleteIpAddressOfAsset(asset.get().id(), addressId);
+
+        return Response.ok().build();
     }
 
 }

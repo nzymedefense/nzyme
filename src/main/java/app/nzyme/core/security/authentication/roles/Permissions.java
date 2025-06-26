@@ -26,11 +26,11 @@ public class Permissions {
                         "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
                 false
         ));
-        put("mac_aliases_manage", Permission.create(
-                "mac_aliases_manage",
-                "Manage MAC Address Aliases",
-                "Allows user to create, edit and delete MAC address aliases for all subsystems, " +
-                        "e.g. 802.11/WiFi or Ethernet.",
+        put("mac_context_manage", Permission.create(
+                "mac_context_manage",
+                "Manage MAC Address Context",
+                "Allows user to create, edit and delete MAC address context for all subsystems, " +
+                        "like 802.11/WiFi or Ethernet.",
                 true
         ));
         put("uav_monitoring_manage", Permission.create(
@@ -46,6 +46,12 @@ public class Permissions {
                 "Manage Bluetooth Monitoring",
                 "Allows user to create, edit and delete configurations of Bluetooth monitoring, This can " +
                         "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
+                false
+        ));
+        put("ethernet_assets_manage", Permission.create(
+                "ethernet_assets_manage",
+                "Manage Ethernet Assets",
+                "Allows user to create, edit and delete configurations related to Ethernet asset management.",
                 false
         ));
     }};
