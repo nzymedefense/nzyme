@@ -167,6 +167,10 @@ public class DNS {
                                                                             Filters filters,
                                                                             Bucketing.BucketingConfiguration bucketing,
                                                                             List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         FilterSqlFragment filterFragment = FilterSql.generate(filters, new DnsFilters());
 
         return nzyme.getDatabase().withHandle(handle ->

@@ -272,7 +272,6 @@ public class DNSResource extends TapDataHandlingResource {
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
-
         Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         Map<DateTime, Long> response = Maps.newHashMap();

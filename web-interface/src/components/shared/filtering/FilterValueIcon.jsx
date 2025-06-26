@@ -17,6 +17,10 @@ export default function FilterValueIcon(props) {
     setShow(!show);
   }
 
+  if (!setFilters) {
+    return null;
+  }
+
   const modal = () => {
     if (!show) {
       return null;

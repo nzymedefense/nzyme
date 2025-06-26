@@ -14,6 +14,7 @@ export default function DNSTransactionsTable(props) {
   const timeRange = props.timeRange;
   const filters = props.filters;
   const setFilters = props.setFilters;
+  const perPage = props.perPage ? props.perPage : 100;
   const revision = props.revision;
 
   const tapContext = useContext(TapContext);
@@ -21,7 +22,6 @@ export default function DNSTransactionsTable(props) {
 
   const [data, setData] = useState(null);
 
-  const perPage = 100;
   const [page, setPage] = useState(1);
 
   useEffect(() => {
