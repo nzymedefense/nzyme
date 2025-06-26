@@ -14,6 +14,7 @@ import {Presets} from "../../shared/timerange/TimeRange";
 import AssetIpAddressesTable from "./AssetIpAddressesTable";
 import {notify} from "react-notify-toast";
 import AssetSourceProtocols from "./AssetSourceProtocols";
+import AssetDetailsDnsTransactions from "./AssetDetailsDnsTransactions";
 
 const assetsService = new AssetsService();
 
@@ -216,8 +217,9 @@ export default function AssetDetailsPage() {
               </div>
             </div>
           </div>
-
         </div>
+
+        <AssetDetailsDnsTransactions asset={asset}/>
       </React.Fragment>
   )
 
