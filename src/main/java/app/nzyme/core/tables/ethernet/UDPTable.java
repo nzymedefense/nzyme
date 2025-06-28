@@ -1,5 +1,7 @@
 package app.nzyme.core.tables.ethernet;
 
+import app.nzyme.core.assets.AssetInformation;
+import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.ethernet.udp.UdpConversationState;
 import app.nzyme.core.ethernet.udp.db.UdpConversationEntry;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
@@ -11,8 +13,10 @@ import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
+import app.nzyme.plugin.Subsystem;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
@@ -21,6 +25,7 @@ import org.joda.time.DateTime;
 
 import java.net.InetAddress;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -204,8 +209,92 @@ public class UDPTable implements DataTable {
         }
     }
 
-    private void registerAssets(Handle handle, Tap tap, DateTime timestamp, List<UdpConversationReport> sessions) {
-        // TODO
+    private void registerAssets(Handle handle, Tap tap, DateTime timestamp, List<UdpConversationReport> conversations) {
+        PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO assets(uuid, organization_id, tenant_id, " +
+                "mac, first_seen, last_seen, seen_udp, updated_at, created_at) VALUES(:uuid, " +
+                ":organization_id, :tenant_id, :mac, :first_seen, :last_seen, true, NOW(), NOW())");
+        PreparedBatch updateBatch = handle.prepareBatch("UPDATE assets SET last_seen = :last_seen, " +
+                "seen_udp = true, updated_at = NOW() WHERE id = :id");
+
+        // We may have multiple sessions from the same client MAC. Pre-process and aggregate.
+        Map<String, AssetInformation> assets = Maps.newHashMap();
+        for (UdpConversationReport conversation : conversations) {
+            if (conversation.sourceMac() == null) {
+                continue;
+            }
+
+            AssetInformation existingAsset = assets.get(conversation.sourceMac());
+            if (existingAsset != null) {
+                // We have already seen this asset. Update timestamps.
+                DateTime firstSeen;
+                DateTime lastSeen;
+
+                if (conversation.startTime().isBefore(existingAsset.firstSeen())) {
+                    firstSeen = conversation.startTime();
+                } else {
+                    firstSeen = existingAsset.firstSeen();
+                }
+
+                if (conversation.mostRecentSegmentTime().isAfter(existingAsset.lastSeen())) {
+                    lastSeen = conversation.mostRecentSegmentTime();
+                } else {
+                    lastSeen = existingAsset.lastSeen();
+                }
+
+                assets.put(conversation.sourceMac(), AssetInformation.create(conversation.sourceMac(), firstSeen, lastSeen));
+            } else {
+                // Not seen before.
+                assets.put(conversation.sourceMac(), AssetInformation.create(
+                        conversation.sourceMac(), conversation.startTime(), conversation.mostRecentSegmentTime()
+                ));
+            }
+        }
+
+        for (AssetInformation assetInfo : assets.values()) {
+            try {
+                Optional<AssetEntry> asset = tablesService.getNzyme().getAssetsManager()
+                        .findAssetByMac(assetInfo.mac(), tap.organizationId(), tap.tenantId());
+
+                if (asset.isPresent()) {
+                    // We have an existing asset.
+                    updateBatch
+                            .bind("id", asset.get().id())
+                            .bind("last_seen", assetInfo.lastSeen());
+
+                    updateBatch.add();
+                } else {
+                    // First time we are seeing this asset.
+                    UUID uuid = UUID.randomUUID();
+                    insertBatch
+                            .bind("uuid", uuid)
+                            .bind("organization_id", tap.organizationId())
+                            .bind("tenant_id", tap.tenantId())
+                            .bind("mac", assetInfo.mac())
+                            .bind("first_seen", assetInfo.firstSeen())
+                            .bind("last_seen", assetInfo.lastSeen())
+                            .add();
+
+                    // Handle new asset.
+                    tablesService.getNzyme().getAssetsManager().onNewAsset(
+                            Subsystem.ETHERNET,
+                            uuid,
+                            assetInfo.mac(),
+                            tap.organizationId(),
+                            tap.tenantId(),
+                            tap.uuid()
+                    );
+                }
+            } catch (Exception e) {
+                LOG.error("Could not register asset from UDP conversations.", e);
+            }
+        }
+
+        try {
+            updateBatch.execute();
+            insertBatch.execute();
+        } catch(Exception e) {
+            LOG.error("Could not write assets from UDP conversations.", e);
+        }
     }
 
     @Override

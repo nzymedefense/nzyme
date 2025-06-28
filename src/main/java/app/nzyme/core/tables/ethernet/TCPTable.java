@@ -1,5 +1,6 @@
 package app.nzyme.core.tables.ethernet;
 
+import app.nzyme.core.assets.AssetInformation;
 import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.ethernet.tcp.TCPFingerprint;
 import app.nzyme.core.ethernet.tcp.TcpSessionState;
@@ -17,7 +18,6 @@ import app.nzyme.plugin.Subsystem;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.auto.value.AutoValue;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -336,37 +336,6 @@ public class TCPTable implements DataTable {
     @Override
     public void retentionClean() {
         // NOOP. Remove from plugin APIs if there remains no use. Database cleaned by category/tenant independently.
-    }
-
-    @AutoValue
-    public static abstract class AssetInformation {
-
-        public abstract String mac();
-        public abstract DateTime firstSeen();
-        public abstract DateTime lastSeen();
-
-        public static AssetInformation create(String mac, DateTime firstSeen, DateTime lastSeen) {
-            return builder()
-                    .mac(mac)
-                    .firstSeen(firstSeen)
-                    .lastSeen(lastSeen)
-                    .build();
-        }
-
-        public static Builder builder() {
-            return new AutoValue_TCPTable_AssetInformation.Builder();
-        }
-
-        @AutoValue.Builder
-        public abstract static class Builder {
-            public abstract Builder mac(String mac);
-
-            public abstract Builder firstSeen(DateTime firstSeen);
-
-            public abstract Builder lastSeen(DateTime lastSeen);
-
-            public abstract AssetInformation build();
-        }
     }
 
 }
