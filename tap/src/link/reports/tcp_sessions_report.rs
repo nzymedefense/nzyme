@@ -3,7 +3,7 @@ use std::sync::MutexGuard;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use crate::state::tables::tcp_table::TcpSession;
-use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
+use crate::protocols::parsers::l4_key::L4Key;
 
 #[derive(Serialize)]
 pub struct TcpSessionsReport {
@@ -36,7 +36,7 @@ pub struct TcpSessionReport {
     pub tags: Vec<String>
 }
 
-pub fn generate(s: &MutexGuard<HashMap<TcpSessionKey, TcpSession>>) -> TcpSessionsReport {
+pub fn generate(s: &MutexGuard<HashMap<L4Key, TcpSession>>) -> TcpSessionsReport {
     let mut sessions: Vec<TcpSessionReport> = Vec::new();
 
     for session in s.values() {

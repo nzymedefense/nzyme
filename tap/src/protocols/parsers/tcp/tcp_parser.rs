@@ -2,7 +2,7 @@ use anyhow::{Result, bail};
 use byteorder::{BigEndian, ByteOrder};
 use chrono::Utc;
 use crate::wired::packets::{IPv4Packet, TcpFlags, TcpSegment};
-use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
+use crate::protocols::parsers::l4_key::L4Key;
 
 #[allow(clippy::cast_possible_truncation)]
 pub fn parse(packet: IPv4Packet) -> Result<TcpSegment> {
@@ -13,7 +13,7 @@ pub fn parse(packet: IPv4Packet) -> Result<TcpSegment> {
     let source_port = BigEndian::read_u16(&packet.payload[0..2]);
     let destination_port = BigEndian::read_u16(&packet.payload[2..4]);
 
-    let session_key = TcpSessionKey::new(
+    let session_key = L4Key::new(
         packet.source_address, source_port, packet.destination_address, destination_port
     );
 

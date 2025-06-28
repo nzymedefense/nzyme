@@ -3,9 +3,9 @@ use std::panic;
 use std::sync::{Arc, Mutex, MutexGuard};
 use log::error;
 use strum_macros::Display;
-use crate::protocols::detection::l7_tagger::L7SessionTag::{Http, Socks, Ssh, Unencrypted};
+use crate::protocols::detection::l7_tagger::L7Tag::{Http, Socks, Ssh, Unencrypted};
 use crate::state::tables::tcp_table::TcpSession;
-use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
+use crate::protocols::parsers::l4_key::L4Key;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::WiredChannelName;
@@ -14,7 +14,7 @@ use crate::protocols::detection::taggers::network_protocols::{http_tagger, socks
 use crate::to_pipeline;
 
 #[derive(Debug, Display, PartialEq, Clone)]
-pub enum L7SessionTag {
+pub enum L7Tag {
     Unencrypted,
     Http,
     Smtp,
@@ -29,7 +29,7 @@ pub enum L7SessionTag {
     Dhcpv4
 }
 
-pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>,
+pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>,
                         bus: Arc<Bus>,
                         metrics: Arc<Mutex<Metrics>>) {
     for session in sessions.values_mut() {
@@ -80,7 +80,7 @@ fn tag_all(client_to_server: &[u8],
            server_to_client: &[u8],
            session: &TcpSession,
            bus: &Arc<Bus>,
-           metrics: &Arc<Mutex<Metrics>>) -> Vec<L7SessionTag> {
+           metrics: &Arc<Mutex<Metrics>>) -> Vec<L7Tag> {
     let mut tags = Vec::new();
 
     // HTTP.

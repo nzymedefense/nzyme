@@ -120,7 +120,7 @@ public class TCPTable implements DataTable {
 
         for (TcpSessionReport session : sessions) {
             try {
-                String sessionKey = Tools.buildTcpSessionKey(
+                String sessionKey = Tools.buildL4Key(
                         session.startTime(),
                         session.sourceAddress(),
                         session.destinationAddress(),
@@ -136,7 +136,8 @@ public class TCPTable implements DataTable {
                 Optional<TcpSessionEntry> existingSession;
                 try (Timer.Context ignored = sessionDiscoveryTimer.time()) {
                     existingSession = handle.createQuery("SELECT * FROM l4_sessions " +
-                                    "WHERE session_key = :session_key AND end_time IS NULL AND tap_uuid = :tap_uuid")
+                                    "WHERE l4_type = 'TCP' AND session_key = :session_key AND end_time IS NULL " +
+                                    "AND tap_uuid = :tap_uuid")
                             .bind("session_key", sessionKey)
                             .bind("tap_uuid", tap.uuid())
                             .mapTo(TcpSessionEntry.class)
@@ -248,7 +249,7 @@ public class TCPTable implements DataTable {
                 continue;
             }
 
-            String fingerprint = new TCPFingerprint(
+            /*String fingerprint = new TCPFingerprint(
                     session.synIpTtl(),
                     session.synIpTos(),
                     session.synIpDf(),
@@ -256,7 +257,7 @@ public class TCPTable implements DataTable {
                     session.synMaximumSegmentSize(),
                     session.synMaximumScaleMultiplier(),
                     session.synOptions()
-            ).generate();
+            ).generate();*/
 
             AssetInformation existingAsset = assets.get(session.sourceMac());
             if (existingAsset != null) {

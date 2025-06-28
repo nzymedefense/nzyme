@@ -4,8 +4,8 @@ use std::net::IpAddr;
 use std::sync::Mutex;
 use chrono::{DateTime, Utc};
 use strum_macros::Display;
-use crate::protocols::detection::l7_tagger::L7SessionTag;
-use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
+use crate::protocols::detection::l7_tagger::L7Tag;
+use crate::protocols::parsers::l4_key::L4Key;
 use crate::wired::traffic_direction::TrafficDirection;
 
 use crate::wired::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass, DNSDataType, Dhcpv4MessageType, Dhcpv4OpCode, Dhcp4TransactionType};
@@ -70,7 +70,7 @@ pub struct TcpSegment {
     pub destination_address: IpAddr,
     pub source_port: u16,
     pub destination_port: u16,
-    pub session_key: TcpSessionKey,
+    pub session_key: L4Key,
     pub flags: TcpFlags,
     pub payload: Vec<u8>,
     pub ip_ttl: u8,
@@ -107,6 +107,7 @@ pub struct TcpFlags {
 
 #[derive(Debug)]
 pub struct Datagram {
+    pub session_key: L4Key,
     pub source_mac: Option<String>,
     pub destination_mac: Option<String>,
     pub source_address: IpAddr,
@@ -116,7 +117,7 @@ pub struct Datagram {
     pub payload: Vec<u8>,
     pub size: u32,
     pub timestamp: DateTime<Utc>,
-    pub tags: Mutex<Vec<L7SessionTag>>
+    pub tags: Mutex<Vec<L7Tag>>
 }
 
 #[derive(Debug)]
@@ -213,7 +214,7 @@ pub struct SocksTunnel {
     pub tunneled_destination_address: Option<IpAddr>,
     pub tunneled_destination_host: Option<String>,
     pub tunneled_destination_port: u16,
-    pub tcp_session_key: TcpSessionKey,
+    pub tcp_session_key: L4Key,
     pub source_mac: Option<String>,
     pub destination_mac: Option<String>,
     pub source_address: IpAddr,
@@ -235,7 +236,7 @@ impl SocksTunnel {
             + mem::size_of::<GenericConnectionStatus>() as u32        // connection_status
             + mem::size_of::<u64>() as u32                            // tunneled_bytes
             + mem::size_of::<u16>() as u32 * 3                        // tunneled_destination_port, source_port, destination_port
-            + mem::size_of::<TcpSessionKey>() as u32                  // tcp_session_key
+            + mem::size_of::<L4Key>() as u32                  // tcp_session_key
             + mem::size_of::<IpAddr>() as u32 * 2                     // source_address, destination_address
             + mem::size_of::<DateTime<Utc>>() as u32 * 2;             // established_at, most_recent_segment_time
 
@@ -279,7 +280,7 @@ pub struct SshSession {
     pub server_version: SshVersion,
     pub connection_status: GenericConnectionStatus,
     pub tunneled_bytes: u64,
-    pub tcp_session_key: TcpSessionKey,
+    pub tcp_session_key: L4Key,
     pub source_mac: Option<String>,
     pub destination_mac: Option<String>,
     pub source_address: IpAddr,
@@ -298,7 +299,7 @@ impl SshSession {
         let mut size = mem::size_of::<SshVersion>() as u32 * 2 // client_version, server_version
             + mem::size_of::<GenericConnectionStatus>() as u32 // connection_status
             + mem::size_of::<u64>() as u32                     // tunneled_bytes
-            + mem::size_of::<TcpSessionKey>() as u32           // tcp_session_key
+            + mem::size_of::<L4Key>() as u32           // tcp_session_key
             + mem::size_of::<u16>() as u32 * 2                 // source_port, destination_port
             + mem::size_of::<IpAddr>() as u32 * 2              // source_address, destination_address
             + mem::size_of::<DateTime<Utc>>() as u32 * 2;      // established_at, most_recent_segment_time

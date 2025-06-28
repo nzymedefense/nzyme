@@ -3,7 +3,7 @@ use std::sync::MutexGuard;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use crate::wired::packets::SocksTunnel;
-use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
+use crate::protocols::parsers::l4_key::L4Key;
 
 #[derive(Serialize)]
 pub struct SocksTunnelsReport {
@@ -32,7 +32,7 @@ pub struct SocksTunnelReport {
     pub most_recent_segment_time: DateTime<Utc>
 }
 
-pub fn generate(t: &MutexGuard<HashMap<TcpSessionKey, SocksTunnel>>) -> SocksTunnelsReport {
+pub fn generate(t: &MutexGuard<HashMap<L4Key, SocksTunnel>>) -> SocksTunnelsReport {
     let mut tunnels: Vec<SocksTunnelReport> = Vec::new();
 
     for tunnel in t.values() {

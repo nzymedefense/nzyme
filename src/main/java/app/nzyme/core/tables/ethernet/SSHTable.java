@@ -56,7 +56,7 @@ public class SSHTable implements DataTable {
                 "updated_at = NOW() WHERE id = :id");
 
         for (SshSessionReport session : sessions) {
-            String tcpSessionKey = Tools.buildTcpSessionKey(
+            String tcpSessionKey = Tools.buildL4Key(
                     session.establishedAt(),
                     session.sourceAddress(),
                     session.destinationAddress(),

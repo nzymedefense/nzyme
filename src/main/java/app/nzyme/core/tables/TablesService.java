@@ -50,6 +50,7 @@ public class TablesService {
                 .put("bluetooth", new BluetoothTable(this))
                 .put("dns", new DNSTable(this))
                 .put("tcp", new TCPTable(this))
+                .put("udp", new UDPTable(this))
                 .put("ssh", new SSHTable(this))
                 .put("socks", new SOCKSTable(this))
                 .put("uav", new UAVTable(this))
@@ -96,6 +97,10 @@ public class TablesService {
 
     public TCPTable tcp() {
         return (TCPTable) tables.get("tcp");
+    }
+
+    public UDPTable udp() {
+        return (UDPTable) tables.get("udp");
     }
 
     public SSHTable ssh() {

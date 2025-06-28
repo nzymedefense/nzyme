@@ -108,11 +108,11 @@ public class Tools {
         return bd.floatValue();
     }
 
-    public static String buildTcpSessionKey(DateTime sessionEstablishedAt,
-                                            String sourceAddress,
-                                            String destinationAddress,
-                                            int sourcePort,
-                                            int destinationPort) {
+    public static String buildL4Key(DateTime sessionEstablishedAt,
+                                    String sourceAddress,
+                                    String destinationAddress,
+                                    int sourcePort,
+                                    int destinationPort) {
         return Hashing.sha256()
                 .hashString(sessionEstablishedAt.getMillis()
                         + sourceAddress

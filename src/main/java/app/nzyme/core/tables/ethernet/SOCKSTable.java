@@ -53,7 +53,7 @@ public class SOCKSTable implements DataTable {
                 "updated_at = NOW() WHERE id = :id");
 
         for (SocksTunnelReport tunnel : tunnels) {
-            String tcpSessionKey = Tools.buildTcpSessionKey(
+            String tcpSessionKey = Tools.buildL4Key(
                     tunnel.establishedAt(),
                     tunnel.sourceAddress(),
                     tunnel.destinationAddress(),

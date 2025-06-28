@@ -5,10 +5,10 @@ use std::sync::{Mutex, MutexGuard};
 use chrono::{DateTime, Duration, Utc};
 use log::{debug, error, trace, warn};
 use strum_macros::Display;
-use crate::protocols::detection::l7_tagger::{L7SessionTag, tag_tcp_sessions};
+use crate::protocols::detection::l7_tagger::{L7Tag, tag_tcp_sessions};
 use crate::wired::packets::{TcpSegment};
 use crate::state::tables::tcp_table::TcpSessionState::{ClosedFin, ClosedRst, ClosedTimeout, Established, FinWait1, FinWait2, Refused, SynReceived, SynSent};
-use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
+use crate::protocols::parsers::l4_key::L4Key;
 use crate::wired::traffic_direction::TrafficDirection;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
@@ -20,14 +20,14 @@ pub struct TcpTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
     ethernet_bus: Arc<Bus>,
     metrics: Arc<Mutex<Metrics>>,
-    sessions: Mutex<HashMap<TcpSessionKey, TcpSession>>,
+    sessions: Mutex<HashMap<L4Key, TcpSession>>,
     reassembly_buffer_size: i32,
     session_timeout_seconds: i32
 }
 
 #[derive(Debug)]
 pub struct TcpSession {
-    pub session_key: TcpSessionKey,
+    pub session_key: L4Key,
     pub state: TcpSessionState,
     pub source_mac: Option<String>,
     pub destination_mac: Option<String>,
@@ -51,7 +51,7 @@ pub struct TcpSession {
     pub syn_maximum_segment_size: Option<u16>,
     pub syn_window_scale_multiplier: Option<u8>,
     pub syn_options: Vec<u8>,
-    pub tags: Vec<L7SessionTag>
+    pub tags: Vec<L7Tag>
 }
 
 #[derive(PartialEq, Debug, Display, Clone)]
@@ -347,7 +347,7 @@ fn insert_session_segment(segment: &TcpSegment, segments: &mut BTreeMap<u32, Vec
     }
 }
 
-fn timeout_sweep(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>, timeout: i64) {
+fn timeout_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>, timeout: i64) {
     for session in sessions.values_mut() {
         if Utc::now() - session.most_recent_segment_time
             > Duration::try_seconds(timeout).unwrap() {
@@ -359,6 +359,6 @@ fn timeout_sweep(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>, 
     }
 }
 
-fn retention_sweep(sessions: &mut MutexGuard<HashMap<TcpSessionKey, TcpSession>>) {
+fn retention_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>) {
     sessions.retain(|_, s| s.state != ClosedTimeout && s.state != ClosedRst && s.state != ClosedFin)
 }

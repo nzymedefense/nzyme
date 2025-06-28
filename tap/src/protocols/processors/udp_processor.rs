@@ -3,8 +3,8 @@ use log::error;
 use crate::context::context_engine::ContextEngine;
 use crate::context::context_source::ContextSource;
 use crate::to_pipeline;
-use crate::protocols::detection::l7_tagger::L7SessionTag;
-use crate::protocols::detection::l7_tagger::L7SessionTag::{Dhcpv4, Dns, Unencrypted};
+use crate::protocols::detection::l7_tagger::L7Tag;
+use crate::protocols::detection::l7_tagger::L7Tag::{Dhcpv4, Dns, Unencrypted};
 use crate::protocols::parsers::{dhcpv4_parser, dns_parser};
 use crate::state::tables::udp_table::UdpTable;
 use crate::helpers::timer::{record_timer, Timer};
@@ -61,7 +61,7 @@ impl UDPProcessor {
         }
     }
 
-    fn tag_and_route(&mut self, datagram: &Arc<Datagram>) -> Vec<L7SessionTag> {
+    fn tag_and_route(&mut self, datagram: &Arc<Datagram>) -> Vec<L7Tag> {
         let mut tags = vec![];
 
         if let Some(dns) = dns_parser::parse(datagram) {

@@ -1,0 +1,216 @@
+package app.nzyme.core.tables.ethernet;
+
+import app.nzyme.core.ethernet.udp.UdpConversationState;
+import app.nzyme.core.ethernet.udp.db.UdpConversationEntry;
+import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
+import app.nzyme.core.integrations.geoip.GeoIpService;
+import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpConversationReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpConversationsReport;
+import app.nzyme.core.tables.DataTable;
+import app.nzyme.core.tables.TablesService;
+import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.MetricNames;
+import app.nzyme.core.util.Tools;
+import com.codahale.metrics.Timer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Handle;
+import org.jdbi.v3.core.statement.PreparedBatch;
+import org.joda.time.DateTime;
+
+import java.net.InetAddress;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static app.nzyme.core.util.Tools.stringtoInetAddress;
+
+public class UDPTable implements DataTable {
+
+    private static final Logger LOG = LogManager.getLogger(UDPTable.class);
+
+    private final TablesService tablesService;
+
+    private final Timer totalReportTimer;
+    private final Timer conversationsReportTimer;
+    private final Timer conversationsDiscoveryTimer;
+    private final Timer assetRegistrationTimer;
+
+    private final GeoIpService geoIp;
+
+    public UDPTable(TablesService tablesService) {
+        this.tablesService = tablesService;
+
+        this.geoIp = tablesService.getNzyme().getGeoIpService();
+
+        this.totalReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.UDP_TOTAL_REPORT_PROCESSING_TIMER);
+
+        this.conversationsReportTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.UDP_CONVERSATIONS_REPORT_PROCESSING_TIMER);
+
+        this.conversationsDiscoveryTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.UDP_CONVERSATION_DISCOVERY_QUERY_TIMER);
+
+        this.assetRegistrationTimer = tablesService.getNzyme().getMetrics()
+                .timer(MetricNames.UDP_ASSET_REGISTRATION_PROCESSING_TIMER);
+    }
+
+    public void handleReport(UUID tapUuid, DateTime timestamp, UdpConversationsReport report) {
+        try (Timer.Context ignored = totalReportTimer.time()) {
+            tablesService.getProcessorPool().submit(() -> {
+                Optional<Tap> tap = tablesService.getNzyme().getTapManager().findTap(tapUuid);
+                if (tap.isEmpty()) {
+                    throw new RuntimeException("Reporting tap [" + tapUuid + "] not found. Not processing report.");
+                }
+
+                tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                    try (Timer.Context ignored2 = conversationsReportTimer.time()) {
+                        writeConversations(handle, tap.get(), timestamp, report.conversations());
+                    }
+
+                    try (Timer.Context ignored2 = assetRegistrationTimer.time()) {
+                        registerAssets(handle, tap.get(), timestamp, report.conversations());
+                    }
+                });
+            });
+        }
+    }
+
+    private void writeConversations(Handle handle,
+                                    Tap tap,
+                                    DateTime timestamp,
+                                    List<UdpConversationReport> conversations) {
+        ObjectMapper om = new ObjectMapper();
+
+        PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO l4_sessions(tap_uuid, l4_type, " +
+                "session_key, source_mac, source_address, source_address_is_site_local, " +
+                "source_address_is_loopback, source_address_is_multicast, source_port, destination_mac, " +
+                "destination_address, destination_address_is_site_local, destination_address_is_loopback, " +
+                "destination_address_is_multicast, destination_port, bytes_count, segments_count, " +
+                "start_time, end_time, most_recent_segment_time, state, source_address_geo_asn_number, " +
+                "source_address_geo_asn_name, source_address_geo_asn_domain, source_address_geo_city, " +
+                "source_address_geo_country_code, source_address_geo_latitude, " +
+                "source_address_geo_longitude, destination_address_geo_asn_number, " +
+                "destination_address_geo_asn_name, destination_address_geo_asn_domain, " +
+                "destination_address_geo_city, destination_address_geo_country_code, " +
+                "destination_address_geo_latitude, destination_address_geo_longitude, created_at) " +
+                "VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, :source_address::inet, " +
+                ":source_address_is_site_local, :source_address_is_loopback, :source_address_is_multicast, " +
+                ":source_port, :destination_mac, :destination_address::inet, " +
+                ":destination_address_is_site_local, :destination_address_is_loopback, " +
+                ":destination_address_is_multicast, :destination_port, :bytes_count, :segments_count, " +
+                ":start_time, :end_time, :most_recent_segment_time, :state, " +
+                ":source_address_geo_asn_number, :source_address_geo_asn_name, " +
+                ":source_address_geo_asn_domain, :source_address_geo_city, " +
+                ":source_address_geo_country_code, :source_address_geo_latitude, " +
+                ":source_address_geo_longitude, :destination_address_geo_asn_number, " +
+                ":destination_address_geo_asn_name, :destination_address_geo_asn_domain, " +
+                ":destination_address_geo_city, :destination_address_geo_country_code, " +
+                ":destination_address_geo_latitude, :destination_address_geo_longitude, :created_at)");
+        PreparedBatch updateBatch = handle.prepareBatch("UPDATE l4_sessions SET state = :state, " +
+                "bytes_count = :bytes_count, segments_count = :segments_count, end_time = :end_time, " +
+                "most_recent_segment_time = :most_recent_segment_time WHERE id = :id");
+
+
+        for (UdpConversationReport conversation : conversations) {
+            try {
+                String sessionKey = Tools.buildL4Key(
+                        conversation.startTime(),
+                        conversation.sourceAddress(),
+                        conversation.destinationAddress(),
+                        conversation.sourcePort(),
+                        conversation.destinationPort()
+                );
+
+                InetAddress sourceAddress = stringtoInetAddress(conversation.sourceAddress());
+                InetAddress destinationAddress = stringtoInetAddress(conversation.destinationAddress());
+                Optional<GeoIpLookupResult> sourceGeo = geoIp.lookup(sourceAddress);
+                Optional<GeoIpLookupResult> destinationGeo = geoIp.lookup(destinationAddress);
+
+                Optional<UdpConversationEntry> existingConversation;
+                try (Timer.Context ignored = conversationsDiscoveryTimer.time()) {
+                    existingConversation = handle.createQuery("SELECT * FROM l4_sessions " +
+                                    "WHERE l4_type = 'UDP' AND session_key = :session_key AND end_time IS NULL " +
+                                    "AND tap_uuid = :tap_uuid")
+                            .bind("session_key", sessionKey)
+                            .bind("tap_uuid", tap.uuid())
+                            .mapTo(UdpConversationEntry.class)
+                            .findOne();
+                }
+
+                if (existingConversation.isPresent()) {
+                    // Existing session. Update.
+                    updateBatch
+                            .bind("state", UdpConversationState.valueOf(conversation.state().toUpperCase()))
+                            .bind("bytes_count", conversation.bytesCount())
+                            .bind("segments_count", conversation.datagramsCount())
+                            .bind("end_time", conversation.endTime())
+                            .bind("most_recent_segment_time", conversation.mostRecentSegmentTime())
+                            .bind("id", existingConversation.get().id())
+                            .add();
+                } else {
+                    // This is a new session.
+                    insertBatch
+                            .bind("tap_uuid", tap.uuid())
+                            .bind("l4_type", "UDP")
+                            .bind("session_key", sessionKey)
+                            .bind("source_mac", conversation.sourceMac())
+                            .bind("source_address", conversation.sourceAddress())
+                            .bind("source_address_is_site_local", sourceAddress.isSiteLocalAddress())
+                            .bind("source_address_is_loopback", sourceAddress.isLoopbackAddress())
+                            .bind("source_address_is_multicast", sourceAddress.isMulticastAddress())
+                            .bind("source_port", conversation.sourcePort())
+                            .bind("destination_mac", conversation.destinationMac())
+                            .bind("destination_address", conversation.destinationAddress())
+                            .bind("destination_address_is_site_local", destinationAddress.isSiteLocalAddress())
+                            .bind("destination_address_is_loopback", destinationAddress.isLoopbackAddress())
+                            .bind("destination_address_is_multicast", destinationAddress.isMulticastAddress())
+                            .bind("destination_port", conversation.destinationPort())
+                            .bind("bytes_count", conversation.bytesCount())
+                            .bind("segments_count", conversation.datagramsCount())
+                            .bind("start_time", conversation.startTime())
+                            .bind("end_time", conversation.endTime())
+                            .bind("most_recent_segment_time", conversation.mostRecentSegmentTime())
+                            .bind("state", UdpConversationState.valueOf(conversation.state().toUpperCase()))
+                            .bind("source_address_geo_asn_number", sourceGeo.map(g -> g.asn().number()).orElse(null))
+                            .bind("source_address_geo_asn_name", sourceGeo.map(g -> g.asn().name()).orElse(null))
+                            .bind("source_address_geo_asn_domain", sourceGeo.map(g -> g.asn().domain()).orElse(null))
+                            .bind("source_address_geo_city", sourceGeo.map(g -> g.geo().city()).orElse(null))
+                            .bind("source_address_geo_country_code", sourceGeo.map(g -> g.geo().countryCode()).orElse(null))
+                            .bind("source_address_geo_latitude", sourceGeo.map(g -> g.geo().latitude()).orElse(null))
+                            .bind("source_address_geo_longitude", sourceGeo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("destination_address_geo_asn_number", destinationGeo.map(g -> g.asn().number()).orElse(null))
+                            .bind("destination_address_geo_asn_name", destinationGeo.map(g -> g.asn().name()).orElse(null))
+                            .bind("destination_address_geo_asn_domain", destinationGeo.map(g -> g.asn().domain()).orElse(null))
+                            .bind("destination_address_geo_city", destinationGeo.map(g -> g.geo().city()).orElse(null))
+                            .bind("destination_address_geo_country_code", destinationGeo.map(g -> g.geo().countryCode()).orElse(null))
+                            .bind("destination_address_geo_latitude", destinationGeo.map(g -> g.geo().latitude()).orElse(null))
+                            .bind("destination_address_geo_longitude", destinationGeo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("created_at", timestamp)
+                            .add();
+                }
+            } catch(Exception e) {
+                LOG.error("Could not handle UDP conversation.", e);
+            }
+        }
+
+        try {
+            updateBatch.execute();
+            insertBatch.execute();
+        } catch (Exception e) {
+            LOG.error("Could not write UDP conversations.", e);
+        }
+    }
+
+    private void registerAssets(Handle handle, Tap tap, DateTime timestamp, List<UdpConversationReport> sessions) {
+        // TODO
+    }
+
+    @Override
+    public void retentionClean() {
+        // NOOP. Remove from plugin APIs if there remains no use. Database cleaned by category/tenant independently.
+    }
+
+}

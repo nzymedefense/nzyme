@@ -28,7 +28,7 @@ import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsRepor
 import app.nzyme.core.rest.resources.taps.reports.tables.ssh.SshSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.uav.UavsReport;
-import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpDatagramsReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpConversationsReport;
 import app.nzyme.plugin.Subsystem;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -106,18 +106,19 @@ public class TablesResource {
     }
 
     @POST
-    @Path("/udp/datagrams")
-    public Response udpDatagrams(@Context SecurityContext sc, UdpDatagramsReport report) {
+    @Path("/udp/conversations")
+    public Response udpConversations(@Context SecurityContext sc, UdpConversationsReport report) {
         AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
-            LOG.debug("Rejecting UDP datagrams report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            LOG.debug("Rejecting UDP conversations report from tap [{}]: Subsystem is disabled.", tap.getUuid());
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        LOG.debug("Received UDP datagram table report from tap [{}]: {}", tap.getUuid(), report);
+        LOG.debug("Received UDP conversations table report from tap [{}]: {}", tap.getUuid(), report);
 
         // Store in combined TCP/UDP table.
+        nzyme.getTablesService().udp().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

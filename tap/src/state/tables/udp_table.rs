@@ -1,16 +1,46 @@
+use std::collections::HashMap;
+use std::net::IpAddr;
 use std::sync::{Arc, Mutex};
-use log::error;
-use crate::wired::packets::Datagram;
+use chrono::{DateTime, Duration, Utc};
+use log::{error, info};
+use strum_macros::Display;
 use crate::helpers::timer::{record_timer, Timer};
+use crate::wired::packets::Datagram;
 use crate::link::leaderlink::Leaderlink;
-use crate::link::reports::{udp_datagrams_report};
+use crate::link::reports::udp_conversations_report;
 use crate::metrics::Metrics;
-use crate::state::tables::table_helpers::clear_mutex_vector;
+use crate::protocols::detection::l7_tagger::L7Tag;
+use crate::protocols::parsers::l4_key::L4Key;
 
 pub struct UdpTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
     metrics: Arc<Mutex<Metrics>>,
-    datagrams: Mutex<Vec<Arc<Datagram>>>
+    conversations: Mutex<HashMap<L4Key, UdpConversation>>,
+}
+
+#[derive(Debug)]
+pub struct UdpConversation {
+    pub conversation_key: L4Key,
+    pub state: UdpConversationState,
+    pub source_mac: Option<String>,
+    pub destination_mac: Option<String>,
+    pub source_address: IpAddr,
+    pub source_port: u16,
+    pub destination_address: IpAddr,
+    pub destination_port: u16,
+    pub start_time: DateTime<Utc>,
+    pub end_time: Option<DateTime<Utc>>,
+    pub most_recent_segment_time: DateTime<Utc>,
+    pub datagrams_count: u64,
+    pub bytes_count: u64,
+    pub datagrams: Vec<Arc<Datagram>>,
+    pub tags: Vec<L7Tag>
+}
+
+#[derive(PartialEq, Debug, Display, Clone)]
+pub enum UdpConversationState {
+    Active,
+    Closed
 }
 
 impl UdpTable {
@@ -19,28 +49,89 @@ impl UdpTable {
         Self {
             leaderlink,
             metrics,
-            datagrams: Mutex::new(Vec::new())
+            conversations: Mutex::new(HashMap::new())
         }
     }
 
     pub fn register_datagram(&mut self, datagram: Arc<Datagram>) {
-        match self.datagrams.lock() {
-            Ok(mut datagrams) => datagrams.push(datagram),
+        match self.conversations.lock() {
+            Ok(mut conversations) => {
+                match conversations.get_mut(&datagram.session_key) {
+                    Some(c) => {
+                        // Existing conversation.
+                        let mut timer = Timer::new();
+
+                        c.most_recent_segment_time = datagram.timestamp;
+                        c.datagrams_count += 1;
+                        c.bytes_count += datagram.payload.len() as u64;
+                        c.datagrams.push(datagram);
+
+                        timer.stop();
+                        record_timer(
+                            timer.elapsed_microseconds(),
+                            "tables.udp.conversations.timer.register_existing",
+                            &self.metrics
+                        );
+                    },
+                    None => {
+                        // New conversation.
+                        let mut timer = Timer::new();
+
+                        conversations.insert(
+                            datagram.session_key.clone(),
+                            UdpConversation {
+                                conversation_key: datagram.session_key.clone(),
+                                state: UdpConversationState::Active,
+                                source_mac: datagram.source_mac.clone(),
+                                destination_mac: datagram.destination_mac.clone(),
+                                source_address: datagram.source_address,
+                                source_port: datagram.source_port,
+                                destination_address: datagram.destination_address,
+                                destination_port: datagram.destination_port,
+                                start_time: datagram.timestamp,
+                                end_time: None,
+                                most_recent_segment_time: datagram.timestamp,
+                                datagrams_count: 1,
+                                bytes_count: datagram.payload.len() as u64,
+                                datagrams: vec![datagram],
+                                tags: vec![],
+                            }
+                        );
+
+                        timer.stop();
+                        record_timer(
+                            timer.elapsed_microseconds(),
+                            "tables.udp.conversations.timer.register_new",
+                            &self.metrics
+                        );
+                    }
+                }
+            }
             Err(e) => {
-                error!("Could not acquire datagram table mutex: {}", e);
+                error!("Could not acquire UDP conversations table mutex: {}", e);
             }
         }
     }
 
     pub fn process_report(&self) {
-        match self.datagrams.lock() {
-            Ok(datagrams) => {
+        match self.conversations.lock() {
+            Ok(mut conversations) => {
+                // Set end time and state in all expired conversations.
+                for c in conversations.values_mut() {
+                    if Utc::now() - c.most_recent_segment_time >
+                        Duration::try_seconds(60).unwrap() {
+
+                        c.end_time = Some(c.most_recent_segment_time);
+                        c.state = UdpConversationState::Closed;
+                    }
+                }
+
                 // Generate JSON.
                 let mut timer = Timer::new();
-                let report = match serde_json::to_string(&udp_datagrams_report::generate(&datagrams)) {
+                let report = match serde_json::to_string(&udp_conversations_report::generate(&conversations)) {
                     Ok(report) => report,
                     Err(e) => {
-                        error!("Could not serialize UDP datagrams report: {}", e);
+                        error!("Could not serialize UDP conversations report: {}", e);
                         return;
                     }
                 };
@@ -54,27 +145,29 @@ impl UdpTable {
                 // Send report.
                 match self.leaderlink.lock() {
                     Ok(link) => {
-                        if let Err(e) = link.send_report("udp/datagrams", report) {
-                            error!("Could not submit UDP datagrams report: {}", e);
+                        if let Err(e) = link.send_report("udp/conversations", report) {
+                            error!("Could not submit UDP conversations report: {}", e);
                         }
                     },
-                    Err(e) => error!("Could not acquire leader link lock for UDP report submission: {}", e)
+                    Err(e) => error!("Could not acquire leader link lock for UDP conversations \
+                        report submission: {}", e)
                 }
+
+                // Delete all closed conversations.
+                conversations.retain(|_key, c| c.state != UdpConversationState::Closed);
             },
             Err(e) => {
-                error!("Could not acquire UDP datagrams table mutex for report generation: {}", e);
+                error!("Could not acquire UDP conversations table mutex for report \
+                    generation and maintenance: {}", e);
             }
         }
-        
-        // Clean up.
-        clear_mutex_vector(&self.datagrams);
     }
 
     pub fn calculate_metrics(&self) {
-        let datagrams_size: i128 = match self.datagrams.lock() {
-            Ok(d) => d.len() as i128,
+        let conversations_size: i128 = match self.conversations.lock() {
+            Ok(c) => c.len() as i128,
             Err(e) => {
-                error!("Could not acquire mutex to calculate datagram table size: {}", e);
+                error!("Could not acquire mutex to calculate UDP conversation table size: {}", e);
 
                 -1
             }
@@ -82,7 +175,7 @@ impl UdpTable {
 
         match self.metrics.lock() {
             Ok(mut metrics) => {
-                metrics.set_gauge("tables.udp.datagrams.size", datagrams_size);
+                metrics.set_gauge("tables.udp.conversations.size", conversations_size);
             },
             Err(e) => error!("Could not acquire metrics mutex: {}", e)
         }

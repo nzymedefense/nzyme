@@ -67,6 +67,11 @@ public class MetricNames {
     public static final String TCP_SESSION_DISCOVERY_QUERY_TIMER = name(TCPTable.class, "session-discovery-query-timing");
     public static final String TCP_ASSET_REGISTRATION_PROCESSING_TIMER = name(TCPTable.class, "asset-registration-processing-timing");
 
+    public static final String UDP_TOTAL_REPORT_PROCESSING_TIMER = name(UDPTable.class, "total-report-processing-timing");
+    public static final String UDP_CONVERSATIONS_REPORT_PROCESSING_TIMER = name(UDPTable.class, "conversations-report-processing-timing");
+    public static final String UDP_CONVERSATION_DISCOVERY_QUERY_TIMER = name(UDPTable.class, "conversation-discovery-query-timing");
+    public static final String UDP_ASSET_REGISTRATION_PROCESSING_TIMER = name(UDPTable.class, "asset-registration-processing-timing");
+
     public static final String SOCKS_TOTAL_REPORT_PROCESSING_TIMER = name(SOCKSTable.class, "total-report-processing-timing");
     public static final String SSH_TOTAL_REPORT_PROCESSING_TIMER = name(SSHTable.class, "total-report-processing-timing");
     public static final String DHCP_TOTAL_REPORT_PROCESSING_TIMER = name(DHCPTable.class, "total-report-processing-timing");

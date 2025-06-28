@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use log::error;
 use crate::wired::packets::SocksTunnel;
-use crate::protocols::parsers::tcp::tcp_session_key::TcpSessionKey;
+use crate::protocols::parsers::l4_key::L4Key;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::socks_tunnels_report;
@@ -12,7 +12,7 @@ use crate::state::tables::table_helpers::clear_mutex_hashmap;
 pub struct SocksTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
     metrics: Arc<Mutex<Metrics>>,
-    tunnels: Mutex<HashMap<TcpSessionKey, SocksTunnel>>
+    tunnels: Mutex<HashMap<L4Key, SocksTunnel>>
 }
 
 impl SocksTable {

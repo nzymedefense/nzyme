@@ -2,27 +2,27 @@ use std::hash::{Hash, Hasher};
 use std::net::IpAddr;
 
 #[derive(Eq, Clone, Debug)]
-pub struct TcpSessionKey {
+pub struct L4Key {
     pub address_low: IpAddr,
     pub address_high: IpAddr,
     pub port_low: u16,
     pub port_high: u16,
 }
 
-impl TcpSessionKey {
+impl L4Key {
     pub fn new(source_address: IpAddr,
                source_port: u16,
                destination_address:
                IpAddr, destination_port: u16) -> Self {
         if (source_address, source_port) <= (destination_address, destination_port) {
-            TcpSessionKey {
+            L4Key {
                 address_low: source_address,
                 address_high: destination_address,
                 port_low: source_port,
                 port_high: destination_port,
             }
         } else {
-            TcpSessionKey {
+            L4Key {
                 address_low: destination_address,
                 address_high: source_address,
                 port_low: destination_port,
@@ -32,7 +32,7 @@ impl TcpSessionKey {
     }
 }
 
-impl PartialEq for TcpSessionKey {
+impl PartialEq for L4Key {
     fn eq(&self, other: &Self) -> bool {
         self.address_high == other.address_high
             && self.address_low == other.address_low
@@ -41,7 +41,7 @@ impl PartialEq for TcpSessionKey {
     }
 }
 
-impl Hash for TcpSessionKey {
+impl Hash for L4Key {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.address_low.hash(state);
         self.address_high.hash(state);
