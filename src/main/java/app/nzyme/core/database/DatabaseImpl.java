@@ -343,7 +343,6 @@ public class DatabaseImpl implements Database {
                         null
                 ));
 
-
                 tables.add(new DataTableInformation(
                         "dot11_channel_histograms",
                         "SELECT COUNT(*) FROM dot11_channel_histograms LEFT JOIN dot11_ssids ON dot11_ssids.id = dot11_channel_histograms.ssid_id WHERE dot11_ssids.tap_uuid IN (<taps>)",
@@ -384,7 +383,7 @@ public class DatabaseImpl implements Database {
                 tables.add(new DataTableInformation(
                         "bluetooth_devices",
                         "SELECT COUNT(*) FROM bluetooth_devices WHERE tap_uuid IN (<taps>)",
-                        "DELETE FROM bluetooth_devices WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                        "DELETE FROM bluetooth_devices WHERE last_seen < :since AND tap_uuid IN (<taps>)"
                 ));
             }
             case ETHERNET_L4 -> {
@@ -397,32 +396,32 @@ public class DatabaseImpl implements Database {
                 tables.add(new DataTableInformation(
                         "l4_sessions",
                         "SELECT COUNT(*) FROM l4_sessions WHERE tap_uuid IN (<taps>)",
-                        "DELETE FROM l4_sessions WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                        "DELETE FROM l4_sessions WHERE most_recent_segment_time < :since AND tap_uuid IN (<taps>)"
                 ));
 
                 tables.add(new DataTableInformation(
                         "ssh_sessions",
                         "SELECT COUNT(*) FROM ssh_sessions WHERE tap_uuid IN (<taps>)",
-                        "DELETE FROM ssh_sessions WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                        "DELETE FROM ssh_sessions WHERE most_recent_segment_time < :since AND tap_uuid IN (<taps>)"
                 ));
 
                 tables.add(new DataTableInformation(
                         "socks_tunnels",
                         "SELECT COUNT(*) FROM socks_tunnels WHERE tap_uuid IN (<taps>)",
-                        "DELETE FROM socks_tunnels WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                        "DELETE FROM socks_tunnels WHERE most_recent_segment_time < :since AND tap_uuid IN (<taps>)"
                 ));
             }
             case ETHERNET_DNS -> {
                 tables.add(new DataTableInformation(
                         "dns_log",
                         "SELECT COUNT(*) FROM dns_log WHERE tap_uuid IN (<taps>)",
-                        "DELETE FROM dns_log WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                        "DELETE FROM dns_log WHERE timestamp < :since AND tap_uuid IN (<taps>)"
                 ));
 
                 tables.add(new DataTableInformation(
                         "dns_entropy_log",
                         "SELECT COUNT(*) FROM dns_entropy_log WHERE tap_uuid IN (<taps>)",
-                        "DELETE FROM dns_entropy_log WHERE created_at < :since AND tap_uuid IN (<taps>)"
+                        "DELETE FROM dns_entropy_log WHERE timestamp < :since AND tap_uuid IN (<taps>)"
                 ));
 
                 tables.add(new DataTableInformation(
