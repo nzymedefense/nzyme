@@ -2,6 +2,7 @@ package app.nzyme.core.ethernet;
 
 import app.nzyme.core.NzymeNodeImpl;
 import app.nzyme.core.ethernet.tcp.TcpSessionState;
+import app.nzyme.core.ethernet.udp.UdpConversationState;
 import app.nzyme.core.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,24 +10,24 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 
-public class EthernetConnectionCleaner extends Periodical {
+public class L4ConnectionCleaner extends Periodical {
 
     /*
      * This functionality takes care of situations where a tap shuts down with connections still open. Such a tap
-     * would never see the FIN/RST, and we'd end up with a connection that exists for forever.
+     * would never see the FIN/RST in TCP or timeout in UDP, and we'd end up with a connection that exists for forever.
      */
 
-    private static final Logger LOG = LogManager.getLogger(EthernetConnectionCleaner.class);
+    private static final Logger LOG = LogManager.getLogger(L4ConnectionCleaner.class);
 
     private final NzymeNodeImpl nzyme;
 
-    public EthernetConnectionCleaner(NzymeNodeImpl nzyme) {
+    public L4ConnectionCleaner(NzymeNodeImpl nzyme) {
         this.nzyme = nzyme;
     }
 
     @Override
     protected void execute() {
-        LOG.debug("Cleaning stale Ethernet connections.");
+        LOG.debug("Cleaning stale L4 connections.");
 
         int tcpSessionTimeoutSeconds;
         if (nzyme.getConfiguration().protocols().isPresent()
@@ -54,11 +55,21 @@ public class EthernetConnectionCleaner extends Periodical {
                         )
                         .execute()
         );
+
+        // UDP.
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE l4_sessions SET state = :new_state " +
+                                "WHERE l4_type = 'UDP' AND most_recent_segment_time < :cutoff " +
+                                "AND state <> 'CLOSED'")
+                        .bind("new_state", UdpConversationState.CLOSEDNODE)
+                        .bind("cutoff", DateTime.now().minusSeconds(120))
+                        .execute()
+        );
     }
 
     @Override
     public String getName() {
-        return "EthernetConnectionCleaner";
+        return "L4ConnectionCleaner";
     }
 
 }

@@ -9,6 +9,7 @@ public enum UdpConversationState {
      */
 
     ACTIVE,
-    CLOSED
+    CLOSED,
+    CLOSEDNODE
 
 }

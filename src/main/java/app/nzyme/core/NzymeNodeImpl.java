@@ -36,7 +36,7 @@ import app.nzyme.core.dot11.monitoring.Dot11SignalTrackMonitor;
 import app.nzyme.core.dot11.monitoring.clients.KnownClientMonitor;
 import app.nzyme.core.dot11.monitoring.disco.Dot11DiscoMonitor;
 import app.nzyme.core.dot11.monitoring.ssids.KnownSSIDMonitor;
-import app.nzyme.core.ethernet.EthernetConnectionCleaner;
+import app.nzyme.core.ethernet.L4ConnectionCleaner;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.ScheduledIntegrationsManager;
@@ -299,7 +299,7 @@ public class NzymeNodeImpl implements NzymeNode {
         PeriodicalManager periodicalManager = new PeriodicalManager();
         periodicalManager.scheduleAtFixedRate(new NodeUpdater(this), 0, 5, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new ConnectStatusReporter(this), 0, 1, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new EthernetConnectionCleaner(this), 0, 1, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new L4ConnectionCleaner(this), 0, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new Dot11SignalTrackMonitor(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new Dot11DiscoMonitor(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new ContextCleaner(getContextService()), 0, 1, TimeUnit.MINUTES);
