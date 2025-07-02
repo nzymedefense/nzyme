@@ -4,10 +4,14 @@ import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSp
 import {TapContext} from "../../../../App";
 import DNSEntropyLogTableRow from "./DNSEntropyLogTableRow";
 import Paginator from "../../../misc/Paginator";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const dnsService = new DNSService()
 
 export default function DNSEntropyLogTable(props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
+
 
   const timeRange = props.timeRange;
   const [data, setData] = useState(null);
@@ -20,8 +24,8 @@ export default function DNSEntropyLogTable(props) {
 
   useEffect(() => {
     setData(null);
-    dnsService.getGlobalEntropyLog(timeRange, selectedTaps, perPage, (page-1)*perPage, setData);
-  }, [selectedTaps, timeRange, page]);
+    dnsService.getGlobalEntropyLog(organizationId, tenantId, timeRange, selectedTaps, perPage, (page-1)*perPage, setData);
+  }, [organizationId, tenantId, selectedTaps, timeRange, page]);
 
   if (!data) {
     return <GenericWidgetLoadingSpinner height={500} />

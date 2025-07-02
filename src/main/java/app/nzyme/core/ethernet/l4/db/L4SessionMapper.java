@@ -1,25 +1,21 @@
-package app.nzyme.core.ethernet.tcp.db;
+package app.nzyme.core.ethernet.l4.db;
 
 import app.nzyme.core.ethernet.L4MapperTools;
 import app.nzyme.core.ethernet.L4Type;
-import app.nzyme.core.ethernet.tcp.TcpSessionState;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.UUID;
 
-public class TcpSessionEntryMapper implements RowMapper<TcpSessionEntry> {
+public class L4SessionMapper implements RowMapper<L4Session> {
 
     @Override
-    public TcpSessionEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return TcpSessionEntry.create(
-                rs.getLong("id"),
+    public L4Session map(ResultSet rs, StatementContext ctx) throws SQLException {
+        return L4Session.create(
                 rs.getString("session_key"),
-                UUID.fromString(rs.getString("tap_uuid")),
-                L4Type.TCP,
+                L4Type.valueOf(rs.getString("l4_type")),
                 L4MapperTools.fieldsToAddressData("source", rs),
                 L4MapperTools.fieldsToAddressData("destination", rs),
                 rs.getLong("bytes_count"),
@@ -27,7 +23,7 @@ public class TcpSessionEntryMapper implements RowMapper<TcpSessionEntry> {
                 new DateTime(rs.getTimestamp("start_time")),
                 rs.getTimestamp("end_time") == null ? null : new DateTime(rs.getTimestamp("end_time")),
                 new DateTime(rs.getTimestamp("most_recent_segment_time")),
-                TcpSessionState.valueOf(rs.getString("state").toUpperCase()),
+                rs.getString("state"),
                 new DateTime(rs.getTimestamp("created_at"))
         );
     }

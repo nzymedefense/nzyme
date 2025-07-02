@@ -18,35 +18,35 @@ export default class DNSService {
     )
   }
 
-  getGlobalPairs(timeRange, taps, limit, offset, setPairs) {
+  getGlobalPairs(organizationId, tenantId, timeRange, taps, limit, offset, setPairs) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/ethernet/dns/global/pairs", { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
+    RESTClient.get("/ethernet/dns/global/pairs", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
         (response) => setPairs(response.data)
     )
   }
 
-  getGlobalEntropyLog(timeRange, taps, limit, offset, setEntropyLog) {
+  getGlobalEntropyLog(organizationId, tenantId, timeRange, taps, limit, offset, setEntropyLog) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/ethernet/dns/global/entropylog", { time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
+    RESTClient.get("/ethernet/dns/global/entropylog", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, taps: tapsList, limit: limit, offset: offset },
         (response) => setEntropyLog(response.data)
     )
   }
 
-  findAllTransactions(timeRange, filters, taps, limit, offset, setTransactions) {
+  findAllTransactions(organizationId, tenantId, timeRange, filters, taps, limit, offset, setTransactions) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/ethernet/dns/transactions/log", { time_range: timeRange, filters: filters, taps: tapsList, limit: limit, offset: offset },
+    RESTClient.get("/ethernet/dns/transactions/log", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, taps: tapsList, limit: limit, offset: offset },
         (response) => setTransactions(response.data)
     )
   }
 
-  findResponsesOfTransaction(transactionId, transactionTimestamp, taps, setResponses) {
+  findResponsesOfTransaction(organizationId, tenantId, transactionId, transactionTimestamp, taps, setResponses) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get(`/ethernet/dns/transactions/log/${transactionId}/responses`,
-        { taps: tapsList, transaction_timestamp: transactionTimestamp},
+        { organization_id: organizationId, tenant_id: tenantId, taps: tapsList, transaction_timestamp: transactionTimestamp},
         (response) => setResponses(response.data)
     )
   }

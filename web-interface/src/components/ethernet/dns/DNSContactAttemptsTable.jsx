@@ -5,10 +5,13 @@ import {DEFAULT_LIMIT} from "../../widgets/LimitSelector";
 import {TapContext} from "../../../App";
 import DNSService from "../../../services/ethernet/DNSService";
 import ThreeColumnHistogram from "../../widgets/histograms/ThreeColumnHistogram";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const dnsService = new DNSService()
 
 export default function DNSContactAttemptsTable (props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const timeRange = props.timeRange;
 
@@ -21,8 +24,8 @@ export default function DNSContactAttemptsTable (props) {
 
   useEffect(() => {
     setData(null);
-    dnsService.getGlobalPairs(timeRange, selectedTaps, limit, 0, setData);
-  }, [selectedTaps, limit, timeRange]);
+    dnsService.getGlobalPairs(organizationId, tenantId, timeRange, selectedTaps, limit, 0, setData);
+  }, [organizationId, tenantId, selectedTaps, limit, timeRange]);
 
   if (!data) {
     return <GenericWidgetLoadingSpinner height={300} />

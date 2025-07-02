@@ -1,4 +1,4 @@
-package app.nzyme.core.ethernet.tcp;
+package app.nzyme.core.ethernet.l4.tcp;
 
 public enum TcpSessionState {
 

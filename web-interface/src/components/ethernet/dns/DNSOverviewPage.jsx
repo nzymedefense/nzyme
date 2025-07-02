@@ -124,7 +124,7 @@ function DNSOverviewPage () {
                                        timeRange={contactAttemptsTimeRange}
                                        setTimeRange={setContactAttemptsTimeRange}/>
 
-                <DNSContactAttemptsTable timeRange={contactAttemptsTimeRange}/>
+                <DNSContactAttemptsTable timeRange={contactAttemptsTimeRange} />
               </div>
             </div>
           </div>
@@ -139,7 +139,7 @@ function DNSOverviewPage () {
                                        timeRange={entropyLogTimeRange}
                                        setTimeRange={setEntropyLogTimeRange}/>
 
-                <DNSEntropyLogTable timeRange={entropyLogTimeRange}/>
+                <DNSEntropyLogTable timeRange={entropyLogTimeRange}  />
               </div>
             </div>
           </div>

@@ -1,8 +1,8 @@
-package app.nzyme.core.ethernet.tcp.db;
+package app.nzyme.core.ethernet.l4.udp.db;
 
 import app.nzyme.core.ethernet.L4AddressData;
 import app.nzyme.core.ethernet.L4Type;
-import app.nzyme.core.ethernet.tcp.TcpSessionState;
+import app.nzyme.core.ethernet.l4.udp.UdpConversationState;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
@@ -10,7 +10,7 @@ import org.joda.time.DateTime;
 import java.util.UUID;
 
 @AutoValue
-public abstract class TcpSessionEntry {
+public abstract class UdpConversationEntry {
 
     public abstract long id();
     public abstract String sessionKey();
@@ -24,10 +24,10 @@ public abstract class TcpSessionEntry {
     @Nullable
     public abstract DateTime endTime();
     public abstract DateTime mostRecentSegmentTime();
-    public abstract TcpSessionState state();
+    public abstract UdpConversationState state();
     public abstract DateTime createdAt();
 
-    public static TcpSessionEntry create(long id, String sessionKey, UUID tapUuid, L4Type l4Type, L4AddressData source, L4AddressData destination, long bytesCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, TcpSessionState state, DateTime createdAt) {
+    public static UdpConversationEntry create(long id, String sessionKey, UUID tapUuid, L4Type l4Type, L4AddressData source, L4AddressData destination, long bytesCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, UdpConversationState state, DateTime createdAt) {
         return builder()
                 .id(id)
                 .sessionKey(sessionKey)
@@ -46,7 +46,7 @@ public abstract class TcpSessionEntry {
     }
 
     public static Builder builder() {
-        return new AutoValue_TcpSessionEntry.Builder();
+        return new AutoValue_UdpConversationEntry.Builder();
     }
 
     @AutoValue.Builder
@@ -73,10 +73,10 @@ public abstract class TcpSessionEntry {
 
         public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
 
-        public abstract Builder state(TcpSessionState state);
+        public abstract Builder state(UdpConversationState state);
 
         public abstract Builder createdAt(DateTime createdAt);
 
-        public abstract TcpSessionEntry build();
+        public abstract UdpConversationEntry build();
     }
 }

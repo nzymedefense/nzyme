@@ -158,6 +158,7 @@ public class AssetsResource extends TapDataHandlingResource {
                 asset.get().dhcpFingerprintRebind(),
                 asset.get().seenDhcp(),
                 asset.get().seenTcp(),
+                asset.get().seenUdp(),
                 asset.get().firstSeen(),
                 asset.get().lastSeen()
         )).build();

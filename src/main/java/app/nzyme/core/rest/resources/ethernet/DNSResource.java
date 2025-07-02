@@ -118,11 +118,17 @@ public class DNSResource extends TapDataHandlingResource {
     @GET
     @Path("/global/pairs")
     public Response globalPairs(@Context SecurityContext sc,
+                                @QueryParam("organization_id") UUID organizationId,
+                                @QueryParam("tenant_id") UUID tenantId,
                                 @QueryParam("time_range") @Valid String timeRangeParameter,
                                 @QueryParam("limit") int limit,
                                 @QueryParam("offset") int offset,
                                 @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
@@ -144,7 +150,7 @@ public class DNSResource extends TapDataHandlingResource {
 
             values.add(ThreeColumnTableHistogramValueResponse.create(
                     HistogramValueStructureResponse.create(
-                            RestHelpers.L4AddressDataToResponse(L4Type.UDP, ps.server()),
+                            RestHelpers.L4AddressDataToResponse(nzyme, organizationId, tenantId, L4Type.UDP, ps.server()),
                             HistogramValueType.L4_ADDRESS,
                             null
                     ),
@@ -168,11 +174,18 @@ public class DNSResource extends TapDataHandlingResource {
     @GET
     @Path("/global/entropylog")
     public Response globalEntropyLog(@Context SecurityContext sc,
+                                     @QueryParam("organization_id") UUID organizationId,
+                                     @QueryParam("tenant_id") UUID tenantId,
                                      @QueryParam("time_range") @Valid String timeRangeParameter,
                                      @QueryParam("limit") int limit,
                                      @QueryParam("offset") int offset,
                                      @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         long total = nzyme.getEthernet().dns().countAllEntropyLogs(timeRange, taps);
@@ -191,10 +204,10 @@ public class DNSResource extends TapDataHandlingResource {
                     continue;
                 }
 
-                DNSLogDataResponse query = logToResponse(transaction.get().query());
+                DNSLogDataResponse query = logToResponse(organizationId, tenantId, transaction.get().query());
                 List<DNSLogDataResponse> responses = Lists.newArrayList();
                 for (DNSLogEntry response : transaction.get().responses()) {
-                    responses.add(logToResponse(response));
+                    responses.add(logToResponse(organizationId, tenantId, response));
                 }
 
                 logs.add(DNSEntropyLogResponse.create(query, responses, el.entropy(), el.entropyMean(), el.zscore()));
@@ -207,12 +220,19 @@ public class DNSResource extends TapDataHandlingResource {
     @GET
     @Path("/transactions/log")
     public Response transactionLog(@Context SecurityContext sc,
+                                   @QueryParam("organization_id") UUID organizationId,
+                                   @QueryParam("tenant_id") UUID tenantId,
                                    @QueryParam("time_range") String timeRangeParameter,
                                    @QueryParam("filters") String filtersParameter,
                                    @QueryParam("limit") int limit,
                                    @QueryParam("offset") int offset,
                                    @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Filters filters = parseFiltersQueryParameter(filtersParameter);
 
@@ -221,7 +241,7 @@ public class DNSResource extends TapDataHandlingResource {
         List<DNSLogEntryResponse> transactions = Lists.newArrayList();
         for (DNSLogEntry q : nzyme.getEthernet().dns()
                 .findAllQueries(timeRange, filters, limit, offset, taps)) {
-            DNSLogDataResponse query = logToResponse(q);
+            DNSLogDataResponse query = logToResponse(organizationId, tenantId, q);
 
             transactions.add(DNSLogEntryResponse.create(query));
         }
@@ -234,13 +254,18 @@ public class DNSResource extends TapDataHandlingResource {
     @GET
     @Path("/transactions/log/{transactionId}/responses")
     public Response findTransactionResponses(@Context SecurityContext sc,
+                                             @QueryParam("organization_id") UUID organizationId,
+                                             @QueryParam("tenant_id") UUID tenantId,
                                              @PathParam("transactionId") int transactionId,
                                              @QueryParam("transaction_timestamp") String transactionTimestamp,
                                              @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
 
-        DateTime timestamp;
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
+        DateTime timestamp;
         try {
             timestamp = DateTime.parse(transactionTimestamp);
         } catch(Exception e) {
@@ -256,7 +281,7 @@ public class DNSResource extends TapDataHandlingResource {
 
         List<DNSLogDataResponse> responses = Lists.newArrayList();
         for (DNSLogEntry response : result.get().responses()) {
-            responses.add(logToResponse(response));
+            responses.add(logToResponse(organizationId, tenantId, response));
         }
 
         return Response.ok(responses).build();
@@ -284,13 +309,13 @@ public class DNSResource extends TapDataHandlingResource {
         return Response.ok(response).build();
     }
 
-    private DNSLogDataResponse logToResponse(DNSLogEntry log) {
+    private DNSLogDataResponse logToResponse(UUID organizationId, UUID tenantId, DNSLogEntry log) {
         return DNSLogDataResponse.create(
                 log.uuid(),
                 log.tapUUID(),
                 log.transactionId(),
-                RestHelpers.L4AddressDataToResponse(L4Type.UDP, log.client()),
-                RestHelpers.L4AddressDataToResponse(L4Type.UDP, log.server()),
+                RestHelpers.L4AddressDataToResponse(nzyme, organizationId, tenantId, L4Type.UDP, log.client()),
+                RestHelpers.L4AddressDataToResponse(nzyme, organizationId, tenantId, L4Type.UDP, log.server()),
                 log.dataValue(),
                 log.dataValueEtld(),
                 log.dataType(),

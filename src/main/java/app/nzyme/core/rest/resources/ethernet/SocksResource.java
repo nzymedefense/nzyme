@@ -3,7 +3,7 @@ package app.nzyme.core.rest.resources.ethernet;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.socks.db.SocksTunnelEntry;
-import app.nzyme.core.ethernet.tcp.db.TcpSessionEntry;
+import app.nzyme.core.ethernet.l4.tcp.db.TcpSessionEntry;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.ethernet.L4AddressResponse;
@@ -39,12 +39,18 @@ public class SocksResource extends TapDataHandlingResource {
     @GET
     @Path("/tunnels")
     public Response tunnels(@Context SecurityContext sc,
+                            @QueryParam("organization_id") UUID organizationId,
+                            @QueryParam("tenant_id") UUID tenantId,
                             @QueryParam("time_range") @Valid String timeRangeParameter,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset,
                             @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         long total = nzyme.getEthernet().socks().countAllTunnels(timeRange, taps);
 
@@ -57,8 +63,12 @@ public class SocksResource extends TapDataHandlingResource {
             L4AddressResponse client = null;
             L4AddressResponse socksServer = null;
             if (tcpSession.isPresent()) {
-                client = RestHelpers.L4AddressDataToResponse(L4Type.TCP, tcpSession.get().source());
-                socksServer = RestHelpers.L4AddressDataToResponse(L4Type.TCP, tcpSession.get().destination());
+                client = RestHelpers.L4AddressDataToResponse(
+                        nzyme, organizationId, tenantId, L4Type.TCP, tcpSession.get().source()
+                );
+                socksServer = RestHelpers.L4AddressDataToResponse(
+                        nzyme, organizationId, tenantId, L4Type.TCP, tcpSession.get().destination()
+                );
             }
 
             tunnels.add(SocksTunnelDetailsResponse.create(

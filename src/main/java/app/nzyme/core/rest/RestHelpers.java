@@ -1,29 +1,33 @@
 package app.nzyme.core.rest;
 
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.context.ContextService;
+import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
 import app.nzyme.core.ethernet.L4AddressData;
 import app.nzyme.core.ethernet.L4Type;
-import app.nzyme.core.ethernet.tcp.TcpSessionState;
+import app.nzyme.core.ethernet.l4.tcp.TcpSessionState;
 import app.nzyme.core.rest.misc.CategorizedTransparentContextData;
 import app.nzyme.core.rest.responses.context.MacAddressTransparentHostnameResponse;
 import app.nzyme.core.rest.responses.context.MacAddressTransparentIpAddressResponse;
-import app.nzyme.core.rest.responses.ethernet.L4AddressAttributesResponse;
-import app.nzyme.core.rest.responses.ethernet.L4AddressGeoResponse;
-import app.nzyme.core.rest.responses.ethernet.L4AddressResponse;
-import app.nzyme.core.rest.responses.ethernet.L4AddressTypeResponse;
+import app.nzyme.core.rest.responses.ethernet.*;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
-
+import java.util.Optional;
+import java.util.UUID;
 
 public class RestHelpers {
 
     private static final Logger LOG = LogManager.getLogger(RestHelpers.class);
 
-    public static L4AddressResponse L4AddressDataToResponse(L4Type type, L4AddressData data) {
+    public static L4AddressResponse L4AddressDataToResponse(NzymeNode nzyme,
+                                                            UUID organizationId,
+                                                            UUID tenantId,
+                                                            L4Type type,
+                                                            L4AddressData data) {
         L4AddressTypeResponse typeResponse;
         switch(type) {
             case TCP:
@@ -62,9 +66,30 @@ public class RestHelpers {
             attributes = null;
         }
 
+        Optional<MacAddressContextEntry> context;
+        EthernetMacAddressResponse macResponse;
+        if (data.mac() != null) {
+            context = nzyme.getContextService().findMacAddressContext(data.mac(), organizationId, tenantId);
+
+            macResponse = EthernetMacAddressResponse.create(
+                    data.mac(),
+                    nzyme.getOuiService().lookup(data.mac()).orElse(null),
+                    context.map(ctx ->
+                            EthernetMacAddressContextResponse.create(
+                                    ctx.name(),
+                                    ctx.description()
+                            )
+                    ).orElse(null)
+            );
+        } else {
+            context = Optional.empty();
+            macResponse = null;
+        }
+
         return L4AddressResponse.create(
                 typeResponse,
-                data.mac(),
+                macResponse,
+                context.map(MacAddressContextEntry::name).orElse(null),
                 data.address(),
                 data.port(),
                 geo,

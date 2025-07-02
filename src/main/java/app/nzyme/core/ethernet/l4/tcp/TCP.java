@@ -1,8 +1,8 @@
-package app.nzyme.core.ethernet.tcp;
+package app.nzyme.core.ethernet.l4.tcp;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.ethernet.tcp.db.TcpSessionEntry;
+import app.nzyme.core.ethernet.l4.tcp.db.TcpSessionEntry;
 import org.joda.time.DateTime;
 
 import java.util.List;

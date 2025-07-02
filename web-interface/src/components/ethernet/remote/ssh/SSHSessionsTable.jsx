@@ -4,10 +4,13 @@ import SSHService from "../../../../services/ethernet/SSHService";
 import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSpinner";
 import Paginator from "../../../misc/Paginator";
 import SSHSessionsTableRow from "./SSHSessionsTableRow";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const sshService = new SSHService();
 
 export default function SSHSessionsTable(props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const timeRange = props.timeRange;
   const [data, setData] = useState(null);
@@ -20,8 +23,8 @@ export default function SSHSessionsTable(props) {
 
   useEffect(() => {
     setData(null);
-    sshService.findAllTunnels(timeRange, selectedTaps, perPage, (page-1)*perPage, setData);
-  }, [selectedTaps, timeRange, page]);
+    sshService.findAllTunnels(organizationId, tenantId, timeRange, selectedTaps, perPage, (page-1)*perPage, setData);
+  }, [organizationId, tenantId, selectedTaps, timeRange, page]);
 
   if (!data) {
     return <GenericWidgetLoadingSpinner height={150} />

@@ -84,7 +84,10 @@ export default function DNSTransactionLogsPage() {
                                        fixedAppliedTimeRange={timeRange}
                                        refreshAction={() => { setRevision(new Date()) }} />
 
-                <DNSTransactionsTable timeRange={timeRange} filters={filters} setFilters={setFilters} revision={revision}/>
+                <DNSTransactionsTable timeRange={timeRange}
+                                      filters={filters}
+                                      setFilters={setFilters}
+                                      revision={revision}/>
               </div>
             </div>
           </div>

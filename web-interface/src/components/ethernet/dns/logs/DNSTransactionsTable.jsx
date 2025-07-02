@@ -6,10 +6,13 @@ import Paginator from "../../../misc/Paginator";
 import DNSTransactionLogTableRow from "./DNSTransactionLogTableRow";
 
 import numeral from "numeral";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const dnsService = new DNSService();
 
 export default function DNSTransactionsTable(props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const timeRange = props.timeRange;
   const filters = props.filters;
@@ -26,8 +29,8 @@ export default function DNSTransactionsTable(props) {
 
   useEffect(() => {
     setData(null);
-    dnsService.findAllTransactions(timeRange, filters, selectedTaps, perPage, (page-1)*perPage, setData);
-  }, [selectedTaps, timeRange, filters, revision, page]);
+    dnsService.findAllTransactions(organizationId, tenantId, timeRange, filters, selectedTaps, perPage, (page-1)*perPage, setData);
+  }, [organizationId, tenantId, selectedTaps, timeRange, filters, revision, page]);
 
   if (!data) {
     return <GenericWidgetLoadingSpinner height={500} />

@@ -24,12 +24,13 @@ public abstract class AssetEntry {
     public abstract String dhcpFingerprintRebind();
     public abstract boolean seenDhcp();
     public abstract boolean seenTcp();
+    public abstract boolean seenUdp();
     public abstract DateTime firstSeen();
     public abstract DateTime lastSeen();
     public abstract DateTime updatedAt();
     public abstract DateTime createdAt();
 
-    public static AssetEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String mac, String dhcpFingerprintInitial, String dhcpFingerprintRenew, String dhcpFingerprintReboot, String dhcpFingerprintRebind, boolean seenDhcp, boolean seenTcp, DateTime firstSeen, DateTime lastSeen, DateTime updatedAt, DateTime createdAt) {
+    public static AssetEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String mac, String dhcpFingerprintInitial, String dhcpFingerprintRenew, String dhcpFingerprintReboot, String dhcpFingerprintRebind, boolean seenDhcp, boolean seenTcp, boolean seenUdp, DateTime firstSeen, DateTime lastSeen, DateTime updatedAt, DateTime createdAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -42,6 +43,7 @@ public abstract class AssetEntry {
                 .dhcpFingerprintRebind(dhcpFingerprintRebind)
                 .seenDhcp(seenDhcp)
                 .seenTcp(seenTcp)
+                .seenUdp(seenUdp)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .updatedAt(updatedAt)
@@ -76,6 +78,8 @@ public abstract class AssetEntry {
         public abstract Builder seenDhcp(boolean seenDhcp);
 
         public abstract Builder seenTcp(boolean seenTcp);
+
+        public abstract Builder seenUdp(boolean seenUdp);
 
         public abstract Builder firstSeen(DateTime firstSeen);
 

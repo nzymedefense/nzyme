@@ -7,7 +7,7 @@ import moment from "moment";
 import AssetHostnames from "./AssetHostnames";
 import AssetIpAddresses from "./AssetIpAddresses";
 import Paginator from "../../misc/Paginator";
-import AssetName from "./AssetName";
+import AssetName from "../shared/AssetName";
 import {truncate} from "../../../util/Tools";
 import ApiRoutes from "../../../util/ApiRoutes";
 

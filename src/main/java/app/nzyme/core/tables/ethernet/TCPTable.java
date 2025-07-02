@@ -2,9 +2,9 @@ package app.nzyme.core.tables.ethernet;
 
 import app.nzyme.core.assets.AssetInformation;
 import app.nzyme.core.assets.db.AssetEntry;
-import app.nzyme.core.ethernet.tcp.TCPFingerprint;
-import app.nzyme.core.ethernet.tcp.TcpSessionState;
-import app.nzyme.core.ethernet.tcp.db.TcpSessionEntry;
+import app.nzyme.core.ethernet.l4.tcp.TCPFingerprint;
+import app.nzyme.core.ethernet.l4.tcp.TcpSessionState;
+import app.nzyme.core.ethernet.l4.tcp.db.TcpSessionEntry;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionReport;

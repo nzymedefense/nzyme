@@ -12,7 +12,11 @@ public abstract class L4AddressResponse {
 
     @Nullable
     @JsonProperty("mac")
-    public abstract String mac();
+    public abstract EthernetMacAddressResponse mac();
+
+    @Nullable
+    @JsonProperty("asset_name")
+    public abstract String assetName();
 
     @JsonProperty("address")
     public abstract String address();
@@ -32,10 +36,11 @@ public abstract class L4AddressResponse {
     @JsonProperty("context")
     public abstract L4AddressContextResponse context();
 
-    public static L4AddressResponse create(L4AddressTypeResponse l4Type, String mac, String address, int port, L4AddressGeoResponse geo, L4AddressAttributesResponse attributes, L4AddressContextResponse context) {
+    public static L4AddressResponse create(L4AddressTypeResponse l4Type, EthernetMacAddressResponse mac, String assetName, String address, int port, L4AddressGeoResponse geo, L4AddressAttributesResponse attributes, L4AddressContextResponse context) {
         return builder()
                 .l4Type(l4Type)
                 .mac(mac)
+                .assetName(assetName)
                 .address(address)
                 .port(port)
                 .geo(geo)
@@ -52,7 +57,9 @@ public abstract class L4AddressResponse {
     public abstract static class Builder {
         public abstract Builder l4Type(L4AddressTypeResponse l4Type);
 
-        public abstract Builder mac(String mac);
+        public abstract Builder mac(EthernetMacAddressResponse mac);
+
+        public abstract Builder assetName(String assetName);
 
         public abstract Builder address(String address);
 

@@ -4,10 +4,13 @@ import {TapContext} from "../../../../App";
 import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSpinner";
 import Paginator from "../../../misc/Paginator";
 import SocksTunnelsTableRow from "./SocksTunnelsTableRow";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const socksService = new SocksService();
 
 export default function SocksTunnelsTable(props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const timeRange = props.timeRange;
   const [data, setData] = useState(null);
@@ -20,8 +23,8 @@ export default function SocksTunnelsTable(props) {
 
   useEffect(() => {
     setData(null);
-    socksService.findAllTunnels(timeRange, selectedTaps, perPage, (page-1)*perPage, setData);
-  }, [selectedTaps, timeRange, page]);
+    socksService.findAllTunnels(organizationId, tenantId, timeRange, selectedTaps, perPage, (page-1)*perPage, setData);
+  }, [organizationId, tenantId, selectedTaps, timeRange, page]);
 
   if (!data) {
     return <GenericWidgetLoadingSpinner height={150} />

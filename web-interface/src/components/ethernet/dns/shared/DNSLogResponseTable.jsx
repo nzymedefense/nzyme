@@ -4,12 +4,15 @@ import ETLD from "../../shared/ETLD";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import DNSService from "../../../../services/ethernet/DNSService";
 import {TapContext} from "../../../../App";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const COLSPAN = 8;
 
 const dnsService = new DNSService();
 
 export default function DNSLogResponseTable(props) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const transactionId = props.transactionId;
   const transactionTimestamp = props.transactionTimestamp;
@@ -22,9 +25,9 @@ export default function DNSLogResponseTable(props) {
 
   useEffect(() => {
     if (show && !responses) {
-      dnsService.findResponsesOfTransaction(transactionId, transactionTimestamp, selectedTaps, setResponses);
+      dnsService.findResponsesOfTransaction(organizationId, tenantId, transactionId, transactionTimestamp, selectedTaps, setResponses);
     }
-  }, [show]);
+  }, [show, organizationId, tenantId, transactionId, selectedTaps]);
 
   if (!show) {
     return null;

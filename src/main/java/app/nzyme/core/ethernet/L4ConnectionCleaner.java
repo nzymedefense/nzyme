@@ -1,8 +1,8 @@
 package app.nzyme.core.ethernet;
 
 import app.nzyme.core.NzymeNodeImpl;
-import app.nzyme.core.ethernet.tcp.TcpSessionState;
-import app.nzyme.core.ethernet.udp.UdpConversationState;
+import app.nzyme.core.ethernet.l4.tcp.TcpSessionState;
+import app.nzyme.core.ethernet.l4.udp.UdpConversationState;
 import app.nzyme.core.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -2,8 +2,8 @@ package app.nzyme.core.tables.ethernet;
 
 import app.nzyme.core.assets.AssetInformation;
 import app.nzyme.core.assets.db.AssetEntry;
-import app.nzyme.core.ethernet.udp.UdpConversationState;
-import app.nzyme.core.ethernet.udp.db.UdpConversationEntry;
+import app.nzyme.core.ethernet.l4.udp.UdpConversationState;
+import app.nzyme.core.ethernet.l4.udp.db.UdpConversationEntry;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpConversationReport;

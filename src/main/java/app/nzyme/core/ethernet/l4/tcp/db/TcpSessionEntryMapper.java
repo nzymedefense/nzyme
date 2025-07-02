@@ -1,8 +1,8 @@
-package app.nzyme.core.ethernet.udp.db;
+package app.nzyme.core.ethernet.l4.tcp.db;
 
 import app.nzyme.core.ethernet.L4MapperTools;
 import app.nzyme.core.ethernet.L4Type;
-import app.nzyme.core.ethernet.udp.UdpConversationState;
+import app.nzyme.core.ethernet.l4.tcp.TcpSessionState;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -11,11 +11,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class UdpConversationEntryMapper implements RowMapper<UdpConversationEntry> {
+public class TcpSessionEntryMapper implements RowMapper<TcpSessionEntry> {
 
     @Override
-    public UdpConversationEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return UdpConversationEntry.create(
+    public TcpSessionEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
+        return TcpSessionEntry.create(
                 rs.getLong("id"),
                 rs.getString("session_key"),
                 UUID.fromString(rs.getString("tap_uuid")),
@@ -27,7 +27,7 @@ public class UdpConversationEntryMapper implements RowMapper<UdpConversationEntr
                 new DateTime(rs.getTimestamp("start_time")),
                 rs.getTimestamp("end_time") == null ? null : new DateTime(rs.getTimestamp("end_time")),
                 new DateTime(rs.getTimestamp("most_recent_segment_time")),
-                UdpConversationState.valueOf(rs.getString("state").toUpperCase()),
+                TcpSessionState.valueOf(rs.getString("state").toUpperCase()),
                 new DateTime(rs.getTimestamp("created_at"))
         );
     }

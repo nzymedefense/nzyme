@@ -1,4 +1,4 @@
-package app.nzyme.core.ethernet.tcp;
+package app.nzyme.core.ethernet.l4.tcp;
 
 import com.google.common.hash.Hashing;
 import jakarta.annotation.Nullable;

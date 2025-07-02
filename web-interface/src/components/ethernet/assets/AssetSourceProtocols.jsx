@@ -12,6 +12,10 @@ export default function AssetSourceProtocols(props) {
     protocols.push("TCP");
   }
 
+  if (asset.seen_udp) {
+    protocols.push("UDP");
+  }
+
   return protocols.join(", ")
 
 }

@@ -1,4 +1,4 @@
-package app.nzyme.core.ethernet.udp;
+package app.nzyme.core.ethernet.l4.udp;
 
 public enum UdpConversationState {
 
