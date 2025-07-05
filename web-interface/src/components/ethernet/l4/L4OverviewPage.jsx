@@ -29,7 +29,7 @@ export default function L4OverviewPage() {
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
-  const [orderColumn, setOrderColumn] = useState("initiated_at");
+  const [orderColumn, setOrderColumn] = useState("most_recent_segment_time");
   const [orderDirection, setOrderDirection] = useState("DESC");
 
   const perPage = 25;
@@ -51,7 +51,7 @@ export default function L4OverviewPage() {
 
   useEffect(() => {
     setSessions(null);
-    l4Service.findAllSessions(organizationId, tenantId, selectedTaps, filters, timeRange, "most_recent_segment_time", "DESC", perPage, (page-1)*perPage, setSessions)
+    l4Service.findAllSessions(organizationId, tenantId, selectedTaps, filters, timeRange, orderColumn, orderDirection, perPage, (page-1)*perPage, setSessions)
   }, [organizationId, tenantId, selectedTaps, filters, timeRange, page, perPage, orderColumn, orderDirection, revision]);
 
   return (
@@ -63,7 +63,6 @@ export default function L4OverviewPage() {
             <h1>TCP/UDP</h1>
           </div>
         </div>
-
 
         <div className="row mt-3">
           <div className="col-md-12">
@@ -86,11 +85,9 @@ export default function L4OverviewPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Sessions"
-                                       refreshAction={() => setRevision(new Date())}
-                                       helpLink="https://go.nzyme.org/ethernet-dhcp" />
+                                       refreshAction={() => setRevision(new Date())} />
 
                 <L4SessionsTable sessions={sessions}
-                                 timeRange={timeRange}
                                  page={page}
                                  setPage={setPage}
                                  perPage={perPage}
@@ -105,16 +102,5 @@ export default function L4OverviewPage() {
         </div>
       </React.Fragment>
   )
-
-  /*
-    const timeRange = props.timeRange;
-  const page = props.page;
-  const setPage = props.setPage;
-  const perPage = props.perPage;
-  const setOrderColumn = props.setOrderColumn;
-  const orderColumn = props.orderColumn;
-  const setOrderDirection = props.setOrderDirection;
-  const orderDirection = props.orderDirection;
-   */
 
 }

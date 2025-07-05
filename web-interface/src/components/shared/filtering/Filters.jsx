@@ -10,6 +10,7 @@ import validateIPAddressValid from "./validators/IPAddressValidator";
 import validateMACAddressValid from "./validators/MACAddressValidator";
 import validateNumber from "./validators/NumberValidator";
 import {filtersToQueryParameters} from "./FilterQueryParameters";
+import validateEnum from "./validators/EnumValidator";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -46,6 +47,23 @@ export const FILTER_TYPE = {
     name: "dns_type",
     validators: [validateDNSDataTypeValid],
     placeholder: "CNAME"
+  },
+  L4_SESSION_TYPE: {
+    name: "l4_session_type",
+    validators: [(value) => validateEnum(["TCP", "UDP"], value)],
+    placeholder: "TCP"
+  },
+  L4_SESSION_STATE: {
+    name: "l4_session_state",
+    validators: [
+        (value) => validateEnum(
+            ["ACTIVE", "ESTABLISHED", "SYNSENT", "SYNRECEIVED", "FINWAIT1", "FINWAIT2", "CLOSED",
+              "CLOSEDNODE", "CLOSEDFIN", "CLOSEDRST", "CLOSEDTIMEOUT", "CLOSEDTIMEOUTNODE", "REFUSED"],
+            value,
+            true
+        )
+    ],
+    placeholder: "Established"
   }
 }
 
@@ -333,7 +351,7 @@ export default function Filters(props) {
       field: selectedFilter.field,
       operator: selectedOperator.name,
       sign: selectedOperator.sign,
-      value: filterValue,
+      value: (typeof filterValue === 'string' || filterValue instanceof String) ? filterValue.trim() : filterValue,
       transformed_value: selectedFilter.value_transform ? selectedFilter.value_transform(filterValue) : null
     }
     

@@ -20,6 +20,8 @@ public class L4 {
 
     public enum OrderColumn {
 
+        SESSION_KEY("session_key"),
+        STATE("state"),
         L4_TYPE("l4_type"),
         SOURCE_MAC("source_mac"),
         SOURCE_ADDRESS("source_address"),
@@ -28,11 +30,9 @@ public class L4 {
         DESTINATION_ADDRESS("destination_address"),
         DESTINATION_PORT("destination_port"),
         BYTES_COUNT("bytes_count"),
-        SEGMENTS_COUNT("segments_count"),
         START_TIME("start_time"),
         END_TIME("end_time"),
-        MOST_RECENT_SEGMENT_TIME("most_recent_segment_time"),
-        STATE("state");
+        MOST_RECENT_SEGMENT_TIME("most_recent_segment_time");
 
         private final String columnName;
 
@@ -49,9 +49,6 @@ public class L4 {
     public L4(Ethernet ethernet) {
         this.nzyme = ethernet.getNzyme();
     }
-
-
-    // TODO: GROUP BY
 
     public long countAllSessions(TimeRange timeRange, Filters filters, List<UUID> taps) {
         if (taps.isEmpty()) {

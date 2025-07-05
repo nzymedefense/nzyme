@@ -18,7 +18,7 @@ public class FilterFactory {
             case "equals":
                 return Filter.create(
                         parameter.field(), FilterOperator.EQUALS, optionallyTransformedValue(parameter), parameter.value()
-                        );
+                );
             case "not_equals":
                 return Filter.create(
                         parameter.field(), FilterOperator.NOT_EQUALS, optionallyTransformedValue(parameter), parameter.value()

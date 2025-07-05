@@ -33,17 +33,17 @@ public class L4Filters implements SqlFilterProvider  {
                 return GeneratedSql.create(stringMatch(bindId, "state", operator), "");
             case "session_key":
                 return GeneratedSql.create(stringMatch(bindId, "session_key", operator), "");
-            case "source_address_asn_number":
+            case "source_address_geo_asn_number":
                 return GeneratedSql.create(numericMatch(bindId, "source_address_geo_asn_number", operator), "");
-            case "source_address_city":
+            case "source_address_geo_city":
                 return GeneratedSql.create(stringMatch(bindId, "source_address_geo_city", operator), "");
-            case "source_address_country_code":
+            case "source_address_geo_country_code":
                 return GeneratedSql.create(stringMatch(bindId, "source_address_geo_country_code", operator), "");
-            case "destination_address_asn_number":
+            case "destination_address_geo_asn_number":
                 return GeneratedSql.create(numericMatch(bindId, "destination_address_geo_asn_number", operator), "");
-            case "destination_address_city":
+            case "destination_address_geo_city":
                 return GeneratedSql.create(stringMatch(bindId, "destination_address_geo_city", operator), "");
-            case "destination_address_country_code":
+            case "destination_address_geo_country_code":
                 return GeneratedSql.create(stringMatch(bindId, "destination_address_geo_country_code", operator), "");
             case "tcp_fingerprint":
                 return GeneratedSql.create(stringMatch(bindId, "tcp_fingerprint", operator), "");

@@ -2,6 +2,7 @@ package app.nzyme.core.util.filters;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.List;
 import java.util.Map;
