@@ -6,7 +6,7 @@ use strum::IntoEnumIterator;
 use strum_macros::Display;
 use statrs::statistics::{Distribution, OrderStatistics, Data};
 
-use log::{warn, error, info};
+use log::{warn, error};
 use crate::log_monitor::{LogCounts, LogMonitor};
 use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
 
@@ -357,33 +357,20 @@ impl MetricsMonitor {
         loop {
             thread::sleep(Duration::from_secs(AVERAGE_INTERVAL.try_into().unwrap()));
 
+            let mut allChannelNames: Vec<String> = vec![];
+            allChannelNames.extend(WiredChannelName::iter().map(|c| c.to_string()));
+            allChannelNames.extend(Dot11ChannelName::iter().map(|c| c.to_string()));
+            allChannelNames.extend(BluetoothChannelName::iter().map(|c| c.to_string()));
+            allChannelNames.extend(GenericChannelName::iter().map(|c| c.to_string()));
+
             match self.metrics.lock() {
                 Ok(mut metrics) => {
-                    // TODO de-duplicate here.
-                    for channel in WiredChannelName::iter() {
+                    for channel in allChannelNames {
                         let errors = metrics.get_channel_errors(&channel.to_string()).avg;
 
-                        if errors > 0 {
-                            error!("Channel [{:?}] had <{}> submit errors in last <{}> seconds. You are losing packets.", 
-                                channel, errors, AVERAGE_INTERVAL);
-                        }
-                    }
-
-                    for channel in Dot11ChannelName::iter() {
-                        let errors = metrics.get_channel_errors(&channel.to_string()).avg;
-
-                        if errors > 0 {
-                            error!("Channel [{:?}] had <{}> submit errors in last <{}> seconds. You are losing packets.",
-                                channel, errors, AVERAGE_INTERVAL);
-                        }
-                    }
-
-                    for channel in BluetoothChannelName::iter() {
-                        let errors = metrics.get_channel_errors(&channel.to_string()).avg;
-
-                        if errors > 0 {
-                            error!("Channel [{:?}] had <{}> submit errors in last <{}> seconds. You are losing packets.",
-                                channel, errors, AVERAGE_INTERVAL);
+                        if errors > 0 { 
+                            error!("Channel [{}] had <{}> submit errors in last <{}> seconds. \
+                                You are losing packets/frames.", channel, errors, AVERAGE_INTERVAL);
                         }
                     }
                 },

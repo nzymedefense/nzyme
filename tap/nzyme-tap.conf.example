@@ -36,14 +36,21 @@ wifi_brokers = 1
 wifi_broker_buffer_capacity = 65535
 ethernet_broker_buffer_capacity = 65535
 bluetooth_devices_pipeline_size = 1024
+shared_protocol_processors = 2
+
+[protocols.wifi]
+pipeline_size = 16384
+processors = 1
 
 [protocols.tcp]
 pipeline_size = 16384
+processors = 3
 reassembly_buffer_size = 1048576
 session_timeout_seconds = 43200
 
 [protocols.udp]
 pipeline_size = 16384
+processors = 3
 
 [protocols.dns]
 pipeline_size = 4096

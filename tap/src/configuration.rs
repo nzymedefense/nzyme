@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::env;
 use std::fs::read_to_string;
-use std::net::{IpAddr, SocketAddr};
+use std::net::SocketAddr;
 use std::str::FromStr;
 use anyhow::{Result, bail, Error};
 use cidr::{Ipv4Cidr, Ipv6Cidr};
@@ -86,7 +86,8 @@ pub struct Performance {
     pub wifi_brokers: i32,
     pub wifi_broker_buffer_capacity: usize,
     pub ethernet_broker_buffer_capacity: usize,
-    pub bluetooth_devices_pipeline_size: Option<i32>
+    pub bluetooth_devices_pipeline_size: Option<i32>,
+    pub shared_protocol_processors: Option<i32>
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -98,6 +99,7 @@ pub struct Misc {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Protocols {
+    pub wifi: ProtocolsWiFi,
     pub tcp: ProtocolsTcp,
     pub udp: ProtocolsUdp,
     pub dns: ProtocolsDns,
@@ -109,8 +111,16 @@ pub struct Protocols {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct ProtocolsWiFi {
+    pub pipeline_size: i32,
+    pub processors: Option<i32>
+}
+
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsTcp {
     pub pipeline_size: i32,
+    pub processors: Option<i32>,
     pub reassembly_buffer_size: i32,
     pub session_timeout_seconds: i32
 }
@@ -118,6 +128,7 @@ pub struct ProtocolsTcp {
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsUdp {
     pub pipeline_size: i32,
+    pub processors: Option<i32>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -166,6 +177,8 @@ pub fn load(path: String) -> Result<Configuration, Error> {
         Ok(d) => d,
         Err(e) => bail!("Could not parse configuration. {}", e),
     };
+
+    // TODO: The validations here suck and are repetitive. Refactor this.
 
     if doc.general.leader_secret.len() < 64 {
         bail!("Configuration variable `leader_secret` must be at least 64 characters long.");
@@ -222,6 +235,14 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     }
     
     // Protocols.
+
+    // WiFi.
+    if doc.protocols.wifi.pipeline_size <= 0 {
+        bail!("Configuration variable `protocols.wifi.pipeline_size` must be set to a value greater than 0.");
+    }
+    if doc.protocols.wifi.processors.is_some() && doc.protocols.wifi.processors.unwrap() <= 0 {
+        bail!("Configuration variable `protocols.wifi.processors` must be set to a value greater than 0.");
+    }
     
     // TCP.
     if doc.protocols.tcp.pipeline_size <= 0 {
@@ -233,10 +254,16 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     if doc.protocols.tcp.reassembly_buffer_size <= 0 {
         bail!("Configuration variable `protocols.tcp.reassembly_buffer_size` must be set to a value greater than 0.");
     }
+    if doc.protocols.tcp.processors.is_some() && doc.protocols.tcp.processors.unwrap() <= 0 {
+        bail!("Configuration variable `protocols.tcp.processors` must be set to a value greater than 0.");
+    }
 
     // UDP.
     if doc.protocols.udp.pipeline_size <= 0 {
         bail!("Configuration variable `protocols.udp.pipeline_size` must be set to a value greater than 0.");
+    }
+    if doc.protocols.udp.processors.is_some() && doc.protocols.udp.processors.unwrap() <= 0 {
+        bail!("Configuration variable `protocols.tcp.processors` must be set to a value greater than 0.");
     }
 
     // DNS.

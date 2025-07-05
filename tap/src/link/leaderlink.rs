@@ -175,7 +175,6 @@ impl Leaderlink {
                 processed_bytes_total = metrics.get_processed_bytes().total;
                 processed_bytes_avg = metrics.get_processed_bytes().avg;
 
-                // TODO de-duplicate here.
                 for c in WiredChannelName::iter() {
                     ethernet_channels.push(
                         Self::build_channel_report(metrics.select_channel(&c.to_string()), c.to_string())

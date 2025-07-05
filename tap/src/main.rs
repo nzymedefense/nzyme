@@ -7,7 +7,7 @@ mod metrics;
 mod system_state;
 mod logging;
 mod alerting;
-mod distributor;
+mod processor_controller;
 mod log_monitor;
 mod state;
 mod context;
@@ -34,6 +34,7 @@ use wired::ethernet::ethernet_broker::EthernetBroker;
 use wireless::{bluetooth, dot11};
 use crate::helpers::network::Channel;
 use crate::log_monitor::LogMonitor;
+use crate::processor_controller::ProcessorController;
 use crate::state::state::State;
 
 #[derive(Parser,Debug)]
@@ -356,16 +357,19 @@ fn main() {
     }
 
     // Processors.
-    distributor::spawn(ethernet_bus.clone(),
-                       dot11_bus.clone(),
-                       bluetooth_bus.clone(),
-                       generic_bus.clone(),
-                       tables.clone(),
-                       state.clone(),
-                       context_engine,
-                       system_state,
-                       metrics.clone(),
-                       &configuration);
+    let processor_controller = ProcessorController::new(
+        ethernet_bus.clone(),
+        dot11_bus.clone(),
+        bluetooth_bus.clone(),
+        generic_bus.clone(),
+        tables.clone(),
+        state.clone(),
+        context_engine,
+        system_state,
+        metrics.clone(),
+        configuration
+    );
+    processor_controller.initialize();
 
     // Metrics aggregator.
     let aggregatormetrics = metrics.clone();

@@ -87,7 +87,7 @@ impl Bus<> {
             bounded(configuration.performance.wifi_broker_buffer_capacity);
 
         let (dot11_frames_sender, dot11_frames_receiver) = 
-            bounded(configuration.performance.wifi_broker_buffer_capacity);
+            bounded(configuration.protocols.wifi.pipeline_size as usize);
 
         let (bluetooth_devices_sender, bluetooth_devices_receiver) =
             bounded(configuration.performance.bluetooth_devices_pipeline_size
