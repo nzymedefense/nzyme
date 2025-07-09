@@ -1,6 +1,7 @@
 package app.nzyme.core.rest;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.context.ContextService;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
@@ -28,6 +29,11 @@ public class RestHelpers {
                                                             UUID tenantId,
                                                             L4Type type,
                                                             L4AddressData data) {
+        if (organizationId == null || tenantId == null) {
+            throw new IllegalArgumentException("Organization and Tenant ID must be set.");
+        }
+
+
         L4AddressTypeResponse typeResponse;
         switch(type) {
             case TCP:
@@ -86,10 +92,20 @@ public class RestHelpers {
             macResponse = null;
         }
 
+        // Get asset info if we have it.
+        UUID assetId;
+        Optional<AssetEntry> asset = nzyme.getAssetsManager().findAssetByMac(data.mac(), organizationId, tenantId);
+        if (asset.isPresent()) {
+            assetId = asset.get().uuid();
+        } else {
+            assetId = null;
+        }
+
         return L4AddressResponse.create(
                 typeResponse,
                 macResponse,
                 context.map(MacAddressContextEntry::name).orElse(null),
+                assetId,
                 data.address(),
                 data.port(),
                 geo,

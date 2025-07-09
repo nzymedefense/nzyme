@@ -17,6 +17,7 @@
 
 package app.nzyme.core.util;
 
+import app.nzyme.core.assets.AssetManager;
 import app.nzyme.core.bluetooth.sig.BluetoothSigService;
 import app.nzyme.core.context.ContextService;
 import app.nzyme.core.crypto.Crypto;

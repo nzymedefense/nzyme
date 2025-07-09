@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
 public class AssetManager {
 
     private static final Logger LOG = LogManager.getLogger(AssetManager.class);

@@ -6805,4 +6805,9 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="remove_asset_tcp_fingerprint" author="lennartkoopmann">
+        <dropColumn tableName="assets" columnName="tcp_fingerprint" />
+    </changeSet>
+
 </databaseChangeLog>

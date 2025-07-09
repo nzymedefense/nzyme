@@ -12,6 +12,8 @@ import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.resources.taps.reports.*;
 import app.nzyme.core.taps.db.metrics.*;
+import app.nzyme.plugin.distributed.messaging.ClusterMessage;
+import app.nzyme.plugin.distributed.messaging.MessageType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.value.AutoValue;

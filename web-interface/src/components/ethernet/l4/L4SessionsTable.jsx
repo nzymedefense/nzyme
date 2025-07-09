@@ -11,6 +11,7 @@ import AssetName from "../shared/AssetName";
 import L4SessionState from "./L4SessionState";
 import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 import {L4_SESSIONS_FILTER_FIELDS} from "./L4SessionFilterFields";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 export default function L4SessionsTable(props) {
 
@@ -103,7 +104,10 @@ export default function L4SessionsTable(props) {
                         address={s.source}
                         inner={<EthernetMacAddress
                             filterElement={macFilter(s.source.mac, "source_mac")}
-                            addressWithContext={s.source.mac} href="#" />} />
+                            addressWithContext={s.source.mac}
+                            assetId={s.source && s.source.asset_id ? s.source.asset_id : null}
+                            href={s.source && s.source.asset_id
+                                ? ApiRoutes.ETHERNET.ASSETS.DETAILS(s.source.asset_id) : null} />} />
                   </td>
                   <td>
                     <L4Address address={s.source} />
@@ -118,7 +122,9 @@ export default function L4SessionsTable(props) {
                         address={s.destination}
                         inner={<EthernetMacAddress
                             filterElement={macFilter(s.destination.mac, "destination_mac")}
-                            addressWithContext={s.destination.mac} href="#" />} />
+                            addressWithContext={s.destination.mac}
+                            href={s.destination && s.destination.asset_id
+                                ? ApiRoutes.ETHERNET.ASSETS.DETAILS(s.destination.asset_id) : null} />} />
                   </td>
                   <td>
                     <L4Address address={s.destination} />
@@ -135,7 +141,9 @@ export default function L4SessionsTable(props) {
                                      field="bytes_count"
                                      value={s.bytes_count} />
                   </td>
-                  <td title={moment(s.most_recent_segment_time).format()}>{moment(s.most_recent_segment_time).fromNow()}</td>
+                  <td title={moment(s.most_recent_segment_time).format()}>
+                    {moment(s.most_recent_segment_time).fromNow()}
+                  </td>
                 </tr>
             )
           })}

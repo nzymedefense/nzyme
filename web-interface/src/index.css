@@ -912,6 +912,7 @@ div.context-overlay {
     background-color: #ffffff;
     border: 1px solid #c5c5c5;
     border-radius: 8px;
+    z-index: 1000;
 }
 
 div.context-overlay img.loading-miller {
@@ -958,7 +959,7 @@ div.context-overlay dd {
 }
 
 div.context-overlay-no-context-controls {
-    margin-top: 10px;
+    margin-top: 25px;
 }
 
 span.context-name {

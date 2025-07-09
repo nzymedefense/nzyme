@@ -21,7 +21,7 @@ function MacAddress(props) {
   const highlighted = props.highlighted;
   const filterElement = props.filterElement;
 
-  const [overlayTimeout, setOverlayTimeout] = React.useState(null);
+  const [overlayTimeout, setOverlayTimeout] = useState(null);
   const [overlayVisible, setOverlayVisible] = useState(false);
 
   const addressElement = () => {

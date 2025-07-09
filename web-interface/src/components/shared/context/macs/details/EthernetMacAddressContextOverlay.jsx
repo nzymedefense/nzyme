@@ -17,12 +17,30 @@ export default function EthernetMacAddressContextOverlay(props) {
   const address = props.address;
   const oui = props.oui;
 
+  // Optional.
+  const assetId = props.assetId;
+
   const [ctx, setCtx] = useState(null);
 
   useEffect(() => {
     setCtx(null);
     contextService.findMacAddressContext(address, organizationId, tenantId, setCtx);
   }, [address]);
+
+  const assetLink = () => {
+    if (!assetId) {
+      return null;
+    }
+
+    return (
+        <React.Fragment>
+          <a href={ApiRoutes.ETHERNET.ASSETS.DETAILS(assetId)}
+             className="btn btn-sm btn-outline-primary">
+            Open Asset Page
+          </a>{' '}
+        </React.Fragment>
+    )
+  }
 
   if (!ctx) {
     return (
@@ -47,7 +65,7 @@ export default function EthernetMacAddressContextOverlay(props) {
             <i className="fa-solid fa-circle-info"></i> This MAC address has no context.
           </p>
 
-          <dl style={{marginBottom: 70}}>
+          <dl style={{marginBottom: 90}}>
             <dt>Device Type:</dt>
             <dd>Ethernet</dd>
             <dt>OUI:</dt>
@@ -57,9 +75,11 @@ export default function EthernetMacAddressContextOverlay(props) {
           </dl>
 
           <div className="context-overlay-no-context-controls">
+            {assetLink()}
+
             <WithPermission permission="mac_context_manage">
               <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE + "?address=" + encodeURIComponent(address)}
-                 className="btn btn-sm btn-outline-primary">
+                 className="btn btn-sm btn-outline-secondary">
                 Add Context
               </a>{' '}
             </WithPermission>
@@ -93,6 +113,8 @@ export default function EthernetMacAddressContextOverlay(props) {
           <dt>Has Notes:</dt>
           <dd>{ctx.context.notes ? "Yes" : "No"}</dd>
         </dl>
+
+        {assetLink()}
 
         <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid, ctx.context.organization_id, ctx.context.tenant_id)}
            className="btn btn-sm btn-outline-primary">

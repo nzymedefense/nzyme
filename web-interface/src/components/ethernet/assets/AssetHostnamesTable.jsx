@@ -5,6 +5,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import Paginator from "../../misc/Paginator";
 import numeral from "numeral";
 import ColumnSorting from "../../shared/ColumnSorting";
+import WithPermission from "../../misc/WithPermission";
 
 export default function AssetHostnamesTable(props) {
 
@@ -63,9 +64,11 @@ export default function AssetHostnamesTable(props) {
                     {moment(hostname.last_seen).fromNow()}
                   </td>
                   <td>
-                    <a href="#" onClick={(e) => onDeleteHostname(e, hostname.id)}>
-                      <i className="fa fa-trash-alt text-danger" title="Delete Hostname"></i>
-                    </a>
+                    <WithPermission permission="ethernet_assets_manage">
+                      <a href="#" onClick={(e) => onDeleteHostname(e, hostname.id)}>
+                        <i className="fa fa-trash-alt text-danger" title="Delete Hostname"></i>
+                      </a>
+                    </WithPermission>
                   </td>
                 </tr>
             )

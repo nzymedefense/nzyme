@@ -6,6 +6,7 @@ import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import jakarta.inject.Inject;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.SecurityContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +25,13 @@ public class UserAuthenticatedResource extends RestResource {
         return (AuthenticatedUser) sc.getUserPrincipal();
     }
 
-    protected boolean passedTenantDataAccessible(SecurityContext sc, UUID organizationId, UUID tenantId) {
+    protected boolean passedTenantDataAccessible(SecurityContext sc,
+                                                 @NotNull UUID organizationId,
+                                                 @NotNull UUID tenantId) {
+        if (organizationId == null || tenantId == null) {
+            throw new IllegalArgumentException("Organization and Tenant ID must be set.");
+        }
+
         AuthenticatedUser user = getAuthenticatedUser(sc);
 
         // Super admin?

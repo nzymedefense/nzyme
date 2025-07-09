@@ -43,13 +43,13 @@ pipeline_size = 16384
 processors = 1
 
 [protocols.tcp]
-pipeline_size = 16384
+pipeline_size = 65535
 processors = 3
 reassembly_buffer_size = 1048576
 session_timeout_seconds = 43200
 
 [protocols.udp]
-pipeline_size = 16384
+pipeline_size = 65535
 processors = 3
 
 [protocols.dns]

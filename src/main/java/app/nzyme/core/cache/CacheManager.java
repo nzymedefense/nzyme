@@ -32,7 +32,7 @@ public class CacheManager {
 
                     switch (cacheType) {
                         case "context_macs":
-                            LOG.info("Invalidating MAC address context cache on request by node [{}].",
+                            LOG.info("Invalidating MAC address context cache on request of node [{}].",
                                     message.sender());
                             nzyme.getContextService().invalidateMacAddressCache();
                             break;

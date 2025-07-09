@@ -47,8 +47,6 @@ import java.util.UUID;
 @RESTSecured(PermissionLevel.ANY)
 public class AssetContextResource extends UserAuthenticatedResource {
 
-    private static final Logger LOG = LogManager.getLogger(AssetContextResource.class);
-
     @Inject
     private NzymeNode nzyme;
 

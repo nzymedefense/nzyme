@@ -5,6 +5,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import ColumnSorting from "../../shared/ColumnSorting";
 import numeral from "numeral";
 import Paginator from "../../misc/Paginator";
+import WithPermission from "../../misc/WithPermission";
 
 export default function AssetIpAddressesTable(props) {
 
@@ -63,9 +64,11 @@ export default function AssetIpAddressesTable(props) {
                     {moment(address.last_seen).fromNow()}
                   </td>
                   <td>
-                    <a href="#" onClick={(e) => onDeleteIpAddress(e, address.id)}>
-                      <i className="fa fa-trash-alt text-danger" title="Delete IP Address"></i>
-                    </a>
+                    <WithPermission permission="ethernet_assets_manage">
+                      <a href="#" onClick={(e) => onDeleteIpAddress(e, address.id)}>
+                        <i className="fa fa-trash-alt text-danger" title="Delete IP Address"></i>
+                      </a>
+                    </WithPermission>
                   </td>
                 </tr>
             )

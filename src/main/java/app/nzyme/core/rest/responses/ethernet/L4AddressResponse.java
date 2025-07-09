@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 
+import java.util.UUID;
+
 @AutoValue
 public abstract class L4AddressResponse {
 
@@ -17,6 +19,10 @@ public abstract class L4AddressResponse {
     @Nullable
     @JsonProperty("asset_name")
     public abstract String assetName();
+
+    @Nullable
+    @JsonProperty("asset_id")
+    public abstract UUID assetId();
 
     @JsonProperty("address")
     public abstract String address();
@@ -36,11 +42,12 @@ public abstract class L4AddressResponse {
     @JsonProperty("context")
     public abstract L4AddressContextResponse context();
 
-    public static L4AddressResponse create(L4AddressTypeResponse l4Type, EthernetMacAddressResponse mac, String assetName, String address, int port, L4AddressGeoResponse geo, L4AddressAttributesResponse attributes, L4AddressContextResponse context) {
+    public static L4AddressResponse create(L4AddressTypeResponse l4Type, EthernetMacAddressResponse mac, String assetName, UUID assetId, String address, int port, L4AddressGeoResponse geo, L4AddressAttributesResponse attributes, L4AddressContextResponse context) {
         return builder()
                 .l4Type(l4Type)
                 .mac(mac)
                 .assetName(assetName)
+                .assetId(assetId)
                 .address(address)
                 .port(port)
                 .geo(geo)
@@ -60,6 +67,8 @@ public abstract class L4AddressResponse {
         public abstract Builder mac(EthernetMacAddressResponse mac);
 
         public abstract Builder assetName(String assetName);
+
+        public abstract Builder assetId(UUID assetId);
 
         public abstract Builder address(String address);
 

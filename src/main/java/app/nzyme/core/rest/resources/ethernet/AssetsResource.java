@@ -13,6 +13,8 @@ import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.assets.*;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.plugin.distributed.messaging.ClusterMessage;
+import app.nzyme.plugin.distributed.messaging.MessageType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -287,6 +289,8 @@ public class AssetsResource extends TapDataHandlingResource {
 
         nzyme.getAssetsManager().deleteHostnameOfAsset(asset.get().id(), hostnameId);
 
+        invalidateAssetByMacCachesClusterWide();
+
         return Response.ok().build();
     }
 
@@ -310,7 +314,17 @@ public class AssetsResource extends TapDataHandlingResource {
 
         nzyme.getAssetsManager().deleteIpAddressOfAsset(asset.get().id(), addressId);
 
+        invalidateAssetByMacCachesClusterWide();
+
         return Response.ok().build();
+    }
+
+    private void invalidateAssetByMacCachesClusterWide() {
+        nzyme.getMessageBus().sendToAllOnlineNodes(ClusterMessage.create(
+                MessageType.INVALIDATE_CACHE,
+                Map.of("cache_type", "asset_by_mac"),
+                false
+        ));
     }
 
 }

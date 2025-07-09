@@ -6,8 +6,8 @@ export default class L4Service {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get("/ethernet/l4/sessions", {
-          organizationId: organizationId,
-          tenantId: tenantId,
+          organization_id: organizationId,
+          tenant_id: tenantId,
           taps: tapsList,
           filters: filters,
           time_range: timeRange,
