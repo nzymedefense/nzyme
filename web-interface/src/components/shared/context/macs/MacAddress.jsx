@@ -66,11 +66,19 @@ function MacAddress(props) {
   }
 
   const mouseOver = () => {
+    if (!overlay) {
+      return;
+    }
+
     setOverlayVisible(false);
     setOverlayTimeout(setTimeout(() => setOverlayVisible(true), 1000));
   }
 
   const mouseOut = () => {
+    if (!overlay) {
+      return;
+    }
+
     setOverlayVisible(false);
     if (overlayTimeout) {
       clearTimeout(overlayTimeout);

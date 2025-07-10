@@ -95,16 +95,23 @@ public class RestHelpers {
         // Get asset info if we have it.
         UUID assetId;
         Optional<AssetEntry> asset = nzyme.getAssetsManager().findAssetByMac(data.mac(), organizationId, tenantId);
-        if (asset.isPresent()) {
+        if (asset.isPresent() && data.attributes().isSiteLocal()) {
             assetId = asset.get().uuid();
         } else {
             assetId = null;
         }
 
+        String assetName;
+        if (data.attributes().isSiteLocal()) {
+            assetName = context.map(MacAddressContextEntry::name).orElse(null);
+        } else {
+            assetName = null;
+        }
+
         return L4AddressResponse.create(
                 typeResponse,
                 macResponse,
-                context.map(MacAddressContextEntry::name).orElse(null),
+                assetName,
                 assetId,
                 data.address(),
                 data.port(),

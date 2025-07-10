@@ -110,11 +110,11 @@ export default function L4SessionsTable(props) {
                                 ? ApiRoutes.ETHERNET.ASSETS.DETAILS(s.source.asset_id) : null} />} />
                   </td>
                   <td>
-                    <L4Address address={s.source} />
-                    <FilterValueIcon setFilters={setFilters}
-                                     fields={L4_SESSIONS_FILTER_FIELDS}
-                                     field="source_address"
-                                     value={s.source.address} />
+                    <L4Address address={s.source}
+                               filterElement={<FilterValueIcon setFilters={setFilters}
+                                                               fields={L4_SESSIONS_FILTER_FIELDS}
+                                                               field="source_address"
+                                                               value={s.source.address} />}/>
                   </td>
                   <td><AssetName name={s.source.asset_name} /></td>
                   <td>
@@ -127,11 +127,11 @@ export default function L4SessionsTable(props) {
                                 ? ApiRoutes.ETHERNET.ASSETS.DETAILS(s.destination.asset_id) : null} />} />
                   </td>
                   <td>
-                    <L4Address address={s.destination} />
-                    <FilterValueIcon setFilters={setFilters}
-                                     fields={L4_SESSIONS_FILTER_FIELDS}
-                                     field="destination_address"
-                                     value={s.destination.address} />
+                    <L4Address address={s.destination}
+                               filterElement={<FilterValueIcon setFilters={setFilters}
+                                                               fields={L4_SESSIONS_FILTER_FIELDS}
+                                                               field="destination_address"
+                                                               value={s.destination.address} />}/>
                   </td>
                   <td><AssetName name={s.destination.asset_name} /></td>
                   <td>

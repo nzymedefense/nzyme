@@ -51,18 +51,19 @@ export default function DNSTransactionLogTableRow(props) {
                              value={log.query.data_value_etld} />
           </td>
           <td>
-            <L4Address address={log.query.client} hidePort={true} />
-            <FilterValueIcon setFilters={setFilters}
-                             fields={DNS_FILTER_FIELDS}
-                             field="client_address"
-                             value={log.query.client.address} />
+            <L4Address address={log.query.client}
+                       filterElement={<FilterValueIcon setFilters={setFilters}
+                                                       fields={DNS_FILTER_FIELDS}
+                                                       field="client_address"
+                                                       value={log.query.client.address} />}
+                       hidePort={true} />
           </td>
           <td>
-            <L4Address address={log.query.server} />
-            <FilterValueIcon setFilters={setFilters}
-                             fields={DNS_FILTER_FIELDS}
-                             field="server_address"
-                             value={log.query.server.address} />
+            <L4Address address={log.query.server}
+                       filterElement={<FilterValueIcon setFilters={setFilters}
+                                                     fields={DNS_FILTER_FIELDS}
+                                                     field="server_address"
+                                                     value={log.query.server.address} />} />
           </td>
         </tr>
 

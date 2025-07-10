@@ -7,6 +7,7 @@ import {truncate} from "../../../../../util/Tools";
 import FirstContextIpAddress from "./FirstContextIpAddress";
 import FirstContextHostname from "./FirstContextHostname";
 import useSelectedTenant from "../../../../system/tenantselector/useSelectedTenant";
+import ContextOverlayLoading from "../../ContextOverlayLoading";
 
 const contextService = new ContextService();
 
@@ -43,17 +44,7 @@ export default function EthernetMacAddressContextOverlay(props) {
   }
 
   if (!ctx) {
-    return (
-        <React.Fragment>
-          <AssetImage filename="loading-miller-notext.png"
-                      className="loading-miller"
-                      alt="loading ..." />
-
-          <AssetImage filename="loading-miller_layer2-notext.png"
-                      className="loading-miller loading-miller-layer2"
-                      alt="loading ..." />
-        </React.Fragment>
-    )
+    return <ContextOverlayLoading />
   }
 
   if (!ctx.context) {

@@ -1,17 +1,37 @@
-import React from "react";
+import React, {useState} from "react";
 import IPAddressLink from "./IPAddressLink";
 import Flag from "../../misc/Flag";
+import ContextOverlayVisibilityWrapper from "../../shared/context/ContextOverlayVisibilityWrapper";
+import L4AddressContextOverlay from "../l4/ip/L4AddressContextOverlay";
 
 export default function L4Address(props) {
 
   const address = props.address;
   const hidePort = props.hidePort;
 
+  // Optional.
+  const filterElement = props.filterElement;
+
+  const [overlayTimeout, setOverlayTimeout] = useState(null);
+  const [overlayVisible, setOverlayVisible] = useState(false);
+
   const geoCountryCode = () => {
     if (!address.geo || !address.geo.country_code) {
       return "NONE"
     } else {
       return address.geo.country_code;
+    }
+  }
+
+  const mouseOver = () => {
+    setOverlayVisible(false);
+    setOverlayTimeout(setTimeout(() => setOverlayVisible(true), 1000));
+  }
+
+  const mouseOut = () => {
+    setOverlayVisible(false);
+    if (overlayTimeout) {
+      clearTimeout(overlayTimeout);
     }
   }
 
@@ -25,9 +45,13 @@ export default function L4Address(props) {
   }
 
   return (
-      <span>
+      <span onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
         <Flag code={geoCountryCode() }/>{' '}
-        <IPAddressLink ip={address.address} port={hidePort ? null : address.port} />
+        <IPAddressLink ip={address.address} port={hidePort ? null : address.port} />{' '}
+        {filterElement ? filterElement : null}
+
+        <ContextOverlayVisibilityWrapper visible={overlayVisible}
+                                         overlay={<L4AddressContextOverlay address={address} />} />
       </span>
   )
 
