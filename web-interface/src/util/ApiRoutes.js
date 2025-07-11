@@ -145,8 +145,7 @@ const ApiRoutes = {
     OVERVIEW: '/ethernet/overview',
     L4: {
       OVERVIEW: '/ethernet/l4',
-      IP: ip => `/ethernet/l4/ip/show/${ip}`,
-      ASN: asn => `/ethernet/l4/asn/show/${asn}`
+      IP: ip => `/ethernet/l4/ip/show/${ip}`
     },
     ASSETS: {
       INDEX: '/ethernet/assets',

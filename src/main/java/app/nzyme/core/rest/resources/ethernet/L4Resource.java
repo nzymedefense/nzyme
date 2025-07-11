@@ -14,17 +14,16 @@ import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import com.google.common.net.InetAddresses;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
+import java.net.InetAddress;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,6 +91,30 @@ public class L4Resource extends TapDataHandlingResource  {
         }
 
         return Response.ok(L4SessionsListResponse.create(total, sessions)).build();
+    }
+
+    @GET
+    @Path("/ips/show/{ip_address}")
+    public Response ipAddress(@Context SecurityContext sc,
+                              @PathParam("ip_address") String ipAddress,
+                              @QueryParam("organization_id") UUID organizationId,
+                              @QueryParam("tenant_id") UUID tenantId,
+                              @QueryParam("time_range") String timeRangeParameter,
+                              @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!InetAddresses.isInetAddress(ipAddress)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        // just return L4AddressResponse? check how we query data and if that gives all we need.
+
+        return Response.ok().build();
     }
 
 }
