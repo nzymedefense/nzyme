@@ -435,6 +435,11 @@ public class TapManager {
                     try {
                         InetAddress ipAddr = InetAddress.getByName(ip.value());
 
+                        if (!ipAddr.isSiteLocalAddress()) {
+                            // We only handle local addresses.
+                            continue;
+                        }
+
                         boolean exists = false;
                         for (MacAddressTransparentContextEntry tcx : transparentContext) {
                             if (ContextService.TransparentDataType.valueOf(tcx.type()).equals(ContextService.TransparentDataType.IP_ADDRESS)
@@ -466,7 +471,7 @@ public class TapManager {
                             );
                         }
 
-                        // Attach hostname to asset.
+                        // Attach IP to asset.
                         nzyme.getAssetsManager().attachTransparentContextIpAddress(
                                 mac.mac(),
                                 tap.get().organizationId(),

@@ -6810,4 +6810,81 @@
         <dropColumn tableName="assets" columnName="tcp_fingerprint" />
     </changeSet>
 
+    <changeSet id="add_arp_packets" author="lennartkoopmann">
+        <createTable tableName="arp_packets">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ethernet_source_mac" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ethernet_destination_mac" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="hardware_type" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="protocol_type" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="operation" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="arp_sender_mac" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="arp_sender_address" type="inet">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="arp_target_mac" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="arp_target_address" type="inet">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="size" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="timestamp" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="arp_packets" indexName="arp_tap">
+            <column name="tap_uuid" />
+        </createIndex>
+
+        <createIndex tableName="arp_packets" indexName="arp_timestamp">
+            <column name="timestamp" />
+        </createIndex>
+
+        <createIndex tableName="arp_packets" indexName="arp_ethsource_mac">
+            <column name="ethernet_source_mac" />
+        </createIndex>
+
+    </changeSet>
+
 </databaseChangeLog>

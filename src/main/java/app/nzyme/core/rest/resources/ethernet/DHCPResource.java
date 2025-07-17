@@ -1,10 +1,12 @@
 package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.dhcp.DHCP;
 import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionEntry;
+import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
@@ -40,15 +42,20 @@ public class DHCPResource extends TapDataHandlingResource {
     @GET
     @Path("/transactions")
     public Response transactions(@Context SecurityContext sc,
+                                 @QueryParam("organization_id") UUID organizationId,
+                                 @QueryParam("tenant_id") UUID tenantId,
                                  @QueryParam("time_range") @Valid String timeRangeParameter,
                                  @QueryParam("order_column") @Nullable String orderColumnParam,
                                  @QueryParam("order_direction") @Nullable String orderDirectionParam,
                                  @QueryParam("limit") int limit,
                                  @QueryParam("offset") int offset,
                                  @QueryParam("taps") String tapIds) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         DHCP.OrderColumn orderColumn = DHCP.OrderColumn.INITIATED_AT;
         OrderDirection orderDirection = OrderDirection.DESC;
@@ -65,7 +72,7 @@ public class DHCPResource extends TapDataHandlingResource {
         List<DHCPTransactionDetailsResponse> txs = Lists.newArrayList();
         for (DHCPTransactionEntry tx : nzyme.getEthernet().dhcp()
                 .findAllTransactions(timeRange, limit, offset, orderColumn, orderDirection, taps)) {
-            txs.add(buildTransactionResponse(tx, authenticatedUser));
+            txs.add(buildTransactionResponse(tx, organizationId, tenantId));
         }
 
         return Response.ok(DHCPTransactionsListResponse.create(total, txs)).build();
@@ -74,13 +81,18 @@ public class DHCPResource extends TapDataHandlingResource {
     @GET
     @Path("/transactions/show/{transaction_id}")
     public Response transaction(@Context SecurityContext sc,
+                                @QueryParam("organization_id") UUID organizationId,
+                                @QueryParam("tenant_id") UUID tenantId,
                                 @PathParam("transaction_id") long transactionId,
                                 @QueryParam("transaction_time") String transactionTimeP,
                                 @QueryParam("taps") String tapIds) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
-        DateTime transactionTime;
 
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        DateTime transactionTime;
         try {
             transactionTime = DateTime.parse(transactionTimeP);
         } catch (IllegalArgumentException e) {
@@ -94,11 +106,12 @@ public class DHCPResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(buildTransactionResponse(txe.get(), authenticatedUser)).build();
+        return Response.ok(buildTransactionResponse(txe.get(), organizationId, tenantId)).build();
     }
 
     private DHCPTransactionDetailsResponse buildTransactionResponse(DHCPTransactionEntry tx,
-                                                                    AuthenticatedUser authenticatedUser) {
+                                                                    UUID organizationId,
+                                                                    UUID tenantId) {
         Long duration = null;
         if (tx.isComplete()) {
             duration = new Duration(tx.firstPacket(), tx.latestPacket()).getMillis();
@@ -106,8 +119,8 @@ public class DHCPResource extends TapDataHandlingResource {
 
         Optional<MacAddressContextEntry> clientMacContext = nzyme.getContextService().findMacAddressContext(
                 tx.clientMac(),
-                authenticatedUser.getOrganizationId(),
-                authenticatedUser.getTenantId()
+                organizationId,
+                tenantId
         );
 
         // We change the structure of the timestamps to be easier to use in the client.
@@ -124,12 +137,15 @@ public class DHCPResource extends TapDataHandlingResource {
                 .sorted(Comparator.comparing(DHCPTimelineStepResponse::timestamp))
                 .toList();
 
+        Optional<AssetEntry> asset = nzyme.getAssetsManager().findAssetByMac(tx.clientMac(), organizationId, tenantId);
+
         return DHCPTransactionDetailsResponse.create(
                 tx.transactionId(),
                 tx.transactionType(),
                 EthernetMacAddressResponse.create(
                         tx.clientMac(),
                         nzyme.getOuiService().lookup(tx.clientMac()).orElse(null),
+                        asset.map(AssetEntry::uuid).orElse(null),
                         clientMacContext.map(macAddressContextEntry ->
                                         EthernetMacAddressContextResponse.create(
                                                 macAddressContextEntry.name(),
@@ -138,10 +154,12 @@ public class DHCPResource extends TapDataHandlingResource {
                                 .orElse(null)
                 ),
                 tx.additionalClientMacs(),
-                buildServerMacResponse(tx, authenticatedUser),
+                buildServerMacResponse(tx, organizationId, tenantId),
                 tx.additionalServerMacs(),
                 tx.offeredIpAddresses(),
-                tx.requestedIpAddress(),
+                RestHelpers.internalAddressDataToResponse(
+                        nzyme, null, tx.requestedIpAddress(), organizationId, tenantId
+                ),
                 tx.options(),
                 tx.additionalOptions(),
                 tx.fingerprint(),
@@ -160,17 +178,22 @@ public class DHCPResource extends TapDataHandlingResource {
 
     @Nullable
     private EthernetMacAddressResponse buildServerMacResponse(DHCPTransactionEntry tx,
-                                                              AuthenticatedUser authenticatedUser) {
+                                                              UUID organizationId,
+                                                              UUID tenantId) {
         if (tx.serverMac() != null) {
             Optional<MacAddressContextEntry> serverMacContext = nzyme.getContextService().findMacAddressContext(
                     tx.serverMac(),
-                    authenticatedUser.getOrganizationId(),
-                    authenticatedUser.getTenantId()
+                    organizationId,
+                    tenantId
             );
+
+            Optional<AssetEntry> asset = nzyme.getAssetsManager()
+                    .findAssetByMac(tx.serverMac(), organizationId, tenantId);
 
             return EthernetMacAddressResponse.create(
                     tx.serverMac(),
                     nzyme.getOuiService().lookup(tx.serverMac()).orElse(null),
+                    asset.map(AssetEntry::uuid).orElse(null),
                     serverMacContext.map(macAddressContextEntry ->
                                     EthernetMacAddressContextResponse.create(
                                             macAddressContextEntry.name(),

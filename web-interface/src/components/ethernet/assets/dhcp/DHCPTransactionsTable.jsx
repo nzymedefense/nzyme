@@ -1,7 +1,6 @@
 import React from "react";
 import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSpinner";
 import Paginator from "../../../misc/Paginator";
-import IPAddress from "../../shared/IPAddress";
 import DHCPTransactionNotesCount from "./DHCPTransactionNotesCount";
 import DHCPDuration from "./DHCPDuration";
 import moment from "moment";
@@ -10,6 +9,8 @@ import DHCPTransactionSuccess from "./DHCPTransactionSuccess";
 import numeral from "numeral";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import ColumnSorting from "../../../shared/ColumnSorting";
+import AssetName from "../../shared/AssetName";
+import L4Address from "../../shared/L4Address";
 
 export default function DHCPTransactionsTable(props) {
 
@@ -50,7 +51,9 @@ export default function DHCPTransactionsTable(props) {
             <th style={{width: 200}}>Initiated At {columnSorting("initiated_at")}</th>
             <th>Type {columnSorting("transaction_type")}</th>
             <th>Client MAC {columnSorting("client_mac")}</th>
+            <th>Client Name</th>
             <th>Server MAC {columnSorting("server_mac")}</th>
+            <th>Server Name</th>
             <th>Requested IP {columnSorting("requested_ip_address")}</th>
             <th>Fingerprint {columnSorting("fingerprint")}</th>
             <th>Success</th>
@@ -69,9 +72,11 @@ export default function DHCPTransactionsTable(props) {
                     </a>
                   </td>
                   <td>{t.transaction_type}</td>
-                  <td><EthernetMacAddress addressWithContext={t.client_mac} /></td>
-                  <td>{t.server_mac ? <EthernetMacAddress addressWithContext={t.server_mac} /> : <span className="text-muted">n/a</span>}</td>
-                  <td><IPAddress ip={t.requested_ip_address} /></td>
+                  <td><EthernetMacAddress addressWithContext={t.client_mac} withAssetLink /></td>
+                  <td><AssetName addressWithContext={t.client_mac} /></td>
+                  <td>{t.server_mac ? <EthernetMacAddress addressWithContext={t.server_mac} withAssetLink /> : <span className="text-muted">n/a</span>}</td>
+                  <td><AssetName addressWithContext={t.server_mac} /></td>
+                  <td><L4Address address={t.requested_ip_address} hideFlag /></td>
                   <td>{t.fingerprint ? <span className="dhcp-options-fingerprint" title={t.fingerprint}>{t.fingerprint.substr(0,6)}</span> : <span className="text-muted">None</span>}</td>
                   <td><DHCPTransactionSuccess success={t.is_successful} /></td>
                   <td>{t.is_complete ? <span className="text-success">Complete</span>

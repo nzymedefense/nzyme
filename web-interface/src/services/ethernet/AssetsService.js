@@ -34,19 +34,27 @@ export default class AssetsService {
     RESTClient.delete(`/ethernet/assets/show/${assetId}/ip_addresses/${addressId}/organization/${organizationId}/tenant/${tenantId}`, onSuccess)
   }
 
-  findAllDHCPTransactions(timeRange, orderColumn, orderDirection, taps, limit, offset, setTransactions) {
+  findAllDHCPTransactions(organizationId, tenantId, timeRange, orderColumn, orderDirection, taps, limit, offset, setTransactions) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/ethernet/dhcp/transactions", { time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, taps: tapsList, limit: limit, offset: offset },
+    RESTClient.get("/ethernet/dhcp/transactions", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, taps: tapsList, limit: limit, offset: offset },
         (response) => setTransactions(response.data)
     )
   }
 
-  findDHCPTransaction(transactionId, transactionTime, taps, setTransaction) {
+  findDHCPTransaction(organizationId, tenantId, transactionId, transactionTime, taps, setTransaction) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get(`/ethernet/dhcp/transactions/show/${transactionId}`, { transaction_time: transactionTime, taps: tapsList },
+    RESTClient.get(`/ethernet/dhcp/transactions/show/${transactionId}`, { organization_id: organizationId, tenant_id: tenantId, transaction_time: transactionTime, taps: tapsList },
         (response) => setTransaction(response.data)
+    )
+  }
+
+  findAllArpPackets(organizationId, tenantId, timeRange, orderColumn, orderDirection, taps, limit, offset, setPackets) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/ethernet/arp/packets", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, taps: tapsList, limit: limit, offset: offset },
+        (response) => setPackets(response.data)
     )
   }
 

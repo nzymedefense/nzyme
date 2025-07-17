@@ -17,13 +17,14 @@ use crate::link::leaderlink::Leaderlink;
 use crate::messagebus::bus::Bus;
 
 use crate::metrics::Metrics;
+use crate::state::tables::arp_table::ArpTable;
 use crate::state::tables::dhcp_table::DhcpTable;
 use crate::state::tables::uav_table::UavTable;
 
 pub struct Tables {
     pub dot11: Arc<Mutex<Dot11Table>>,
     pub bluetooth: Arc<Mutex<BluetoothTable>>,
-    pub arp: Arc<Mutex<HashMap<IpAddr, HashMap<String, u128>>>>,
+    pub arp: Arc<Mutex<ArpTable>>,
     pub dhcp: Arc<Mutex<DhcpTable>>,
     pub tcp: Arc<Mutex<TcpTable>>,
     pub udp: Arc<Mutex<UdpTable>>,
@@ -41,10 +42,10 @@ impl Tables {
                configuration: &Configuration) -> Self {
         Tables {
             dot11: Arc::new(Mutex::new(Dot11Table::new(leaderlink.clone()))),
-            bluetooth: Arc::new(Mutex::new(BluetoothTable::new(metrics.clone(), leaderlink.clone()))),
-            arp: Arc::new(Mutex::new(HashMap::new())),
+            bluetooth: Arc::new(Mutex::new(BluetoothTable::new(leaderlink.clone(), metrics.clone()))),
+            arp: Arc::new(Mutex::new(ArpTable::new(leaderlink.clone(), metrics.clone()))),
             dhcp: Arc::new(Mutex::new(DhcpTable::new(leaderlink.clone(), metrics.clone()))),
-            dns: Arc::new(Mutex::new(DnsTable::new(metrics.clone(), leaderlink.clone()))),
+            dns: Arc::new(Mutex::new(DnsTable::new(leaderlink.clone(), metrics.clone()))),
             tcp: Arc::new(Mutex::new(TcpTable::new(
                 leaderlink.clone(),
                 ethernet_bus.clone(),
@@ -75,7 +76,15 @@ impl Tables {
                 },
                 Err(e) => error!("Could not acquire Bluetooth table lock for report processing: {}", e)
             }
-            
+
+            match self.arp.lock() {
+                Ok(arp) => {
+                    arp.calculate_metrics();
+                    arp.process_report();
+                },
+                Err(e) => error!("Could not acquire ARP table lock for report processing: {}", e)
+            }
+
             match self.dhcp.lock() {
                 Ok(dhcp) => {
                     dhcp.calculate_metrics();

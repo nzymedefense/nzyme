@@ -2,7 +2,7 @@ use strum_macros::{Display};
 
 pub struct NotImplementedError;
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum HardwareType {
     Ethernet,
     NotImplemented
@@ -15,7 +15,7 @@ pub fn find_hardwaretype(val: u16) -> HardwareType {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Display, PartialEq)]
 pub enum EtherType {
     IPv4,
     Arp,
@@ -31,18 +31,18 @@ pub fn find_ethertype(val: u16) -> EtherType {
     }
 }
 
-#[derive(Debug)]
-pub enum ARPOpCode {
+#[derive(Debug, Display)]
+pub enum ArpOpCode {
     Request,
     Reply,
     NotImplemented
 }
 
-pub fn find_arp_opcode(val: u16) -> ARPOpCode {
+pub fn find_arp_opcode(val: u16) -> ArpOpCode {
     match val {
-        1 => ARPOpCode::Request,
-        2 => ARPOpCode::Reply,
-        _ => ARPOpCode::NotImplemented
+        1 => ArpOpCode::Request,
+        2 => ArpOpCode::Reply,
+        _ => ArpOpCode::NotImplemented
     }
 }
 

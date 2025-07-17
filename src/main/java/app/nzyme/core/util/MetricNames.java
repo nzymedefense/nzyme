@@ -57,6 +57,8 @@ public class MetricNames {
 
     public static final String BLUETOOTH_TOTAL_REPORT_PROCESSING_TIMER = name(BluetoothTable.class, "total-report-processing-timing");
 
+    public static final String ARP_TOTAL_REPORT_PROCESSING_TIMER = name(ARPTable.class, "total-report-processing-timing");
+
     public static final String DNS_TOTAL_REPORT_PROCESSING_TIMER = name(DNSTable.class, "total-report-processing-timing");
     public static final String DNS_STATISTICS_REPORT_PROCESSING_TIMER = name(DNSTable.class, "statistics-report-processing-timing");
     public static final String DNS_PAIRS_REPORT_PROCESSING_TIMER = name(DNSTable.class, "pairs-report-processing-timing");

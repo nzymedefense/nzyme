@@ -48,13 +48,14 @@ public class TablesService {
         this.tables = new ImmutableMap.Builder<String, DataTable>()
                 .put("dot11", new Dot11Table(this))
                 .put("bluetooth", new BluetoothTable(this))
-                .put("dns", new DNSTable(this))
+                .put("uav", new UAVTable(this))
+                .put("arp", new ARPTable(this))
+                .put("dhcp", new DHCPTable(this))
                 .put("tcp", new TCPTable(this))
                 .put("udp", new UDPTable(this))
+                .put("dns", new DNSTable(this))
                 .put("ssh", new SSHTable(this))
                 .put("socks", new SOCKSTable(this))
-                .put("uav", new UAVTable(this))
-                .put("dhcp", new DHCPTable(this))
                 .build();
 
         this.processorPool = Executors.newFixedThreadPool(
@@ -87,6 +88,10 @@ public class TablesService {
 
     public BluetoothTable bluetooth() {
         return (BluetoothTable) tables.get("bluetooth");
+    }
+
+    public ARPTable arp() {
+        return (ARPTable) tables.get("arp");
     }
 
     public DHCPTable dhcp() { return (DHCPTable) tables.get("dhcp"); }

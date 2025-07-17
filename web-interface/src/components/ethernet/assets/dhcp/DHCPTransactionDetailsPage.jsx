@@ -14,8 +14,9 @@ import DHCPTransactionSuccess from "./DHCPTransactionSuccess";
 import DHCPDuration from "./DHCPDuration";
 import DHCPNotes from "./DHCPNotes";
 import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress";
-import IPAddress from "../../shared/IPAddress";
 import DHCPOfferedIpAddresses from "./DHCPOfferedIpAddresses";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import L4Address from "../../shared/L4Address";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -24,6 +25,8 @@ const useQuery = () => {
 const assetsService = new AssetsService();
 
 export default function DHCPTransactionDetailsPage() {
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   let urlQuery = useQuery();
   const tapContext = useContext(TapContext);
@@ -47,8 +50,8 @@ export default function DHCPTransactionDetailsPage() {
 
   useEffect(() => {
     setTx(null);
-    assetsService.findDHCPTransaction(transactionId, transactionTime, selectedTaps, setTx)
-  }, [transactionId, transactionTime])
+    assetsService.findDHCPTransaction(organizationId, tenantId, transactionId, transactionTime, selectedTaps, setTx)
+  }, [transactionId, transactionTime, organizationId, tenantId])
 
   if (!transactionTime) {
     return <div className="alert alert-danger">No Transaction Time passed.</div>
@@ -107,9 +110,14 @@ export default function DHCPTransactionDetailsPage() {
 
                 <dl>
                   <dt>Client</dt>
-                  <dd><EthernetMacAddress addressWithContext={tx.client_mac} /></dd>
+                  <dd>
+                    <EthernetMacAddress addressWithContext={tx.client_mac} withAssetLink withAssetName />
+                  </dd>
                   <dt>Server</dt>
-                  <dd>{tx.server_mac ? <EthernetMacAddress addressWithContext={tx.server_mac} /> : <span className="text-muted">n/a</span>}</dd>
+                  <dd>
+                    {tx.server_mac ? <EthernetMacAddress addressWithContext={tx.server_mac} withAssetLink withAssetName />
+                        : <span className="text-muted">n/a</span>}
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -181,7 +189,7 @@ export default function DHCPTransactionDetailsPage() {
                   <dt>Offered IP Addresses</dt>
                   <dd><DHCPOfferedIpAddresses ips={tx.offered_ip_addresses} /></dd>
                   <dt>Requested IP Address</dt>
-                  <dd><IPAddress ip={tx.requested_ip_address} /></dd>
+                  <dd><L4Address address={tx.requested_ip_address} hideFlag /></dd>
                 </dl>
 
                 <table className="table table-sm table-hover table-striped">

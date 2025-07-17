@@ -8,7 +8,7 @@ use crate::protocols::detection::l7_tagger::L7Tag;
 use crate::protocols::parsers::l4_key::L4Key;
 use crate::wired::traffic_direction::TrafficDirection;
 
-use crate::wired::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass, DNSDataType, Dhcpv4MessageType, Dhcpv4OpCode, Dhcp4TransactionType};
+use crate::wired::types::{HardwareType, EtherType, ArpOpCode, DNSType, DNSClass, DNSDataType, Dhcpv4MessageType, Dhcpv4OpCode, Dhcp4TransactionType};
 
 #[derive(Debug)]
 pub struct EthernetData {
@@ -27,18 +27,16 @@ pub struct EthernetPacket {
 }
 
 #[derive(Debug)]
-pub struct ARPPacket {
-    pub source_mac: String,
-    pub destination_mac: String,
+pub struct ArpPacket {
+    pub ethernet_source_mac: String,
+    pub ethernet_destination_mac: String,
     pub hardware_type: HardwareType,
     pub protocol_type: EtherType,
-    pub hardware_length: u8,
-    pub protocol_length: u8,
-    pub operation: ARPOpCode,
-    pub sender_mac_address: String,
-    pub sender_address: IpAddr,
-    pub target_mac_address: String,
-    pub target_address: IpAddr,
+    pub operation: ArpOpCode,
+    pub arp_sender_mac: String,
+    pub arp_sender_address: IpAddr,
+    pub arp_target_mac: String,
+    pub arp_target_address: IpAddr,
     pub size: u32,
     pub timestamp: DateTime<Utc>
 }

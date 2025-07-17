@@ -97,7 +97,7 @@ public class OuiService {
     }
 
     public Optional<String> lookup(String mac) {
-        if (!isEnabled || mac == null || mac.trim().isEmpty()) {
+        if (!isEnabled || mac == null || mac.trim().isEmpty() || mac.equals("00:00:00:00:00:00")) {
             return Optional.empty();
         }
 

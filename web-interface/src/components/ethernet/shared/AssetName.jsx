@@ -2,12 +2,12 @@ import React from "react";
 
 export default function AssetName(props) {
 
-  const name = props.name;
+  const addressWithContext = props.addressWithContext;
 
-  if (!name || name.trim() === "") {
+  if (!addressWithContext || !addressWithContext.context || !addressWithContext.context.name || addressWithContext.context.name.trim() === "") {
     return <span className="text-muted">None</span>
   }
 
-  return <span className="context-name">{name}</span>;
+  return <span className="context-name">{addressWithContext.context.name}</span>;
 
 }

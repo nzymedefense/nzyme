@@ -1,19 +1,19 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from 'react';
+import {TapContext} from "../../../../App";
+import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
+import {Presets} from "../../../shared/timerange/TimeRange";
+import AssetsService from "../../../../services/ethernet/AssetsService";
+import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {ASSETS_MENU_ITEMS} from "../AssetsMenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
-import {Presets} from "../../../shared/timerange/TimeRange";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
-import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
-import {TapContext} from "../../../../App";
-import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
-import DHCPTransactionsTable from "./DHCPTransactionsTable";
-import {queryParametersToFilters} from "../../../shared/filtering/FilterQueryParameters";
-import {DHCP_FILTER_FIELDS} from "./DHCPFilterFields";
-import {useLocation} from "react-router-dom";
 import Filters from "../../../shared/filtering/Filters";
-import AssetsService from "../../../../services/ethernet/AssetsService";
+import {ARP_FILTER_FIELDS} from "./ARPFilterFields";
+import {queryParametersToFilters} from "../../../shared/filtering/FilterQueryParameters";
+import {useLocation} from "react-router-dom";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import ARPPacketsTable from "./ARPPacketsTable";
 
 const assetsService = new AssetsService();
 
@@ -21,7 +21,7 @@ const useQuery = () => {
   return new URLSearchParams(useLocation().search);
 }
 
-export default function DHCPTransactionsPage() {
+export default function ARPPacketsPage() {
 
   const [organizationId, tenantId] = useSelectedTenant();
 
@@ -31,9 +31,9 @@ export default function DHCPTransactionsPage() {
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
-  const [data, setData] = useState(null);
+  const [packets, setPackets] = useState(null);
 
-  const [orderColumn, setOrderColumn] = useState("initiated_at");
+  const [orderColumn, setOrderColumn] = useState("timestamp");
   const [orderDirection, setOrderDirection] = useState("DESC");
 
   const perPage = 25;
@@ -42,7 +42,7 @@ export default function DHCPTransactionsPage() {
   const [revision, setRevision] = useState(new Date());
 
   const [filters, setFilters] = useState(
-      queryParametersToFilters(urlQuery.get("filters"), DHCP_FILTER_FIELDS)
+      queryParametersToFilters(urlQuery.get("filters"), ARP_FILTER_FIELDS)
   );
 
   useEffect(() => {
@@ -54,8 +54,8 @@ export default function DHCPTransactionsPage() {
   }, [tapContext]);
 
   useEffect(() => {
-    setData(null);
-    assetsService.findAllDHCPTransactions(
+    setPackets(null);
+    assetsService.findAllArpPackets(
         organizationId,
         tenantId,
         timeRange,
@@ -64,7 +64,7 @@ export default function DHCPTransactionsPage() {
         selectedTaps,
         perPage,
         (page-1)*perPage,
-        setData
+        setPackets
     );
   }, [selectedTaps, organizationId, tenantId, timeRange, orderColumn, orderDirection, page, revision]);
 
@@ -75,7 +75,7 @@ export default function DHCPTransactionsPage() {
         <div className="row">
           <div className="col-md-12">
             <SectionMenuBar items={ASSETS_MENU_ITEMS}
-                            activeRoute={ApiRoutes.ETHERNET.ASSETS.DHCP.INDEX} />
+                            activeRoute={ApiRoutes.ETHERNET.ASSETS.ARP.INDEX} />
           </div>
         </div>
 
@@ -83,13 +83,13 @@ export default function DHCPTransactionsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="DHCP Transactions Filters"
+                <CardTitleWithControls title="ARP Packets Filters"
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange} />
 
                 <Filters filters={filters}
                          setFilters={setFilters}
-                         fields={DHCP_FILTER_FIELDS} />
+                         fields={ARP_FILTER_FIELDS} />
               </div>
             </div>
           </div>
@@ -99,11 +99,11 @@ export default function DHCPTransactionsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="DHCP Transactions"
+                <CardTitleWithControls title="ARP Packets"
                                        refreshAction={() => setRevision(new Date())}
-                                       helpLink="https://go.nzyme.org/ethernet-dhcp" />
+                                       helpLink="https://go.nzyme.org/ethernet-arp" />
 
-                <DHCPTransactionsTable data={data}
+                <ARPPacketsTable packets={packets}
                                        timeRange={timeRange}
                                        page={page}
                                        setPage={setPage}
@@ -113,6 +113,7 @@ export default function DHCPTransactionsPage() {
                                        setOrderColumn={setOrderColumn}
                                        setOrderDirection={setOrderDirection}
                                        setFilters={setFilters} />
+
               </div>
             </div>
           </div>

@@ -108,6 +108,10 @@ public class ContextService {
     public Optional<MacAddressContextEntry> findMacAddressContext(String mac,
                                                                   @Nullable UUID organizationId,
                                                                   @Nullable UUID tenantId) {
+        if (mac == null) {
+            return Optional.empty();
+        }
+
         try {
             return macAddressContextCache.get(MacAddressContextCacheKey.create(mac, organizationId, tenantId));
         } catch(ExecutionException e) {
@@ -118,6 +122,10 @@ public class ContextService {
     public Optional<MacAddressContextEntry> findMacAddressContextNoCache(String mac,
                                                                          @Nullable UUID organizationId,
                                                                          @Nullable UUID tenantId) {
+        if (mac == null) {
+            return Optional.empty();
+        }
+
         try(Timer.Context ignored = macLookupTimer.time()) {
             if (organizationId != null && tenantId != null) {
                 // Tenant data.

@@ -76,6 +76,11 @@ public class AssetsResource extends TapDataHandlingResource {
 
             Set<String> hostnames = Sets.newHashSet();
             Set<String> ipAddresses = Sets.newHashSet();
+            /*
+             * We pull the "summary" IP addresses from context and not the `assets_ip_addresses` table because we only
+             * want recent addresses in the assets overviews. IP addresses from months ago are not relevant. The context
+             *  tables are retention cleaned.
+             */
             if (context.isPresent()) {
                 for (MacAddressTransparentContextEntry tpx : nzyme.getContextService()
                         .findTransparentMacAddressContext(context.get().id())) {
@@ -97,6 +102,7 @@ public class AssetsResource extends TapDataHandlingResource {
                     EthernetMacAddressResponse.create(
                             asset.mac(),
                             nzyme.getOuiService().lookup(asset.mac()).orElse(null),
+                            asset.uuid(),
                             context.map(ctx ->
                                     EthernetMacAddressContextResponse.create(
                                             ctx.name(),
@@ -145,6 +151,7 @@ public class AssetsResource extends TapDataHandlingResource {
                 EthernetMacAddressResponse.create(
                         asset.get().mac(),
                         nzyme.getOuiService().lookup(asset.get().mac()).orElse(null),
+                        asset.get().uuid(),
                         context.map(ctx ->
                                 EthernetMacAddressContextResponse.create(
                                         ctx.name(),

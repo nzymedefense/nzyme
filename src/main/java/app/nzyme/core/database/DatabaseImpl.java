@@ -23,6 +23,7 @@ import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.dot11.db.monitoring.probereq.MonitoredProbeRequestEntryMapper;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfigMapper;
+import app.nzyme.core.ethernet.arp.db.ArpPacketEntryMapper;
 import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionMapper;
 import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.ethernet.l4.db.L4SessionMapper;
@@ -185,7 +186,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new AssetHostnameEntryMapper())
                 .registerRowMapper(new AssetIpAddressEntryMapper())
                 .registerRowMapper(new UdpConversationEntryMapper())
-                .registerRowMapper(new L4SessionMapper());
+                .registerRowMapper(new L4SessionMapper())
+                .registerRowMapper(new ArpPacketEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

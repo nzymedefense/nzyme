@@ -1,18 +1,20 @@
 import React, {useState} from "react";
 import ContextOverlayVisibilityWrapper from "../ContextOverlayVisibilityWrapper";
 import Dot11MacAddressType from "./Dot11MacAddressType";
-import {BSSID_FILTER_FIELDS} from "../../../dot11/bssids/BssidFilterFields";
-import FilterValueIcon from "../../filtering/FilterValueIcon";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
 function MacAddress(props) {
 
+  const addressWithContext = props.addressWithContext;
   const overlay = props.overlay ? props.overlay : null;
-  const address = props.addressWithContext ? props.addressWithContext.address : props.address;
-  const context = props.addressWithContext ? props.addressWithContext.context : null;
-  const oui = props.addressWithContext ? props.addressWithContext.oui : null;
-  const isRandomized = props.addressWithContext ? props.addressWithContext.is_randomized : props.address.is_randomized;
+  const address = addressWithContext ? addressWithContext.address : props.address;
+  const context = addressWithContext ? addressWithContext.context : null;
+  const oui = addressWithContext ? addressWithContext.oui : null;
+  const isRandomized = addressWithContext ? addressWithContext.is_randomized : props.address.is_randomized;
 
   const href = props.href;
+  const withAssetLink = props.withAssetLink;
+  const withAssetName = props.withAssetName;
   const onClick = props.onClick;
 
   const type = props.type;
@@ -25,13 +27,27 @@ function MacAddress(props) {
   const [overlayVisible, setOverlayVisible] = useState(false);
 
   const addressElement = () => {
-    if (href || onClick) {
-      return <a href={href ? href : "#"}
+    let computedHref = href;
+    if (withAssetLink && addressWithContext && addressWithContext.asset_id) {
+      // Asset link requested.
+      computedHref = ApiRoutes.ETHERNET.ASSETS.DETAILS(addressWithContext.asset_id);
+    }
+
+    if (computedHref || onClick) {
+      return <a href={computedHref ? computedHref : "#"}
                 onClick={onClick ? onClick : () => {}}
                 className={highlighted ? "highlighted" : null}>{address}</a>
     } else {
       return <span style={{cursor: "help"}} className={highlighted ? "highlighted" : null}>{address}</span>;
     }
+  }
+
+  const assetNameElement = () => {
+    if (withAssetName && context && context.name) {
+      return <span className="context-name" style={{marginLeft: 5}}>{context.name}</span>;
+    }
+
+    return null;
   }
 
   const contextElement = () => {
@@ -87,7 +103,7 @@ function MacAddress(props) {
 
   return (
       <span onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
-        {typeElement()}{addressElement()}{randomizedIcon()}{contextElement()}{ouiElement()}{filterElement ? filterElement : null}
+        {typeElement()}{addressElement()}{randomizedIcon()}{contextElement()}{ouiElement()}{assetNameElement()}{filterElement ? filterElement : null}
 
         {overlay ? <ContextOverlayVisibilityWrapper visible={overlayVisible} overlay={overlay} /> : null }
       </span>

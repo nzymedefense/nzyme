@@ -7,9 +7,10 @@ import L4AddressContextOverlay from "../l4/ip/L4AddressContextOverlay";
 export default function L4Address(props) {
 
   const address = props.address;
-  const hidePort = props.hidePort;
 
   // Optional.
+  const hidePort = props.hidePort;
+  const hideFlag = props.hideFlag;
   const filterElement = props.filterElement;
 
   const [overlayTimeout, setOverlayTimeout] = useState(null);
@@ -21,6 +22,14 @@ export default function L4Address(props) {
     } else {
       return address.geo.country_code;
     }
+  }
+
+  const flag = () => {
+    if (hideFlag) {
+      return false;
+    }
+
+    return <Flag code={geoCountryCode() }/>
   }
 
   const mouseOver = () => {
@@ -46,7 +55,7 @@ export default function L4Address(props) {
 
   return (
       <span onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
-        <Flag code={geoCountryCode() }/>{' '}
+        {flag()}{' '}
         <IPAddressLink ip={address.address} port={hidePort ? null : address.port} />{' '}
         {filterElement ? filterElement : null}
 

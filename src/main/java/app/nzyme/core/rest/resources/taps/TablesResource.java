@@ -20,6 +20,7 @@ package app.nzyme.core.rest.resources.taps;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
+import app.nzyme.core.rest.resources.taps.reports.tables.arp.ArpPacketsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDevicesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dhcp.DhcpTransactionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsTablesReport;
@@ -199,6 +200,22 @@ public class TablesResource {
 
         LOG.debug("Received DHCP transactions report from tap [{}]: {}", tap.getUuid(), report);
         nzyme.getTablesService().dhcp().handleReport(tap.getUuid(), DateTime.now(), report);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("/arp/packets")
+    public Response arpPackets(@Context SecurityContext sc, ArpPacketsReport report) {
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
+
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting ARP packets report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        LOG.debug("Received ARP packets report from tap [{}]: {}", tap.getUuid(), report);
+        nzyme.getTablesService().arp().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

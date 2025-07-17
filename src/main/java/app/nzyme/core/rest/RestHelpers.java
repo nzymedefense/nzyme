@@ -13,6 +13,7 @@ import app.nzyme.core.rest.responses.context.MacAddressTransparentHostnameRespon
 import app.nzyme.core.rest.responses.context.MacAddressTransparentIpAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.*;
 import com.google.common.collect.Lists;
+import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -72,25 +73,8 @@ public class RestHelpers {
             attributes = null;
         }
 
-        Optional<MacAddressContextEntry> context;
-        EthernetMacAddressResponse macResponse;
-        if (data.mac() != null) {
-            context = nzyme.getContextService().findMacAddressContext(data.mac(), organizationId, tenantId);
-
-            macResponse = EthernetMacAddressResponse.create(
-                    data.mac(),
-                    nzyme.getOuiService().lookup(data.mac()).orElse(null),
-                    context.map(ctx ->
-                            EthernetMacAddressContextResponse.create(
-                                    ctx.name(),
-                                    ctx.description()
-                            )
-                    ).orElse(null)
-            );
-        } else {
-            context = Optional.empty();
-            macResponse = null;
-        }
+        Optional<MacAddressContextEntry> context = nzyme.getContextService()
+                .findMacAddressContext(data.mac(), organizationId, tenantId);
 
         // Get asset info if we have it.
         UUID assetId;
@@ -101,23 +85,31 @@ public class RestHelpers {
             assetId = null;
         }
 
-        String assetName;
-        if (data.attributes().isSiteLocal()) {
-            assetName = context.map(MacAddressContextEntry::name).orElse(null);
+        EthernetMacAddressResponse macResponse;
+        if (data.mac() != null) {
+            macResponse = EthernetMacAddressResponse.create(
+                    data.mac(),
+                    nzyme.getOuiService().lookup(data.mac()).orElse(null),
+                    assetId,
+                    context.map(ctx ->
+                            EthernetMacAddressContextResponse.create(
+                                    ctx.name(),
+                                    ctx.description()
+                            )
+                    ).orElse(null)
+            );
         } else {
-            assetName = null;
+            macResponse = null;
         }
 
         return L4AddressResponse.create(
                 typeResponse,
                 macResponse,
-                assetName,
-                assetId,
                 data.address(),
                 data.port(),
                 geo,
                 attributes,
-                null
+                L4AddressContextResponse.create()
         );
     }
 
@@ -175,6 +167,42 @@ public class RestHelpers {
         }
 
         return CategorizedTransparentContextData.create(transparentIps, transparentHostnames);
+    }
+
+    public static InternalAddressResponse internalAddressDataToResponse(NzymeNode nzyme,
+                                                                  @Nullable String mac,
+                                                                  String address,
+                                                                  UUID organizationId,
+                                                                  UUID tenantId) {
+        Optional<AssetEntry> asset;
+        EthernetMacAddressResponse macResponse;
+        if (mac != null) {
+            asset = nzyme.getAssetsManager().findAssetByMac(mac, organizationId, tenantId);
+
+            Optional<MacAddressContextEntry> context = nzyme.getContextService().findMacAddressContext(mac, organizationId, tenantId);
+            macResponse = EthernetMacAddressResponse.create(
+                    mac,
+                    nzyme.getOuiService().lookup(mac).orElse(null),
+                    asset.map(AssetEntry::uuid).orElse(null),
+                    context.map(ctx ->
+                            EthernetMacAddressContextResponse.create(
+                                    ctx.name(),
+                                    ctx.description()
+                            )
+                    ).orElse(null)
+            );
+        } else {
+            asset = null;
+            macResponse = null;
+        }
+
+        return InternalAddressResponse.create(
+                L4AddressTypeResponse.NONE,
+                macResponse,
+                address,
+                null,
+                L4AddressContextResponse.create()
+        );
     }
 
 }

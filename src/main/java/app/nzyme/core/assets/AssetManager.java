@@ -24,6 +24,7 @@ public class AssetManager {
 
     public enum OrderColumn {
 
+        FIRST_SEEN("first_seen"),
         LAST_SEEN("last_seen"),
         MAC("mac");
 

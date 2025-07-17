@@ -173,6 +173,7 @@ import DHCPTransactionsPage from "./components/ethernet/assets/dhcp/DHCPTransact
 import DHCPTransactionDetailsPage from "./components/ethernet/assets/dhcp/DHCPTransactionDetailsPage";
 import GlobalTenantSelectorForm from "./components/system/tenantselector/GlobalTenantSelectorForm";
 import AssetDetailsPage from "./components/ethernet/assets/AssetDetailsPage";
+import ARPPacketsPage from "./components/ethernet/assets/arp/ARPPacketsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -537,6 +538,7 @@ function App() {
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.DETAILS(`:uuid`)} element={<AssetDetailsPage />} />
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.DHCP.INDEX} element={<DHCPTransactionsPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.DHCP.TRANSACTION_DETAILS(':transactionId')} element={<DHCPTransactionDetailsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.ASSETS.ARP.INDEX} element={<ARPPacketsPage />}/>
 
                                 { /* Ethernet/Hostnames. */}
                                 <Route path={ApiRoutes.ETHERNET.HOSTNAMES.HOSTNAME(':hostnameParam')} element={<HostnameDetailsPage />}/>

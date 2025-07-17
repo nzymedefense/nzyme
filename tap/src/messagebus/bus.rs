@@ -10,7 +10,7 @@ use crate::wired::packets::{Dhcpv4Packet, SocksTunnel, SshSession};
 use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
 use crate::protocols::detection::taggers::remoteid::messages::UavRemoteIdMessage;
 use crate::wired::packets::{
-    ARPPacket,
+    ArpPacket,
     DNSPacket,
     Datagram,
     EthernetData,
@@ -28,7 +28,7 @@ pub struct Bus {
 
     pub bluetooth_device_pipeline: NzymeChannel<BluetoothDeviceAdvertisement>,
 
-    pub arp_pipeline: NzymeChannel<ARPPacket>,
+    pub arp_pipeline: NzymeChannel<ArpPacket>,
     pub tcp_pipeline: NzymeChannel<TcpSegment>,
     pub udp_pipeline: NzymeChannel<Datagram>,
     pub dns_pipeline: NzymeChannel<DNSPacket>,

@@ -1,6 +1,7 @@
 package app.nzyme.core.ethernet;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.ethernet.arp.ARP;
 import app.nzyme.core.ethernet.dhcp.DHCP;
 import app.nzyme.core.ethernet.dns.DNS;
 import app.nzyme.core.ethernet.l4.L4;
@@ -12,6 +13,7 @@ public class Ethernet {
 
     private final NzymeNode nzyme;
 
+    private final ARP arp;
     private final DHCP dhcp;
     private final L4 l4;
     private final TCP tcp;
@@ -21,6 +23,8 @@ public class Ethernet {
 
     public Ethernet(NzymeNode nzyme) {
         this.nzyme = nzyme;
+
+        this.arp = new ARP(this);
         this.dhcp = new DHCP(this);
         this.l4 = new L4(this);
         this.tcp = new TCP(this);
@@ -31,6 +35,10 @@ public class Ethernet {
 
     public NzymeNode getNzyme() {
         return this.nzyme;
+    }
+
+    public ARP arp() {
+        return arp;
     }
 
     public DHCP dhcp() {

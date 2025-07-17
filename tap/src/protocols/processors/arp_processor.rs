@@ -6,8 +6,8 @@ use crate::state::tables::tables::Tables;
 use crate::context::context_engine::ContextEngine;
 use crate::context::context_source::ContextSource;
 use crate::state::state::State;
-use crate::wired::packets::ARPPacket;
-use crate::wired::types::ARPOpCode;
+use crate::wired::packets::ArpPacket;
+use crate::wired::types::ArpOpCode;
 
 pub struct ARPProcessor {
     tables: Arc<Tables>,
@@ -21,66 +21,53 @@ impl ARPProcessor {
         Self { tables, state, context }
     }
 
-    pub fn process(&mut self, packet: Arc<ARPPacket>) {
+    pub fn process(&mut self, packet: Arc<ArpPacket>) {
         match packet.operation {
-            ARPOpCode::Request => { self.process_request(packet) },
-            ARPOpCode::Reply => { self.process_reply(packet) },
-            ARPOpCode::NotImplemented => {
+            ArpOpCode::Request => { self.process_request(packet) },
+            ArpOpCode::Reply => { self.process_reply(packet) },
+            ArpOpCode::NotImplemented => {
                 debug!("Received ARP packet with not implemented op code: {:?}", packet);
             }
         }
     }
 
-    fn process_reply(&mut self, packet: Arc<ARPPacket>) {
+    fn process_reply(&mut self, packet: Arc<ArpPacket>) {
         debug!("ARP reply: <{}/{}>, <{}> is at <{}>.",
-            packet.target_address,
-            packet.target_mac_address,
-            packet.sender_address,
-            packet.sender_mac_address);
+            packet.arp_target_address,
+            packet.arp_target_mac,
+            packet.arp_sender_address,
+            packet.arp_sender_mac);
         
-        self.process_discovered_ip(packet.sender_mac_address.clone(), packet.sender_address);
-        self.process_discovered_ip(packet.target_mac_address.clone(), packet.target_address);
+        self.process_discovered_ip(packet.arp_sender_mac.clone(), packet.arp_sender_address);
+        self.process_discovered_ip(packet.arp_target_mac.clone(), packet.arp_target_address);
 
         match self.tables.arp.lock() {
-            Ok(mut table) => {
-
-                match table.get_mut(&packet.sender_address) { Some(ips) => {
-                    match ips.get_mut(&packet.sender_mac_address) {
-                        Some(count) => { *count += 1 },
-                        None => {
-                            ips.insert(packet.sender_mac_address.clone(), 1);
-                        }
-                    }
-                } _ => {
-                    let mut mac = HashMap::new();
-                    mac.insert(packet.sender_mac_address.clone(), 1);
-                    table.insert(packet.sender_address.clone(), mac);
-                }}
-            },
+            Ok(mut table) => table.register_reply(packet.clone()),
             Err(e) => {
                 error!("Could not acquire table mutex. {}", e);
             }
         }
     }
 
-    fn process_request(&mut self, packet: Arc<ARPPacket>) {
-        if packet.sender_address == IpAddr::V4(Ipv4Addr::UNSPECIFIED) {
-            // Ignore ARP probes.
-            return;
+    fn process_request(&mut self, packet: Arc<ArpPacket>) {
+        match self.tables.arp.lock() {
+            Ok(mut table) => table.register_request(packet.clone()),
+            Err(e) => {
+                error!("Could not acquire table mutex. {}", e);
+            }
         }
 
-        if (packet.target_address == packet.sender_address)
-            && (packet.target_mac_address == "00:00:00:00:00:00"
-                || packet.target_mac_address == packet.sender_mac_address) {
+        if (packet.arp_target_address == packet.arp_sender_address)
+            && (packet.arp_target_mac == "00:00:00:00:00:00"
+                || packet.arp_target_mac == packet.arp_sender_mac) {
             // ARP broadcast announce.
-            debug!("ARP announce. {} is at {}.", packet.sender_address, packet.sender_mac_address);
-            self.process_discovered_ip(packet.sender_mac_address.clone(), packet.sender_address);
-            return;
+            debug!("ARP announce. {} is at {}.", packet.arp_sender_address, packet.arp_sender_mac);
+            self.process_discovered_ip(packet.arp_sender_mac.clone(), packet.arp_sender_address);
+        } else {
+            debug!("ARP request: Who has <{}>? Tell <{}/{}>",
+            packet.arp_target_address, packet.arp_sender_address, packet.arp_sender_mac);
+            self.process_discovered_ip(packet.arp_sender_mac.clone(), packet.arp_sender_address);
         }
-
-        debug!("ARP request: Who has <{}>? Tell <{}/{}>",
-            packet.target_address, packet.sender_address, packet.sender_mac_address);
-        self.process_discovered_ip(packet.sender_mac_address.clone(), packet.sender_address);
     }
 
     fn process_discovered_ip(&self, mac: String, ip: IpAddr) {

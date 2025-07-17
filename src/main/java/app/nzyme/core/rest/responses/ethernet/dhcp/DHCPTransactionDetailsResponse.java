@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.responses.ethernet.dhcp;
 
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
+import app.nzyme.core.rest.responses.ethernet.InternalAddressResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
@@ -36,7 +37,7 @@ public abstract class DHCPTransactionDetailsResponse {
 
     @JsonProperty("requested_ip_address")
     @Nullable
-    public abstract String requestedIpAddress();
+    public abstract InternalAddressResponse requestedIpAddress();
 
     @JsonProperty("options")
     public abstract List<Integer> options();
@@ -82,7 +83,7 @@ public abstract class DHCPTransactionDetailsResponse {
     @Nullable
     public abstract Long durationMs();
 
-    public static DHCPTransactionDetailsResponse create(long transactionId, String transactionType, EthernetMacAddressResponse clientMac, List<String> additionalClientMacs, EthernetMacAddressResponse serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, String requestedIpAddress, List<Integer> options, List<List<Integer>> additionalOptions, String fingerprint, List<String> additionalFingerprints, String vendorClass, List<String> additionalVendorClasses, List<DHCPTimelineStepResponse> timeline, DateTime firstPacket, DateTime latestPacket, List<String> notes, Boolean isSuccessful, boolean isComplete, Long durationMs) {
+    public static DHCPTransactionDetailsResponse create(long transactionId, String transactionType, EthernetMacAddressResponse clientMac, List<String> additionalClientMacs, EthernetMacAddressResponse serverMac, List<String> additionalServerMacs, List<String> offeredIpAddresses, InternalAddressResponse requestedIpAddress, List<Integer> options, List<List<Integer>> additionalOptions, String fingerprint, List<String> additionalFingerprints, String vendorClass, List<String> additionalVendorClasses, List<DHCPTimelineStepResponse> timeline, DateTime firstPacket, DateTime latestPacket, List<String> notes, Boolean isSuccessful, boolean isComplete, Long durationMs) {
         return builder()
                 .transactionId(transactionId)
                 .transactionType(transactionType)
@@ -128,7 +129,7 @@ public abstract class DHCPTransactionDetailsResponse {
 
         public abstract Builder offeredIpAddresses(List<String> offeredIpAddresses);
 
-        public abstract Builder requestedIpAddress(String requestedIpAddress);
+        public abstract Builder requestedIpAddress(InternalAddressResponse requestedIpAddress);
 
         public abstract Builder options(List<Integer> options);
 

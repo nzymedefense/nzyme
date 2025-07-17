@@ -11,6 +11,8 @@ export default function EthernetMacAddress(props) {
 
   // Optional.
   const href = props.href;
+  const withAssetLink = props.withAssetLink;
+  const withAssetName = props.withAssetName;
   const assetId = props.assetId;
   const onClick = props.onClick;
   const filterElement = props.filterElement;
@@ -27,7 +29,9 @@ export default function EthernetMacAddress(props) {
                     href={href}
                     onClick={onClick}
                     filterElement={filterElement}
-                    highlighted={highlighted} />
+                    highlighted={highlighted}
+                    withAssetLink={withAssetLink}
+                    withAssetName={withAssetName} />
       </span>
   )
 

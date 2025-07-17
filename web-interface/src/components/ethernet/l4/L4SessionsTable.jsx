@@ -106,8 +106,7 @@ export default function L4SessionsTable(props) {
                             filterElement={macFilter(s.source.mac, "source_mac")}
                             addressWithContext={s.source.mac}
                             assetId={s.source && s.source.asset_id ? s.source.asset_id : null}
-                            href={s.source && s.source.asset_id
-                                ? ApiRoutes.ETHERNET.ASSETS.DETAILS(s.source.asset_id) : null} />} />
+                            withAssetLink />} />
                   </td>
                   <td>
                     <L4Address address={s.source}
@@ -116,15 +115,14 @@ export default function L4SessionsTable(props) {
                                                                field="source_address"
                                                                value={s.source.address} />}/>
                   </td>
-                  <td><AssetName name={s.source.asset_name} /></td>
+                  <td><AssetName addressWithContext={s.source ? s.source.mac : null} /></td>
                   <td>
                     <InternalAddressOnlyWrapper
                         address={s.destination}
                         inner={<EthernetMacAddress
                             filterElement={macFilter(s.destination.mac, "destination_mac")}
                             addressWithContext={s.destination.mac}
-                            href={s.destination && s.destination.asset_id
-                                ? ApiRoutes.ETHERNET.ASSETS.DETAILS(s.destination.asset_id) : null} />} />
+                            withAssetLink />} />
                   </td>
                   <td>
                     <L4Address address={s.destination}
@@ -133,7 +131,7 @@ export default function L4SessionsTable(props) {
                                                                field="destination_address"
                                                                value={s.destination.address} />}/>
                   </td>
-                  <td><AssetName name={s.destination.asset_name} /></td>
+                  <td><AssetName addressWithContext={s.destination ? s.destination.mac : null} /></td>
                   <td>
                     {numeral(s.bytes_count).format("0b")}
                     <FilterValueIcon setFilters={setFilters}

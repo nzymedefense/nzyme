@@ -4,10 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 
-import java.util.UUID;
-
 @AutoValue
-public abstract class L4AddressResponse {
+public abstract class InternalAddressResponse {
 
     @JsonProperty("l4_type")
     public abstract L4AddressTypeResponse l4Type();
@@ -20,34 +18,25 @@ public abstract class L4AddressResponse {
     public abstract String address();
 
     @JsonProperty("port")
-    public abstract int port();
-
     @Nullable
-    @JsonProperty("geo")
-    public abstract L4AddressGeoResponse geo();
-
-    @Nullable
-    @JsonProperty("attributes")
-    public abstract L4AddressAttributesResponse attributes();
+    public abstract Integer port();
 
     @Nullable
     @JsonProperty("context")
     public abstract L4AddressContextResponse context();
 
-    public static L4AddressResponse create(L4AddressTypeResponse l4Type, EthernetMacAddressResponse mac, String address, int port, L4AddressGeoResponse geo, L4AddressAttributesResponse attributes, L4AddressContextResponse context) {
+    public static InternalAddressResponse create(L4AddressTypeResponse l4Type, EthernetMacAddressResponse mac, String address, Integer port, L4AddressContextResponse context) {
         return builder()
                 .l4Type(l4Type)
                 .mac(mac)
                 .address(address)
                 .port(port)
-                .geo(geo)
-                .attributes(attributes)
                 .context(context)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_L4AddressResponse.Builder();
+        return new AutoValue_InternalAddressResponse.Builder();
     }
 
     @AutoValue.Builder
@@ -58,14 +47,10 @@ public abstract class L4AddressResponse {
 
         public abstract Builder address(String address);
 
-        public abstract Builder port(int port);
-
-        public abstract Builder geo(L4AddressGeoResponse geo);
-
-        public abstract Builder attributes(L4AddressAttributesResponse attributes);
+        public abstract Builder port(Integer port);
 
         public abstract Builder context(L4AddressContextResponse context);
 
-        public abstract L4AddressResponse build();
+        public abstract InternalAddressResponse build();
     }
 }

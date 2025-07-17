@@ -52,6 +52,7 @@ export default function AssetsTable(props) {
             <th>Name</th>
             <th>Hostname</th>
             <th>IP Address</th>
+            <th>First Seen {columnSorting("first_seen")}</th>
             <th>Last Seen {columnSorting("last_seen")}</th>
           </tr>
           </thead>
@@ -61,9 +62,10 @@ export default function AssetsTable(props) {
                 <tr key={i}>
                   <td><EthernetMacAddress addressWithContext={a.mac} href={ApiRoutes.ETHERNET.ASSETS.DETAILS(a.uuid)} /></td>
                   <td>{a.oui ? truncate(a.oui, 30, false) : <span className="text-muted">Unknown</span>}</td>
-                  <td><AssetName name={a.name} /></td>
+                  <td>{a.name ? <span className="context-name">{a.name}</span> : <span className="text-muted">None</span>}</td>
                   <td><AssetHostnames hostnames={a.hostnames} /></td>
                   <td><AssetIpAddresses addresses={a.ip_addresses} /></td>
+                  <td title={moment(a.first_seen).format()}>{moment(a.first_seen).fromNow()}</td>
                   <td title={moment(a.last_seen).format()}>{moment(a.last_seen).fromNow()}</td>
                 </tr>
             )

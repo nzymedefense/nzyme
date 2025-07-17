@@ -1,5 +1,6 @@
 package app.nzyme.core.ethernet.dhcp.db;
 
+import app.nzyme.core.rest.responses.ethernet.InternalAddressResponse;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;

@@ -5,11 +5,11 @@ use byteorder::{BigEndian, ByteOrder};
 use log::trace;
 use anyhow::{Result, bail};
 
-use crate::wired::packets::{EthernetPacket, ARPPacket};
+use crate::wired::packets::{EthernetPacket, ArpPacket};
 use crate::wired::types::{find_hardwaretype, find_ethertype, find_arp_opcode};
 use crate::helpers::network::{to_mac_address_string, to_ipv4_address_string};
 
-pub fn parse(packet: &Arc<EthernetPacket>) -> Result<ARPPacket> {
+pub fn parse(packet: &Arc<EthernetPacket>) -> Result<ArpPacket> {
     trace!("Received ARP packet: {:?}", &packet.data);
 
     if packet.data.len() < 8 {
@@ -48,28 +48,26 @@ pub fn parse(packet: &Arc<EthernetPacket>) -> Result<ARPPacket> {
         bail!("ARP packet is too small. Wouldn't fit addresses. Skipping. {:?}", &packet.data);
     }
 
-    let sender_address = match sender_protocol_address.parse::<IpAddr>() {
+    let arp_sender_address = match sender_protocol_address.parse::<IpAddr>() {
         Ok(a) => a,
         Err(e) => bail!("Could not parse IP address [{}]: {}", sender_protocol_address, e),
     };
 
-    let target_address = match target_protocol_address.parse::<IpAddr>() {
+    let arp_target_address = match target_protocol_address.parse::<IpAddr>() {
         Ok(a) => a,
         Err(e) => bail!("Could not parse IP address [{}]: {}", target_protocol_address, e),
     };
 
-    let p = ARPPacket {
-        source_mac: packet.source_mac.clone(),
-        destination_mac: packet.destination_mac.clone(),
+    let p = ArpPacket {
+        ethernet_source_mac: packet.source_mac.clone(),
+        ethernet_destination_mac: packet.destination_mac.clone(),
         hardware_type,
         protocol_type,
-        hardware_length,
-        protocol_length,
         operation,
-        sender_mac_address: sender_hardware_address,
-        sender_address,
-        target_mac_address: target_hardware_address,
-        target_address,
+        arp_sender_mac: sender_hardware_address,
+        arp_sender_address,
+        arp_target_mac: target_hardware_address,
+        arp_target_address,
         size: 40,
         timestamp: packet.timestamp
     };

@@ -16,7 +16,7 @@ pub struct BluetoothTable {
 
 impl BluetoothTable {
 
-    pub fn new(metrics: Arc<Mutex<Metrics>>, leaderlink: Arc<Mutex<Leaderlink>>) -> Self {
+    pub fn new(leaderlink: Arc<Mutex<Leaderlink>>, metrics: Arc<Mutex<Metrics>>) -> Self {
         Self {
             metrics,
             leaderlink,

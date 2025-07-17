@@ -153,6 +153,9 @@ const ApiRoutes = {
       DHCP: {
         INDEX: '/ethernet/assets/dhcp',
         TRANSACTION_DETAILS: transactionId => `/ethernet/assets/dhcp/show/${transactionId}`
+      },
+      ARP: {
+        INDEX: '/ethernet/assets/arp'
       }
     },
     HOSTNAMES: {
