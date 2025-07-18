@@ -32,6 +32,7 @@ export default function ARPPacketsPage() {
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   const [packets, setPackets] = useState(null);
+  const [statistics, setStatistics] = useState(null);
 
   const [orderColumn, setOrderColumn] = useState("timestamp");
   const [orderDirection, setOrderDirection] = useState("DESC");
@@ -55,6 +56,10 @@ export default function ARPPacketsPage() {
 
   useEffect(() => {
     setPackets(null);
+    setStatistics(null);
+
+    assetsService.getArpStatistics(organizationId, tenantId, timeRange, filters, selectedTaps, setStatistics);
+
     assetsService.findAllArpPackets(
         organizationId,
         tenantId,

@@ -58,4 +58,12 @@ export default class AssetsService {
     )
   }
 
+  getArpStatistics(organizationId, tenantId, timeRange, filters, taps, setStatistics) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/ethernet/arp/statistics", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters,  taps: tapsList },
+        (response) => setStatistics(response.data)
+    )
+  }
+
 }

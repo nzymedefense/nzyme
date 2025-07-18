@@ -50,8 +50,6 @@ export default function ARPPacketsTable(props) {
           <tr>
             <th style={{width: 200}}>Timestamp {columnSorting("timestamp")}</th>
             <th>ARP Operation {columnSorting("operation")}</th>
-            <th>Source MAC {columnSorting("ethernet_source_mac")}</th>
-            <th>Destination MAC {columnSorting("ethernet_destination_mac")}</th>
             <th>Sender MAC {columnSorting("arp_sender_mac")}</th>
             <th>Sender Name</th>
             <th>Sender Address {columnSorting("arp_sender_address")}</th>
@@ -71,22 +69,6 @@ export default function ARPPacketsTable(props) {
                                      fields={ARP_FILTER_FIELDS}
                                      field="operation"
                                      value={p.operation} />
-                  </td>
-                  <td>
-                    <EthernetMacAddress addressWithContext={p.ethernet_source_mac}
-                                        filterElement={<FilterValueIcon setFilters={setFilters}
-                                                                        fields={ARP_FILTER_FIELDS}
-                                                                        field="ethernet_source_mac"
-                                                                        value={p.ethernet_source_mac.address} />}
-                                        withAssetLink />
-                  </td>
-                  <td>
-                    <EthernetMacAddress addressWithContext={p.ethernet_destination_mac}
-                                        filterElement={<FilterValueIcon setFilters={setFilters}
-                                                                        fields={ARP_FILTER_FIELDS}
-                                                                        field="ethernet_destination_mac"
-                                                                        value={p.ethernet_destination_mac.address} />}
-                                        withAssetLink />
                   </td>
                   <td>
                     <EthernetMacAddress addressWithContext={p.arp_sender.mac}

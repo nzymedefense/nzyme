@@ -5,17 +5,21 @@ import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.arp.ARP;
+import app.nzyme.core.ethernet.arp.db.ARPStatisticsBucket;
 import app.nzyme.core.ethernet.arp.db.ArpPacketEntry;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.ethernet.*;
 import app.nzyme.core.rest.responses.ethernet.arp.ArpPacketDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.arp.ArpPacketsListResponse;
+import app.nzyme.core.rest.responses.ethernet.arp.ArpStatisticsBucketResponse;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -27,8 +31,10 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,6 +87,40 @@ public class ArpResource extends TapDataHandlingResource {
         }
 
         return Response.ok(ArpPacketsListResponse.create(total, packets)).build();
+    }
+
+    @GET
+    @Path("/statistics")
+    public Response statistics(@Context SecurityContext sc,
+                               @QueryParam("organization_id") UUID organizationId,
+                               @QueryParam("tenant_id") UUID tenantId,
+                               @QueryParam("time_range") @Valid String timeRangeParameter,
+                               @QueryParam("filters") String filtersParameter,
+                               @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Map<DateTime, ArpStatisticsBucketResponse> statistics = Maps.newHashMap();
+        for (ARPStatisticsBucket s : nzyme.getEthernet().arp().getStatistics(timeRange, bucketing, filters, taps)) {
+            statistics.put(s.bucket(), ArpStatisticsBucketResponse.create(
+                    s.totalCount(),
+                    s.requestCount(),
+                    s.replyCount(),
+                    s.requestToReplyRatio(),
+                    s.gratuitousRequestCount(),
+                    s.gratuitousReplyCount()
+            ));
+        }
+
+        return Response.ok(statistics).build();
     }
 
     private ArpPacketDetailsResponse buildDetailsResponse(ArpPacketEntry packet, UUID organizationId, UUID tenantId) {

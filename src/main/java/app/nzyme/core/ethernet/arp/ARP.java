@@ -3,7 +3,9 @@ package app.nzyme.core.ethernet.arp;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.Ethernet;
+import app.nzyme.core.ethernet.arp.db.ARPStatisticsBucket;
 import app.nzyme.core.ethernet.arp.db.ArpPacketEntry;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.FilterSql;
 import app.nzyme.core.util.filters.FilterSqlFragment;
@@ -95,6 +97,41 @@ public class ARP {
                         .define("order_column", orderColumn.getColumnName())
                         .define("order_direction", orderDirection)
                         .mapTo(ArpPacketEntry.class)
+                        .list()
+        );
+    }
+
+    public List<ARPStatisticsBucket> getStatistics(TimeRange timeRange,
+                                                   Bucketing.BucketingConfiguration bucketing,
+                                                   Filters filters,
+                                                   List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new ARPFilters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "COUNT(*) AS total_count, COUNT(*) FILTER (WHERE operation = 'Request') " +
+                                "AS request_count, " +
+                                "COUNT(*) FILTER (WHERE operation = 'Reply') AS reply_count, " +
+                                "CASE WHEN COUNT(*) FILTER (WHERE operation = 'Reply') = 0 THEN NULL ELSE " +
+                                "ROUND(COUNT(*) FILTER (WHERE operation = 'Request')::numeric / COUNT(*) " +
+                                "FILTER (WHERE operation = 'Reply'), 2) END AS request_to_reply_ratio, " +
+                                "COUNT(*) FILTER (WHERE operation = 'Request' " +
+                                "AND arp_sender_address = arp_target_address) AS gratuitous_request_count, " +
+                                "COUNT(*) FILTER ( WHERE operation = 'Reply' AND " +
+                                "arp_sender_address = arp_target_address) AS gratuitous_reply_count " +
+                                "FROM arp_packets WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>)" + filterFragment.whereSql() + " " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(ARPStatisticsBucket.class)
                         .list()
         );
     }
