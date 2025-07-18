@@ -12,6 +12,7 @@ import app.nzyme.core.rest.responses.ethernet.*;
 import app.nzyme.core.rest.responses.ethernet.arp.ArpPacketDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.arp.ArpPacketsListResponse;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -45,6 +46,7 @@ public class ArpResource extends TapDataHandlingResource {
                             @QueryParam("organization_id") UUID organizationId,
                             @QueryParam("tenant_id") UUID tenantId,
                             @QueryParam("time_range") @Valid String timeRangeParameter,
+                            @QueryParam("filters") String filtersParameter,
                             @QueryParam("order_column") @Nullable String orderColumnParam,
                             @QueryParam("order_direction") @Nullable String orderDirectionParam,
                             @QueryParam("limit") int limit,
@@ -52,6 +54,7 @@ public class ArpResource extends TapDataHandlingResource {
                             @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -68,11 +71,11 @@ public class ArpResource extends TapDataHandlingResource {
             }
         }
 
-        long total = nzyme.getEthernet().arp().countAllPackets(timeRange, taps);
+        long total = nzyme.getEthernet().arp().countAllPackets(timeRange, filters, taps);
 
         List<ArpPacketDetailsResponse> packets = Lists.newArrayList();
         for (ArpPacketEntry packet : nzyme.getEthernet().arp()
-                .findAllPackets(timeRange, limit, offset, orderColumn, orderDirection, taps)) {
+                .findAllPackets(timeRange, filters, limit, offset, orderColumn, orderDirection, taps)) {
 
            packets.add(buildDetailsResponse(packet, organizationId, tenantId));
         }

@@ -5,6 +5,9 @@ import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.arp.db.ArpPacketEntry;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.filters.FilterSql;
+import app.nzyme.core.util.filters.FilterSqlFragment;
+import app.nzyme.core.util.filters.Filters;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,16 +46,19 @@ public class ARP {
         this.nzyme = ethernet.getNzyme();
     }
 
-    public long countAllPackets(TimeRange timeRange, List<UUID> taps) {
+    public long countAllPackets(TimeRange timeRange, Filters filters, List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
 
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new ARPFilters());
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM arp_packets " +
                                 "WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>)")
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql())
                         .bindList("taps", taps)
+                        .bindMap(filterFragment.bindings())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .mapTo(Long.class)
@@ -62,6 +68,7 @@ public class ARP {
 
 
     public List<ArpPacketEntry> findAllPackets(TimeRange timeRange,
+                                               Filters filters,
                                                int limit,
                                                int offset,
                                                OrderColumn orderColumn,
@@ -71,13 +78,16 @@ public class ARP {
             return Collections.emptyList();
         }
 
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new ARPFilters());
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM arp_packets " +
                                 "WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
                                 "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)
+                        .bindMap(filterFragment.bindings())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bind("limit", limit)

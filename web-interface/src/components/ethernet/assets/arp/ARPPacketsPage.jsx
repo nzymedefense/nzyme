@@ -59,6 +59,7 @@ export default function ARPPacketsPage() {
         organizationId,
         tenantId,
         timeRange,
+        filters,
         orderColumn,
         orderDirection,
         selectedTaps,
@@ -66,7 +67,7 @@ export default function ARPPacketsPage() {
         (page-1)*perPage,
         setPackets
     );
-  }, [selectedTaps, organizationId, tenantId, timeRange, orderColumn, orderDirection, page, revision]);
+  }, [selectedTaps, filters, organizationId, tenantId, timeRange, orderColumn, orderDirection, page, revision]);
 
   return (
       <React.Fragment>
@@ -104,15 +105,15 @@ export default function ARPPacketsPage() {
                                        helpLink="https://go.nzyme.org/ethernet-arp" />
 
                 <ARPPacketsTable packets={packets}
-                                       timeRange={timeRange}
-                                       page={page}
-                                       setPage={setPage}
-                                       perPage={perPage}
-                                       orderColumn={orderColumn}
-                                       orderDirection={orderDirection}
-                                       setOrderColumn={setOrderColumn}
-                                       setOrderDirection={setOrderDirection}
-                                       setFilters={setFilters} />
+                                 timeRange={timeRange}
+                                 page={page}
+                                 setPage={setPage}
+                                 perPage={perPage}
+                                 orderColumn={orderColumn}
+                                 orderDirection={orderDirection}
+                                 setOrderColumn={setOrderColumn}
+                                 setOrderDirection={setOrderDirection}
+                                 setFilters={setFilters} />
 
               </div>
             </div>

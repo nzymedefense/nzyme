@@ -7,6 +7,8 @@ import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress"
 import Paginator from "../../../misc/Paginator";
 import AssetName from "../../shared/AssetName";
 import L4Address from "../../shared/L4Address";
+import FilterValueIcon from "../../../shared/filtering/FilterValueIcon";
+import {ARP_FILTER_FIELDS} from "./ARPFilterFields";
 
 export default function ARPPacketsTable(props) {
 
@@ -14,6 +16,7 @@ export default function ARPPacketsTable(props) {
   const page = props.page;
   const setPage = props.setPage;
   const perPage = props.perPage;
+  const setFilters = props.setFilters;
   const setOrderColumn = props.setOrderColumn;
   const orderColumn = props.orderColumn;
   const setOrderDirection = props.setOrderDirection;
@@ -46,15 +49,15 @@ export default function ARPPacketsTable(props) {
           <thead>
           <tr>
             <th style={{width: 200}}>Timestamp {columnSorting("timestamp")}</th>
-            <th>ARP Operation</th>
-            <th>Source MAC</th>
-            <th>Destination MAC</th>
-            <th>Target MAC</th>
+            <th>ARP Operation {columnSorting("operation")}</th>
+            <th>Source MAC {columnSorting("ethernet_source_mac")}</th>
+            <th>Destination MAC {columnSorting("ethernet_destination_mac")}</th>
+            <th>Sender MAC {columnSorting("arp_sender_mac")}</th>
+            <th>Sender Name</th>
+            <th>Sender Address {columnSorting("arp_sender_address")}</th>
+            <th>Target MAC {columnSorting("arp_target_mac")}</th>
             <th>Target Name</th>
-            <th>Target Address</th>
-            <th>Target MAC</th>
-            <th>Target Name</th>
-            <th>Target Address</th>
+            <th>Target Address {columnSorting("arp_target_address")}</th>
           </tr>
           </thead>
           <tbody>
@@ -62,15 +65,63 @@ export default function ARPPacketsTable(props) {
             return (
                 <tr key={i}>
                   <td>{moment(p.timestamp).format()}</td>
-                  <td>{p.operation}</td>
-                  <td><EthernetMacAddress addressWithContext={p.ethernet_source_mac} withAssetLink /></td>
-                  <td><EthernetMacAddress addressWithContext={p.ethernet_destination_mac} withAssetLink /></td>
-                  <td><EthernetMacAddress addressWithContext={p.arp_sender.mac} withAssetLink /></td>
+                  <td>
+                    {p.operation}
+                    <FilterValueIcon setFilters={setFilters}
+                                     fields={ARP_FILTER_FIELDS}
+                                     field="operation"
+                                     value={p.operation} />
+                  </td>
+                  <td>
+                    <EthernetMacAddress addressWithContext={p.ethernet_source_mac}
+                                        filterElement={<FilterValueIcon setFilters={setFilters}
+                                                                        fields={ARP_FILTER_FIELDS}
+                                                                        field="ethernet_source_mac"
+                                                                        value={p.ethernet_source_mac.address} />}
+                                        withAssetLink />
+                  </td>
+                  <td>
+                    <EthernetMacAddress addressWithContext={p.ethernet_destination_mac}
+                                        filterElement={<FilterValueIcon setFilters={setFilters}
+                                                                        fields={ARP_FILTER_FIELDS}
+                                                                        field="ethernet_destination_mac"
+                                                                        value={p.ethernet_destination_mac.address} />}
+                                        withAssetLink />
+                  </td>
+                  <td>
+                    <EthernetMacAddress addressWithContext={p.arp_sender.mac}
+                                        filterElement={<FilterValueIcon setFilters={setFilters}
+                                                                        fields={ARP_FILTER_FIELDS}
+                                                                        field="arp_sender_mac"
+                                                                        value={p.arp_sender.mac.address} />}
+                                        withAssetLink />
+                  </td>
                   <td><AssetName addressWithContext={p.arp_sender ? p.arp_sender.mac : null} /></td>
-                  <td><L4Address address={p.arp_sender} hideFlag /></td>
-                  <td><EthernetMacAddress addressWithContext={p.arp_target.mac} withAssetLink /></td>
+                  <td>
+                    <L4Address address={p.arp_sender}
+                               filterElement={<FilterValueIcon setFilters={setFilters}
+                                                               fields={ARP_FILTER_FIELDS}
+                                                               field="arp_sender_address"
+                                                               value={p.arp_sender.address} />}
+                               hideFlag />
+                  </td>
+                  <td>
+                    <EthernetMacAddress addressWithContext={p.arp_target.mac}
+                                        filterElement={<FilterValueIcon setFilters={setFilters}
+                                                                        fields={ARP_FILTER_FIELDS}
+                                                                        field="arp_target_mac"
+                                                                        value={p.arp_target.mac.address} />}
+                                        withAssetLink />
+                  </td>
                   <td><AssetName addressWithContext={p.arp_target ? p.arp_target.mac : null} /></td>
-                  <td><L4Address address={p.arp_target} hideFlag /></td>
+                  <td>
+                    <L4Address address={p.arp_target}
+                               filterElement={<FilterValueIcon setFilters={setFilters}
+                                                               fields={ARP_FILTER_FIELDS}
+                                                               field="arp_target_address"
+                                                               value={p.arp_target.address} />}
+                               hideFlag />
+                  </td>
                 </tr>
             )
           })}

@@ -23,7 +23,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
-import java.net.InetAddress;
 import java.util.List;
 import java.util.UUID;
 
