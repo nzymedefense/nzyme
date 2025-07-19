@@ -3,7 +3,6 @@ import {TapContext} from "../../../../App";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import {Presets} from "../../../shared/timerange/TimeRange";
 import AssetsService from "../../../../services/ethernet/AssetsService";
-import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {ASSETS_MENU_ITEMS} from "../AssetsMenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
@@ -14,6 +13,9 @@ import {queryParametersToFilters} from "../../../shared/filtering/FilterQueryPar
 import {useLocation} from "react-router-dom";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import ARPPacketsTable from "./ARPPacketsTable";
+import ARPPacketsChart from "./ARPPacketsChart";
+import ARPRequestToReplyRatioChart from "./ARPRequestToReplyRatioChart";
+import ARPGratuitousPacketsChart from "./ARPGratuitousPacketsChart";
 
 const assetsService = new AssetsService();
 
@@ -76,8 +78,6 @@ export default function ARPPacketsPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
-
         <div className="row">
           <div className="col-md-12">
             <SectionMenuBar items={ASSETS_MENU_ITEMS}
@@ -91,7 +91,8 @@ export default function ARPPacketsPage() {
               <div className="card-body">
                 <CardTitleWithControls title="ARP Packets Filters"
                                        timeRange={timeRange}
-                                       setTimeRange={setTimeRange} />
+                                       setTimeRange={setTimeRange}
+                                       helpLink="https://go.nzyme.org/ethernet-arp" />
 
                 <Filters filters={filters}
                          setFilters={setFilters}
@@ -102,12 +103,48 @@ export default function ARPPacketsPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Total ARP Packets"
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <ARPPacketsChart statistics={statistics} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="ARP Request to Reply Ratio"
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <ARPRequestToReplyRatioChart statistics={statistics} />
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Gratuitous ARP Packets"
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <ARPGratuitousPacketsChart statistics={statistics} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-12">
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="ARP Packets"
-                                       refreshAction={() => setRevision(new Date())}
-                                       helpLink="https://go.nzyme.org/ethernet-arp" />
+                                       refreshAction={() => setRevision(new Date())} />
 
                 <ARPPacketsTable packets={packets}
                                  timeRange={timeRange}

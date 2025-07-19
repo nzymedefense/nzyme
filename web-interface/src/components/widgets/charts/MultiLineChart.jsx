@@ -3,12 +3,12 @@ import React from 'react'
 import Plot from 'react-plotly.js'
 import Store from '../../../util/Store'
 
-class SimpleLineChart extends React.Component {
+class MultiLineChart extends React.Component {
   constructor (props) {
     super(props)
 
     this.state = {
-      data: props.data
+      data: props.data,
     }
   }
 
@@ -17,34 +17,66 @@ class SimpleLineChart extends React.Component {
   }
 
   render () {
-    const x = []
-    const y = []
-
     const data = this.state.data
+    const seriesNames = this.props.seriesNames || {};
+
+    const lightLinesPalette = [
+      '#1d30d7',
+      '#9467bd',
+      '#e377c2',
+      '#d7d130'
+    ]
+
+    const darkLinesPalette = [
+      '#f9f9f9',
+      '#b087f4',
+      '#f48af1',
+      '#f4f48a'
+    ]
+
+    const defaultPalette = Store.get('dark_mode') ? darkLinesPalette : lightLinesPalette
 
     let finalData = this.props.finalData
     if (!finalData) {
-      Object.keys(data).forEach(function (key) {
-        x.push(new Date(key))
-        y.push(data[key])
-      })
+      finalData = []
 
-      finalData = [
-        {
-          x: x,
-          y: y,
+      Object.keys(data).forEach((seriesName, index) => {
+        const xs = []
+        const ys = []
+
+        Object.keys(data[seriesName]).forEach((key) => {
+          xs.push(new Date(key))
+          ys.push(data[seriesName][key])
+        })
+
+        const displayName = seriesNames[seriesName] || seriesName;
+
+        finalData.push({
+          name: displayName,
+          x: xs,
+          y: ys,
           type: 'scatter',
-          mode: this.props.scattermode ? this.props.scattermode : 'line',
+          mode: this.props.scattermode ? this.props.scattermode : 'lines',
           marker: { size: 3 },
-          line: { width: this.props.lineWidth ? this.props.lineWidth : 2, shape: 'linear', color: Store.get('dark_mode') ? '#f9f9f9' : '#1d30d7' }
-        }
-      ]
+          line: {
+            width: this.props.lineWidth ? this.props.lineWidth : 2,
+            shape: 'linear',
+            color: this.props.colors?.[seriesName] || defaultPalette[index % defaultPalette.length]
+          }
+        })
+      })
     }
 
+    let allTimestamps = []
+    finalData.forEach(trace => {
+      allTimestamps = allTimestamps.concat(trace.x.map(d => d.getTime()))
+    })
+
     let xRange = undefined
-    if (x.length > 1) {
-      const min = new Date(Math.min(...x.map(d => d.getTime())))
-      const max = new Date(Math.max(...x.map(d => d.getTime())))
+    if (allTimestamps.length > 1) {
+      const bufferMs = 5 * 60 * 1000 // optional
+      const min = new Date(Math.min(...allTimestamps) - bufferMs)
+      const max = new Date(Math.max(...allTimestamps) + bufferMs)
       xRange = [min, max]
     }
 
@@ -82,7 +114,7 @@ class SimpleLineChart extends React.Component {
               title: { text: this.props.title },
               paper_bgcolor: colors.background,
               plot_bgcolor: colors.background,
-              showlegend: false,
+              showlegend: true,
               dragmode: false,
               clickmode: 'none',
               hovermode: this.props.disableHover ? false : 'x',
@@ -124,4 +156,4 @@ class SimpleLineChart extends React.Component {
   }
 }
 
-export default SimpleLineChart
+export default MultiLineChart
