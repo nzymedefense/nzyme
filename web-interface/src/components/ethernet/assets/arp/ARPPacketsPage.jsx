@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {TapContext} from "../../../../App";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
-import {Presets} from "../../../shared/timerange/TimeRange";
+import {Absolute, Presets} from "../../../shared/timerange/TimeRange";
 import AssetsService from "../../../../services/ethernet/AssetsService";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {ASSETS_MENU_ITEMS} from "../AssetsMenuItems";
@@ -109,7 +109,7 @@ export default function ARPPacketsPage() {
                 <CardTitleWithControls title="Total ARP Packets"
                                        refreshAction={() => setRevision(new Date())} />
 
-                <ARPPacketsChart statistics={statistics} />
+                <ARPPacketsChart statistics={statistics} setTimeRange={setTimeRange} />
               </div>
             </div>
           </div>
@@ -122,7 +122,7 @@ export default function ARPPacketsPage() {
                 <CardTitleWithControls title="ARP Request to Reply Ratio"
                                        refreshAction={() => setRevision(new Date())} />
 
-                <ARPRequestToReplyRatioChart statistics={statistics} />
+                <ARPRequestToReplyRatioChart statistics={statistics} setTimeRange={setTimeRange} />
               </div>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function ARPPacketsPage() {
                 <CardTitleWithControls title="Gratuitous ARP Packets"
                                        refreshAction={() => setRevision(new Date())} />
 
-                <ARPGratuitousPacketsChart statistics={statistics} />
+                <ARPGratuitousPacketsChart statistics={statistics} setTimeRange={setTimeRange} />
               </div>
             </div>
           </div>

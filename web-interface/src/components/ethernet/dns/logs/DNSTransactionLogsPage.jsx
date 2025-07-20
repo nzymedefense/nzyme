@@ -51,10 +51,8 @@ export default function DNSTransactionLogsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Filters"
-                                       hideTimeRange={true}
                                        timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       slim={true}/>
+                                       setTimeRange={setTimeRange} />
 
                 <Filters filters={filters} setFilters={setFilters} fields={DNS_FILTER_FIELDS} />
               </div>
@@ -67,10 +65,13 @@ export default function DNSTransactionLogsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Transaction Count"
-                                       fixedAppliedTimeRange={timeRange}
                                        refreshAction={() => { setRevision(new Date()) }} />
 
-                <DNSTransactionCountChart timeRange={timeRange} filters={filters} setFilters={setFilters} revision={revision} />
+                <DNSTransactionCountChart timeRange={timeRange}
+                                          filters={filters}
+                                          setFilters={setFilters}
+                                          setTimeRange={setTimeRange}
+                                          revision={revision} />
               </div>
             </div>
           </div>
@@ -81,7 +82,6 @@ export default function DNSTransactionLogsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Transactions"
-                                       fixedAppliedTimeRange={timeRange}
                                        refreshAction={() => { setRevision(new Date()) }} />
 
                 <DNSTransactionsTable timeRange={timeRange}

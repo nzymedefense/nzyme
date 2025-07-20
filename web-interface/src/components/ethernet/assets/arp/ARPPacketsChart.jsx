@@ -5,6 +5,7 @@ import MultiLineChart from "../../../widgets/charts/MultiLineChart";
 export default function ARPPacketsChart(props) {
 
   const statistics = props.statistics;
+  const setTimeRange = props.setTimeRange;
 
   if (!statistics) {
     return <GenericWidgetLoadingSpinner height={200} />
@@ -33,6 +34,7 @@ export default function ARPPacketsChart(props) {
       customMarginBottom={35}
       seriesNames={{request_count: "ARP Requests", reply_count: "ARP Replies" }}
       data={formatData(statistics)}
+      setTimeRange={setTimeRange}
   />
 
 }

@@ -78,9 +78,10 @@ function DNSOverviewPage () {
               <div className="card-body">
                 <CardTitleWithControls title="Query Traffic"
                                        timeRange={queryStatsTimeRange}
-                                       setTimeRange={setQueryStatsTimeRange}/>
+                                       setTimeRange={setQueryStatsTimeRange} />
 
                 <DNSStatisticsChart data={queryStats}
+                                    setTimeRange={setQueryStatsTimeRange}
                                     conversion={byteConversion}
                                     valueType="KB"/>
               </div>
@@ -92,9 +93,10 @@ function DNSOverviewPage () {
               <div className="card-body">
                 <CardTitleWithControls title="Response Traffic"
                                        timeRange={responseStatsTimeRange}
-                                       setTimeRange={setResponseStatsTimeRange}/>
+                                       setTimeRange={setResponseStatsTimeRange} />
 
                 <DNSStatisticsChart data={responseStats}
+                                    setTimeRange={setResponseStatsTimeRange}
                                     conversion={byteConversion}
                                     valueType="KB"/>
               </div>
@@ -107,9 +109,11 @@ function DNSOverviewPage () {
                 <CardTitleWithControls title="NXDOMAIN Responses"
                                        helpLink="https://go.nzyme.org/ethernet-dns-nxdomain"
                                        timeRange={nxdomainStatsTimeRange}
-                                       setTimeRange={setNxdomainStatsTimeRange}/>
+                                       setTimeRange={setNxdomainStatsTimeRange} />
 
-                <DNSStatisticsChart data={nxdomainStats} attribute="nxdomain_count"/>
+                <DNSStatisticsChart data={nxdomainStats}
+                                    setTimeRange={setNxdomainStatsTimeRange}
+                                    attribute="nxdomain_count"/>
               </div>
             </div>
           </div>

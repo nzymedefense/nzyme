@@ -2,6 +2,7 @@ import React from 'react'
 
 import Plot from 'react-plotly.js'
 import Store from '../../../util/Store'
+import {Absolute} from "../../shared/timerange/TimeRange";
 
 class SimpleBarChart extends React.Component {
   constructor (props) {
@@ -85,7 +86,7 @@ class SimpleBarChart extends React.Component {
               paper_bgcolor: colors.background,
               plot_bgcolor: colors.background,
               showlegend: false,
-              dragmode: false,
+              dragmode: this.props.setTimeRange ? 'zoom' : false,
               clickmode: 'none',
               hovermode:  hovermode,
               hoverlabel: {
@@ -95,7 +96,8 @@ class SimpleBarChart extends React.Component {
               barmode: 'stack',
               boxgap: 0,
               xaxis: {
-                fixedrange: true,
+                fixedrange: false,
+                rangeslider: { visible: false },
                 title: this.props.xaxistitle,
                 linecolor: colors.lines,
                 linewidth: 1,
@@ -120,6 +122,15 @@ class SimpleBarChart extends React.Component {
               autosize: true,
               responsive: true
             }}
+            onRelayout={event => {
+              if (this.props.setTimeRange) {
+                const x0 = event['xaxis.range[0]']
+                const x1 = event['xaxis.range[1]']
+                if (x0 != null && x1 != null) {
+                  this.props.setTimeRange(Absolute(new Date(x0), new Date(x1)))
+                }
+              }}
+            }
         />
     )
   }

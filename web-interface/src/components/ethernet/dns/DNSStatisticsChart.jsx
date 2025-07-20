@@ -5,6 +5,7 @@ import SimpleLineChart from "../../widgets/charts/SimpleLineChart";
 export default function DNSStatisticsChart (props) {
 
   const data = props.data;
+  const setTimeRange = props.setTimeRange;
 
   // Optional.
   const conversion = props.conversion;
@@ -35,5 +36,6 @@ export default function DNSStatisticsChart (props) {
         data={formatData()}
         ticksuffix={valueType ? ' ' + valueType : undefined}
         tickformat={'.2~f'}
+        setTimeRange={setTimeRange}
     />
 }

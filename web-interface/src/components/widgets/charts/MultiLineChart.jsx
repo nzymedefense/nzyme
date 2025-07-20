@@ -2,6 +2,7 @@ import React from 'react'
 
 import Plot from 'react-plotly.js'
 import Store from '../../../util/Store'
+import {Absolute} from "../../shared/timerange/TimeRange";
 
 class MultiLineChart extends React.Component {
   constructor (props) {
@@ -115,7 +116,7 @@ class MultiLineChart extends React.Component {
               paper_bgcolor: colors.background,
               plot_bgcolor: colors.background,
               showlegend: true,
-              dragmode: false,
+              dragmode: this.props.setTimeRange ? 'zoom' : false,
               clickmode: 'none',
               hovermode: this.props.disableHover ? false : 'x',
               hoverlabel: {
@@ -125,7 +126,8 @@ class MultiLineChart extends React.Component {
               barmode: 'stack',
               boxgap: 0,
               xaxis: {
-                fixedrange: true,
+                fixedrange: false,
+                rangeslider: { visible: false },
                 title: this.props.xaxistitle,
                 linecolor: colors.lines,
                 linewidth: 1,
@@ -149,8 +151,18 @@ class MultiLineChart extends React.Component {
             config={{
               displayModeBar: false,
               autosize: true,
-              responsive: true
+              responsive: true,
+              showTips: false
             }}
+            onRelayout={event => {
+              if (this.props.setTimeRange) {
+                const x0 = event['xaxis.range[0]']
+                const x1 = event['xaxis.range[1]']
+                if (x0 != null && x1 != null) {
+                  this.props.setTimeRange(Absolute(new Date(x0), new Date(x1)))
+                }
+              }}
+            }
         />
     )
   }

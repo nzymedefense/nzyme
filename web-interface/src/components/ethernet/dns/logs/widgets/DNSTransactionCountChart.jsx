@@ -12,6 +12,7 @@ export default function DNSTransactionCountChart(props) {
   const timeRange = props.timeRange;
   const filters = props.filters;
   const revision = props.revision;
+  const setTimeRange = props.setTimeRange;
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -31,6 +32,7 @@ export default function DNSTransactionCountChart(props) {
       height={200}
       lineWidth={1}
       customMarginBottom={35}
+      setTimeRange={setTimeRange}
       data={convertGenericChartData(histogram)}
   />
 

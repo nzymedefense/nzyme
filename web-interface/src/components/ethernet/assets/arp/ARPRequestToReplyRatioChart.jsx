@@ -5,6 +5,7 @@ import SimpleLineChart from "../../../widgets/charts/SimpleLineChart";
 export default function ARPRequestToReplyRatioChart(props) {
 
   const statistics = props.statistics;
+  const setTimeRange = props.setTimeRange;
 
   if (!statistics) {
     return <GenericWidgetLoadingSpinner height={200} />
@@ -25,6 +26,7 @@ export default function ARPRequestToReplyRatioChart(props) {
       lineWidth={1}
       scattermode="markers"
       data={formatData(statistics)}
+      setTimeRange={setTimeRange}
   />
 
 }
