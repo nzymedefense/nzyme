@@ -27,14 +27,8 @@ function BSSIDsPage() {
 
   const [bssids, setBSSIDs] = useState(null);
 
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [revision, setRevision] = useState(new Date());
-
-  const [bssidTimeRange, setBssidTimeRange] = useState(Presets.RELATIVE_HOURS_24);
-  const [bssidChartRevision, setBssidChartRevision] = useState(new Date());
-
-  const [ssidTimeRange, setSsidTimeRange] = useState(Presets.RELATIVE_HOURS_24);
-  const [ssidChartRevision, setSsidChartRevision] = useState(new Date());
 
   const [filters, setFilters] = useState(queryParametersToFilters(urlQuery.get("filters"), BSSID_FILTER_FIELDS));
 
@@ -77,32 +71,6 @@ function BSSIDsPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Active BSSIDs" slim={true}
-                                       refreshAction={() => setBssidChartRevision(new Date())}
-                                       timeRange={bssidTimeRange}
-                                       setTimeRange={setBssidTimeRange} />
-
-                <BSSIDAndSSIDChart parameter="bssid_count" timeRange={bssidTimeRange} revision={bssidChartRevision} />
-              </div>
-            </div>
-          </div>
-          <div className="col-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Active SSIDs" slim={true}
-                                       refreshAction={() => setSsidChartRevision(new Date())}
-                                       timeRange={ssidTimeRange} setTimeRange={setSsidTimeRange} />
-
-                <BSSIDAndSSIDChart parameter="ssid_count" timeRange={ssidTimeRange} revision={ssidChartRevision}/>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row mt-3">
           <div className="col-12">
             <div className="card">
               <div className="card-body">
@@ -111,6 +79,39 @@ function BSSIDsPage() {
                                        setTimeRange={setTimeRange} />
 
                 <Filters filters={filters} setFilters={setFilters} fields={BSSID_FILTER_FIELDS} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Active BSSIDs" slim={true}
+                                       refreshAction={() => setRevision(new Date())}
+                                       timeRange={timeRange}/>
+
+                <BSSIDAndSSIDChart parameter="bssid_count"
+                                   timeRange={timeRange}
+                                   filters={filters}
+                                   setTimeRange={setTimeRange}
+                                   revision={revision} />
+              </div>
+            </div>
+          </div>
+          <div className="col-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Active SSIDs" slim={true}
+                                       refreshAction={() => setRevision(new Date())}
+                                       timeRange={timeRange} />
+
+                <BSSIDAndSSIDChart parameter="ssid_count"
+                                   timeRange={timeRange}
+                                   filters={filters}
+                                   setTimeRange={setTimeRange}
+                                   revision={revision}/>
               </div>
             </div>
           </div>

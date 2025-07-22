@@ -70,7 +70,9 @@ function DiscoPage() {
                                          timeRange={discoHistogramTimeRange}
                                          setTimeRange={setDiscoHistogramTimeRange} />
 
-                  <DiscoHistogram discoType="disconnection" timeRange={discoHistogramTimeRange} />
+                  <DiscoHistogram discoType="disconnection"
+                                  timeRange={discoHistogramTimeRange}
+                                  setTimeRange={setDiscoHistogramTimeRange} />
 
                   <p className="mb-0 mt-3 text-muted">
                     <i>Disconnection activity</i> refers to the sum of deauthentication and disassociation frames.
@@ -88,7 +90,9 @@ function DiscoPage() {
                                          timeRange={deauthHistogramTimeRange}
                                          setTimeRange={setDeauthHistogramTimeRange} />
 
-                  <DiscoHistogram discoType="deauthentication" timeRange={deauthHistogramTimeRange} />
+                  <DiscoHistogram discoType="deauthentication"
+                                  timeRange={deauthHistogramTimeRange}
+                                  setTimeRange={setDeauthHistogramTimeRange} />
                 </div>
               </div>
             </div>
@@ -100,7 +104,9 @@ function DiscoPage() {
                                          timeRange={disassocHistogramTimeRange}
                                          setTimeRange={setDisassocHistogramTimeRange} />
 
-                  <DiscoHistogram discoType="disassociation" timeRange={disassocHistogramTimeRange} />
+                  <DiscoHistogram discoType="disassociation"
+                                  timeRange={disassocHistogramTimeRange}
+                                  setTimeRange={setDisassocHistogramTimeRange} />
                 </div>
               </div>
             </div>

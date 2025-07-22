@@ -361,16 +361,18 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     @Path("/bssids/histogram")
     public Response histogram(@Context SecurityContext sc,
                               @QueryParam("time_range") @Valid String timeRangeParameter,
+                              @QueryParam("filters") String filtersParameter,
                               @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Map<DateTime, BSSIDAndSSIDHistogramValueResponse> response = Maps.newTreeMap();
         for (BSSIDAndSSIDCountHistogramEntry h : nzyme.getDot11()
-                .getBSSIDAndSSIDCountHistogram(timeRange, bucketing, tapUuids)) {
+                .getBSSIDAndSSIDCountHistogram(timeRange, bucketing, filters, tapUuids)) {
             response.put(
                     h.bucket(),
                     BSSIDAndSSIDHistogramValueResponse.create(

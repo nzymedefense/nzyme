@@ -62,10 +62,10 @@ class Dot11Service {
     })
   }
 
-  getBSSIDAndSSIDHistogram(timeRange, taps, setBSSIDAndSSIDHistogram) {
+  getBSSIDAndSSIDHistogram(timeRange, filters, taps, setBSSIDAndSSIDHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/dot11/networks/bssids/histogram", { time_range: timeRange, taps: tapsList },
+    RESTClient.get("/dot11/networks/bssids/histogram", { time_range: timeRange, filters: filters, taps: tapsList },
         function (response) {
           setBSSIDAndSSIDHistogram(response.data)
     })

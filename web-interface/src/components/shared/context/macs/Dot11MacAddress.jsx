@@ -13,6 +13,7 @@ function Dot11MacAddress(props) {
   // Optional.
   const href = props.href;
   const onClick = props.onClick;
+  const withAssetName =  props.withAssetName;
   const filterElement = props.filterElement;
 
   return (
@@ -28,7 +29,8 @@ function Dot11MacAddress(props) {
                     href={href}
                     onClick={onClick}
                     filterElement={filterElement}
-                    highlighted={highlighted} />
+                    highlighted={highlighted}
+                    withAssetName={withAssetName} />
       </span>
   )
 

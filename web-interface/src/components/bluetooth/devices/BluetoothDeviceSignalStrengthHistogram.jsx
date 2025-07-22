@@ -10,6 +10,7 @@ export function BluetoothDeviceSignalStrengthHistogram(props) {
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
+  const setTimeRange = props.setTimeRange;
 
   const formatData = function(data) {
     const result = {}
@@ -48,6 +49,7 @@ export function BluetoothDeviceSignalStrengthHistogram(props) {
       customMarginBottom={35}
       customMarginRight={20}
       scattermode="markers"
+      setTimeRange={setTimeRange}
       data={formatData(data)} />
 
 }

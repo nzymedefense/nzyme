@@ -12,6 +12,7 @@ function SSIDAdvertisementHistogram(props) {
   const ssid = props.ssid;
   const parameter = props.parameter;
   const timeRange = props.timeRange;
+  const setTimeRange = props.setTimeRange;
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -43,6 +44,7 @@ function SSIDAdvertisementHistogram(props) {
           lineWidth={1}
           customMarginBottom={35}
           customMarginRight={20}
+          setTimeRange={setTimeRange}
           data={formatData(histogram.values)} />
       </React.Fragment>
   )

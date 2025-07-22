@@ -277,7 +277,8 @@ function ClientDetailsPage() {
                                            timeRange={connectedSignalStrengthHistogramTimeRange}
                                            setTimeRange={setConnectedSignalStrengthHistogramTimeRange} />
 
-                    <ClientSignalStrengthChart data={connectedSignalStrengthHistogram} />
+                    <ClientSignalStrengthChart data={connectedSignalStrengthHistogram}
+                                               setTimeRange={setConnectedSignalStrengthHistogramTimeRange} />
                   </div>
                 </div>
               </div>
@@ -305,7 +306,8 @@ function ClientDetailsPage() {
                                            timeRange={disconnectedSignalStrengthHistogramTimeRange}
                                            setTimeRange={setDisconnectedSignalStrengthHistogramTimeRange} />
 
-                    <ClientSignalStrengthChart data={disconnectedSignalStrengthHistogram} />
+                    <ClientSignalStrengthChart data={disconnectedSignalStrengthHistogram}
+                                               setTimeRange={setDisconnectedSignalStrengthHistogramTimeRange}/>
                   </div>
                 </div>
               </div>
@@ -319,7 +321,7 @@ function ClientDetailsPage() {
               <div className="card-body">
                 <CardTitleWithControls title="Recorded Frames"
                                        timeRange={frameCountHistogramTimeRange}
-                                       setTimeRange={setFrameCountHistogramTimeRange}/>
+                                       setTimeRange={setFrameCountHistogramTimeRange} />
 
                 <select className="form-select form-select-sm" style={{width: 250}}
                         onChange={(e) => {
@@ -334,6 +336,7 @@ function ClientDetailsPage() {
 
                 <ClientActivityHistogram histogram={frameCountHistogram}
                                          parameter={frameCountHistogramType}
+                                         setTimeRange={setFrameCountHistogramTimeRange}
                                          type="bar"/>
               </div>
             </div>

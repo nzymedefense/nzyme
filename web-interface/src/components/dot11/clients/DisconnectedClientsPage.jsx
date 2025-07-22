@@ -28,11 +28,10 @@ function ClientsPage() {
 
   const urlQuery = useQuery();
 
-  const [histogramTimeRange, setHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [histogram, setHistogram] = useState(null);
 
   const [clients, setClients] = useState(null);
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [page, setPage] = useState(1);
 
   const [orderColumn, setOrderColumn] = useState("last_seen");
@@ -50,9 +49,9 @@ function ClientsPage() {
     setHistogram(null);
 
     dot11Service.getDisconnectedClientsHistogram(
-        histogramTimeRange, filters, skipRandomized, selectedTaps, setHistogram
+        timeRange, filters, skipRandomized, selectedTaps, setHistogram
     );
-  }, [histogramTimeRange, skipRandomized, selectedTaps, filters])
+  }, [timeRange, skipRandomized, selectedTaps, filters])
 
   useEffect(() => {
     setClients(null);
@@ -99,21 +98,6 @@ function ClientsPage() {
           </div>
         </div>
 
-
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title={disconnectedTitle()} slim={true}
-                                       timeRange={histogramTimeRange}
-                                       setTimeRange={setHistogramTimeRange} />
-
-                <ClientHistogram histogram={histogram} />
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="row mt-3">
           <div className="col-md-12">
             <div className="card">
@@ -134,7 +118,19 @@ function ClientsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title={disconnectedTitle()} />
+                <CardTitleWithControls title={disconnectedTitle()} slim={true} timeRange={timeRange} />
+
+                <ClientHistogram histogram={histogram} setTimeRange={setTimeRange} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title={disconnectedTitle()} timeRange={timeRange} />
 
                 <p className="text-muted">
                   <em>Disconnected</em> clients are currently not connected to any WiFi network but still making their

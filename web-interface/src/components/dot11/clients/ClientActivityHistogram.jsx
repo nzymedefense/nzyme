@@ -8,6 +8,7 @@ function ClientActivityHistogram(props) {
   const histogram = props.histogram;
   const parameter = props.parameter;
   const type = props.type;
+  const setTimeRange = props.setTimeRange;
 
   if (histogram === null) {
     return <LoadingSpinner />
@@ -30,6 +31,7 @@ function ClientActivityHistogram(props) {
           lineWidth={1}
           customMarginBottom={35}
           customMarginRight={20}
+          setTimeRange={setTimeRange}
           data={formatData(histogram)} />
     case "line":
     default:
@@ -38,6 +40,7 @@ function ClientActivityHistogram(props) {
           lineWidth={1}
           customMarginBottom={35}
           customMarginRight={20}
+          setTimeRange={setTimeRange}
           data={formatData(histogram)} />
   }
 

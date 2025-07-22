@@ -275,6 +275,7 @@ function BSSIDDetailsPage() {
 
                     <BSSIDAdvertisementHistogram bssid={bssid.summary.bssid.address}
                                                  timeRange={advertisementsBeaconTimeRange}
+                                                 setTimeRange={setAdvertisementsBeaconTimeRange}
                                                  parameter="beacon_count" />
                   </div>
                 </div>
@@ -291,6 +292,7 @@ function BSSIDDetailsPage() {
 
                     <BSSIDAdvertisementHistogram bssid={bssid.summary.bssid.address}
                                                  timeRange={advertisementsProbeRespTimeRange}
+                                                 setTimeRange={setAdvertisementsProbeRespTimeRange}
                                                  parameter="proberesp_count"/>
                   </div>
                 </div>
@@ -305,7 +307,8 @@ function BSSIDDetailsPage() {
                                            timeRange={activeChannelsTimeRange}
                                            setTimeRange={setActiveChannelsTimeRange} />
 
-                    <BSSIDChannelUsageHistogram bssid={bssid.summary.bssid.address} timeRange={activeChannelsTimeRange} />
+                    <BSSIDChannelUsageHistogram bssid={bssid.summary.bssid.address}
+                                                timeRange={activeChannelsTimeRange} />
                   </div>
                 </div>
               </div>
@@ -345,6 +348,7 @@ function BSSIDDetailsPage() {
 
                 <DiscoHistogram discoType="disconnection"
                                 timeRange={discoFramesTimeRange}
+                                setTimeRange={setDiscoFramesTimeRange}
                                 bssids={[bssid.summary.bssid.address]} />
 
                 <p className="text-muted mb-0 mt-3">

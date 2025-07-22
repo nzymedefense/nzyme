@@ -110,6 +110,7 @@ function SSIDDetailsPage() {
                 <dd>
                   <Dot11MacAddress addressWithContext={ssid.bssid}
                                    href={ApiRoutes.DOT11.NETWORKS.BSSID(ssid.bssid.address)}
+                                   withAssetName
                                    showOui={true} />
                 </dd>
                 <dt>Name</dt>
@@ -187,6 +188,7 @@ function SSIDDetailsPage() {
               <SSIDAdvertisementHistogram bssid={ssid.bssid.address}
                                           ssid={ssid.ssid}
                                           timeRange={advertisementHistogramTimeRange}
+                                          setTimeRange={setAdvertisementHistogramTimeRange}
                                           parameter={advertisementHistogramType} />
             </div>
           </div>
@@ -206,7 +208,10 @@ function SSIDDetailsPage() {
                 includes disconnections initiated by access point as well as clients.
               </p>
 
-              <DiscoHistogram discoType="disconnection" timeRange={discoActivityTimeRange} bssids={[ssid.bssid.address]} />
+              <DiscoHistogram discoType="disconnection"
+                              timeRange={discoActivityTimeRange}
+                              setTimeRange={setDiscoActivityTimeRange}
+                              bssids={[ssid.bssid.address]} />
             </div>
           </div>
         </div>

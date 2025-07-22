@@ -13,6 +13,7 @@ function DiscoHistogram(props) {
 
   const discoType = props.discoType;
   const timeRange = props.timeRange;
+  const setTimeRange = props.setTimeRange;
   const bssids = props.bssids;
 
   const [monitoredNetworkId, setMonitoredNetworkId] = useState(props.monitoredNetworkId);
@@ -50,6 +51,7 @@ function DiscoHistogram(props) {
   return <SimpleBarChart
       height={200}
       lineWidth={1}
+      setTimeRange={setTimeRange}
       customMarginBottom={35}
       data={formatData(histogram)}
   />

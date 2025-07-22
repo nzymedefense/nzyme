@@ -503,7 +503,8 @@ public class Dot11 {
                                 "AND s.tap_uuid IN (<taps>) " +
                                 "GROUP BY ssid")
                         .bind("tr_from", timeRange.from())
-                        .bind("tr_to", timeRange.to())                        .bind("bssid", bssid)
+                        .bind("tr_to", timeRange.to())
+                        .bind("bssid", bssid)
                         .bind("ssid", ssid)
                         .bindList("taps", taps)
                         .mapTo(SSIDDetails.class)
@@ -513,26 +514,52 @@ public class Dot11 {
 
     public List<BSSIDAndSSIDCountHistogramEntry> getBSSIDAndSSIDCountHistogram(TimeRange timeRange,
                                                                                Bucketing.BucketingConfiguration bc,
+                                                                               Filters filters,
                                                                                List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
 
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new Dot11BSSIDFilters());
+
+
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(DISTINCT(b.bssid)) as bssid_count, " +
-                                "COUNT(DISTINCT(s.ssid)) as ssid_count, DATE_TRUNC(:date_trunc, b.created_at) as bucket " +
-                                "FROM dot11_bssids AS b " +
-                                "LEFT JOIN dot11_ssids s ON b.id = s.bssid_id " +
-                                "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
-                                "AND b.tap_uuid IN (<taps>) " +
-                                "GROUP BY bucket ORDER BY bucket DESC")
+                handle.createQuery(
+                                "SELECT "
+                                        + "  sub.bucket, "
+                                        + "  COUNT(DISTINCT bssid)               AS bssid_count, "
+                                        + "  COUNT(DISTINCT ssid)   AS ssid_count "
+                                        + "FROM ( "
+                                        + "  SELECT "
+                                        + "    DATE_TRUNC(:date_trunc, b.created_at)      AS bucket, "
+                                        + "    b.bssid, "
+                                        + "    ARRAY_AGG(DISTINCT s.ssid)                 AS ssids "
+                                        + "  FROM dot11_bssids AS b "
+                                        + "  LEFT JOIN dot11_ssids AS s                     ON b.id   = s.bssid_id "
+                                + "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id "
+                                        + "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id "
+                                        +                                 "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
+                                        "AND ssp.attribute = 'security_protocol' "
+                                        + "  WHERE b.created_at >= :tr_from "
+                                        + "    AND b.created_at <= :tr_to "
+                                        + "    AND b.tap_uuid   IN (<taps>) "
+                                        +      filterFragment.whereSql() + " "
+                                        + "  GROUP BY bucket, b.bssid "
+                                        + "  HAVING 1=1 " + filterFragment.havingSql()
+                                        + ") AS sub "
+                                        + "  CROSS JOIN LATERAL UNNEST(sub.ssids) AS ssid "
+                                        + "GROUP BY sub.bucket "
+                                        + "ORDER BY sub.bucket"
+                        )
                         .bind("date_trunc", bc.type().getDateTruncName())
-                        .bind("tr_from", timeRange.from())
-                        .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tr_from",   timeRange.from())
+                        .bind("tr_to",     timeRange.to())
+                        .bindList("taps",  taps)
+                        .bindMap(filterFragment.bindings())
                         .mapTo(BSSIDAndSSIDCountHistogramEntry.class)
                         .list()
         );
+
     }
 
     public List<Dot11AdvertisementHistogramEntry> getSSIDAdvertisementHistogram(String bssid,

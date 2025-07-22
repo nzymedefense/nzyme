@@ -27,10 +27,9 @@ function ClientsPage() {
 
   const urlQuery = useQuery();
 
-  const [histogramTimeRange, sethistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [histogram, setHistogram] = useState(null);
   const [clients, setClients] = useState(null);
-  const [clientsTimeRange, setClientsTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [page, setPage] = useState(1);
 
   const [orderColumn, setOrderColumn] = useState("last_seen");
@@ -46,18 +45,18 @@ function ClientsPage() {
     setHistogram(null);
 
     dot11Service.getConnectedClientsHistogram(
-        histogramTimeRange,
+        timeRange,
         filters,
         selectedTaps,
         setHistogram
     );
-  }, [histogramTimeRange, selectedTaps, filters])
+  }, [timeRange, selectedTaps, filters])
 
   useEffect(() => {
     setClients(null);
 
     dot11Service.findConnectedClients(
-        clientsTimeRange,
+        timeRange,
         filters,
         orderColumn,
         orderDirection,
@@ -66,7 +65,7 @@ function ClientsPage() {
         perPage,
         (page-1)*perPage
     );
-  }, [page, clientsTimeRange, selectedTaps, filters, orderColumn, orderDirection])
+  }, [page, timeRange, selectedTaps, filters, orderColumn, orderDirection])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -89,23 +88,9 @@ function ClientsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Connected Clients" slim={true}
-                                       timeRange={histogramTimeRange}
-                                       setTimeRange={sethistogramTimeRange} />
-
-                <ClientHistogram histogram={histogram} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
                 <CardTitleWithControls title="Connected Clients Filters"
-                                       timeRange={clientsTimeRange}
-                                       setTimeRange={setClientsTimeRange} />
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange} />
 
                 <Filters filters={filters}
                          setFilters={setFilters}
@@ -119,7 +104,19 @@ function ClientsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Connected Clients" />
+                <CardTitleWithControls title="Connected Clients" slim={true} timeRange={timeRange} />
+
+                <ClientHistogram histogram={histogram} setTimeRange={setTimeRange} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Connected Clients" timeRange={timeRange} />
 
                 <p className="text-muted">
                   All clients currently observed as connected to an access point within range are listed here. The

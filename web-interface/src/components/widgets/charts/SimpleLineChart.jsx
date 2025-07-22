@@ -117,6 +117,7 @@ class SimpleLineChart extends React.Component {
               shapes: this.props.shapes
             }}
             config={{
+              showAxisDragHandles: false,
               displayModeBar: false,
               autosize: true,
               responsive: true,
