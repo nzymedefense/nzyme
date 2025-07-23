@@ -5,14 +5,20 @@ import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.arp.ARP;
+import app.nzyme.core.ethernet.arp.ARPExplainer;
 import app.nzyme.core.ethernet.arp.db.ARPStatisticsBucket;
 import app.nzyme.core.ethernet.arp.db.ArpPacketEntry;
+import app.nzyme.core.ethernet.arp.db.ArpSenderTargetCountPair;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
+import app.nzyme.core.rest.responses.dot11.Dot11MacLinkMetadataResponse;
 import app.nzyme.core.rest.responses.ethernet.*;
 import app.nzyme.core.rest.responses.ethernet.arp.ArpPacketDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.arp.ArpPacketsListResponse;
 import app.nzyme.core.rest.responses.ethernet.arp.ArpStatisticsBucketResponse;
+import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.Filters;
@@ -123,6 +129,62 @@ public class ArpResource extends TapDataHandlingResource {
         return Response.ok(statistics).build();
     }
 
+    @GET
+    @Path("/histograms/requesters/pairs")
+    public Response requesterPairs(@Context SecurityContext sc,
+                                   @QueryParam("organization_id") UUID organizationId,
+                                   @QueryParam("tenant_id") UUID tenantId,
+                                   @QueryParam("time_range") @Valid String timeRangeParameter,
+                                   @QueryParam("filters") String filtersParameter,
+                                   @QueryParam("limit") int limit,
+                                   @QueryParam("offset") int offset,
+                                   @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long topRequesterPairsCount = nzyme.getEthernet().arp()
+                .countPairs("Request", timeRange,  filters, taps);
+
+        List<ThreeColumnTableHistogramValueResponse> topRequesterPairs = buildPairs(
+                "Request", organizationId, tenantId, timeRange, filters, limit, offset, taps
+        );
+
+        return Response.ok(ThreeColumnTableHistogramResponse.create(topRequesterPairsCount, topRequesterPairs)).build();
+    }
+
+    @GET
+    @Path("/histograms/responders/pairs")
+    public Response responderPairs(@Context SecurityContext sc,
+                                   @QueryParam("organization_id") UUID organizationId,
+                                   @QueryParam("tenant_id") UUID tenantId,
+                                   @QueryParam("time_range") @Valid String timeRangeParameter,
+                                   @QueryParam("filters") String filtersParameter,
+                                   @QueryParam("limit") int limit,
+                                   @QueryParam("offset") int offset,
+                                   @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long topRequesterPairsCount = nzyme.getEthernet().arp()
+                .countPairs("Reply", timeRange,  filters, taps);
+
+        List<ThreeColumnTableHistogramValueResponse> topRequesterPairs = buildPairs(
+                "Reply", organizationId, tenantId, timeRange, filters, limit, offset, taps
+        );
+
+        return Response.ok(ThreeColumnTableHistogramResponse.create(topRequesterPairsCount, topRequesterPairs)).build();
+    }
+
     private ArpPacketDetailsResponse buildDetailsResponse(ArpPacketEntry packet, UUID organizationId, UUID tenantId) {
         Optional<AssetEntry> ethernetSourceAsset = nzyme.getAssetsManager()
                 .findAssetByMac(packet.ethernetSourceMac(), organizationId, tenantId);
@@ -167,8 +229,82 @@ public class ArpResource extends TapDataHandlingResource {
                         nzyme, packet.arpTargetMac(), packet.arpTargetAddress(), organizationId, tenantId
                 ),
                 packet.size(),
-                packet.timestamp()
+                packet.timestamp(),
+                ARPExplainer.explain(
+                        packet.ethernetDestinationMac(),
+                        packet.operation(),
+                        packet.arpSenderMac(),
+                        packet.arpSenderAddress(),
+                        packet.arpTargetMac(),
+                        packet.arpTargetAddress()
+                )
         );
+    }
+
+    private List<ThreeColumnTableHistogramValueResponse> buildPairs(String operation,
+                                                                    UUID organizationId,
+                                                                    UUID tenantId,
+                                                                    TimeRange timeRange,
+                                                                    Filters filters,
+                                                                    int limit,
+                                                                    int offset,
+                                                                    List<UUID> taps) {
+        List<ThreeColumnTableHistogramValueResponse> pairs = Lists.newArrayList();
+        for (ArpSenderTargetCountPair pair : nzyme.getEthernet().arp()
+                .getPairs(operation, timeRange, filters, limit, offset, taps)) {
+            Optional<MacAddressContextEntry> senderMacContext = nzyme.getContextService().findMacAddressContext(
+                    pair.senderMac(),
+                    organizationId,
+                    tenantId
+            );
+            Optional<MacAddressContextEntry> targetMacContext = nzyme.getContextService().findMacAddressContext(
+                    pair.targetMac(),
+                    organizationId,
+                    tenantId
+            );
+
+            Optional<AssetEntry> senderAsset = nzyme.getAssetsManager()
+                    .findAssetByMac(pair.senderMac(), organizationId, tenantId);
+            Optional<AssetEntry> targetAsset = nzyme.getAssetsManager()
+                    .findAssetByMac(pair.targetMac(), organizationId, tenantId);
+
+            pairs.add(ThreeColumnTableHistogramValueResponse.create(
+                    HistogramValueStructureResponse.create(
+                            pair.senderMac(),
+                            HistogramValueType.ETHERNET_MAC,
+                            EthernetMacAddressResponse.create(
+                                    pair.senderMac(),
+                                    nzyme.getOuiService().lookup(pair.senderMac()).orElse(null),
+                                    senderAsset.map(AssetEntry::uuid).orElse(null),
+                                    senderMacContext.map(ctx ->
+                                            EthernetMacAddressContextResponse.create(
+                                                    ctx.name(),
+                                                    ctx.description()
+                                            )
+                                    ).orElse(null)
+                            )
+                    ),
+                    HistogramValueStructureResponse.create(
+                            pair.targetMac(),
+                            HistogramValueType.ETHERNET_MAC,
+                            EthernetMacAddressResponse.create(
+                                    pair.targetMac(),
+                                    nzyme.getOuiService().lookup(pair.targetMac()).orElse(null),
+                                    targetAsset.map(AssetEntry::uuid).orElse(null),
+                                    targetMacContext.map(ctx ->
+                                            EthernetMacAddressContextResponse.create(
+                                                    ctx.name(),
+                                                    ctx.description()
+                                            )
+                                    ).orElse(null)
+                            )
+                    ),
+                    HistogramValueStructureResponse.create(pair.count(), HistogramValueType.INTEGER, null),
+                    pair.senderMac() + " -> " + pair.targetMac()
+            ));
+        }
+
+        return pairs;
     }
 
 }

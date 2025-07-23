@@ -19,7 +19,6 @@ export default function DNSContactAttemptsTable (props) {
   const [data, setData] = useState(null);
 
   const tapContext = useContext(TapContext);
-
   const selectedTaps = tapContext.taps;
 
   useEffect(() => {

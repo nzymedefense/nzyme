@@ -5,6 +5,7 @@ import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.arp.db.ARPStatisticsBucket;
 import app.nzyme.core.ethernet.arp.db.ArpPacketEntry;
+import app.nzyme.core.ethernet.arp.db.ArpSenderTargetCountPair;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.FilterSql;
@@ -132,6 +133,58 @@ public class ARP {
                         .bindMap(filterFragment.bindings())
                         .bindList("taps", taps)
                         .mapTo(ARPStatisticsBucket.class)
+                        .list()
+        );
+    }
+
+    public long countPairs(String operation, TimeRange timeRange, Filters filters, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new ARPFilters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(DISTINCT(arp_sender_mac, arp_target_mac)) " +
+                                "FROM arp_packets WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND operation = :operation AND tap_uuid IN (<taps>)" + filterFragment.whereSql())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("operation", operation)
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<ArpSenderTargetCountPair> getPairs(String operation,
+                                                   TimeRange timeRange,
+                                                   Filters filters,
+                                                   int limit,
+                                                   int offset,
+                                                   List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new ARPFilters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT arp_sender_mac, arp_target_mac, COUNT(*) AS count " +
+                                "FROM arp_packets WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND operation = :operation AND tap_uuid IN (<taps>)" + filterFragment.whereSql() +
+                                "GROUP BY arp_sender_mac, arp_target_mac " +
+                                "ORDER BY count DESC LIMIT :limit OFFSET :offset")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("operation", operation)
+
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(ArpSenderTargetCountPair.class)
                         .list()
         );
     }

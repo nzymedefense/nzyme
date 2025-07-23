@@ -4,6 +4,9 @@ import numeral from "numeral";
 import AutomaticDot11MacAddressLink from "../../shared/context/macs/AutomaticDot11MacAddressLink";
 import ApiRoutes from "../../../util/ApiRoutes";
 import L4Address from "../../ethernet/shared/L4Address";
+import EthernetMacAddress from "../../shared/context/macs/EthernetMacAddress";
+import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
+import {ARP_FILTER_FIELDS} from "../../ethernet/assets/arp/ARPFilterFields";
 
 function HistogramValue(props) {
 
@@ -20,6 +23,12 @@ function HistogramValue(props) {
             addressWithContext={value.metadata.mac} />
       } else {
         return <span className={value.value === highlightValue ? "highlighted" : null}>{value.value}</span>
+      }
+    case "ETHERNET_MAC":
+      if (value.metadata) {
+        return <EthernetMacAddress addressWithContext={value.metadata} withAssetLink withAssetName />
+      } else {
+        return "XX"
       }
     case "L4_ADDRESS":
       return <L4Address address={value.value} />

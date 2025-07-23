@@ -841,7 +841,8 @@ a.ssh-session-key, span.ssh-session-key,
 a.socks-tunnel-id, span.socks-tunnel-id,
 a.dhcp-transaction-id, span.dhcp-transaction-id,
 a.dhcp-options-fingerprint, span.dhcp-options-fingerprint,
-a.machine-data, span.machine-data {
+a.machine-data, span.machine-data,
+div.arp-description strong {
     font-family: 'B612 Mono', monospace;
     font-size: 12px;
 }
@@ -1255,4 +1256,8 @@ th i.order-icon-selected {
 div.condition-form {
     padding: 25px;
     border: 1px solid #ccc;
+}
+
+div.arp-description p {
+    display: inline;
 }

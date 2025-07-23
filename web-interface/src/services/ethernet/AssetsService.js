@@ -61,8 +61,24 @@ export default class AssetsService {
   getArpStatistics(organizationId, tenantId, timeRange, filters, taps, setStatistics) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/ethernet/arp/statistics", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters,  taps: tapsList },
+    RESTClient.get("/ethernet/arp/statistics", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, taps: tapsList },
         (response) => setStatistics(response.data)
+    )
+  }
+
+  getArpRequesterPairs(organizationId, tenantId, timeRange, filters, limit, offset, taps, setRequesterPairs) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/ethernet/arp/histograms/requesters/pairs", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset, taps: tapsList },
+        (response) => setRequesterPairs(response.data)
+    )
+  }
+
+  getArpResponderPairs(organizationId, tenantId, timeRange, filters, limit, offset, taps, setRequesterPairs) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/ethernet/arp/histograms/responders/pairs", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset, taps: tapsList },
+        (response) => setRequesterPairs(response.data)
     )
   }
 

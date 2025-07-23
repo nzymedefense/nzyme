@@ -16,6 +16,8 @@ import ARPPacketsTable from "./ARPPacketsTable";
 import ARPPacketsChart from "./ARPPacketsChart";
 import ARPRequestToReplyRatioChart from "./ARPRequestToReplyRatioChart";
 import ARPGratuitousPacketsChart from "./ARPGratuitousPacketsChart";
+import ARPRequesterPairsHistogram from "./ARPRequesterPairsHistogram";
+import ARPResponderPairsHistogram from "./ARPResponderPairsHistogram";
 
 const assetsService = new AssetsService();
 
@@ -107,6 +109,7 @@ export default function ARPPacketsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Total ARP Packets"
+                                       timeRange={timeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
                 <ARPPacketsChart statistics={statistics} setTimeRange={setTimeRange} />
@@ -120,6 +123,7 @@ export default function ARPPacketsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="ARP Request to Reply Ratio"
+                                       timeRange={timeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
                 <ARPRequestToReplyRatioChart statistics={statistics} setTimeRange={setTimeRange} />
@@ -131,9 +135,44 @@ export default function ARPPacketsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Gratuitous ARP Packets"
+                                       timeRange={timeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
                 <ARPGratuitousPacketsChart statistics={statistics} setTimeRange={setTimeRange} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="ARP Requesters"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <ARPRequesterPairsHistogram organizationId={organizationId}
+                                            tenantId={tenantId}
+                                            timeRange={timeRange}
+                                            filters={filters}
+                                            revision={revision} />
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="ARP Responders"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <ARPResponderPairsHistogram organizationId={organizationId}
+                                            tenantId={tenantId}
+                                            timeRange={timeRange}
+                                            filters={filters}
+                                            revision={revision} />
               </div>
             </div>
           </div>
@@ -144,6 +183,7 @@ export default function ARPPacketsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="ARP Packets"
+                                       timeRange={timeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
                 <ARPPacketsTable packets={packets}

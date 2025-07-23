@@ -25,6 +25,7 @@ import app.nzyme.core.dot11.db.monitoring.probereq.MonitoredProbeRequestEntryMap
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfigMapper;
 import app.nzyme.core.ethernet.arp.db.ARPStatisticsBucketMapper;
 import app.nzyme.core.ethernet.arp.db.ArpPacketEntryMapper;
+import app.nzyme.core.ethernet.arp.db.ArpSenderTargetCountPairMapper;
 import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionMapper;
 import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.ethernet.l4.db.L4SessionMapper;
@@ -189,7 +190,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new UdpConversationEntryMapper())
                 .registerRowMapper(new L4SessionMapper())
                 .registerRowMapper(new ArpPacketEntryMapper())
-                .registerRowMapper(new ARPStatisticsBucketMapper());
+                .registerRowMapper(new ARPStatisticsBucketMapper())
+                .registerRowMapper(new ArpSenderTargetCountPairMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());
@@ -393,6 +395,12 @@ public class DatabaseImpl implements Database {
                 ));
             }
             case ETHERNET_L4 -> {
+                tables.add(new DataTableInformation(
+                        "arp_packets",
+                        "SELECT COUNT(*) FROM arp_packets WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM arp_packets WHERE timestamp < :since AND tap_uuid IN (<taps>)"
+                ));
+
                 tables.add(new DataTableInformation(
                         "dhcp_transactions",
                         "SELECT COUNT(*) FROM dhcp_transactions WHERE tap_uuid IN (<taps>)",

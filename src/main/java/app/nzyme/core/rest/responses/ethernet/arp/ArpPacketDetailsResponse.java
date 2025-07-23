@@ -41,7 +41,10 @@ public abstract class ArpPacketDetailsResponse {
     @JsonProperty("timestamp")
     public abstract DateTime timestamp();
 
-    public static ArpPacketDetailsResponse create(UUID tapUUID, EthernetMacAddressResponse ethernetSourceMac, EthernetMacAddressResponse ethernetDestinationMac, String hardwareType, String protocolType, String operation, InternalAddressResponse arpSender, InternalAddressResponse arpTarget, int size, DateTime timestamp) {
+    @JsonProperty("description")
+    public abstract String description();
+
+    public static ArpPacketDetailsResponse create(UUID tapUUID, EthernetMacAddressResponse ethernetSourceMac, EthernetMacAddressResponse ethernetDestinationMac, String hardwareType, String protocolType, String operation, InternalAddressResponse arpSender, InternalAddressResponse arpTarget, int size, DateTime timestamp, String description) {
         return builder()
                 .tapUUID(tapUUID)
                 .ethernetSourceMac(ethernetSourceMac)
@@ -53,6 +56,7 @@ public abstract class ArpPacketDetailsResponse {
                 .arpTarget(arpTarget)
                 .size(size)
                 .timestamp(timestamp)
+                .description(description)
                 .build();
     }
 
@@ -81,6 +85,8 @@ public abstract class ArpPacketDetailsResponse {
         public abstract Builder size(int size);
 
         public abstract Builder timestamp(DateTime timestamp);
+
+        public abstract Builder description(String description);
 
         public abstract ArpPacketDetailsResponse build();
     }

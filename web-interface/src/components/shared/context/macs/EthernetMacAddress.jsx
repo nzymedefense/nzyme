@@ -13,7 +13,6 @@ export default function EthernetMacAddress(props) {
   const href = props.href;
   const withAssetLink = props.withAssetLink;
   const withAssetName = props.withAssetName;
-  const assetId = props.assetId;
   const onClick = props.onClick;
   const filterElement = props.filterElement;
 
@@ -22,7 +21,7 @@ export default function EthernetMacAddress(props) {
         <MacAddress address={address}
                     addressWithContext={addressWithContext}
                     overlay={<EthernetMacAddressContextOverlay
-                        assetId={assetId}
+                        assetId={addressWithContext ? addressWithContext.asset_id : null}
                         address={addressWithContext ? addressWithContext.address : address}
                         oui={addressWithContext ? addressWithContext.oui : null} />}
                     showOui={showOui}
