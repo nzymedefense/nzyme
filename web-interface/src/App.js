@@ -251,6 +251,7 @@ function App() {
         callback();
       });
     } else {
+      setAuthenticated(false);
       callback();
     }
   }
@@ -258,7 +259,7 @@ function App() {
   // Background ping to keep session alive.
   useEffect(() => {
     const x = setInterval(() => {
-      authenticationService.touchSession();
+      authenticationService.touchSession(setRevision);
     }, 15000);
 
     return () => {

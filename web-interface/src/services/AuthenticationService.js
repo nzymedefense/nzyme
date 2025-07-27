@@ -23,13 +23,13 @@ class AuthenticationService {
     })
   }
 
-  touchSession() {
+  touchSession(setRevision) {
     // NOT USING RESTClient wrapper here because it's kind of a special call with special error handler etc and we
     // can keep things simple this way.
 
     axios.post(RESTClient.buildUri('/system/authentication/session/touch'), {}, { headers: RESTClient.getAuthHeaders() })
         .then(() => {})
-        .catch(() => { console.log("Could not touch session."); })
+        .catch(() => { console.log("Could not touch session."); setRevision(new Date()); })
   }
 
   fetchSessionInfo(selectedOrganization, selectedTenant, successCallback, errorCallback) {
