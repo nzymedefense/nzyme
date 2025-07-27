@@ -123,11 +123,8 @@ impl ContextEngine {
      */
 
     pub fn register_mac_address_ip(&self, mac: String, ip_addr: IpAddr, source: ContextSource) {
-        if ip_addr.is_unspecified() 
-            || ip_addr.is_multicast()
-            || ip_addr.is_loopback() 
-            || ip_addr == Ipv4Addr::new(255, 255, 255, 255) {
-            return;
+        if Self::skip_ip_address(&ip_addr) || Self::skip_mac_address(&mac) {
+            return
         }
 
         match self.macs.lock() {
@@ -161,6 +158,10 @@ impl ContextEngine {
                                          new_hostname: String,
                                          dns_transaction_id: Option<u16>,
                                          source: ContextSource) {
+        if Self::skip_mac_address(&mac) {
+            return
+        }
+
         match dns_transaction_id {
             Some(id) => {
                 match self.used_transaction_ids.lock() {
@@ -459,6 +460,17 @@ impl ContextEngine {
                 error!("Could not acquire leaderlink mutex: {}", e)
             }
         }
+    }
+
+    fn skip_ip_address(ip_addr: &IpAddr) -> bool {
+        ip_addr.is_unspecified()
+            || ip_addr.is_multicast()
+            || ip_addr.is_loopback()
+            || *ip_addr == Ipv4Addr::new(255, 255, 255, 255)
+    }
+
+    fn skip_mac_address(mac_addr: &String) -> bool {
+        mac_addr.eq_ignore_ascii_case("FF:FF:FF:FF:FF:FF")
     }
 
     fn calculate_metrics(macs: &Arc<Mutex<HashMap<String, MacAddressContext>>>,
