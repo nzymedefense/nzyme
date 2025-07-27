@@ -80,7 +80,7 @@ public class SyslogAction implements Action {
 
         // Structured data.
         StringBuilder sb = new StringBuilder();
-        sb.append("[").append(eventIdentifier).append("@99999");
+        sb.append("[").append(eventIdentifier).append("@63705");
         for (Map.Entry<String, Object> entry : payload.entrySet()) {
             String key = sanitizeSDName(entry.getKey());
             String value = sanitizeSDValue(entry.getValue().toString());
