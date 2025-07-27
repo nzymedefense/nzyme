@@ -336,35 +336,35 @@ class Dot11Service {
     })
   }
 
-  getDiscoTopSenders(timeRange, taps, monitoredNetworkId, limit, offset, setTopSenders) {
+  getDiscoTopSenders(organizationId, tenantId, timeRange, taps, monitoredNetworkId, limit, offset, setTopSenders) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
     const monitoredNetworkIdParam = monitoredNetworkId ? monitoredNetworkId : null;
 
     RESTClient.get("/dot11/disco/lists/senders",
-        { time_range: timeRange, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, limit: limit, offset: offset},
+        { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, limit: limit, offset: offset},
         function (response) {
           setTopSenders(response.data)
     })
   }
 
-  getDiscoTopReceivers(timeRange, taps, monitoredNetworkId, limit, offset, setTopReceivers) {
+  getDiscoTopReceivers(organizationId, tenantId, timeRange, taps, monitoredNetworkId, limit, offset, setTopReceivers) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
     const monitoredNetworkIdParam = monitoredNetworkId ? monitoredNetworkId : null;
 
     RESTClient.get("/dot11/disco/lists/receivers",
-        { time_range: timeRange, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, limit: limit, offset: offset},
+        { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, limit: limit, offset: offset},
         function (response) {
           setTopReceivers(response.data)
         })
   }
 
-  getDiscoTopPairs(timeRange, taps, monitoredNetworkId, bssids, limit, offset, setTopPairs) {
+  getDiscoTopPairs(organizationId, tenantId, timeRange, taps, monitoredNetworkId, bssids, limit, offset, setTopPairs) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
     const monitoredNetworkIdParam = monitoredNetworkId ? monitoredNetworkId : null;
     const bssidsParam = bssids ? bssids.join(",") : null;
 
     RESTClient.get("/dot11/disco/lists/pairs",
-        { time_range: timeRange, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, bssids: bssidsParam, limit: limit, offset: offset},
+        { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, bssids: bssidsParam, limit: limit, offset: offset},
         function (response) {
           setTopPairs(response.data)
         })

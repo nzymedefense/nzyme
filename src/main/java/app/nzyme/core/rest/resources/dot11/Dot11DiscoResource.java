@@ -79,7 +79,6 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
-
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Dot11.DiscoType discoType;
@@ -122,6 +121,8 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
     @GET
     @Path("/lists/{list_type}")
     public Response list(@Context SecurityContext sc,
+                         @QueryParam("organization_id") UUID organizationId,
+                         @QueryParam("tenant_id") UUID tenantId,
                          @PathParam("list_type") @NotEmpty String listTypeParam,
                          @QueryParam("time_range") @Valid String timeRangeParameter,
                          @QueryParam("taps") String taps,
@@ -131,6 +132,10 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                          @QueryParam("offset") int offset) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
@@ -179,9 +184,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 total = nzyme.getDot11().countDiscoTopSenders(timeRange, tapUuids, selectedBssids);
                 for (Dot11MacFrameCount s : nzyme.getDot11().getDiscoTopSenders(timeRange, limit, offset, tapUuids, selectedBssids)) {
                     Optional<MacAddressContextEntry> macContext = nzyme.getContextService().findMacAddressContext(
-                            s.mac(),
-                            authenticatedUser.getOrganizationId(),
-                            authenticatedUser.getTenantId()
+                            s.mac(), organizationId, tenantId
                     );
 
                     sendersValues.add(TwoColumnTableHistogramValueResponse.create(
@@ -216,9 +219,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 total = nzyme.getDot11().countDiscoTopReceivers(timeRange, tapUuids, selectedBssids);
                 for (Dot11MacFrameCount s : nzyme.getDot11().getDiscoTopReceivers(timeRange, limit, offset, tapUuids, selectedBssids)) {
                     Optional<MacAddressContextEntry> macContext = nzyme.getContextService().findMacAddressContext(
-                            s.mac(),
-                            authenticatedUser.getOrganizationId(),
-                            authenticatedUser.getTenantId()
+                            s.mac(), organizationId, tenantId
                     );
 
                     receiversValues.add(TwoColumnTableHistogramValueResponse.create(
@@ -253,15 +254,11 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 total = nzyme.getDot11().countDiscoTopPairs(timeRange, tapUuids, selectedBssids);
                 for (BSSIDPairFrameCount s : nzyme.getDot11().getDiscoTopPairs(timeRange, limit, offset, tapUuids, selectedBssids)) {
                     Optional<MacAddressContextEntry> senderMacContext = nzyme.getContextService().findMacAddressContext(
-                            s.sender(),
-                            authenticatedUser.getOrganizationId(),
-                            authenticatedUser.getTenantId()
+                            s.sender(), organizationId, tenantId
                     );
 
                     Optional<MacAddressContextEntry> receiverMacContext = nzyme.getContextService().findMacAddressContext(
-                            s.receiver(),
-                            authenticatedUser.getOrganizationId(),
-                            authenticatedUser.getTenantId()
+                            s.receiver(), organizationId, tenantId
                     );
 
                     pairsValues.add(ThreeColumnTableHistogramValueResponse.create(

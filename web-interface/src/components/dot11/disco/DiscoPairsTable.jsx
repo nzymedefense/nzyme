@@ -5,6 +5,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import {DEFAULT_LIMIT} from "../../widgets/LimitSelector";
 import ThreeColumnHistogram from "../../widgets/histograms/ThreeColumnHistogram";
 import {MonitoredNetworkContext} from "./DiscoPage";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const dot11Service = new Dot11Service();
 
@@ -16,6 +17,7 @@ function DiscoPairsTable(props) {
 
   const monitoredNetworkContext = useContext(MonitoredNetworkContext);
   const tapContext = useContext(TapContext);
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const selectedTaps = tapContext.taps;
 
@@ -29,7 +31,7 @@ function DiscoPairsTable(props) {
     setTopPairs(null);
 
     dot11Service.getDiscoTopPairs(
-        timeRange, selectedTaps, monitoredNetworkId, bssids, limit, 0, setTopPairs
+        organizationId, tenantId, timeRange, selectedTaps, monitoredNetworkId, bssids, limit, 0, setTopPairs
     );
   }, [selectedTaps, timeRange, limit, monitoredNetworkId]);
 

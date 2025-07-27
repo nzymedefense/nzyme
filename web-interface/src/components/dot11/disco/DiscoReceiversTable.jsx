@@ -5,6 +5,7 @@ import {TapContext} from "../../../App";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {DEFAULT_LIMIT} from "../../widgets/LimitSelector";
 import {MonitoredNetworkContext} from "./DiscoPage";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const dot11Service = new Dot11Service();
 
@@ -14,6 +15,7 @@ function DiscoReceiversTable(props) {
 
   const monitoredNetworkContext = useContext(MonitoredNetworkContext);
   const tapContext = useContext(TapContext);
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const selectedTaps = tapContext.taps;
 
@@ -23,7 +25,7 @@ function DiscoReceiversTable(props) {
   useEffect(() => {
     setTopReceivers(null);
     dot11Service.getDiscoTopReceivers(
-        timeRange, selectedTaps, monitoredNetworkContext.network, limit, 0, setTopReceivers
+        organizationId, tenantId, timeRange, selectedTaps, monitoredNetworkContext.network, limit, 0, setTopReceivers
     );
   }, [selectedTaps, limit, timeRange, monitoredNetworkContext.network]);
 
