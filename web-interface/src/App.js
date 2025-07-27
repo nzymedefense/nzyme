@@ -221,6 +221,7 @@ function App() {
 
     // Reset taps as well.
     Store.delete("selected_taps");
+    setSelectedTaps([]);
 
     setRevision(new Date());
   }
@@ -368,6 +369,9 @@ function App() {
     } else {
       // Show tenant selector for super- and org admins if no tenant selected.
       if (!Store.get("selected_organization") || !Store.get("selected_tenant")) {
+        // Reset taps.
+        Store.delete("selected_taps");
+
         if (userInformation.is_superadmin || userInformation.is_orgadmin) {
           return (
               <div className="nzyme">

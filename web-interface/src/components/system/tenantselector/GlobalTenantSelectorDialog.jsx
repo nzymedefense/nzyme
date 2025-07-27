@@ -2,11 +2,12 @@ import React, {useContext, useState} from "react";
 import GlobalTenantSelectorForm from "./GlobalTenantSelectorForm";
 
 import Store from "../../../util/Store";
-import {AppContext} from "../../../App";
+import {AppContext, TapContext} from "../../../App";
 
 export default function GlobalTenantSelectorDialog() {
 
   const app = useContext(AppContext);
+  const tapContext = useContext(TapContext);
 
   const [selectedOrganization, setSelectedOrganization] = useState(null);
   const [selectedTenant, setSelectedTenant] = useState(false);
@@ -22,6 +23,7 @@ export default function GlobalTenantSelectorDialog() {
 
     // Reset taps as well.
     Store.delete("selected_taps");
+    tapContext.set([]);
 
     app.setRevision(new Date());
   }

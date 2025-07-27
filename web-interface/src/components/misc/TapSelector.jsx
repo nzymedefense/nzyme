@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useRef, useState} from "react";
 import Store from "../../util/Store";
 import TapsService from "../../services/TapsService";
 import {TapContext} from "../../App";
-import {arraysAreEqual, compareArray} from "../../util/Tools";
+import {arraysAreEqual} from "../../util/Tools";
 import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 
 export const enableTapSelector = (ctx) => {
@@ -161,23 +161,18 @@ function TapSelector() {
 
   const handleTapSelection = function(e, uuid) {
     e.preventDefault();
-    console.log("REMOVE XXX")
     const taps = preSelectedTaps === "*" ? [] : [...preSelectedTaps];
     if (taps.includes(uuid)) {
       // Remove a tap.
       if (taps.length > 1) {
-        console.log("REMOVE 1")
         const idx = taps.indexOf(uuid);
         taps.splice(idx, 1);
-        console.log("setPreSelectedTaps", taps);
         setPreSelectedTaps(taps);
       } else {
-        console.log("REMOVE 2")
         // Removed last tap.
         setPreSelectedTaps("*");
       }
     } else {
-      console.log("REMOVE 3")
       // Add a new tap.
       taps.push(uuid);
       setPreSelectedTaps(taps);
