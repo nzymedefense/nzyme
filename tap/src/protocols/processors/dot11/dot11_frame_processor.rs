@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex};
 use log::{error, info, trace};
 
 use crate::wireless::dot11::frames::{Dot11BeaconFrame, Dot11DataFrame, Dot11DeauthenticationFrame, Dot11Frame, Dot11ProbeRequestFrame, FrameSubType};
-use crate::alerting::alert_types::{Dot11Alert, Dot11AlertAttribute, Dot11AlertType};
+use crate::alerting::alert_types::{Dot11Alert, AlertAttribute, Dot11AlertType};
 use crate::messagebus::bus::Bus;
 use crate::metrics::Metrics;
 use crate::wireless::dot11::frames::{Dot11DisassociationFrame, Dot11ProbeResponseFrame, PwnagotchiData};
@@ -170,15 +170,15 @@ impl Dot11FrameProcessor {
 
 }
 
-fn build_pwnagotchi_alert_attributes(data: &PwnagotchiData) -> HashMap<String, Dot11AlertAttribute> {
+fn build_pwnagotchi_alert_attributes(data: &PwnagotchiData) -> HashMap<String, AlertAttribute> {
     let mut attributes = HashMap::new();
 
-    attributes.insert("identity".to_string(), Dot11AlertAttribute::String(data.identity.clone()));
-    attributes.insert("name".to_string(), Dot11AlertAttribute::String(data.name.clone()));
-    attributes.insert("uptime".to_string(), Dot11AlertAttribute::Number(data.uptime));
-    attributes.insert("pwnd_run".to_string(), Dot11AlertAttribute::Number(data.pwnd_run));
-    attributes.insert("pwnd_tot".to_string(), Dot11AlertAttribute::Number(data.pwnd_tot));
-    attributes.insert("version".to_string(), Dot11AlertAttribute::String(data.version.clone()));
+    attributes.insert("identity".to_string(), AlertAttribute::String(data.identity.clone()));
+    attributes.insert("name".to_string(), AlertAttribute::String(data.name.clone()));
+    attributes.insert("uptime".to_string(), AlertAttribute::Number(data.uptime));
+    attributes.insert("pwnd_run".to_string(), AlertAttribute::Number(data.pwnd_run));
+    attributes.insert("pwnd_tot".to_string(), AlertAttribute::Number(data.pwnd_tot));
+    attributes.insert("version".to_string(), AlertAttribute::String(data.version.clone()));
 
     attributes
 }

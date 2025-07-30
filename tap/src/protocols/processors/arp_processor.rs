@@ -1,7 +1,6 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{sync::Arc};
 use std::net::{IpAddr, Ipv4Addr};
 use log::{debug, error};
-
 use crate::state::tables::tables::Tables;
 use crate::context::context_engine::ContextEngine;
 use crate::context::context_source::ContextSource;
@@ -17,7 +16,9 @@ pub struct ARPProcessor {
 
 impl ARPProcessor {
 
-    pub fn new(tables: Arc<Tables>, state: Arc<State>, context: Arc<ContextEngine>) -> Self {
+    pub fn new(tables: Arc<Tables>,
+               state: Arc<State>,
+               context: Arc<ContextEngine>) -> Self {
         Self { tables, state, context }
     }
 

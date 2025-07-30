@@ -469,7 +469,7 @@ impl ContextEngine {
             || *ip_addr == Ipv4Addr::new(255, 255, 255, 255)
     }
 
-    fn skip_mac_address(mac_addr: &String) -> bool {
+    fn skip_mac_address(mac_addr: &str) -> bool {
         mac_addr.eq_ignore_ascii_case("FF:FF:FF:FF:FF:FF")
     }
 

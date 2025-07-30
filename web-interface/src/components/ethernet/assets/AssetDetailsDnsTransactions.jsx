@@ -1,5 +1,4 @@
 import React, {useContext, useEffect, useState} from "react";
-import LoadingSpinner from "../../misc/LoadingSpinner";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
 import DNSTransactionCountChart from "../dns/logs/widgets/DNSTransactionCountChart";

@@ -2,12 +2,7 @@ use std::collections::HashMap;
 use serde::Serialize;
 
 #[derive(Serialize, Clone, Debug)]
-pub enum Dot11AlertType {
-    PwnagotchiDetected
-}
-
-#[derive(Serialize, Clone, Debug)]
-pub enum Dot11AlertAttribute {
+pub enum AlertAttribute {
     Number(u128),
     String(String)
 }
@@ -16,5 +11,21 @@ pub enum Dot11AlertAttribute {
 pub struct Dot11Alert {
     pub alert_type: Dot11AlertType,
     pub signal_strength: i8,
-    pub attributes: HashMap<String, Dot11AlertAttribute>
+    pub attributes: HashMap<String, AlertAttribute>
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub enum Dot11AlertType {
+    PwnagotchiDetected
+}
+
+#[derive(Debug)]
+pub struct ArpAlert {
+    pub alert_type: ArpAlertType,
+    pub attributes: HashMap<String, AlertAttribute>
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub enum ArpAlertType {
+    PoisoningDetected
 }

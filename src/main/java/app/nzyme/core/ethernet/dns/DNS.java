@@ -80,7 +80,7 @@ public class DNS {
                                 "server_address_geo_country_code, SUM(count) AS request_count, " +
                                 "COUNT(DISTINCT(client_address)) AS client_count FROM dns_pairs " +
                                 "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) AND server_address <> '224.0.0.251' " +
+                                "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY server_address, server_port, server_address_geo_asn_number, " +
                                 "server_address_geo_asn_name, server_address_geo_asn_domain, " +
                                 "server_address_geo_country_code " +
@@ -107,7 +107,7 @@ public class DNS {
                                 "server_address_geo_country_code, SUM(count) AS request_count, " +
                                 "COUNT(DISTINCT(client_address)) AS client_count " +
                                 "FROM dns_pairs WHERE created_at >= :tr_from AND created_at <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) AND server_address <> '224.0.0.251' " +
+                                "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY server_address, server_port, server_address_geo_asn_number, " +
                                 "server_address_geo_asn_name, server_address_geo_asn_domain, " +
                                 "server_address_geo_city, server_address_geo_country_code, " +
@@ -233,7 +233,7 @@ public class DNS {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM dns_log " +
-                                "WHERE dns_type = 'query' AND server_address <> '224.0.0.251' " +
+                                "WHERE dns_type = 'query' " +
                                 "AND timestamp >= :tr_from AND timestamp <= :tr_to AND " +
                                 "tap_uuid IN (<taps>) " + filterFragment.whereSql() + "HAVING 1=1 " + filterFragment.havingSql())
                         .bindList("taps", taps)
@@ -254,8 +254,8 @@ public class DNS {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM dns_log " +
-                                "WHERE dns_type = 'query' AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
-                                "AND server_address <> '224.0.0.251' " + filterFragment.whereSql() +
+                                "WHERE dns_type = 'query' AND timestamp >= :tr_from AND timestamp <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
                                 "GROUP BY id HAVING 1=1 " + filterFragment.havingSql() +
                                 "ORDER BY timestamp DESC " +
                                 "LIMIT :limit OFFSET :offset")

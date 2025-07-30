@@ -51,8 +51,8 @@ impl DnsProcessor {
         // Clean and update entropy table.
         let mut scheduler = Scheduler::new();
         scheduler.every(5.minutes()).run(move || {
-            Self::clean_entropy_table(&query_entropy_ret.clone());
-            Self::clean_entropy_table(&response_entropy_ret.clone());
+            Self::clean_entropy_table(&query_entropy_ret);
+            Self::clean_entropy_table(&response_entropy_ret);
         });
 
         scheduler.every(10.seconds()).run(move || {
@@ -84,7 +84,7 @@ impl DnsProcessor {
         thread::spawn(move || {
             loop {
                 scheduler.run_pending();
-                thread::sleep(std::time::Duration::from_millis(10));
+                thread::sleep(std::time::Duration::from_millis(100));
             }
         });
 

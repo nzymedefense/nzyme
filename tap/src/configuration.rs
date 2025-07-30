@@ -140,6 +140,8 @@ pub struct ProtocolsDns {
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsArp {
     pub pipeline_size: i32,
+    pub poisoning_monitor: bool,
+    pub poisoning_window_seconds: i32
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -277,6 +279,10 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     // ARP.
     if doc.protocols.arp.pipeline_size <= 0 {
         bail!("Configuration variable `protocols.arp.pipeline_size` must be set to a value greater than 0.");
+    }
+
+    if doc.protocols.arp.poisoning_window_seconds <= 0 {
+        bail!("Configuration variable `protocols.arp.poisoning_window_seconds` must be set to a value greater than 0.");
     }
 
     // SSH.

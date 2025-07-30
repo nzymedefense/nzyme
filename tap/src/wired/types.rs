@@ -31,7 +31,7 @@ pub fn find_ethertype(val: u16) -> EtherType {
     }
 }
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Eq, PartialEq)]
 pub enum ArpOpCode {
     Request,
     Reply,

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};
-use crate::alerting::alert_types::{Dot11AlertAttribute, Dot11AlertType};
+use crate::alerting::alert_types::{AlertAttribute, Dot11AlertType};
 
 #[derive(Serialize)]
 pub struct StatusReport {
@@ -138,7 +138,7 @@ pub struct Dot11ClientReport {
 pub struct Dot11AlertReport {
     pub alert_type: Dot11AlertType,
     pub signal_strength: i8,
-    pub attributes: HashMap<String, Dot11AlertAttribute>
+    pub attributes: HashMap<String, AlertAttribute>
 }
 
 #[derive(Serialize)]
