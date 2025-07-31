@@ -64,7 +64,9 @@ pub struct Channels {
     ssh_pipeline: ChannelUtilization,
     dhcpv4_pipeline: ChannelUtilization,
 
-    uav_remote_id_pipeline: ChannelUtilization
+    uav_remote_id_pipeline: ChannelUtilization,
+
+    gnss_nmea_pipeline: ChannelUtilization
 }
 
 #[derive(Clone, Display)]
@@ -72,7 +74,8 @@ pub enum CaptureType {
     Ethernet,
     RawIp,
     WiFi,
-    Bluetooth
+    Bluetooth,
+    Gnss
 }
 
 #[derive(Clone)]
@@ -208,6 +211,7 @@ impl Metrics {
             "SshPipeline" => &mut self.channels.ssh_pipeline,
             "Dhcpv4Pipeline" => &mut self.channels.dhcpv4_pipeline,
             "UavRemoteIdPipeline" => &mut self.channels.uav_remote_id_pipeline,
+            "GnssNmeaMessagesPipeline" => &mut self.channels.gnss_nmea_pipeline,
             _ => panic!("Unknown channel {}", channel)
         }
     }

@@ -20,7 +20,8 @@ use crate::protocols::processors::udp_processor::UDPProcessor;
 use crate::state::state::State;
 use crate::state::tables::tables::Tables;
 use crate::system_state::SystemState;
-use crate::wireless::bluetooth::processors::bluetooth_device_processor::BluetoothDeviceProcessor;
+use crate::protocols::processors::bluetooth_device_processor::BluetoothDeviceProcessor;
+use crate::protocols::processors::gnss_nmea_processor::GnssNmeaProcessor;
 
 const DEFAULT_WIFI_PROCESSORS: i32 = 1;
 const DEFAULT_TCP_PROCESSORS: i32 = 2;
@@ -158,7 +159,11 @@ impl ProcessorController {
             let generic_bus = self.generic_bus.clone();
 
             let bluetooth_processor = BluetoothDeviceProcessor::new(self.tables.bluetooth.clone());
+
             let mut uav_processor = UavRemoteIdProcessor::new(self.tables.uav.clone());
+
+            let mut gnss_nmea_processor = GnssNmeaProcessor::new(self.tables.gnss.clone());
+
             let mut arp_processor = ARPProcessor::new(self.tables.clone(), self.state.clone(), self.context.clone());
             let mut dhcp4_processor = Dhcpv4Processor::new(self.state.clone(), self.tables.dhcp.clone(), self.context.clone());
             let mut dns_processor = DnsProcessor::new(
@@ -194,7 +199,17 @@ impl ProcessorController {
                                 }
                             }
                         }
-                        
+
+                        recv(generic_bus.gnss_nmea_pipeline.receiver) -> msg => {
+                            match msg {
+                                Ok(message) => gnss_nmea_processor.process(message),
+                                Err(e) => {
+                                    error!("GNSS NMEA receiver disconnected: {}", e);
+                                    break;
+                                }
+                            }
+                        }
+
                         recv(ethernet_bus.arp_pipeline.receiver) -> msg => {
                             match msg {
                                 Ok(packet) => arp_processor.process(packet),

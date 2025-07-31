@@ -1,7 +1,6 @@
 use std::panic::catch_unwind;
 use std::{sync::Arc, thread};
 
-use chrono::Utc;
 use log::{debug, error, info, warn};
 use byteorder::{BigEndian, ByteOrder};
 use crate::wired::packets::EthernetData;

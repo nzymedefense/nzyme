@@ -16,6 +16,7 @@ pub struct Configuration {
     pub ethernet_interfaces: Option<HashMap<String, EthernetInterface>>,
     pub rawip_interfaces: Option<HashMap<String, RawIpInterface>>,
     pub bluetooth_interfaces: Option<HashMap<String, BluetoothInterface>>,
+    pub gnss_interfaces: Option<HashMap<String, GNSSInterface>>,
     pub performance: Performance,
     pub protocols: Protocols,
     pub misc: Misc
@@ -65,6 +66,11 @@ pub struct WifiInterface {
     pub channels_6g: Vec<u16>,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct GNSSInterface {
+    pub active: bool,
+}
+
 #[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Deserialize, Eq, PartialEq)]
 pub enum ChannelWidthHoppingMode {
@@ -107,7 +113,8 @@ pub struct Protocols {
     pub ssh: ProtocolsSsh,
     pub socks: ProtocolsSocks,
     pub dhcpv4: ProtocolsDhcpv4,
-    pub uav_remote_id: ProtocolsUavRemoteId
+    pub uav_remote_id: ProtocolsUavRemoteId,
+    pub gnss: ProtocolsGnss
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -115,7 +122,6 @@ pub struct ProtocolsWiFi {
     pub pipeline_size: i32,
     pub processors: Option<i32>
 }
-
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsTcp {
@@ -162,6 +168,11 @@ pub struct ProtocolsDhcpv4 {
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsUavRemoteId {
     pub pipeline_size: i32,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ProtocolsGnss {
+    pub nmea_pipeline_size: i32,
 }
 
 pub fn load(path: String) -> Result<Configuration, Error> {
@@ -303,6 +314,11 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     // UAV Remote ID.
     if doc.protocols.uav_remote_id.pipeline_size <= 0 {
         bail!("Configuration variable `protocols.uav_remote_id.pipeline_size` must be set to a value greater than 0.");
+    }
+
+    // GNSS NMEA messages.
+    if doc.protocols.gnss.nmea_pipeline_size <= 0 {
+        bail!("Configuration variable `protocols.gnss.nmea_pipeline_size` must be set to a value greater than 0.");
     }
 
     // Validate WiFi interfaces configuration

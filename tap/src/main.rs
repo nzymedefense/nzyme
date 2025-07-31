@@ -36,6 +36,7 @@ use crate::helpers::network::Channel;
 use crate::log_monitor::LogMonitor;
 use crate::processor_controller::ProcessorController;
 use crate::state::state::State;
+use crate::wireless::positioning;
 
 #[derive(Parser,Debug)]
 struct Arguments {
@@ -348,6 +349,49 @@ fn main() {
                     error!("Bluetooth capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
                     match capture_metrics.lock() {
                         Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                        Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                    }
+                    sleep(Duration::from_secs(5));
+                }
+            });
+        }
+    }
+
+    // GNSS capture.
+    if let Some(gnss_interfaces) = &configuration.gnss_interfaces {
+        for (interface_name, interface_config) in gnss_interfaces {
+            if !interface_config.active {
+                info!("Skipping disabled GNSS interface [{}].", interface_name);
+                continue;
+            }
+
+            let capture_metrics = metrics.clone();
+            let capture_bus = generic_bus.clone();
+            let interface_name = interface_name.clone();
+            thread::spawn(move || {
+                let mut gnss_capture = positioning::gnss::capture::Capture {
+                    metrics: capture_metrics.clone(),
+                    bus: capture_bus
+                };
+
+                let full_device_name = positioning::gnss::capture::Capture::build_full_capture_name(
+                    &interface_name
+                );
+
+                match capture_metrics.lock() {
+                    Ok(mut metrics) => metrics.register_new_capture(
+                        &full_device_name, metrics::CaptureType::Gnss
+                    ),
+                    Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                }
+
+                loop {
+                    gnss_capture.run(&full_device_name);
+
+                    error!("GNSS capture [{}] disconnected. Retrying in 5 seconds.",
+                        &full_device_name);
+                    match capture_metrics.lock() {
+                        Ok(mut metrics) => metrics.mark_capture_as_failed(&full_device_name),
                         Err(e) => error!("Could not acquire mutex of metrics: {}", e)
                     }
                     sleep(Duration::from_secs(5));

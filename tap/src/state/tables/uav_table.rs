@@ -2,7 +2,7 @@ use sha2::Digest;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use chrono::{DateTime, Utc};
-use log::{error, info};
+use log::{error};
 use sha2::Sha256;
 use strum_macros::Display;
 use crate::helpers::timer::{record_timer, Timer};

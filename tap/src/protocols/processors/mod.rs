@@ -7,3 +7,5 @@ pub mod socks_processor;
 pub mod ssh_processor;
 pub mod dhcpv4_processor;
 pub mod uav_remote_id_processor;
+pub mod bluetooth_device_processor;
+pub mod gnss_nmea_processor;
