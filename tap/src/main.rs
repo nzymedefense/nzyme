@@ -368,6 +368,7 @@ fn main() {
             let capture_metrics = metrics.clone();
             let capture_bus = generic_bus.clone();
             let interface_name = interface_name.clone();
+            let constellation = interface_config.constellation.to_string();
             thread::spawn(move || {
                 let mut gnss_capture = positioning::gnss::capture::Capture {
                     metrics: capture_metrics.clone(),
@@ -386,7 +387,7 @@ fn main() {
                 }
 
                 loop {
-                    gnss_capture.run(&full_device_name);
+                    gnss_capture.run(&full_device_name, &constellation);
 
                     error!("GNSS capture [{}] disconnected. Retrying in 5 seconds.",
                         &full_device_name);

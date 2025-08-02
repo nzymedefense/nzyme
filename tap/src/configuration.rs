@@ -8,6 +8,7 @@ use cidr::{Ipv4Cidr, Ipv6Cidr};
 use regex::Regex;
 use reqwest::Url;
 use serde::Deserialize;
+use strum_macros::Display;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Configuration {
@@ -72,7 +73,7 @@ pub struct GNSSInterface {
     pub constellation: GNSSConstellationConfiguration
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Display, Clone, Deserialize)]
 pub enum GNSSConstellationConfiguration {
     GNSS, GPS, GLONASS, BeiDou, Galileo
 }
