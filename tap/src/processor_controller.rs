@@ -162,7 +162,7 @@ impl ProcessorController {
 
             let mut uav_processor = UavRemoteIdProcessor::new(self.tables.uav.clone());
 
-            let mut gnss_nmea_processor = GnssNmeaProcessor::new(self.tables.gnss.clone());
+            let mut gnss_nmea_processor = GnssNmeaProcessor::new(self.tables.gnss_monitor.clone());
 
             let mut arp_processor = ARPProcessor::new(self.tables.clone(), self.state.clone(), self.context.clone());
             let mut dhcp4_processor = Dhcpv4Processor::new(self.state.clone(), self.tables.dhcp.clone(), self.context.clone());

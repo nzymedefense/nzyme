@@ -1,2 +1,2 @@
 pub mod capture;
-pub mod nmea_message;
+pub mod gnss_constellation;

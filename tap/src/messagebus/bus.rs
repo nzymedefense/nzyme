@@ -17,7 +17,7 @@ use crate::wired::packets::{
     TcpSegment
 };
 use crate::wireless::dot11::frames::{Dot11Frame, Dot11RawFrame};
-use crate::wireless::positioning::gnss::nmea_message::NmeaMessage;
+use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 
 pub struct Bus {
     pub name: String,
@@ -39,7 +39,7 @@ pub struct Bus {
     
     pub uav_remote_id_pipeline: NzymeChannel<UavRemoteIdMessage>,
 
-    pub gnss_nmea_pipeline: NzymeChannel<NmeaMessage>
+    pub gnss_nmea_pipeline: NzymeChannel<NMEAMessage>
 }
 
 pub struct NzymeChannelSender<T> {

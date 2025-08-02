@@ -6,7 +6,8 @@ use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::GenericChannelName;
 use crate::metrics::Metrics;
 use crate::to_pipeline;
-use crate::wireless::positioning::gnss::nmea_message::NmeaMessage;
+use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation;
+use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 
 pub struct Capture {
     pub metrics: Arc<Mutex<Metrics>>,
@@ -14,8 +15,16 @@ pub struct Capture {
 }
 
 impl Capture {
-    pub fn run(&mut self, device_name: &str) {
-        info!("Starting GNSS capture on [{}]", device_name);
+    pub fn run(&mut self, device_name: &str, constellation: &str) {
+        info!("Starting GNSS capture for [{}] on [{}]", constellation, device_name);
+
+        let constellation = match GNSSConstellation::try_from(constellation) {
+            Ok(constellation) => constellation,
+            Err(e) => {
+                error!("Unknown GNSS constellation [{}]", constellation);
+                return;
+            }
+        };
 
         let port = match serialport::new(device_name, 9600)
             .timeout(Duration::from_secs(10))
@@ -44,9 +53,10 @@ impl Capture {
 
                     debug!("NMEA sentence from [{}]: [{}]", &device_name, nmea);
 
-                    let message = NmeaMessage {
+                    let message = NMEAMessage {
                         interface: device_name.to_string(),
-                        message: nmea.to_string()
+                        sentence: nmea.to_string(),
+                        constellation: constellation.clone()
                     };
 
                     let message_len = (nmea.len() + device_name.len()) as u32;

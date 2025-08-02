@@ -1,8 +1,4 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex}, thread
-};
-use std::net::IpAddr;
+use std::{sync::{Arc, Mutex}, thread};
 use log::error;
 use std::time::Duration;
 use crate::wireless::bluetooth::tables::bluetooth_table::BluetoothTable;
@@ -19,7 +15,7 @@ use crate::messagebus::bus::Bus;
 use crate::metrics::Metrics;
 use crate::state::tables::arp_table::ArpTable;
 use crate::state::tables::dhcp_table::DhcpTable;
-use crate::state::tables::gnss_table::GnssTable;
+use crate::state::tables::gnss_monitor_table::GnssMonitorTable;
 use crate::state::tables::uav_table::UavTable;
 
 pub struct Tables {
@@ -33,7 +29,7 @@ pub struct Tables {
     pub ssh: Arc<Mutex<SshTable>>,
     pub socks: Arc<Mutex<SocksTable>>,
     pub uav: Arc<Mutex<UavTable>>,
-    pub gnss: Arc<Mutex<GnssTable>>
+    pub gnss_monitor: Arc<Mutex<GnssMonitorTable>>
 }
 
 impl Tables {
@@ -64,7 +60,7 @@ impl Tables {
             ssh: Arc::new(Mutex::new(SshTable::new(leaderlink.clone(), metrics.clone()))),
             socks: Arc::new(Mutex::new(SocksTable::new(leaderlink.clone(), metrics.clone()))),
             uav: Arc::new(Mutex::new(UavTable::new(leaderlink.clone(), metrics.clone()))),
-            gnss: Arc::new(Mutex::new(GnssTable::new(leaderlink.clone(), metrics)))
+            gnss_monitor: Arc::new(Mutex::new(GnssMonitorTable::new(leaderlink.clone(), metrics)))
         }
     }
 
@@ -149,12 +145,12 @@ impl Tables {
                 Err(e) => error!("Could not acquire UAV table lock for report processing: {}", e)
             }
 
-            match self.gnss.lock() {
-                Ok(gnss) => {
-                    gnss.calculate_metrics();
-                    gnss.process_report();
+            match self.gnss_monitor.lock() {
+                Ok(gnss_monitor) => {
+                    gnss_monitor.calculate_metrics();
+                    gnss_monitor.process_report();
                 },
-                Err(e) => error!("Could not acquire GNSS table lock for report processing: {}", e)
+                Err(e) => error!("Could not acquire GNSS Monitor table lock for report processing: {}", e)
             }
         }
     }

@@ -361,15 +361,15 @@ impl MetricsMonitor {
         loop {
             thread::sleep(Duration::from_secs(AVERAGE_INTERVAL.try_into().unwrap()));
 
-            let mut allChannelNames: Vec<String> = vec![];
-            allChannelNames.extend(WiredChannelName::iter().map(|c| c.to_string()));
-            allChannelNames.extend(Dot11ChannelName::iter().map(|c| c.to_string()));
-            allChannelNames.extend(BluetoothChannelName::iter().map(|c| c.to_string()));
-            allChannelNames.extend(GenericChannelName::iter().map(|c| c.to_string()));
+            let mut all_channel_names: Vec<String> = vec![];
+            all_channel_names.extend(WiredChannelName::iter().map(|c| c.to_string()));
+            all_channel_names.extend(Dot11ChannelName::iter().map(|c| c.to_string()));
+            all_channel_names.extend(BluetoothChannelName::iter().map(|c| c.to_string()));
+            all_channel_names.extend(GenericChannelName::iter().map(|c| c.to_string()));
 
             match self.metrics.lock() {
                 Ok(mut metrics) => {
-                    for channel in allChannelNames {
+                    for channel in all_channel_names {
                         let errors = metrics.get_channel_errors(&channel.to_string()).avg;
 
                         if errors > 0 { 
