@@ -25,6 +25,7 @@ import app.nzyme.core.rest.resources.taps.reports.tables.bluetooth.BluetoothDevi
 import app.nzyme.core.rest.resources.taps.reports.tables.dhcp.DhcpTransactionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsTablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11TablesReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.gnss.GNSSConstellationsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.ssh.SshSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
@@ -216,6 +217,22 @@ public class TablesResource {
 
         LOG.debug("Received ARP packets report from tap [{}]: {}", tap.getUuid(), report);
         nzyme.getTablesService().arp().handleReport(tap.getUuid(), DateTime.now(), report);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("/gnss/constellations")
+    public Response gnssConstellations(@Context SecurityContext sc, GNSSConstellationsReport report) {
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
+
+        /*if (!nzyme.getSubsystems().isEnabled(Subsystem.GNSS, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting GNSS constellations report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }*/
+
+        LOG.info("Received GNSS constellations report from tap [{}]: {}", tap.getUuid(), report);
+        //nzyme.getTablesService().gnss().handleConstellationsReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

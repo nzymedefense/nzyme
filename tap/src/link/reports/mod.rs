@@ -7,3 +7,4 @@ pub mod context_report;
 pub mod uavs_report;
 pub mod dhcp_transactions_report;
 pub mod arp_packets_report;
+pub mod gnss_constellations_report;

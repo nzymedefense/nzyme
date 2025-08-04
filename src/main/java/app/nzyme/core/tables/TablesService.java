@@ -20,6 +20,7 @@ package app.nzyme.core.tables;
 import app.nzyme.core.tables.bluetooth.BluetoothTable;
 import app.nzyme.core.tables.dot11.Dot11Table;
 import app.nzyme.core.tables.ethernet.*;
+import app.nzyme.core.tables.gnss.GNSSTable;
 import app.nzyme.core.tables.uav.UAVTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -49,6 +50,7 @@ public class TablesService {
                 .put("dot11", new Dot11Table(this))
                 .put("bluetooth", new BluetoothTable(this))
                 .put("uav", new UAVTable(this))
+                .put("gnss", new GNSSTable(this))
                 .put("arp", new ARPTable(this))
                 .put("dhcp", new DHCPTable(this))
                 .put("tcp", new TCPTable(this))
@@ -117,6 +119,10 @@ public class TablesService {
     }
 
     public UAVTable uav() { return (UAVTable) tables.get("uav"); }
+
+    public GNSSTable gnss() {
+        return (GNSSTable) tables.get("gnss");
+    }
 
     public ExecutorService getProcessorPool() {
         return processorPool;

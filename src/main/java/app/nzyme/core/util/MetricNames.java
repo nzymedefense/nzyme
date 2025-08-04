@@ -29,6 +29,7 @@ import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.tables.bluetooth.BluetoothTable;
 import app.nzyme.core.tables.ethernet.*;
 import app.nzyme.core.tables.dot11.Dot11Table;
+import app.nzyme.core.tables.gnss.GNSSTable;
 import app.nzyme.core.tables.uav.UAVTable;
 import app.nzyme.core.uav.Uav;
 
@@ -84,5 +85,6 @@ public class MetricNames {
     public static final String UAV_TOTAL_REPORT_PROCESSING_TIMER = name(UAVTable.class, "total-report-processing-timing");
     public static final String UAV_CONNECT_TYPE_LOOKUP_TIMING = name(Uav.class, "connect-type-lookup-timing");
 
+    public static final String GNSS_TOTAL_REPORT_PROCESSING_TIMER = name(GNSSTable.class, "total-report-processing-timing");
 
 }

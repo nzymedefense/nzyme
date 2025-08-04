@@ -30,6 +30,10 @@ bt_le_enabled = true
 discovery_period_seconds = 15
 dbus_method_call_timeout_seconds = 2
 
+[gnss_interfaces.ttyACM0]
+active = true
+constellation = "GNSS"
+
 [performance]
 ethernet_brokers = 1
 wifi_brokers = 1

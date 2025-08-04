@@ -1,6 +1,7 @@
 use std::io::{BufRead, BufReader};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use chrono::Utc;
 use log::{debug, error, info, trace};
 use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::GenericChannelName;
@@ -43,6 +44,8 @@ impl Capture {
             line.clear();
             match reader.read_line(&mut line) {
                 Ok(n) if n > 0 => {
+                    let timestamp = Utc::now();
+
                     let nmea = line.trim_end();
 
                     if nmea.len() < 7 {
@@ -55,6 +58,7 @@ impl Capture {
 
                     let message = NMEAMessage {
                         interface: device_name.to_string(),
+                        timestamp,
                         sentence: nmea.to_string(),
                         constellation: constellation.clone()
                     };

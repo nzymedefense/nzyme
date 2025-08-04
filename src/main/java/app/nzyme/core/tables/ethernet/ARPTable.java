@@ -6,16 +6,12 @@ import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
 import java.util.UUID;
 
 public class ARPTable implements DataTable {
-
-    private static final Logger LOG = LogManager.getLogger(ARPTable.class);
 
     private final Timer totalReportTimer;
 
