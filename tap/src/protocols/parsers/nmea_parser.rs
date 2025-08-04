@@ -2,6 +2,7 @@ use std::sync::Arc;
 use anyhow::{bail, Error};
 use chrono::{DateTime, NaiveTime, Utc};
 use log::warn;
+use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation::GPS;
 use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 use crate::wireless::positioning::nmea::nmea_sentences::{
     FixType, GPGGASentence, GPGSASentence, GPGSVSentence, SatelliteInfo
@@ -58,7 +59,7 @@ pub fn parse_gpgga(message: &Arc<NMEAMessage>) -> Result<GPGGASentence, Error> {
     let geoid_separation_m = fields[11].parse::<f32>().ok();
 
     Ok(GPGGASentence {
-        constellation: message.constellation.clone(),
+        constellation: GPS,
         timestamp: message.timestamp,
         time,
         latitude,
@@ -106,7 +107,7 @@ pub fn parse_gpgsa(message: &Arc<NMEAMessage>) -> Result<GPGSASentence, Error> {
     let vdop = fields[17].parse::<f32>().ok();
 
     Ok(GPGSASentence {
-        constellation: message.constellation.clone(),
+        constellation: GPS,
         fix,
         fix_satellites,
         pdop,
@@ -159,7 +160,7 @@ pub fn parse_gpgsv(message: &Arc<NMEAMessage>) -> Result<GPGSVSentence, Error> {
     }
 
     Ok(GPGSVSentence {
-        constellation: message.constellation.clone(),
+        constellation: GPS,
         total_messages,
         message_number,
         satellites_in_view,

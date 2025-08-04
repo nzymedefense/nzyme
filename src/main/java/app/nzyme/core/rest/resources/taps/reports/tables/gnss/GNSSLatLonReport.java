@@ -7,7 +7,9 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class GNSSLatLonReport {
 
+    @JsonProperty("lat")
     public abstract double lat();
+    @JsonProperty("lon")
     public abstract double lon();
 
     @JsonCreator

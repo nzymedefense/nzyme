@@ -18,10 +18,14 @@ import jakarta.annotation.Nullable;
 @AutoValue
 public abstract class GNSSSatelliteInfoReport {
 
+    @JsonProperty("prn")
     public abstract int prn();
+    @JsonProperty("elevation_degrees")
     public abstract int elevationDegrees();
+    @JsonProperty("azimuth_degrees")
     public abstract int azimuthDegrees();
     @Nullable
+    @JsonProperty("snr_db")
     public abstract Integer snrDb();
 
     @JsonCreator

@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex, MutexGuard};
 use anyhow::Error;
+use chrono::Utc;
 use log::error;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
@@ -294,7 +295,7 @@ impl GnssMonitorTable {
 
                 // Generate JSON.
                 let report = match serde_json::
-                        to_string(&gnss_constellations_report::generate(&constellations)) {
+                        to_string(&gnss_constellations_report::generate(&constellations, Utc::now())) {
                     Ok(report) => report,
                     Err(e) => {
                         error!("Could not serialize GNSS constellations report: {}", e);

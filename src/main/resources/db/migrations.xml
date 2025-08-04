@@ -6887,4 +6887,84 @@
 
     </changeSet>
 
+    <changeSet id="add_gnss_constellations" author="lennartkoopmann">
+        <createTable tableName="gnss_constellations">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="constellation" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="fixes" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="maximum_time_deviation_ms" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="positions" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="maximum_fix_satellite_count" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="minimum_fix_satellite_count" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="fix_satellites" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="maximum_altitude_meters" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="minimum_altitude_meters" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="maximum_pdop" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="minimum_pdop" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="satellites_in_view" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="timestamp" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="gnss_constellations" indexName="gnssc_tap">
+            <column name="tap_uuid" />
+        </createIndex>
+
+        <createIndex tableName="gnss_constellations" indexName="gnssc_constellation">
+            <column name="constellation" />
+        </createIndex>
+
+        <createIndex tableName="gnss_constellations" indexName="gnssc_timestamp">
+            <column name="timestamp" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

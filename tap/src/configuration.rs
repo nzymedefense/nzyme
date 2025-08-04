@@ -69,13 +69,7 @@ pub struct WifiInterface {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GNSSInterface {
-    pub active: bool,
-    pub constellation: GNSSConstellationConfiguration
-}
-
-#[derive(Debug, Display, Clone, Deserialize)]
-pub enum GNSSConstellationConfiguration {
-    GNSS, GPS, GLONASS, BeiDou, Galileo
+    pub active: bool
 }
 
 #[allow(non_camel_case_types)]

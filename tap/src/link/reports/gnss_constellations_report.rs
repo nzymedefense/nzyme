@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::MutexGuard;
+use chrono::{DateTime, Utc};
 use serde::Serialize;
 use crate::state::tables::gnss_monitor_table::GNSSConstellationData;
 use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation;
@@ -21,7 +22,8 @@ pub struct GNSSConstellationReport {
     minimum_altitude_meters: Option<f32>,
     maximum_pdop: Option<f32>,
     minimum_pdop: Option<f32>,
-    satellites_in_view: Vec<SatelliteInfoReport>
+    satellites_in_view: Vec<SatelliteInfoReport>,
+    timestamp: DateTime<Utc>
 }
 
 #[derive(Serialize)]
@@ -38,7 +40,8 @@ pub struct SatelliteInfoReport {
     pub snr_db: Option<u8>,
 }
 
-pub fn generate(constellations: &MutexGuard<HashMap<GNSSConstellation, GNSSConstellationData>>) -> GNSSConstellationsReport {
+pub fn generate(constellations: &MutexGuard<HashMap<GNSSConstellation, GNSSConstellationData>>,
+                timestamp: DateTime<Utc>) -> GNSSConstellationsReport {
     let mut constellations_report: HashMap<String, GNSSConstellationReport> = HashMap::new();
 
     for (name, data) in constellations.iter() {
@@ -60,7 +63,8 @@ pub fn generate(constellations: &MutexGuard<HashMap<GNSSConstellation, GNSSConst
                     elevation_degrees: s.elevation_degrees,
                     azimuth_degrees: s.azimuth_degrees,
                     snr_db: s.snr_db,
-                } ).collect()
+                } ).collect(),
+            timestamp
         };
 
         constellations_report.insert(name.to_string(), constellation);

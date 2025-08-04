@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
+import org.joda.time.DateTime;
 
 import java.util.List;
 
@@ -30,6 +31,7 @@ public abstract class GNSSConstellationReport {
     @Nullable
     public abstract Double minimumPdop();
     public abstract List<GNSSSatelliteInfoReport> satellitesInView();
+    public abstract DateTime timestamp();
 
     @JsonCreator
     public static GNSSConstellationReport create(@JsonProperty("fixes") List<String> fixes,
@@ -42,7 +44,8 @@ public abstract class GNSSConstellationReport {
                                                  @JsonProperty("minimum_altitude_meters") Double minimumAltitudeMeters,
                                                  @JsonProperty("maximum_pdop") Double maximumPdop,
                                                  @JsonProperty("minimum_pdop") Double minimumPdop,
-                                                 @JsonProperty("satellites_in_view") List<GNSSSatelliteInfoReport> satellitesInView) {
+                                                 @JsonProperty("satellites_in_view") List<GNSSSatelliteInfoReport> satellitesInView,
+                                                 @JsonProperty("timestamp") DateTime timestamp) {
         return builder()
                 .fixes(fixes)
                 .maximumTimeDeviationMs(maximumTimeDeviationMs)
@@ -55,6 +58,7 @@ public abstract class GNSSConstellationReport {
                 .maximumPdop(maximumPdop)
                 .minimumPdop(minimumPdop)
                 .satellitesInView(satellitesInView)
+                .timestamp(timestamp)
                 .build();
     }
 
@@ -85,6 +89,8 @@ public abstract class GNSSConstellationReport {
         public abstract Builder minimumPdop(Double minimumPdop);
 
         public abstract Builder satellitesInView(List<GNSSSatelliteInfoReport> satellitesInView);
+
+        public abstract Builder timestamp(DateTime timestamp);
 
         public abstract GNSSConstellationReport build();
     }

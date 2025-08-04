@@ -231,8 +231,8 @@ public class TablesResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }*/
 
-        LOG.info("Received GNSS constellations report from tap [{}]: {}", tap.getUuid(), report);
-        //nzyme.getTablesService().gnss().handleConstellationsReport(tap.getUuid(), DateTime.now(), report);
+        LOG.debug("Received GNSS constellations report from tap [{}]: {}", tap.getUuid(), report);
+        nzyme.getTablesService().gnss().handleConstellationsReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }
