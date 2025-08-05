@@ -248,6 +248,9 @@ const ApiRoutes = {
       EDIT: (uuid, organizationId, tenantId) => `/uavs/types/organizations/show/${organizationId}/tenants/show/${tenantId}/show/${uuid}/edit`,
     }
   },
+  GNSS: {
+    CONSTELLATIONS: '/gnss/constellations'
+  },
   CONTEXT: {
     MAC_ADDRESSES: {
       INDEX: '/context/macs',

@@ -176,6 +176,8 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
                 return;
             }
 
+            // TODO GNSS subsystem
+
             // Check if we have the permissions required by resource.
             switch (resourcePermissionLevel) {
                 case SUPERADMINISTRATOR:

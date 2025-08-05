@@ -39,6 +39,7 @@ import app.nzyme.core.dot11.monitoring.ssids.KnownSSIDMonitor;
 import app.nzyme.core.ethernet.L4ConnectionCleaner;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
+import app.nzyme.core.gnss.Gnss;
 import app.nzyme.core.integrations.ScheduledIntegrationsManager;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.integrations.tenant.cot.CotService;
@@ -129,6 +130,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final Dot11 dot11;
     private final Bluetooth bluetooth;
     private final Uav uav;
+    private final Gnss gnss;
 
     private final AssetManager assets;
 
@@ -198,6 +200,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.dot11 = new Dot11(this);
         this.bluetooth = new Bluetooth(this);
         this.uav = new Uav(this);
+        this.gnss = new Gnss(this);
 
         this.assets = new AssetManager(this);
 
@@ -408,6 +411,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public Uav getUav() {
         return uav;
+    }
+
+    @Override
+    public Gnss getGnss() {
+        return gnss;
     }
 
     @Override

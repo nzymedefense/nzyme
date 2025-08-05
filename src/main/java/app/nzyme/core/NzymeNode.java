@@ -28,6 +28,7 @@ import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.events.EventEngine;
+import app.nzyme.core.gnss.Gnss;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.integrations.tenant.cot.CotService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
@@ -73,6 +74,7 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
     Dot11 getDot11();
     Bluetooth getBluetooth();
     Uav getUav();
+    Gnss getGnss();
 
     AssetManager getAssetsManager();
 

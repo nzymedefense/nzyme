@@ -174,6 +174,7 @@ import DHCPTransactionDetailsPage from "./components/ethernet/assets/dhcp/DHCPTr
 import GlobalTenantSelectorForm from "./components/system/tenantselector/GlobalTenantSelectorForm";
 import AssetDetailsPage from "./components/ethernet/assets/AssetDetailsPage";
 import ARPPacketsPage from "./components/ethernet/assets/arp/ARPPacketsPage";
+import GNSSConstellationsPage from "./components/gnss/GNSSConstellationsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -622,6 +623,9 @@ function App() {
 
                                 <Route path={ApiRoutes.UAV.MONITORING.INDEX} element={<UavMonitoringPage />}/>
                               </Route>
+
+                              { /* GNSS. TODO: subsystem guard */ }
+                              <Route path={ApiRoutes.GNSS.CONSTELLATIONS} element={<GNSSConstellationsPage />}/>
 
                               { /* Context. */ }
                               <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>

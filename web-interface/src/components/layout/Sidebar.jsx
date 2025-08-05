@@ -136,6 +136,17 @@ function Sidebar(props) {
               show={userHasPermission(user, "uav_monitoring_manage")}/>
           </SidebarSubmenu>
 
+          <SidebarSubmenu title="GNSS"
+                          subhref="/gnss"
+                          icon={<i className="sidebar-icon fa-solid fa-globe"/>}
+                          show={true}>
+            <NavigationLink
+              href={ApiRoutes.GNSS.CONSTELLATIONS}
+              title="Constellations"
+              icon={<i className="sidebar-icon fa-solid fa-satellite"/>}/>
+
+          </SidebarSubmenu>
+
           <SidebarSubmenu title="Context"
                           subhref="/context"
                           icon={<i className="sidebar-icon fa-solid fa-circle-info"></i>}
