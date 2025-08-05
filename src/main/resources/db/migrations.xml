@@ -6967,4 +6967,16 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_gnss_satellites_in_view_counts" author="lennartkoopmann">
+        <addColumn tableName="gnss_constellations">
+            <column name="maximum_satellites_in_view_count" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="minimum_satellites_in_view_count" type="integer">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

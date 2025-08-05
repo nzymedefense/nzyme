@@ -102,9 +102,18 @@ pub fn parse_gpgsa(message: &Arc<NMEAMessage>) -> Result<GPGSASentence, Error> {
     }
 
     // DOP values.
-    let pdop = fields[15].parse::<f32>().ok();
-    let hdop = fields[16].parse::<f32>().ok();
-    let vdop = fields[17].parse::<f32>().ok();
+    let pdop = match fields[15] {
+        "99.99" => None,
+        val => val.parse::<f32>().ok(),
+    };
+    let hdop = match fields[16] {
+        "99.99" => None,
+        val => val.parse::<f32>().ok(),
+    };
+    let vdop = match fields[17] {
+        "99.99" => None,
+        val => val.parse::<f32>().ok(),
+    };
 
     Ok(GPGSASentence {
         constellation: GPS,
@@ -138,12 +147,13 @@ pub fn parse_gpgsv(message: &Arc<NMEAMessage>) -> Result<GPGSVSentence, Error> {
         }
 
         let prn = chunk[0].parse::<u8>().ok();
-        let elevation_degrees = chunk[1].parse::<u8>().ok();
-        let azimuth_degrees = chunk[2].parse::<u16>().ok();
 
-        if prn.is_none() || elevation_degrees.is_none() || azimuth_degrees.is_none() {
+        if prn.is_none() {
             continue;
         }
+
+        let elevation_degrees = chunk[1].parse::<u8>().ok();
+        let azimuth_degrees = chunk[2].parse::<u16>().ok();
 
         let snr_db = if chunk[3].is_empty() {
             None
@@ -153,8 +163,8 @@ pub fn parse_gpgsv(message: &Arc<NMEAMessage>) -> Result<GPGSVSentence, Error> {
 
         satellites.push(SatelliteInfo {
             prn: prn.unwrap(),
-            elevation_degrees: elevation_degrees.unwrap(),
-            azimuth_degrees: azimuth_degrees.unwrap(),
+            elevation_degrees,
+            azimuth_degrees,
             snr_db,
         });
     }

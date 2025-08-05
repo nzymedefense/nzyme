@@ -31,6 +31,10 @@ public abstract class GNSSConstellationReport {
     @Nullable
     public abstract Double minimumPdop();
     public abstract List<GNSSSatelliteInfoReport> satellitesInView();
+    @Nullable
+    public abstract Integer maximumSatellitesInViewCount();
+    @Nullable
+    public abstract Integer minimumSatellitesInViewCount();
     public abstract DateTime timestamp();
 
     @JsonCreator
@@ -45,6 +49,8 @@ public abstract class GNSSConstellationReport {
                                                  @JsonProperty("maximum_pdop") Double maximumPdop,
                                                  @JsonProperty("minimum_pdop") Double minimumPdop,
                                                  @JsonProperty("satellites_in_view") List<GNSSSatelliteInfoReport> satellitesInView,
+                                                 @JsonProperty("maximum_satellites_in_view_count") Integer maximumSatellitesInViewCount,
+                                                 @JsonProperty("minimum_satellites_in_view_count") Integer minimumSatellitesInViewCount,
                                                  @JsonProperty("timestamp") DateTime timestamp) {
         return builder()
                 .fixes(fixes)
@@ -58,6 +64,8 @@ public abstract class GNSSConstellationReport {
                 .maximumPdop(maximumPdop)
                 .minimumPdop(minimumPdop)
                 .satellitesInView(satellitesInView)
+                .maximumSatellitesInViewCount(maximumSatellitesInViewCount)
+                .minimumSatellitesInViewCount(minimumSatellitesInViewCount)
                 .timestamp(timestamp)
                 .build();
     }
@@ -89,6 +97,10 @@ public abstract class GNSSConstellationReport {
         public abstract Builder minimumPdop(Double minimumPdop);
 
         public abstract Builder satellitesInView(List<GNSSSatelliteInfoReport> satellitesInView);
+
+        public abstract Builder maximumSatellitesInViewCount(Integer maximumSatellitesInViewCount);
+
+        public abstract Builder minimumSatellitesInViewCount(Integer minimumSatellitesInViewCount);
 
         public abstract Builder timestamp(DateTime timestamp);
 

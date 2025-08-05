@@ -40,11 +40,12 @@ public class GNSSTable implements DataTable {
                         "constellation, fixes, maximum_time_deviation_ms, positions, maximum_fix_satellite_count, " +
                         "minimum_fix_satellite_count, fix_satellites, maximum_altitude_meters, " +
                         "minimum_altitude_meters, maximum_pdop, minimum_pdop, satellites_in_view, " +
-                        "timestamp, created_at) VALUES(:tap_uuid, :constellation, :fixes::jsonb, " +
-                        ":maximum_time_deviation_ms, :positions::jsonb, :maximum_fix_satellite_count, " +
-                        ":minimum_fix_satellite_count, :fix_satellites::jsonb, :maximum_altitude_meters, " +
-                        ":minimum_altitude_meters, :maximum_pdop, :minimum_pdop, :satellites_in_view::jsonb, " +
-                        ":timestamp, NOW())");
+                        "maximum_satellites_in_view_count, minimum_satellites_in_view_count, timestamp, " +
+                        "created_at) VALUES(:tap_uuid, :constellation, :fixes::jsonb, :maximum_time_deviation_ms, " +
+                        ":positions::jsonb, :maximum_fix_satellite_count, :minimum_fix_satellite_count, " +
+                        ":fix_satellites::jsonb, :maximum_altitude_meters, :minimum_altitude_meters, :maximum_pdop, " +
+                        ":minimum_pdop, :satellites_in_view::jsonb, :maximum_satellites_in_view_count, " +
+                        ":minimum_satellites_in_view_count, :timestamp, NOW())");
 
                 for (Map.Entry<String, GNSSConstellationReport> constellation : report.constellations().entrySet()) {
                     String constellationName = constellation.getKey();
@@ -64,6 +65,8 @@ public class GNSSTable implements DataTable {
                                 .bind("maximum_pdop", data.maximumPdop())
                                 .bind("minimum_pdop", data.minimumPdop())
                                 .bind("satellites_in_view", om.writeValueAsString(data.satellitesInView()))
+                                .bind("maximum_satellites_in_view_count", data.maximumSatellitesInViewCount())
+                                .bind("minimum_satellites_in_view_count", data.minimumSatellitesInViewCount())
                                 .bind("timestamp", data.timestamp())
                                 .add();
                     } catch (JsonProcessingException e) {

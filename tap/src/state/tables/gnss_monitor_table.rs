@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex, MutexGuard};
 use anyhow::Error;
 use chrono::Utc;
-use log::error;
+use log::{error, info};
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::gnss_constellations_report;
@@ -30,7 +30,9 @@ pub struct GNSSConstellationData {
     pub minimum_altitude_meters: Option<f32>,
     pub maximum_pdop: Option<f32>,
     pub minimum_pdop: Option<f32>,
-    pub satellites_in_view: HashMap<u8, SatelliteInfo>
+    pub satellites_in_view: HashMap<u8, SatelliteInfo>,
+    pub minimum_satellites_in_view_count: Option<u8>,
+    pub maximum_satellites_in_view_count: Option<u8>
 }
 
 impl GNSSConstellationData {
@@ -58,8 +60,8 @@ impl LatLon {
 #[derive(Debug, Default, Eq, PartialEq)]
 pub struct SatelliteInfo {
     pub prn: u8,
-    pub elevation_degrees: u8,
-    pub azimuth_degrees: u16,
+    pub elevation_degrees: Option<u8>,
+    pub azimuth_degrees: Option<u16>,
     pub snr_db: Option<u8>,
 }
 
@@ -201,8 +203,8 @@ impl GnssMonitorTable {
                 constellation.fixes.insert(sentence.fix);
                 constellation.fix_satellites.extend(sentence.fix_satellites);
 
-                // Maximum PDOP.
                 if let Some(pdop) = sentence.pdop {
+                    // Maximum PDOP.
                     match constellation.maximum_pdop {
                         Some(p) => {
                             if pdop > p {
@@ -250,6 +252,36 @@ impl GnssMonitorTable {
                 }
 
                 let constellation = constellations.get_mut(&sentence.constellation).unwrap();
+
+                if let Some(count) = sentence.satellites_in_view {
+                    // Max satellite in view count.
+                    match constellation.maximum_satellites_in_view_count {
+                        Some(c) => {
+                            if count > c {
+                                // Count is larger than previous max.
+                                constellation.maximum_satellites_in_view_count = Some(count)
+                            }
+                        },
+                        None => {
+                            // First recorded maximum count.
+                            constellation.maximum_satellites_in_view_count = Some(count)
+                        }
+                    };
+
+                    // Min satellite in view count.
+                    match constellation.minimum_satellites_in_view_count {
+                        Some(c) => {
+                            if count < c {
+                                // Count is less than previous max.
+                                constellation.minimum_satellites_in_view_count = Some(count)
+                            }
+                        },
+                        None => {
+                            // First recorded maximum count.
+                            constellation.minimum_satellites_in_view_count = Some(count)
+                        }
+                    };
+                }
 
                 for satellite in sentence.satellites {
                     match constellation.satellites_in_view.get_mut(&satellite.prn) {

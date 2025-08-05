@@ -43,7 +43,7 @@ pub enum FixType {
 #[derive(Debug)]
 pub struct SatelliteInfo {
     pub prn: u8,
-    pub elevation_degrees: u8,
-    pub azimuth_degrees: u16,
+    pub elevation_degrees: Option<u8>,
+    pub azimuth_degrees: Option<u16>,
     pub snr_db: Option<u8>,
 }

@@ -23,6 +23,8 @@ pub struct GNSSConstellationReport {
     maximum_pdop: Option<f32>,
     minimum_pdop: Option<f32>,
     satellites_in_view: Vec<SatelliteInfoReport>,
+    minimum_satellites_in_view_count: Option<u8>,
+    maximum_satellites_in_view_count: Option<u8>,
     timestamp: DateTime<Utc>
 }
 
@@ -35,8 +37,8 @@ pub struct LatLonReport {
 #[derive(Serialize)]
 pub struct SatelliteInfoReport {
     pub prn: u8,
-    pub elevation_degrees: u8,
-    pub azimuth_degrees: u16,
+    pub elevation_degrees: Option<u8>,
+    pub azimuth_degrees: Option<u16>,
     pub snr_db: Option<u8>,
 }
 
@@ -64,6 +66,8 @@ pub fn generate(constellations: &MutexGuard<HashMap<GNSSConstellation, GNSSConst
                     azimuth_degrees: s.azimuth_degrees,
                     snr_db: s.snr_db,
                 } ).collect(),
+            minimum_satellites_in_view_count: data.minimum_satellites_in_view_count,
+            maximum_satellites_in_view_count: data.maximum_satellites_in_view_count,
             timestamp
         };
 
