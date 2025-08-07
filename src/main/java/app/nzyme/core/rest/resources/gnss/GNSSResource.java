@@ -7,11 +7,15 @@ import app.nzyme.core.gnss.Constellation;
 import app.nzyme.core.gnss.db.GNSSDoubleBucket;
 import app.nzyme.core.gnss.db.GNSSIntegerBucket;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.responses.gnss.GNSSConstellationCoordinatesResponse;
 import app.nzyme.core.rest.responses.gnss.GNSSDoubleBucketResponse;
 import app.nzyme.core.rest.responses.gnss.GNSSIntegerBucketResponse;
+import app.nzyme.core.rest.responses.gnss.GNSSTapLocationResponse;
 import app.nzyme.core.rest.responses.shared.LatLonResponse;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.api.client.util.Lists;
@@ -27,6 +31,7 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/gnss")
@@ -53,12 +58,28 @@ public class GNSSResource extends TapDataHandlingResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
+        // Coordinates.
         List<LatLonResponse> coordinates = Lists.newArrayList();
         for (LatLonResult coords : nzyme.getGnss().getRecordedCoordinates(constellation, timeRange, taps)) {
             coordinates.add(LatLonResponse.create(coords.lat(), coords.lon()));
         }
 
-        return Response.ok(coordinates).build();
+        // Tap locations.
+        List<GNSSTapLocationResponse> tapLocations = Lists.newArrayList();
+        for (UUID tapUuid : taps) {
+            Optional<Tap> tap = nzyme.getTapManager().findTap(tapUuid);
+            if (tap.isPresent() && tap.get().latitude() != null && tap.get().longitude() != null
+                    && tap.get().latitude() != 0 && tap.get().longitude() != 0) {
+                tapLocations.add(GNSSTapLocationResponse.create(
+                        tap.get().latitude(),
+                        tap.get().longitude(),
+                        Tools.isTapActive(tap.get().lastReport()),
+                        tap.get().name()
+                ));
+            }
+        }
+
+        return Response.ok(GNSSConstellationCoordinatesResponse.create(coordinates, tapLocations)).build();
     }
 
     @GET

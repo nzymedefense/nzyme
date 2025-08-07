@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from "react";
 import {latLng} from "leaflet/src/geo";
+import {sanitizeHtml} from "../../util/Tools";
 
-// TODO SHOW ALL SELECTED TAPS AND THEIR POSITIONS, MAX DISTANCE BETWEEN COORDS, HEATMAP CONTROLS, REACT TO REVISION
+// TODO SHOW ALL SELECTED TAPS AND THEIR POSITIONS, MAX DISTANCE BETWEEN COORDS, HEATMAP CONTROLS, REACT TO REVISION, PAD CHARTS
 
 export default function GNSSCoordinatesHeatmap(props) {
 
@@ -16,15 +17,29 @@ export default function GNSSCoordinatesHeatmap(props) {
   const [map, setMap] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(defaultZoomLevel ? defaultZoomLevel : 16);
 
+  const onlineTapIcon = L.icon({
+    iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap.png',
+    iconSize: [24, 16],
+    iconAnchor: [12, 8],
+    tooltipAnchor: [0, 0]
+  });
+
+  const offlineTapIcon = L.icon({
+    iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap-offline.png',
+    iconSize: [24, 16],
+    iconAnchor: [12, 8],
+    tooltipAnchor: [0, 0]
+  });
+
   function getDefaultCenter(coords) {
-    if (!coords || coords.length === 0) {
+    if (!coords || !coords.coordinates || coords.coordinates.length === 0) {
       return [0,0];
     }
 
-    const n = coords.length;
+    const n = coords.coordinates.length;
     if (n === 0) return null;
 
-    const { sumLat, sumLon } = coords.reduce(
+    const { sumLat, sumLon } = coords.coordinates.reduce(
       (acc, { lat, lon }) => {
         acc.sumLat += lat;
         acc.sumLon += lon;
@@ -34,6 +49,11 @@ export default function GNSSCoordinatesHeatmap(props) {
     );
 
     return [ sumLat / n, sumLon / n ];
+  }
+
+  const tapTooltip = (tap) => {
+    return "Tap &quot;" + sanitizeHtml(tap.name) + "&quot; " +
+      (tap.active ? "<span class='text-success'>(Online)</span>" : "<span class='text-danger'>(Offline)</span>")
   }
 
   useEffect(() => {
@@ -51,8 +71,8 @@ export default function GNSSCoordinatesHeatmap(props) {
       if (latitude && longitude) {
         map.setView(latLng(latitude, longitude), zoomLevel)
       } else {
-        if (coordinates) {
-          map.setView(getDefaultCenter(coordinates), zoomLevel)
+        if (coordinates && coordinates.coordinates) {
+          map.setView(getDefaultCenter(coordinates.coordinates), zoomLevel)
         }
       }
 
@@ -67,7 +87,7 @@ export default function GNSSCoordinatesHeatmap(props) {
     }
   }, [map, latitude, longitude])
 
-  // Instant positions.
+  // Coordinates.
   useEffect(() => {
     if (map) {
       map.setView(getDefaultCenter(coordinates), zoomLevel)
@@ -80,8 +100,8 @@ export default function GNSSCoordinatesHeatmap(props) {
       });
 
       // Heatmap data.
-      if (coordinates) {
-        const points = coordinates.map(({ lat, lon }) => [lat, lon, 1]);
+      if (coordinates && coordinates.coordinates) {
+        const points = coordinates.coordinates.map(({ lat, lon }) => [lat, lon, 1]);
 
         L.heatLayer(points, {
           nzymeType: "heatmap-marker",
@@ -94,6 +114,27 @@ export default function GNSSCoordinatesHeatmap(props) {
       }
     }
   }, [coordinates, map])
+
+  // Render taps.
+  useEffect(() => {
+    if (coordinates && coordinates.tap_locations && map) {
+      coordinates.tap_locations.forEach((tap) => {
+        let iconImage;
+        if (tap.active) {
+          iconImage = onlineTapIcon;
+        } else {
+          iconImage = offlineTapIcon;
+        }
+
+        const icon = L.marker(latLng(tap.lat, tap.lon), {
+          nzymeType: "tap-marker",
+          icon: iconImage
+        }).addTo(map);
+
+        icon.bindTooltip(tapTooltip(tap));
+      })
+    }
+  }, [coordinates, map]);
 
   return (
     <React.Fragment>

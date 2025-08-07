@@ -26,7 +26,7 @@ export default function GNSSConstellationsPage() {
   const [satellitesInViewHistogram, setSatellitesInViewHistogram] = useState(null);
   const [altitudeHistogram, setAltitudeHistogram] = useState(null);
 
-  const constellationCoordinatesTimeRange = Presets.RELATIVE_MINUTES_15;
+  const constellationCoordinatesTimeRange = Presets.RELATIVE_HOURS_24;
   const [constellationCoordinates, setConstellationCoordinates] = useState(null);
 
   const [revision, setRevision] = useState(new Date());
