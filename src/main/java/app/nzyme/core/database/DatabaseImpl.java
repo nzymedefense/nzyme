@@ -10,6 +10,7 @@ import app.nzyme.core.context.db.MacAddressContextEntryMapper;
 import app.nzyme.core.context.db.MacAddressTransparentContextEntryMapper;
 import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntryMapper;
 import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntryMapper;
+import app.nzyme.core.database.generic.LatLonResultMapper;
 import app.nzyme.core.database.generic.NumberBucketAggregationResultMapper;
 import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntryMapper;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntryMapper;
@@ -38,6 +39,8 @@ import app.nzyme.core.events.db.EventEntryMapper;
 import app.nzyme.core.events.db.SubscriptionEntryMapper;
 import app.nzyme.core.floorplans.db.TenantLocationEntryMapper;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntryMapper;
+import app.nzyme.core.gnss.db.GNSSDoubleBucketMapper;
+import app.nzyme.core.gnss.db.GNSSIntegerBucketMapper;
 import app.nzyme.core.integrations.tenant.cot.db.CotOutputEntryMapper;
 import app.nzyme.core.monitoring.TimerEntryMapper;
 import app.nzyme.core.monitoring.health.db.IndicatorStatusMapper;
@@ -191,7 +194,10 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new L4SessionMapper())
                 .registerRowMapper(new ArpPacketEntryMapper())
                 .registerRowMapper(new ARPStatisticsBucketMapper())
-                .registerRowMapper(new ArpSenderTargetCountPairMapper());
+                .registerRowMapper(new ArpSenderTargetCountPairMapper())
+                .registerRowMapper(new GNSSIntegerBucketMapper())
+                .registerRowMapper(new GNSSDoubleBucketMapper())
+                .registerRowMapper(new LatLonResultMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

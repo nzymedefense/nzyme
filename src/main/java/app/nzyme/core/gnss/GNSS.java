@@ -1,0 +1,188 @@
+package app.nzyme.core.gnss;
+
+import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.generic.LatLonResult;
+import app.nzyme.core.gnss.db.GNSSDoubleBucket;
+import app.nzyme.core.gnss.db.GNSSIntegerBucket;
+import app.nzyme.core.util.Bucketing;
+import app.nzyme.core.util.TimeRange;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+public class GNSS {
+
+    private final NzymeNode nzyme;
+
+    public GNSS(NzymeNode nzyme) {
+        this.nzyme = nzyme;
+    }
+
+    public List<LatLonResult> getRecordedCoordinates(Constellation constellation,
+                                                     TimeRange timeRange,
+                                                     List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT round(c.lat::numeric, 5)::double precision AS lat, " +
+                                "round(c.lon::numeric, 5)::double precision AS lon " +
+                                "FROM gnss_constellations AS gnss " +
+                                "CROSS JOIN LATERAL jsonb_to_recordset(gnss.positions) " +
+                                "AS c (lat double precision, lon double precision) " +
+                                "WHERE gnss.constellation = :constellation " +
+                                "AND created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>)")
+                        .bind("constellation", constellation)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(LatLonResult.class)
+                        .list()
+        );
+    }
+
+    public List<GNSSIntegerBucket> getTimeDeviationHistogram(TimeRange timeRange,
+                                                             Bucketing.BucketingConfiguration bucketing,
+                                                             List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
+                                "(WHERE constellation = 'GPS')) AS gps, " +
+                                "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
+                                "(WHERE constellation = 'GLONASS')) AS glonass, " +
+                                "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
+                                "(WHERE constellation = 'BeiDou')) AS beidou, " +
+                                "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
+                                "(WHERE constellation = 'Galileo')) AS galileo " +
+                                "FROM gnss_constellations WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GNSSIntegerBucket.class)
+                        .list()
+        );
+    }
+
+    public List<GNSSDoubleBucket> getPdopHistogram(TimeRange timeRange,
+                                                            Bucketing.BucketingConfiguration bucketing,
+                                                            List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "AVG(maximum_pdop) FILTER (WHERE constellation = 'GPS') AS gps, " +
+                                "AVG(maximum_pdop) FILTER (WHERE constellation = 'GLONASS') AS glonass, " +
+                                "AVG(maximum_pdop) FILTER (WHERE constellation = 'BeiDou') AS beidou, " +
+                                "AVG(maximum_pdop) FILTER (WHERE constellation = 'Galileo') AS galileo " +
+                                "FROM gnss_constellations WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GNSSDoubleBucket.class)
+                        .list()
+        );
+    }
+
+    public List<GNSSIntegerBucket> getFixSatelliteHistogram(TimeRange timeRange,
+                                                           Bucketing.BucketingConfiguration bucketing,
+                                                           List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "ROUND(AVG(maximum_fix_satellite_count) FILTER " +
+                                "(WHERE constellation = 'GPS')) AS gps, " +
+                                "ROUND(AVG(maximum_fix_satellite_count) FILTER " +
+                                "(WHERE constellation = 'GLONASS')) AS glonass, " +
+                                "ROUND(AVG(maximum_fix_satellite_count) FILTER " +
+                                "(WHERE constellation = 'BeiDou')) AS beidou, " +
+                                "ROUND(AVG(maximum_fix_satellite_count) FILTER " +
+                                "(WHERE constellation = 'Galileo')) AS galileo " +
+                                "FROM gnss_constellations WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GNSSIntegerBucket.class)
+                        .list()
+        );
+    }
+
+    public List<GNSSIntegerBucket> getAltitudeHistogram(TimeRange timeRange,
+                                                        Bucketing.BucketingConfiguration bucketing,
+                                                        List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "ROUND(AVG(maximum_altitude_meters) FILTER " +
+                                "(WHERE constellation = 'GPS')) AS gps, " +
+                                "ROUND(AVG(maximum_altitude_meters) FILTER " +
+                                "(WHERE constellation = 'GLONASS')) AS glonass, " +
+                                "ROUND(AVG(maximum_altitude_meters) FILTER " +
+                                "(WHERE constellation = 'BeiDou')) AS beidou, " +
+                                "ROUND(AVG(maximum_altitude_meters) FILTER " +
+                                "(WHERE constellation = 'Galileo')) AS galileo " +
+                                "FROM gnss_constellations WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GNSSIntegerBucket.class)
+                        .list()
+        );
+    }
+
+    public List<GNSSIntegerBucket> getSatellitesInViewHistogram(TimeRange timeRange,
+                                                                Bucketing.BucketingConfiguration bucketing,
+                                                                List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "ROUND(AVG(maximum_satellites_in_view_count) FILTER " +
+                                "(WHERE constellation = 'GPS')) AS gps, " +
+                                "ROUND(AVG(maximum_satellites_in_view_count) FILTER " +
+                                "(WHERE constellation = 'GLONASS')) AS glonass, " +
+                                "ROUND(AVG(maximum_satellites_in_view_count) FILTER " +
+                                "(WHERE constellation = 'BeiDou')) AS beidou, " +
+                                "ROUND(AVG(maximum_satellites_in_view_count) FILTER " +
+                                "(WHERE constellation = 'Galileo')) AS galileo " +
+                                "FROM gnss_constellations WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GNSSIntegerBucket.class)
+                        .list()
+        );
+    }
+
+}

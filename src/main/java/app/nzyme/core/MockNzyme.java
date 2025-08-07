@@ -31,7 +31,7 @@ import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
-import app.nzyme.core.gnss.Gnss;
+import app.nzyme.core.gnss.GNSS;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.integrations.tenant.cot.CotService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
@@ -258,7 +258,7 @@ public class MockNzyme implements NzymeNode {
     }
 
     @Override
-    public Gnss getGnss() {
+    public GNSS getGnss() {
         return null;
     }
 

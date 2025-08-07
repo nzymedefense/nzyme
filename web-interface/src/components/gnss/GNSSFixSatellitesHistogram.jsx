@@ -2,7 +2,7 @@ import React from "react";
 import GenericWidgetLoadingSpinner from "../widgets/GenericWidgetLoadingSpinner";
 import MultiLineChart from "../widgets/charts/MultiLineChart";
 
-export default function GNSSTimeDeviationHistogram(props) {
+export default function GNSSFixSatellitesHistogram(props) {
 
   const histogram = props.histogram;
   const setTimeRange = props.setTimeRange;
@@ -37,9 +37,8 @@ export default function GNSSTimeDeviationHistogram(props) {
   return <MultiLineChart
     height={200}
     lineWidth={1}
-    ticksuffix="ms"
-    customMarginLeft={60}
     customMarginBottom={35}
+    scattermode="markers"
     seriesNames={{gps: "GPS", glonass: "GLONASS",  beidou: "BeiDou", galileo: "Galileo" }}
     data={formatData(histogram)}
     setTimeRange={setTimeRange}
