@@ -45,5 +45,5 @@ pub struct SatelliteInfo {
     pub prn: u8,
     pub elevation_degrees: Option<u8>,
     pub azimuth_degrees: Option<u16>,
-    pub snr_db: Option<u8>,
+    pub snr: Option<u8>,
 }

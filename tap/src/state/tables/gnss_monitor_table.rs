@@ -62,7 +62,7 @@ pub struct SatelliteInfo {
     pub prn: u8,
     pub elevation_degrees: Option<u8>,
     pub azimuth_degrees: Option<u16>,
-    pub snr_db: Option<u8>,
+    pub snr: Option<u8>,
 }
 
 impl GnssMonitorTable {
@@ -288,7 +288,7 @@ impl GnssMonitorTable {
                         Some(existing) => {
                             existing.elevation_degrees = satellite.elevation_degrees;
                             existing.azimuth_degrees = satellite.azimuth_degrees;
-                            existing.snr_db = satellite.snr_db;
+                            existing.snr = satellite.snr;
                         },
                         None => {
                             // First time we see this satellite.
@@ -296,7 +296,7 @@ impl GnssMonitorTable {
                                 prn: satellite.prn,
                                 elevation_degrees: satellite.elevation_degrees,
                                 azimuth_degrees: satellite.azimuth_degrees,
-                                snr_db: satellite.snr_db,
+                                snr: satellite.snr,
                             });
                         }
                     }

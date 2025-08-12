@@ -4,6 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.generic.LatLonResult;
 import app.nzyme.core.gnss.db.GNSSDoubleBucket;
 import app.nzyme.core.gnss.db.GNSSIntegerBucket;
+import app.nzyme.core.gnss.db.GNSSSatelliteInView;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 
@@ -33,13 +34,37 @@ public class GNSS {
                                 "CROSS JOIN LATERAL jsonb_to_recordset(gnss.positions) " +
                                 "AS c (lat double precision, lon double precision) " +
                                 "WHERE gnss.constellation = :constellation " +
-                                "AND created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND timestamp >= :tr_from AND timestamp <= :tr_to " +
                                 "AND tap_uuid IN (<taps>)")
                         .bind("constellation", constellation)
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(LatLonResult.class)
+                        .list()
+        );
+    }
+
+    public List<GNSSSatelliteInView> findAllSatellitesInView(TimeRange timeRange, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT gnss.constellation, s.prn, (AVG(s.snr))::int as snr, " +
+                                "(AVG(s.azimuth_degrees))::int AS azimuth_degrees, " +
+                                "(AVG(s.elevation_degrees))::int AS elevation_degrees, " +
+                                "MAX(gnss.timestamp) as last_seen " +
+                                "FROM gnss_constellations AS gnss " +
+                                "CROSS JOIN LATERAL jsonb_to_recordset(gnss.satellites_in_view) AS s " +
+                                "(prn integer, snr integer, azimuth_degrees integer, elevation_degrees integer) " +
+                                "WHERE timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "GROUP BY gnss.constellation, s.prn " +
+                                "ORDER BY constellation, prn")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GNSSSatelliteInView.class)
                         .list()
         );
     }
@@ -61,7 +86,7 @@ public class GNSS {
                                 "(WHERE constellation = 'BeiDou')) AS beidou, " +
                                 "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
                                 "(WHERE constellation = 'Galileo')) AS galileo " +
-                                "FROM gnss_constellations WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
@@ -86,7 +111,7 @@ public class GNSS {
                                 "AVG(maximum_pdop) FILTER (WHERE constellation = 'GLONASS') AS glonass, " +
                                 "AVG(maximum_pdop) FILTER (WHERE constellation = 'BeiDou') AS beidou, " +
                                 "AVG(maximum_pdop) FILTER (WHERE constellation = 'Galileo') AS galileo " +
-                                "FROM gnss_constellations WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
@@ -115,7 +140,7 @@ public class GNSS {
                                 "(WHERE constellation = 'BeiDou')) AS beidou, " +
                                 "ROUND(AVG(maximum_fix_satellite_count) FILTER " +
                                 "(WHERE constellation = 'Galileo')) AS galileo " +
-                                "FROM gnss_constellations WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
@@ -144,7 +169,7 @@ public class GNSS {
                                 "(WHERE constellation = 'BeiDou')) AS beidou, " +
                                 "ROUND(AVG(maximum_altitude_meters) FILTER " +
                                 "(WHERE constellation = 'Galileo')) AS galileo " +
-                                "FROM gnss_constellations WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
@@ -173,7 +198,7 @@ public class GNSS {
                                 "(WHERE constellation = 'BeiDou')) AS beidou, " +
                                 "ROUND(AVG(maximum_satellites_in_view_count) FILTER " +
                                 "(WHERE constellation = 'Galileo')) AS galileo " +
-                                "FROM gnss_constellations WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())

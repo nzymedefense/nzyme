@@ -1,15 +1,5 @@
 package app.nzyme.core.rest.resources.taps.reports.tables.gnss;
 
-/*
-#[derive(Serialize)]
-pub struct SatelliteInfoReport {
-    pub prn: u8,
-    pub elevation_degrees: u8,
-    pub azimuth_degrees: u16,
-    pub snr_db: Option<u8>,
-}
- */
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
@@ -20,24 +10,29 @@ public abstract class GNSSSatelliteInfoReport {
 
     @JsonProperty("prn")
     public abstract int prn();
-    @JsonProperty("elevation_degrees")
-    public abstract int elevationDegrees();
-    @JsonProperty("azimuth_degrees")
-    public abstract int azimuthDegrees();
+
     @Nullable
-    @JsonProperty("snr_db")
-    public abstract Integer snrDb();
+    @JsonProperty("elevation_degrees")
+    public abstract Integer elevationDegrees();
+
+    @Nullable
+    @JsonProperty("azimuth_degrees")
+    public abstract Integer azimuthDegrees();
+
+    @Nullable
+    @JsonProperty("snr")
+    public abstract Integer snr();
 
     @JsonCreator
     public static GNSSSatelliteInfoReport create(@JsonProperty("prn") int prn,
-                                                 @JsonProperty("elevation_degrees") int elevationDegrees,
-                                                 @JsonProperty("azimuth_degrees") int azimuthDegrees,
-                                                 @JsonProperty("snr_db") Integer snrDb) {
+                                                 @JsonProperty("elevation_degrees") Integer elevationDegrees,
+                                                 @JsonProperty("azimuth_degrees") Integer azimuthDegrees,
+                                                 @JsonProperty("snr") Integer snr) {
         return builder()
                 .prn(prn)
                 .elevationDegrees(elevationDegrees)
                 .azimuthDegrees(azimuthDegrees)
-                .snrDb(snrDb)
+                .snr(snr)
                 .build();
     }
 
@@ -49,11 +44,11 @@ public abstract class GNSSSatelliteInfoReport {
     public abstract static class Builder {
         public abstract Builder prn(int prn);
 
-        public abstract Builder elevationDegrees(int elevationDegrees);
+        public abstract Builder elevationDegrees(Integer elevationDegrees);
 
-        public abstract Builder azimuthDegrees(int azimuthDegrees);
+        public abstract Builder azimuthDegrees(Integer azimuthDegrees);
 
-        public abstract Builder snrDb(Integer snrDb);
+        public abstract Builder snr(Integer snr);
 
         public abstract GNSSSatelliteInfoReport build();
     }

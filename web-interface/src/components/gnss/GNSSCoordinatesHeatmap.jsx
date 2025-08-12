@@ -2,8 +2,6 @@ import React, {useEffect, useState} from "react";
 import {latLng} from "leaflet/src/geo";
 import {sanitizeHtml} from "../../util/Tools";
 
-// TODO SHOW ALL SELECTED TAPS AND THEIR POSITIONS, MAX DISTANCE BETWEEN COORDS, HEATMAP CONTROLS, REACT TO REVISION, PAD CHARTS
-
 export default function GNSSCoordinatesHeatmap(props) {
 
   const containerHeight = props.containerHeight;

@@ -45,8 +45,16 @@ export default class GnssService {
   getSatellitesInViewHistogram(timeRange, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/gnss/satellites/visibie/histogram", { time_range: timeRange, taps: tapsList },
+    RESTClient.get("/gnss/satellites/visible/histogram", { time_range: timeRange, taps: tapsList },
       (response) => setHistogram(response.data)
+    )
+  }
+
+  findAllSatellitesInView(timeRange, taps, setSatellites) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/gnss/satellites/visible/list", { time_range: timeRange, taps: tapsList },
+      (response) => setSatellites(response.data)
     )
   }
 

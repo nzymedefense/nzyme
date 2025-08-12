@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use anyhow::{bail, Error};
 use chrono::{DateTime, NaiveTime, Utc};
-use log::warn;
+use log::{info, warn};
 use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation::GPS;
 use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 use crate::wireless::positioning::nmea::nmea_sentences::{
@@ -155,7 +155,7 @@ pub fn parse_gpgsv(message: &Arc<NMEAMessage>) -> Result<GPGSVSentence, Error> {
         let elevation_degrees = chunk[1].parse::<u8>().ok();
         let azimuth_degrees = chunk[2].parse::<u16>().ok();
 
-        let snr_db = if chunk[3].is_empty() {
+        let snr = if chunk[3].is_empty() {
             None
         } else {
             chunk[3].parse::<u8>().ok()
@@ -165,7 +165,7 @@ pub fn parse_gpgsv(message: &Arc<NMEAMessage>) -> Result<GPGSVSentence, Error> {
             prn: prn.unwrap(),
             elevation_degrees,
             azimuth_degrees,
-            snr_db,
+            snr
         });
     }
 

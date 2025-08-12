@@ -6,11 +6,9 @@ import app.nzyme.core.database.generic.LatLonResult;
 import app.nzyme.core.gnss.Constellation;
 import app.nzyme.core.gnss.db.GNSSDoubleBucket;
 import app.nzyme.core.gnss.db.GNSSIntegerBucket;
+import app.nzyme.core.gnss.db.GNSSSatelliteInView;
 import app.nzyme.core.rest.TapDataHandlingResource;
-import app.nzyme.core.rest.responses.gnss.GNSSConstellationCoordinatesResponse;
-import app.nzyme.core.rest.responses.gnss.GNSSDoubleBucketResponse;
-import app.nzyme.core.rest.responses.gnss.GNSSIntegerBucketResponse;
-import app.nzyme.core.rest.responses.gnss.GNSSTapLocationResponse;
+import app.nzyme.core.rest.responses.gnss.*;
 import app.nzyme.core.rest.responses.shared.LatLonResponse;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
@@ -163,7 +161,7 @@ public class GNSSResource extends TapDataHandlingResource {
     }
 
     @GET
-    @Path("/satellites/visibie/histogram")
+    @Path("/satellites/visible/histogram")
     public Response satellitesInViewHistogram(@Context SecurityContext sc,
                                               @QueryParam("time_range") @Valid String timeRangeParameter,
                                               @QueryParam("taps") String tapIds) {
@@ -182,5 +180,27 @@ public class GNSSResource extends TapDataHandlingResource {
         return Response.ok(histogram).build();
     }
 
+    @GET
+    @Path("/satellites/visible/list")
+    public Response satellitesInViewList(@Context SecurityContext sc,
+                                         @QueryParam("time_range") @Valid String timeRangeParameter,
+                                         @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        List<SatelliteInViewResponse> satellites = Lists.newArrayList();
+        for (GNSSSatelliteInView sat : nzyme.getGnss().findAllSatellitesInView(timeRange, taps)) {
+            satellites.add(SatelliteInViewResponse.create(
+                    sat.constellation(),
+                    sat.lastSeen(),
+                    sat.prn(),
+                    sat.snr(),
+                    sat.azimuthDegrees(),
+                    sat.elevationDegrees())
+            );
+        }
+
+        return Response.ok(SatellitesInViewListResponse.create(satellites)).build();
+    }
 
 }

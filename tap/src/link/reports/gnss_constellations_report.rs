@@ -39,7 +39,7 @@ pub struct SatelliteInfoReport {
     pub prn: u8,
     pub elevation_degrees: Option<u8>,
     pub azimuth_degrees: Option<u16>,
-    pub snr_db: Option<u8>,
+    pub snr: Option<u8>,
 }
 
 pub fn generate(constellations: &MutexGuard<HashMap<GNSSConstellation, GNSSConstellationData>>,
@@ -64,7 +64,7 @@ pub fn generate(constellations: &MutexGuard<HashMap<GNSSConstellation, GNSSConst
                     prn: s.prn,
                     elevation_degrees: s.elevation_degrees,
                     azimuth_degrees: s.azimuth_degrees,
-                    snr_db: s.snr_db,
+                    snr: s.snr
                 } ).collect(),
             minimum_satellites_in_view_count: data.minimum_satellites_in_view_count,
             maximum_satellites_in_view_count: data.maximum_satellites_in_view_count,
