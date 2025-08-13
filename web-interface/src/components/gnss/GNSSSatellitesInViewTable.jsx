@@ -4,6 +4,7 @@ import moment from "moment";
 import numeral from "numeral";
 import {GNSSSNR} from "./GNSSSNR";
 import GNSSDegrees from "./GNSSDegrees";
+import ApiRoutes from "../../util/ApiRoutes";
 
 export default function GNSSSatellitesInViewTable(props) {
 
@@ -28,10 +29,12 @@ export default function GNSSSatellitesInViewTable(props) {
         <tr>
           <th>Constellation</th>
           <th>PRN</th>
+          <th>Fix</th>
           <th>Last Seen</th>
           <th title="Signal-to-Noise Ratio">SNR (0-99)</th>
           <th>Azimuth</th>
           <th>Elevation</th>
+          <th>&nbsp;</th>
         </tr>
         </thead>
         <tbody>
@@ -40,10 +43,13 @@ export default function GNSSSatellitesInViewTable(props) {
             <tr key={i}>
               <td>{sat.constellation}</td>
               <td>{sat.prn}</td>
+              <td>{sat.used_for_fix ? <i className="fa fa-check-circle text-success" title="Used for fix." />
+                : <i className="fa fa-cancel text-muted" title="Not used for fix." />}</td>
               <td title={moment(sat.last_seen).format()}>{moment(sat.last_seen).fromNow()}</td>
               <td><GNSSSNR snr={sat.snr} /></td>
               <td><GNSSDegrees degrees={sat.azimuth_degrees} /></td>
               <td><GNSSDegrees degrees={sat.elevation_degrees} /></td>
+              <td><a href={ApiRoutes.GNSS.PRN(sat.constellation, sat.prn)}>Details</a></td>
             </tr>
           )
         })}

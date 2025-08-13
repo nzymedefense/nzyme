@@ -28,10 +28,10 @@ export default function GNSSConstellationsPage() {
   const [altitudeHistogram, setAltitudeHistogram] = useState(null);
 
   const [constellationCoordinatesConstellation, setConstellationCoordinatesConstellation] = useState("GPS");
-  const constellationCoordinatesTimeRange = Presets.RELATIVE_MINUTES_15;
+  const [constellationCoordinatesTimeRange, setConstellationCoordinatesTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
   const [constellationCoordinates, setConstellationCoordinates] = useState(null);
 
-  const satellitesInViewTimeRange = Presets.RELATIVE_MINUTES_1;
+  const [satellitesInViewTimeRange, setSatellitesInViewTimeRange] = useState(Presets.RELATIVE_MINUTES_1);
   const [satellitesInView, setSatellitesInView] = useState(null);
 
   const [revision, setRevision] = useState(new Date());
@@ -51,7 +51,6 @@ export default function GNSSConstellationsPage() {
     setSatellitesInViewHistogram(null);
     setAltitudeHistogram(null);
     setConstellationCoordinates(null);
-    setSatellitesInView(null);
 
     gnssService.getPdopHistogram(timeRange, selectedTaps, setPdopHistogram);
     gnssService.getTimeDeviationHistogram(timeRange, selectedTaps, setTimeDeviationHistogram);
@@ -65,8 +64,6 @@ export default function GNSSConstellationsPage() {
       selectedTaps,
       setConstellationCoordinates
     );
-
-    gnssService.findAllSatellitesInView(satellitesInViewTimeRange, selectedTaps, setSatellitesInView);
   }, [timeRange, selectedTaps, revision])
 
   useEffect(() => {
@@ -78,7 +75,12 @@ export default function GNSSConstellationsPage() {
       selectedTaps,
       setConstellationCoordinates
     );
-  }, [constellationCoordinatesConstellation, timeRange, selectedTaps, revision])
+  }, [constellationCoordinatesConstellation, constellationCoordinatesTimeRange, timeRange, selectedTaps, revision])
+
+  useEffect(() => {
+    setSatellitesInView(null);
+    gnssService.findAllSatellitesInView(satellitesInViewTimeRange, selectedTaps, setSatellitesInView);
+  }, [satellitesInViewTimeRange, timeRange, selectedTaps, revision]);
 
   return (
     <React.Fragment>
@@ -164,7 +166,8 @@ export default function GNSSConstellationsPage() {
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Reported Locations"
-                                     fixedAppliedTimeRange={constellationCoordinatesTimeRange}
+                                     timeRange={constellationCoordinatesTimeRange}
+                                     setTimeRange={setConstellationCoordinatesTimeRange}
                                      refreshAction={() => setRevision(new Date())} />
 
               <select className="form-select form-select-sm mb-3" style={{width: 250}}
@@ -183,11 +186,12 @@ export default function GNSSConstellationsPage() {
       </div>
 
       <div className="row mt-3">
-        <div className="col-md-6">
+        <div className="col-md-12">
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Satellites In View"
-                                     fixedAppliedTimeRange={satellitesInViewTimeRange}
+                                     timeRange={satellitesInViewTimeRange}
+                                     setTimeRange={setSatellitesInViewTimeRange}
                                      refreshAction={() => setRevision(new Date())} />
 
               <GNSSSatellitesInViewTable satellites={satellitesInView} />
@@ -195,6 +199,7 @@ export default function GNSSConstellationsPage() {
           </div>
         </div>
       </div>
+
     </React.Fragment>
   )
 

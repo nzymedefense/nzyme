@@ -29,7 +29,10 @@ public abstract class SatelliteInViewResponse {
     @JsonProperty("elevation_degrees")
     public abstract Integer elevationDegrees();
 
-    public static SatelliteInViewResponse create(String constellation, DateTime lastSeen, int prn, Integer snr, Integer azimuthDegrees, Integer elevationDegrees) {
+    @JsonProperty("used_for_fix")
+    public abstract boolean usedForFix();
+
+    public static SatelliteInViewResponse create(String constellation, DateTime lastSeen, int prn, Integer snr, Integer azimuthDegrees, Integer elevationDegrees, boolean usedForFix) {
         return builder()
                 .constellation(constellation)
                 .lastSeen(lastSeen)
@@ -37,6 +40,7 @@ public abstract class SatelliteInViewResponse {
                 .snr(snr)
                 .azimuthDegrees(azimuthDegrees)
                 .elevationDegrees(elevationDegrees)
+                .usedForFix(usedForFix)
                 .build();
     }
 
@@ -57,6 +61,8 @@ public abstract class SatelliteInViewResponse {
         public abstract Builder azimuthDegrees(Integer azimuthDegrees);
 
         public abstract Builder elevationDegrees(Integer elevationDegrees);
+
+        public abstract Builder usedForFix(boolean usedForFix);
 
         public abstract SatelliteInViewResponse build();
     }

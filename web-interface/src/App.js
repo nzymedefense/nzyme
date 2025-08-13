@@ -175,6 +175,7 @@ import GlobalTenantSelectorForm from "./components/system/tenantselector/GlobalT
 import AssetDetailsPage from "./components/ethernet/assets/AssetDetailsPage";
 import ARPPacketsPage from "./components/ethernet/assets/arp/ARPPacketsPage";
 import GNSSConstellationsPage from "./components/gnss/GNSSConstellationsPage";
+import GNSSPRNDetailsPage from "./components/gnss/prn/GNSSPRNDetailsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -626,6 +627,7 @@ function App() {
 
                               { /* GNSS. TODO: subsystem guard */ }
                               <Route path={ApiRoutes.GNSS.CONSTELLATIONS} element={<GNSSConstellationsPage />}/>
+                              <Route path={ApiRoutes.GNSS.PRN(':constellation', ':prn')} element={<GNSSPRNDetailsPage />}/>
 
                               { /* Context. */ }
                               <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>

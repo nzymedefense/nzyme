@@ -5,6 +5,7 @@ import app.nzyme.core.database.generic.LatLonResult;
 import app.nzyme.core.gnss.db.GNSSDoubleBucket;
 import app.nzyme.core.gnss.db.GNSSIntegerBucket;
 import app.nzyme.core.gnss.db.GNSSSatelliteInView;
+import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 
@@ -54,6 +55,9 @@ public class GNSS {
                 handle.createQuery("SELECT gnss.constellation, s.prn, (AVG(s.snr))::int as snr, " +
                                 "(AVG(s.azimuth_degrees))::int AS azimuth_degrees, " +
                                 "(AVG(s.elevation_degrees))::int AS elevation_degrees, " +
+                                "BOOL_OR(gnss.fix_satellites IS NOT NULL AND EXISTS (" +
+                                "SELECT 1 FROM jsonb_array_elements_text(gnss.fix_satellites) AS e(val) " +
+                                "WHERE e.val::int = s.prn)) AS used_for_fix, " +
                                 "MAX(gnss.timestamp) as last_seen " +
                                 "FROM gnss_constellations AS gnss " +
                                 "JOIN gnss_sats_in_view AS s ON s.gnss_constellation_id = gnss.id " +
@@ -68,7 +72,6 @@ public class GNSS {
                         .list()
         );
     }
-
     public List<GNSSIntegerBucket> getTimeDeviationHistogram(TimeRange timeRange,
                                                              Bucketing.BucketingConfiguration bucketing,
                                                              List<UUID> taps) {
@@ -99,8 +102,8 @@ public class GNSS {
     }
 
     public List<GNSSDoubleBucket> getPdopHistogram(TimeRange timeRange,
-                                                            Bucketing.BucketingConfiguration bucketing,
-                                                            List<UUID> taps) {
+                                                   Bucketing.BucketingConfiguration bucketing,
+                                                   List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -206,6 +209,87 @@ public class GNSS {
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(GNSSIntegerBucket.class)
+                        .list()
+        );
+    }
+
+    public List<GenericIntegerHistogramEntry> getPrnSnrHistogram(Constellation constellation,
+                                                                 int prn,
+                                                                 TimeRange timeRange,
+                                                                 Bucketing.BucketingConfiguration bucketing,
+                                                                 List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "ROUND(AVG(snr)) AS value FROM gnss_constellations AS gnss " +
+                                "LEFT JOIN public.gnss_sats_in_view AS sats on gnss.id = sats.gnss_constellation_id " +
+                                "WHERE gnss.constellation = :constellation AND sats.prn = :prn " +
+                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("constellation", constellation)
+                        .bind("prn", prn)
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GenericIntegerHistogramEntry.class)
+                        .list()
+        );
+    }
+
+    public List<GenericIntegerHistogramEntry> getPrnElevationHistogram(Constellation constellation,
+                                                                       int prn,
+                                                                       TimeRange timeRange,
+                                                                       Bucketing.BucketingConfiguration bucketing,
+                                                                       List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "ROUND(AVG(elevation_degrees)) AS value FROM gnss_constellations AS gnss " +
+                                "LEFT JOIN public.gnss_sats_in_view AS sats on gnss.id = sats.gnss_constellation_id " +
+                                "WHERE gnss.constellation = :constellation AND sats.prn = :prn " +
+                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("constellation", constellation)
+                        .bind("prn", prn)
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GenericIntegerHistogramEntry.class)
+                        .list()
+        );
+    }
+
+    public List<GenericIntegerHistogramEntry> getPrnAzimuthHistogram(Constellation constellation,
+                                                                     int prn,
+                                                                     TimeRange timeRange,
+                                                                     Bucketing.BucketingConfiguration bucketing,
+                                                                     List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "ROUND(AVG(azimuth_degrees)) AS value FROM gnss_constellations AS gnss " +
+                                "LEFT JOIN public.gnss_sats_in_view AS sats on gnss.id = sats.gnss_constellation_id " +
+                                "WHERE gnss.constellation = :constellation AND sats.prn = :prn " +
+                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("constellation", constellation)
+                        .bind("prn", prn)
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GenericIntegerHistogramEntry.class)
                         .list()
         );
     }

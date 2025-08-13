@@ -125,7 +125,9 @@ export default function UavDetailsPage() {
             </ol>
           </nav>
         </div>
+      </div>
 
+      <div className="row mt-2">
         <div className="col-12">
           <h1>
             <UavActiveIndicator active={uav.summary.is_active} />{' '}

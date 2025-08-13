@@ -58,4 +58,31 @@ export default class GnssService {
     )
   }
 
+  getPrnSnrHistogram(constellation, prn, timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get(`/gnss/constellations/${constellation}/prns/show/${prn}/snr/histogram`,
+      { time_range: timeRange, taps: tapsList },
+      (response) => setHistogram(response.data)
+    )
+  }
+
+  getPrnElevationHistogram(constellation, prn, timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get(`/gnss/constellations/${constellation}/prns/show/${prn}/elevation/histogram`,
+      { time_range: timeRange, taps: tapsList },
+      (response) => setHistogram(response.data)
+    )
+  }
+
+  getPrnAzimuthHistogram(constellation, prn, timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get(`/gnss/constellations/${constellation}/prns/show/${prn}/azimuth/histogram`,
+      { time_range: timeRange, taps: tapsList },
+      (response) => setHistogram(response.data)
+    )
+  }
+
 }

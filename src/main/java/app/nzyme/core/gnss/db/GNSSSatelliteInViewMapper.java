@@ -17,7 +17,8 @@ public class GNSSSatelliteInViewMapper implements RowMapper<GNSSSatelliteInView>
                 rs.getInt("prn"),
                 rs.getObject("snr", Integer.class),
                 rs.getObject("azimuth_degrees", Integer.class),
-                rs.getObject("elevation_degrees", Integer.class)
+                rs.getObject("elevation_degrees", Integer.class),
+                rs.getBoolean("used_for_fix")
         );
     }
 

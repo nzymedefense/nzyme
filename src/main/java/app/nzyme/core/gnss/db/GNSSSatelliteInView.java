@@ -16,8 +16,9 @@ public abstract class GNSSSatelliteInView {
     public abstract Integer azimuthDegrees();
     @Nullable
     public abstract Integer elevationDegrees();
+    public abstract boolean usedForFix();
 
-    public static GNSSSatelliteInView create(String constellation, DateTime lastSeen, int prn, Integer snr, Integer azimuthDegrees, Integer elevationDegrees) {
+    public static GNSSSatelliteInView create(String constellation, DateTime lastSeen, int prn, Integer snr, Integer azimuthDegrees, Integer elevationDegrees, boolean usedForFix) {
         return builder()
                 .constellation(constellation)
                 .lastSeen(lastSeen)
@@ -25,6 +26,7 @@ public abstract class GNSSSatelliteInView {
                 .snr(snr)
                 .azimuthDegrees(azimuthDegrees)
                 .elevationDegrees(elevationDegrees)
+                .usedForFix(usedForFix)
                 .build();
     }
 
@@ -45,6 +47,8 @@ public abstract class GNSSSatelliteInView {
         public abstract Builder azimuthDegrees(Integer azimuthDegrees);
 
         public abstract Builder elevationDegrees(Integer elevationDegrees);
+
+        public abstract Builder usedForFix(boolean usedForFix);
 
         public abstract GNSSSatelliteInView build();
     }

@@ -9,7 +9,9 @@ import app.nzyme.core.gnss.db.GNSSIntegerBucket;
 import app.nzyme.core.gnss.db.GNSSSatelliteInView;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.gnss.*;
+import app.nzyme.core.rest.responses.metrics.HistogramResponse;
 import app.nzyme.core.rest.responses.shared.LatLonResponse;
+import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
@@ -20,6 +22,7 @@ import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -196,11 +199,96 @@ public class GNSSResource extends TapDataHandlingResource {
                     sat.prn(),
                     sat.snr(),
                     sat.azimuthDegrees(),
-                    sat.elevationDegrees())
-            );
+                    sat.elevationDegrees(),
+                    sat.usedForFix()
+            ));
         }
 
         return Response.ok(SatellitesInViewListResponse.create(satellites)).build();
+    }
+
+    @GET
+    @Path("/constellations/{constellation}/prns/show/{prn}/snr/histogram")
+    public Response constellationPrnSnrHistogram(@Context SecurityContext sc,
+                                                 @PathParam("constellation") String constellationParam,
+                                                 @PathParam("prn") @Min(1) int prn,
+                                                 @QueryParam("time_range") @Valid String timeRangeParameter,
+                                                 @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        Constellation constellation;
+        try {
+            constellation = Constellation.valueOf(constellationParam);
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Map<DateTime, Integer> response = Maps.newHashMap();
+
+        for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
+                .getPrnSnrHistogram(constellation, prn, timeRange, bucketing, taps)) {
+            response.put(bucket.bucket(), bucket.value());
+        }
+
+        return Response.ok(response).build();
+    }
+
+    @GET
+    @Path("/constellations/{constellation}/prns/show/{prn}/elevation/histogram")
+    public Response constellationPrnElevationHistogram(@Context SecurityContext sc,
+                                                       @PathParam("constellation") String constellationParam,
+                                                       @PathParam("prn") @Min(1) int prn,
+                                                       @QueryParam("time_range") @Valid String timeRangeParameter,
+                                                       @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        Constellation constellation;
+        try {
+            constellation = Constellation.valueOf(constellationParam);
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Map<DateTime, Integer> response = Maps.newHashMap();
+
+        for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
+                .getPrnElevationHistogram(constellation, prn, timeRange, bucketing, taps)) {
+            response.put(bucket.bucket(), bucket.value());
+        }
+
+        return Response.ok(response).build();
+    }
+
+    @GET
+    @Path("/constellations/{constellation}/prns/show/{prn}/azimuth/histogram")
+    public Response constellationPrnAzimuthHistogram(@Context SecurityContext sc,
+                                                     @PathParam("constellation") String constellationParam,
+                                                     @PathParam("prn") @Min(1) int prn,
+                                                     @QueryParam("time_range") @Valid String timeRangeParameter,
+                                                     @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        Constellation constellation;
+        try {
+            constellation = Constellation.valueOf(constellationParam);
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Map<DateTime, Integer> response = Maps.newHashMap();
+
+        for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
+                .getPrnAzimuthHistogram(constellation, prn, timeRange, bucketing, taps)) {
+            response.put(bucket.bucket(), bucket.value());
+        }
+
+        return Response.ok(response).build();
     }
 
 }

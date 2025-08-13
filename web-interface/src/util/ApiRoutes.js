@@ -249,7 +249,8 @@ const ApiRoutes = {
     }
   },
   GNSS: {
-    CONSTELLATIONS: '/gnss/constellations'
+    CONSTELLATIONS: '/gnss/constellations',
+    PRN: (constellation, prn) => `/gnss/constellations/${constellation}/prns/show/${prn}`,
   },
   CONTEXT: {
     MAC_ADDRESSES: {
