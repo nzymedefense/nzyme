@@ -8,11 +8,13 @@ import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.util.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,23 +38,28 @@ public class GNSSTable implements DataTable {
     public void handleConstellationsReport(UUID tapUuid, DateTime timestamp, GNSSConstellationsReport report) {
         try (Timer.Context ignored = totalReportTimer.time()) {
             tablesService.getNzyme().getDatabase().useHandle(handle -> {
-                PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO gnss_constellations(tap_uuid, " +
+                PreparedBatch constellationInsertBatch = handle.prepareBatch("INSERT INTO gnss_constellations(tap_uuid, " +
                         "constellation, fixes, maximum_time_deviation_ms, positions, maximum_fix_satellite_count, " +
                         "minimum_fix_satellite_count, fix_satellites, maximum_altitude_meters, " +
-                        "minimum_altitude_meters, maximum_pdop, minimum_pdop, satellites_in_view, " +
-                        "maximum_satellites_in_view_count, minimum_satellites_in_view_count, timestamp, " +
-                        "created_at) VALUES(:tap_uuid, :constellation, :fixes::jsonb, :maximum_time_deviation_ms, " +
-                        ":positions::jsonb, :maximum_fix_satellite_count, :minimum_fix_satellite_count, " +
-                        ":fix_satellites::jsonb, :maximum_altitude_meters, :minimum_altitude_meters, :maximum_pdop, " +
-                        ":minimum_pdop, :satellites_in_view::jsonb, :maximum_satellites_in_view_count, " +
-                        ":minimum_satellites_in_view_count, :timestamp, NOW())");
+                        "minimum_altitude_meters, maximum_pdop, minimum_pdop, maximum_satellites_in_view_count, " +
+                        "minimum_satellites_in_view_count, timestamp, created_at) VALUES(:tap_uuid, :constellation, " +
+                        ":fixes::jsonb, :maximum_time_deviation_ms, :positions::jsonb, " +
+                        ":maximum_fix_satellite_count, :minimum_fix_satellite_count, :fix_satellites::jsonb, " +
+                        ":maximum_altitude_meters, :minimum_altitude_meters, :maximum_pdop, :minimum_pdop, " +
+                        ":maximum_satellites_in_view_count, :minimum_satellites_in_view_count, :timestamp, NOW())");
+
+                // Keep a parallel list so we can match rows/ids for additional linked inserts.
+                List<GNSSConstellationReport> rowsInOrder = Lists.newArrayList();
 
                 for (Map.Entry<String, GNSSConstellationReport> constellation : report.constellations().entrySet()) {
                     String constellationName = constellation.getKey();
                     GNSSConstellationReport data = constellation.getValue();
 
+                    rowsInOrder.add(data);
+
                     try {
-                        insertBatch.bind("tap_uuid", tapUuid)
+                        constellationInsertBatch
+                                .bind("tap_uuid", tapUuid)
                                 .bind("constellation", constellationName)
                                 .bind("fixes", om.writeValueAsString(data.fixes()))
                                 .bind("maximum_time_deviation_ms", data.maximumTimeDeviationMs())
@@ -64,7 +71,6 @@ public class GNSSTable implements DataTable {
                                 .bind("minimum_altitude_meters", data.minimumAltitudeMeters())
                                 .bind("maximum_pdop", data.maximumPdop())
                                 .bind("minimum_pdop", data.minimumPdop())
-                                .bind("satellites_in_view", om.writeValueAsString(data.satellitesInView()))
                                 .bind("maximum_satellites_in_view_count", data.maximumSatellitesInViewCount())
                                 .bind("minimum_satellites_in_view_count", data.minimumSatellitesInViewCount())
                                 .bind("timestamp", data.timestamp())
@@ -75,7 +81,33 @@ public class GNSSTable implements DataTable {
                     }
                 }
 
-                insertBatch.execute();
+                // Insert constellation data and retrieve generated IDs.
+                List<Long> constellationIds = constellationInsertBatch
+                        .executePreparedBatch("id")
+                        .mapTo(Long.class)
+                        .list();
+
+                PreparedBatch satellitesInsertBatch = handle.prepareBatch("INSERT INTO " +
+                        "gnss_sats_in_view(gnss_constellation_id, prn, snr, azimuth_degrees, " +
+                        "elevation_degrees) VALUES(:gnss_constellation_id, :prn, :snr, :azimuth_degrees, " +
+                        ":elevation_degrees)");
+
+                for (int i = 0; i < constellationIds.size(); i++) {
+                    long constellationId = constellationIds.get(i);
+                    GNSSConstellationReport data = rowsInOrder.get(i);
+
+                    for (var s : data.satellitesInView()) {
+                        satellitesInsertBatch
+                                .bind("gnss_constellation_id", constellationId)
+                                .bind("prn", s.prn())
+                                .bind("snr", s.snr())
+                                .bind("azimuth_degrees", s.azimuthDegrees())
+                                .bind("elevation_degrees", s.elevationDegrees())
+                                .add();
+                    }
+                }
+
+                satellitesInsertBatch.execute();
             });
         }
     }

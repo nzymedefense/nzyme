@@ -6979,4 +6979,42 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_gnss_sats_in_view" author="lennartkoopmann">
+        <createTable tableName="gnss_sats_in_view">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="gnss_constellation_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="prn" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="snr" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="azimuth_degrees" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="elevation_degrees" type="integer">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+
+        <dropColumn tableName="gnss_constellations" columnName="satellites_in_view" />
+
+        <addForeignKeyConstraint constraintName="link_gnss2satsinview"
+                                 baseTableName="gnss_sats_in_view"
+                                 baseColumnNames="gnss_constellation_id"
+                                 referencedTableName="gnss_constellations"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
 </databaseChangeLog>

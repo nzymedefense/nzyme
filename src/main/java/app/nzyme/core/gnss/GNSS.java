@@ -56,8 +56,7 @@ public class GNSS {
                                 "(AVG(s.elevation_degrees))::int AS elevation_degrees, " +
                                 "MAX(gnss.timestamp) as last_seen " +
                                 "FROM gnss_constellations AS gnss " +
-                                "CROSS JOIN LATERAL jsonb_to_recordset(gnss.satellites_in_view) AS s " +
-                                "(prn integer, snr integer, azimuth_degrees integer, elevation_degrees integer) " +
+                                "LEFT JOIN gnss_sats_in_view AS s ON s.gnss_constellation_id = gnss.id " +
                                 "WHERE timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
                                 "GROUP BY gnss.constellation, s.prn " +
                                 "ORDER BY constellation, prn")
