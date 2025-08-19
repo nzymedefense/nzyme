@@ -724,6 +724,13 @@ span.flag-inline {
     width: 15px;
 }
 
+h1 span.flag-inline {
+    height: 16px;
+    width: 22px;
+    position: relative;
+    top: 2px;
+}
+
 span.fi-none {
     background-color: #ccc;
 }

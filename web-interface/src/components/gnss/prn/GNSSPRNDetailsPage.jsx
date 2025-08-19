@@ -8,6 +8,8 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import GNSSPRNSNRHistogram from "./GNSSPRNSNRHistogram";
 import GNSSPRNDegreesHistogram from "./GNSSPRNDegreesHistogram";
 import GNSSPRNSkyChart from "./GNSSPRNSkyChart";
+import GNSSPRN from "../GNSSPRN";
+import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 
 const gnssService = new GnssService();
 
@@ -25,6 +27,14 @@ export default function GNSSPRNDetailsPage(props) {
   const [snrHistogram, setSnrHistogram] = useState(null);
   const [elevationHistogram, setElevationHistogram] = useState(null);
   const [azimuthHistogram, setAzimuthHistogram] = useState(null);
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
 
   useEffect(() => {
     setSnrHistogram(null);
@@ -57,7 +67,7 @@ export default function GNSSPRNDetailsPage(props) {
 
       <div className="row mt-2">
         <div className="col-12">
-          <h1>{constellation} PRN <span className="machine-data">{prn}</span></h1>
+          <h1>{constellation} PRN <GNSSPRN constellation={constellation} prn={prn}/></h1>
         </div>
       </div>
 
@@ -85,7 +95,9 @@ export default function GNSSPRNDetailsPage(props) {
                                      setTimeRange={setTimeRange}
                                      refreshAction={() => setRevision(new Date())} />
 
-              <GNSSPRNSkyChart elevationHistogram={elevationHistogram} azimuthHistogram={azimuthHistogram} />
+              <GNSSPRNSkyChart elevationHistogram={elevationHistogram}
+                               azimuthHistogram={azimuthHistogram}
+                               snrHistogram={snrHistogram} />
             </div>
           </div>
         </div>

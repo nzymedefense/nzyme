@@ -5,6 +5,7 @@ import numeral from "numeral";
 import {GNSSSNR} from "./GNSSSNR";
 import GNSSDegrees from "./GNSSDegrees";
 import ApiRoutes from "../../util/ApiRoutes";
+import GNSSPRN from "./GNSSPRN";
 
 export default function GNSSSatellitesInViewTable(props) {
 
@@ -42,7 +43,7 @@ export default function GNSSSatellitesInViewTable(props) {
           return (
             <tr key={i}>
               <td>{sat.constellation}</td>
-              <td>{sat.prn}</td>
+              <td><GNSSPRN constellation={sat.constellation} prn={sat.prn} /></td>
               <td>{sat.used_for_fix ? <i className="fa fa-check-circle text-success" title="Used for fix." />
                 : <i className="fa fa-cancel text-muted" title="Not used for fix." />}</td>
               <td title={moment(sat.last_seen).format()}>{moment(sat.last_seen).fromNow()}</td>

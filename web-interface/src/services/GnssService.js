@@ -34,6 +34,22 @@ export default class GnssService {
     )
   }
 
+  getFixStatusHistogram(timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/gnss/fix/status/histogram", { time_range: timeRange, taps: tapsList },
+        (response) => setHistogram(response.data)
+    )
+  }
+
+  getDistances(timeRange, taps, setDistances) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/gnss/distances", { time_range: timeRange, taps: tapsList },
+        (response) => setDistances(response.data)
+    )
+  }
+
   getAltitudeHistogram(timeRange, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 

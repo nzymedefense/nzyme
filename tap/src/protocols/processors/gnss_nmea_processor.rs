@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
-use log::{debug, error, info, trace};
-use crate::protocols::parsers::nmea_parser::{parse_gpgga, parse_gpgsa, parse_gpgsv};
+use log::{debug, error, trace};
+use crate::protocols::parsers::nmea_parser::{parse_gga, parse_gsa, parse_gsv};
 use crate::state::tables::gnss_monitor_table::GnssMonitorTable;
 use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 use crate::wireless::positioning::nmea::nmea_sentence_types::NMEASentenceType;
@@ -18,9 +18,14 @@ impl GnssNmeaProcessor {
     pub fn process(&mut self, message: Arc<NMEAMessage>) {
         match self.gnss_monitor_table.lock() {
             Ok(mut gnss_monitor_table) => {
+                if message.sentence.len() < 7 {
+                    error!("NMEA sentence is too short: {}", message.sentence);
+                    return;
+                }
+
                 // Determine sentence type.
                 let sentence_type: NMEASentenceType = match
-                        NMEASentenceType::try_from(&message.sentence[1..6]) {
+                        NMEASentenceType::try_from(&message.sentence[3..6]) {
                     Ok(sentence_type) => sentence_type,
                     Err(e) => {
                         debug!("Failed to parse NMEA type from sentence: [{}]", message.sentence);
@@ -29,36 +34,36 @@ impl GnssNmeaProcessor {
                 };
 
                 match sentence_type {
-                    NMEASentenceType::GPGGA => {
-                        match parse_gpgga(&message) {
+                    NMEASentenceType::GGA => {
+                        match parse_gga(&message) {
                             Ok(sentence) => {
-                                trace!("NMEA GPGGA sentence: {:?}", sentence);
-                                gnss_monitor_table.register_gpgga_sentence(sentence);
+                                trace!("NMEA GGA sentence: {:?}", sentence);
+                                gnss_monitor_table.register_gga_sentence(sentence);
                             },
                             Err(e) => {
-                                error!("Failed to parse NMEA GPGGA message: {}", e);
+                                error!("Failed to parse NMEA GGA message: {}", e);
                             }
                         }
                     }
-                    NMEASentenceType::GPGSA => {
-                        match parse_gpgsa(&message) {
+                    NMEASentenceType::GSA => {
+                        match parse_gsa(&message) {
                             Ok(sentence) => {
-                                trace!("NMEA GPGSA sentence: {:?}", sentence);
-                                gnss_monitor_table.register_gpgsa_sentence(sentence);
+                                trace!("NMEA GSA sentence: {:?}", sentence);
+                                gnss_monitor_table.register_gsa_sentence(sentence);
                             },
                             Err(e) => {
-                                error!("Failed to parse NMEA GPGSA message: {}", e);
+                                error!("Failed to parse NMEA GSA message: {}", e);
                             }
                         }
                     }
-                    NMEASentenceType::GPGSV => {
-                        match parse_gpgsv(&message) {
+                    NMEASentenceType::GSV => {
+                        match parse_gsv(&message) {
                             Ok(sentence) => {
-                                trace!("NMEA GPGSV sentence: {:?}", sentence);
-                                gnss_monitor_table.register_gpgsv_sentence(sentence);
+                                trace!("NMEA GSV sentence: {:?}", sentence);
+                                gnss_monitor_table.register_gsv_sentence(sentence);
                             },
                             Err(e) => {
-                                error!("Failed to parse NMEA GPGSV message: {}", e);
+                                error!("Failed to parse NMEA GSV message: {}", e);
                             }
                         }
                     }

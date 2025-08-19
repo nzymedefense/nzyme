@@ -2,19 +2,22 @@ use std::sync::Arc;
 use anyhow::{bail, Error};
 use chrono::{DateTime, NaiveTime, Utc};
 use log::{info, warn};
-use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation::GPS;
+use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation;
 use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
-use crate::wireless::positioning::nmea::nmea_sentences::{
-    FixType, GPGGASentence, GPGSASentence, GPGSVSentence, SatelliteInfo
-};
+use crate::wireless::positioning::nmea::nmea_sentences::{FixType, GGASentence, GSASentence, GSVSentence, SatelliteInfo};
 
-pub fn parse_gpgga(message: &Arc<NMEAMessage>) -> Result<GPGGASentence, Error> {
+pub fn parse_gga(message: &Arc<NMEAMessage>) -> Result<GGASentence, Error> {
+    if message.sentence.len() < 5 {
+        bail!("NMEA message too short: {}", message.sentence)
+    }
+
     let body = validate_nmea_checksum(&message.sentence)?;
+    let constellation = parse_constellation(&message)?;
 
     // Split fields.
     let fields: Vec<&str> = body.split(',').collect();
     if fields.len() < 12 {
-        bail!("Incomplete GPGGA sentence: {}", message.sentence);
+        bail!("Incomplete GGA sentence: {}", message.sentence);
     }
 
     // Time.
@@ -58,8 +61,8 @@ pub fn parse_gpgga(message: &Arc<NMEAMessage>) -> Result<GPGGASentence, Error> {
     // Geoid separation.
     let geoid_separation_m = fields[11].parse::<f32>().ok();
 
-    Ok(GPGGASentence {
-        constellation: GPS,
+    Ok(GGASentence {
+        constellation,
         timestamp: message.timestamp,
         time,
         latitude,
@@ -70,13 +73,30 @@ pub fn parse_gpgga(message: &Arc<NMEAMessage>) -> Result<GPGGASentence, Error> {
     })
 }
 
-pub fn parse_gpgsa(message: &Arc<NMEAMessage>) -> Result<GPGSASentence, Error> {
+fn parse_constellation(message: &&Arc<NMEAMessage>) -> Result<GNSSConstellation, Error> {
+    let constellation = match &message.sentence[1..3] {
+        "GP" => GNSSConstellation::GPS,
+        "GL" => GNSSConstellation::GLONASS,
+        "GA" => GNSSConstellation::Galileo,
+        "GB" => GNSSConstellation::BeiDou,
+        _ => bail!("NMEA constellation not found: {}", message.sentence)
+    };
+
+    Ok(constellation)
+}
+
+pub fn parse_gsa(message: &Arc<NMEAMessage>) -> Result<GSASentence, Error> {
+    if message.sentence.len() < 5 {
+        bail!("NMEA message too short: {}", message.sentence)
+    }
+
     let body = validate_nmea_checksum(&message.sentence)?;
+    let constellation = parse_constellation(&message)?;
 
     // Split fields.
     let fields: Vec<&str> = body.split(',').collect();
     if fields.len() < 18 {
-        bail!("Incomplete GPGSA sentence: {}", message.sentence);
+        bail!("Incomplete GSA sentence: {}", message.sentence);
     }
 
     // Fix type.
@@ -115,8 +135,8 @@ pub fn parse_gpgsa(message: &Arc<NMEAMessage>) -> Result<GPGSASentence, Error> {
         val => val.parse::<f32>().ok(),
     };
 
-    Ok(GPGSASentence {
-        constellation: GPS,
+    Ok(GSASentence {
+        constellation,
         fix,
         fix_satellites,
         pdop,
@@ -125,52 +145,77 @@ pub fn parse_gpgsa(message: &Arc<NMEAMessage>) -> Result<GPGSASentence, Error> {
     })
 }
 
-pub fn parse_gpgsv(message: &Arc<NMEAMessage>) -> Result<GPGSVSentence, Error> {
+pub fn parse_gsv(message: &Arc<NMEAMessage>) -> Result<GSVSentence, Error> {
+    if message.sentence.len() < 5 {
+        bail!("NMEA message too short: {}", message.sentence)
+    }
+    
     let body = validate_nmea_checksum(&message.sentence)?;
+    let constellation = parse_constellation(&message)?;
 
     // Split fields.
     let fields: Vec<&str> = body.split(',').collect();
-    if fields.len() < 8 {
-        bail!("Incomplete GPGSV sentence: {}", message.sentence);
+
+    // Need at least the 3 header fields after the sentence ID
+    if fields.len() < 4 {
+        bail!("Incomplete GSV header: {}", message.sentence);
     }
 
     // Header counts.
-    let total_messages = fields[1].parse::<u8>().ok();
-    let message_number = fields[2].parse::<u8>().ok();
-    let satellites_in_view = fields[3].parse::<u8>().ok();
+    let total_messages = fields.get(1).and_then(|s| s.parse::<u8>().ok());
+    let message_number  = fields.get(2).and_then(|s| s.parse::<u8>().ok());
+    let satellites_in_view = fields.get(3).and_then(|s| s.parse::<u8>().ok());
 
-    // Parse groups.
-    let mut satellites = Vec::new();
-    for chunk in fields[4..].chunks(4) {
-        if chunk.len() < 4 {
-            break;
-        }
-
-        let prn = chunk[0].parse::<u8>().ok();
-
-        if prn.is_none() {
-            continue;
-        }
-
-        let elevation_degrees = chunk[1].parse::<u8>().ok();
-        let azimuth_degrees = chunk[2].parse::<u16>().ok();
-
-        let snr = if chunk[3].is_empty() {
-            None
-        } else {
-            chunk[3].parse::<u8>().ok()
-        };
-
-        satellites.push(SatelliteInfo {
-            prn: prn.unwrap(),
-            elevation_degrees,
-            azimuth_degrees,
-            snr
+    // If sat count is explicitly 0, return gracefully with empty list.
+    // Also handle cases where there are simply no group fields present.
+    let has_group_fields = fields.len() > 4;
+    if satellites_in_view == Some(0) || !has_group_fields {
+        return Ok(GSVSentence {
+            constellation,
+            total_messages,
+            message_number,
+            satellites_in_view,
+            satellites: Vec::new(),
         });
     }
 
-    Ok(GPGSVSentence {
-        constellation: GPS,
+    // Some receivers append a single trailing "signal ID" after the 4-field groups.
+    // If (fields.len() - 4) % 4 == 1, treat the last field as that optional ID and ignore it.
+    let mut end = fields.len();
+    let group_span = end.saturating_sub(4);
+    if group_span % 4 == 1 {
+        end -= 1; // drop the trailing signal ID
+    }
+
+    // Parse groups.
+    let mut satellites = Vec::new();
+    for chunk in fields[4..end].chunks(4) {
+        if chunk.len() < 4 {
+            // Tolerate incomplete tail group silently.
+            break;
+        }
+
+        let prn = chunk[0].parse::<u16>().ok();
+        if prn.is_none() {
+            // Skip groups missing PRN.
+            continue;
+        }
+
+        // Be tolerant of blank fields.
+        let elevation_degrees = if chunk[1].is_empty() { None } else { chunk[1].parse::<u8>().ok() };
+        let azimuth_degrees = if chunk[2].is_empty() { None } else { chunk[2].parse::<u16>().ok() };
+        let snr = if chunk[3].is_empty() { None } else { chunk[3].parse::<u8>().ok() };
+
+        satellites.push(SatelliteInfo {
+            prn: prn.unwrap() as u8,
+            elevation_degrees,
+            azimuth_degrees,
+            snr,
+        });
+    }
+
+    Ok(GSVSentence {
+        constellation,
         total_messages,
         message_number,
         satellites_in_view,

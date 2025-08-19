@@ -23,6 +23,7 @@ export default function GNSSPRNDegreesHistogram({histogram, setTimeRange}) {
       <SimpleLineChart
         height={200}
         lineWidth={1}
+        scattermode="markers"
         ticksuffix="&deg;"
         setTimeRange={setTimeRange}
         data={formatData(histogram)} />

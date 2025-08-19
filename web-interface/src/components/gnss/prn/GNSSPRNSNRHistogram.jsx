@@ -23,6 +23,7 @@ export default function GNSSPRNSNRHistogram({histogram, setTimeRange}) {
       <SimpleLineChart
         height={200}
         lineWidth={1}
+        scattermode="markers"
         setTimeRange={setTimeRange}
         data={formatData(histogram)} />
     </React.Fragment>

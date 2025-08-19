@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {TapContext} from "../../App";
-import {Presets} from "../shared/timerange/TimeRange";
+import {Presets as TimeRange, Presets} from "../shared/timerange/TimeRange";
 import {disableTapSelector, enableTapSelector} from "../misc/TapSelector";
 import CardTitleWithControls from "../shared/CardTitleWithControls";
 import GNSSTimeDeviationHistogram from "./GNSSTimeDeviationHistogram";
@@ -11,6 +11,8 @@ import GNSSSatellitesInViewHistogram from "./GNSSSatellitesInViewHistogram";
 import GNSSAltitudeHistogram from "./GNSSAltitudeHistogram";
 import GNSSCoordinatesHeatmap from "./GNSSCoordinatesHeatmap";
 import GNSSSatellitesInViewTable from "./GNSSSatellitesInViewTable";
+import GNSSFixStatusHistogram from "./GNSSFixStatusHistogram";
+import GNSSDistancesTable from "./GNSSDistancesTable";
 
 const gnssService = new GnssService();
 
@@ -24,8 +26,10 @@ export default function GNSSConstellationsPage() {
   const [pdopHistogram, setPdopHistogram] = useState(null);
   const [timeDeviationHistogram, setTimeDeviationHistogram] = useState(null);
   const [fixSatellitesHistogram, setFixSatellitesHistogram] = useState(null);
+  const [fixStatusHistogram, setFixStatusHistogram] = useState(null);
   const [satellitesInViewHistogram, setSatellitesInViewHistogram] = useState(null);
   const [altitudeHistogram, setAltitudeHistogram] = useState(null);
+  const [distances, setDistances] = useState(null);
 
   const [constellationCoordinatesConstellation, setConstellationCoordinatesConstellation] = useState("GPS");
   const [constellationCoordinatesTimeRange, setConstellationCoordinatesTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
@@ -48,6 +52,7 @@ export default function GNSSConstellationsPage() {
     setPdopHistogram(null);
     setTimeDeviationHistogram(null);
     setFixSatellitesHistogram(null);
+    setFixStatusHistogram(null);
     setSatellitesInViewHistogram(null);
     setAltitudeHistogram(null);
     setConstellationCoordinates(null);
@@ -55,19 +60,14 @@ export default function GNSSConstellationsPage() {
     gnssService.getPdopHistogram(timeRange, selectedTaps, setPdopHistogram);
     gnssService.getTimeDeviationHistogram(timeRange, selectedTaps, setTimeDeviationHistogram);
     gnssService.getFixSatellitesHistogram(timeRange, selectedTaps, setFixSatellitesHistogram);
+    gnssService.getFixStatusHistogram(timeRange, selectedTaps, setFixStatusHistogram);
     gnssService.getSatellitesInViewHistogram(timeRange, selectedTaps, setSatellitesInViewHistogram);
     gnssService.getAltitudeHistogram(timeRange, selectedTaps, setAltitudeHistogram);
-
-    gnssService.getConstellationCoordinates(
-      constellationCoordinatesConstellation,
-      constellationCoordinatesTimeRange,
-      selectedTaps,
-      setConstellationCoordinates
-    );
-  }, [timeRange, selectedTaps, revision])
+    }, [timeRange, selectedTaps, revision])
 
   useEffect(() => {
     setConstellationCoordinates(null);
+    setDistances(null);
 
     gnssService.getConstellationCoordinates(
       constellationCoordinatesConstellation,
@@ -75,6 +75,8 @@ export default function GNSSConstellationsPage() {
       selectedTaps,
       setConstellationCoordinates
     );
+
+    gnssService.getDistances(constellationCoordinatesTimeRange, selectedTaps, setDistances);
   }, [constellationCoordinatesConstellation, constellationCoordinatesTimeRange, timeRange, selectedTaps, revision])
 
   useEffect(() => {
@@ -91,7 +93,21 @@ export default function GNSSConstellationsPage() {
       </div>
 
       <div className="row mt-3">
-        <div className="col-12">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Fix Status"
+                                     timeRange={timeRange}
+                                     setTimeRange={setTimeRange}
+                                     refreshAction={() => setRevision(new Date())} />
+
+
+              <GNSSFixStatusHistogram fixStatusHistogram={fixStatusHistogram} />
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-6">
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Dilution of Precision"
@@ -162,7 +178,7 @@ export default function GNSSConstellationsPage() {
       </div>
 
       <div className="row mt-3">
-        <div className="col-12">
+        <div className="col-md-7">
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Reported Locations"
@@ -180,6 +196,18 @@ export default function GNSSConstellationsPage() {
               </select>
 
               <GNSSCoordinatesHeatmap containerHeight={400} coordinates={constellationCoordinates} />
+            </div>
+          </div>
+        </div>
+        <div className="col-md-5">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Maximum Distances From Tap"
+                                     timeRange={constellationCoordinatesTimeRange}
+                                     setTimeRange={setConstellationCoordinatesTimeRange}
+                                     refreshAction={() => setRevision(new Date())} />
+
+              <GNSSDistancesTable distances={distances}/>
             </div>
           </div>
         </div>

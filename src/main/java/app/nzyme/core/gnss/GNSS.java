@@ -2,10 +2,9 @@ package app.nzyme.core.gnss;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.generic.LatLonResult;
-import app.nzyme.core.gnss.db.GNSSDoubleBucket;
-import app.nzyme.core.gnss.db.GNSSIntegerBucket;
-import app.nzyme.core.gnss.db.GNSSSatelliteInView;
+import app.nzyme.core.gnss.db.*;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 
@@ -101,6 +100,39 @@ public class GNSS {
         );
     }
 
+    public GNSSConstellationDistances getConstellationDistancesFromTap(TimeRange timeRange, Tap tap) {
+        if (tap.latitude() == null || tap.longitude() == null) {
+            throw new RuntimeException("Tap has no location information assigned.");
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("WITH distances AS (" +
+                                "SELECT g.constellation," +
+                                "2 * 6371000.0 * ASIN(" +
+                                "  SQRT(" +
+                                "    POWER(SIN(RADIANS((:lat - (elem->>'lat')::double precision) / 2.0)), 2)" +
+                                "    + COS(RADIANS(:lat))" +
+                                "      * COS(RADIANS((elem->>'lat')::double precision))\n" +
+                                "      * POWER(SIN(RADIANS((:lon - (elem->>'lon')::double precision) / 2.0)), 2)" +
+                                "  )) AS distance_m " +
+                                "FROM gnss_constellations AS g " +
+                                "CROSS JOIN LATERAL jsonb_array_elements(g.positions) AS elem " +
+                                "WHERE tap_uuid = :tap_uuid AND timestamp >= :tr_from AND timestamp <= :tr_to) " +
+                                "SELECT MAX(distance_m) FILTER (WHERE constellation = 'GPS') AS gps, " +
+                                "MAX(distance_m) FILTER (WHERE constellation = 'GLONASS') AS glonass, " +
+                                "MAX(distance_m) FILTER (WHERE constellation = 'BeiDou')  AS beidou, " +
+                                "MAX(distance_m) FILTER (WHERE constellation = 'Galileo') AS galileo " +
+                                "FROM distances;")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("tap_uuid", tap.uuid())
+                        .bind("lat", tap.latitude())
+                        .bind("lon", tap.longitude())
+                        .mapTo(GNSSConstellationDistances.class)
+                        .one()
+        );
+    }
+
     public List<GNSSDoubleBucket> getPdopHistogram(TimeRange timeRange,
                                                    Bucketing.BucketingConfiguration bucketing,
                                                    List<UUID> taps) {
@@ -151,6 +183,84 @@ public class GNSS {
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(GNSSIntegerBucket.class)
+                        .list()
+        );
+    }
+
+    public List<GNSSStringBucket> getFixStatusHistogram(TimeRange timeRange,
+                                                        Bucketing.BucketingConfiguration bucketing,
+                                                        List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery(
+                                "SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+
+                                        // GPS
+                                        "CASE " +
+                                        "  WHEN BOOL_OR( EXISTS ( " +
+                                        "         SELECT 1 FROM jsonb_array_elements_text(fixes) AS v(val) " +
+                                        "         WHERE v.val = 'Fix3D' " +
+                                        "       ) ) FILTER (WHERE constellation = 'GPS') THEN 'Fix3D' " +
+                                        "  WHEN BOOL_OR( EXISTS ( " +
+                                        "         SELECT 1 FROM jsonb_array_elements_text(fixes) AS v(val) " +
+                                        "         WHERE v.val = 'Fix2D' " +
+                                        "       ) ) FILTER (WHERE constellation = 'GPS') THEN 'Fix2D' " +
+                                        "  ELSE 'NoFix' " +
+                                        "END AS gps, " +
+
+                                        // GLONASS
+                                        "CASE " +
+                                        "  WHEN BOOL_OR( EXISTS ( " +
+                                        "         SELECT 1 FROM jsonb_array_elements_text(fixes) AS v(val) " +
+                                        "         WHERE v.val = 'Fix3D' " +
+                                        "       ) ) FILTER (WHERE constellation = 'GLONASS') THEN 'Fix3D' " +
+                                        "  WHEN BOOL_OR( EXISTS ( " +
+                                        "         SELECT 1 FROM jsonb_array_elements_text(fixes) AS v(val) " +
+                                        "         WHERE v.val = 'Fix2D' " +
+                                        "       ) ) FILTER (WHERE constellation = 'GLONASS') THEN 'Fix2D' " +
+                                        "  ELSE 'NoFix' " +
+                                        "END AS glonass, " +
+
+                                        // BeiDou
+                                        "CASE " +
+                                        "  WHEN BOOL_OR( EXISTS ( " +
+                                        "         SELECT 1 FROM jsonb_array_elements_text(fixes) AS v(val) " +
+                                        "         WHERE v.val = 'Fix3D' " +
+                                        "       ) ) FILTER (WHERE constellation = 'BeiDou') THEN 'Fix3D' " +
+                                        "  WHEN BOOL_OR( EXISTS ( " +
+                                        "         SELECT 1 FROM jsonb_array_elements_text(fixes) AS v(val) " +
+                                        "         WHERE v.val = 'Fix2D' " +
+                                        "       ) ) FILTER (WHERE constellation = 'BeiDou') THEN 'Fix2D' " +
+                                        "  ELSE 'NoFix' " +
+                                        "END AS beidou, " +
+
+                                        // Galileo
+                                        "CASE " +
+                                        "  WHEN BOOL_OR( EXISTS ( " +
+                                        "         SELECT 1 FROM jsonb_array_elements_text(fixes) AS v(val) " +
+                                        "         WHERE v.val = 'Fix3D' " +
+                                        "       ) ) FILTER (WHERE constellation = 'Galileo') THEN 'Fix3D' " +
+                                        "  WHEN BOOL_OR( EXISTS ( " +
+                                        "         SELECT 1 FROM jsonb_array_elements_text(fixes) AS v(val) " +
+                                        "         WHERE v.val = 'Fix2D' " +
+                                        "       ) ) FILTER (WHERE constellation = 'Galileo') THEN 'Fix2D' " +
+                                        "  ELSE 'NoFix' " +
+                                        "END AS galileo " +
+
+                                        "FROM gnss_constellations " +
+                                        "WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
+                                        "AND tap_uuid IN (<taps>) " +
+                                        "GROUP BY bucket " +
+                                        "ORDER BY bucket DESC"
+                        )
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GNSSStringBucket.class)
                         .list()
         );
     }

@@ -3,7 +3,7 @@ use strum_macros::Display;
 use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation;
 
 #[derive(Debug)]
-pub struct GPGGASentence {
+pub struct GGASentence {
     pub constellation: GNSSConstellation,
     pub time: Option<DateTime<Utc>>,
     pub timestamp: DateTime<Utc>,
@@ -15,7 +15,7 @@ pub struct GPGGASentence {
 }
 
 #[derive(Debug)]
-pub struct GPGSASentence {
+pub struct GSASentence {
     pub constellation: GNSSConstellation,
     pub fix: FixType,
     pub fix_satellites: Vec<u8>,
@@ -25,7 +25,7 @@ pub struct GPGSASentence {
 }
 
 #[derive(Debug)]
-pub struct GPGSVSentence {
+pub struct GSVSentence {
     pub constellation: GNSSConstellation,
     pub total_messages: Option<u8>,
     pub message_number: Option<u8>,

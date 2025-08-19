@@ -39,9 +39,7 @@ import app.nzyme.core.events.db.EventEntryMapper;
 import app.nzyme.core.events.db.SubscriptionEntryMapper;
 import app.nzyme.core.floorplans.db.TenantLocationEntryMapper;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntryMapper;
-import app.nzyme.core.gnss.db.GNSSDoubleBucketMapper;
-import app.nzyme.core.gnss.db.GNSSIntegerBucketMapper;
-import app.nzyme.core.gnss.db.GNSSSatelliteInViewMapper;
+import app.nzyme.core.gnss.db.*;
 import app.nzyme.core.integrations.tenant.cot.db.CotOutputEntryMapper;
 import app.nzyme.core.monitoring.TimerEntryMapper;
 import app.nzyme.core.monitoring.health.db.IndicatorStatusMapper;
@@ -198,8 +196,10 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new ArpSenderTargetCountPairMapper())
                 .registerRowMapper(new GNSSIntegerBucketMapper())
                 .registerRowMapper(new GNSSDoubleBucketMapper())
+                .registerRowMapper(new GNSSStringBucketMapper())
                 .registerRowMapper(new LatLonResultMapper())
-                .registerRowMapper(new GNSSSatelliteInViewMapper());
+                .registerRowMapper(new GNSSSatelliteInViewMapper())
+                .registerRowMapper(new GNSSConstellationDistancesMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

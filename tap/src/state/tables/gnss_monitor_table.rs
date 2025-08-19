@@ -9,7 +9,7 @@ use crate::link::reports::gnss_constellations_report;
 use crate::metrics::Metrics;
 use crate::state::tables::table_helpers::clear_mutex_hashmap;
 use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation;
-use crate::wireless::positioning::nmea::nmea_sentences::{FixType, GPGGASentence, GPGSASentence, GPGSVSentence};
+use crate::wireless::positioning::nmea::nmea_sentences::{FixType, GGASentence, GSASentence, GSVSentence};
 
 pub struct GnssMonitorTable {
     metrics: Arc<Mutex<Metrics>>,
@@ -75,7 +75,7 @@ impl GnssMonitorTable {
     }
 
     /*
-     * GPGGA contains:
+     * GGA contains:
      *  - Current time
      *  - Lat/Lon
      *  - Fix quality (we ignore this and use DOP values for fix quality instead)
@@ -84,7 +84,7 @@ impl GnssMonitorTable {
      *  - Altitude
      *  - Geoid Separation
      */
-    pub fn register_gpgga_sentence(&mut self, sentence: GPGGASentence) {
+    pub fn register_gga_sentence(&mut self, sentence: GGASentence) {
 
         match self.constellations.lock() {
             Ok(mut constellations) => {
@@ -185,13 +185,13 @@ impl GnssMonitorTable {
     }
 
     /*
-     * GPGSA contains:
+     * GSA contains:
      *  - Selection mode (Automatic, Manual)
      *  - Fix type (None, 2D, 3D)
      *  - Satellites used for fix
      *  - PDOP, HDOP, VDOP  (Position, Horizontal, Vertical. Position is combined dilution.)
      */
-    pub fn register_gpgsa_sentence(&mut self, sentence: GPGSASentence) {
+    pub fn register_gsa_sentence(&mut self, sentence: GSASentence) {
         match self.constellations.lock() {
             Ok(mut constellations) => {
                 if let Err(e) = Self::ensure_constellation(&sentence.constellation, &mut constellations) {
@@ -238,13 +238,13 @@ impl GnssMonitorTable {
     }
 
     /*
-     * GPGSV contains:
+     * GSV contains:
      *  - Count of satellites in view
      *  - Details of each satellites in view
      *
      * The payload is often split over multiple messages to accommodate NMEA length limits.
      */
-    pub fn register_gpgsv_sentence(&mut self, sentence: GPGSVSentence) {
+    pub fn register_gsv_sentence(&mut self, sentence: GSVSentence) {
         match self.constellations.lock() {
             Ok(mut constellations) => {
                 if let Err(e) = Self::ensure_constellation(&sentence.constellation, &mut constellations) {
