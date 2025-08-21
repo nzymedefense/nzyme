@@ -16,10 +16,10 @@ export default function GNSSAltitudeHistogram(props) {
     // Sort timestamps so the x‑axis is in order
     Object.keys(data).sort().forEach(timestamp => {
       const row = data[timestamp] || {};
-      gps[timestamp] = row["gps"] ?? 0;
-      glonass[timestamp] = row["glonass"] ?? 0;
-      beidou[timestamp] = row["beidou"] ?? 0;
-      galileo[timestamp] = row["galileo"] ?? 0;
+      gps[timestamp] = row["gps"];
+      glonass[timestamp] = row["glonass"];
+      beidou[timestamp] = row["beidou"];
+      galileo[timestamp] = row["galileo"];
     });
 
     return {

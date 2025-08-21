@@ -63,7 +63,7 @@ export default function GNSSConstellationsPage() {
     gnssService.getFixStatusHistogram(timeRange, selectedTaps, setFixStatusHistogram);
     gnssService.getSatellitesInViewHistogram(timeRange, selectedTaps, setSatellitesInViewHistogram);
     gnssService.getAltitudeHistogram(timeRange, selectedTaps, setAltitudeHistogram);
-    }, [timeRange, selectedTaps, revision])
+  }, [timeRange, selectedTaps, revision])
 
   useEffect(() => {
     setConstellationCoordinates(null);

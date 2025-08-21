@@ -124,6 +124,24 @@ export default function SubsystemsConfiguration(props) {
                               dbUpdateCallback={dbUpdateCallback}/>
         </td>
       </tr>
+      <tr>
+        <td>Is GNSS (Global Navigation Satellite System) enabled</td>
+        <td>
+          <ConfigurationValue value={configuration.subsystem_gnss_enabled.value}
+                              configKey={configuration.subsystem_gnss_enabled.key}
+                              boolean={true}/>
+        </td>
+        <td>
+          <ConfigurationModal config={configuration.subsystem_gnss_enabled}
+                              disabled={!configuration.subsystem_gnss_available}
+                              disabledTitle={"Subsystem is disabled system-wide."}
+                              setGlobalConfig={setConfiguration}
+                              setLocalRevision={setLocalRevision}
+                              organizationId={organizationUUID}
+                              tenantId={tenantUUID}
+                              dbUpdateCallback={dbUpdateCallback}/>
+        </td>
+      </tr>
       </tbody>
     </table>
   )

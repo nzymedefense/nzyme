@@ -176,7 +176,13 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
                 return;
             }
 
-            // TODO GNSS subsystem
+            if (requestPath.startsWith("api/gnss")
+                    && !nzyme.getSubsystems().isEnabled(Subsystem.GNSS, user.get().organizationId(), user.get().tenantId())) {
+                LOG.debug("Blocking access to disabled subsystem at [{}] for user [{}].",
+                        requestPath, user.get().uuid());
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+                return;
+            }
 
             // Check if we have the permissions required by resource.
             switch (resourcePermissionLevel) {

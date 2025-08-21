@@ -12,10 +12,10 @@ public class GNSSDoubleBucketMapper implements RowMapper<GNSSDoubleBucket> {
     public GNSSDoubleBucket map(ResultSet rs, StatementContext ctx) throws SQLException {
         return GNSSDoubleBucket.create(
                 new DateTime(rs.getTimestamp("bucket")),
-                rs.getDouble("gps"),
-                rs.getDouble("glonass"),
-                rs.getDouble("beidou"),
-                rs.getDouble("galileo")
+                rs.getObject("gps", Double.class),
+                rs.getObject("glonass", Double.class),
+                rs.getObject("beidou", Double.class),
+                rs.getObject("galileo", Double.class)
         );
     }
 }

@@ -176,6 +176,7 @@ import AssetDetailsPage from "./components/ethernet/assets/AssetDetailsPage";
 import ARPPacketsPage from "./components/ethernet/assets/arp/ARPPacketsPage";
 import GNSSConstellationsPage from "./components/gnss/GNSSConstellationsPage";
 import GNSSPRNDetailsPage from "./components/gnss/prn/GNSSPRNDetailsPage";
+import GNSSMonitoringPage from "./components/gnss/monitoring/GNSSMonitoringPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -615,7 +616,6 @@ function App() {
 
                               { /* UAV. */ }
                               <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "uav")} />}>
-                                { /* UAVs */}
                                 <Route path={ApiRoutes.UAV.INDEX} element={<UavsPage />}/>
                                 <Route path={ApiRoutes.UAV.DETAILS(':identifierParam')} element={<UavDetailsPage />}/>
                                 <Route path={ApiRoutes.UAV.TYPES.INDEX} element={<UavTypesPage />}/>
@@ -625,9 +625,12 @@ function App() {
                                 <Route path={ApiRoutes.UAV.MONITORING.INDEX} element={<UavMonitoringPage />}/>
                               </Route>
 
-                              { /* GNSS. TODO: subsystem guard */ }
-                              <Route path={ApiRoutes.GNSS.CONSTELLATIONS} element={<GNSSConstellationsPage />}/>
-                              <Route path={ApiRoutes.GNSS.PRN(':constellation', ':prn')} element={<GNSSPRNDetailsPage />}/>
+                              { /* GNSS. */ }
+                              <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "gnss")} />}>
+                                <Route path={ApiRoutes.GNSS.CONSTELLATIONS} element={<GNSSConstellationsPage />}/>
+                                <Route path={ApiRoutes.GNSS.PRN(':constellation', ':prn')} element={<GNSSPRNDetailsPage />}/>
+                                <Route path={ApiRoutes.GNSS.MONITORING.INDEX} element={<GNSSMonitoringPage />}/>
+                              </Route>
 
                               { /* Context. */ }
                               <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>

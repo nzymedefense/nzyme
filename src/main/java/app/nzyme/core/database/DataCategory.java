@@ -6,6 +6,7 @@ public enum DataCategory {
     BLUETOOTH,
     ETHERNET_L4,
     ETHERNET_DNS,
-    UAV
+    UAV,
+    GNSS
 
 }

@@ -265,7 +265,7 @@ public class GNSSResource extends TapDataHandlingResource {
                                                  @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
-        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.BucketingConfiguration.create(Bucketing.Type.MINUTE);
 
         Constellation constellation;
         try {
@@ -293,7 +293,7 @@ public class GNSSResource extends TapDataHandlingResource {
                                                        @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
-        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.BucketingConfiguration.create(Bucketing.Type.MINUTE);
 
         Constellation constellation;
         try {
@@ -321,7 +321,7 @@ public class GNSSResource extends TapDataHandlingResource {
                                                      @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
-        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.BucketingConfiguration.create(Bucketing.Type.MINUTE);
 
         Constellation constellation;
         try {

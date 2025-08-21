@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from "react";
 import {latLng} from "leaflet/src/geo";
 import {sanitizeHtml} from "../../util/Tools";
+import '../../../lib/Control.FullScreen';
+import '../../../lib/Control.FullScreen.css';
 
 export default function GNSSCoordinatesHeatmap(props) {
 
@@ -57,7 +59,11 @@ export default function GNSSCoordinatesHeatmap(props) {
   useEffect(() => {
     if (!map) {
       setMap(L.map("gnss-coordinates-heatmap", {
-        scrollWheelZoom: false
+        scrollWheelZoom: false,
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+          position: "topleft"
+        }
       }));
     }
   }, []);

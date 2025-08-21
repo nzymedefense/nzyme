@@ -226,10 +226,10 @@ public class TablesResource {
     public Response gnssConstellations(@Context SecurityContext sc, GNSSConstellationsReport report) {
         AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
 
-        /*if (!nzyme.getSubsystems().isEnabled(Subsystem.GNSS, tap.getOrganizationId(), tap.getTenantId())) {
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.GNSS, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting GNSS constellations report from tap [{}]: Subsystem is disabled.", tap.getUuid());
             return Response.status(Response.Status.UNAUTHORIZED).build();
-        }*/
+        }
 
         LOG.debug("Received GNSS constellations report from tap [{}]: {}", tap.getUuid(), report);
         nzyme.getTablesService().gnss().handleConstellationsReport(tap.getUuid(), DateTime.now(), report);

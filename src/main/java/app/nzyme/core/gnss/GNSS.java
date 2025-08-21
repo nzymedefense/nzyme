@@ -81,13 +81,13 @@ public class GNSS {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
-                                "(WHERE constellation = 'GPS')) AS gps, " +
+                                "(WHERE constellation = 'GPS'))::int AS gps, " +
                                 "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
-                                "(WHERE constellation = 'GLONASS')) AS glonass, " +
+                                "(WHERE constellation = 'GLONASS'))::int AS glonass, " +
                                 "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
-                                "(WHERE constellation = 'BeiDou')) AS beidou, " +
+                                "(WHERE constellation = 'BeiDou'))::int AS beidou, " +
                                 "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
-                                "(WHERE constellation = 'Galileo')) AS galileo " +
+                                "(WHERE constellation = 'Galileo'))::int AS galileo " +
                                 "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
@@ -168,13 +168,13 @@ public class GNSS {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(maximum_fix_satellite_count) FILTER " +
-                                "(WHERE constellation = 'GPS')) AS gps, " +
+                                "(WHERE constellation = 'GPS'))::int AS gps, " +
                                 "ROUND(AVG(maximum_fix_satellite_count) FILTER " +
-                                "(WHERE constellation = 'GLONASS')) AS glonass, " +
+                                "(WHERE constellation = 'GLONASS'))::int AS glonass, " +
                                 "ROUND(AVG(maximum_fix_satellite_count) FILTER " +
-                                "(WHERE constellation = 'BeiDou')) AS beidou, " +
+                                "(WHERE constellation = 'BeiDou'))::int AS beidou, " +
                                 "ROUND(AVG(maximum_fix_satellite_count) FILTER " +
-                                "(WHERE constellation = 'Galileo')) AS galileo " +
+                                "(WHERE constellation = 'Galileo'))::int AS galileo " +
                                 "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
@@ -275,13 +275,13 @@ public class GNSS {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(maximum_altitude_meters) FILTER " +
-                                "(WHERE constellation = 'GPS')) AS gps, " +
+                                "(WHERE constellation = 'GPS'))::int AS gps, " +
                                 "ROUND(AVG(maximum_altitude_meters) FILTER " +
-                                "(WHERE constellation = 'GLONASS')) AS glonass, " +
+                                "(WHERE constellation = 'GLONASS'))::int AS glonass, " +
                                 "ROUND(AVG(maximum_altitude_meters) FILTER " +
-                                "(WHERE constellation = 'BeiDou')) AS beidou, " +
+                                "(WHERE constellation = 'BeiDou'))::int AS beidou, " +
                                 "ROUND(AVG(maximum_altitude_meters) FILTER " +
-                                "(WHERE constellation = 'Galileo')) AS galileo " +
+                                "(WHERE constellation = 'Galileo'))::int AS galileo " +
                                 "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
@@ -304,13 +304,13 @@ public class GNSS {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(maximum_satellites_in_view_count) FILTER " +
-                                "(WHERE constellation = 'GPS')) AS gps, " +
+                                "(WHERE constellation = 'GPS'))::int AS gps, " +
                                 "ROUND(AVG(maximum_satellites_in_view_count) FILTER " +
-                                "(WHERE constellation = 'GLONASS')) AS glonass, " +
+                                "(WHERE constellation = 'GLONASS'))::int AS glonass, " +
                                 "ROUND(AVG(maximum_satellites_in_view_count) FILTER " +
-                                "(WHERE constellation = 'BeiDou')) AS beidou, " +
+                                "(WHERE constellation = 'BeiDou'))::int AS beidou, " +
                                 "ROUND(AVG(maximum_satellites_in_view_count) FILTER " +
-                                "(WHERE constellation = 'Galileo')) AS galileo " +
+                                "(WHERE constellation = 'Galileo'))::int AS galileo " +
                                 "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket ORDER BY bucket DESC")

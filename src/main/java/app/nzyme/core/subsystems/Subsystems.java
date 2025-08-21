@@ -67,6 +67,9 @@ public class Subsystems {
             case UAV -> {
                 return SubsystemRegistryKeys.UAV_ENABLED;
             }
+            case GNSS -> {
+                return SubsystemRegistryKeys.GNSS_ENABLED;
+            }
             default -> throw new RuntimeException("Subsystem [" + subsystem + "] cannot be enabled/disabled.");
         }
     }

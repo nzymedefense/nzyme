@@ -139,12 +139,17 @@ function Sidebar(props) {
           <SidebarSubmenu title="GNSS"
                           subhref="/gnss"
                           icon={<i className="sidebar-icon fa-solid fa-globe"/>}
-                          show={true}>
+                          show={userHasSubsystem(user, "gnss")}>
             <NavigationLink
               href={ApiRoutes.GNSS.CONSTELLATIONS}
               title="Constellations"
               icon={<i className="sidebar-icon fa-solid fa-satellite"/>}/>
 
+            <NavigationLink
+                href={ApiRoutes.GNSS.MONITORING.INDEX}
+                title="Monitoring"
+                icon={<i className="sidebar-icon fa-solid fa-shield-halved"/>}
+                show={userHasPermission(user, "gnss_monitoring_manage")}/>
           </SidebarSubmenu>
 
           <SidebarSubmenu title="Context"

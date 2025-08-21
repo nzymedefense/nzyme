@@ -54,6 +54,13 @@ public class Permissions {
                 "Allows user to create, edit and delete configurations related to Ethernet asset management.",
                 false
         ));
+        put("gnss_monitoring_manage", Permission.create(
+                "gnss_monitoring_manage",
+                "Manage GNSS Monitoring",
+                "Allows user to create, edit and delete configurations of GNSS monitoring, This can " +
+                        "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
+                false
+        ));
     }};
 
 }

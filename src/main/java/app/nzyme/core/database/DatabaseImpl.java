@@ -465,6 +465,13 @@ public class DatabaseImpl implements Database {
                         "DELETE FROM uavs WHERE last_seen < :since AND tap_uuid IN (<taps>)"
                 ));
             }
+            case GNSS -> {
+                tables.add(new DataTableInformation(
+                        "gnss_constellations",
+                        "SELECT COUNT(*) FROM gnss_constellations WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM gnss_constellations WHERE timestamp < :since AND tap_uuid IN (<taps>)"
+                ));
+            }
         }
 
         return tables;

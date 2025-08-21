@@ -12,10 +12,10 @@ public class GNSSIntegerBucketMapper implements RowMapper<GNSSIntegerBucket> {
     public GNSSIntegerBucket map(ResultSet rs, StatementContext ctx) throws SQLException {
         return GNSSIntegerBucket.create(
                 new DateTime(rs.getTimestamp("bucket")),
-                rs.getInt("gps"),
-                rs.getInt("glonass"),
-                rs.getInt("beidou"),
-                rs.getInt("galileo")
+                rs.getObject("gps", Integer.class),
+                rs.getObject("glonass", Integer.class),
+                rs.getObject("beidou", Integer.class),
+                rs.getObject("galileo", Integer.class)
         );
     }
 }
