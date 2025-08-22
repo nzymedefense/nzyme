@@ -56,8 +56,8 @@ public class TapMapper implements RowMapper<Tap>  {
                 rs.getInt("floor_location_x"),
                 rs.getInt("floor_location_y"),
                 rs.getString("remote_address"),
-                rs.getDouble("latitude"),
-                rs.getDouble("longitude")
+                rs.getObject("latitude", Double.class),
+                rs.getObject("longitude", Double.class)
         );
     }
 

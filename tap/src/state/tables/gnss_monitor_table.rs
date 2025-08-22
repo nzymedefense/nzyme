@@ -25,7 +25,7 @@ pub struct GNSSConstellationData {
     pub positions: Vec<LatLon>,
     pub maximum_fix_satellite_count: Option<u8>,
     pub minimum_fix_satellite_count: Option<u8>,
-    pub fix_satellites: HashSet<u8>,
+    pub fix_satellites: HashSet<u16>,
     pub maximum_altitude_meters: Option<f32>,
     pub minimum_altitude_meters: Option<f32>,
     pub maximum_pdop: Option<f32>,

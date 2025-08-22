@@ -18,6 +18,11 @@ export default function GNSSDistancesTable({distances}) {
     return <LoadingSpinner height={400} />
   }
 
+  if (distances.length === 0) {
+    return <div className="alert alert-warning mb-0">None of the selected taps have a geographical
+      position (latitude, longitude) associated. You can configure a position in the tap settings.</div>;
+  }
+
   return (
       <React.Fragment>
         <table className="table table-sm table-hover table-striped mt-2">

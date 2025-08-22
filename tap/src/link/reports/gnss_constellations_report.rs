@@ -17,7 +17,7 @@ pub struct GNSSConstellationReport {
     positions: Vec<LatLonReport>,
     maximum_fix_satellite_count: Option<u8>,
     minimum_fix_satellite_count: Option<u8>,
-    fix_satellites: HashSet<u8>,
+    fix_satellites: HashSet<u16>,
     maximum_altitude_meters: Option<f32>,
     minimum_altitude_meters: Option<f32>,
     maximum_pdop: Option<f32>,

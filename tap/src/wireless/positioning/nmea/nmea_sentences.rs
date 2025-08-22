@@ -18,7 +18,7 @@ pub struct GGASentence {
 pub struct GSASentence {
     pub constellation: GNSSConstellation,
     pub fix: FixType,
-    pub fix_satellites: Vec<u8>,
+    pub fix_satellites: Vec<u16>,
     pub pdop: Option<f32>,
     pub hdop: Option<f32>,
     pub vdop: Option<f32>

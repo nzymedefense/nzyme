@@ -136,7 +136,7 @@ public class GNSSResource extends TapDataHandlingResource {
         for (UUID tapId : taps) {
             Optional<Tap> tap = nzyme.getTapManager().findTap(tapId);
 
-            if (tap.isEmpty() || tap.get().latitude() == null ||tap.get().longitude() == null) {
+            if (tap.isEmpty() || tap.get().latitude() == null || tap.get().longitude() == null) {
                 continue;
             }
 

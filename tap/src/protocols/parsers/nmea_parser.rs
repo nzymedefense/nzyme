@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use anyhow::{bail, Error};
 use chrono::{DateTime, NaiveTime, Utc};
-use log::{info, warn};
+use log::{warn};
 use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation;
 use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 use crate::wireless::positioning::nmea::nmea_sentences::{FixType, GGASentence, GSASentence, GSVSentence, SatelliteInfo};
@@ -111,7 +111,7 @@ pub fn parse_gsa(message: &Arc<NMEAMessage>) -> Result<GSASentence, Error> {
     let mut fix_satellites = Vec::new();
     for prn_str in &fields[3..15] {
         if !prn_str.is_empty() {
-            match prn_str.parse::<u8>() {
+            match prn_str.parse::<u16>() {
                 Ok(prn) => fix_satellites.push(prn),
                 Err(_) => {
                     warn!("Invalid PRN: {}", message.sentence);
@@ -149,7 +149,7 @@ pub fn parse_gsv(message: &Arc<NMEAMessage>) -> Result<GSVSentence, Error> {
     if message.sentence.len() < 5 {
         bail!("NMEA message too short: {}", message.sentence)
     }
-    
+
     let body = validate_nmea_checksum(&message.sentence)?;
     let constellation = parse_constellation(&message)?;
 
