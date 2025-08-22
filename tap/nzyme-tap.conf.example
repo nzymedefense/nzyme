@@ -32,7 +32,6 @@ dbus_method_call_timeout_seconds = 2
 
 [gnss_interfaces.ttyACM0]
 active = true
-constellation = "GNSS"
 
 [performance]
 ethernet_brokers = 1

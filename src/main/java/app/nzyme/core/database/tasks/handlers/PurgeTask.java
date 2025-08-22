@@ -27,6 +27,8 @@ public class PurgeTask {
                 for (DataTableInformation table : tables) {
                     // Check if we have a purge query. (Some tables are purged via relation/cascade)
                     if (table.getPurgeQuery() != null) {
+                        LOG.info("Purging table [{}] of data from taps [{}]", table.getTableName(), tapUuids);
+
                         handle.createUpdate(table.getPurgeQuery())
                                 .bindList("taps", tapUuids)
                                 .bind("since", since)

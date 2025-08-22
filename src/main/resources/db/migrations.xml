@@ -7017,4 +7017,22 @@
                                  onDelete="CASCADE" />
     </changeSet>
 
+    <changeSet id="add_gnss_indices" author="lennartkoopmann">
+        <dropIndex tableName="gnss_constellations" indexName="gnssc_timestamp"/>
+
+        <createIndex tableName="gnss_constellations" indexName="gnssc_tap_ts">
+            <column name="tap_uuid"/>
+            <column name="timestamp"/>
+        </createIndex>
+
+        <createIndex tableName="gnss_sats_in_view" indexName="gnssiv_fk">
+            <column name="gnss_constellation_id"/>
+        </createIndex>
+
+        <createIndex tableName="gnss_sats_in_view" indexName="gnssiv_fk_prn">
+            <column name="gnss_constellation_id"/>
+            <column name="prn"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
