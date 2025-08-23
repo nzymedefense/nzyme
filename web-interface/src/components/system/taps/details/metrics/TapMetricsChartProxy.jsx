@@ -53,6 +53,10 @@ function TapMetricsChartProxy (props) {
       valueType = '%'
     }
 
+    if (props.name.includes('temperature')) {
+      valueType = '&deg;C'
+    }
+
     return (
         <TapMetricsChart data={data} conversion={conversion} valueType={valueType}/>
     )

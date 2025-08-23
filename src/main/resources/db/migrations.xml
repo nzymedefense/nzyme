@@ -7035,4 +7035,26 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_rpi_info_to_taps" author="lennartkoopmann">
+        <addColumn tableName="taps">
+            <column name="rpi" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="rpi_temperature" type="float">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="make_rpi_version_string" author="lennartkoopmann">
+        <dropColumn tableName="taps" columnName="rpi" />
+
+        <addColumn tableName="taps">
+            <column name="rpi" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

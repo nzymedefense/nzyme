@@ -8,7 +8,6 @@ use cidr::{Ipv4Cidr, Ipv6Cidr};
 use regex::Regex;
 use reqwest::Url;
 use serde::Deserialize;
-use strum_macros::Display;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Configuration {
@@ -27,7 +26,7 @@ pub struct Configuration {
 pub struct General {
     pub leader_secret: String,
     pub leader_uri: String,
-    pub accept_insecure_certs: bool,
+    pub accept_insecure_certs: bool
 }
 
 #[derive(Debug, Clone, Deserialize)]

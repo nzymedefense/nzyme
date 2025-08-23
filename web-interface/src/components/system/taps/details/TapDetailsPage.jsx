@@ -134,6 +134,9 @@ function TapDetailsPage () {
 
                 <dt>Version</dt>
                 <dd>{tap.version ? tap.version : "unknown"}</dd>
+
+                <dt>Raspberry Pi</dt>
+                <dd>{tap.rpi ? <span><i className="fa-brands fa-raspberry-pi"></i> {tap.rpi}</span> : "No"}</dd>
               </dl>
             </div>
           </div>
@@ -151,6 +154,20 @@ function TapDetailsPage () {
           </div>
         </div>
       </div>
+
+      { tap.rpi ?
+      <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <h3>CPU Temperature</h3>
+
+              <TapMetricsChartProxy type="gauge" name="rpi.temperature" tapUuid={tap.uuid} />
+            </div>
+          </div>
+        </div>
+      </div>
+      : null }
 
       { tap.location_id || (tap.latitude && tap.longitude) ?
       <div className="row mt-3">

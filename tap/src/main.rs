@@ -14,6 +14,7 @@ mod context;
 mod protocols;
 mod wired;
 mod wireless;
+mod rpi;
 
 use std::{process::exit, sync::{Arc, Mutex}, thread::{self, sleep}, time, time::Duration};
 use anyhow::Error;

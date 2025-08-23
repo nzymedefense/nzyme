@@ -52,6 +52,10 @@ public abstract class TapDetailsResponse {
     @JsonProperty("clock_drift_ms")
     public abstract Long clockDriftMs();
 
+    @Nullable
+    @JsonProperty("rpi")
+    public abstract String rpi();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
@@ -107,7 +111,7 @@ public abstract class TapDetailsResponse {
     @Nullable
     public abstract Double longitude();
 
-    public static TapDetailsResponse create(UUID uuid, String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, boolean active, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures, String remoteAddress, List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies, UUID organizationId, UUID tenantId, UUID locationId, String locationName, UUID floorId, String floorName, Double latitude, Double longitude) {
+    public static TapDetailsResponse create(UUID uuid, String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, boolean active, Long clockDriftMs, String rpi, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures, String remoteAddress, List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies, UUID organizationId, UUID tenantId, UUID locationId, String locationName, UUID floorId, String floorName, Double latitude, Double longitude) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -120,6 +124,7 @@ public abstract class TapDetailsResponse {
                 .cpuLoad(cpuLoad)
                 .active(active)
                 .clockDriftMs(clockDriftMs)
+                .rpi(rpi)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .lastReport(lastReport)
@@ -166,6 +171,8 @@ public abstract class TapDetailsResponse {
         public abstract Builder active(boolean active);
 
         public abstract Builder clockDriftMs(Long clockDriftMs);
+
+        public abstract Builder rpi(String rpi);
 
         public abstract Builder createdAt(DateTime createdAt);
 

@@ -138,8 +138,8 @@ public class TapManager {
                                 "processed_bytes_total = :processed_bytes_total, " +
                                 "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
                                 "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
-                                "remote_address = :remote_address, last_report = NOW() " +
-                                "WHERE deleted = false AND uuid = :uuid")
+                                "remote_address = :remote_address, rpi = :rpi, rpi_temperature = :rpi_temperature, " +
+                                "last_report = NOW() WHERE deleted = false AND uuid = :uuid")
                         .bind("version", report.version())
                         .bind("clock", report.timestamp())
                         .bind("processed_bytes_total", report.processedBytes().total())
@@ -149,6 +149,8 @@ public class TapManager {
                         .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())
                         .bind("cpu_load", report.systemMetrics().cpuLoad())
                         .bind("remote_address", remoteAddress)
+                        .bind("rpi", report.rpi())
+                        .bind("rpi_temperature", report.systemMetrics().rpiTemperature())
                         .bind("uuid", tapUUID)
                         .execute()
         );
@@ -364,6 +366,10 @@ public class TapManager {
         writeGauge(tapUUID, "system.captures.throughput_bit_sec", report.processedBytes().average()*8/10, report.timestamp());
         writeGauge(tapUUID, "os.memory.bytes_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(), report.timestamp());
         writeGauge(tapUUID, "os.cpu.load.percent", report.systemMetrics().cpuLoad(), report.timestamp());
+
+        if (report.systemMetrics().rpiTemperature() != null) {
+            writeGauge(tapUUID, "rpi.temperature", report.systemMetrics().rpiTemperature(), report.timestamp());
+        }
 
         // Log counts.
         for (Map.Entry<String, Long> lc : report.logCounts().entrySet()) {

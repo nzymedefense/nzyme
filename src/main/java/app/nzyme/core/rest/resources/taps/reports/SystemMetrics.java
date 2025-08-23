@@ -3,6 +3,7 @@ package app.nzyme.core.rest.resources.taps.reports;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 
 @AutoValue
 public abstract class SystemMetrics {
@@ -11,14 +12,19 @@ public abstract class SystemMetrics {
     public abstract Long memoryTotal();
     public abstract Long memoryFree();
 
+    @Nullable
+    public abstract Double rpiTemperature();
+
     @JsonCreator
     public static SystemMetrics create(@JsonProperty("cpu_load") Double cpuLoad,
                                        @JsonProperty("memory_total") Long memoryTotal,
-                                       @JsonProperty("memory_free") Long memoryFree) {
+                                       @JsonProperty("memory_free") Long memoryFree,
+                                       @JsonProperty("rpi_temperature") Double rpiTemperature) {
         return builder()
                 .cpuLoad(cpuLoad)
                 .memoryTotal(memoryTotal)
                 .memoryFree(memoryFree)
+                .rpiTemperature(rpiTemperature)
                 .build();
     }
 
@@ -33,6 +39,8 @@ public abstract class SystemMetrics {
         public abstract Builder memoryTotal(Long memoryTotal);
 
         public abstract Builder memoryFree(Long memoryFree);
+
+        public abstract Builder rpiTemperature(Double rpiTemperature);
 
         public abstract SystemMetrics build();
     }

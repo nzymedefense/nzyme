@@ -6,15 +6,13 @@ use std::{thread::self, time::Duration, sync::{Mutex, Arc}, collections::HashMap
 use systemstat::{System, Platform};
 use strum::IntoEnumIterator;
 
-use crate::{
-    configuration::Configuration,
-    metrics::Metrics, messagebus::bus::Bus
-};
+use crate::{configuration::Configuration, metrics::Metrics, messagebus::bus::Bus, rpi};
 use crate::wireless::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
 use crate::link::payloads::{NodeHelloReport, TimerReport, WiFiSupportedFrequencyReport};
 use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
 use crate::metrics::ChannelUtilization;
-
+use crate::rpi::rpi_model::detect_pi_model;
+use crate::rpi::rpi_temperature;
 use super::{payloads::{StatusReport, SystemMetricsReport, TotalWithAverage, ChannelReport, CaptureReport}};
 
 pub struct Leaderlink {
@@ -26,6 +24,7 @@ pub struct Leaderlink {
     dot11_bus: Arc<Bus>,
     bluetooth_bus: Arc<Bus>,
     generic_bus: Arc<Bus>,
+    configuration: Configuration,
 }
 
 impl Leaderlink {
@@ -62,7 +61,8 @@ impl Leaderlink {
             ethernet_bus,
             dot11_bus,
             bluetooth_bus,
-            generic_bus
+            generic_bus,
+            configuration
         })
     }
 
@@ -271,7 +271,8 @@ impl Leaderlink {
             captures,
             gauges_long,
             timers,
-            log_counts
+            log_counts,
+            rpi: detect_pi_model()
         };
         
         let mut uri = self.uri.clone();
@@ -343,10 +344,14 @@ impl Leaderlink {
             }
         }
 
+        let rpi_temperature = detect_pi_model()
+            .map(|_| rpi_temperature::read_cpu_temp_c());
+
         SystemMetricsReport {
             cpu_load,
             memory_total,
-            memory_free
+            memory_free,
+            rpi_temperature
         }
     }
 

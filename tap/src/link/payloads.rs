@@ -14,7 +14,8 @@ pub struct StatusReport {
     pub system_metrics: SystemMetricsReport,
     pub gauges_long: HashMap<String, i128>,
     pub timers: HashMap<String, TimerReport>,
-    pub log_counts: HashMap<String, u128>
+    pub log_counts: HashMap<String, u128>,
+    pub rpi: Option<String>
 }
 
 #[derive(Serialize)]
@@ -43,7 +44,8 @@ pub struct TotalWithAverage {
 pub struct SystemMetricsReport {
     pub cpu_load: f32,
     pub memory_total: u64,
-    pub memory_free: u64
+    pub memory_free: u64,
+    pub rpi_temperature: Option<f32>
 }
 
 #[derive(Serialize)]

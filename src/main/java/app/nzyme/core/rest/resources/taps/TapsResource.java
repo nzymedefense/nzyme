@@ -324,6 +324,7 @@ public class TapsResource extends UserAuthenticatedResource {
                 tap.cpuLoad(),
                 Tools.isTapActive(tap.lastReport()),
                 tap.clockDriftMs(),
+                tap.rpi(),
                 tap.createdAt(),
                 tap.updatedAt(),
                 tap.lastReport(),

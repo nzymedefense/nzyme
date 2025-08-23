@@ -20,6 +20,7 @@ package app.nzyme.core.rest.resources.taps.reports;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
 import java.util.List;
@@ -38,6 +39,9 @@ public abstract class StatusReport {
     public abstract Map<String, TimersReport> timers();
     public abstract Map<String, Long> logCounts();
 
+    @Nullable
+    public abstract String rpi();
+
     @JsonCreator
     public static StatusReport create(@JsonProperty("version") String version,
                                       @JsonProperty("timestamp") DateTime timestamp,
@@ -47,7 +51,8 @@ public abstract class StatusReport {
                                       @JsonProperty("captures") List<CapturesReport> captures,
                                       @JsonProperty("gauges_long") Map<String, Long> gaugesLong,
                                       @JsonProperty("timers") Map<String, TimersReport> timers,
-                                      @JsonProperty("log_counts") Map<String, Long> logCounts) {
+                                      @JsonProperty("log_counts") Map<String, Long> logCounts,
+                                      @JsonProperty("rpi") String rpi) {
         return builder()
                 .version(version)
                 .timestamp(timestamp)
@@ -58,6 +63,7 @@ public abstract class StatusReport {
                 .gaugesLong(gaugesLong)
                 .timers(timers)
                 .logCounts(logCounts)
+                .rpi(rpi)
                 .build();
     }
 
@@ -84,6 +90,8 @@ public abstract class StatusReport {
         public abstract Builder timers(Map<String, TimersReport> timers);
 
         public abstract Builder logCounts(Map<String, Long> logCounts);
+
+        public abstract Builder rpi(String rpi);
 
         public abstract StatusReport build();
     }

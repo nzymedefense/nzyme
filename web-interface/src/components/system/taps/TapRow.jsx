@@ -8,9 +8,15 @@ function TapsRow (props) {
 
   const tap = props.tap
 
+  const rpi = () => {
+    if (tap.rpi !== null) {
+      return <i className="fa-brands fa-raspberry-pi" title={tap.rpi}></i>
+    }
+  }
+
   if (tap.active) {
     return (
-      <tr>
+        <tr>
         <td>
           <a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.uuid)}>{tap.name}</a>
 
@@ -29,7 +35,7 @@ function TapsRow (props) {
         <td>{tap.clock_drift_ms < -5000 || tap.clock_drift_ms > 5000
           ? <i className="fa-solid fa-warning text-danger" title="Clock drift detected"/>
           : <i className="fa-regular fa-circle-check" title="No clock drift detected" />}</td>
-        <td>{tap.version}</td>
+        <td>{tap.version} {rpi()}</td>
         <td title={moment(tap.last_report).format()}>
           {moment(tap.last_report).fromNow()}
         </td>
