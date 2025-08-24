@@ -1,6 +1,7 @@
 import React, {useMemo} from "react";
 import GenericWidgetLoadingSpinner from "../widgets/GenericWidgetLoadingSpinner";
 import Plot from "react-plotly.js";
+import moment from "moment";
 
 const STATE_MAP = { NoFix: 0, Fix2D: 1, Fix3D: 2 };
 const STATE_LABELS = ["NoFix", "Fix2D", "Fix3D"];
@@ -81,12 +82,12 @@ export default function GNSSFixStatusHistogram({fixStatusHistogram}) {
     );
 
     const yLabels = constellations.map(c => c.label);
-    const x = buckets.map(({bStart}) => new Date(bStart + bucketMs / 2));
+    const x = buckets.map(({bStart}) => moment(bStart + bucketMs / 2).format("YYYY-MM-DD HH:mm"));
 
     const textMatrix = z.map((row, rowIdx) =>
         row.map((val, colIdx) => {
           const label = yLabels[rowIdx];
-          const ts = x[colIdx].toISOString();
+          const ts = moment(x[colIdx]).format("MMM D, YYYY, HH:mm");
           const stateLabel = (val == null) ? "No data" : (STATE_LABELS[val] ?? "NoFix");
           return `${label}<br>${stateLabel}<br>${ts}`;
         })
