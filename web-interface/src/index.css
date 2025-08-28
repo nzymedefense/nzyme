@@ -849,6 +849,7 @@ a.socks-tunnel-id, span.socks-tunnel-id,
 a.dhcp-transaction-id, span.dhcp-transaction-id,
 a.dhcp-options-fingerprint, span.dhcp-options-fingerprint,
 a.machine-data, span.machine-data,
+span.operator,
 div.arp-description strong {
     font-family: 'B612 Mono', monospace;
     font-size: 12px;

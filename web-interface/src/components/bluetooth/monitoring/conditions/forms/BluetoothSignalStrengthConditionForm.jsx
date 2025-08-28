@@ -10,7 +10,6 @@ export default function BluetoothSignalStrengthConditionForm(props) {
   const selectOperator = (e, op) => {
     e.preventDefault();
 
-
     setOperator(op);
   }
 

@@ -158,6 +158,10 @@ export function capitalizeFirstLetter(val) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
 
+export function capitalizeFirstLetterAndLowercase(val) {
+  return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+}
+
 export function metersToFeet(x) {
   return x / 0.3048;
 }

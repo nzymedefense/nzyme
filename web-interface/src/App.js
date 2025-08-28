@@ -177,6 +177,7 @@ import ARPPacketsPage from "./components/ethernet/assets/arp/ARPPacketsPage";
 import GNSSConstellationsPage from "./components/gnss/GNSSConstellationsPage";
 import GNSSPRNDetailsPage from "./components/gnss/prn/GNSSPRNDetailsPage";
 import GNSSMonitoringPage from "./components/gnss/monitoring/GNSSMonitoringPage";
+import CreateGNSSMonitoringRulePage from "./components/gnss/monitoring/CreateGNSSMonitoringRulePage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -627,9 +628,13 @@ function App() {
 
                               { /* GNSS. */ }
                               <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "gnss")} />}>
+                                { /* GNSS Constellations and PRNs. */}
                                 <Route path={ApiRoutes.GNSS.CONSTELLATIONS} element={<GNSSConstellationsPage />}/>
                                 <Route path={ApiRoutes.GNSS.PRN(':constellation', ':prn')} element={<GNSSPRNDetailsPage />}/>
+
+                                { /* GNSS Monitoring. */}
                                 <Route path={ApiRoutes.GNSS.MONITORING.INDEX} element={<GNSSMonitoringPage />}/>
+                                <Route path={ApiRoutes.GNSS.MONITORING.RULES.CREATE(':organizationId', ':tenantId')} element={<CreateGNSSMonitoringRulePage />}/>
                               </Route>
 
                               { /* Context. */ }
