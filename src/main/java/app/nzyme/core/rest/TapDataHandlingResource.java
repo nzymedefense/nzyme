@@ -28,8 +28,24 @@ public class TapDataHandlingResource extends UserAuthenticatedResource {
             return userAccessibleTaps;
         }
 
+        return parseAndValidateTapIds(
+                requestingUser, Splitter.on(",").splitToList(queryParamDataCsv), userAccessibleTaps
+        );
+    }
+
+    protected List<UUID> parseAndValidateTapIds(AuthenticatedUser requestingUser,
+                                              NzymeNode nzyme,
+                                              List<String> tapIds) {
+        return parseAndValidateTapIds(
+                requestingUser, tapIds, nzyme.getTapManager().allTapUUIDsAccessibleByUser(requestingUser)
+        );
+    }
+
+    private List<UUID> parseAndValidateTapIds(AuthenticatedUser requestingUser,
+                                              List<String> tapIds,
+                                              List<UUID> userAccessibleTaps) {
         List<UUID> uuids = Lists.newArrayList();
-        for (String id : Splitter.on(",").splitToList(queryParamDataCsv)) {
+        for (String id : tapIds) {
             UUID tapUuid = UUID.fromString(id);
 
             if (userAccessibleTaps.contains(tapUuid)) {

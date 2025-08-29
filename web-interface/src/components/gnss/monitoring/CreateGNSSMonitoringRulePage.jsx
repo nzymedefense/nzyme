@@ -1,12 +1,15 @@
 import AuthenticationManagementService from "../../../services/AuthenticationManagementService";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import ApiRoutes from "../../../util/ApiRoutes";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import GNSSMonitoringRuleForm from "./GNSSMonitoringRuleForm";
+import GnssService from "../../../services/GnssService";
+import {notify} from "react-notify-toast";
 
 const authenticationManagementService = new AuthenticationManagementService();
+const gnssService = new GnssService();
 
 export default function CreateGNSSMonitoringRulePage() {
 
@@ -16,12 +19,23 @@ export default function CreateGNSSMonitoringRulePage() {
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
 
+  const [redirect, setRedirect] = useState(null);
+
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
   }, [organizationId, tenantId])
 
-  const onFormSubmitted = (name, onFailure) => {
+  const onFormSubmitted = (name, description, conditions, taps, onFailure) => {
+    gnssService.createMonitoringRule(name, description, conditions, taps, organizationId, tenantId, () => {
+      // Success.
+      notify.show("Monitoring rule created.", "success");
+      setRedirect(true);
+    }, onFailure)
+  }
+
+  if (redirect) {
+    return <Navigate to={ApiRoutes.GNSS.MONITORING.INDEX} />
   }
 
   if (!organization || !tenant) {
@@ -65,7 +79,7 @@ export default function CreateGNSSMonitoringRulePage() {
               <div className="card-body">
                 <CardTitleWithControls title="Create Rule" slim={true}/>
 
-                <GNSSMonitoringRuleForm onSubmit={onFormSubmitted} submitText="Create Output" />
+                <GNSSMonitoringRuleForm onSubmit={onFormSubmitted} submitText="Create Rule" />
               </div>
             </div>
           </div>

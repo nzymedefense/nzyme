@@ -6,6 +6,7 @@ import app.nzyme.core.database.generic.LatLonResult;
 import app.nzyme.core.gnss.Constellation;
 import app.nzyme.core.gnss.db.*;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.requests.CreateGNSSMonitoringRuleRequest;
 import app.nzyme.core.rest.responses.gnss.*;
 import app.nzyme.core.rest.responses.metrics.HistogramResponse;
 import app.nzyme.core.rest.responses.shared.LatLonResponse;
@@ -19,9 +20,11 @@ import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -338,6 +341,22 @@ public class GNSSResource extends TapDataHandlingResource {
         }
 
         return Response.ok(response).build();
+    }
+
+    @POST
+    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules")
+    public Response createMonitoringRule(@Context SecurityContext sc,
+                                         @PathParam("organizationId") UUID organizationId,
+                                         @PathParam("tenantId") UUID tenantId,
+                                         @Valid CreateGNSSMonitoringRuleRequest request) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, request.taps());
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+
+        return Response.ok().build();
     }
 
 }

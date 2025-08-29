@@ -101,4 +101,10 @@ export default class GnssService {
     )
   }
 
+  createMonitoringRule(name, description, conditions, taps, organizationId, tenantId, onSuccess, onFailure) {
+    RESTClient.post(`/gnss/monitoring/organization/${organizationId}/tenant/${tenantId}/rules`,
+        { name: name, description: description, conditions: conditions, taps: taps }, onSuccess, onFailure
+    )
+  }
+
 }

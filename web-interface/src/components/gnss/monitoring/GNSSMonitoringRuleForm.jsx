@@ -119,14 +119,6 @@ export default function GNSSMonitoringRuleForm(props) {
     });
   }
 
-  const submit = function(e) {
-    e.preventDefault();
-  }
-
-  const formIsReady = function() {
-    return name && name.trim().length > 0 && Object.keys(conditions).length > 0;
-  }
-
   const tapLimiterForm = () => {
     if (tapLimiterType === "SELECTED") {
       if (availableTaps.length === 0) {
@@ -210,6 +202,29 @@ export default function GNSSMonitoringRuleForm(props) {
                                                     onConditionRemoved={onConditionRemoved} />;
       default: return JSON.stringify(conditions[type])
     }
+  }
+
+
+  const submit = function(e) {
+    e.preventDefault();
+
+    setIsSubmitting(true)
+    setSubmitText("Please wait...");
+    onSubmit(name, description, conditions, selectedTaps, () => {
+      // Failure.
+      notify.show("Could not create monitoring rule.", "error");
+      setSubmitText(submitTextProp)
+      setIsSubmitting(false);
+    });
+  }
+
+  const formIsReady = function() {
+    /*
+     * Must have a name and also conditions that are not "CONSTELLATION", because that
+     * constellation by itself makes no sense.
+     */
+    return name && name.trim().length > 0 && Object.keys(conditions).length > 0
+        && !(Object.keys(conditions).length === 1 && conditions["CONSTELLATION"]);
   }
 
   const configuredConditionsTable = () => {
