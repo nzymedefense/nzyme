@@ -17,7 +17,7 @@ export default function GNSSMonitoringPage() {
   const perPage = 25;
 
   useEffect(() => {
-    //gnssService.findAllMonitoringRules(setRules, perPage, (page-1)*perPage)
+    gnssService.findAllMonitoringRules(organizationId, tenantId, perPage, (page-1)*perPage, setRules)
   }, [organizationId, tenantId, page]);
 
   return (

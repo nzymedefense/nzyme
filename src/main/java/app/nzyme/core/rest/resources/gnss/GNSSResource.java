@@ -344,6 +344,7 @@ public class GNSSResource extends TapDataHandlingResource {
     }
 
     @POST
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
     @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules")
     public Response createMonitoringRule(@Context SecurityContext sc,
                                          @PathParam("organizationId") UUID organizationId,
@@ -355,6 +356,26 @@ public class GNSSResource extends TapDataHandlingResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
+        nzyme.getGnss().writeMonitorRule(
+                request.name(), request.description(), request.conditions(), taps, organizationId, tenantId
+        );
+
+        return Response.ok().build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
+    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules")
+    public Response findAllMonitoringRules(@Context SecurityContext sc,
+                                           @PathParam("organizationId") UUID organizationId,
+                                           @PathParam("tenantId") UUID tenantId,
+                                           @QueryParam("limit") int limit,
+                                           @QueryParam("offset") int offset) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        nzyme.getGnss().findAllMonitoringRules(organizationId, tenantId, limit, offset);
 
         return Response.ok().build();
     }

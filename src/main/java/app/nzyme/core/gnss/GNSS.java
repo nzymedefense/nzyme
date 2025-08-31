@@ -3,21 +3,28 @@ package app.nzyme.core.gnss;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.generic.LatLonResult;
 import app.nzyme.core.gnss.db.*;
+import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntry;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class GNSS {
 
     private final NzymeNode nzyme;
+    private final ObjectMapper om;
 
     public GNSS(NzymeNode nzyme) {
         this.nzyme = nzyme;
+        this.om = new ObjectMapper();
     }
 
     public List<LatLonResult> getRecordedCoordinates(Constellation constellation,
@@ -400,6 +407,60 @@ public class GNSS {
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(GenericIntegerHistogramEntry.class)
+                        .list()
+        );
+    }
+
+    public void writeMonitorRule(String name,
+                                 @Nullable String description,
+                                 Map<String, List<Object>> conditions,
+                                 List<UUID> taps,
+                                 UUID organizationId,
+                                 UUID tenantId) {
+
+        String conditionsJson;
+        String tapsJson;
+        try {
+            conditionsJson = om.writeValueAsString(conditions);
+
+            if (taps.isEmpty()) {
+                tapsJson = null;
+            } else {
+                tapsJson  = om.writeValueAsString(taps);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO gnss_monitoring_rules(uuid, organization_id, tenant_id, name, " +
+                                "description, conditions, taps, updated_at, created_at) VALUES(:uuid, " +
+                                ":organization_id, :tenant_id, :name, :description, :conditions::jsonb, " +
+                                ":taps::jsonb, NOW(), NOW())")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("name", name)
+                        .bind("description", description)
+                        .bind("conditions", conditionsJson)
+                        .bind("taps", tapsJson)
+                        .execute()
+        );
+    }
+
+    public List<GNSSMonitoringRuleEntry> findAllMonitoringRules(UUID organizationId,
+                                                                UUID tenantId,
+                                                                int limit,
+                                                                int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM gnss_monitoring_rules " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(GNSSMonitoringRuleEntry.class)
                         .list()
         );
     }

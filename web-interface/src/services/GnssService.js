@@ -101,6 +101,12 @@ export default class GnssService {
     )
   }
 
+  findAllMonitoringRules(organizationId, tenantId, limit, offset, setRules) {
+    RESTClient.get(`/gnss/monitoring/organization/${organizationId}/tenant/${tenantId}/rules`,
+        { limit: limit, offset: offset }, (response) => setRules(response.data)
+    )
+  }
+
   createMonitoringRule(name, description, conditions, taps, organizationId, tenantId, onSuccess, onFailure) {
     RESTClient.post(`/gnss/monitoring/organization/${organizationId}/tenant/${tenantId}/rules`,
         { name: name, description: description, conditions: conditions, taps: taps }, onSuccess, onFailure

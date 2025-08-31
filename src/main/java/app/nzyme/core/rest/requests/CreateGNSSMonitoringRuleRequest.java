@@ -20,14 +20,14 @@ public abstract class CreateGNSSMonitoringRuleRequest {
     public abstract String description();
 
     @NotEmpty
-    public abstract Map<String, Object> conditions();
+    public abstract Map<String, List<Object>> conditions();
 
     public abstract List<String> taps();
 
     @JsonCreator
     public static CreateGNSSMonitoringRuleRequest create(@JsonProperty("name") String name,
                                                          @JsonProperty("description") String description,
-                                                         @JsonProperty("conditions") Map<String, Object> conditions,
+                                                         @JsonProperty("conditions") Map<String, List<Object>> conditions,
                                                          @JsonProperty("taps") List<String> taps) {
         return builder()
                 .name(name)
@@ -47,7 +47,7 @@ public abstract class CreateGNSSMonitoringRuleRequest {
 
         public abstract Builder description(String description);
 
-        public abstract Builder conditions(@NotEmpty Map<String, Object> conditions);
+        public abstract Builder conditions(@NotEmpty Map<String, List<Object>> conditions);
 
         public abstract Builder taps(List<String> taps);
 

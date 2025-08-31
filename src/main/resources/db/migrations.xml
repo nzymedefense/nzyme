@@ -7057,4 +7057,52 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="create_gnss_monitoring_rules" author="lennartkoopmann">
+        <createTable tableName="gnss_monitoring_rules">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="conditions" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="taps" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="make_gnss_monitoring_rule_taps_nullable" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="gnss_monitoring_rules" columnName="taps" />
+    </changeSet>
+    
 </databaseChangeLog>
