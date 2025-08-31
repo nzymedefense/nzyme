@@ -448,10 +448,21 @@ public class GNSS {
         );
     }
 
-    public List<GNSSMonitoringRuleEntry> findAllMonitoringRules(UUID organizationId,
-                                                                UUID tenantId,
-                                                                int limit,
-                                                                int offset) {
+    public long countAllMonitoringRulesOfTenant(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM gnss_monitoring_rules " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<GNSSMonitoringRuleEntry> findAllMonitoringRulesOfTenant(UUID organizationId,
+                                                                        UUID tenantId,
+                                                                        int limit,
+                                                                        int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM gnss_monitoring_rules " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +

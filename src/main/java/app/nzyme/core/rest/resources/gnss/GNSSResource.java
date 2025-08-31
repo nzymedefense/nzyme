@@ -5,9 +5,12 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.generic.LatLonResult;
 import app.nzyme.core.gnss.Constellation;
 import app.nzyme.core.gnss.db.*;
+import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntry;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.requests.CreateGNSSMonitoringRuleRequest;
 import app.nzyme.core.rest.responses.gnss.*;
+import app.nzyme.core.rest.responses.gnss.monitoring.GNSSMonitoringRuleDetailsResponse;
+import app.nzyme.core.rest.responses.gnss.monitoring.GNSSMonitoringRulesListResponse;
 import app.nzyme.core.rest.responses.metrics.HistogramResponse;
 import app.nzyme.core.rest.responses.shared.LatLonResponse;
 import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
@@ -375,9 +378,30 @@ public class GNSSResource extends TapDataHandlingResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        nzyme.getGnss().findAllMonitoringRules(organizationId, tenantId, limit, offset);
+        long total = nzyme.getGnss().countAllMonitoringRulesOfTenant(organizationId, tenantId);
 
-        return Response.ok().build();
+        List<GNSSMonitoringRuleDetailsResponse> rules = Lists.newArrayList();
+        for (GNSSMonitoringRuleEntry rule : nzyme.getGnss()
+                .findAllMonitoringRulesOfTenant(organizationId, tenantId, limit, offset)) {
+            rules.add(GNSSMonitoringRuleDetailsResponse.create(
+                    rule.uuid(),
+                    rule.organizationId(),
+                    rule.tenantId(),
+                    rule.name(),
+                    rule.description(),
+                    rule.conditions()
+                            .values()
+                            .stream()
+                            .mapToInt(List::size)
+                            .sum(),
+                    rule.conditions(),
+                    rule.taps().orElse(null),
+                    rule.updatedAt(),
+                    rule.createdAt())
+            );
+        }
+
+        return Response.ok(GNSSMonitoringRulesListResponse.create(total, rules)).build();
     }
 
 }
