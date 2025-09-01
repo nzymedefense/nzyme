@@ -14,6 +14,8 @@ import GNSSPDOPConditionForm from "./conditions/forms/GNSSPDOPConditionForm";
 import GNSSPDOPConditionsDescription from "./conditions/descriptions/GNSSPDOPConditionsDescription";
 import GNSSClockDriftConditionForm from "./conditions/forms/GNSSClockDriftConditionForm";
 import GNSSClockDriftConditionsDescription from "./conditions/descriptions/GNSSClockDriftConditionsDescription";
+import conditionTypeSetToDescription from "./conditions/descriptions/GNSSConditionsDescriptionFactory";
+import conditionTypeToTitle from "./conditions/GNSSConditionTypeTitleFactory";
 
 const tapsService = new TapsService();
 
@@ -168,43 +170,6 @@ export default function GNSSMonitoringRuleForm(props) {
     return null;
   }
 
-  const conditionTypeToTitle = (type) => {
-    switch (type) {
-      case "FIX_QUALITY": return "Fix Quality";
-      case "FIX_DISTANCE": return "Fix Distance from Tap";
-      case "PDOP": return "Dilution of Precision (PDOP)";
-      case "CLOCK_DRIFT": return "Clock Drift";
-      default: return capitalizeFirstLetterAndLowercase(type)
-    }
-  }
-
-  const conditionTypeSetToDescription = (type, conditionSet) => {
-    switch (type) {
-      case "CONSTELLATION":
-        return <GNSSConstellationConditionsDescription type={type}
-                                                       conditionSet={conditionSet}
-                                                       onConditionRemoved={onConditionRemoved} />;
-      case "FIX_QUALITY":
-        return <GNSSFixQualityConditionsDescription type={type}
-                                                    conditionSet={conditionSet}
-                                                    onConditionRemoved={onConditionRemoved} />;
-      case "FIX_DISTANCE":
-        return <GNSSFixDistanceConditionsDescription type={type}
-                                                     conditionSet={conditionSet}
-                                                     onConditionRemoved={onConditionRemoved} />;
-      case "PDOP":
-        return <GNSSPDOPConditionsDescription type={type}
-                                              conditionSet={conditionSet}
-                                              onConditionRemoved={onConditionRemoved} />;
-      case "CLOCK_DRIFT":
-        return <GNSSClockDriftConditionsDescription type={type}
-                                                    conditionSet={conditionSet}
-                                                    onConditionRemoved={onConditionRemoved} />;
-      default: return JSON.stringify(conditions[type])
-    }
-  }
-
-
   const submit = function(e) {
     e.preventDefault();
 
@@ -249,7 +214,7 @@ export default function GNSSMonitoringRuleForm(props) {
                   <tr key={i}>
                     <td>{conditionTypeToTitle(type)}</td>
                     <td title="Click on a condition to remove it.">
-                      {conditionTypeSetToDescription(type, conditions[type])}
+                      {conditionTypeSetToDescription(type, conditions[type], onConditionRemoved)}
                     </td>
                   </tr>
               )

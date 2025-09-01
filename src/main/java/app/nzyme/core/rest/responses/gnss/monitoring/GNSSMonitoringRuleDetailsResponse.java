@@ -1,5 +1,7 @@
 package app.nzyme.core.rest.responses.gnss.monitoring;
 
+import app.nzyme.core.rest.responses.taps.TapDetailsResponse;
+import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
@@ -29,13 +31,13 @@ public abstract class GNSSMonitoringRuleDetailsResponse {
     public abstract Map<String, List<Object>> conditions();
     @JsonProperty("taps")
     @Nullable
-    public abstract List<UUID> taps();
+    public abstract List<TapHighLevelInformationDetailsResponse> taps();
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
-    public static GNSSMonitoringRuleDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, int conditionsCount, Map<String, List<Object>> conditions, List<UUID> taps, DateTime updatedAt, DateTime createdAt) {
+    public static GNSSMonitoringRuleDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, int conditionsCount, Map<String, List<Object>> conditions, List<TapHighLevelInformationDetailsResponse> taps, DateTime updatedAt, DateTime createdAt) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -70,7 +72,7 @@ public abstract class GNSSMonitoringRuleDetailsResponse {
 
         public abstract Builder conditions(Map<String, List<Object>> conditions);
 
-        public abstract Builder taps(List<UUID> taps);
+        public abstract Builder taps(List<TapHighLevelInformationDetailsResponse> taps);
 
         public abstract Builder updatedAt(DateTime updatedAt);
 

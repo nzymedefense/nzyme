@@ -38,11 +38,10 @@ export default function GNSSMonitoringPage() {
               <div className="card-body">
                 <CardTitleWithControls title="Monitoring Rules" />
 
-                <GNSSMonitoringRulesTable page={page} setPage={setPage} rules={rules} />
+                <GNSSMonitoringRulesTable page={page} setPage={setPage} perPage={perPage} rules={rules} />
 
                 <div className="mt-2">
-                  <a href={ApiRoutes.GNSS.MONITORING.RULES.CREATE(organizationId, tenantId)}
-                     className="btn btn-sm btn-secondary">
+                  <a href={ApiRoutes.GNSS.MONITORING.RULES.CREATE} className="btn btn-sm btn-secondary">
                     Create GNSS Monitoring Rule
                   </a>
                 </div>

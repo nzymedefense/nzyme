@@ -178,6 +178,7 @@ import GNSSConstellationsPage from "./components/gnss/GNSSConstellationsPage";
 import GNSSPRNDetailsPage from "./components/gnss/prn/GNSSPRNDetailsPage";
 import GNSSMonitoringPage from "./components/gnss/monitoring/GNSSMonitoringPage";
 import CreateGNSSMonitoringRulePage from "./components/gnss/monitoring/CreateGNSSMonitoringRulePage";
+import GNSSMonitoringRuleDetailsPage from "./components/gnss/monitoring/GNSSMonitoringRuleDetailsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -634,7 +635,8 @@ function App() {
 
                                 { /* GNSS Monitoring. */}
                                 <Route path={ApiRoutes.GNSS.MONITORING.INDEX} element={<GNSSMonitoringPage />}/>
-                                <Route path={ApiRoutes.GNSS.MONITORING.RULES.CREATE(':organizationId', ':tenantId')} element={<CreateGNSSMonitoringRulePage />}/>
+                                <Route path={ApiRoutes.GNSS.MONITORING.RULES.DETAILS(':uuid')} element={<GNSSMonitoringRuleDetailsPage />}/>
+                                <Route path={ApiRoutes.GNSS.MONITORING.RULES.CREATE} element={<CreateGNSSMonitoringRulePage />}/>
                               </Route>
 
                               { /* Context. */ }

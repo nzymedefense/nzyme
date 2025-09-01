@@ -13,18 +13,35 @@ export default function GNSSFixQualityConditionsDescription({type, conditionSet,
     }
   }
 
-  return (
-      <>
-        {keys.map((key, i) => (
-            <span key={i}>
-              <a href="#" onClick={(e) => {e.preventDefault(); onConditionRemoved(conditionSet[key], type)}}>
+  if (onConditionRemoved) {
+    return (
+        <>
+          {keys.map((key, i) => (
+              <span key={i}>
+              <a href="#" onClick={(e) => {
+                e.preventDefault();
+                onConditionRemoved(conditionSet[key], type)
+              }}>
                 Fix quality continuously below {fixQuality(conditionSet[key].minimumContinuousFixQuality)} for at
                 least {numeral(conditionSet[key].timeframeMinutes).format("0,0")} minutes
               </a>
-              {i < keys.length - 1 && (<span className="operator">{" OR "}</span>)}
+                {i < keys.length - 1 && (<span className="operator">{" OR "}</span>)}
             </span>
-        ))}
-      </>
-  );
+          ))}
+        </>
+    );
+  } else {
+    return (
+        <>
+          {keys.map((key, i) => (
+              <span key={i}>
+                Fix quality continuously below {fixQuality(conditionSet[key].minimumContinuousFixQuality)} for at
+                least {numeral(conditionSet[key].timeframeMinutes).format("0,0")} minutes{' '}
+                {i < keys.length - 1 && (<span className="operator">{" OR "}</span>)}
+              </span>
+          ))}
+        </>
+    );
+  }
 
 }

@@ -7,14 +7,14 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import GNSSMonitoringRuleForm from "./GNSSMonitoringRuleForm";
 import GnssService from "../../../services/GnssService";
 import {notify} from "react-notify-toast";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const authenticationManagementService = new AuthenticationManagementService();
 const gnssService = new GnssService();
 
 export default function CreateGNSSMonitoringRulePage() {
 
-  const {organizationId} = useParams();
-  const {tenantId} = useParams();
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);

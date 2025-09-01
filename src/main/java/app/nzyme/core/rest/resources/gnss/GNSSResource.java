@@ -346,6 +346,50 @@ public class GNSSResource extends TapDataHandlingResource {
         return Response.ok(response).build();
     }
 
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
+    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules/show/{uuid}")
+    public Response findMonitoringRule(@Context SecurityContext sc,
+                                       @PathParam("uuid") UUID uuid,
+                                       @PathParam("organizationId") UUID organizationId,
+                                       @PathParam("tenantId") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<GNSSMonitoringRuleEntry> rule = nzyme.getGnss()
+                .findMonitoringRuleOfTenant(uuid, organizationId, tenantId);
+
+        if (rule.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(buildMonitoringRuleResponse(rule.get())).build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
+    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules")
+    public Response findAllMonitoringRules(@Context SecurityContext sc,
+                                           @PathParam("organizationId") UUID organizationId,
+                                           @PathParam("tenantId") UUID tenantId,
+                                           @QueryParam("limit") int limit,
+                                           @QueryParam("offset") int offset) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        long total = nzyme.getGnss().countAllMonitoringRulesOfTenant(organizationId, tenantId);
+
+        List<GNSSMonitoringRuleDetailsResponse> rules = Lists.newArrayList();
+        for (GNSSMonitoringRuleEntry rule : nzyme.getGnss()
+                .findAllMonitoringRulesOfTenant(organizationId, tenantId, limit, offset)) {
+            rules.add(buildMonitoringRuleResponse(rule));
+        }
+
+        return Response.ok(GNSSMonitoringRulesListResponse.create(total, rules)).build();
+    }
+
     @POST
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
     @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules")
@@ -366,42 +410,45 @@ public class GNSSResource extends TapDataHandlingResource {
         return Response.ok().build();
     }
 
-    @GET
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
-    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules")
-    public Response findAllMonitoringRules(@Context SecurityContext sc,
-                                           @PathParam("organizationId") UUID organizationId,
-                                           @PathParam("tenantId") UUID tenantId,
-                                           @QueryParam("limit") int limit,
-                                           @QueryParam("offset") int offset) {
-        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+    private GNSSMonitoringRuleDetailsResponse buildMonitoringRuleResponse(GNSSMonitoringRuleEntry rule) {
+        List<TapHighLevelInformationDetailsResponse> taps;
+
+        if (rule.taps().isEmpty()) {
+            taps = null;
+        } else {
+            List<TapHighLevelInformationDetailsResponse> tapInfos = Lists.newArrayList();
+
+            for (UUID tapUuid : rule.taps().get()) {
+                Optional<Tap> tap = nzyme.getTapManager().findTap(tapUuid);
+
+                if (tap.isPresent()) {
+                    tapInfos.add(TapHighLevelInformationDetailsResponse.create(
+                            tap.get().uuid(),
+                            tap.get().name(),
+                            Tools.isTapActive(tap.get().lastReport())
+                    ));
+                }
+            }
+
+            taps = tapInfos;
         }
 
-        long total = nzyme.getGnss().countAllMonitoringRulesOfTenant(organizationId, tenantId);
-
-        List<GNSSMonitoringRuleDetailsResponse> rules = Lists.newArrayList();
-        for (GNSSMonitoringRuleEntry rule : nzyme.getGnss()
-                .findAllMonitoringRulesOfTenant(organizationId, tenantId, limit, offset)) {
-            rules.add(GNSSMonitoringRuleDetailsResponse.create(
-                    rule.uuid(),
-                    rule.organizationId(),
-                    rule.tenantId(),
-                    rule.name(),
-                    rule.description(),
-                    rule.conditions()
-                            .values()
-                            .stream()
-                            .mapToInt(List::size)
-                            .sum(),
-                    rule.conditions(),
-                    rule.taps().orElse(null),
-                    rule.updatedAt(),
-                    rule.createdAt())
-            );
-        }
-
-        return Response.ok(GNSSMonitoringRulesListResponse.create(total, rules)).build();
+        return GNSSMonitoringRuleDetailsResponse.create(
+                rule.uuid(),
+                rule.organizationId(),
+                rule.tenantId(),
+                rule.name(),
+                rule.description(),
+                rule.conditions()
+                        .values()
+                        .stream()
+                        .mapToInt(List::size)
+                        .sum(),
+                rule.conditions(),
+                taps,
+                rule.updatedAt(),
+                rule.createdAt()
+        );
     }
 
 }

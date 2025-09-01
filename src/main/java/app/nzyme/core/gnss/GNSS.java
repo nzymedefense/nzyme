@@ -12,10 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nullable;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class GNSS {
 
@@ -445,6 +442,21 @@ public class GNSS {
                         .bind("conditions", conditionsJson)
                         .bind("taps", tapsJson)
                         .execute()
+        );
+    }
+
+    public Optional<GNSSMonitoringRuleEntry> findMonitoringRuleOfTenant(UUID uuid,
+                                                                        UUID organizationId,
+                                                                        UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM gnss_monitoring_rules " +
+                                "WHERE uuid = :uuid AND organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id")
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(GNSSMonitoringRuleEntry.class)
+                        .findOne()
         );
     }
 

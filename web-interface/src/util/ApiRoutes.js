@@ -254,7 +254,8 @@ const ApiRoutes = {
     MONITORING: {
       INDEX: '/gnss/monitoring',
       RULES: {
-        CREATE: (organizationId, tenantId) => `/gnss/monitoring/rules/organizations/show/${organizationId}/tenants/show/${tenantId}/create`
+        DETAILS: (uuid) => `/gnss/monitoring/rules/show/${uuid}`,
+        CREATE: '/gnss/monitoring/rules/organizations/show/create'
       }
     }
   },

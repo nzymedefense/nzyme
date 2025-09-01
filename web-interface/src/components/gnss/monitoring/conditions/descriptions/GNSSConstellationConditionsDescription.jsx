@@ -4,17 +4,29 @@ export default function GNSSConstellationConditionsDescription({type, conditionS
 
   const keys = Object.keys(conditionSet);
 
-  return (
-      <>
-        {keys.map((key, i) => (
-            <span key={i}>
+  if (onConditionRemoved) {
+    return (
+        <>
+          {keys.map((key, i) => (
+              <span key={i}>
               <a href="#" onClick={(e) => {e.preventDefault(); onConditionRemoved(conditionSet[key], type)}}>
                 {conditionSet[key].constellation}
               </a>
-              {i < keys.length - 1 && (<span className="operator">{" OR "}</span>)}
+                {i < keys.length - 1 && (<span className="operator">{" OR "}</span>)}
             </span>
-        ))}
-      </>
-  );
+          ))}
+        </>
+    );
+  } else {
+    return (
+        <>
+          {keys.map((key, i) => (
+              <span key={i}>
+                {conditionSet[key].constellation} {i < keys.length - 1 && (<span className="operator">{" OR "}</span>)}
+              </span>
+          ))}
+        </>
+    );
+  }
 
 }

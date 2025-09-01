@@ -101,6 +101,12 @@ export default class GnssService {
     )
   }
 
+  findMonitoringRule(uuid, organizationId, tenantId, setRule) {
+    RESTClient.get(`/gnss/monitoring/organization/${organizationId}/tenant/${tenantId}/rules/show/${uuid}`,
+        {}, (response) => setRule(response.data)
+    )
+  }
+
   findAllMonitoringRules(organizationId, tenantId, limit, offset, setRules) {
     RESTClient.get(`/gnss/monitoring/organization/${organizationId}/tenant/${tenantId}/rules`,
         { limit: limit, offset: offset }, (response) => setRules(response.data)
