@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import GnssService from "../../../services/GnssService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
@@ -9,6 +9,7 @@ import moment from "moment";
 import {truncate} from "../../../util/Tools";
 import conditionTypeToTitle from "./conditions/GNSSConditionTypeTitleFactory";
 import conditionTypeSetToDescription from "./conditions/descriptions/GNSSConditionsDescriptionFactory";
+import {notify} from "react-notify-toast";
 
 const gnssService = new GnssService();
 
@@ -19,9 +20,24 @@ export default function GNSSMonitoringRuleDetailsPage() {
 
   const [rule, setRule] = useState(null);
 
+  const [redirect, setRedirect] = useState(false);
+
   useEffect(() => {
     gnssService.findMonitoringRule(uuid, organizationId, tenantId, setRule)
   }, [uuid]);
+
+  const deleteRule = (e) => {
+    e.preventDefault();
+
+    if (!confirm("Are you sure you want to delete this monitoring rule?")) {
+      return;
+    }
+
+    gnssService.deleteMonitoringRule(uuid, organizationId, tenantId, () => {
+      notify.show("Monitoring rule deleted.", "success");
+      setRedirect(true);
+    })
+  }
 
   const tapsTable = () => {
     if (!rule.taps) {
@@ -58,8 +74,6 @@ export default function GNSSMonitoringRuleDetailsPage() {
 
     return (
         <>
-          <p>Click on a condition to remove it.</p>
-
           <table className="mb-3 table table-sm table-hover table-striped">
             <thead>
             <tr>
@@ -82,6 +96,10 @@ export default function GNSSMonitoringRuleDetailsPage() {
     );
   }
 
+  if (redirect) {
+    return <Navigate to={ApiRoutes.GNSS.MONITORING.INDEX} />
+  }
+
   if (!rule) {
     return <LoadingSpinner />
   }
@@ -89,7 +107,7 @@ export default function GNSSMonitoringRuleDetailsPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-10">
+          <div className="col-9">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.CONSTELLATIONS}>GNSS</a></li>
@@ -101,8 +119,11 @@ export default function GNSSMonitoringRuleDetailsPage() {
             </nav>
           </div>
 
-          <div className="col-2">
-            <a href={ApiRoutes.GNSS.MONITORING.INDEX} className="btn btn-secondary float-end">Back</a>
+          <div className="col-3">
+            <span className="float-end">
+              <a href={ApiRoutes.GNSS.MONITORING.INDEX} className="btn btn-secondary">Back</a>{' '}
+              <a href={ApiRoutes.GNSS.MONITORING.RULES.EDIT(uuid)} className="btn btn-primary">Edit Rule</a>
+            </span>
           </div>
         </div>
 
@@ -174,7 +195,7 @@ export default function GNSSMonitoringRuleDetailsPage() {
               <div className="card-body">
                 <CardTitleWithControls title="Delete Rule" slim={true} />
 
-                <button className="btn btn-danger mt-2" onClick={(e) => {e.preventDefault();}}>Delete Rule</button>
+                <button className="btn btn-danger mt-2" onClick={deleteRule}>Delete Rule</button>
               </div>
             </div>
           </div>

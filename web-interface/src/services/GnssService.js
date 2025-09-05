@@ -119,4 +119,15 @@ export default class GnssService {
     )
   }
 
+  editMonitoringRule(uuid, name, description, conditions, taps, organizationId, tenantId, onSuccess, onFailure) {
+    RESTClient.put(`/gnss/monitoring/organization/${organizationId}/tenant/${tenantId}/rules/show/${uuid}`,
+      { name: name, description: description, conditions: conditions, taps: taps }, onSuccess, onFailure
+    )
+  }
+
+  deleteMonitoringRule(uuid, organizationId, tenantId, onSuccess) {
+    RESTClient.delete(`/gnss/monitoring/organization/${organizationId}/tenant/${tenantId}/rules/show/${uuid}`,
+      onSuccess)
+  }
+
 }

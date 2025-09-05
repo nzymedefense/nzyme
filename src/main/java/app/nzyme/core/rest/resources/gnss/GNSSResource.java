@@ -8,6 +8,7 @@ import app.nzyme.core.gnss.db.*;
 import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntry;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.requests.CreateGNSSMonitoringRuleRequest;
+import app.nzyme.core.rest.requests.UpdateGNSSMonitoringRuleRequest;
 import app.nzyme.core.rest.responses.gnss.*;
 import app.nzyme.core.rest.responses.gnss.monitoring.GNSSMonitoringRuleDetailsResponse;
 import app.nzyme.core.rest.responses.gnss.monitoring.GNSSMonitoringRulesListResponse;
@@ -403,9 +404,60 @@ public class GNSSResource extends TapDataHandlingResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        nzyme.getGnss().writeMonitorRule(
+        nzyme.getGnss().createMonitoringRule(
                 request.name(), request.description(), request.conditions(), taps, organizationId, tenantId
         );
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
+    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules/show/{uuid}")
+    public Response editMonitoringRule(@Context SecurityContext sc,
+                                       @PathParam("uuid") UUID uuid,
+                                       @PathParam("organizationId") UUID organizationId,
+                                       @PathParam("tenantId") UUID tenantId,
+                                       @Valid UpdateGNSSMonitoringRuleRequest request) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, request.taps());
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<GNSSMonitoringRuleEntry> rule = nzyme.getGnss()
+                .findMonitoringRuleOfTenant(uuid, organizationId, tenantId);
+
+        if (rule.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getGnss().updateMonitoringRule(
+                rule.get().id(), request.name(), request.description(), request.conditions(), taps
+        );
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
+    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules/show/{uuid}")
+    public Response deleteMonitoringRule(@Context SecurityContext sc,
+                                         @PathParam("uuid") UUID uuid,
+                                         @PathParam("organizationId") UUID organizationId,
+                                         @PathParam("tenantId") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<GNSSMonitoringRuleEntry> rule = nzyme.getGnss()
+                .findMonitoringRuleOfTenant(uuid, organizationId, tenantId);
+
+        if (rule.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getGnss().deleteMonitoringRule(rule.get().id());
 
         return Response.ok().build();
     }

@@ -408,12 +408,12 @@ public class GNSS {
         );
     }
 
-    public void writeMonitorRule(String name,
-                                 @Nullable String description,
-                                 Map<String, List<Object>> conditions,
-                                 List<UUID> taps,
-                                 UUID organizationId,
-                                 UUID tenantId) {
+    public void createMonitoringRule(String name,
+                                     @Nullable String description,
+                                     Map<String, List<Object>> conditions,
+                                     List<UUID> taps,
+                                     UUID organizationId,
+                                     UUID tenantId) {
 
         String conditionsJson;
         String tapsJson;
@@ -445,21 +445,6 @@ public class GNSS {
         );
     }
 
-    public Optional<GNSSMonitoringRuleEntry> findMonitoringRuleOfTenant(UUID uuid,
-                                                                        UUID organizationId,
-                                                                        UUID tenantId) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM gnss_monitoring_rules " +
-                                "WHERE uuid = :uuid AND organization_id = :organization_id " +
-                                "AND tenant_id = :tenant_id")
-                        .bind("uuid", uuid)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
-                        .mapTo(GNSSMonitoringRuleEntry.class)
-                        .findOne()
-        );
-    }
-
     public long countAllMonitoringRulesOfTenant(UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM gnss_monitoring_rules " +
@@ -488,4 +473,59 @@ public class GNSS {
         );
     }
 
+    public Optional<GNSSMonitoringRuleEntry> findMonitoringRuleOfTenant(UUID uuid,
+                                                                        UUID organizationId,
+                                                                        UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM gnss_monitoring_rules " +
+                                "WHERE uuid = :uuid AND organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id")
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(GNSSMonitoringRuleEntry.class)
+                        .findOne()
+        );
+    }
+
+    public void updateMonitoringRule(long id,
+                                     String name,
+                                     @Nullable String description,
+                                     Map<String, List<Object>> conditions,
+                                     List<UUID> taps) {
+        String conditionsJson;
+        String tapsJson;
+        try {
+            conditionsJson = om.writeValueAsString(conditions);
+
+            if (taps.isEmpty()) {
+                tapsJson = null;
+            } else {
+                tapsJson = om.writeValueAsString(taps);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE gnss_monitoring_rules SET name = :name, description = :description, " +
+                                "conditions = :conditions::jsonb, taps = :taps::jsonb, updated_at = NOW() " +
+                                "WHERE id = :id")
+                        .bind("name", name)
+                        .bind("description", description)
+                        .bind("conditions", conditionsJson)
+                        .bind("taps", tapsJson)
+                        .bind("id", id)
+                        .execute()
+        );
+
+    }
+
+    public void deleteMonitoringRule(long id) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM gnss_monitoring_rules WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
 }

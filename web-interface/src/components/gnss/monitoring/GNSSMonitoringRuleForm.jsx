@@ -3,17 +3,11 @@ import TapsService from "../../../services/TapsService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import GNSSConstellationConditionForm from "./conditions/forms/GNSSConstellationConditionForm";
-import GNSSConstellationConditionsDescription from "./conditions/descriptions/GNSSConstellationConditionsDescription";
-import {capitalizeFirstLetterAndLowercase} from "../../../util/Tools";
 import GNSSFixQualityConditionForm from "./conditions/forms/GNSSFixQualityConditionForm";
 import {notify} from "react-notify-toast";
-import GNSSFixQualityConditionsDescription from "./conditions/descriptions/GNSSFixQualityConditionsDescription";
 import GNSSFixDistanceConditionForm from "./conditions/forms/GNSSFixDistanceConditionForm";
-import GNSSFixDistanceConditionsDescription from "./conditions/descriptions/GNSSFixDistanceConditionsDescription";
 import GNSSPDOPConditionForm from "./conditions/forms/GNSSPDOPConditionForm";
-import GNSSPDOPConditionsDescription from "./conditions/descriptions/GNSSPDOPConditionsDescription";
 import GNSSClockDriftConditionForm from "./conditions/forms/GNSSClockDriftConditionForm";
-import GNSSClockDriftConditionsDescription from "./conditions/descriptions/GNSSClockDriftConditionsDescription";
 import conditionTypeSetToDescription from "./conditions/descriptions/GNSSConditionsDescriptionFactory";
 import conditionTypeToTitle from "./conditions/GNSSConditionTypeTitleFactory";
 
@@ -29,13 +23,13 @@ export default function GNSSMonitoringRuleForm(props) {
   const [name, setName] = useState(props.name ? props.name : "");
   const [description, setDescription] = useState(props.description ? props.description : "");
 
-  const [tapLimiterType, setTapLimiterType] = useState(props.tapLimiterType ? props.tapLimiterType : "");
-  const [selectedTaps, setSelectedTaps] = useState(props.selectedTaps ? props.selectedTaps : [])
+  const [tapLimiterType, setTapLimiterType] = useState(props.selectedTaps != null && props.selectedTaps.length > 0 ? "SELECTED" : "ALL");
+  const [selectedTaps, setSelectedTaps] = useState(props.selectedTaps ? props.selectedTaps.map((t) => t.uuid) : [])
 
   const [selectedConditionType, setSelectedConditionType] = useState("CONSTELLATION");
   const [conditionFormType, setConditionFormType] = useState(null);
 
-  const [conditions, setConditions] = useState({});
+  const [conditions, setConditions] = useState(props.conditions ? props.conditions : {});
 
   const [availableTaps, setAvailableTaps] = useState(null);
 
@@ -177,7 +171,7 @@ export default function GNSSMonitoringRuleForm(props) {
     setSubmitText("Please wait...");
     onSubmit(name, description, conditions, selectedTaps, () => {
       // Failure.
-      notify.show("Could not create monitoring rule.", "error");
+      notify.show("Could not update monitoring rule.", "error");
       setSubmitText(submitTextProp)
       setIsSubmitting(false);
     });
@@ -189,7 +183,8 @@ export default function GNSSMonitoringRuleForm(props) {
      * constellation by itself makes no sense.
      */
     return name && name.trim().length > 0 && Object.keys(conditions).length > 0
-        && !(Object.keys(conditions).length === 1 && conditions["CONSTELLATION"]);
+      && !(Object.keys(conditions).length === 1 && conditions["CONSTELLATION"])
+      && (tapLimiterType === "ALL" || (tapLimiterType === "SELECTED" && selectedTaps.length > 0));
   }
 
   const configuredConditionsTable = () => {

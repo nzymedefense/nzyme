@@ -255,6 +255,7 @@ const ApiRoutes = {
       INDEX: '/gnss/monitoring',
       RULES: {
         DETAILS: (uuid) => `/gnss/monitoring/rules/show/${uuid}`,
+        EDIT: (uuid) => `/gnss/monitoring/rules/show/${uuid}/edit`,
         CREATE: '/gnss/monitoring/rules/organizations/show/create'
       }
     }

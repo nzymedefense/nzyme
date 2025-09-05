@@ -12,8 +12,8 @@ export default function GNSSMonitoringRulesTable({rules, page, setPage, perPage}
     return <LoadingSpinner />
   }
 
-  if (rules.count === 0) {
-    return <div className="alert alert-info mb-0">
+  if (rules.total === 0) {
+    return <div className="alert alert-info">
       No GNSS monitoring rules configured.
     </div>
   }
