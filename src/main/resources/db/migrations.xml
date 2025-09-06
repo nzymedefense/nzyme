@@ -7104,5 +7104,17 @@
     <changeSet id="make_gnss_monitoring_rule_taps_nullable" author="lennartkoopmann">
         <dropNotNullConstraint tableName="gnss_monitoring_rules" columnName="taps" />
     </changeSet>
-    
+
+    <changeSet id="add_new_metrics_to_taps" author="lennartkoopmann">
+        <addColumn tableName="taps">
+            <column name="cpu_cores_load" type="jsonb" defaultValue="[]">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="configuration" type="jsonb" defaultValue="{}">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

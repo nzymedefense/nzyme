@@ -8,7 +8,7 @@ use strum::IntoEnumIterator;
 
 use crate::{configuration::Configuration, metrics::Metrics, messagebus::bus::Bus, rpi};
 use crate::wireless::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
-use crate::link::payloads::{NodeHelloReport, TimerReport, WiFiSupportedFrequencyReport};
+use crate::link::payloads::{ConfigurationReport, NodeHelloReport, TimerReport, WiFiSupportedFrequencyReport};
 use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
 use crate::metrics::ChannelUtilization;
 use crate::rpi::rpi_model::detect_pi_model;
@@ -242,6 +242,9 @@ impl Leaderlink {
 
         let system_metrics = self.build_system_metrics();
 
+        let configuration = ConfigurationReport::try_from(self.configuration.clone())
+            .unwrap();
+
         let status = StatusReport {
             version: env!("CARGO_PKG_VERSION").to_string(),
             timestamp: Utc::now(),
@@ -272,6 +275,7 @@ impl Leaderlink {
             gauges_long,
             timers,
             log_counts,
+            configuration,
             rpi: detect_pi_model()
         };
         
@@ -330,6 +334,31 @@ impl Leaderlink {
             }
         }
 
+        let mut cpu_cores_load: HashMap<u8, f32> = HashMap::new();
+        match self.system.cpu_load() {
+            Ok(cpu) => {
+                // Have to sleep for a brief moment to allow gathering of data.
+                thread::sleep(Duration::from_secs(1));
+
+                match cpu.done() {
+                    Ok(cores) => {
+                        for (i, core) in cores.iter().enumerate() {
+                            cpu_cores_load.insert(
+                                i as u8,
+                                (core.user+core.nice+core.system+core.interrupt)*100.0
+                            );
+                        }
+                    },
+                    Err(e) => {
+                        error!("Could not determine CPU core loads. {}", e);
+                    }
+                }
+            },
+            Err(e) => {
+                error!("Could not determine CPU core loads. {}", e);
+            }
+        }
+
         let memory_total: u64;
         let memory_free: u64;
         match self.system.memory() {
@@ -349,6 +378,7 @@ impl Leaderlink {
 
         SystemMetricsReport {
             cpu_load,
+            cpu_cores_load,
             memory_total,
             memory_free,
             rpi_temperature

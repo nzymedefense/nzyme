@@ -38,6 +38,7 @@ public abstract class StatusReport {
     public abstract Map<String, Long> gaugesLong();
     public abstract Map<String, TimersReport> timers();
     public abstract Map<String, Long> logCounts();
+    public abstract Map<String, Object> configuration();
 
     @Nullable
     public abstract String rpi();
@@ -52,6 +53,7 @@ public abstract class StatusReport {
                                       @JsonProperty("gauges_long") Map<String, Long> gaugesLong,
                                       @JsonProperty("timers") Map<String, TimersReport> timers,
                                       @JsonProperty("log_counts") Map<String, Long> logCounts,
+                                      @JsonProperty("configuration") Map<String, Object> configuration,
                                       @JsonProperty("rpi") String rpi) {
         return builder()
                 .version(version)
@@ -63,6 +65,7 @@ public abstract class StatusReport {
                 .gaugesLong(gaugesLong)
                 .timers(timers)
                 .logCounts(logCounts)
+                .configuration(configuration)
                 .rpi(rpi)
                 .build();
     }
@@ -90,6 +93,8 @@ public abstract class StatusReport {
         public abstract Builder timers(Map<String, TimersReport> timers);
 
         public abstract Builder logCounts(Map<String, Long> logCounts);
+
+        public abstract Builder configuration(Map<String, Object> configuration);
 
         public abstract Builder rpi(String rpi);
 

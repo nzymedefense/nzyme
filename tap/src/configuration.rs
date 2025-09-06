@@ -152,27 +152,27 @@ pub struct ProtocolsArp {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsSsh {
-    pub pipeline_size: i32,
+    pub pipeline_size: i32
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsSocks {
-    pub pipeline_size: i32,
+    pub pipeline_size: i32
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsDhcpv4 {
-    pub pipeline_size: i32,
+    pub pipeline_size: i32
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsUavRemoteId {
-    pub pipeline_size: i32,
+    pub pipeline_size: i32
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsGnss {
-    pub nmea_pipeline_size: i32,
+    pub nmea_pipeline_size: i32
 }
 
 pub fn load(path: String) -> Result<Configuration, Error> {

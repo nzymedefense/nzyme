@@ -1,8 +1,8 @@
 use std::collections::HashMap;
-
 use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};
 use crate::alerting::alert_types::{AlertAttribute, Dot11AlertType};
+use crate::configuration::Configuration;
 
 #[derive(Serialize)]
 pub struct StatusReport {
@@ -15,7 +15,166 @@ pub struct StatusReport {
     pub gauges_long: HashMap<String, i128>,
     pub timers: HashMap<String, TimerReport>,
     pub log_counts: HashMap<String, u128>,
-    pub rpi: Option<String>
+    pub rpi: Option<String>,
+    pub configuration: ConfigurationReport
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReport {
+    pub performance: ConfigurationReportPerformance,
+    pub misc: ConfigurationReportMisc,
+    pub protocols: ConfigurationReportProtocols,
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportPerformance {
+    pub ethernet_brokers: i32,
+    pub wifi_brokers: i32,
+    pub wifi_broker_buffer_capacity: usize,
+    pub ethernet_broker_buffer_capacity: usize,
+    pub bluetooth_devices_pipeline_size: Option<i32>,
+    pub shared_protocol_processors: Option<i32>
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportMisc {
+    pub training_period_minutes: i32,
+    pub context_mac_ip_retention_hours: i32,
+    pub context_mac_hostname_retention_hours: i32
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportProtocols {
+    pub wifi: ConfigurationReportProtocolsWifi,
+    pub tcp: ConfigurationReportProtocolsTcp,
+    pub udp: ConfigurationReportProtocolsUdp,
+    pub dns: ConfigurationReportProtocolsDns,
+    pub arp: ConfigurationReportProtocolsArp,
+    pub ssh: ConfigurationReportProtocolsSsh,
+    pub socks: ConfigurationReportProtocolsSocks,
+    pub dhcpv4: ConfigurationReportProtocolsDhcpv4,
+    pub uav_remote_id: ConfigurationReportProtocolsUavRemoteId,
+    pub gnss: ConfigurationReportProtocolsGnss
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportProtocolsWifi {
+    pub pipeline_size: i32,
+    pub processors: Option<i32>
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportProtocolsTcp {
+    pub pipeline_size: i32,
+    pub processors: Option<i32>,
+    pub reassembly_buffer_size: i32,
+    pub session_timeout_seconds: i32
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportProtocolsUdp {
+    pub pipeline_size: i32,
+    pub processors: Option<i32>,
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportProtocolsDns {
+    pub pipeline_size: i32,
+    pub entropy_zscore_threshold: f32
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportProtocolsArp {
+    pub pipeline_size: i32,
+    pub poisoning_monitor: bool,
+    pub poisoning_window_seconds: i32
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportProtocolsSsh {
+    pub pipeline_size: i32
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportProtocolsSocks {
+    pub pipeline_size: i32
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportProtocolsDhcpv4 {
+    pub pipeline_size: i32
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportProtocolsUavRemoteId {
+    pub pipeline_size: i32
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportProtocolsGnss {
+    pub nmea_pipeline_size: i32
+}
+
+impl TryFrom<Configuration> for ConfigurationReport {
+    type Error = ();
+
+    fn try_from(c: Configuration) -> Result<ConfigurationReport, ()> {
+        Ok(ConfigurationReport {
+            performance: ConfigurationReportPerformance {
+                ethernet_brokers: c.performance.ethernet_brokers,
+                wifi_brokers: c.performance.wifi_brokers,
+                wifi_broker_buffer_capacity: c.performance.wifi_broker_buffer_capacity,
+                ethernet_broker_buffer_capacity: c.performance.ethernet_broker_buffer_capacity,
+                bluetooth_devices_pipeline_size: c.performance.bluetooth_devices_pipeline_size,
+                shared_protocol_processors: c.performance.shared_protocol_processors
+            },
+            misc: ConfigurationReportMisc {
+                training_period_minutes: c.misc.training_period_minutes,
+                context_mac_ip_retention_hours: c.misc.context_mac_ip_retention_hours,
+                context_mac_hostname_retention_hours: c.misc.context_mac_hostname_retention_hours
+            },
+            protocols: ConfigurationReportProtocols {
+                wifi: ConfigurationReportProtocolsWifi {
+                    pipeline_size: c.protocols.wifi.pipeline_size,
+                    processors: c.protocols.wifi.processors
+                },
+                tcp: ConfigurationReportProtocolsTcp {
+                    pipeline_size: c.protocols.tcp.pipeline_size,
+                    processors: c.protocols.tcp.processors,
+                    reassembly_buffer_size: c.protocols.tcp.reassembly_buffer_size,
+                    session_timeout_seconds: c.protocols.tcp.session_timeout_seconds
+                },
+                udp: ConfigurationReportProtocolsUdp {
+                    pipeline_size: c.protocols.udp.pipeline_size,
+                    processors: c.protocols.udp.processors
+                },
+                dns: ConfigurationReportProtocolsDns {
+                    pipeline_size: c.protocols.dns.pipeline_size,
+                    entropy_zscore_threshold: c.protocols.dns.entropy_zscore_threshold
+                },
+                arp: ConfigurationReportProtocolsArp {
+                    pipeline_size: c.protocols.arp.pipeline_size,
+                    poisoning_monitor: c.protocols.arp.poisoning_monitor,
+                    poisoning_window_seconds: c.protocols.arp.poisoning_window_seconds
+                },
+                ssh: ConfigurationReportProtocolsSsh {
+                    pipeline_size: c.protocols.ssh.pipeline_size
+                },
+                socks: ConfigurationReportProtocolsSocks {
+                    pipeline_size: c.protocols.socks.pipeline_size
+                },
+                dhcpv4: ConfigurationReportProtocolsDhcpv4 {
+                    pipeline_size: c.protocols.dhcpv4.pipeline_size
+                },
+                uav_remote_id: ConfigurationReportProtocolsUavRemoteId {
+                    pipeline_size: c.protocols.uav_remote_id.pipeline_size
+                },
+                gnss: ConfigurationReportProtocolsGnss {
+                    nmea_pipeline_size: c.protocols.gnss.nmea_pipeline_size
+                },
+            }
+        })
+    }
 }
 
 #[derive(Serialize)]
@@ -43,6 +202,7 @@ pub struct TotalWithAverage {
 #[derive(Serialize)]
 pub struct SystemMetricsReport {
     pub cpu_load: f32,
+    pub cpu_cores_load: HashMap<u8, f32>,
     pub memory_total: u64,
     pub memory_free: u64,
     pub rpi_temperature: Option<f32>

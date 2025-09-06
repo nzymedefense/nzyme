@@ -38,9 +38,11 @@ public class TapManager {
     private static final Logger LOG = LogManager.getLogger(TapManager.class);
 
     private final NzymeNode nzyme;
+    private final ObjectMapper om;
 
     public TapManager(NzymeNode nzyme) {
         this.nzyme = nzyme;
+        this.om = new ObjectMapper();
 
         Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
@@ -133,13 +135,24 @@ public class TapManager {
     public void registerTapStatus(StatusReport report, String remoteAddress, UUID tapUUID) {
         LOG.debug("Registering report from tap [{}].", tapUUID);
 
+        String cpuCoresLoadJson;
+        String configurationJson;
+        try {
+            cpuCoresLoadJson = this.om.writeValueAsString(report.systemMetrics().cpuCoresLoad());
+            configurationJson = this.om.writeValueAsString(report.configuration());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Could not serialize tap report JSON.", e);
+        }
+
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE taps SET version = :version, clock = :clock, " +
                                 "processed_bytes_total = :processed_bytes_total, " +
                                 "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
                                 "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
-                                "remote_address = :remote_address, rpi = :rpi, rpi_temperature = :rpi_temperature, " +
-                                "last_report = NOW() WHERE deleted = false AND uuid = :uuid")
+                                "cpu_cores_load = :cpu_cores_load::jsonb, remote_address = :remote_address, " +
+                                "rpi = :rpi, rpi_temperature = :rpi_temperature, " +
+                                "configuration = :configuration::jsonb, last_report = NOW() " +
+                                "WHERE deleted = false AND uuid = :uuid")
                         .bind("version", report.version())
                         .bind("clock", report.timestamp())
                         .bind("processed_bytes_total", report.processedBytes().total())
@@ -148,9 +161,11 @@ public class TapManager {
                         .bind("memory_free", report.systemMetrics().memoryFree())
                         .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())
                         .bind("cpu_load", report.systemMetrics().cpuLoad())
+                        .bind("cpu_cores_load", cpuCoresLoadJson)
                         .bind("remote_address", remoteAddress)
                         .bind("rpi", report.rpi())
                         .bind("rpi_temperature", report.systemMetrics().rpiTemperature())
+                        .bind("configuration", configurationJson)
                         .bind("uuid", tapUUID)
                         .execute()
         );
@@ -366,6 +381,12 @@ public class TapManager {
         writeGauge(tapUUID, "system.captures.throughput_bit_sec", report.processedBytes().average()*8/10, report.timestamp());
         writeGauge(tapUUID, "os.memory.bytes_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(), report.timestamp());
         writeGauge(tapUUID, "os.cpu.load.percent", report.systemMetrics().cpuLoad(), report.timestamp());
+
+        // CPU core load.
+        for (Map.Entry<Integer, Double> core : report.systemMetrics().cpuCoresLoad().entrySet()) {
+            writeGauge(tapUUID, "os.cpu.cores." + core.getKey() + ".load.percent", core.getValue(), report.timestamp());
+        }
+
 
         if (report.systemMetrics().rpiTemperature() != null) {
             writeGauge(tapUUID, "rpi.temperature", report.systemMetrics().rpiTemperature(), report.timestamp());
