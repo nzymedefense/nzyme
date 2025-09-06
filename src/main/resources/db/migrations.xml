@@ -7116,5 +7116,20 @@
             </column>
         </addColumn>
     </changeSet>
+    
+    <changeSet id="add_dot11_indices_20250906" author="lennartkoopmann">
+        <createIndex tableName="dot11_ssids" indexName="ssids_join_distinct">
+            <column name="bssid_id" />
+            <column name="ssid" />
+        </createIndex>
+
+        <dropIndex tableName="dot11_ssid_settings" indexName="attribute_lookup" />
+        <dropIndex tableName="dot11_ssid_settings" indexName="ssid_lookup" />
+
+        <createIndex tableName="dot11_ssid_settings" indexName="attribute_lookup">
+            <column name="ssid_id" />
+            <column name="attribute" />
+        </createIndex>
+    </changeSet>
 
 </databaseChangeLog>

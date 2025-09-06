@@ -546,7 +546,6 @@ public class Dot11 {
                         .mapTo(BSSIDAndSSIDCountHistogramEntry.class)
                         .list()
         );
-
     }
 
     public List<Dot11AdvertisementHistogramEntry> getSSIDAdvertisementHistogram(String bssid,
