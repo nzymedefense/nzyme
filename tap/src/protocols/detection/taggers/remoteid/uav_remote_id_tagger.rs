@@ -67,7 +67,7 @@ pub fn tag(data: &[u8], bssid: String, rssi: Option<i8>) -> Option<UavRemoteIdMe
             return None
         }
 
-        if let Err(e) =  parse_message(&data[5..data.len()], &mut parent_message) {
+        if let Err(e) = parse_message(&data[5..data.len()], &mut parent_message) {
             tracemark!("Could not parse individual remote ID message: {:?}", e);
             return None
         }
@@ -212,7 +212,7 @@ fn parse_location_vector_message(data: &[u8]) -> Result<LocationVectorMessage> {
         false => data[2] as f32 * 0.25
     };
     
-    if speed > 254.25 {
+    if !(0.0..=254.25).contains(&speed) {
         bail!("Invalid speed: {}", speed);
     }
 

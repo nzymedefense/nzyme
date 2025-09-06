@@ -194,7 +194,6 @@ impl TryFrom<u8> for UavType {
 
     fn try_from(val: u8) -> Result<Self, Self::Error> {
         match val {
-            0 => Ok(UavType::Undeclared),
             1 => Ok(UavType::Aeroplane),
             2 => Ok(UavType::MultirotorHelicopter),
             3 => Ok(UavType::Gyroplane),

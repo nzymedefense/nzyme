@@ -62,6 +62,11 @@ pub fn generate(x: &MutexGuard<HashMap<String, Uav>>) -> UavsReport {
     let mut uavs: Vec<UavReport> = Vec::new();
 
     for uav in x.values() {
+        // We only report UAVs that have transmitted vector reports.
+        if uav.vector_reports.is_empty() {
+            continue;
+        }
+
         let uav_ids = uav.uav_ids.iter()
             .map(|id| UavIdReport { id: id.id.clone(), id_type: id.id_type.clone() })
             .collect();
