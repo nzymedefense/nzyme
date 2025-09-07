@@ -5,7 +5,7 @@
 
 Learn more at https://www.nzyme.org/.
 
-**Version 2.0.0 of nzyme is currently in development. The previous website for v1.x is archived [here](https://v1.nzyme.org/).**
+**Version 2.0.0 of nzyme is currently in development and alpha releases are available.**
 
 ## Contributing
 
