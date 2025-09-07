@@ -131,7 +131,7 @@ class SimpleLineChart extends React.Component {
               autosize: true,
               responsive: true,
               showTips: false,
-              scrollZoom: interactive
+              scrollZoom: false
             }}
             onRelayout={event => {
               if (this.props.setTimeRange) {
