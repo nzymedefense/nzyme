@@ -1,11 +1,11 @@
-# nzyme - Close Access Denial
+# Nzyme - Close Access Denial
 
 [![Codecov](https://img.shields.io/codecov/c/github/lennartkoopmann/nzyme.svg)](https://codecov.io/gh/lennartkoopmann/nzyme/)
 [![License](https://img.shields.io/badge/license-SSPL-brightgreen)](http://www.mongodb.com/licensing/server-side-public-license)
 
 Learn more at https://www.nzyme.org/.
 
-**Version 2.0.0 of nzyme is currently in development and alpha releases are available.**
+**Version 2.0.0 of Nzyme is currently in development and alpha releases are available.**
 
 ## Contributing
 
@@ -16,7 +16,7 @@ There are many ways to contribute and all community interaction is absolutely we
 * Open a Pull Request for a new feature or a bugfix. It is a good idea to get in contact first to make sure that it fits the roadmap and has a chance to be merged.
 * Write documentation.
 * Write a blog post.
-* Help a user in the issue tracker or the IRC channel (#nzyme on FreeNode.)
+* Help a user in the issue tracker or [our Discord](https://discord.gg/9W2tVtXUny).
 * Get in contact and say how you use it or what would be a cool addition.
 * Tell the world.
 
@@ -24,4 +24,4 @@ Please be aware of the [Code of Conduct](CODE_OF_CONDUCT.md) that will be enforc
 
 ## Legal notice
 
-Make sure to comply with local laws, especially with regards to wiretapping, when running nzyme. Note that nzyme is never decrypting any data but only reading unencrypted data.
+Make sure to comply with local laws, especially with regards to wiretapping, when running Nzyme. Note that Nzyme is never decrypting any data but only reading unencrypted data.
