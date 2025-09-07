@@ -118,9 +118,11 @@ class SimpleBarChart extends React.Component {
               shapes: this.props.shapes
             }}
             config={{
+              showAxisDragHandles: false,
               displayModeBar: false,
               autosize: true,
-              responsive: true
+              responsive: true,
+              showTips: false
             }}
             onRelayout={event => {
               if (this.props.setTimeRange) {
