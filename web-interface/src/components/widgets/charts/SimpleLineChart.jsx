@@ -1,7 +1,7 @@
 import React from 'react'
 import Plot from 'react-plotly.js'
 import Store from '../../../util/Store'
-import {Absolute} from "../../shared/timerange/TimeRange";
+import { Absolute } from "../../shared/timerange/TimeRange";
 
 class SimpleLineChart extends React.Component {
   constructor (props) {
@@ -34,9 +34,13 @@ class SimpleLineChart extends React.Component {
           x: x,
           y: y,
           type: 'scatter',
-          mode: this.props.scattermode ? this.props.scattermode : 'line',
+          mode: this.props.scattermode ? this.props.scattermode : 'lines',
           marker: { size: 3 },
-          line: { width: this.props.lineWidth ? this.props.lineWidth : 2, shape: 'linear', color: Store.get('dark_mode') ? '#f9f9f9' : '#1d30d7' }
+          line: {
+            width: this.props.lineWidth ? this.props.lineWidth : 2,
+            shape: 'linear',
+            color: Store.get('dark_mode') ? '#f9f9f9' : '#1d30d7'
+          }
         }
       ]
     }
@@ -66,9 +70,14 @@ class SimpleLineChart extends React.Component {
       colors.grid = '#e6e6e6'
     }
 
+    const interactive = Boolean(this.props.setTimeRange)
+
+    const hovermode = this.props.disableHover
+        ? false
+        : (this.props.hovermode ?? (interactive ? "x" : "closest"))
+
     return (
         <Plot
-            ref={this.plotRef}
             style={{ width: '100%', height: '100%' }}
             data={finalData}
             layout={{
@@ -84,9 +93,9 @@ class SimpleLineChart extends React.Component {
               paper_bgcolor: colors.background,
               plot_bgcolor: colors.background,
               showlegend: false,
-              dragmode: this.props.setTimeRange ? 'zoom' : false,
+              dragmode: interactive ? 'zoom' : false,
               clickmode: 'none',
-              hovermode: this.props.disableHover ? false : 'x',
+              hovermode: hovermode,
               hoverlabel: {
                 font: { size: 11 },
                 namelength: -1
@@ -94,14 +103,14 @@ class SimpleLineChart extends React.Component {
               barmode: 'stack',
               boxgap: 0,
               xaxis: {
-                fixedrange: false,
+                fixedrange: !interactive,
                 rangeslider: { visible: false },
                 title: this.props.xaxistitle,
                 linecolor: colors.lines,
                 linewidth: 1,
                 gridcolor: colors.grid,
                 zeroline: false,
-                range: xRange,
+                range: xRange
               },
               yaxis: {
                 ticksuffix: this.props.ticksuffix ? this.props.ticksuffix : undefined,
@@ -121,7 +130,8 @@ class SimpleLineChart extends React.Component {
               displayModeBar: false,
               autosize: true,
               responsive: true,
-              showTips: false
+              showTips: false,
+              scrollZoom: interactive
             }}
             onRelayout={event => {
               if (this.props.setTimeRange) {

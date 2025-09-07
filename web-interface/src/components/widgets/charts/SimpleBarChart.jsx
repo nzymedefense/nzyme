@@ -1,8 +1,7 @@
 import React from 'react'
-
 import Plot from 'react-plotly.js'
 import Store from '../../../util/Store'
-import {Absolute} from "../../shared/timerange/TimeRange";
+import { Absolute } from "../../shared/timerange/TimeRange";
 
 class SimpleBarChart extends React.Component {
   constructor (props) {
@@ -58,16 +57,11 @@ class SimpleBarChart extends React.Component {
       colors.grid = '#e6e6e6'
     }
 
-    let hovermode;
-    if (this.props.disableHover) {
-      hovermode = false;
-    } else {
-      if (this.props.hovermode) {
-        hovermode = this.props.hovermode;
-      } else {
-        hovermode = "x";
-      }
-    }
+    const interactive = Boolean(this.props.setTimeRange)
+
+    const hovermode = this.props.disableHover
+        ? false
+        : (this.props.hovermode ?? (interactive ? "x" : "closest"))
 
     return (
         <Plot
@@ -86,9 +80,9 @@ class SimpleBarChart extends React.Component {
               paper_bgcolor: colors.background,
               plot_bgcolor: colors.background,
               showlegend: false,
-              dragmode: this.props.setTimeRange ? 'zoom' : false,
+              dragmode: interactive ? 'zoom' : false,
               clickmode: 'none',
-              hovermode:  hovermode,
+              hovermode: hovermode,
               hoverlabel: {
                 font: { size: 11 },
                 namelength: -1
@@ -96,7 +90,7 @@ class SimpleBarChart extends React.Component {
               barmode: 'stack',
               boxgap: 0,
               xaxis: {
-                fixedrange: false,
+                fixedrange: !interactive,
                 rangeslider: { visible: false },
                 title: this.props.xaxistitle,
                 linecolor: colors.lines,
@@ -122,7 +116,8 @@ class SimpleBarChart extends React.Component {
               displayModeBar: false,
               autosize: true,
               responsive: true,
-              showTips: false
+              showTips: false,
+              scrollZoom: interactive
             }}
             onRelayout={event => {
               if (this.props.setTimeRange) {
