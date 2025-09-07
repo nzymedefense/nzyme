@@ -525,10 +525,6 @@ public class Dot11 {
                                 "DATE_TRUNC(:date_trunc, b.created_at) AS bucket " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
-                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
-                                "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
-                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
-                                "AND ssp.attribute = 'security_protocol' " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "AND b.tap_uuid IN (<taps>) " +
                                 "GROUP BY bucket ORDER BY bucket")
