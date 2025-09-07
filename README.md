@@ -1,4 +1,4 @@
-# nzyme - close Access Denial
+# nzyme - Close Access Denial
 
 [![Codecov](https://img.shields.io/codecov/c/github/lennartkoopmann/nzyme.svg)](https://codecov.io/gh/lennartkoopmann/nzyme/)
 [![License](https://img.shields.io/badge/license-SSPL-brightgreen)](http://www.mongodb.com/licensing/server-side-public-license)
