@@ -513,14 +513,11 @@ public class Dot11 {
     }
 
     public List<BSSIDAndSSIDCountHistogramEntry> getBSSIDAndSSIDCountHistogram(TimeRange timeRange,
-                                                                        Bucketing.BucketingConfiguration bc,
-                                                                        Filters filters,
-                                                                        List<UUID> taps) {
+                                                                               Bucketing.BucketingConfiguration bc,
+                                                                               List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
-
-        FilterSqlFragment filterFragment = FilterSql.generate(filters, new Dot11BSSIDFilters());
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT b.bssid) AS bssid_count, " +
@@ -533,14 +530,12 @@ public class Dot11 {
                                 "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
                                 "AND ssp.attribute = 'security_protocol' " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
-                                "AND b.tap_uuid IN (<taps>) " + filterFragment.whereSql() +
-                                "GROUP BY bucket HAVING 1=1 " + filterFragment.havingSql() +
-                                "ORDER BY bucket")
+                                "AND b.tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket")
                         .bind("date_trunc", bc.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
-                        .bindMap(filterFragment.bindings())
                         .mapTo(BSSIDAndSSIDCountHistogramEntry.class)
                         .list()
         );
