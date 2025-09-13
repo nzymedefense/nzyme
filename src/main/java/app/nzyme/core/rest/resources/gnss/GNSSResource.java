@@ -1,18 +1,20 @@
 package app.nzyme.core.rest.resources.gnss;
 
-
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.generic.LatLonResult;
 import app.nzyme.core.gnss.Constellation;
+import app.nzyme.core.gnss.GNSSRegistryKeys;
 import app.nzyme.core.gnss.db.*;
 import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntry;
+import app.nzyme.core.integrations.smtp.SMTPConfigurationRegistryKeys;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.requests.CreateGNSSMonitoringRuleRequest;
+import app.nzyme.core.rest.requests.GenericConfigurationUpdateRequest;
 import app.nzyme.core.rest.requests.UpdateGNSSMonitoringRuleRequest;
 import app.nzyme.core.rest.responses.gnss.*;
+import app.nzyme.core.rest.responses.gnss.monitoring.GNSSMonitoringConfigurationResponse;
 import app.nzyme.core.rest.responses.gnss.monitoring.GNSSMonitoringRuleDetailsResponse;
 import app.nzyme.core.rest.responses.gnss.monitoring.GNSSMonitoringRulesListResponse;
-import app.nzyme.core.rest.responses.metrics.HistogramResponse;
 import app.nzyme.core.rest.responses.shared.LatLonResponse;
 import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
@@ -20,15 +22,16 @@ import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.Tools;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
-import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -458,6 +461,71 @@ public class GNSSResource extends TapDataHandlingResource {
         }
 
         nzyme.getGnss().deleteMonitoringRule(rule.get().id());
+
+        return Response.ok().build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
+    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/configuration")
+    public Response getMonitoringConfiguration(@Context SecurityContext sc,
+                                               @PathParam("organizationId") UUID organizationId,
+                                               @PathParam("tenantId") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Integer trainingPeriodMinutes = nzyme.getDatabaseCoreRegistry()
+                .getValue(GNSSRegistryKeys.GNSS_MONITORING_TRAINING_PERIOD_MINUTES.key(), organizationId, tenantId)
+                .map(Integer::parseInt)
+                .orElse(Integer.parseInt(GNSSRegistryKeys.GNSS_MONITORING_TRAINING_PERIOD_MINUTES.defaultValue().get()));
+
+        GNSSMonitoringConfigurationResponse response = GNSSMonitoringConfigurationResponse.create(
+                ConfigurationEntryResponse.create(
+                        GNSSRegistryKeys.GNSS_MONITORING_TRAINING_PERIOD_MINUTES.key(),
+                        "Training Period (minutes)",
+                        trainingPeriodMinutes,
+                        ConfigurationEntryValueType.NUMBER,
+                        GNSSRegistryKeys.GNSS_MONITORING_TRAINING_PERIOD_MINUTES.defaultValue().orElse(null),
+                        GNSSRegistryKeys.GNSS_MONITORING_TRAINING_PERIOD_MINUTES.requiresRestart(),
+                        GNSSRegistryKeys.GNSS_MONITORING_TRAINING_PERIOD_MINUTES.constraints().orElse(null),
+                        "gnss-monitoring-training-period"
+                )
+        );
+
+        return Response.ok(response).build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
+    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/configuration")
+    public Response updateMonitoringConfiguration(@Context SecurityContext sc,
+                                                  @PathParam("organizationId") UUID organizationId,
+                                                  @PathParam("tenantId") UUID tenantId,
+                                                  @Valid GenericConfigurationUpdateRequest req) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (req.change().isEmpty()) {
+            return Response.status(422).build();
+        }
+
+        for (Map.Entry<String, Object> c : req.change().entrySet()) {
+            //noinspection SwitchStatementWithTooFewBranches
+            switch (c.getKey()) {
+                case "gnss_monitoring_training_period_minutes":
+                    if (!ConfigurationEntryConstraintValidator
+                            .checkConstraints(GNSSRegistryKeys.GNSS_MONITORING_TRAINING_PERIOD_MINUTES, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                default:
+                    return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+
+            nzyme.getDatabaseCoreRegistry().setValue(c.getKey(), c.getValue().toString(), organizationId, tenantId);
+        }
 
         return Response.ok().build();
     }

@@ -97,7 +97,7 @@ export default function GNSSMonitoringRuleDetailsPage() {
   }
 
   if (redirect) {
-    return <Navigate to={ApiRoutes.GNSS.MONITORING.INDEX} />
+    return <Navigate to={ApiRoutes.GNSS.MONITORING.RULES.INDEX} />
   }
 
   if (!rule) {
@@ -110,9 +110,9 @@ export default function GNSSMonitoringRuleDetailsPage() {
           <div className="col-9">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
-                <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.CONSTELLATIONS}>GNSS</a></li>
-                <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.MONITORING.INDEX}>Monitoring</a></li>
-                <li className="breadcrumb-item">Rules</li>
+                <li className="breadcrumb-item">GNSS</li>
+                <li className="breadcrumb-item">Monitoring</li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.MONITORING.RULES.INDEX}>Rules</a></li>
                 <li className="breadcrumb-item">{rule.name}</li>
                 <li className="breadcrumb-item active" aria-current="page">Details</li>
               </ol>
@@ -121,7 +121,7 @@ export default function GNSSMonitoringRuleDetailsPage() {
 
           <div className="col-3">
             <span className="float-end">
-              <a href={ApiRoutes.GNSS.MONITORING.INDEX} className="btn btn-secondary">Back</a>{' '}
+              <a href={ApiRoutes.GNSS.MONITORING.RULES.INDEX} className="btn btn-secondary">Back</a>{' '}
               <a href={ApiRoutes.GNSS.MONITORING.RULES.EDIT(uuid)} className="btn btn-primary">Edit Rule</a>
             </span>
           </div>

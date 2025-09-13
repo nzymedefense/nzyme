@@ -35,7 +35,7 @@ export default function CreateGNSSMonitoringRulePage() {
   }
 
   if (redirect) {
-    return <Navigate to={ApiRoutes.GNSS.MONITORING.INDEX} />
+    return <Navigate to={ApiRoutes.GNSS.MONITORING.RULES.INDEX} />
   }
 
   if (!organization || !tenant) {
@@ -49,10 +49,8 @@ export default function CreateGNSSMonitoringRulePage() {
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item">GNSS</li>
-                <li className="breadcrumb-item">
-                  <a href={ApiRoutes.GNSS.MONITORING.INDEX}>Monitoring</a>
-                </li>
-                <li className="breadcrumb-item">Rules</li>
+                <li className="breadcrumb-item">Monitoring</li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.MONITORING.RULES.INDEX}>Rules</a></li>
                 <li className="breadcrumb-item active" aria-current="page">Create Rule</li>
               </ol>
             </nav>
@@ -60,7 +58,7 @@ export default function CreateGNSSMonitoringRulePage() {
 
           <div className="col-md-3">
             <span className="float-end">
-              <a className="btn btn-primary" href={ApiRoutes.GNSS.MONITORING.INDEX}>
+              <a className="btn btn-primary" href={ApiRoutes.GNSS.MONITORING.RULES.INDEX}>
                 Back
               </a>
             </span>

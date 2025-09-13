@@ -252,8 +252,9 @@ const ApiRoutes = {
     CONSTELLATIONS: '/gnss/constellations',
     PRN: (constellation, prn) => `/gnss/constellations/${constellation}/prns/show/${prn}`,
     MONITORING: {
-      INDEX: '/gnss/monitoring',
+      SETTINGS: '/gnss/monitoring/settings',
       RULES: {
+        INDEX: '/gnss/monitoring/rules',
         DETAILS: (uuid) => `/gnss/monitoring/rules/show/${uuid}`,
         EDIT: (uuid) => `/gnss/monitoring/rules/show/${uuid}/edit`,
         CREATE: '/gnss/monitoring/rules/organizations/show/create'

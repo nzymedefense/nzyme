@@ -130,4 +130,15 @@ export default class GnssService {
       onSuccess)
   }
 
+  getMonitoringConfiguration(organizationId, tenantId, setSettings) {
+    RESTClient.get(`/gnss/monitoring/organization/${organizationId}/tenant/${tenantId}/configuration`,
+        {}, (response) => setSettings(response.data)
+    )
+  }
+
+  updateMonitoringConfiguration(newConfig, organizationId, tenantId, successCallback, errorCallback) {
+    RESTClient.put(`/gnss/monitoring/organization/${organizationId}/tenant/${tenantId}/configuration`,
+        { change: newConfig }, successCallback, errorCallback)
+  }
+
 }

@@ -17,4 +17,13 @@ public class GNSSRegistryKeys {
             false
     );
 
+    public static final RegistryKey GNSS_MONITORING_TRAINING_PERIOD_MINUTES = RegistryKey.create(
+            "gnss_monitoring_training_period_minutes",
+            Optional.of(new ArrayList<>() {{
+                add(ConfigurationEntryConstraint.createNumberRangeConstraint(0, Integer.MAX_VALUE));
+            }}),
+            Optional.of("10"),
+            false
+    );
+
 }

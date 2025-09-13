@@ -146,7 +146,7 @@ function Sidebar(props) {
               icon={<i className="sidebar-icon fa-solid fa-satellite"/>}/>
 
             <NavigationLink
-                href={ApiRoutes.GNSS.MONITORING.INDEX}
+                href={ApiRoutes.GNSS.MONITORING.RULES.INDEX}
                 title="Monitoring"
                 icon={<i className="sidebar-icon fa-solid fa-shield-halved"/>}
                 show={userHasPermission(user, "gnss_monitoring_manage")}/>

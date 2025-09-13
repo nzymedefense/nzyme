@@ -45,9 +45,9 @@ export default function EditGNSSMonitoringRulePage() {
         <div className="col-9">
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
-              <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.CONSTELLATIONS}>GNSS</a></li>
-              <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.MONITORING.INDEX}>Monitoring</a></li>
-              <li className="breadcrumb-item">Rules</li>
+              <li className="breadcrumb-item">GNSS</li>
+              <li className="breadcrumb-item">Monitoring</li>
+              <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.MONITORING.RULES.INDEX}>Rules</a></li>
               <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.MONITORING.RULES.DETAILS(uuid)}>{rule.name}</a></li>
               <li className="breadcrumb-item active" aria-current="page">Edit</li>
             </ol>

@@ -4,10 +4,12 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import ApiRoutes from "../../../util/ApiRoutes";
 import GnssService from "../../../services/GnssService";
 import GNSSMonitoringRulesTable from "./GNSSMonitoringRulesTable";
+import SectionMenuBar from "../../shared/SectionMenuBar";
+import {GNSS_MONITORING_MENU_ITEMS} from "./GNSSMonitoringMenuItems";
 
 const gnssService = new GnssService();
 
-export default function GNSSMonitoringPage() {
+export default function GNSSMonitoringRulesPage() {
 
   const [organizationId, tenantId] = useSelectedTenant();
 
@@ -24,7 +26,8 @@ export default function GNSSMonitoringPage() {
       <React.Fragment>
         <div className="row">
           <div className="col-md-10">
-            <h1>GNSS Monitoring</h1>
+            <SectionMenuBar items={GNSS_MONITORING_MENU_ITEMS}
+                            activeRoute={ApiRoutes.GNSS.MONITORING.RULES.INDEX} />
           </div>
 
           <div className="col-md-2 text-end">

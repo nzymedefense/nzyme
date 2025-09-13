@@ -176,10 +176,11 @@ import AssetDetailsPage from "./components/ethernet/assets/AssetDetailsPage";
 import ARPPacketsPage from "./components/ethernet/assets/arp/ARPPacketsPage";
 import GNSSConstellationsPage from "./components/gnss/GNSSConstellationsPage";
 import GNSSPRNDetailsPage from "./components/gnss/prn/GNSSPRNDetailsPage";
-import GNSSMonitoringPage from "./components/gnss/monitoring/GNSSMonitoringPage";
+import GNSSMonitoringRulesPage from "./components/gnss/monitoring/GNSSMonitoringRulesPage";
 import CreateGNSSMonitoringRulePage from "./components/gnss/monitoring/CreateGNSSMonitoringRulePage";
 import GNSSMonitoringRuleDetailsPage from "./components/gnss/monitoring/GNSSMonitoringRuleDetailsPage";
 import EditGNSSMonitoringRulePage from "./components/gnss/monitoring/EditGNSSMonitoringRulePage";
+import GNSSMonitoringSettingsPage from "./components/gnss/monitoring/GNSSMonitoringSettingsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -634,11 +635,14 @@ function App() {
                                 <Route path={ApiRoutes.GNSS.CONSTELLATIONS} element={<GNSSConstellationsPage />}/>
                                 <Route path={ApiRoutes.GNSS.PRN(':constellation', ':prn')} element={<GNSSPRNDetailsPage />}/>
 
-                                { /* GNSS Monitoring. */}
-                                <Route path={ApiRoutes.GNSS.MONITORING.INDEX} element={<GNSSMonitoringPage />}/>
+                                { /* GNSS Monitoring Rules. */}
+                                <Route path={ApiRoutes.GNSS.MONITORING.RULES.INDEX} element={<GNSSMonitoringRulesPage />}/>
                                 <Route path={ApiRoutes.GNSS.MONITORING.RULES.DETAILS(':uuid')} element={<GNSSMonitoringRuleDetailsPage />}/>
                                 <Route path={ApiRoutes.GNSS.MONITORING.RULES.CREATE} element={<CreateGNSSMonitoringRulePage />}/>
                                 <Route path={ApiRoutes.GNSS.MONITORING.RULES.EDIT(':uuid')} element={<EditGNSSMonitoringRulePage />}/>
+
+                                { /* GNSS Monitoring Settings. */}
+                                <Route path={ApiRoutes.GNSS.MONITORING.SETTINGS} element={<GNSSMonitoringSettingsPage />}/>
                               </Route>
 
                               { /* Context. */ }
