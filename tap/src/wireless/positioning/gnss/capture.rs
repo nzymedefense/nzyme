@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use chrono::Utc;
 use log::{debug, error, info, trace};
+use crate::configuration::GNSSInterface;
 use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::GenericChannelName;
 use crate::metrics::Metrics;
@@ -15,7 +16,7 @@ pub struct Capture {
 }
 
 impl Capture {
-    pub fn run(&mut self, device_name: &str) {
+    pub fn run(&mut self, device_name: &str, device_config: &GNSSInterface) {
         info!("Starting GNSS capture on [{}]", device_name);
 
         let port = match serialport::new(device_name, 9600)
@@ -50,7 +51,9 @@ impl Capture {
                     let message = NMEAMessage {
                         interface: device_name.to_string(),
                         timestamp,
-                        sentence: nmea.to_string()
+                        sentence: nmea.to_string(),
+                        offset_lat: device_config.offset_lat,
+                        offset_lon: device_config.offset_lon
                     };
 
                     let message_len = (nmea.len() + device_name.len()) as u32;

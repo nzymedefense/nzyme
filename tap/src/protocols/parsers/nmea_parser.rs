@@ -46,8 +46,14 @@ pub fn parse_gga(message: &Arc<NMEAMessage>) -> Result<GGASentence, Error> {
 
     // Latitude / Longitude.
     let (latitude, longitude) = if !fields[2].is_empty() && !fields[4].is_empty() {
-        (Some(parse_coord(fields[2], fields[3].chars().next().unwrap())?),
-         Some(parse_coord(fields[4], fields[5].chars().next().unwrap())?))
+        let lat = parse_coord(fields[2], fields[3].chars().next().unwrap())?;
+        let lon = parse_coord(fields[4], fields[5].chars().next().unwrap())?;
+
+        if let Some(offset_lat) = message.offset_lat && let Some(offset_lon) = message.offset_lon {
+            apply_offset(lat, lon, offset_lat, offset_lon)
+        } else {
+            (Some(lat), Some(lon))
+        }
     } else {
         (None, None)
     };
@@ -285,4 +291,24 @@ fn parse_coord(raw: &str, hemi: char) -> Result<f64, Error> {
     }
 
     Ok(val)
+}
+
+fn apply_offset(mut lat: f64, mut lon: f64, offset_lat: f64, offset_lon: f64)
+    -> (Option<f64>, Option<f64>) {
+    lat += offset_lat;
+    lon += offset_lon;
+
+    // Handle latitude beyond poles with reflection
+    if lat > 90.0 {
+        lat = 180.0 - lat;
+        lon += 180.0;
+    } else if lat < -90.0 {
+        lat = -180.0 - lat;
+        lon += 180.0;
+    }
+
+    // Normalize longitude into [-180, 180)
+    lon = (lon + 180.0).rem_euclid(360.0) - 180.0;
+
+    (Some(lat), Some(lon))
 }

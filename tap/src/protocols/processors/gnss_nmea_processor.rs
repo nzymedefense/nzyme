@@ -1,12 +1,13 @@
 use std::sync::{Arc, Mutex};
 use log::{debug, error, trace};
+use crate::configuration::Configuration;
 use crate::protocols::parsers::nmea_parser::{parse_gga, parse_gsa, parse_gsv};
 use crate::state::tables::gnss_monitor_table::GnssMonitorTable;
 use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 use crate::wireless::positioning::nmea::nmea_sentence_types::NMEASentenceType;
 
 pub struct GnssNmeaProcessor {
-    gnss_monitor_table: Arc<Mutex<GnssMonitorTable>>,
+    gnss_monitor_table: Arc<Mutex<GnssMonitorTable>>
 }
 
 impl GnssNmeaProcessor {

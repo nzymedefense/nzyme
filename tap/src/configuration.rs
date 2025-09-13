@@ -68,7 +68,9 @@ pub struct WifiInterface {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GNSSInterface {
-    pub active: bool
+    pub active: bool,
+    pub offset_lat: Option<f64>,
+    pub offset_lon: Option<f64>
 }
 
 #[allow(non_camel_case_types)]
