@@ -2,7 +2,7 @@ import React from "react";
 
 export default function TapConfiguration({configuration}) {
 
-  if (!configuration) {
+  if (!configuration || configuration === "{}") {
     return <div className="alert alert-info mb-0">This tap is not reporting configuration information.</div>
   }
 
