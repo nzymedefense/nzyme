@@ -18,6 +18,7 @@ import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import LatitudeLongitude from "../../../shared/LatitudeLongitude";
 import TapPositionMap from "../../authentication/management/taps/TapPositionMap";
+import TapConfiguration from "./TapConfiguration";
 
 const tapsService = new TapsService()
 
@@ -231,6 +232,18 @@ function TapDetailsPage () {
               <h3>802.11 / WiFi Channel Coverage</h3>
 
               <TapDot11CoverageMap tap={tap} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <h3>Configuration</h3>
+
+              <TapConfiguration configuration={tap.configuration} />
             </div>
           </div>
         </div>
