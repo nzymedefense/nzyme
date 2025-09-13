@@ -340,7 +340,8 @@ public class TapsResource extends UserAuthenticatedResource {
                 tap.floorId(),
                 floor.map(Tools::buildFloorName).orElse(null),
                 tap.latitude(),
-                tap.longitude()
+                tap.longitude(),
+                tap.configuration()
         );
     }
 
