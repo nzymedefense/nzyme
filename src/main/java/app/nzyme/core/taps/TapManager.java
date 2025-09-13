@@ -382,11 +382,10 @@ public class TapManager {
         writeGauge(tapUUID, "os.memory.bytes_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(), report.timestamp());
         writeGauge(tapUUID, "os.cpu.load.percent", report.systemMetrics().cpuLoad(), report.timestamp());
 
-        // CPU core load.
+        // CPU core loads.
         for (Map.Entry<Integer, Double> core : report.systemMetrics().cpuCoresLoad().entrySet()) {
             writeGauge(tapUUID, "os.cpu.cores." + core.getKey() + ".load.percent", core.getValue(), report.timestamp());
         }
-
 
         if (report.systemMetrics().rpiTemperature() != null) {
             writeGauge(tapUUID, "rpi.temperature", report.systemMetrics().rpiTemperature(), report.timestamp());

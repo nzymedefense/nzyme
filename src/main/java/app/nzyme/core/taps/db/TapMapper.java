@@ -48,6 +48,7 @@ public class TapMapper implements RowMapper<Tap>  {
                 (long) new Period(lastReport, clock, PeriodType.millis()).getMillis(),
                 rs.getString("rpi"),
                 rs.getObject("rpi_temperature", Double.class),
+                rs.getString("configuration"),
                 new DateTime(rs.getTimestamp("created_at")),
                 updatedAt,
                 lastReport,

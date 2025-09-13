@@ -47,6 +47,9 @@ public abstract class Tap {
     @Nullable
     public abstract Double rpiTemperature();
 
+    @Nullable
+    public abstract String configuration();
+
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
@@ -79,7 +82,7 @@ public abstract class Tap {
     @Nullable
     public abstract Double longitude();
 
-    public static Tap create(long id, UUID uuid, String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, String rpi, Double rpiTemperature, DateTime createdAt, DateTime updatedAt, DateTime lastReport, UUID organizationId, UUID tenantId, UUID locationId, UUID floorId, Integer x, Integer y, String remoteAddress, Double latitude, Double longitude) {
+    public static Tap create(long id, UUID uuid, String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, String rpi, Double rpiTemperature, String configuration, DateTime createdAt, DateTime updatedAt, DateTime lastReport, UUID organizationId, UUID tenantId, UUID locationId, UUID floorId, Integer x, Integer y, String remoteAddress, Double latitude, Double longitude) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -95,6 +98,7 @@ public abstract class Tap {
                 .clockDriftMs(clockDriftMs)
                 .rpi(rpi)
                 .rpiTemperature(rpiTemperature)
+                .configuration(configuration)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .lastReport(lastReport)
@@ -111,7 +115,7 @@ public abstract class Tap {
     }
 
     public static Builder builder() {
-        return new AutoValue_Tap.Builder();
+        return new app.nzyme.core.taps.AutoValue_Tap.Builder();
     }
 
     @AutoValue.Builder
@@ -143,6 +147,8 @@ public abstract class Tap {
         public abstract Builder rpi(String rpi);
 
         public abstract Builder rpiTemperature(Double rpiTemperature);
+
+        public abstract Builder configuration(String configuration);
 
         public abstract Builder createdAt(DateTime createdAt);
 

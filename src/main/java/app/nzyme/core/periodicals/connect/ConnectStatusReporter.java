@@ -64,6 +64,11 @@ public class ConnectStatusReporter extends Periodical {
 
         LOG.debug("Running Connect status reporter.");
 
+        sendStatusReport();
+        sendMetricsReport();
+    }
+
+    private void sendStatusReport() {
         try {
             NodeInformation.Info ni = new NodeInformation().collect();
 
@@ -135,6 +140,19 @@ public class ConnectStatusReporter extends Periodical {
             }
         } catch (Exception e) {
             LOG.error("Could not submit status report to Connect at [{}]..",
+                    nzyme.getConnect().getApiUri(), e);
+        }
+    }
+
+    private void sendMetricsReport() {
+        try {
+            // Node metrics.
+
+
+            // Tap metrics.
+
+        } catch (Exception e) {
+            LOG.error("Could not submit metrics report to Connect at [{}]..",
                     nzyme.getConnect().getApiUri(), e);
         }
     }
@@ -241,6 +259,9 @@ public class ConnectStatusReporter extends Periodical {
                         organizationName,
                         tenantName,
                         ConnectTapLogCountReport.create(trace, debug, info, warn, error),
+                        tap.rpi(),
+                        tap.rpiTemperature(),
+                        tap.configuration(),
                         tap.lastReport()
                 ));
             }

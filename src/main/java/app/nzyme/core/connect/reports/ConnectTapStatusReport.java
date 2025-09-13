@@ -2,9 +2,8 @@ package app.nzyme.core.connect.reports;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
-
-import javax.annotation.Nullable;
 
 @AutoValue
 public abstract class ConnectTapStatusReport {
@@ -48,11 +47,23 @@ public abstract class ConnectTapStatusReport {
     @JsonProperty("log_counts")
     public abstract ConnectTapLogCountReport logCounts();
 
+    @JsonProperty("rpi")
+    @Nullable
+    public abstract String rpi();
+
+    @JsonProperty("rpi_temperature")
+    @Nullable
+    public abstract Double rpiTemperature();
+
+    @JsonProperty("configuration")
+    @Nullable
+    public abstract String configuration();
+
     @JsonProperty("last_report")
     @Nullable
     public abstract DateTime lastReport();
 
-    public static ConnectTapStatusReport create(String version, String uuid, String name, Long throughput, DateTime localTime, String remoteAddress, Double cpuUtilization, Double memoryUtilization, String organizationName, String tenantName, ConnectTapLogCountReport logCounts, DateTime lastReport) {
+    public static ConnectTapStatusReport create(String version, String uuid, String name, Long throughput, DateTime localTime, String remoteAddress, Double cpuUtilization, Double memoryUtilization, String organizationName, String tenantName, ConnectTapLogCountReport logCounts, String rpi, Double rpiTemperature, String configuration, DateTime lastReport) {
         return builder()
                 .version(version)
                 .uuid(uuid)
@@ -65,6 +76,9 @@ public abstract class ConnectTapStatusReport {
                 .organizationName(organizationName)
                 .tenantName(tenantName)
                 .logCounts(logCounts)
+                .rpi(rpi)
+                .rpiTemperature(rpiTemperature)
+                .configuration(configuration)
                 .lastReport(lastReport)
                 .build();
     }
@@ -96,6 +110,12 @@ public abstract class ConnectTapStatusReport {
         public abstract Builder tenantName(String tenantName);
 
         public abstract Builder logCounts(ConnectTapLogCountReport logCounts);
+
+        public abstract Builder rpi(String rpi);
+
+        public abstract Builder rpiTemperature(Double rpiTemperature);
+
+        public abstract Builder configuration(String configuration);
 
         public abstract Builder lastReport(DateTime lastReport);
 
