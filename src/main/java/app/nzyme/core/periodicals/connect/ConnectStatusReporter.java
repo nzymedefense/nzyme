@@ -4,7 +4,10 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.connect.*;
 import app.nzyme.core.connect.reports.*;
 import app.nzyme.core.distributed.MetricExternalName;
+import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.NodeInformation;
+import app.nzyme.core.monitoring.GaugeEntryAverage;
+import app.nzyme.core.monitoring.TimerEntryAverage;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.rest.resources.system.connect.api.ConnectApiStatusResponse;
@@ -12,12 +15,15 @@ import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.taps.db.metrics.BucketSize;
-import app.nzyme.core.taps.db.metrics.TapMetricsAggregation;
+import app.nzyme.core.taps.db.metrics.TapMetricsGaugeAggregation;
+import app.nzyme.core.taps.db.metrics.TapMetricsTimerAggregation;
+import app.nzyme.core.taps.db.metrics.TapMetricsTimerHistogramAggregation;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.net.HttpHeaders;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
@@ -110,8 +116,8 @@ public class ConnectStatusReporter extends Periodical {
 
             try(Response response = httpClient.newCall(request).execute()) {
                 if (response.code() != 201) {
-                    LOG.error("Could not report node status to Connect at [{}]. Expected HTTP <201> but " +
-                            "received HTTP <{}>.", nzyme.getConnect().getApiUri(), response.code());
+                    LOG.error("Could not report node status to Connect. Expected HTTP <201> but " +
+                            "received HTTP <{}>.", response.code());
                 } else {
                     // Successful report submission.
                     LOG.debug("Successfully submitted Connect status report.");
@@ -139,21 +145,82 @@ public class ConnectStatusReporter extends Periodical {
                 }
             }
         } catch (Exception e) {
-            LOG.error("Could not submit status report to Connect at [{}]..",
-                    nzyme.getConnect().getApiUri(), e);
+            LOG.error("Could not submit status report to Connect.", e);
         }
     }
 
+    // TODO we are currently pulling some metrics twice: Once for node status and then again for metrics.
+
     private void sendMetricsReport() {
         try {
-            // Node metrics.
+            DateTime cutoff = DateTime.now().minusMinutes(1);
 
+            Map<UUID, ConnectNodeMetricsReport> nodes = Maps.newHashMap();
+            Map<UUID, ConnectTapMetricsReport> taps = Maps.newHashMap();
+
+            // Node metrics. We report each node, not just ourselves.
+            for (Node node : nzyme.getNodeManager().getNodes()) {
+                Map<String, Double> gauges = Maps.newHashMap();
+                Map<String, ConnectNodeTimerReport> timers = Maps.newHashMap();
+
+                for (GaugeEntryAverage g : nzyme.getNodeManager().findAverageGaugeValuesOfNode(node.uuid(), cutoff)) {
+                    gauges.put(g.name(), g.value());
+                }
+
+                for (TimerEntryAverage t : nzyme.getNodeManager().findAverageTimerValuesOfNode(node.uuid(), cutoff)) {
+                    timers.put(t.name(), ConnectNodeTimerReport.create(
+                            t.max(), t.min(), t.mean(), t.p99(), t.stddev(), t.counter()
+                    ));
+                }
+
+                nodes.put(node.uuid(), ConnectNodeMetricsReport.create(gauges, timers));
+            }
 
             // Tap metrics.
+            for (Tap tap : nzyme.getTapManager().findAllTapsOfAllUsers()) {
+                Map<String, Double> gauges = Maps.newHashMap();
+                Map<String, ConnectTapTimerReport> timers = Maps.newHashMap();
+
+                for (TapMetricsGaugeAggregation g : nzyme.getTapManager()
+                        .findAverageGaugeValuesOfTap(tap.uuid(), cutoff)) {
+                    gauges.put(g.name(), g.value());
+                }
+
+                for (TapMetricsTimerAggregation t : nzyme.getTapManager()
+                        .findAverageTimerValuesOfTap(tap.uuid(), cutoff)) {
+                    timers.put(t.name(), ConnectTapTimerReport.create(t.mean(), t.p99()));
+                }
+
+                taps.put(tap.uuid(), ConnectTapMetricsReport.create(gauges, timers));
+            }
+
+            byte[] body = om.writeValueAsBytes(ConnectMetricsReport.create(nodes, taps));
+
+            HttpUrl url = HttpUrl.get(nzyme.getConnect().getApiUri())
+                    .newBuilder()
+                    .addPathSegment("metrics")
+                    .addPathSegment("report")
+                    .build();
+
+            Request request = new Request.Builder()
+                    .post(RequestBody.create(body))
+                    .url(url)
+                    .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + nzyme.getConnect().getApiKey())
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader(HttpHeaders.USER_AGENT, "nzyme-node")
+                    .build();
+
+            try(Response response = httpClient.newCall(request).execute()) {
+                if (response.code() == 201) {
+                    LOG.debug("Successfully submitted Connect metrics report.");
+                } else {
+                    LOG.error("Could not report metrics to Connect. Expected HTTP <201> but " +
+                            "received HTTP <{}>.", response.code());
+                }
+            }
 
         } catch (Exception e) {
-            LOG.error("Could not submit metrics report to Connect at [{}]..",
-                    nzyme.getConnect().getApiUri(), e);
+            LOG.error("Could not submit metrics report to Connect.", e);
         }
     }
 
@@ -192,7 +259,7 @@ public class ConnectStatusReporter extends Periodical {
     }
 
     private List<ConnectThroughputReport> buildThroughputReport() {
-        Optional<Map<DateTime, TapMetricsAggregation>> histo = nzyme.getTapManager().findMetricsGaugeHistogram(
+        Optional<Map<DateTime, TapMetricsTimerHistogramAggregation>> histo = nzyme.getTapManager().findMetricsGaugeHistogram(
                 null,
                 "system.captures.throughput_bit_sec",
                 1,
@@ -203,7 +270,7 @@ public class ConnectStatusReporter extends Periodical {
         if (histo.isEmpty()) {
             return report;
         } else {
-            for (TapMetricsAggregation e : histo.get().values()) {
+            for (TapMetricsTimerHistogramAggregation e : histo.get().values()) {
                 report.add(ConnectThroughputReport.create(
                         e.bucket(),
                         e.average(),

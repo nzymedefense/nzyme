@@ -12,8 +12,6 @@ import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.resources.taps.reports.*;
 import app.nzyme.core.taps.db.metrics.*;
-import app.nzyme.plugin.distributed.messaging.ClusterMessage;
-import app.nzyme.plugin.distributed.messaging.MessageType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.value.AutoValue;
@@ -804,13 +802,13 @@ public class TapManager {
         );
     }
 
-    public Optional<Map<DateTime, TapMetricsAggregation>> findMetricsGaugeHistogram(@Nullable UUID tapUUID,
-                                                                                    String metricName,
-                                                                                    int hours,
-                                                                                    BucketSize bucketSize) {
-        Map<DateTime, TapMetricsAggregation> result = Maps.newHashMap();
+    public Optional<Map<DateTime, TapMetricsTimerHistogramAggregation>> findMetricsGaugeHistogram(@Nullable UUID tapUUID,
+                                                                                                  String metricName,
+                                                                                                  int hours,
+                                                                                                  BucketSize bucketSize) {
+        Map<DateTime, TapMetricsTimerHistogramAggregation> result = Maps.newHashMap();
 
-        List<TapMetricsAggregation> agg = nzyme.getDatabase().withHandle(handle -> {
+        List<TapMetricsTimerHistogramAggregation> agg = nzyme.getDatabase().withHandle(handle -> {
             String query = "SELECT AVG(metric_value) AS average, MAX(metric_value) AS maximum, " +
                     "MIN(metric_value) AS minimum, date_trunc(:bucket_size, created_at) AS bucket " +
                     "FROM tap_metrics_gauges WHERE";
@@ -826,7 +824,7 @@ public class TapManager {
                     .bind("tap_uuid", tapUUID)
                     .bind("metric_name", metricName)
                     .bind("created_at", DateTime.now().minusHours(hours))
-                    .mapTo(TapMetricsAggregation.class)
+                    .mapTo(TapMetricsTimerHistogramAggregation.class)
                     .list();
         });
 
@@ -834,7 +832,7 @@ public class TapManager {
             return Optional.empty();
         }
 
-        for (TapMetricsAggregation x : agg) {
+        for (TapMetricsTimerHistogramAggregation x : agg) {
             result.put(x.bucket(), x);
         }
 
@@ -856,13 +854,13 @@ public class TapManager {
                 .findOne();
     }
 
-    public Optional<Map<DateTime, TapMetricsAggregation>> findMetricsTimerHistogram(UUID tapUUID,
-                                                                                    String metricName,
-                                                                                    int hours,
-                                                                                    BucketSize bucketSize) {
-        Map<DateTime, TapMetricsAggregation> result = Maps.newHashMap();
+    public Optional<Map<DateTime, TapMetricsTimerHistogramAggregation>> findMetricsTimerHistogram(UUID tapUUID,
+                                                                                                  String metricName,
+                                                                                                  int hours,
+                                                                                                  BucketSize bucketSize) {
+        Map<DateTime, TapMetricsTimerHistogramAggregation> result = Maps.newHashMap();
 
-        List<TapMetricsAggregation> agg = nzyme.getDatabase().withHandle(handle ->
+        List<TapMetricsTimerHistogramAggregation> agg = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT AVG(mean) AS average, MAX(mean) AS maximum, " +
                                 "MIN(mean) AS minimum, date_trunc(:bucket_size, created_at) AS bucket " +
                                 "FROM tap_metrics_timers WHERE tap_uuid = :tap_uuid AND metric_name = :metric_name " +
@@ -871,7 +869,7 @@ public class TapManager {
                         .bind("tap_uuid", tapUUID)
                         .bind("metric_name", metricName)
                         .bind("created_at", DateTime.now().minusHours(hours))
-                        .mapTo(TapMetricsAggregation.class)
+                        .mapTo(TapMetricsTimerHistogramAggregation.class)
                         .list()
         );
 
@@ -879,11 +877,36 @@ public class TapManager {
             return Optional.empty();
         }
 
-        for (TapMetricsAggregation x : agg) {
+        for (TapMetricsTimerHistogramAggregation x : agg) {
             result.put(x.bucket(), x);
         }
 
         return Optional.of(result);
+    }
+
+    public List<TapMetricsTimerAggregation> findAverageTimerValuesOfTap(UUID tapUuid, DateTime since) {
+        return nzyme.getDatabase().withHandle(handle ->
+            handle.createQuery("SELECT metric_name, AVG(mean) AS mean, AVG(p99) AS p99, " +
+                            "MAX(created_at) AS created_at FROM tap_metrics_timers " +
+                            "WHERE tap_uuid = :tap_uuid AND created_at >= :since AND created_at <= NOW() " +
+                            "GROUP BY metric_name")
+                    .bind("tap_uuid", tapUuid)
+                    .bind("since", since)
+                    .mapTo(TapMetricsTimerAggregation.class)
+                    .list()
+        );
+    }
+
+    public List<TapMetricsGaugeAggregation> findAverageGaugeValuesOfTap(UUID tapUuid, DateTime since) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT metric_name, AVG(metric_value) AS value FROM tap_metrics_gauges " +
+                                "WHERE tap_uuid = :tap_uuid AND created_at >= :since AND created_at <= NOW() " +
+                                "GROUP BY metric_name")
+                        .bind("tap_uuid", tapUuid)
+                        .bind("since", since)
+                        .mapTo(TapMetricsGaugeAggregation.class)
+                        .list()
+        );
     }
 
     public Optional<List<Bus>> findBusesOfTap(UUID tapUUID) {

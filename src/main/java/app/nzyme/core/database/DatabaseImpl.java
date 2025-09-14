@@ -42,6 +42,8 @@ import app.nzyme.core.floorplans.db.TenantLocationFloorEntryMapper;
 import app.nzyme.core.gnss.db.*;
 import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntryMapper;
 import app.nzyme.core.integrations.tenant.cot.db.CotOutputEntryMapper;
+import app.nzyme.core.monitoring.GaugeEntryAverageMapper;
+import app.nzyme.core.monitoring.TimerEntryAverageMapper;
 import app.nzyme.core.monitoring.TimerEntryMapper;
 import app.nzyme.core.monitoring.health.db.IndicatorStatusMapper;
 import app.nzyme.core.registry.RegistryEntryMapper;
@@ -50,8 +52,7 @@ import app.nzyme.core.security.sessions.db.SessionEntryMapper;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetailsMapper;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntryMapper;
 import app.nzyme.core.shared.db.TapBasedSignalStrengthResultMapper;
-import app.nzyme.core.taps.db.metrics.Dot11FrequencyAndChannelWidthEntryMapper;
-import app.nzyme.core.taps.db.metrics.TapMetricsTimerMapper;
+import app.nzyme.core.taps.db.metrics.*;
 import app.nzyme.core.uav.db.UavEntryMapper;
 import app.nzyme.core.uav.db.UavTimelineEntryMapper;
 import app.nzyme.core.uav.db.UavTypeEntryMapper;
@@ -59,8 +60,6 @@ import app.nzyme.core.uav.db.UavVectorEntryMapper;
 import app.nzyme.plugin.Database;
 import app.nzyme.core.crypto.database.PGPKeyFingerprintMapper;
 import app.nzyme.core.taps.db.*;
-import app.nzyme.core.taps.db.metrics.TapMetricsAggregationMapper;
-import app.nzyme.core.taps.db.metrics.TapMetricsGaugeMapper;
 import com.google.common.collect.Lists;
 import liquibase.*;
 import liquibase.database.DatabaseFactory;
@@ -164,7 +163,7 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new TenantLocationEntryMapper())
                 .registerRowMapper(new TenantLocationFloorEntryMapper())
                 .registerRowMapper(new TapBasedSignalStrengthResultHistogramEntryMapper())
-                .registerRowMapper(new TapMetricsTimerMapper())
+                .registerRowMapper(new TapMetricsTimerHistogramAggregationMapper())
                 .registerRowMapper(new Dot11FrequencyAndChannelWidthEntryMapper())
                 .registerRowMapper(new TcpSessionEntryMapper())
                 .registerRowMapper(new DNSEntropyLogEntryMapper())
@@ -201,7 +200,11 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new LatLonResultMapper())
                 .registerRowMapper(new GNSSSatelliteInViewMapper())
                 .registerRowMapper(new GNSSConstellationDistancesMapper())
-                .registerRowMapper(new GNSSMonitoringRuleEntryMapper());
+                .registerRowMapper(new GNSSMonitoringRuleEntryMapper())
+                .registerRowMapper(new TimerEntryAverageMapper())
+                .registerRowMapper(new GaugeEntryAverageMapper())
+                .registerRowMapper(new TapMetricsGaugeAggregationMapper())
+                .registerRowMapper(new TapMetricsTimerAggregationMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

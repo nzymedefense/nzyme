@@ -24,11 +24,11 @@ import org.joda.time.DateTime;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class TapMetricsAggregationMapper implements RowMapper<TapMetricsAggregation> {
+public class TapMetricsAggregationMapper implements RowMapper<TapMetricsTimerHistogramAggregation> {
 
     @Override
-    public TapMetricsAggregation map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return TapMetricsAggregation.create(
+    public TapMetricsTimerHistogramAggregation map(ResultSet rs, StatementContext ctx) throws SQLException {
+        return TapMetricsTimerHistogramAggregation.create(
                 new DateTime(rs.getTimestamp("bucket")),
                 rs.getDouble("average"),
                 rs.getDouble("maximum"),

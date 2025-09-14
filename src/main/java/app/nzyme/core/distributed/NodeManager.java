@@ -5,7 +5,9 @@ import app.nzyme.core.crypto.pgp.PGPKeys;
 import app.nzyme.core.distributed.database.NodeEntry;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
 import app.nzyme.core.logging.CountingAppender;
+import app.nzyme.core.monitoring.GaugeEntryAverage;
 import app.nzyme.core.monitoring.TimerEntry;
+import app.nzyme.core.monitoring.TimerEntryAverage;
 import app.nzyme.core.taps.db.metrics.BucketSize;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Gauge;
@@ -470,8 +472,8 @@ public class NodeManager {
     }
 
     public Optional<Double> findLatestActiveMetricsGaugeValue(UUID nodeId,
-                                                            String metricName,
-                                                            Handle handle) {
+                                                              String metricName,
+                                                              Handle handle) {
         return handle.createQuery("SELECT metric_value FROM node_metrics_gauges " +
                         "WHERE node_id = :node_id AND metric_name = :metric_name " +
                         "AND created_at > :created_at " +
@@ -482,6 +484,33 @@ public class NodeManager {
                 .bind("created_at", DateTime.now().minusMinutes(2))
                 .mapTo(Double.class)
                 .findOne();
+    }
+
+    public List<TimerEntryAverage> findAverageTimerValuesOfNode(UUID nodeId, DateTime since) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT metric_name AS name, AVG(metric_max) AS max, AVG(metric_min) AS min, " +
+                                "AVG(metric_mean) AS mean, AVG(metric_p99) AS p99, AVG(metric_stddev) AS stddev, " +
+                                "AVG(metric_counter) AS counter FROM node_metrics_timers " +
+                                "WHERE node_id = :node_id AND created_at >= :since AND created_at <= NOW() " +
+                                "GROUP BY metric_name")
+                        .bind("node_id", nodeId)
+                        .bind("since", since)
+                        .mapTo(TimerEntryAverage.class)
+                        .list()
+        );
+    }
+
+    public List<GaugeEntryAverage> findAverageGaugeValuesOfNode(UUID nodeId, DateTime since) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT metric_name AS name, AVG(metric_value) AS value " +
+                                "FROM node_metrics_gauges " +
+                                "WHERE node_id = :node_id AND created_at >= :since AND created_at <= NOW() " +
+                                "GROUP BY metric_name")
+                        .bind("node_id", nodeId)
+                        .bind("since", since)
+                        .mapTo(GaugeEntryAverage.class)
+                        .list()
+        );
     }
 
     private boolean isNodeEphemeral(NodeEntry node) {

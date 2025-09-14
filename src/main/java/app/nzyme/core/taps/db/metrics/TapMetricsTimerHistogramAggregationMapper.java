@@ -7,7 +7,7 @@ import org.joda.time.DateTime;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class TapMetricsTimerMapper implements RowMapper<TapMetricsTimer> {
+public class TapMetricsTimerHistogramAggregationMapper implements RowMapper<TapMetricsTimer> {
 
     @Override
     public TapMetricsTimer map(ResultSet rs, StatementContext ctx) throws SQLException {

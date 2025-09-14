@@ -21,14 +21,14 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 @AutoValue
-public abstract class TapMetricsAggregation {
+public abstract class TapMetricsTimerHistogramAggregation {
 
     public abstract DateTime bucket();
     public abstract Double average();
     public abstract Double maximum();
     public abstract Double minimum();
 
-    public static TapMetricsAggregation create(DateTime bucket, Double average, Double maximum, Double minimum) {
+    public static TapMetricsTimerHistogramAggregation create(DateTime bucket, Double average, Double maximum, Double minimum) {
         return builder()
                 .bucket(bucket)
                 .average(average)
@@ -38,7 +38,7 @@ public abstract class TapMetricsAggregation {
     }
 
     public static Builder builder() {
-        return new AutoValue_TapMetricsAggregation.Builder();
+        return new AutoValue_TapMetricsTimerHistogramAggregation.Builder();
     }
 
     @AutoValue.Builder
@@ -51,6 +51,6 @@ public abstract class TapMetricsAggregation {
 
         public abstract Builder minimum(Double minimum);
 
-        public abstract TapMetricsAggregation build();
+        public abstract TapMetricsTimerHistogramAggregation build();
     }
 }

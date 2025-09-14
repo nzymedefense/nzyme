@@ -192,7 +192,7 @@ public class TapsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Optional<Map<DateTime, TapMetricsAggregation>> histo = nzyme.getTapManager().findMetricsGaugeHistogram(
+        Optional<Map<DateTime, TapMetricsTimerHistogramAggregation>> histo = nzyme.getTapManager().findMetricsGaugeHistogram(
                 uuid, metricName, 24, BucketSize.MINUTE
         );
 
@@ -201,7 +201,7 @@ public class TapsResource extends UserAuthenticatedResource {
         }
 
         Map<DateTime, TapMetricsHistogramValueResponse> result = Maps.newTreeMap();
-        for (TapMetricsAggregation value : histo.get().values()) {
+        for (TapMetricsTimerHistogramAggregation value : histo.get().values()) {
             result.put(value.bucket(), TapMetricsHistogramValueResponse.create(
                     value.bucket(), value.average(), value.maximum(), value.minimum()
             ));
@@ -228,7 +228,7 @@ public class TapsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Optional<Map<DateTime, TapMetricsAggregation>> histo = nzyme.getTapManager().findMetricsTimerHistogram(
+        Optional<Map<DateTime, TapMetricsTimerHistogramAggregation>> histo = nzyme.getTapManager().findMetricsTimerHistogram(
                 uuid, metricName, 24, BucketSize.MINUTE
         );
 
@@ -237,7 +237,7 @@ public class TapsResource extends UserAuthenticatedResource {
         }
 
         Map<DateTime, TapMetricsHistogramValueResponse> result = Maps.newTreeMap();
-        for (TapMetricsAggregation value : histo.get().values()) {
+        for (TapMetricsTimerHistogramAggregation value : histo.get().values()) {
             result.put(value.bucket(), TapMetricsHistogramValueResponse.create(
                     value.bucket(), value.average(), value.maximum(), value.minimum()
             ));
