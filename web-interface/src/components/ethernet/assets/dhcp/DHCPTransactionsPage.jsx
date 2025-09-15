@@ -4,7 +4,6 @@ import {ASSETS_MENU_ITEMS} from "../AssetsMenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import {Presets} from "../../../shared/timerange/TimeRange";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
-import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
 import {TapContext} from "../../../../App";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import DHCPTransactionsTable from "./DHCPTransactionsTable";
@@ -70,8 +69,6 @@ export default function DHCPTransactionsPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
-
         <div className="row">
           <div className="col-md-12">
             <SectionMenuBar items={ASSETS_MENU_ITEMS}

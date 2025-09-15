@@ -1,7 +1,6 @@
 import React, {useContext, useEffect, useState} from "react";
 import {TapContext} from "../../../../App";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
-import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {ASSETS_MENU_ITEMS} from "../AssetsMenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
@@ -63,8 +62,6 @@ export default function DHCPTransactionDetailsPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
-
         <div className="row">
           <div className="col-md-12">
             <SectionMenuBar items={ASSETS_MENU_ITEMS}

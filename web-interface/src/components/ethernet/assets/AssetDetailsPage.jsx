@@ -3,7 +3,6 @@ import {useParams} from "react-router-dom";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import AssetsService from "../../../services/ethernet/AssetsService";
-import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 import SectionMenuBar from "../../shared/SectionMenuBar";
 import {ASSETS_MENU_ITEMS} from "./AssetsMenuItems";
 import ApiRoutes from "../../../util/ApiRoutes";
@@ -109,8 +108,6 @@ export default function AssetDetailsPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
-
         <div className="row">
           <div className="col-md-12">
             <SectionMenuBar items={ASSETS_MENU_ITEMS}

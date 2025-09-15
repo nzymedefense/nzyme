@@ -2,7 +2,6 @@ import React, {useContext, useEffect, useState} from "react";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
 import SSHSessionsTable from "./ssh/SSHSessionsTable";
-import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import {TapContext} from "../../../App";
 
@@ -22,8 +21,6 @@ export default function RemoteAccessPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
-
         <div className="row">
           <div className="col-md-12">
             <h1>Remote Access Connections</h1>

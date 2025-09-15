@@ -181,6 +181,7 @@ import CreateGNSSMonitoringRulePage from "./components/gnss/monitoring/CreateGNS
 import GNSSMonitoringRuleDetailsPage from "./components/gnss/monitoring/GNSSMonitoringRuleDetailsPage";
 import EditGNSSMonitoringRulePage from "./components/gnss/monitoring/EditGNSSMonitoringRulePage";
 import GNSSMonitoringSettingsPage from "./components/gnss/monitoring/GNSSMonitoringSettingsPage";
+import ReconPage from "./components/ethernet/recon/ReconPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -569,6 +570,9 @@ function App() {
 
                                 { /* Ethernet/Beacons. */}
                                 <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>
+
+                                { /* Ethernet/Recon. */}
+                                <Route path={ApiRoutes.ETHERNET.RECON.INDEX} element={<ReconPage />}/>
                               </Route>
 
                               { /* 802.11. */ }

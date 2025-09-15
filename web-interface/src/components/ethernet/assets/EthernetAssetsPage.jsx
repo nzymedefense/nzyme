@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from "react";
-import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
 import SectionMenuBar from "../../shared/SectionMenuBar";
@@ -35,8 +34,6 @@ export default function EthernetAssetsPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
-
         <div className="row">
           <div className="col-md-12">
             <SectionMenuBar items={ASSETS_MENU_ITEMS}

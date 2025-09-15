@@ -179,6 +179,9 @@ const ApiRoutes = {
     },
     BEACONS: {
       INDEX: '/ethernet/beacons'
+    },
+    RECON: {
+      INDEX: '/ethernet/recon'
     }
   },
   DOT11: {

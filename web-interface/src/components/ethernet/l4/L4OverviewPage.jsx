@@ -1,5 +1,4 @@
 import React, {useContext, useEffect, useState} from "react";
-import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 import L4Service from "../../../services/ethernet/L4Service";
 import {TapContext} from "../../../App";
 import {Presets} from "../../shared/timerange/TimeRange";
@@ -56,8 +55,6 @@ export default function L4OverviewPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
-
         <div className="row">
           <div className="col-md-12">
             <h1>TCP/UDP</h1>

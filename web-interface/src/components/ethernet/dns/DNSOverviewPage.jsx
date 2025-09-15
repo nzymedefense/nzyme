@@ -8,7 +8,6 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import DNSService from "../../../services/ethernet/DNSService";
 import DNSContactAttemptsTable from "./DNSContactAttemptsTable";
 import DNSEntropyLogTable from "./entropy/DNSEntropyLogTable";
-import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 import ApiRoutes from "../../../util/ApiRoutes";
 import SectionMenuBar from "../../shared/SectionMenuBar";
 import {DNS_MENU_ITEMS} from "./DNSMenuItems";
@@ -59,8 +58,6 @@ function DNSOverviewPage () {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
-
         <div className="row">
           <div className="col-md-12">
             <SectionMenuBar items={DNS_MENU_ITEMS}

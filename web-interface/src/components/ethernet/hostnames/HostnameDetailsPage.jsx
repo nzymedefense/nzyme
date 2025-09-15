@@ -1,7 +1,6 @@
 import React from "react";
 import {useParams} from "react-router-dom";
 import ApiRoutes from "../../../util/ApiRoutes";
-import AlphaFeatureAlert from "../../shared/AlphaFeatureAlert";
 
 export default function HostnameDetailsPage() {
 
@@ -9,8 +8,6 @@ export default function HostnameDetailsPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
-
         <div className="row">
           <div className="col-md-12">
             <nav aria-label="breadcrumb">

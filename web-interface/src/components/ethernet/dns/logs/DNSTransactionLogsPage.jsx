@@ -9,7 +9,6 @@ import Filters from "../../../shared/filtering/Filters";
 import DNSTransactionCountChart from "./widgets/DNSTransactionCountChart";
 import {DNS_FILTER_FIELDS} from "../DNSFilterFields";
 import {useLocation} from "react-router-dom";
-import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {DNS_MENU_ITEMS} from "../DNSMenuItems";
 import {queryParametersToFilters} from "../../../shared/filtering/FilterQueryParameters";
@@ -37,8 +36,6 @@ export default function DNSTransactionLogsPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert/>
-
         <div className="row">
           <div className="row mb-3">
             <div className="col-md-12">

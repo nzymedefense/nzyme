@@ -1,6 +1,5 @@
 import React from "react";
 import {useParams} from "react-router-dom";
-import AlphaFeatureAlert from "../../../shared/AlphaFeatureAlert";
 import ApiRoutes from "../../../../util/ApiRoutes";
 
 export default function SSHSessionDetailsPage() {
@@ -9,8 +8,6 @@ export default function SSHSessionDetailsPage() {
 
   return (
       <React.Fragment>
-        <AlphaFeatureAlert />
-
         <div className="row">
           <div className="col-md-12">
             <nav aria-label="breadcrumb">
