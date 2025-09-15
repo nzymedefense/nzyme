@@ -467,7 +467,6 @@ public class TapManager {
                         boolean exists = false;
                         for (MacAddressTransparentContextEntry tcx : transparentContext) {
                             if (ContextService.TransparentDataType.valueOf(tcx.type()).equals(ContextService.TransparentDataType.IP_ADDRESS)
-                                    && tcx.tapUuid().equals(tapUuid)
                                     && tcx.source().equals(ip.source())
                                     && tcx.ipAddress() != null
                                     && tcx.ipAddress().equals(ipAddr)) {
