@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};
+use sha2::{Sha256, Digest};
 use crate::alerting::alert_types::{AlertAttribute, Dot11AlertType};
 use crate::configuration::Configuration;
 
@@ -19,11 +20,20 @@ pub struct StatusReport {
     pub configuration: ConfigurationReport
 }
 
+// Note that this is also used for the configuration print CLI flag.
 #[derive(Serialize)]
 pub struct ConfigurationReport {
+    pub general: ConfigurationReportGeneral,
     pub performance: ConfigurationReportPerformance,
     pub misc: ConfigurationReportMisc,
     pub protocols: ConfigurationReportProtocols,
+}
+
+#[derive(Serialize)]
+pub struct ConfigurationReportGeneral {
+    pub leader_secret: String,
+    pub leader_uri: String,
+    pub accept_insecure_certs: bool
 }
 
 #[derive(Serialize)]
@@ -120,6 +130,11 @@ impl TryFrom<Configuration> for ConfigurationReport {
 
     fn try_from(c: Configuration) -> Result<ConfigurationReport, ()> {
         Ok(ConfigurationReport {
+            general: ConfigurationReportGeneral {
+                leader_secret: privacy_hash(&c.general.leader_secret),
+                leader_uri: privacy_hash(&c.general.leader_uri),
+                accept_insecure_certs: c.general.accept_insecure_certs
+            },
             performance: ConfigurationReportPerformance {
                 ethernet_brokers: c.performance.ethernet_brokers,
                 wifi_brokers: c.performance.wifi_brokers,
@@ -175,6 +190,15 @@ impl TryFrom<Configuration> for ConfigurationReport {
             }
         })
     }
+}
+
+fn privacy_hash(value: &str) -> String {
+    let mut hasher = Sha256::new();
+
+    sha2::Digest::update(&mut hasher, value);
+    let  result = hasher.finalize();
+
+    format!("PRIVACY_HASHED___SHA56_{:x}", result)
 }
 
 #[derive(Serialize)]

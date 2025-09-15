@@ -34,6 +34,7 @@ use wireless::dot11::dot11_broker::Dot11Broker;
 use wired::ethernet::ethernet_broker::EthernetBroker;
 use wireless::{bluetooth, dot11};
 use crate::helpers::network::Channel;
+use crate::link::payloads::ConfigurationReport;
 use crate::log_monitor::LogMonitor;
 use crate::processor_controller::ProcessorController;
 use crate::state::state::State;
@@ -49,6 +50,9 @@ struct Arguments {
 
     #[clap(short, long, required_unless_present("configuration_file"))]
     generate_channels: bool,
+
+    #[clap(short, long)]
+    print_configuration: bool,
 }
 
 fn main() {
@@ -135,6 +139,15 @@ fn main() {
             exit(exit_code::EX_CONFIG);
         }
     };
+
+    if args.print_configuration {
+        info!("Printing configuration.");
+
+        let configuration_report = ConfigurationReport::try_from(configuration).unwrap();
+        serde_json::to_writer_pretty(std::io::stdout(), &configuration_report).unwrap();
+
+        exit(exit_code::EX_OK);
+    }
 
     let system_state = Arc::new(
         SystemState::new(configuration.misc.training_period_minutes as usize).initialize()
