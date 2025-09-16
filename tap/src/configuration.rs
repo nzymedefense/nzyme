@@ -17,6 +17,7 @@ pub struct Configuration {
     pub rawip_interfaces: Option<HashMap<String, RawIpInterface>>,
     pub bluetooth_interfaces: Option<HashMap<String, BluetoothInterface>>,
     pub gnss_interfaces: Option<HashMap<String, GNSSInterface>>,
+    pub wifi_engagement_interfaces: Option<HashMap<String, WiFiEngagementInterface>>,
     pub performance: Performance,
     pub protocols: Protocols,
     pub misc: Misc
@@ -64,6 +65,20 @@ pub struct WifiInterface {
     pub channels_2g: Vec<u16>,
     pub channels_5g: Vec<u16>,
     pub channels_6g: Vec<u16>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct WiFiEngagementInterface {
+    pub interface_name: String,
+    pub engage: Vec<EngagementTarget>,
+    pub supported_channels_2g: Vec<u16>,
+    pub supported_channels_5g: Vec<u16>,
+    pub supported_channels_6g: Vec<u16>
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub enum EngagementTarget {
+    UAV
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -200,15 +215,18 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     }
 
     if doc.misc.training_period_minutes < 0 {
-        bail!("Configuration variable `training_period_minutes` must be set to a value greater or equal to 0.");
+        bail!("Configuration variable `training_period_minutes` must be set to a value greater \
+            or equal to 0.");
     }
 
     if doc.misc.context_mac_ip_retention_hours < 0 {
-        bail!("Configuration variable `context_mac_ip_retention_hours` must be set to a value greater or equal to 0.");
+        bail!("Configuration variable `context_mac_ip_retention_hours` must be set to a value \
+            greater or equal to 0.");
     }
 
     if doc.misc.context_mac_hostname_retention_hours < 0 {
-        bail!("Configuration variable `context_mac_hostname_retention_hours` must be set to a value greater or equal to 0.");
+        bail!("Configuration variable `context_mac_hostname_retention_hours` must be set to a \
+            value greater or equal to 0.");
     }
 
     if doc.performance.ethernet_brokers <= 0 {
@@ -220,16 +238,19 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     }
 
     if doc.performance.wifi_broker_buffer_capacity == 0 {
-        bail!("Configuration variable `wifi_broker_buffer_capacity` must be set to a value greater than 0.");
+        bail!("Configuration variable `wifi_broker_buffer_capacity` must be set to a value \
+            greater than 0.");
     }
 
     if doc.performance.ethernet_broker_buffer_capacity == 0 {
-        bail!("Configuration variable `ethernet_broker_buffer_capacity` must be set to a value greater than 0.");
+        bail!("Configuration variable `ethernet_broker_buffer_capacity` must be set to a value \
+            greater than 0.");
     }
 
     if let Some(size) = doc.performance.bluetooth_devices_pipeline_size {
         if size <= 0 {
-            bail!("Configuration variable `bluetooth_devices_pipeline_size` must be set to a value greater than 0.");
+            bail!("Configuration variable `bluetooth_devices_pipeline_size` must be set to a \
+                value greater than 0.");
         }
     }
 
@@ -248,79 +269,112 @@ pub fn load(path: String) -> Result<Configuration, Error> {
             }
         }
     }
-    
+
+    // Engagement interfaces.
+    // WiFi.
+    if doc.wifi_interfaces.is_none() && doc.wifi_engagement_interfaces.is_some() {
+        bail!("You must have at least one WiFi monitoring interface before configuring a WiFi \
+            engagement interface.");
+    }
+
+    if let Some(engagement_interfaces) = doc.wifi_engagement_interfaces.clone() {
+        for engagement_interface_name in engagement_interfaces.keys() {
+            if doc.wifi_interfaces.clone().unwrap().contains_key(engagement_interface_name) {
+                bail!("Engagement interface [{}] already configured as monitoring interface.",
+                    engagement_interface_name);
+            }
+        }
+    }
+
     // Protocols.
 
     // WiFi.
     if doc.protocols.wifi.pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.wifi.pipeline_size` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.wifi.pipeline_size` must be set to a value \
+            greater than 0.");
     }
     if doc.protocols.wifi.processors.is_some() && doc.protocols.wifi.processors.unwrap() <= 0 {
-        bail!("Configuration variable `protocols.wifi.processors` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.wifi.processors` must be set to a value greater \
+            than 0.");
     }
-    
+
     // TCP.
     if doc.protocols.tcp.pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.tcp.pipeline_size` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.tcp.pipeline_size` must be set to a value \
+            greater than 0.");
     }
     if doc.protocols.tcp.session_timeout_seconds <= 0 {
-        bail!("Configuration variable `protocols.tcp.session_timeout_seconds` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.tcp.session_timeout_seconds` must be set to a \
+            value greater than 0.");
     }
     if doc.protocols.tcp.reassembly_buffer_size <= 0 {
-        bail!("Configuration variable `protocols.tcp.reassembly_buffer_size` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.tcp.reassembly_buffer_size` must be set to a \
+            value greater than 0.");
     }
     if doc.protocols.tcp.processors.is_some() && doc.protocols.tcp.processors.unwrap() <= 0 {
-        bail!("Configuration variable `protocols.tcp.processors` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.tcp.processors` must be set to a value greater \
+            than 0.");
     }
 
     // UDP.
     if doc.protocols.udp.pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.udp.pipeline_size` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.udp.pipeline_size` must be set to a value \
+            greater than 0.");
     }
     if doc.protocols.udp.processors.is_some() && doc.protocols.udp.processors.unwrap() <= 0 {
-        bail!("Configuration variable `protocols.tcp.processors` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.tcp.processors` must be set to a value greater \
+            than 0.");
     }
 
     // DNS.
     if doc.protocols.dns.pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.dns.pipeline_size` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.dns.pipeline_size` must be set to a value \
+            greater than 0.");
     }
     if doc.protocols.dns.entropy_zscore_threshold <= 0.0 {
-        bail!("Configuration variable `protocols.dns.entropy_zscore_threshold` must be set to a value greater than 0.0.");
+        bail!("Configuration variable `protocols.dns.entropy_zscore_threshold` must be set to a \
+            value greater than 0.0.");
     }
 
     // ARP.
     if doc.protocols.arp.pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.arp.pipeline_size` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.arp.pipeline_size` must be set to a value \
+            greater than 0.");
     }
 
     if doc.protocols.arp.poisoning_window_seconds <= 0 {
-        bail!("Configuration variable `protocols.arp.poisoning_window_seconds` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.arp.poisoning_window_seconds` must be set to a \
+            value greater than 0.");
     }
 
     // SSH.
     if doc.protocols.ssh.pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.ssh.pipeline_size` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.ssh.pipeline_size` must be set to a value \
+            greater than 0.");
     }
 
     // SOCKS.
     if doc.protocols.socks.pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.socks.pipeline_size` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.socks.pipeline_size` must be set to a value \
+            greater than 0.");
     }
 
     // DHCPv4.
     if doc.protocols.dhcpv4.pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.dhcpv4.pipeline_size` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.dhcpv4.pipeline_size` must be set to a value \
+            greater than 0.");
     }
 
     // UAV Remote ID.
     if doc.protocols.uav_remote_id.pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.uav_remote_id.pipeline_size` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.uav_remote_id.pipeline_size` must be set to a \
+            value greater than 0.");
     }
 
     // GNSS NMEA messages.
     if doc.protocols.gnss.nmea_pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.gnss.nmea_pipeline_size` must be set to a value greater than 0.");
+        bail!("Configuration variable `protocols.gnss.nmea_pipeline_size` must be set to a value \
+            greater than 0.");
     }
 
     // Validate WiFi interfaces configuration
@@ -332,24 +386,24 @@ pub fn load(path: String) -> Result<Configuration, Error> {
             // Make sure every channel is only assigned once.
             for channel in &*interface.channels_2g {
                 if assigned_channels_2g.contains(channel) {
-                    bail!("WiFi channel <{}> on 2G band already assigned to another interface. Channels can only \
-                                be assigned once.", *channel);
+                    bail!("WiFi channel <{}> on 2G band already assigned to another interface. \
+                        Channels can only be assigned once.", *channel);
                 } else {
                     assigned_channels_2g.push(*channel);
                 }
             }
             for channel in &*interface.channels_5g {
                 if assigned_channels_5g.contains(channel) {
-                    bail!("WiFi channel <{}> on 5G band already assigned to another interface. Channels can only \
-                                be assigned once.", *channel);
+                    bail!("WiFi channel <{}> on 5G band already assigned to another interface. \
+                        Channels can only be assigned once.", *channel);
                 } else {
                     assigned_channels_5g.push(*channel);
                 }
             }
             for channel in &*interface.channels_6g {
                 if assigned_channels_6g.contains(channel) {
-                    bail!("WiFi channel <{}> on 6G band already assigned to another interface. Channels can only \
-                                be assigned once.", *channel);
+                    bail!("WiFi channel <{}> on 6G band already assigned to another interface. \
+                        Channels can only be assigned once.", *channel);
                 } else {
                     assigned_channels_6g.push(*channel);
                 }
@@ -361,11 +415,14 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     if let Some(bluetooth_interfaces) = &doc.bluetooth_interfaces {
         for interface in bluetooth_interfaces.values() {
             if interface.discovery_period_seconds <= 0 {
-                bail!("Configuration variable `bluetooth_interfaces.*.discovery_period_seconds` must be set to a value greater than 0.");
+                bail!("Configuration variable `bluetooth_interfaces.*.discovery_period_seconds` \
+                    must be set to a value greater than 0.");
             }
 
             if interface.dbus_method_call_timeout_seconds <= 0 {
-                bail!("Configuration variable `bluetooth_interfaces.*.dbus_method_call_timeout_seconds` must be set to a value greater than 0.");
+                bail!("Configuration variable \
+                    `bluetooth_interfaces.*.dbus_method_call_timeout_seconds` must be set to a \
+                        value greater than 0.");
             }
 
             if !interface.bt_classic_enabled && !interface.bt_le_enabled {

@@ -4,34 +4,40 @@ leader_uri = "https://nzyme.example.org:22900/"
 accept_insecure_certs = false
 
 [ethernet_interfaces.enp6s0]
-active = true
+active = false
 networks = [
   { cidr = "192.168.0.0/24", dns_servers = [ "192.168.0.1:53" ], injection_interface = "enp6s0" }
 ]
 
 [wifi_interfaces.wlx00c0ca000000]
-active = true
+active = false
 channel_width_hopping_mode = "full" # Learn more: https://go.nzyme.org/wifi-hopping-channel-width-mode
 channels_2g = [1, 6, 11]
 channels_5g = [100, 102, 104, 106, 108, 110, 112, 136, 138, 140, 149, 151, 153, 155, 157, 159, 161, 165]
 channels_6g = []
 
 [wifi_interfaces.wlx00c0ca000001]
-active = true
+active = false
 channel_width_hopping_mode = "full" # Learn more: https://go.nzyme.org/wifi-hopping-channel-width-mode
 channels_2g = [2, 3, 4, 5, 7, 8, 9, 10, 12, 13]
 channels_5g = [36, 40, 44, 48, 52, 56, 60, 64, 173]
 channels_6g = [5, 9, 13, 17, 21, 25, 29, 109, 113, 153, 157, 161, 165, 169, 173, 177, 181, 185, 189, 229, 233]
 
 [bluetooth_interfaces.hci0]
-active = true
+active = false
 bt_classic_enabled = true
 bt_le_enabled = true
 discovery_period_seconds = 15
 dbus_method_call_timeout_seconds = 2
 
 [gnss_interfaces.ttyACM0]
-active = true
+active = false
+
+[wifi_engagement_interfaces.wlx00c0ca000002]
+engage = [UAV]
+channels_2g = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14]
+channels_5g = [36, 40, 44, 48, 52, 56, 60, 64, 173, 100, 102, 104, 106, 108, 110, 112, 136, 138, 140, 149, 151, 153, 155, 157, 159, 161, 165]
+channels_6g = []
 
 [performance]
 ethernet_brokers = 1
