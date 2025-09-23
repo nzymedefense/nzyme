@@ -41,6 +41,7 @@ use crate::log_monitor::LogMonitor;
 use crate::processor_controller::ProcessorController;
 use crate::state::state::State;
 use crate::wireless::dot11::engagement::engagement_control::EngagementControl;
+use crate::wireless::dot11::sona_capture;
 use crate::wireless::positioning;
 
 #[derive(Parser,Debug)]
@@ -331,6 +332,11 @@ fn main() {
             });
         }
     }
+
+    // XXX TODO SONA
+    thread::spawn(move || {
+        sona_capture::run();
+    });
 
     let covered_wifi_spectrum;
     let wifi_device_cycle_times;
