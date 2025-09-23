@@ -1,14 +1,12 @@
 use std::sync::{Arc, Mutex};
 
-use caps::{CapSet, Capability};
 use log::{debug, error, info};
 
 use crate::{
     messagebus::bus::Bus,
     metrics::Metrics,
 };
-use crate::wireless::dot11::nl::InterfaceState::{Down, Up};
-use crate::wireless::dot11::nl::Nl;
+use crate::wireless::dot11::capture_helpers::prepare_device;
 use crate::wireless::dot11::frames::Dot11RawFrame;
 
 pub struct Capture {
@@ -21,54 +19,9 @@ impl Capture {
     pub fn run(&mut self, device_name: &str) {
         info!("Starting WiFi capture on [{}]", device_name);
 
-        // Check if `net_admin` permission is set on this program.
-        let permission = caps::has_cap(None, CapSet::Permitted, Capability::CAP_NET_ADMIN);
-        match permission {
-            Ok(result) => {
-                if !result {
-                    error!("Missing `net_admin` permission on this program. Please follow the documentation.");
-                    return;
-                }
-            }
-            Err(e) => {
-                error!("Could not check program capabilities: {}", e);
-                return;
-            }
-        }
-
-        let mut nl = match Nl::new() {
-            Ok(nl) => nl,
-            Err(e) => {
-                error!("Could not establish Netlink connection: {}", e);
-                return
-            }
-        };
-
-        info!("Temporarily disabling interface [{}] ...", device_name);
-        match nl.change_80211_interface_state(&device_name.to_string(), Down) {
-            Ok(_) => info!("Device [{}] is now down.", device_name),
-            Err(e) => {
-                error!("Could not disable device [{}]: {}", device_name, e);
-                return;
-            }
-        }
-
-        info!("Enabling monitor mode on interface [{}] ...", device_name);
-        match nl.enable_monitor_mode(&device_name.to_string()) {
-            Ok(_) => info!("Device [{}] is now in monitor mode.", device_name),
-            Err(e) => {
-                error!("Could not set device [{}] to monitor mode: {}", device_name, e);
-                return;
-            }
-        }
-
-        info!("Enabling interface [{}] ...", device_name);
-        match nl.change_80211_interface_state(&device_name.to_string(), Up) {
-            Ok(_) => info!("Device [{}] is now up.", device_name),
-            Err(e) => {
-                error!("Could not enable device [{}]: {}", device_name, e);
-                return;
-            }
+        if let Err(e) = prepare_device(device_name) {
+            error!("Could not prepare device [{}]: {}", device_name, e);
+            return;
         }
 
         let device = match pcap::Capture::from_device(device_name) {
@@ -107,7 +60,7 @@ impl Capture {
             let frame = match handle.next_packet() {
                 Ok(packet) => packet,
                 Err(e) => {
-                    error!("Dot11 capture exception: {}", e);
+                    error!("Capture exception: {}", e);
                     continue;
                 }
             };
@@ -119,10 +72,13 @@ impl Capture {
                     match stats {
                         Ok(stats) => {
                             metrics.increment_processed_bytes_total(length as u32);
-                            metrics.update_capture(device_name, true, stats.dropped, stats.if_dropped);
+                            metrics.update_capture(
+                                device_name, true, stats.dropped, stats.if_dropped
+                            );
                         },
                         Err(ref e) => { // TOOD add error
-                            error!("Could not fetch handle stats for capture [{}] metrics update: {}", device_name, e);
+                            error!("Could not fetch handle stats for capture [{}] metrics \
+                                update: {}", device_name, e);
                         }
                     }
                 },
@@ -130,7 +86,8 @@ impl Capture {
             }
 
             if length < 4 {
-                debug!("Packet too small. Wouldn't even fit radiotap length information. Skipping.");
+                debug!("Packet too small. Wouldn't even fit radiotap length information. \
+                    Skipping.");
                 continue;
             }
 
@@ -142,7 +99,7 @@ impl Capture {
             // Write to Dot11 broker pipeline.
             match self.bus.dot11_broker.sender.lock() {
                 Ok(mut sender) => { sender.send_packet(Arc::new(data), length as u32) },
-                Err(e) => error!("Could not aquire remoteid handler broker mutex: {}", e)
+                Err(e) => error!("Could not acquire 802.11 handler broker mutex: {}", e)
             }
         }
     }

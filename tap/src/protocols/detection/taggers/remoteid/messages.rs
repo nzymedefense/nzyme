@@ -12,7 +12,8 @@ pub struct UavRemoteIdMessage {
     pub location_and_vector: Option<LocationVectorMessage>,
     pub system: Option<SystemMessage>,
     pub self_id: Option<SelfIdMessage>,
-    pub timestamp: DateTime<Utc>
+    pub timestamp: DateTime<Utc>,
+    pub frequency: u16
 }
 
 #[derive(Debug)]

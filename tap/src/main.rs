@@ -34,7 +34,7 @@ use wireless::dot11::channel_hopper::ChannelHopper;
 use wireless::dot11::dot11_broker::Dot11Broker;
 use wired::ethernet::ethernet_broker::EthernetBroker;
 use wireless::{bluetooth, dot11};
-use crate::configuration::WiFiEngagementInterface;
+use crate::configuration::WiFiEngagementInterfaceConfiguration;
 use crate::helpers::network::Channel;
 use crate::link::payloads::ConfigurationReport;
 use crate::log_monitor::LogMonitor;
@@ -181,7 +181,21 @@ fn main() {
         }
     };
 
-    let tables = Arc::new(Tables::new(metrics.clone(), leaderlink.clone(), ethernet_bus.clone(), &configuration));
+    // Engagement control.
+    let engagement_control = Arc::new(EngagementControl::new(
+        configuration.wifi_engagement_interfaces.clone().unwrap_or_default(),
+        metrics.clone(),
+        dot11_bus.clone()
+    ));
+    engagement_control.initialize();
+
+    let tables = Arc::new(Tables::new(
+        metrics.clone(),
+        leaderlink.clone(),
+        ethernet_bus.clone(),
+        engagement_control,
+        &configuration
+    ));
     let state = Arc::new(State::new(metrics.clone()));
     state.initialize();
 
@@ -417,12 +431,6 @@ fn main() {
             });
         }
     }
-
-    // Engagement control.
-    let engagement_control = EngagementControl::new(
-        configuration.wifi_engagement_interfaces.clone().unwrap_or_default()
-    );
-    engagement_control.initialize();
 
     // Processors.
     let processor_controller = ProcessorController::new(

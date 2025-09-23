@@ -11,13 +11,14 @@ use crate::wireless::tags::Tag;
 pub fn tag_advertisement_frame_tags(data: &[u8],
                                     bssid: String,
                                     rssi: Option<i8>,
+                                    frequency: Option<u16>,
                                     bus: Arc<Bus>,
                                     metrics: Arc<Mutex<Metrics>>) -> Vec<Tag> {
     let mut tags = Vec::new();
 
     // UAV Remote ID.
     let mut remote_id_timer = Timer::new();
-    if let Some(rid) = uav_remote_id_tagger::tag(data, bssid, rssi) {
+    if let Some(rid) = uav_remote_id_tagger::tag(data, bssid, rssi, frequency) {
         remote_id_timer.stop();
         record_timer(
             remote_id_timer.elapsed_microseconds(),

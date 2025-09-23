@@ -6,8 +6,9 @@ pub struct SupportedFrequency {
     pub channel_widths: Vec<SupportedChannelWidth>
 }
 
-#[derive(Debug, Clone, Display)]
+#[derive(Debug, Clone, Display, Default)]
 pub enum SupportedChannelWidth {
+    #[default]
     Mhz20,
     Mhz40Minus,
     Mhz40Plus,

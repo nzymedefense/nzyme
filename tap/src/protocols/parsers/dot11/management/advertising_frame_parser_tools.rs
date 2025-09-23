@@ -58,6 +58,7 @@ pub struct TaggedParameterParserData {
 pub fn parse_tagged_parameters(payload: &[u8],
                                bssid: String,
                                rssi: Option<i8>,
+                               frequency: Option<u16>,
                                bus: Arc<Bus>,
                                metrics: Arc<Mutex<Metrics>>) -> Result<TaggedParameterParserData, Error> {
     let mut ssid: Option<String> = Option::None;
@@ -194,7 +195,7 @@ pub fn parse_tagged_parameters(payload: &[u8],
                         _ => {
                             // Potentially tag anything else / anything unknown.
                             tags.extend(tag_advertisement_frame_tags(
-                                data, bssid.clone(), rssi, bus.clone(), metrics.clone())
+                                data, bssid.clone(), rssi, frequency, bus.clone(), metrics.clone())
                             );
                         }
                     }

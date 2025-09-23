@@ -33,7 +33,13 @@ pub fn parse(frame: &Arc<Dot11Frame>,
 
     // Tagged parameters.
     let mut tagged_data = match parse_tagged_parameters(
-        &frame.payload, transmitter.clone(), frame.header.antenna_signal, bus, metrics) {
+        &frame.payload,
+        transmitter.clone(),
+        frame.header.antenna_signal,
+        frame.header.frequency,
+        bus,
+        metrics) {
+
         Ok(tagged_data) => tagged_data,
         Err(e) => {
             bail!("Could not parse beacon tagged parameters. Skipping frame. Error: {}", e);

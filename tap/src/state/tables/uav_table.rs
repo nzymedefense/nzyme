@@ -2,7 +2,8 @@ use sha2::Digest;
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use chrono::{DateTime, Utc};
-use log::{error};
+use libc::__u32;
+use log::{error, info};
 use sha2::Sha256;
 use strum_macros::Display;
 use crate::helpers::timer::{record_timer, Timer};
@@ -12,11 +13,15 @@ use crate::metrics::Metrics;
 use crate::protocols::detection::taggers::remoteid::messages::{RemoteIdType, UavRemoteIdMessage, UavType};
 use crate::state::tables::table_helpers::clear_mutex_hashmap;
 use crate::state::tables::uav_table::DetectionSource::{RemoteIdBluetooth, RemoteIdWiFi};
+use crate::wireless::dot11::engagement::engagement_control::EngagementControl;
+use crate::wireless::dot11::engagement::uav_engagement_request::UavEngagementRequest;
+use crate::wireless::dot11::supported_frequency::SupportedChannelWidth;
 
 pub struct UavTable {
     uavs: Mutex<HashMap<String, Uav>>,
     metrics: Arc<Mutex<Metrics>>,
     leaderlink: Arc<Mutex<Leaderlink>>,
+    engagement_control: Arc<EngagementControl>
 }
 
 #[derive(Debug, Display)]
@@ -76,11 +81,14 @@ pub struct OperatorLocationReport {
 
 impl UavTable {
 
-    pub fn new(leaderlink: Arc<Mutex<Leaderlink>>, metrics: Arc<Mutex<Metrics>>) -> Self {
+    pub fn new(leaderlink: Arc<Mutex<Leaderlink>>,
+               metrics: Arc<Mutex<Metrics>>,
+               engagement_control: Arc<EngagementControl>) -> Self {
         UavTable {
             uavs: Mutex::new(HashMap::new()),
             leaderlink,
-            metrics
+            metrics,
+            engagement_control
         }
     }
 
@@ -139,7 +147,7 @@ impl UavTable {
                         };
 
                         uavs.insert(identifier.clone(), Uav {
-                            identifier,
+                            identifier: identifier.clone(),
                             rssis: message.rssis.clone(),
                             detection_source,
                             first_seen: message.timestamp,
@@ -151,6 +159,18 @@ impl UavTable {
                             vector_reports,
                             operator_location_reports
                         });
+                        
+                        let tracking_request = UavEngagementRequest {
+                            uav_id: identifier.clone(),
+                            mac_address: message.bssid.clone(),
+                            initial_frequency: message.frequency,
+                            initial_channel_width: SupportedChannelWidth::Mhz20
+                        };
+
+                        // Request tracking.
+                        if let Err(e) = self.engagement_control.engage_uav(tracking_request) {
+                            error!("Tracking request for UAV [{}] failed: {}", identifier, e);
+                        }
                     }
                 }
             },

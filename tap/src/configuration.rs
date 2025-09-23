@@ -17,7 +17,7 @@ pub struct Configuration {
     pub rawip_interfaces: Option<HashMap<String, RawIpInterface>>,
     pub bluetooth_interfaces: Option<HashMap<String, BluetoothInterface>>,
     pub gnss_interfaces: Option<HashMap<String, GNSSInterface>>,
-    pub wifi_engagement_interfaces: Option<HashMap<String, WiFiEngagementInterface>>,
+    pub wifi_engagement_interfaces: Option<HashMap<String, WiFiEngagementInterfaceConfiguration>>,
     pub performance: Performance,
     pub protocols: Protocols,
     pub misc: Misc
@@ -68,15 +68,14 @@ pub struct WifiInterface {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct WiFiEngagementInterface {
-    pub interface_name: String,
+pub struct WiFiEngagementInterfaceConfiguration {
     pub engage: Vec<EngagementTarget>,
     pub supported_channels_2g: Vec<u16>,
     pub supported_channels_5g: Vec<u16>,
     pub supported_channels_6g: Vec<u16>
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub enum EngagementTarget {
     UAV
 }

@@ -17,6 +17,7 @@ use crate::state::tables::arp_table::ArpTable;
 use crate::state::tables::dhcp_table::DhcpTable;
 use crate::state::tables::gnss_monitor_table::GnssMonitorTable;
 use crate::state::tables::uav_table::UavTable;
+use crate::wireless::dot11::engagement::engagement_control::EngagementControl;
 
 pub struct Tables {
     pub dot11: Arc<Mutex<Dot11Table>>,
@@ -37,6 +38,7 @@ impl Tables {
     pub fn new(metrics: Arc<Mutex<Metrics>>,
                leaderlink: Arc<Mutex<Leaderlink>>,
                ethernet_bus: Arc<Bus>,
+               engagement_control: Arc<EngagementControl>,
                configuration: &Configuration) -> Self {
         Tables {
             dot11: Arc::new(Mutex::new(Dot11Table::new(leaderlink.clone()))),
@@ -59,7 +61,7 @@ impl Tables {
             udp: Arc::new(Mutex::new(UdpTable::new(leaderlink.clone(), metrics.clone()))),
             ssh: Arc::new(Mutex::new(SshTable::new(leaderlink.clone(), metrics.clone()))),
             socks: Arc::new(Mutex::new(SocksTable::new(leaderlink.clone(), metrics.clone()))),
-            uav: Arc::new(Mutex::new(UavTable::new(leaderlink.clone(), metrics.clone()))),
+            uav: Arc::new(Mutex::new(UavTable::new(leaderlink.clone(), metrics.clone(), engagement_control))),
             gnss_monitor: Arc::new(Mutex::new(GnssMonitorTable::new(leaderlink.clone(), metrics)))
         }
     }
