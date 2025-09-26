@@ -7,6 +7,7 @@ use crate::{
     metrics::Metrics,
 };
 use crate::wireless::dot11::capture_helpers::prepare_device;
+use crate::wireless::dot11::frames::Dot11CaptureSource::Acquisition;
 use crate::wireless::dot11::frames::Dot11RawFrame;
 
 pub struct Capture {
@@ -92,6 +93,7 @@ impl Capture {
             }
 
             let data = Dot11RawFrame {
+                capture_source: Acquisition,
                 interface_name: device_name.to_string(),
                 data: frame.data.to_vec()
             };

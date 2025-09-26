@@ -334,9 +334,9 @@ fn main() {
     }
 
     // XXX TODO SONA
-    thread::spawn(move || {
+    /*thread::spawn(move || {
         sona_capture::run();
-    });
+    });*/
 
     let covered_wifi_spectrum;
     let wifi_device_cycle_times;

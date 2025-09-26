@@ -2,8 +2,15 @@ use serde::Deserialize;
 use strum_macros::Display;
 
 #[derive(Debug)]
+pub enum Dot11CaptureSource {
+    Acquisition,
+    Engagement
+}
+
+#[derive(Debug)]
 pub struct Dot11RawFrame {
     pub interface_name: String,
+    pub capture_source: Dot11CaptureSource,
     pub data: Vec<u8>
 }
 
