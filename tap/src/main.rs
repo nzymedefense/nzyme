@@ -34,14 +34,12 @@ use wireless::dot11::channel_hopper::ChannelHopper;
 use wireless::dot11::dot11_broker::Dot11Broker;
 use wired::ethernet::ethernet_broker::EthernetBroker;
 use wireless::{bluetooth, dot11};
-use crate::configuration::WiFiEngagementInterfaceConfiguration;
 use crate::helpers::network::Channel;
 use crate::link::payloads::ConfigurationReport;
 use crate::log_monitor::LogMonitor;
 use crate::processor_controller::ProcessorController;
 use crate::state::state::State;
 use crate::wireless::dot11::engagement::engagement_control::EngagementControl;
-use crate::wireless::dot11::sona_capture;
 use crate::wireless::positioning;
 
 #[derive(Parser,Debug)]

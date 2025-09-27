@@ -34,6 +34,7 @@ dbus_method_call_timeout_seconds = 2
 active = false
 
 [wifi_engagement_interfaces.wlx00c0ca000002]
+active = false
 engage = ["UAV"]
 supported_channels_2g = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14]
 supported_channels_5g = [36, 40, 44, 48, 52, 56, 60, 64, 173, 100, 102, 104, 106, 108, 110, 112, 136, 138, 140, 149, 151, 153, 155, 157, 159, 161, 165]

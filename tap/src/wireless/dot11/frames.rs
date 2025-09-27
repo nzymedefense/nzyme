@@ -1,13 +1,13 @@
 use serde::Deserialize;
 use strum_macros::Display;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Dot11CaptureSource {
     Acquisition,
     Engagement
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Dot11RawFrame {
     pub interface_name: String,
     pub capture_source: Dot11CaptureSource,

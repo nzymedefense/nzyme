@@ -21,15 +21,19 @@ pub struct EngagementControl {
     bus: Arc<Bus>
 }
 
-#[derive(Display, Debug, Clone, Eq, PartialEq)]
+#[derive(Display, Copy, Debug, Clone, Eq, PartialEq)]
 pub enum EngagementInterfaceStatus {
     Idle,
     Seeking,
     Engaging
 }
 
-impl EngagementControl {
+const ENGAGEMENT_TIMEOUT_SECS: i64 = 60;
+const SEEKER_TIMEOUT_SECS: i64 = 300;
+const CONTROL_LOOP_INTERVAL_SECS: i64 = 10;
 
+impl EngagementControl {
+`
     pub fn new(dot11_interfaces_configuration: HashMap<String, WiFiEngagementInterfaceConfiguration>,
                metrics: Arc<Mutex<Metrics>>,
                bus: Arc<Bus>)
@@ -37,6 +41,10 @@ impl EngagementControl {
         let mut dot11_interfaces = HashMap::new();
 
         for (interface_name, c) in dot11_interfaces_configuration {
+            if !c.active {
+                continue
+            }
+
             dot11_interfaces.insert(
                 interface_name.clone(),
                 Arc::new(Dot11EngagementInterface::from_config(interface_name, c))
@@ -54,14 +62,14 @@ impl EngagementControl {
             // Interface engagement controller.
             let controller_interface = interface.clone();
             let mut scheduler = Scheduler::new();
-            scheduler.every(10.seconds()).run(move || {
+            scheduler.every((CONTROL_LOOP_INTERVAL_SECS as u32).seconds()).run(move || {
                 Self::interface_control(&controller_interface);
             });
 
             thread::spawn(move || {
                 loop {
                     scheduler.run_pending();
-                    thread::sleep(std::time::Duration::from_secs(1));
+                    thread::sleep(std::time::Duration::from_millis(500));
                 }
             });
 
@@ -71,7 +79,7 @@ impl EngagementControl {
             let capturebus = self.bus.clone();
             thread::spawn(move || {
                 let capture = Arc::new(Dot11EngagementCapture::new(
-                    captureinterface.name.clone(), capturemetrics, capturebus
+                    captureinterface.clone(), capturemetrics, capturebus
                 ));
 
                 // Set capture ref.
@@ -122,7 +130,9 @@ impl EngagementControl {
             .collect();
 
         if interfaces.is_empty() {
-            bail!("No engagement interface for requested type configured.");
+            // This can be silently ignored because it simply means that we are not tracking UAVs.
+            debug!("No engagement interface for requested type configured.");
+            return Ok(());
         }
 
         // Find an idle interface.
@@ -182,13 +192,15 @@ impl EngagementControl {
                         Ok(ts) => {
                             if let Some(timestamp) = ts.as_ref() {
                                 let secs_ago = Utc::now() - timestamp;
+
                                 match capture_status {
                                     Idle => {
                                         // Capture is idle. Nothing to do.
                                     },
                                     Engaging => {
                                         // Check if we lost track of the target.
-                                        if secs_ago > Duration::try_seconds(60).unwrap() {
+                                        if secs_ago > Duration::try_seconds(ENGAGEMENT_TIMEOUT_SECS)
+                                                .unwrap() {
                                             info!("Interface [{}] lost engaged target. Tasking \
                                                 to start seeking.", interface.name);
 
@@ -200,13 +212,25 @@ impl EngagementControl {
                                     },
                                     Seeking => {
                                         // Check if seeking did not detect the target.
-                                        if secs_ago > Duration::try_seconds(300).unwrap() {
-                                            info!("Interface [{}] timed out seeking and lost target.\
-                                                Requesting to disengage.", interface.name);
+                                        if secs_ago > Duration::try_seconds(SEEKER_TIMEOUT_SECS)
+                                                .unwrap() {
+                                            info!("Interface [{}] timed out seeking and lost \
+                                                target. Requesting to disengage.", interface.name);
 
                                             if capture.disengage_current_target().is_err() {
                                                 error!("Could not disengage current target on \
                                                     [{}].", interface.name);
+                                            }
+                                        } else if secs_ago <= Duration
+                                            ::try_seconds(CONTROL_LOOP_INTERVAL_SECS+2).unwrap() {
+
+                                            // Target re-acquired. Engage.
+                                            info!("Target re-acquired in seeking mode. Tasking \
+                                            [{}] to engage.", interface.name);
+
+                                            if capture.reengage_current_target().is_err() {
+                                                error!("Could not re-engage current target on \
+                                                [{}].", interface.name);
                                             }
                                         }
                                     },

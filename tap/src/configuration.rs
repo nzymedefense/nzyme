@@ -69,6 +69,7 @@ pub struct WifiInterface {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct WiFiEngagementInterfaceConfiguration {
+    pub active: bool,
     pub engage: Vec<EngagementTarget>,
     pub supported_channels_2g: Vec<u16>,
     pub supported_channels_5g: Vec<u16>,
