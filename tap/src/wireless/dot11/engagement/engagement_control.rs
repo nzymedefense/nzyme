@@ -33,7 +33,7 @@ const SEEKER_TIMEOUT_SECS: i64 = 300;
 const CONTROL_LOOP_INTERVAL_SECS: i64 = 10;
 
 impl EngagementControl {
-`
+
     pub fn new(dot11_interfaces_configuration: HashMap<String, WiFiEngagementInterfaceConfiguration>,
                metrics: Arc<Mutex<Metrics>>,
                bus: Arc<Bus>)
