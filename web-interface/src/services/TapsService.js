@@ -36,6 +36,12 @@ class TapService {
     })
   }
 
+  findEngagementLogOfTap(uuid, limit, offset, setLogs) {
+    RESTClient.get('/taps/show/' + uuid + '/engagement/logs', { limit: limit, offset: offset }, function (response) {
+      setLogs(response.data)
+    })
+  }
+
 }
 
 export default TapService

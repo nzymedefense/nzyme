@@ -11,6 +11,7 @@ import app.nzyme.core.shared.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.resources.taps.reports.*;
+import app.nzyme.core.taps.db.EngagementLogEntry;
 import app.nzyme.core.taps.db.metrics.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -374,7 +375,6 @@ public class TapManager {
             writeTimer(tapUUID, timer.getKey(), timer.getValue().mean(), timer.getValue().p99(), report.timestamp());
         }
 
-
         // Additional metrics.
         writeGauge(tapUUID, "system.captures.throughput_bit_sec", report.processedBytes().average()*8/10, report.timestamp());
         writeGauge(tapUUID, "os.memory.bytes_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(), report.timestamp());
@@ -403,6 +403,17 @@ public class TapManager {
             }
         }
 
+        // Engagement capture logs.
+        nzyme.getDatabase().useHandle(handle -> {
+            for (EngagementLogReport log : report.engagementLogs()) {
+                handle.createUpdate("INSERT INTO tap_engagement_logs(message, tap_uuid, timestamp) " +
+                                "VALUES(:message, :tap_uuid, :timestamp)")
+                        .bind("message", log.message())
+                        .bind("timestamp", log.timestamp())
+                        .bind("tap_uuid", tapUUID)
+                        .execute();
+            }
+        });
     }
 
     public void registerTapContext(TapContextReport report, UUID tapUuid) {
@@ -594,6 +605,12 @@ public class TapManager {
         nzyme.getDatabase().useHandle(handle -> {
             handle.createUpdate("DELETE FROM tap_metrics_timers WHERE created_at < :created_at")
                     .bind("created_at", DateTime.now().minusHours(24))
+                    .execute();
+        });
+
+        nzyme.getDatabase().useHandle(handle -> {
+            handle.createUpdate("DELETE FROM tap_engagement_logs WHERE timestamp < :timestamp")
+                    .bind("timestamp", DateTime.now().minusDays(30))
                     .execute();
         });
     }
@@ -956,6 +973,27 @@ public class TapManager {
                 .bind("tap_uuid", tapUuid)
                 .mapTo(Dot11FrequencyAndChannelWidthEntry.class)
                 .list());
+    }
+
+    public long countEngagementLogOfTap(UUID tapUUID) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM tap_engagement_logs WHERE tap_uuid = :tap_uuid")
+                        .bind("tap_uuid", tapUUID)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<EngagementLogEntry> findEngagementLogOfTap(UUID tapUUID, int limit, int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM tap_engagement_logs WHERE tap_uuid = :tap_uuid " +
+                                "ORDER BY timestamp DESC LIMIT :limit OFFSET :offset")
+                        .bind("tap_uuid", tapUUID)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(EngagementLogEntry.class)
+                        .list()
+        );
     }
 
     public Optional<TenantLocationFloorEntry> guessFloorOfSignalSource(List<TapBasedSignalStrengthResult> signalStrengths) {

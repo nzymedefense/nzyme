@@ -204,7 +204,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new TimerEntryAverageMapper())
                 .registerRowMapper(new GaugeEntryAverageMapper())
                 .registerRowMapper(new TapMetricsGaugeAggregationMapper())
-                .registerRowMapper(new TapMetricsTimerAggregationMapper());
+                .registerRowMapper(new TapMetricsTimerAggregationMapper())
+                .registerRowMapper(new EngagementLogEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

@@ -6,6 +6,7 @@ import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.taps.metrics.*;
+import app.nzyme.core.taps.db.EngagementLogEntry;
 import app.nzyme.core.taps.db.metrics.*;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -244,6 +245,35 @@ public class TapsResource extends UserAuthenticatedResource {
         }
 
         return Response.ok(TapMetricsHistogramResponse.create(result)).build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{uuid}/engagement/logs")
+    public Response tapMetricsTimer(@Context SecurityContext sc,
+                                    @PathParam("uuid") UUID uuid,
+                                    @QueryParam("limit") int limit,
+                                    @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser).contains(uuid)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<Tap> tap = nzyme.getTapManager().findTap(uuid);
+
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total = nzyme.getTapManager().countEngagementLogOfTap(tap.get().uuid());
+
+        List<TapEngagementLogDetailsResponse> logs = Lists.newArrayList();
+        for (EngagementLogEntry log : nzyme.getTapManager().findEngagementLogOfTap(tap.get().uuid(), limit, offset)) {
+            logs.add(TapEngagementLogDetailsResponse.create(log.message(), log.timestamp()));
+        }
+
+        return Response.ok(TapEngagementLogsListResponse.create(total, logs)).build();
     }
 
     private TapDetailsResponse buildTapResponse(Tap tap,

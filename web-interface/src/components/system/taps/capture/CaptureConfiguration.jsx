@@ -15,7 +15,6 @@ function CaptureConfiguration (props) {
             <thead>
             <tr>
                 <th>Interface</th>
-                <th>Status</th>
                 <th>Type</th>
                 <th>Received Frames / Packets / Blocks</th>
                 <th>Dropped (Interface)</th>

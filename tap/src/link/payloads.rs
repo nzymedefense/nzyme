@@ -16,6 +16,7 @@ pub struct StatusReport {
     pub gauges_long: HashMap<String, i128>,
     pub timers: HashMap<String, TimerReport>,
     pub log_counts: HashMap<String, u128>,
+    pub engagement_logs: Vec<EngagementLogReport>,
     pub rpi: Option<String>,
     pub configuration: ConfigurationReport
 }
@@ -246,6 +247,12 @@ pub struct CaptureReport {
     pub received: u32,
     pub dropped_buffer: u32,
     pub dropped_interface: u32
+}
+
+#[derive(Serialize)]
+pub struct EngagementLogReport {
+    pub timestamp: DateTime<Utc>,
+    pub message: String
 }
 
 pub struct TablesReport {

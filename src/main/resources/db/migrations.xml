@@ -7132,4 +7132,40 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_tap_engagement_logs" author="lennartkoopmann">
+        <createTable tableName="tap_engagement_logs">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="message" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="timestamp" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="tap_engagement_logs" indexName="std_lookup">
+            <column name="tap_uuid" />
+        </createIndex>
+
+        <createIndex tableName="tap_engagement_logs" indexName="ts_order">
+            <column name="timestamp" />
+        </createIndex>
+
+        <addForeignKeyConstraint constraintName="link_englogs2taps"
+                                 baseTableName="tap_engagement_logs"
+                                 baseColumnNames="tap_uuid"
+                                 referencedTableName="taps"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
 </databaseChangeLog>

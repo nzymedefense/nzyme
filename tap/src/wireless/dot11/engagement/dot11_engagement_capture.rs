@@ -13,7 +13,7 @@ use crate::metrics::Metrics;
 use crate::protocols::parsers::dot11::dot11_header_parser;
 use crate::wireless::dot11::capture_helpers::prepare_device;
 use crate::wireless::dot11::engagement::dot11_engagement_interface::Dot11EngagementInterface;
-use crate::wireless::dot11::engagement::engagement_control::EngagementInterfaceStatus;
+use crate::wireless::dot11::engagement::engagement_control::{EngagementControl, EngagementInterfaceStatus};
 use crate::wireless::dot11::engagement::engagement_control::EngagementInterfaceStatus::{Engaging, Seeking, Idle};
 use crate::wireless::dot11::engagement::uav_engagement_request::UavEngagementRequest;
 use crate::wireless::dot11::frames::Dot11CaptureSource::Engagement;
@@ -59,6 +59,7 @@ impl Dot11EngagementCapture {
 
     pub fn run(&self) {
         info!("Starting WiFi engagement capture on [{}]", self.parent_interface.name);
+
         if let Err(e) = prepare_device(&self.parent_interface.name) {
             error!("Could not prepare device [{}]: {}", self.parent_interface.name, e);
             return;
@@ -165,7 +166,7 @@ impl Dot11EngagementCapture {
                             parent_interface.name, e)
                     }
 
-                    info!("Engagement capture interface [{}] seeking frequency set to [{} MHz / {}]",
+                    debug!("Engagement capture interface [{}] seeking frequency set to [{} MHz / {}]",
                         parent_interface.name, frequency, &SupportedChannelWidth::Mhz20);
                     sleep(Duration::from_millis(250));
                 }
@@ -205,6 +206,8 @@ impl Dot11EngagementCapture {
             return;
         }
 
+        let stats = handle.stats();
+
         let t = tick(Duration::from_millis(100));
 
         'run: loop {
@@ -220,7 +223,10 @@ impl Dot11EngagementCapture {
                     }
 
                     Ok(Cmd::Stop) | Err(_) => {
-                        info!("Stopping capture on [{}]", self.parent_interface.name);
+                        EngagementControl::engagement_log(
+                            self.metrics.clone(),
+                            format!("Stopping capture on [{}]", self.parent_interface.name)
+                        );
                         break 'run;
                     }
                 },
@@ -240,8 +246,11 @@ impl Dot11EngagementCapture {
                         match self.last_tracked_frame_timestamp.lock() {
                             Ok(mut timestamp) => {
                                 if timestamp.is_none() {
-                                    info!("Initial lock on engagement capture [{}].",
-                                        self.parent_interface.name);
+                                    EngagementControl::engagement_log(
+                                        self.metrics.clone(),
+                                        format!("Initial lock on engagement capture [{}].",
+                                            self.parent_interface.name)
+                                    );
                                 }
 
                                 // Set new timestamp.
@@ -252,6 +261,27 @@ impl Dot11EngagementCapture {
                         }
 
                         let length = frame.data.len();
+
+                        match self.metrics.lock() {
+                            Ok(mut metrics) => {
+                                match stats {
+                                    Ok(stats) => {
+                                        metrics.increment_processed_bytes_total(length as u32);
+                                        metrics.update_capture(
+                                            &self.parent_interface.name,
+                                            true,
+                                            stats.dropped,
+                                            stats.if_dropped
+                                        );
+                                    },
+                                    Err(ref e) => { // TOOD add error
+                                        error!("Could not fetch handle stats for capture \
+                                            [{}] metrics update: {}", self.parent_interface.name, e);
+                                    }
+                                }
+                            },
+                            Err(e) => error!("Could not acquire metrics mutex: {}", e)
+                        }
 
                         if length < 4 {
                             debug!("Packet too small. Wouldn't even fit radiotap length \
@@ -360,11 +390,14 @@ impl Dot11EngagementCapture {
             Err(e) => bail!("Could not acquire status lock: {}", e)
         }
 
-        info!("Engaging UAV [{}] on [{} / {} Mhz / {}].",
-            target.uav_id,
-            self.parent_interface.name,
-            target.initial_frequency,
-            target.initial_channel_width);
+        EngagementControl::engagement_log(
+            self.metrics.clone(),
+            format!("Engaging UAV [{}] on [{} / {} Mhz / {}].",
+                    target.uav_id,
+                    self.parent_interface.name,
+                    target.initial_frequency,
+                    target.initial_channel_width)
+        );
 
         Ok(())
     }
@@ -387,7 +420,10 @@ impl Dot11EngagementCapture {
             Err(e) => bail!("Could not acquire status lock: {}", e)
         }
 
-        info!("Now seeking UAV [{}] on [{}].", target.uav_id, self.parent_interface.name);
+        EngagementControl::engagement_log(
+            self.metrics.clone(),
+            format!("Now seeking UAV [{}] on [{}].", target.uav_id, self.parent_interface.name)
+        );
 
         Ok(())
     }
@@ -439,7 +475,12 @@ impl Dot11EngagementCapture {
             )
         }
 
-        info!("Re-engaged target [{}] on [{}].", target.uav_id, self.parent_interface.name);
+        EngagementControl::engagement_log(
+            self.metrics.clone(),
+            format!("Re-engaged target [{}] on [{}].",
+                    target.uav_id, self.parent_interface.name)
+        );
+
         debug!("Engagement capture [{}] now at frequency [{} Mhz / {}]",
             self.parent_interface.name,
             target.initial_frequency,
@@ -476,8 +517,9 @@ impl Dot11EngagementCapture {
             Err(e) => bail!("Could not acquire current target lock: {}", e)
         }
 
-        info!("Disengaged [{}].", target_id);
-
+        EngagementControl::engagement_log(
+            self.metrics.clone(), format!("Disengaged [{target_id}].")
+        );
 
         Ok(())
     }

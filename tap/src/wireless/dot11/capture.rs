@@ -77,7 +77,7 @@ impl Capture {
                                 device_name, true, stats.dropped, stats.if_dropped
                             );
                         },
-                        Err(ref e) => { // TOOD add error
+                        Err(ref e) => {
                             error!("Could not fetch handle stats for capture [{}] metrics \
                                 update: {}", device_name, e);
                         }

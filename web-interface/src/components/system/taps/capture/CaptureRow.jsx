@@ -7,13 +7,18 @@ function CaptureRow (props) {
   const c = props.capture
   const tap = props.tap;
 
+  const captureType = (capture_type) => {
+    switch (capture_type) {
+      case "WiFi": return "WiFi Acquisition";
+      case "WiFiEngagement": return "WiFi Engagement";
+      default: return capture_type;
+    }
+  }
+
   return (
     <tr>
       <td>{c.interface_name}</td>
-      <td>
-        {c.is_running ? <span className="badge bg-success">Running</span> : <span className="badge bg-danger">Failing</span>}
-      </td>
-      <td>{c.capture_type}</td>
+      <td>{captureType(c.capture_type)}</td>
       <td>
         <a href={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(tap.uuid, "gauge", "captures." + sanitizeHtml(c.interface_name) + ".received")}>
          {numeral(c.received).format('0,0')}
@@ -30,7 +35,7 @@ function CaptureRow (props) {
         </a>
       </td>
     </tr>
-)
+  )
 }
 
 export default CaptureRow

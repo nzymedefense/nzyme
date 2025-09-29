@@ -8,7 +8,7 @@ use strum::IntoEnumIterator;
 
 use crate::{configuration::Configuration, metrics::Metrics, messagebus::bus::Bus, rpi};
 use crate::wireless::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
-use crate::link::payloads::{ConfigurationReport, NodeHelloReport, TimerReport, WiFiSupportedFrequencyReport};
+use crate::link::payloads::{ConfigurationReport, EngagementLogReport, NodeHelloReport, TimerReport, WiFiSupportedFrequencyReport};
 use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
 use crate::metrics::ChannelUtilization;
 use crate::rpi::rpi_model::detect_pi_model;
@@ -169,6 +169,7 @@ impl Leaderlink {
         let mut gauges_long: HashMap<String, i128> = HashMap::new();
         let mut timers: HashMap<String, TimerReport> = HashMap::new();
         let mut log_counts: HashMap<String, u128> = HashMap::new();
+        let mut engagement_logs: Vec<EngagementLogReport> = Vec::new();
 
         match self.metrics.lock() {
             Ok(mut metrics) => {
@@ -234,6 +235,15 @@ impl Leaderlink {
                 if let Err(e) = metrics.reset_log_counts() {
                     error!("Could not reset log counts: {}", e);
                 }
+
+                // Engagement logs.
+                for log in metrics.get_engagement_logs() {
+                    engagement_logs.push(EngagementLogReport {
+                        timestamp: log.timestamp,
+                        message: log.message
+                    });
+                }
+                metrics.clear_engagement_log();
             },
             Err(e) => {
                 error!("Could not acquire metrics mutex. {}", e);
@@ -275,6 +285,7 @@ impl Leaderlink {
             gauges_long,
             timers,
             log_counts,
+            engagement_logs,
             configuration,
             rpi: detect_pi_model()
         };

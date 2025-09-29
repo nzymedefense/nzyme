@@ -74,6 +74,7 @@ pub enum CaptureType {
     Ethernet,
     RawIp,
     WiFi,
+    WiFiEngagement,
     Bluetooth,
     Gnss
 }
@@ -88,12 +89,19 @@ pub struct Capture {
     pub dropped_interface: u32
 }
 
+#[derive(Clone)]
+pub struct EngagementLogEntry {
+    pub message: String,
+    pub timestamp: DateTime<Utc>
+}
+
 pub const AVERAGE_INTERVAL: u8 = 10;
 
 pub struct Metrics {
     captures: HashMap<String, Capture>,
     processed_bytes: TotalWithAverage,
     channels: Channels,
+    engagement_log: Vec<EngagementLogEntry>,
     gauges_long: HashMap<String, i128>,
     timers: Mutex<HashMap<String, BTreeMap<DateTime<Utc>, i64>>>,
     log_monitor: Arc<LogMonitor>
@@ -106,6 +114,7 @@ impl Metrics {
             processed_bytes: TotalWithAverage::default(),
             channels: Channels::default(),
             captures: HashMap::new(),
+            engagement_log: Vec::new(),
             gauges_long: HashMap::new(),
             timers: Mutex::new(HashMap::new()),
             log_monitor
@@ -234,6 +243,20 @@ impl Metrics {
     
     pub fn record_channel_capacity(&mut self, channel: &str, capacity: u128) {
         self.select_channel(channel).capacity = capacity;
+    }
+
+    pub fn record_engagement_log(&mut self, message: String) {
+        self.engagement_log.push(EngagementLogEntry {
+            message, timestamp: Utc::now(),
+        });
+    }
+
+    pub fn get_engagement_logs(&mut self) -> Vec<EngagementLogEntry> {
+        self.engagement_log.clone()
+    }
+
+    pub fn clear_engagement_log(&mut self) {
+        self.engagement_log.clear();
     }
 
     pub fn increment_processed_bytes_total(&mut self, x: u32) {

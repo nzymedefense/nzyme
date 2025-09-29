@@ -19,6 +19,7 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import LatitudeLongitude from "../../../shared/LatitudeLongitude";
 import TapPositionMap from "../../authentication/management/taps/TapPositionMap";
 import TapConfiguration from "./TapConfiguration";
+import TapEngagementLogsTable from "./TapEngagementLogsTable";
 
 const tapsService = new TapsService()
 
@@ -169,6 +170,22 @@ function TapDetailsPage () {
         </div>
       </div>
       : null }
+
+      <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Engagement Interface Logs"
+                                     slim={true}
+                                     helpLink="https://go.nzyme.org/engagement-interfaces"/>
+
+              <p className="help-text">Retention period is 30 days.</p>
+
+              <TapEngagementLogsTable tapUuid={tap.uuid} />
+            </div>
+          </div>
+        </div>
+      </div>
 
       { tap.location_id || (tap.latitude && tap.longitude) ?
       <div className="row mt-3">

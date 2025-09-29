@@ -9,6 +9,7 @@ use strum_macros::Display;
 use crate::configuration::WiFiEngagementInterfaceConfiguration;
 use crate::configuration::EngagementTarget::UAV;
 use crate::messagebus::bus::Bus;
+use crate::metrics;
 use crate::metrics::Metrics;
 use crate::wireless::dot11::engagement::dot11_engagement_capture::Dot11EngagementCapture;
 use crate::wireless::dot11::engagement::dot11_engagement_interface::Dot11EngagementInterface;
@@ -61,9 +62,10 @@ impl EngagementControl {
         for interface in self.dot11_interfaces.values() {
             // Interface engagement controller.
             let controller_interface = interface.clone();
+            let controller_metrics = self.metrics.clone();
             let mut scheduler = Scheduler::new();
             scheduler.every((CONTROL_LOOP_INTERVAL_SECS as u32).seconds()).run(move || {
-                Self::interface_control(&controller_interface);
+                Self::interface_control(controller_metrics.clone(), &controller_interface);
             });
 
             thread::spawn(move || {
@@ -79,8 +81,14 @@ impl EngagementControl {
             let capturebus = self.bus.clone();
             thread::spawn(move || {
                 let capture = Arc::new(Dot11EngagementCapture::new(
-                    captureinterface.clone(), capturemetrics, capturebus
+                    captureinterface.clone(), capturemetrics.clone(), capturebus
                 ));
+
+                match capturemetrics.lock() {
+                    Ok(mut metrics) => metrics.register_new_capture(
+                        &captureinterface.name, metrics::CaptureType::WiFiEngagement),
+                    Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                }
 
                 // Set capture ref.
                 match captureinterface.capture.lock() {
@@ -145,7 +153,10 @@ impl EngagementControl {
         let interface_name = selected_interface.ok_or_else(||
             anyhow!("All available engagement interfaces are busy."))?;
 
-        info!("Tasking [{}] to engage UAV [{}].", interface_name, request.uav_id);
+        Self::engagement_log(
+            self.metrics.clone(),
+            format!("Tasking [{}] to engage UAV [{}].", interface_name, request.uav_id)
+        );
 
         let interface = self.dot11_interfaces
             .get(interface_name)
@@ -168,7 +179,7 @@ impl EngagementControl {
         Ok(())
     }
 
-    fn interface_control(interface: &Arc<Dot11EngagementInterface>) {
+    fn interface_control(metrics: Arc<Mutex<Metrics>>, interface: &Arc<Dot11EngagementInterface>) {
         match interface.capture.lock() {
             Ok(capture) => {
                 // Check if this interface has a capture (yet).
@@ -201,8 +212,12 @@ impl EngagementControl {
                                         // Check if we lost track of the target.
                                         if secs_ago > Duration::try_seconds(ENGAGEMENT_TIMEOUT_SECS)
                                                 .unwrap() {
-                                            info!("Interface [{}] lost engaged target. Tasking \
-                                                to start seeking.", interface.name);
+                                            Self::engagement_log(
+                                                metrics,
+                                                 format!("Interface [{}] lost engaged \
+                                                    target. Tasking to start seeking.",
+                                                         interface.name)
+                                            );
 
                                             if capture.seek_current_target().is_err() {
                                                 error!("Could not start seeking current target on \
@@ -214,19 +229,27 @@ impl EngagementControl {
                                         // Check if seeking did not detect the target.
                                         if secs_ago > Duration::try_seconds(SEEKER_TIMEOUT_SECS)
                                                 .unwrap() {
-                                            info!("Interface [{}] timed out seeking and lost \
-                                                target. Requesting to disengage.", interface.name);
+                                            Self::engagement_log(
+                                                metrics,
+                                                format!("Interface [{}] timed out seeking and \
+                                                    lost target. Requesting to \
+                                                    disengage.", interface.name)
+                                            );
 
                                             if capture.disengage_current_target().is_err() {
                                                 error!("Could not disengage current target on \
                                                     [{}].", interface.name);
                                             }
                                         } else if secs_ago <= Duration
-                                            ::try_seconds(CONTROL_LOOP_INTERVAL_SECS+2).unwrap() {
+                                            ::try_seconds(CONTROL_LOOP_INTERVAL_SECS+2)
+                                            .unwrap() {
 
                                             // Target re-acquired. Engage.
-                                            info!("Target re-acquired in seeking mode. Tasking \
-                                            [{}] to engage.", interface.name);
+                                            Self::engagement_log(
+                                                metrics,
+                                                format!("Target re-acquired in seeking mode. \
+                                                Tasking  [{}] to engage.", interface.name)
+                                            );
 
                                             if capture.reengage_current_target().is_err() {
                                                 error!("Could not re-engage current target on \
@@ -242,12 +265,19 @@ impl EngagementControl {
                                 interface [{}]: {}", interface.name, e);
                         }
                     }
-
-                    // todo if sta
                 }
             },
             Err(e) => error!("Could not acquire capture lock on interface [{}]: {}",
                 interface.name, e)
+        }
+    }
+
+    pub fn engagement_log(metrics: Arc<Mutex<Metrics>>, log: String) {
+        info!("{}", log);
+
+        match metrics.lock() {
+            Ok(mut metrics) => metrics.record_engagement_log(log),
+            Err(e) => error!("Could not acquire mutex of metrics`: {}", e)
         }
     }
 }
