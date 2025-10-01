@@ -52,13 +52,13 @@ public class TapManager {
     }
 
     public void registerTapHello(HelloReport report, UUID tapUUID) {
-        Optional<List<Capture>> c = findCapturesOfTap(tapUUID, new DateTime(0));
+        List<Capture> c = findCapturesOfTap(tapUUID, new DateTime(0));
         if (c.isEmpty()) {
             return;
         }
 
         Map<String, Capture> captures = Maps.newHashMap();
-        for (Capture capture : c.get()) {
+        for (Capture capture : c) {
             captures.put(capture.interfaceName(), capture);
         }
 
@@ -949,20 +949,18 @@ public class TapManager {
         return channels == null || channels.isEmpty() ? Optional.empty() : Optional.of(channels);
     }
 
-    public Optional<List<Capture>> findActiveCapturesOfTap(UUID tapUUID) {
+    public List<Capture> findActiveCapturesOfTap(UUID tapUUID) {
         return findCapturesOfTap(tapUUID, DateTime.now().minusMinutes(1));
     }
 
-    public Optional<List<Capture>> findCapturesOfTap(UUID tapUUID, DateTime since) {
-        List<Capture> captures = nzyme.getDatabase().withHandle(handle ->
+    public List<Capture> findCapturesOfTap(UUID tapUUID, DateTime since) {
+        return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM tap_captures WHERE tap_uuid = :tap_uuid AND updated_at > :last_seen")
                         .bind("tap_uuid", tapUUID)
                         .bind("last_seen", since)
                         .mapTo(Capture.class)
                         .list()
         );
-
-        return captures == null || captures.isEmpty() ? Optional.empty() : Optional.of(captures);
     }
 
     public List<Dot11FrequencyAndChannelWidthEntry> findDot11FrequenciesOfTap(UUID tapUuid) {

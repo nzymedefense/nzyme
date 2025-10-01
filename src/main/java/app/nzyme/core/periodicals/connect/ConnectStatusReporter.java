@@ -13,6 +13,7 @@ import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.rest.resources.system.connect.api.ConnectApiStatusResponse;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
+import app.nzyme.core.taps.Capture;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.taps.db.metrics.BucketSize;
 import app.nzyme.core.taps.db.metrics.TapMetricsGaugeAggregation;
@@ -314,6 +315,19 @@ public class ConnectStatusReporter extends Periodical {
                         tap.uuid(), "logs.counts.error", handle
                 ).orElse(0D).longValue();
 
+                // Captures.
+                List<ConnectTapCaptureReport> captures = Lists.newArrayList();
+                for (Capture capture : nzyme.getTapManager()
+                        .findCapturesOfTap(tap.uuid(), DateTime.now().minusHours(24))) {
+                    captures.add(ConnectTapCaptureReport.create(
+                            capture.interfaceName(),
+                            capture.captureType(),
+                            capture.isRunning(),
+                            capture.cycleTime(),
+                            capture.updatedAt()
+                    ));
+                }
+
                 taps.add(ConnectTapStatusReport.create(
                         tap.version(),
                         tap.uuid().toString(),
@@ -326,6 +340,7 @@ public class ConnectStatusReporter extends Periodical {
                         organizationName,
                         tenantName,
                         ConnectTapLogCountReport.create(trace, debug, info, warn, error),
+                        captures,
                         tap.rpi(),
                         tap.rpiTemperature(),
                         tap.configuration(),

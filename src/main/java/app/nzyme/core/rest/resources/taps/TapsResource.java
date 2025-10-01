@@ -318,23 +318,20 @@ public class TapsResource extends UserAuthenticatedResource {
         }
 
         List<CaptureDetailsResponse> capturesResponse = Lists.newArrayList();
-        Optional<List<Capture>> captures = nzyme.getTapManager().findActiveCapturesOfTap(tap.uuid());
-        if (captures.isPresent()) {
-            for (Capture capture : captures.get()) {
-                capturesResponse.add(
-                        CaptureDetailsResponse.create(
-                                capture.interfaceName(),
-                                capture.captureType(),
-                                capture.isRunning(),
-                                capture.received(),
-                                capture.droppedBuffer(),
-                                capture.droppedInterface(),
-                                capture.cycleTime(),
-                                capture.updatedAt(),
-                                capture.createdAt()
-                        )
-                );
-            }
+        for (Capture capture : nzyme.getTapManager().findActiveCapturesOfTap(tap.uuid())) {
+            capturesResponse.add(
+                    CaptureDetailsResponse.create(
+                            capture.interfaceName(),
+                            capture.captureType(),
+                            capture.isRunning(),
+                            capture.received(),
+                            capture.droppedBuffer(),
+                            capture.droppedInterface(),
+                            capture.cycleTime(),
+                            capture.updatedAt(),
+                            capture.createdAt()
+                    )
+            );
         }
 
         List<TapFrequencyAndChannelWidthsResponse> dot11Frequencies = Lists.newArrayList();

@@ -5,6 +5,8 @@ import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
+import java.util.List;
+
 @AutoValue
 public abstract class ConnectTapStatusReport {
 
@@ -47,6 +49,9 @@ public abstract class ConnectTapStatusReport {
     @JsonProperty("log_counts")
     public abstract ConnectTapLogCountReport logCounts();
 
+    @JsonProperty("captures")
+    public abstract List<ConnectTapCaptureReport> captures();
+
     @JsonProperty("rpi")
     @Nullable
     public abstract String rpi();
@@ -63,7 +68,7 @@ public abstract class ConnectTapStatusReport {
     @Nullable
     public abstract DateTime lastReport();
 
-    public static ConnectTapStatusReport create(String version, String uuid, String name, Long throughput, DateTime localTime, String remoteAddress, Double cpuUtilization, Double memoryUtilization, String organizationName, String tenantName, ConnectTapLogCountReport logCounts, String rpi, Double rpiTemperature, String configuration, DateTime lastReport) {
+    public static ConnectTapStatusReport create(String version, String uuid, String name, Long throughput, DateTime localTime, String remoteAddress, Double cpuUtilization, Double memoryUtilization, String organizationName, String tenantName, ConnectTapLogCountReport logCounts, List<ConnectTapCaptureReport> captures, String rpi, Double rpiTemperature, String configuration, DateTime lastReport) {
         return builder()
                 .version(version)
                 .uuid(uuid)
@@ -76,6 +81,7 @@ public abstract class ConnectTapStatusReport {
                 .organizationName(organizationName)
                 .tenantName(tenantName)
                 .logCounts(logCounts)
+                .captures(captures)
                 .rpi(rpi)
                 .rpiTemperature(rpiTemperature)
                 .configuration(configuration)
@@ -110,6 +116,8 @@ public abstract class ConnectTapStatusReport {
         public abstract Builder tenantName(String tenantName);
 
         public abstract Builder logCounts(ConnectTapLogCountReport logCounts);
+
+        public abstract Builder captures(List<ConnectTapCaptureReport> captures);
 
         public abstract Builder rpi(String rpi);
 

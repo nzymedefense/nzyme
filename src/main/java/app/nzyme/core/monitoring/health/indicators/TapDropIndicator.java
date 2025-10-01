@@ -7,7 +7,6 @@ import app.nzyme.core.taps.Tap;
 import app.nzyme.core.taps.TapManager;
 
 import java.util.List;
-import java.util.Optional;
 
 public class TapDropIndicator extends Indicator {
 
@@ -22,12 +21,9 @@ public class TapDropIndicator extends Indicator {
         List<Tap> taps = tapManager.findAllTapsOfAllUsers();
 
         for (Tap tap : taps) {
-            Optional<List<Capture>> capturesOfTap = tapManager.findActiveCapturesOfTap(tap.uuid());
-            if (capturesOfTap.isPresent()) {
-                for (Capture capture : capturesOfTap.get()) {
-                    if (capture.droppedBuffer() > 0 || capture.droppedInterface() > 0) {
-                        return IndicatorStatus.red(this);
-                    }
+            for (Capture capture : tapManager.findActiveCapturesOfTap(tap.uuid())) {
+                if (capture.droppedBuffer() > 0 || capture.droppedInterface() > 0) {
+                    return IndicatorStatus.red(this);
                 }
             }
         }
