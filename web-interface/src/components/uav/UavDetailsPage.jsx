@@ -28,6 +28,7 @@ import UavTimelineTable from "./UavTimelineTable";
 import {userHasPermission} from "../../util/Tools";
 import UavModelType from "./util/UavModelType";
 import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
+import LongDistance from "../shared/LongDistance";
 
 const uavService = new UavService();
 
@@ -263,7 +264,7 @@ export default function UavDetailsPage() {
       </div>
 
       <div className="row mt-3">
-        <div className="col-6">
+        <div className="col-4">
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="UAV Vector"
@@ -291,7 +292,7 @@ export default function UavDetailsPage() {
           </div>
         </div>
 
-        <div className="col-6">
+        <div className="col-4">
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Operator Position"
@@ -313,6 +314,38 @@ export default function UavDetailsPage() {
                 <dt>Operator Distance To UAV</dt>
                 <dd><UavOperatorDistanceToUav distance={uav.summary.operator_distance_to_uav} /></dd>
               </dl>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-4">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Distance From Taps"
+                                     fixedAppliedTimeRange={Presets.ALL_TIME}/>
+
+              <p className="help-text">
+                Distance of last vector information from taps.
+              </p>
+
+              <table className="table table-sm table-hover table-striped">
+                <thead>
+                <tr>
+                  <th>Tap</th>
+                  <th>Distance</th>
+                </tr>
+                </thead>
+                <tbody>
+                {Object.keys(uav.summary.tap_distances).map((uuid, i) => {
+                  return (
+                      <tr key={i}>
+                        <td>{uav.summary.tap_distances[uuid].tap.name}</td>
+                        <td><LongDistance feet={uav.summary.tap_distances[uuid].distance_feet} /></td>
+                      </tr>
+                  )
+                })}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

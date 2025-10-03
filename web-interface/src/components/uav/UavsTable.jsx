@@ -15,6 +15,7 @@ import ApiRoutes from "../../util/ApiRoutes";
 import Designation from "../shared/Designation";
 import UavClassification from "./util/UavClassification";
 import UavModelType from "./util/UavModelType";
+import LongDistance from "../shared/LongDistance";
 
 export default function UavsTable(props) {
 
@@ -53,9 +54,9 @@ export default function UavsTable(props) {
             <th>Name</th>
             <th>Status</th>
             <th>RSSI</th>
+            <th>Distance</th>
             <th>Altitude</th>
             <th>Speed</th>
-            <th>Vertical Speed</th>
             <th>Last Seen</th>
           </tr>
           </thead>
@@ -76,9 +77,9 @@ export default function UavsTable(props) {
                 <td>{uav.uav_model_name ? uav.uav_model_name : <span className="text-muted">n/a</span>}</td>
                 <td><UavOperationalStatus status={uav.operational_status} /></td>
                 <td><SignalStrength strength={uav.rssi_average} selectedTapCount={selectedTaps.length}/></td>
+                <td><LongDistance feet={uav.closest_tap_distance} /></td>
                 <td><UavAltitude uav={uav} /></td>
                 <td><UavSpeed speed={uav.speed} accuracy={uav.accuracy_speed} /></td>
-                <td><UavVerticalSpeed verticalSpeed={uav.vertical_speed} accuracy={uav.accuracy_speed} /></td>
                 <td title={uav.last_seen}>{moment(uav.last_seen).fromNow()}</td>
               </tr>
             );

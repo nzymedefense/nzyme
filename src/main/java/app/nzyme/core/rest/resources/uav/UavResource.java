@@ -7,6 +7,7 @@ import app.nzyme.core.rest.requests.CreateUavCustomTypeRequest;
 import app.nzyme.core.rest.requests.UavMonitoringConfigurationRequest;
 import app.nzyme.core.rest.requests.UpdateUavCustomTypeRequest;
 import app.nzyme.core.rest.responses.shared.ClassificationResponse;
+import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
 import app.nzyme.core.rest.responses.uav.*;
 import app.nzyme.core.rest.responses.uav.enums.*;
 import app.nzyme.core.rest.responses.uav.monitoring.UavMonitoringSettingsResponse;
@@ -15,6 +16,7 @@ import app.nzyme.core.rest.responses.uav.types.UavConnectTypeListResponse;
 import app.nzyme.core.rest.responses.uav.types.UavCustomTypeDetailsResponse;
 import app.nzyme.core.rest.responses.uav.types.UavCustomTypeListResponse;
 import app.nzyme.core.shared.Classification;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.core.uav.UavRegistryKeys;
 import app.nzyme.core.uav.db.UavEntry;
 import app.nzyme.core.uav.db.UavTimelineEntry;
@@ -28,6 +30,7 @@ import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -39,6 +42,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -71,7 +75,7 @@ public class UavResource extends TapDataHandlingResource {
 
         List<UavTypeEntry> customTypes = nzyme.getUav().findAllCustomTypes(organizationId, tenantId);
         for (UavEntry uav : nzyme.getUav().findAllUavsOfTenant(timeRange, limit, offset, organizationId, tenantId, taps)) {
-            uavs.add(uavEntryToSummaryResponse(uav, nzyme.getUav().matchUavType(customTypes, uav.idSerial())));
+            uavs.add(uavEntryToSummaryResponse(uav, nzyme.getUav().matchUavType(customTypes, uav.idSerial()), taps));
         }
 
         return Response.ok(UavListResponse.create(total, uavs)).build();
@@ -99,7 +103,7 @@ public class UavResource extends TapDataHandlingResource {
         Optional<UavTypeMatch> uavType = nzyme.getUav().matchUavType(uav.get().idSerial(), tenantId, organizationId);
 
         return Response.ok(UavDetailsResponse.create(
-                uavEntryToSummaryResponse(uav.get(), uavType)
+                uavEntryToSummaryResponse(uav.get(), uavType, taps)
         )).build();
     }
 
@@ -116,12 +120,48 @@ public class UavResource extends TapDataHandlingResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
+        List<UUID> tapUuids = nzyme.getTapManager().allTapUUIDsAccessibleByUser(getAuthenticatedUser(sc));
+        List<Tap> taps = Lists.newArrayList();
+        for (UUID uuid : tapUuids) {
+            Optional<Tap> tap = nzyme.getTapManager().findTap(uuid);
+            tap.ifPresent(taps::add);
+        }
+
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         long count = nzyme.getUav().countTimelines(uavIdentifier, timeRange, organizationId, tenantId);
         List<UavTimelineDetailsResponse> timelines = Lists.newArrayList();
         for (UavTimelineEntry timeline : nzyme.getUav()
                 .findUavTimelines(uavIdentifier, timeRange, organizationId, tenantId, limit, offset)) {
+            // Fetch all vectors of this timeline and calculate max/min distance from selected taps.
+            Double minDistance = null;
+            Double maxDistance = null;
+
+            for (UavVectorEntry vector : nzyme.getUav()
+                    .findVectorsOfTimeline(uavIdentifier, organizationId, tenantId,
+                            timeline.seenFrom(), timeline.seenTo())) {
+                if (vector.latitude() != null && vector.longitude() != null) {
+                    for (Tap tap : taps) {
+                        if (tap.latitude() == null || tap.longitude() == null) {
+                            continue;
+                        }
+
+                        double distanceFeet = HaversineDistance.haversine(
+                                tap.latitude(), tap.longitude(), vector.latitude(), vector.longitude()
+                        )*3.28084;
+
+                        if (minDistance == null || distanceFeet < minDistance) {
+                            minDistance = distanceFeet;
+                        }
+
+                        if (maxDistance == null || distanceFeet > maxDistance) {
+                            maxDistance = distanceFeet;
+                        }
+                    }
+                }
+            }
+
+
             Duration duration = new Duration(timeline.seenFrom(), timeline.seenTo());
 
             timelines.add(UavTimelineDetailsResponse.create(
@@ -129,6 +169,8 @@ public class UavResource extends TapDataHandlingResource {
                     timeline.uuid(),
                     timeline.seenFrom(),
                     timeline.seenTo(),
+                    maxDistance,
+                    minDistance,
                     duration.getStandardSeconds(),
                     Tools.durationToHumanReadable(duration)
             ));
@@ -496,7 +538,9 @@ public class UavResource extends TapDataHandlingResource {
         return Response.ok().build();
     }
 
-    private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav, Optional<UavTypeMatch> uavType) {
+    private UavSummaryResponse uavEntryToSummaryResponse(UavEntry uav,
+                                                         Optional<UavTypeMatch> uavType,
+                                                         List<UUID> taps) {
         Double operatorDistanceToUav = null;
 
         if (uav.latitude() != null && uav.longitude() != null
@@ -512,6 +556,33 @@ public class UavResource extends TapDataHandlingResource {
         } else {
             // No custom classification. Leave it at the manual classification.
             classification = ClassificationResponse.valueOf(uav.classification());
+        }
+
+        // Calculate tap distances.
+        Map<UUID, UavToTapDistanceResponse> tapDistances = Maps.newHashMap();
+        Double closestTapDistance = null;
+        if (uav.latitude() != null && uav.longitude() != null) {
+            for (UUID uuid : taps) {
+                Optional<Tap> tap = nzyme.getTapManager().findTap(uuid);
+                if (tap.isEmpty() || tap.get().latitude() == null || tap.get().longitude() == null) {
+                    continue;
+                }
+
+                double distanceFeet = HaversineDistance.haversine(
+                        tap.get().latitude(), tap.get().longitude(), uav.latitude(), uav.longitude()
+                )*3.28084;
+
+                if (closestTapDistance == null || distanceFeet < closestTapDistance) {
+                    closestTapDistance = distanceFeet;
+                }
+
+                tapDistances.put(uuid, UavToTapDistanceResponse.create(
+                        TapHighLevelInformationDetailsResponse.create(
+                                uuid, tap.get().name(), Tools.isTapActive(tap.get().lastReport())
+                        ),
+                        distanceFeet
+                ));
+            }
         }
 
         return UavSummaryResponse.create(
@@ -551,6 +622,8 @@ public class UavResource extends TapDataHandlingResource {
                 operatorDistanceToUav,
                 uav.latestVectorTimestamp(),
                 uav.latestOperatorLocationTimestamp(),
+                tapDistances,
+                closestTapDistance,
                 uav.firstSeen(),
                 uav.lastSeen()
         );

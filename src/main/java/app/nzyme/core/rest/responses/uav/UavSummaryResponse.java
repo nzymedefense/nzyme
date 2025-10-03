@@ -7,6 +7,7 @@ import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
+import java.util.Map;
 import java.util.UUID;
 
 @AutoValue
@@ -149,13 +150,20 @@ public abstract class UavSummaryResponse {
     @Nullable
     public abstract DateTime latestOperatorLocationTimestamp();
 
+    @JsonProperty("tap_distances")
+    public abstract Map<UUID, UavToTapDistanceResponse> tapDistances();
+
+    @JsonProperty("closest_tap_distance")
+    @Nullable
+    public abstract Double closestTapDistance();
+
     @JsonProperty("first_seen")
     public abstract DateTime firstSeen();
 
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static UavSummaryResponse create(boolean isActive, String identifier, String designation, ClassificationResponse classification, UavTypeResponse uavType, String uavModelType, String uavModelModel, String uavModelName, UavDetectionSourceResponse detectionSource, String idSerial, String idRegistration, String idUtm, String idSession, String operatorId, double rssiAverage, UavOperationalStatusResponse operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, UavHeightTypeResponse heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, UavOperatorLocationTypeResponse operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, Double operatorDistanceToUav, DateTime latestVectorTimestamp, DateTime latestOperatorLocationTimestamp, DateTime firstSeen, DateTime lastSeen) {
+    public static UavSummaryResponse create(boolean isActive, String identifier, String designation, ClassificationResponse classification, UavTypeResponse uavType, String uavModelType, String uavModelModel, String uavModelName, UavDetectionSourceResponse detectionSource, String idSerial, String idRegistration, String idUtm, String idSession, String operatorId, double rssiAverage, UavOperationalStatusResponse operationalStatus, Double latitude, Double longitude, Integer groundTrack, Double speed, Double verticalSpeed, Double altitudePressure, Double altitudeGeodetic, UavHeightTypeResponse heightType, Double height, Integer accuracyHorizontal, Integer accuracyVertical, Integer accuracyBarometer, Integer accuracySpeed, UavOperatorLocationTypeResponse operatorLocationType, Double operatorLatitude, Double operatorLongitude, Double operatorAltitude, Double operatorDistanceToUav, DateTime latestVectorTimestamp, DateTime latestOperatorLocationTimestamp, Map<UUID, UavToTapDistanceResponse> tapDistances, Double closestTapDistance, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .isActive(isActive)
                 .identifier(identifier)
@@ -193,6 +201,8 @@ public abstract class UavSummaryResponse {
                 .operatorDistanceToUav(operatorDistanceToUav)
                 .latestVectorTimestamp(latestVectorTimestamp)
                 .latestOperatorLocationTimestamp(latestOperatorLocationTimestamp)
+                .tapDistances(tapDistances)
+                .closestTapDistance(closestTapDistance)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .build();
@@ -275,6 +285,10 @@ public abstract class UavSummaryResponse {
         public abstract Builder latestVectorTimestamp(DateTime latestVectorTimestamp);
 
         public abstract Builder latestOperatorLocationTimestamp(DateTime latestOperatorLocationTimestamp);
+
+        public abstract Builder tapDistances(Map<UUID, UavToTapDistanceResponse> tapDistances);
+
+        public abstract Builder closestTapDistance(Double closestTapDistance);
 
         public abstract Builder firstSeen(DateTime firstSeen);
 

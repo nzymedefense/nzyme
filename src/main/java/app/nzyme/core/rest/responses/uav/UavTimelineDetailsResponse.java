@@ -2,6 +2,7 @@ package app.nzyme.core.rest.responses.uav;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
 import java.util.UUID;
@@ -21,18 +22,28 @@ public abstract class UavTimelineDetailsResponse {
     @JsonProperty("seen_to")
     public abstract DateTime seenTo();
 
+    @JsonProperty("max_distance")
+    @Nullable
+    public abstract Double maxDistance();
+
+    @JsonProperty("min_distance")
+    @Nullable
+    public abstract Double minDistance();
+
     @JsonProperty("duration_seconds")
     public abstract Long durationSeconds();
 
     @JsonProperty("duration_human_readable")
     public abstract String durationHumanReadable();
 
-    public static UavTimelineDetailsResponse create(boolean isActive, UUID uuid, DateTime seenFrom, DateTime seenTo, Long durationSeconds, String durationHumanReadable) {
+    public static UavTimelineDetailsResponse create(boolean isActive, UUID uuid, DateTime seenFrom, DateTime seenTo, Double maxDistance, Double minDistance, Long durationSeconds, String durationHumanReadable) {
         return builder()
                 .isActive(isActive)
                 .uuid(uuid)
                 .seenFrom(seenFrom)
                 .seenTo(seenTo)
+                .maxDistance(maxDistance)
+                .minDistance(minDistance)
                 .durationSeconds(durationSeconds)
                 .durationHumanReadable(durationHumanReadable)
                 .build();
@@ -51,6 +62,10 @@ public abstract class UavTimelineDetailsResponse {
         public abstract Builder seenFrom(DateTime seenFrom);
 
         public abstract Builder seenTo(DateTime seenTo);
+
+        public abstract Builder maxDistance(Double maxDistance);
+
+        public abstract Builder minDistance(Double minDistance);
 
         public abstract Builder durationSeconds(Long durationSeconds);
 
