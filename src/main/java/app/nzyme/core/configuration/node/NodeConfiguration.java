@@ -9,6 +9,7 @@ import java.util.Optional;
 public abstract class NodeConfiguration {
 
     public abstract boolean versionchecksEnabled();
+    public abstract Optional<String> versioncheckUri();
 
     public abstract String databasePath();
 
@@ -32,9 +33,10 @@ public abstract class NodeConfiguration {
     public abstract PerformanceConfiguration performance();
     public abstract MiscConfiguration misc();
 
-    public static NodeConfiguration create(boolean versionchecksEnabled, String databasePath, URI restListenUri, URI httpExternalUri, Optional<Integer> httpMaxPostSize, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, Optional<ProtocolsConfiguration> protocols, Optional<String> connectApiUri, boolean connectSkip, PerformanceConfiguration performance, MiscConfiguration misc) {
+    public static NodeConfiguration create(boolean versionchecksEnabled, Optional<String> versioncheckUri, String databasePath, URI restListenUri, URI httpExternalUri, Optional<Integer> httpMaxPostSize, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer, Optional<ProtocolsConfiguration> protocols, Optional<String> connectApiUri, boolean connectSkip, PerformanceConfiguration performance, MiscConfiguration misc) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
+                .versioncheckUri(versioncheckUri)
                 .databasePath(databasePath)
                 .restListenUri(restListenUri)
                 .httpExternalUri(httpExternalUri)
@@ -58,6 +60,8 @@ public abstract class NodeConfiguration {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder versionchecksEnabled(boolean versionchecksEnabled);
+
+        public abstract Builder versioncheckUri(Optional<String> versioncheckUri);
 
         public abstract Builder databasePath(String databasePath);
 

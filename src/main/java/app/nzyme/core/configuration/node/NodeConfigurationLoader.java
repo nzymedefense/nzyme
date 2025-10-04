@@ -68,6 +68,7 @@ public class NodeConfigurationLoader {
     public NodeConfiguration get() {
         return NodeConfiguration.create(
                 parseVersionchecksEnabled(),
+                parseVersioncheckUri(),
                 parseDatabasePath(),
                 parseRestListenUri(),
                 parseHttpExternalUri(),
@@ -100,6 +101,14 @@ public class NodeConfigurationLoader {
         return general.getBoolean(ConfigurationKeys.VERSIONCHECKS);
     }
 
+    @Nullable
+    private Optional<String> parseVersioncheckUri() {
+        if (general.hasPath(ConfigurationKeys.VERSIONCHECKS_URI)) {
+            return Optional.of(general.getString(ConfigurationKeys.VERSIONCHECKS_URI));
+        } else {
+            return Optional.empty();
+        }
+    }
     private String parsePluginDirectory() {
         return general.getString(ConfigurationKeys.PLUGIN_DIRECTORY);
     }

@@ -40,7 +40,7 @@ public class VersioncheckThread extends Periodical {
 
     private static final Logger LOG = LogManager.getLogger(VersioncheckThread.class);
 
-    private static final String VERSIONCHECK_API = "https://versionchecks.nzyme.org/check";
+    private static final String DEFAULT_VERSIONCHECK_API = "https://versionchecks.nzyme.org/check";
 
     private static final String USER_AGENT = String.format(Locale.ENGLISH, "nzyme (%s, %s, %s, %s)",
             System.getProperty("java.vendor"), System.getProperty("java.version"),
@@ -69,10 +69,17 @@ public class VersioncheckThread extends Periodical {
     protected void execute() {
         LOG.info("Starting to check for most recent nzyme version.");
 
+        HttpUrl url;
+        if (nzyme.getConfiguration().versioncheckUri().isEmpty()) {
+            url = HttpUrl.parse(DEFAULT_VERSIONCHECK_API);
+        } else {
+            url = HttpUrl.parse(nzyme.getConfiguration().versioncheckUri().get());
+        }
+
         try {
             Request request = new Request.Builder()
                     .get()
-                    .url(HttpUrl.parse(VERSIONCHECK_API).newBuilder()
+                    .url(url.newBuilder()
                             .addQueryParameter("version", version.getShortVersionString())
                             .build())
                     .addHeader(HttpHeaders.USER_AGENT, USER_AGENT)
