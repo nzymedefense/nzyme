@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.resources.uav;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.geo.GeoCenter;
 import app.nzyme.core.geo.HaversineDistance;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.requests.CreateUavCustomTypeRequest;
@@ -74,11 +75,28 @@ public class UavResource extends TapDataHandlingResource {
         List<UavSummaryResponse> uavs = Lists.newArrayList();
 
         List<UavTypeEntry> customTypes = nzyme.getUav().findAllCustomTypes(organizationId, tenantId);
+        List<GeoCenter.LatLon> uavPositions = Lists.newArrayList();
+
         for (UavEntry uav : nzyme.getUav().findAllUavsOfTenant(timeRange, limit, offset, organizationId, tenantId, taps)) {
             uavs.add(uavEntryToSummaryResponse(uav, nzyme.getUav().matchUavType(customTypes, uav.idSerial()), taps));
+
+            if (uav.latitude() != null && uav.longitude() != null) {
+                uavPositions.add(new GeoCenter.LatLon(uav.latitude(), uav.longitude()));
+            }
         }
 
-        return Response.ok(UavListResponse.create(total, uavs)).build();
+        UavMapCenterResponse mapCenterResponse;
+
+        if (!uavPositions.isEmpty()) {
+            GeoCenter.LatLon geoCenter = GeoCenter.center(uavPositions);
+            mapCenterResponse = UavMapCenterResponse.create(
+                    13, geoCenter.latDeg, geoCenter.lonDeg
+            );
+        } else {
+            mapCenterResponse = UavMapCenterResponse.create(0, 0, 0);
+        }
+
+        return Response.ok(UavListResponse.create(total, mapCenterResponse, uavs)).build();
     }
 
     @GET

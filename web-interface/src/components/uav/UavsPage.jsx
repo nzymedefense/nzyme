@@ -6,6 +6,7 @@ import {disableTapSelector, enableTapSelector} from "../misc/TapSelector";
 import CardTitleWithControls from "../shared/CardTitleWithControls";
 import UavsTable from "./UavsTable";
 import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
+import UavTacticalMap from "./UavTacticalMap";
 
 const uavService = new UavService();
 
@@ -21,10 +22,12 @@ export default function UavsPage() {
   const [page, setPage] = useState(1);
   const perPage = 25;
 
+  const [revision, setRevision] = useState(new Date());
+
   useEffect(() => {
     setUavs(null);
     uavService.findAll(setUavs, organizationId, tenantId, timeRange, selectedTaps, perPage, (page-1)*perPage);
-  }, [selectedTaps, timeRange, page, organizationId, tenantId]);
+  }, [selectedTaps, timeRange, page, organizationId, tenantId, revision]);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -53,7 +56,34 @@ export default function UavsPage() {
               <div className="card-body">
                 <CardTitleWithControls title="UAVs"
                                        timeRange={timeRange}
-                                       setTimeRange={setTimeRange} />
+                                       setTimeRange={setTimeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Tactical Live Map"
+                                       fixedAppliedTimeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <UavTacticalMap containerHeight={600} uavs={uavs} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="All UAVs"
+                                       fixedAppliedTimeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
 
                 <p className="text-muted mt-0">
                   The table shows the most recent recorded values. More details and a history of values is available on

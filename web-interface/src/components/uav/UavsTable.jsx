@@ -10,7 +10,6 @@ import UavOperationalStatus from "./util/UavOperationalStatus";
 import moment from "moment/moment";
 import UavAltitude from "./util/UavAltitude";
 import UavSpeed from "./util/UavSpeed";
-import UavVerticalSpeed from "./util/UavVerticalSpeed";
 import ApiRoutes from "../../util/ApiRoutes";
 import Designation from "../shared/Designation";
 import UavClassification from "./util/UavClassification";
