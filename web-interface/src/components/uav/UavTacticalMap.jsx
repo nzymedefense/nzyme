@@ -36,7 +36,7 @@ export default function UavTacticalMap(props) {
 
   const uavTooltip = (uav) => {
     // Watch for XSS here.
-    return "UAV [" + sanitizeHtml(uav.designation) + "] at " + moment(uav.last_seen).fromNow();
+    return "UAV [" + sanitizeHtml(uav.designation) + "]<br/>" + moment(uav.last_seen).fromNow();
   }
 
   useEffect(() => {
