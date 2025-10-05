@@ -49,11 +49,14 @@ public class DHCP {
             return 0;
         }
 
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new DHCPFilters());
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT transaction_id) FROM dhcp_transactions " +
                                 "WHERE latest_packet >= :tr_from AND latest_packet <= :tr_to " +
-                                "AND tap_uuid IN (<taps>)")
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql())
                         .bindList("taps", taps)
+                        .bindMap(filterFragment.bindings())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .mapTo(Long.class)

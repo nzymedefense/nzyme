@@ -7,6 +7,9 @@ import app.nzyme.core.assets.db.AssetIpAddressEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.filters.FilterSql;
+import app.nzyme.core.util.filters.FilterSqlFragment;
+import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.Subsystem;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
 public class AssetManager {
 
     private static final Logger LOG = LogManager.getLogger(AssetManager.class);
@@ -84,14 +88,18 @@ public class AssetManager {
         this.nzyme = nzyme;
     }
 
-    public long countAssets(TimeRange timeRange, UUID organizationId, UUID tenantId) {
+    public long countAssets(TimeRange timeRange, Filters filters, UUID organizationId, UUID tenantId) {
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new AssetFilters());
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM assets WHERE organization_id = :organization_id " +
-                                "AND tenant_id = :tenant_id AND last_seen >= :tr_from AND last_seen <= :tr_to")
+                                "AND tenant_id = :tenant_id AND last_seen >= :tr_from " +
+                                "AND last_seen <= :tr_to" + filterFragment.whereSql())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
+                        .bindMap(filterFragment.bindings())
                         .mapTo(Long.class)
                         .one()
         );
@@ -100,13 +108,17 @@ public class AssetManager {
     public List<AssetEntry> findAllAssets(UUID organizationId,
                                           UUID tenantId,
                                           TimeRange timeRange,
+                                          Filters filters,
                                           int limit,
                                           int offset,
                                           OrderColumn orderColumn,
                                           OrderDirection orderDirection) {
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new AssetFilters());
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM assets WHERE organization_id = :organization_id " +
-                                "AND tenant_id = :tenant_id AND last_seen >= :tr_from AND last_seen <= :tr_to " +
+                                "AND tenant_id = :tenant_id AND last_seen >= :tr_from " +
+                                "AND last_seen <= :tr_to " + filterFragment.whereSql() + " " +
                                 "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
@@ -117,6 +129,7 @@ public class AssetManager {
                         .bind("offset", offset)
                         .define("order_column", orderColumn.getColumnName())
                         .define("order_direction", orderDirection)
+                        .bindMap(filterFragment.bindings())
                         .mapTo(AssetEntry.class)
                         .list()
         );

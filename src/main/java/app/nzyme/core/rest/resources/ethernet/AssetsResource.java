@@ -13,6 +13,7 @@ import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.assets.*;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.distributed.messaging.ClusterMessage;
 import app.nzyme.plugin.distributed.messaging.MessageType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -43,11 +44,13 @@ public class AssetsResource extends TapDataHandlingResource {
                               @QueryParam("organization_id") UUID organizationId,
                               @QueryParam("tenant_id") UUID tenantId,
                               @QueryParam("time_range") @Valid String timeRangeParameter,
+                              @QueryParam("filters") String filtersParameter,
                               @QueryParam("order_column") @Nullable String orderColumnParam,
                               @QueryParam("order_direction") @Nullable String orderDirectionParam,
                               @QueryParam("limit") int limit,
                               @QueryParam("offset") int offset) {
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -64,11 +67,11 @@ public class AssetsResource extends TapDataHandlingResource {
             }
         }
 
-        long total = nzyme.getAssetsManager().countAssets(timeRange, organizationId, tenantId);
+        long total = nzyme.getAssetsManager().countAssets(timeRange, filters, organizationId, tenantId);
 
         List<AssetSummaryResponse> assets = Lists.newArrayList();
         for (AssetEntry asset : nzyme.getAssetsManager()
-                .findAllAssets(organizationId, tenantId, timeRange, limit, offset, orderColumn, orderDirection)) {
+                .findAllAssets(organizationId, tenantId, timeRange, filters, limit, offset, orderColumn, orderDirection)) {
 
             Optional<MacAddressContextEntry> context = nzyme.getContextService().findMacAddressContext(
                     asset.mac(), organizationId, tenantId
