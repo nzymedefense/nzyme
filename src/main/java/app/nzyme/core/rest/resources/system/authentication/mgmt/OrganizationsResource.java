@@ -2805,6 +2805,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         nzyme.getAuthenticationService().deleteSuperAdministrator(userId);
 
+        // System event.
+        nzyme.getEventEngine().processEvent(SystemEvent.create(
+                SystemEventType.AUTHENTICATION_SUPERADMIN_DELETED,
+                DateTime.now(),
+                "Super administrator [" + superAdmin.get().email() + "] was deleted."
+        ), null, null);
+
         return Response.ok().build();
     }
 

@@ -51,7 +51,14 @@ public enum SystemEventType {
             SystemEventCategory.AUTHENTICATION,
             SystemEventScope.SYSTEM,
             "New super administrator created",
-            "A new user with super administrator permissions was created"
+            "A new user with super administrator permissions was created."
+    ),
+
+    AUTHENTICATION_SUPERADMIN_DELETED(
+            SystemEventCategory.AUTHENTICATION,
+            SystemEventScope.SYSTEM,
+            "A super administrator was deleted",
+            "A super administrator was deleted by another super administrator."
     ),
 
     AUTHENTICATION_SUPERADMIN_PASSWORD_CHANGED(
