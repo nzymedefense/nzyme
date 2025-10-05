@@ -160,7 +160,8 @@ public class UavResource extends TapDataHandlingResource {
                             timeline.seenFrom(), timeline.seenTo())) {
                 if (vector.latitude() != null && vector.longitude() != null) {
                     for (Tap tap : taps) {
-                        if (tap.latitude() == null || tap.longitude() == null) {
+                        if (tap.latitude() == null || tap.latitude() == 0
+                                || tap.longitude() == null || tap.longitude() == 0) {
                             continue;
                         }
 
