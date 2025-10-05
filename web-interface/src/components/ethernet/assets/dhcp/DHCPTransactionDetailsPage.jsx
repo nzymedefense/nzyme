@@ -162,7 +162,7 @@ export default function DHCPTransactionDetailsPage() {
 
                 <dl className="mb-0">
                   <dt>Transaction Fingerprint</dt>
-                  <dd><span className="dhcp-options-fingerprint">{tx.fingerprint}</span></dd>
+                  <dd><span className="machine-data">{tx.fingerprint}</span></dd>
                   <dt>DHCP Options</dt>
                   <dd>{tx.options != null && tx.options.length > 0 ?
                       <span className="machine-data">{tx.options.join(",")}</span>

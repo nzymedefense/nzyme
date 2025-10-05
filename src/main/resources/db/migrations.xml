@@ -7168,4 +7168,8 @@
                                  onDelete="CASCADE" />
     </changeSet>
 
+    <changeSet id="make_dhcp_transactions_req_ip_addr_type_inet" author="lennartkoopmann">
+        <modifyDataType tableName="dhcp_transactions" columnName="requested_ip_address" newDataType="inet" />
+    </changeSet>
+
 </databaseChangeLog>

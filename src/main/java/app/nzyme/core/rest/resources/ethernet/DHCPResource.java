@@ -15,6 +15,7 @@ import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTimelineStepResponse;
 import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTransactionDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTransactionsListResponse;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -45,6 +46,7 @@ public class DHCPResource extends TapDataHandlingResource {
                                  @QueryParam("organization_id") UUID organizationId,
                                  @QueryParam("tenant_id") UUID tenantId,
                                  @QueryParam("time_range") @Valid String timeRangeParameter,
+                                 @QueryParam("filters") String filtersParameter,
                                  @QueryParam("order_column") @Nullable String orderColumnParam,
                                  @QueryParam("order_direction") @Nullable String orderDirectionParam,
                                  @QueryParam("limit") int limit,
@@ -52,6 +54,7 @@ public class DHCPResource extends TapDataHandlingResource {
                                  @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -68,10 +71,10 @@ public class DHCPResource extends TapDataHandlingResource {
             }
         }
 
-        long total = nzyme.getEthernet().dhcp().countAllTransactions(timeRange, taps);
+        long total = nzyme.getEthernet().dhcp().countAllTransactions(timeRange, filters, taps);
         List<DHCPTransactionDetailsResponse> txs = Lists.newArrayList();
         for (DHCPTransactionEntry tx : nzyme.getEthernet().dhcp()
-                .findAllTransactions(timeRange, limit, offset, orderColumn, orderDirection, taps)) {
+                .findAllTransactions(timeRange, limit, offset, orderColumn, orderDirection, filters, taps)) {
             txs.add(buildTransactionResponse(tx, organizationId, tenantId));
         }
 

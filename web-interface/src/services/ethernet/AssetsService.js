@@ -34,10 +34,10 @@ export default class AssetsService {
     RESTClient.delete(`/ethernet/assets/show/${assetId}/ip_addresses/${addressId}/organization/${organizationId}/tenant/${tenantId}`, onSuccess)
   }
 
-  findAllDHCPTransactions(organizationId, tenantId, timeRange, orderColumn, orderDirection, taps, limit, offset, setTransactions) {
+  findAllDHCPTransactions(organizationId, tenantId, timeRange, orderColumn, orderDirection, filters, taps, limit, offset, setTransactions) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/ethernet/dhcp/transactions", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, taps: tapsList, limit: limit, offset: offset },
+    RESTClient.get("/ethernet/dhcp/transactions", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, filters: filters, taps: tapsList, limit: limit, offset: offset },
         (response) => setTransactions(response.data)
     )
   }

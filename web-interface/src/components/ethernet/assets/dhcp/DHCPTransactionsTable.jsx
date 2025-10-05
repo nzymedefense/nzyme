@@ -11,6 +11,7 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import ColumnSorting from "../../../shared/ColumnSorting";
 import AssetName from "../../shared/AssetName";
 import L4Address from "../../shared/L4Address";
+import FullCopyShortenedFingerprint from "../../../shared/FullCopyShortenedFingerprint";
 
 export default function DHCPTransactionsTable(props) {
 
@@ -77,7 +78,7 @@ export default function DHCPTransactionsTable(props) {
                   <td>{t.server_mac ? <EthernetMacAddress addressWithContext={t.server_mac} withAssetLink /> : <span className="text-muted">n/a</span>}</td>
                   <td><AssetName addressWithContext={t.server_mac} /></td>
                   <td><L4Address address={t.requested_ip_address} hideFlag /></td>
-                  <td>{t.fingerprint ? <span className="dhcp-options-fingerprint" title={t.fingerprint}>{t.fingerprint.substr(0,6)}</span> : <span className="text-muted">None</span>}</td>
+                  <td><FullCopyShortenedFingerprint fingerprint={t.fingerprint} /></td>
                   <td><DHCPTransactionSuccess success={t.is_successful} /></td>
                   <td>{t.is_complete ? <span className="text-success">Complete</span>
                       : <span className="text-warning">Incomplete</span>}</td>

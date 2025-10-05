@@ -60,12 +60,13 @@ export default function DHCPTransactionsPage() {
         timeRange,
         orderColumn,
         orderDirection,
+        filters,
         selectedTaps,
         perPage,
         (page-1)*perPage,
         setData
     );
-  }, [selectedTaps, organizationId, tenantId, timeRange, orderColumn, orderDirection, page, revision]);
+  }, [selectedTaps, organizationId, tenantId, timeRange, orderColumn, orderDirection, filters, page, revision]);
 
   return (
       <React.Fragment>

@@ -5,6 +5,9 @@ import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionEntry;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.filters.FilterSql;
+import app.nzyme.core.util.filters.FilterSqlFragment;
+import app.nzyme.core.util.filters.Filters;
 import org.joda.time.DateTime;
 
 import java.util.Collections;
@@ -41,7 +44,7 @@ public class DHCP {
         this.nzyme = ethernet.getNzyme();
     }
 
-    public long countAllTransactions(TimeRange timeRange, List<UUID> taps) {
+    public long countAllTransactions(TimeRange timeRange, Filters filters, List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
@@ -63,10 +66,13 @@ public class DHCP {
                                                           int offset,
                                                           OrderColumn orderColumn,
                                                           OrderDirection orderDirection,
+                                                          Filters filters,
                                                           List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new DHCPFilters());
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT transaction_id, ANY_VALUE(transaction_type) AS transaction_type, " +
@@ -87,11 +93,12 @@ public class DHCP {
                                 "BOOL_OR(is_successful) AS is_successful, BOOL_OR(is_complete) AS is_complete " +
                                 "FROM dhcp_transactions " +
                                 "WHERE latest_packet >= :tr_from AND latest_packet <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
                                 "GROUP BY transaction_id, time_bucket " +
                                 "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)
+                        .bindMap(filterFragment.bindings())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bind("limit", limit)
