@@ -7172,4 +7172,9 @@
         <modifyDataType tableName="dhcp_transactions" columnName="requested_ip_address" newDataType="inet" />
     </changeSet>
 
+    <changeSet id="make_ssh_and_socks_tcp_session_keys_not_nullable" author="lennartkoopmann">
+        <addNotNullConstraint tableName="ssh_sessions" columnName="tcp_session_key" />
+        <addNotNullConstraint tableName="socks_tunnels" columnName="tcp_session_key" />
+    </changeSet>
+
 </databaseChangeLog>

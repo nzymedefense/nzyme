@@ -3,9 +3,8 @@ package app.nzyme.core.rest.resources.taps.reports.tables.ssh;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
-
-import javax.annotation.Nullable;
 
 @AutoValue
 public abstract class SshSessionReport {
@@ -14,9 +13,9 @@ public abstract class SshSessionReport {
     public abstract SshVersionReport serverVersion();
     public abstract String connectionStatus();
     public abstract int tunneledBytes();
-    @jakarta.annotation.Nullable
+    @Nullable
     public abstract String sourceMac();
-    @jakarta.annotation.Nullable
+    @Nullable
     public abstract String destinationMac();
     public abstract String sourceAddress();
     public abstract String destinationAddress();
