@@ -3,11 +3,12 @@ import React from "react";
 import numeral from "numeral";
 import moment from "moment";
 import IPAddressLink from "../../shared/IPAddressLink";
-import HostnameLink from "../../shared/HostnameLink";
 import L4Address from "../../shared/L4Address";
 import {calculateConnectionDuration} from "../../../../util/Tools";
 import GenericConnectionStatus from "../../shared/GenericConnectionStatus";
 import SocksTunnelIdLink from "../../shared/SocksTunnelIdLink";
+import Hostname from "../../shared/Hostname";
+import Port from "../../shared/Port";
 
 export default function SocksTunnelsTableRow(props) {
 
@@ -28,7 +29,13 @@ export default function SocksTunnelsTableRow(props) {
     }
 
     if (tunnel.tunneled_destination_host) {
-      return <HostnameLink hostname={tunnel.tunneled_destination_host} port={tunnel.tunneled_destination_port} />
+      return (
+        <>
+          <Hostname hostname={tunnel.tunneled_destination_host} />
+          {tunnel.tunneled_destination_port === undefined || tunnel.tunneled_destination_port === null ? null
+            : <Port port={tunnel.tunneled_destination_port} />};
+        </>
+      )
     }
 
     return "[Invalid]"

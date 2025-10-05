@@ -122,7 +122,6 @@ import RemoteAccessPage from "./components/ethernet/remote/RemoteAccessPage";
 import DNSTransactionLogsPage from "./components/ethernet/dns/logs/DNSTransactionLogsPage";
 import ConnectPage from "./components/system/connect/ConnectPage";
 import BluetoothDevicesPage from "./components/bluetooth/devices/BluetoothDevicesPage";
-import HostnameDetailsPage from "./components/ethernet/hostnames/HostnameDetailsPage";
 import SocksTunnelDetailsPage from "./components/ethernet/tunnels/socks/SocksTunnelDetailsPage";
 import SSHSessionDetailsPage from "./components/ethernet/remote/ssh/SSHSessionDetailsPage";
 import L4OverviewPage from "./components/ethernet/l4/L4OverviewPage";
@@ -552,9 +551,6 @@ function App() {
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.DHCP.INDEX} element={<DHCPTransactionsPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.DHCP.TRANSACTION_DETAILS(':transactionId')} element={<DHCPTransactionDetailsPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.ARP.INDEX} element={<ARPPacketsPage />}/>
-
-                                { /* Ethernet/Hostnames. */}
-                                <Route path={ApiRoutes.ETHERNET.HOSTNAMES.HOSTNAME(':hostnameParam')} element={<HostnameDetailsPage />}/>
 
                                 { /* Ethernet/DNS. */}
                                 <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>

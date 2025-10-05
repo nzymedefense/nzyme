@@ -1,5 +1,4 @@
 import React from "react";
-import HostnameLink from "../shared/HostnameLink";
 
 export default function DNSData(props) {
 
@@ -9,6 +8,6 @@ export default function DNSData(props) {
     return <span className="text-muted">None</span>
   }
 
-  return <span title={value}><HostnameLink hostname={value} /></span>
+  return <span title={value}>{value}</span>
 
 }
