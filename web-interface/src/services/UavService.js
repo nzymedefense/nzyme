@@ -19,9 +19,11 @@ export default class UavService {
     )
   }
 
-  findTimeline(setTimeline, organizationId, tenantId, timeRange, identifier, limit, offset) {
+  findTimeline(setTimeline, organizationId, tenantId, timeRange, identifier, taps, limit, offset) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
     RESTClient.get(`/uav/uavs/organization/${organizationId}/tenant/${tenantId}/show/${identifier}/timelines`,
-        { time_range: timeRange, limit: limit, offset: offset },
+        { time_range: timeRange, limit: limit, offset: offset, taps: tapsList},
         (response) => setTimeline(response.data)
     )
   }

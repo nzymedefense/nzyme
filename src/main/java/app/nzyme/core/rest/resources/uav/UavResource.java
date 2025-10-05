@@ -131,6 +131,7 @@ public class UavResource extends TapDataHandlingResource {
                                   @PathParam("identifier") String uavIdentifier,
                                   @PathParam("organization_id") UUID organizationId,
                                   @PathParam("tenant_id") UUID tenantId,
+                                  @QueryParam("taps") String tapIds,
                                   @QueryParam("time_range") @Valid String timeRangeParameter,
                                   @QueryParam("limit") int limit,
                                   @QueryParam("offset") int offset) {
@@ -138,7 +139,7 @@ public class UavResource extends TapDataHandlingResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        List<UUID> tapUuids = nzyme.getTapManager().allTapUUIDsAccessibleByUser(getAuthenticatedUser(sc));
+        List<UUID> tapUuids = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         List<Tap> taps = Lists.newArrayList();
         for (UUID uuid : tapUuids) {
             Optional<Tap> tap = nzyme.getTapManager().findTap(uuid);
@@ -160,8 +161,7 @@ public class UavResource extends TapDataHandlingResource {
                             timeline.seenFrom(), timeline.seenTo())) {
                 if (vector.latitude() != null && vector.longitude() != null) {
                     for (Tap tap : taps) {
-                        if (tap.latitude() == null || tap.latitude() == 0
-                                || tap.longitude() == null || tap.longitude() == 0) {
+                        if (tap.latitude() == null || tap.longitude() == null) {
                             continue;
                         }
 

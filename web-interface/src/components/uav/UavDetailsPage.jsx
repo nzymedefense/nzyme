@@ -78,6 +78,7 @@ export default function UavDetailsPage() {
         tenantId,
         timelineTimeRange,
         identifierParam,
+        selectedTaps,
         perPageTimeline,
         (timelinePage - 1) * perPageTimeline
       );
