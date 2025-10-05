@@ -40,7 +40,7 @@ export default function UavTacticalMap(props) {
   }
 
   useEffect(() => {
-    if (uavs !== null && !mapInitialized) {
+    if (uavs !== null && uavs.uavs.length > 0 && !mapInitialized) {
       setMap(L.map("uav-tactical-map", {
         scrollWheelZoom: false,
         fullscreenControl: true,
