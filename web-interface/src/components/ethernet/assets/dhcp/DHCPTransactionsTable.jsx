@@ -12,11 +12,14 @@ import ColumnSorting from "../../../shared/ColumnSorting";
 import AssetName from "../../shared/AssetName";
 import L4Address from "../../shared/L4Address";
 import FullCopyShortenedFingerprint from "../../../shared/FullCopyShortenedFingerprint";
+import FilterValueIcon from "../../../shared/filtering/FilterValueIcon";
+import {DHCP_FILTER_FIELDS} from "./DHCPFilterFields";
 
 export default function DHCPTransactionsTable(props) {
 
   const data = props.data;
   const page = props.page;
+  const setFilters = props.setFilters;
   const setPage = props.setPage;
   const perPage = props.perPage;
   const setOrderColumn = props.setOrderColumn;
@@ -72,13 +75,48 @@ export default function DHCPTransactionsTable(props) {
                       {moment(t.first_packet).format()}
                     </a>
                   </td>
-                  <td>{t.transaction_type}</td>
-                  <td><EthernetMacAddress addressWithContext={t.client_mac} withAssetLink /></td>
+                  <td>
+                    {t.transaction_type}
+
+                    <FilterValueIcon setFilters={setFilters}
+                                     fields={DHCP_FILTER_FIELDS}
+                                     field="transaction_type"
+                                     value={t.transaction_type} />
+                  </td>
+                  <td>
+                    <EthernetMacAddress addressWithContext={t.client_mac}
+                                        filterElement={<FilterValueIcon setFilters={setFilters}
+                                                                        fields={DHCP_FILTER_FIELDS}
+                                                                        field="client_mac"
+                                                                        value={t.client_mac.address} />}
+                                        withAssetLink />
+                  </td>
                   <td><AssetName addressWithContext={t.client_mac} /></td>
-                  <td>{t.server_mac ? <EthernetMacAddress addressWithContext={t.server_mac} withAssetLink /> : <span className="text-muted">n/a</span>}</td>
+                  <td>
+                    {t.server_mac ?
+                      <EthernetMacAddress addressWithContext={t.server_mac}
+                                          filterElement={<FilterValueIcon setFilters={setFilters}
+                                                                          fields={DHCP_FILTER_FIELDS}
+                                                                          field="server_mac"
+                                                                          value={t.server_mac.address} />}
+                                          withAssetLink />
+                      : <span className="text-muted">n/a</span>}</td>
                   <td><AssetName addressWithContext={t.server_mac} /></td>
-                  <td><L4Address address={t.requested_ip_address} hideFlag /></td>
-                  <td><FullCopyShortenedFingerprint fingerprint={t.fingerprint} /></td>
+                  <td>
+                    <L4Address address={t.requested_ip_address}
+                               filterElement={<FilterValueIcon setFilters={setFilters}
+                                                               fields={DHCP_FILTER_FIELDS}
+                                                               field="requested_ip"
+                                                               value={t.requested_ip_address.address} />}
+                               hideFlag />
+                  </td>
+                  <td>
+                    <FullCopyShortenedFingerprint fingerprint={t.fingerprint} />
+                    <FilterValueIcon setFilters={setFilters}
+                                     fields={DHCP_FILTER_FIELDS}
+                                     field="fingerprint"
+                                     value={t.fingerprint} />
+                  </td>
                   <td><DHCPTransactionSuccess success={t.is_successful} /></td>
                   <td>{t.is_complete ? <span className="text-success">Complete</span>
                       : <span className="text-warning">Incomplete</span>}</td>

@@ -106,6 +106,7 @@ export default function DHCPTransactionsPage() {
                                        page={page}
                                        setPage={setPage}
                                        perPage={perPage}
+                                       setFilters={setFilters}
                                        orderColumn={orderColumn}
                                        orderDirection={orderDirection}
                                        setOrderColumn={setOrderColumn}
