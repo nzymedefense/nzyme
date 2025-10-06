@@ -11,7 +11,7 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import ColumnSorting from "../../../shared/ColumnSorting";
 import AssetName from "../../shared/AssetName";
 import L4Address from "../../shared/L4Address";
-import FullCopyShortenedFingerprint from "../../../shared/FullCopyShortenedFingerprint";
+import FullCopyShortenedId from "../../../shared/FullCopyShortenedId";
 import FilterValueIcon from "../../../shared/filtering/FilterValueIcon";
 import {DHCP_FILTER_FIELDS} from "./DHCPFilterFields";
 
@@ -111,7 +111,7 @@ export default function DHCPTransactionsTable(props) {
                                hideFlag />
                   </td>
                   <td>
-                    <FullCopyShortenedFingerprint fingerprint={t.fingerprint} />
+                    <FullCopyShortenedId value={t.fingerprint} />
                     <FilterValueIcon setFilters={setFilters}
                                      fields={DHCP_FILTER_FIELDS}
                                      field="fingerprint"

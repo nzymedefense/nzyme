@@ -12,6 +12,7 @@ export default function L4Address(props) {
   const hidePort = props.hidePort;
   const hideFlag = props.hideFlag;
   const filterElement = props.filterElement;
+  const suffixElement = props.suffixElement;
 
   const [overlayTimeout, setOverlayTimeout] = useState(null);
   const [overlayVisible, setOverlayVisible] = useState(false);
@@ -57,7 +58,8 @@ export default function L4Address(props) {
       <span onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
         {flag()}{' '}
         <IPAddressLink ip={address.address} port={hidePort ? null : address.port} />{' '}
-        {filterElement ? filterElement : null}
+        {filterElement ? filterElement : null}{' '}
+        {suffixElement ? suffixElement : null}
 
         <ContextOverlayVisibilityWrapper visible={overlayVisible}
                                          overlay={<L4AddressContextOverlay address={address} />} />

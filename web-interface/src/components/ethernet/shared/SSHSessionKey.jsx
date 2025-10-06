@@ -1,13 +1,15 @@
 import React from "react";
+import FullCopyShortenedId from "../../shared/FullCopyShortenedId";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 export default function SSHSessionKey(props) {
 
   const sessionKey = props.sessionKey;
 
   return (
-      <span className="ssh-session-key" title={sessionKey}>
-        {sessionKey.substring(0, 6).toUpperCase()}
-      </span>
+    <a href={ApiRoutes.ETHERNET.REMOTE.SSH.SESSION_DETAILS(sessionKey)}>
+      <FullCopyShortenedId value={sessionKey} />
+    </a>
   )
 
 }

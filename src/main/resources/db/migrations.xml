@@ -7177,4 +7177,8 @@
         <addNotNullConstraint tableName="socks_tunnels" columnName="tcp_session_key" />
     </changeSet>
 
+    <changeSet id="fix_ssh_sessions_tunneled_bytes_type" author="lennartkoopmann">
+        <modifyDataType tableName="ssh_sessions" columnName="tunneled_bytes" newDataType="bigint" />
+    </changeSet>
+
 </databaseChangeLog>

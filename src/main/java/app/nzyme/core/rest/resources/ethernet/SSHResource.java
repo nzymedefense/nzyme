@@ -1,7 +1,10 @@
 package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.L4Type;
+import app.nzyme.core.ethernet.dhcp.DHCP;
+import app.nzyme.core.ethernet.ssh.SSH;
 import app.nzyme.core.ethernet.ssh.db.SSHSessionEntry;
 import app.nzyme.core.ethernet.l4.tcp.db.TcpSessionEntry;
 import app.nzyme.core.rest.RestHelpers;
@@ -11,9 +14,11 @@ import app.nzyme.core.rest.responses.ethernet.ssh.SSHSessionDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.ssh.SSHSessionsListResponse;
 import app.nzyme.core.rest.responses.ethernet.ssh.SSHVersionResponse;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.GET;
@@ -43,20 +48,36 @@ public class SSHResource extends TapDataHandlingResource {
                              @QueryParam("organization_id") UUID organizationId,
                              @QueryParam("tenant_id") UUID tenantId,
                              @QueryParam("time_range") @Valid String timeRangeParameter,
+                             @QueryParam("filters") String filtersParameter,
+                             @QueryParam("order_column") @Nullable String orderColumnParam,
+                             @QueryParam("order_direction") @Nullable String orderDirectionParam,
                              @QueryParam("limit") int limit,
                              @QueryParam("offset") int offset,
                              @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        long total = nzyme.getEthernet().ssh().countAllSessions(timeRange, taps);
+        SSH.OrderColumn orderColumn = SSH.OrderColumn.ESTABLISHED_AT;
+        OrderDirection orderDirection = OrderDirection.DESC;
+        if (orderColumnParam != null && orderDirectionParam != null) {
+            try {
+                orderColumn = SSH.OrderColumn.valueOf(orderColumnParam.toUpperCase());
+                orderDirection = OrderDirection.valueOf(orderDirectionParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
+
+        long total = nzyme.getEthernet().ssh().countAllSessions(timeRange, filters, taps);
 
         List<SSHSessionDetailsResponse> sessions = Lists.newArrayList();
-        for (SSHSessionEntry s : nzyme.getEthernet().ssh().findAllSessions(timeRange, limit, offset, taps)) {
+        for (SSHSessionEntry s : nzyme.getEthernet().ssh()
+                .findAllSessions(timeRange, filters, orderColumn, orderDirection, limit, offset, taps)) {
             // Get underlying TCP session. (Can be NULL)
             Optional<TcpSessionEntry> tcpSession = nzyme.getEthernet().tcp()
                     .findSessionBySessionKey(s.tcpSessionKey(), s.establishedAt(), taps);

@@ -5,6 +5,8 @@ import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSp
 import Paginator from "../../../misc/Paginator";
 import SSHSessionsTableRow from "./SSHSessionsTableRow";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import ColumnSorting from "../../../shared/ColumnSorting";
+import numeral from "numeral";
 
 const sshService = new SSHService();
 
@@ -13,6 +15,12 @@ export default function SSHSessionsTable(props) {
   const [organizationId, tenantId] = useSelectedTenant();
 
   const timeRange = props.timeRange;
+  const filters = props.filters;
+  const setFilters = props.setFilters;
+
+  const [orderColumn, setOrderColumn] = useState("established_at");
+  const [orderDirection, setOrderDirection] = useState("DESC");
+
   const [data, setData] = useState(null);
 
   const tapContext = useContext(TapContext);
@@ -23,8 +31,17 @@ export default function SSHSessionsTable(props) {
 
   useEffect(() => {
     setData(null);
-    sshService.findAllTunnels(organizationId, tenantId, timeRange, selectedTaps, perPage, (page-1)*perPage, setData);
-  }, [organizationId, tenantId, selectedTaps, timeRange, page]);
+    sshService.findAllTunnels(organizationId, tenantId, timeRange, filters, orderColumn, orderDirection, selectedTaps, perPage, (page-1)*perPage, setData);
+  }, [organizationId, tenantId, selectedTaps, timeRange, filters, orderColumn, orderDirection, page]);
+
+
+  const columnSorting = (columnName) => {
+    return <ColumnSorting thisColumn={columnName}
+                          orderColumn={orderColumn}
+                          setOrderColumn={setOrderColumn}
+                          orderDirection={orderDirection}
+                          setOrderDirection={setOrderDirection} />
+  }
 
   if (!data) {
     return <GenericWidgetLoadingSpinner height={150} />
@@ -36,22 +53,24 @@ export default function SSHSessionsTable(props) {
 
   return (
       <React.Fragment>
+        <strong>Total:</strong> {numeral(data.total).format("0,0")}
+
         <table className="table table-sm table-hover table-striped mb-4 mt-3">
           <thead>
           <tr>
-            <th>Session ID</th>
-            <th>Client</th>
-            <th>Server</th>
-            <th>Status</th>
-            <th>Bytes</th>
+            <th>Session ID {columnSorting("session_id")}</th>
+            <th>Client {columnSorting("client_address")}</th>
+            <th>Server {columnSorting("server_address")}</th>
+            <th>Status {columnSorting("connection_status")}</th>
+            <th>Bytes {columnSorting("tunneled_bytes")}</th>
             <th>Duration</th>
-            <th>Established At</th>
-            <th>Terminated At</th>
+            <th>Established At {columnSorting("established_at")}</th>
+            <th>Terminated At {columnSorting("terminated_at")}</th>
           </tr>
           </thead>
           <tbody>
           {data.sessions.map((session, i) => {
-            return <SSHSessionsTableRow session={session} key={i} />
+            return <SSHSessionsTableRow session={session} key={i} setFilters={setFilters}/>
           })}
           </tbody>
         </table>

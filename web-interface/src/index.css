@@ -844,7 +844,6 @@ a.asn-number, span.asn-number {
 
 a.ip-address, span.ip-address,
 a.hostname, span.hostname,
-a.ssh-session-key, span.ssh-session-key,
 a.socks-tunnel-id, span.socks-tunnel-id,
 a.dhcp-transaction-id, span.dhcp-transaction-id,
 a.machine-data, span.machine-data,
