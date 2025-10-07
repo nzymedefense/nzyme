@@ -117,8 +117,8 @@ import CreateFloorPage from "./components/system/authentication/management/tenan
 import EditFloorPage from "./components/system/authentication/management/tenants/locations/floors/EditFloorPage";
 import LookAndFeelPage from "./components/system/lookandfeel/LookAndFeelPage";
 import IPDetailsPage from "./components/ethernet/l4/ip/IPDetailsPage";
-import TunnelsPage from "./components/ethernet/tunnels/TunnelsPage";
-import RemoteAccessPage from "./components/ethernet/remote/RemoteAccessPage";
+import SOCKSTunnelsPage from "./components/ethernet/tunnels/socks/SOCKSTunnelsPage";
+import SSHSessionsPage from "./components/ethernet/remote/ssh/SSHSessionsPage";
 import DNSTransactionLogsPage from "./components/ethernet/dns/logs/DNSTransactionLogsPage";
 import ConnectPage from "./components/system/connect/ConnectPage";
 import BluetoothDevicesPage from "./components/bluetooth/devices/BluetoothDevicesPage";
@@ -557,11 +557,11 @@ function App() {
                                 <Route path={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS} element={<DNSTransactionLogsPage />}/>
 
                                 { /* Ethernet/Remote. */}
-                                <Route path={ApiRoutes.ETHERNET.REMOTE.INDEX} element={<RemoteAccessPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.REMOTE.SSH.INDEX} element={<SSHSessionsPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.REMOTE.SSH.SESSION_DETAILS(':sessionId')} element={<SSHSessionDetailsPage />}/>
 
                                 { /* Ethernet/Tunnels. */}
-                                <Route path={ApiRoutes.ETHERNET.TUNNELS.INDEX} element={<TunnelsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.INDEX} element={<SOCKSTunnelsPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.TUNNEL_DETAILS(':tunnelId')} element={<SocksTunnelDetailsPage />}/>
 
                                 { /* Ethernet/Beacons. */}

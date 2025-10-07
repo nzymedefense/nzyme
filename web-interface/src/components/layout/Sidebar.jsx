@@ -54,11 +54,11 @@ function Sidebar(props) {
                 title="DNS"
                 icon={<i className="sidebar-icon fa-solid fa-signs-post"/>}/>
             <NavigationLink
-                href={ApiRoutes.ETHERNET.REMOTE.INDEX}
+                href={ApiRoutes.ETHERNET.REMOTE.SSH.INDEX}
                 title="Remote Access"
                 icon={<i className="sidebar-icon fa-solid fa-plug"/>}/>
             <NavigationLink
-                href={ApiRoutes.ETHERNET.TUNNELS.INDEX}
+                href={ApiRoutes.ETHERNET.TUNNELS.SOCKS.INDEX}
                 title="Tunnels"
                 icon={<i className="sidebar-icon fa-solid fa-car-tunnel"/>}/>
             <NavigationLink

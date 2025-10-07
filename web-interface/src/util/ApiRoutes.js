@@ -166,14 +166,14 @@ const ApiRoutes = {
       TRANSACTION_LOGS: '/ethernet/dns/logs'
     },
     TUNNELS: {
-      INDEX: '/ethernet/tunnels',
       SOCKS: {
+        INDEX: '/ethernet/tunnels/socks',
         TUNNEL_DETAILS: tunnelId => `/ethernet/tunnels/socks/tunnels/show/${tunnelId}`
       }
     },
     REMOTE: {
-      INDEX: '/ethernet/remoteaccess',
       SSH: {
+        INDEX: '/ethernet/remoteaccess/ssh',
         SESSION_DETAILS: sessionId => `/ethernet/remoteaccess/ssh/sessions/show/${sessionId}`
       }
     },
