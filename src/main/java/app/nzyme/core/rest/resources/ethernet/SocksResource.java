@@ -10,6 +10,7 @@ import app.nzyme.core.rest.responses.ethernet.L4AddressResponse;
 import app.nzyme.core.rest.responses.ethernet.socks.SocksTunnelDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.socks.SocksTunnelsListResponse;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -42,20 +43,22 @@ public class SocksResource extends TapDataHandlingResource {
                             @QueryParam("organization_id") UUID organizationId,
                             @QueryParam("tenant_id") UUID tenantId,
                             @QueryParam("time_range") @Valid String timeRangeParameter,
+                            @QueryParam("filters") String filtersParameter,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset,
                             @QueryParam("taps") String tapIds) {
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        long total = nzyme.getEthernet().socks().countAllTunnels(timeRange, taps);
+        long total = nzyme.getEthernet().socks().countAllTunnels(timeRange, filters, taps);
 
         List<SocksTunnelDetailsResponse> tunnels = Lists.newArrayList();
-        for (SocksTunnelEntry t : nzyme.getEthernet().socks().findAllTunnels(timeRange, limit, offset, taps)) {
+        for (SocksTunnelEntry t : nzyme.getEthernet().socks().findAllTunnels(timeRange, filters, limit, offset, taps)) {
             // Get underlying TCP session. (Can be NULL)
             Optional<TcpSessionEntry> tcpSession = nzyme.getEthernet().tcp()
                     .findSessionBySessionKey(t.tcpSessionKey(), t.establishedAt(), taps);

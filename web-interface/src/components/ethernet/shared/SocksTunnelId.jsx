@@ -1,13 +1,15 @@
 import React from "react";
+import FullCopyShortenedId from "../../shared/FullCopyShortenedId";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 export default function SocksTunnelId(props) {
 
   const tunnelId = props.tunnelId;
 
   return (
-      <span className="socks-tunnel-id" title={tunnelId}>
-        {tunnelId.substring(0, 6).toUpperCase()}
-      </span>
+    <a href={ApiRoutes.ETHERNET.TUNNELS.SOCKS.TUNNEL_DETAILS(tunnelId)}>
+      <FullCopyShortenedId value={tunnelId} />
+    </a>
   )
 
 }

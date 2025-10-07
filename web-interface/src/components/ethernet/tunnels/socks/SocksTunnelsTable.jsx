@@ -5,6 +5,7 @@ import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSp
 import Paginator from "../../../misc/Paginator";
 import SocksTunnelsTableRow from "./SocksTunnelsTableRow";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import numeral from "numeral";
 
 const socksService = new SocksService();
 
@@ -13,6 +14,9 @@ export default function SocksTunnelsTable(props) {
   const [organizationId, tenantId] = useSelectedTenant();
 
   const timeRange = props.timeRange;
+  const filters = props.filters;
+  const setFilters = props.setFilters;
+
   const [data, setData] = useState(null);
 
   const tapContext = useContext(TapContext);
@@ -23,8 +27,8 @@ export default function SocksTunnelsTable(props) {
 
   useEffect(() => {
     setData(null);
-    socksService.findAllTunnels(organizationId, tenantId, timeRange, selectedTaps, perPage, (page-1)*perPage, setData);
-  }, [organizationId, tenantId, selectedTaps, timeRange, page]);
+    socksService.findAllTunnels(organizationId, tenantId, timeRange, filters, selectedTaps, perPage, (page-1)*perPage, setData);
+  }, [organizationId, tenantId, selectedTaps, filters, timeRange, page]);
 
   if (!data) {
     return <GenericWidgetLoadingSpinner height={150} />
@@ -36,6 +40,8 @@ export default function SocksTunnelsTable(props) {
 
   return (
       <React.Fragment>
+        <strong>Total:</strong> {numeral(data.total).format("0,0")}
+
         <table className="table table-sm table-hover table-striped mb-4 mt-3">
           <thead>
           <tr>
@@ -53,7 +59,7 @@ export default function SocksTunnelsTable(props) {
           </thead>
           <tbody>
           {data.tunnels.map((tunnel, i) => {
-            return <SocksTunnelsTableRow tunnel={tunnel} key={i} />
+            return <SocksTunnelsTableRow tunnel={tunnel} key={i} setFilters={setFilters} />
           })}
           </tbody>
         </table>

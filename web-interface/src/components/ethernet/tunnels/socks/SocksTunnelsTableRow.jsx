@@ -6,13 +6,16 @@ import IPAddressLink from "../../shared/IPAddressLink";
 import L4Address from "../../shared/L4Address";
 import {calculateConnectionDuration} from "../../../../util/Tools";
 import GenericConnectionStatus from "../../shared/GenericConnectionStatus";
-import SocksTunnelIdLink from "../../shared/SocksTunnelIdLink";
 import Hostname from "../../shared/Hostname";
 import Port from "../../shared/Port";
+import FilterValueIcon from "../../../shared/filtering/FilterValueIcon";
+import SocksTunnelId from "../../shared/SocksTunnelId";
+import {SOCKS_FILTER_FIELDS} from "./SOCKSFilterFields";
 
 export default function SocksTunnelsTableRow(props) {
 
   const tunnel = props.tunnel;
+  const setFilters = props.setFilters;
 
   const socksType = () => {
     switch (tunnel.socks_type) {
@@ -43,7 +46,14 @@ export default function SocksTunnelsTableRow(props) {
 
   return (
       <tr>
-        <td><SocksTunnelIdLink tunnelId={tunnel.tcp_session_key} /></td>
+        <td>
+          <SocksTunnelId tunnelId={tunnel.tcp_session_key} />
+
+          <FilterValueIcon setFilters={setFilters}
+                           fields={SOCKS_FILTER_FIELDS}
+                           field="session_key"
+                           value={tunnel.tcp_session_key} />
+        </td>
         <td><L4Address address={tunnel.client}/></td>
         <td><L4Address address={tunnel.socks_server}/></td>
         <td>{destination()}</td>

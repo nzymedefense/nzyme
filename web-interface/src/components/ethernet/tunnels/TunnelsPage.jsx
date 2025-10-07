@@ -4,12 +4,24 @@ import {Presets} from "../../shared/timerange/TimeRange";
 import SocksTunnelsTable from "./socks/SocksTunnelsTable";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import {TapContext} from "../../../App";
+import {SOCKS_FILTER_FIELDS} from "./socks/SOCKSFilterFields";
+import {queryParametersToFilters} from "../../shared/filtering/FilterQueryParameters";
+import {useLocation} from "react-router-dom";
+import Filters from "../../shared/filtering/Filters";
+
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+}
 
 export default function TunnelsPage() {
 
   const tapContext = useContext(TapContext);
+  const urlQuery = useQuery();
 
   const [socksTunnelsTimeRange, setSocksTunnelsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [socksTunnelsFilters, setSocksTunnelsFilters] = useState(
+    queryParametersToFilters(urlQuery.get("filters"), SOCKS_FILTER_FIELDS)
+  );
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -37,7 +49,15 @@ export default function TunnelsPage() {
                                        timeRange={socksTunnelsTimeRange}
                                        setTimeRange={setSocksTunnelsTimeRange}/>
 
-                <SocksTunnelsTable timeRange={socksTunnelsTimeRange} />
+                <Filters filters={socksTunnelsFilters}
+                         setFilters={setSocksTunnelsFilters}
+                         fields={SOCKS_FILTER_FIELDS} />
+
+                <hr />
+
+                <SocksTunnelsTable timeRange={socksTunnelsTimeRange}
+                                   filters={socksTunnelsFilters}
+                                   setFilters={setSocksTunnelsFilters} />
               </div>
             </div>
           </div>
