@@ -11,6 +11,7 @@ import Port from "../../shared/Port";
 import FilterValueIcon from "../../../shared/filtering/FilterValueIcon";
 import SocksTunnelId from "../../shared/SocksTunnelId";
 import {SOCKS_FILTER_FIELDS} from "./SOCKSFilterFields";
+import FullCopy from "../../../shared/FullCopy";
 
 export default function SocksTunnelsTableRow(props) {
 
@@ -52,14 +53,45 @@ export default function SocksTunnelsTableRow(props) {
           <FilterValueIcon setFilters={setFilters}
                            fields={SOCKS_FILTER_FIELDS}
                            field="session_key"
-                           value={tunnel.tcp_session_key} />
+                           value={tunnel.tcp_session_key}  />
         </td>
-        <td><L4Address address={tunnel.client}/></td>
-        <td><L4Address address={tunnel.socks_server}/></td>
+        <td>
+          <L4Address address={tunnel.client}
+                     filterElement={<FilterValueIcon setFilters={setFilters}
+                                                     fields={SOCKS_FILTER_FIELDS}
+                                                     field="client_address"
+                                                     value={tunnel.client.address} />}/>
+        </td>
+        <td>
+          <L4Address address={tunnel.socks_server}
+                     filterElement={<FilterValueIcon setFilters={setFilters}
+                                                     fields={SOCKS_FILTER_FIELDS}
+                                                     field="server_address"
+                                                     value={tunnel.socks_server.address} />}/>
+        </td>
         <td>{destination()}</td>
-        <td>{socksType()}</td>
-        <td><GenericConnectionStatus status={tunnel.connection_status} /></td>
-        <td>{numeral(tunnel.tunneled_bytes).format("0,0b")}</td>
+        <td>
+          {socksType()}
+          <FilterValueIcon setFilters={setFilters}
+                           fields={SOCKS_FILTER_FIELDS}
+                           field="type"
+                           value={socksType()}  />
+        </td>
+        <td>
+          <GenericConnectionStatus status={tunnel.connection_status} />
+          <FilterValueIcon setFilters={setFilters}
+                           fields={SOCKS_FILTER_FIELDS}
+                           field="status"
+                           value={tunnel.connection_status}  />
+        </td>
+        <td>
+          <FullCopy shortValue={numeral(tunnel.tunneled_bytes).format("0,0b")} fullValue={tunnel.tunneled_bytes} />
+
+          <FilterValueIcon setFilters={setFilters}
+                           fields={SOCKS_FILTER_FIELDS}
+                           field="tunneled_bytes"
+                           value={tunnel.tunneled_bytes} />
+        </td>
         <td>{calculateConnectionDuration(tunnel.connection_status, tunnel.established_at, tunnel.terminated_at)}</td>
         <td>{moment(tunnel.established_at).format()}</td>
         <td>{tunnel.terminated_at ? moment(tunnel.terminated_at).format() : <span className="text-muted">n/a</span>}</td>

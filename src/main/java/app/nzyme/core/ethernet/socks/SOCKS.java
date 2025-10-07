@@ -1,6 +1,7 @@
 package app.nzyme.core.ethernet.socks;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.socks.db.SocksTunnelEntry;
 import app.nzyme.core.util.TimeRange;
@@ -15,6 +16,29 @@ import java.util.UUID;
 public class SOCKS {
 
     private final NzymeNode nzyme;
+
+    public enum OrderColumn {
+
+        TUNNEL_ID("ANY_VALUE(socks.uuid)"),
+        CLIENT_ADDRESS("ANY_VALUE(tcp.source_address)"),
+        SERVER_ADDRESS("ANY_VALUE(tcp.destination_address)"),
+        TYPE("socks_type"),
+        CONNECTION_STATUS("connection_status"),
+        TUNNELED_BYTES("tunneled_bytes"),
+        ESTABLISHED_AT("established_at"),
+        TERMINATED_AT("terminated_at");
+
+        private final String columnName;
+
+        OrderColumn(String columnName) {
+            this.columnName = columnName;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+    }
 
     public SOCKS(Ethernet ethernet) {
         this.nzyme = ethernet.getNzyme();
@@ -57,7 +81,13 @@ public class SOCKS {
         );
     }
 
-    public List<SocksTunnelEntry> findAllTunnels(TimeRange timeRange, Filters filters, int limit, int offset, List<UUID> taps) {
+    public List<SocksTunnelEntry> findAllTunnels(TimeRange timeRange,
+                                                 Filters filters,
+                                                 OrderColumn orderColumn,
+                                                 OrderDirection orderDirection,
+                                                 int limit,
+                                                 int offset,
+                                                 List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -84,7 +114,7 @@ public class SOCKS {
                                 "WHERE socks.most_recent_segment_time >= :tr_from AND socks.most_recent_segment_time <= :tr_to " +
                                 "AND socks.tap_uuid IN (<taps>) " + filterFragment.whereSql() +
                                 "GROUP BY tcp_session_key HAVING 1=1 " +  filterFragment.havingSql() +
-                                "ORDER BY MAX(socks.most_recent_segment_time) DESC " +
+                                "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)
                         .bindMap(filterFragment.bindings())
@@ -92,6 +122,8 @@ public class SOCKS {
                         .bind("tr_to", timeRange.to())
                         .bind("limit", limit)
                         .bind("offset", offset)
+                        .define("order_column", orderColumn.getColumnName())
+                        .define("order_direction", orderDirection)
                         .mapTo(SocksTunnelEntry.class)
                         .list()
         );

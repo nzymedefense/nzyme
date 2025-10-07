@@ -7181,4 +7181,8 @@
         <modifyDataType tableName="ssh_sessions" columnName="tunneled_bytes" newDataType="bigint" />
     </changeSet>
 
+    <changeSet id="fix_socks_tunnels_tunneled_bytes_type" author="lennartkoopmann">
+        <modifyDataType tableName="socks_tunnels" columnName="tunneled_bytes" newDataType="bigint" />
+    </changeSet>
+
 </databaseChangeLog>

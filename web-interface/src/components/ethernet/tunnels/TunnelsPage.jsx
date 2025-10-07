@@ -23,6 +23,8 @@ export default function TunnelsPage() {
     queryParametersToFilters(urlQuery.get("filters"), SOCKS_FILTER_FIELDS)
   );
 
+  const [revision, setRevision] = useState(new Date());
+
   useEffect(() => {
     enableTapSelector(tapContext);
 
@@ -47,7 +49,8 @@ export default function TunnelsPage() {
                 <CardTitleWithControls title="SOCKS Tunnels"
                                        helpLink="https://go.nzyme.org/ethernet-socks"
                                        timeRange={socksTunnelsTimeRange}
-                                       setTimeRange={setSocksTunnelsTimeRange}/>
+                                       setTimeRange={setSocksTunnelsTimeRange}
+                                       refreshAction={() => setRevision(new Date())} />
 
                 <Filters filters={socksTunnelsFilters}
                          setFilters={setSocksTunnelsFilters}
@@ -57,7 +60,8 @@ export default function TunnelsPage() {
 
                 <SocksTunnelsTable timeRange={socksTunnelsTimeRange}
                                    filters={socksTunnelsFilters}
-                                   setFilters={setSocksTunnelsFilters} />
+                                   setFilters={setSocksTunnelsFilters}
+                                   revision={revision} />
               </div>
             </div>
           </div>

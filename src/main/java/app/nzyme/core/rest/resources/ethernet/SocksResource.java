@@ -1,7 +1,9 @@
 package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.L4Type;
+import app.nzyme.core.ethernet.socks.SOCKS;
 import app.nzyme.core.ethernet.socks.db.SocksTunnelEntry;
 import app.nzyme.core.ethernet.l4.tcp.db.TcpSessionEntry;
 import app.nzyme.core.rest.RestHelpers;
@@ -14,6 +16,7 @@ import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.GET;
@@ -44,6 +47,8 @@ public class SocksResource extends TapDataHandlingResource {
                             @QueryParam("tenant_id") UUID tenantId,
                             @QueryParam("time_range") @Valid String timeRangeParameter,
                             @QueryParam("filters") String filtersParameter,
+                            @QueryParam("order_column") @Nullable String orderColumnParam,
+                            @QueryParam("order_direction") @Nullable String orderDirectionParam,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset,
                             @QueryParam("taps") String tapIds) {
@@ -55,10 +60,22 @@ public class SocksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        SOCKS.OrderColumn orderColumn = SOCKS.OrderColumn.ESTABLISHED_AT;
+        OrderDirection orderDirection = OrderDirection.DESC;
+        if (orderColumnParam != null && orderDirectionParam != null) {
+            try {
+                orderColumn = SOCKS.OrderColumn.valueOf(orderColumnParam.toUpperCase());
+                orderDirection = OrderDirection.valueOf(orderDirectionParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
+
         long total = nzyme.getEthernet().socks().countAllTunnels(timeRange, filters, taps);
 
         List<SocksTunnelDetailsResponse> tunnels = Lists.newArrayList();
-        for (SocksTunnelEntry t : nzyme.getEthernet().socks().findAllTunnels(timeRange, filters, limit, offset, taps)) {
+        for (SocksTunnelEntry t : nzyme.getEthernet().socks()
+                .findAllTunnels(timeRange, filters, orderColumn, orderDirection, limit, offset, taps)) {
             // Get underlying TCP session. (Can be NULL)
             Optional<TcpSessionEntry> tcpSession = nzyme.getEthernet().tcp()
                     .findSessionBySessionKey(t.tcpSessionKey(), t.establishedAt(), taps);

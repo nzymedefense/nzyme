@@ -6,6 +6,7 @@ import Paginator from "../../../misc/Paginator";
 import SocksTunnelsTableRow from "./SocksTunnelsTableRow";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import numeral from "numeral";
+import ColumnSorting from "../../../shared/ColumnSorting";
 
 const socksService = new SocksService();
 
@@ -16,6 +17,10 @@ export default function SocksTunnelsTable(props) {
   const timeRange = props.timeRange;
   const filters = props.filters;
   const setFilters = props.setFilters;
+  const revision = props.revision;
+
+  const [orderColumn, setOrderColumn] = useState("established_at");
+  const [orderDirection, setOrderDirection] = useState("DESC");
 
   const [data, setData] = useState(null);
 
@@ -25,10 +30,18 @@ export default function SocksTunnelsTable(props) {
   const perPage = 25;
   const [page, setPage] = useState(1);
 
+  const columnSorting = (columnName) => {
+    return <ColumnSorting thisColumn={columnName}
+                          orderColumn={orderColumn}
+                          setOrderColumn={setOrderColumn}
+                          orderDirection={orderDirection}
+                          setOrderDirection={setOrderDirection} />
+  }
+
   useEffect(() => {
     setData(null);
-    socksService.findAllTunnels(organizationId, tenantId, timeRange, filters, selectedTaps, perPage, (page-1)*perPage, setData);
-  }, [organizationId, tenantId, selectedTaps, filters, timeRange, page]);
+    socksService.findAllTunnels(organizationId, tenantId, timeRange, filters, orderColumn, orderDirection, selectedTaps, perPage, (page-1)*perPage, setData);
+  }, [organizationId, tenantId, selectedTaps, filters, orderColumn, orderDirection, timeRange, page, revision]);
 
   if (!data) {
     return <GenericWidgetLoadingSpinner height={150} />
@@ -45,16 +58,16 @@ export default function SocksTunnelsTable(props) {
         <table className="table table-sm table-hover table-striped mb-4 mt-3">
           <thead>
           <tr>
-            <th>Tunnel ID</th>
-            <th>Client</th>
-            <th>Tunnel Server</th>
+            <th>Tunnel ID {columnSorting("tunnel_id")}</th>
+            <th>Client {columnSorting("client_address")}</th>
+            <th>Tunnel Server {columnSorting("server_address")}</th>
             <th>Tunnel Destination</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Bytes</th>
+            <th>Type {columnSorting("type")}</th>
+            <th>Status {columnSorting("connection_status")}</th>
+            <th>Bytes {columnSorting("tunneled_bytes")}</th>
             <th>Duration</th>
-            <th>Established At</th>
-            <th>Terminated At</th>
+            <th>Established At {columnSorting("established_at")}</th>
+            <th>Terminated At {columnSorting("terminated_at")}</th>
           </tr>
           </thead>
           <tbody>

@@ -76,7 +76,7 @@ public class SOCKSTable implements DataTable {
                         .bind("uuid", UUID.randomUUID())
                         .bind("tap_uuid", tapUuid)
                         .bind("tcp_session_key", tcpSessionKey)
-                        .bind("socks_type", tunnel.socksType())
+                        .bind("socks_type", tunnel.socksType().toUpperCase())
                         .bind("authentication_status", tunnel.authenticationStatus())
                         .bind("handshake_status", tunnel.handshakeStatus())
                         .bind("connection_status", tunnel.connectionStatus())

@@ -17,7 +17,7 @@ public class SSH {
 
     public enum OrderColumn {
 
-        SESSION_ID("session_id"),
+        SESSION_ID("ANY_VALUE(ssh.uuid)"),
         CLIENT_ADDRESS("ANY_VALUE(tcp.source_address)"),
         SERVER_ADDRESS("ANY_VALUE(tcp.destination_address)"),
         CONNECTION_STATUS("connection_status"),

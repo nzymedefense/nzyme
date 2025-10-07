@@ -17,6 +17,7 @@ export default function SSHSessionsTable(props) {
   const timeRange = props.timeRange;
   const filters = props.filters;
   const setFilters = props.setFilters;
+  const revision = props.revision;
 
   const [orderColumn, setOrderColumn] = useState("established_at");
   const [orderDirection, setOrderDirection] = useState("DESC");
@@ -32,8 +33,7 @@ export default function SSHSessionsTable(props) {
   useEffect(() => {
     setData(null);
     sshService.findAllTunnels(organizationId, tenantId, timeRange, filters, orderColumn, orderDirection, selectedTaps, perPage, (page-1)*perPage, setData);
-  }, [organizationId, tenantId, selectedTaps, timeRange, filters, orderColumn, orderDirection, page]);
-
+  }, [organizationId, tenantId, selectedTaps, timeRange, filters, orderColumn, orderDirection, page, revision]);
 
   const columnSorting = (columnName) => {
     return <ColumnSorting thisColumn={columnName}

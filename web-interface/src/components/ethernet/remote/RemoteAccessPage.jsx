@@ -23,6 +23,8 @@ export default function RemoteAccessPage() {
     queryParametersToFilters(urlQuery.get("filters"), SSH_FILTER_FIELDS)
   );
 
+  const [revision, setRevision] = useState(new Date());
+
   useEffect(() => {
     enableTapSelector(tapContext);
 
@@ -46,7 +48,8 @@ export default function RemoteAccessPage() {
                 <CardTitleWithControls title="SSH Sessions"
                                        helpLink="https://go.nzyme.org/ethernet-ssh"
                                        timeRange={sshSessionsTimeRange}
-                                       setTimeRange={setSshSessionsTimeRange}/>
+                                       setTimeRange={setSshSessionsTimeRange}
+                                       refreshAction={() => setRevision(new Date())} />
 
                 <Filters filters={sshSessionsFilters}
                          setFilters={setSshSessionsFilters}
@@ -56,7 +59,8 @@ export default function RemoteAccessPage() {
 
                 <SSHSessionsTable timeRange={sshSessionsTimeRange}
                                   filters={sshSessionsFilters}
-                                  setFilters={setSshSessionsFilters} />
+                                  setFilters={setSshSessionsFilters}
+                                  revision={revision} />
               </div>
             </div>
           </div>
