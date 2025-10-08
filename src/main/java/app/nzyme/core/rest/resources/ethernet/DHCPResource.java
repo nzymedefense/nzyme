@@ -14,6 +14,8 @@ import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTimelineStepResponse;
 import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTransactionDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTransactionsListResponse;
+import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;

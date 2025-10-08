@@ -6,6 +6,8 @@ import app.nzyme.core.assets.db.AssetHostnameEntry;
 import app.nzyme.core.assets.db.AssetIpAddressEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.detection.alerts.DetectionType;
+import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.FilterSql;
 import app.nzyme.core.util.filters.FilterSqlFragment;
@@ -25,6 +27,8 @@ import java.util.UUID;
 public class AssetManager {
 
     private static final Logger LOG = LogManager.getLogger(AssetManager.class);
+
+    private static final int ACTIVE_ASSET_TIMEOUT_MINUTES = 30;
 
     public enum OrderColumn {
 
@@ -105,6 +109,7 @@ public class AssetManager {
         );
     }
 
+
     public List<AssetEntry> findAllAssets(UUID organizationId,
                                           UUID tenantId,
                                           TimeRange timeRange,
@@ -116,7 +121,9 @@ public class AssetManager {
         FilterSqlFragment filterFragment = FilterSql.generate(filters, new AssetFilters());
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM assets WHERE organization_id = :organization_id " +
+                handle.createQuery("SELECT *, " +
+                                "(last_seen >= (NOW() - interval '" + ACTIVE_ASSET_TIMEOUT_MINUTES + " minute')) " +
+                                "AS is_active FROM assets WHERE organization_id = :organization_id " +
                                 "AND tenant_id = :tenant_id AND last_seen >= :tr_from " +
                                 "AND last_seen <= :tr_to " + filterFragment.whereSql() + " " +
                                 "ORDER BY <order_column> <order_direction> " +
@@ -137,7 +144,9 @@ public class AssetManager {
 
     public Optional<AssetEntry> findAsset(UUID uuid, UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM assets WHERE uuid = :uuid AND organization_id = :organization_id " +
+                handle.createQuery("SELECT *, " +
+                                "(last_seen >= (NOW() - interval '" + ACTIVE_ASSET_TIMEOUT_MINUTES + " minute')) " +
+                                "AS is_active FROM assets WHERE uuid = :uuid AND organization_id = :organization_id " +
                                 "AND tenant_id = :tenant_id")
                         .bind("uuid", uuid)
                         .bind("organization_id", organizationId)
@@ -149,7 +158,9 @@ public class AssetManager {
 
     public Optional<AssetEntry> findAssetByMac(String mac, UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM assets WHERE mac = :mac " +
+                handle.createQuery("SELECT *, " +
+                                "(last_seen >= (NOW() - interval '" + ACTIVE_ASSET_TIMEOUT_MINUTES + " minute')) " +
+                                "AS is_active FROM assets WHERE mac = :mac " +
                                 "AND organization_id = :organization_id AND tenant_id = :tenant_id")
                         .bind("mac", mac)
                         .bind("organization_id", organizationId)
@@ -316,6 +327,36 @@ public class AssetManager {
                         .define("order_column", orderColumn.getColumnName())
                         .define("order_direction", orderDirection)
                         .mapTo(AssetIpAddressEntry.class)
+                        .list()
+        );
+    }
+
+    public List<GenericIntegerHistogramEntry> activeAssetCountHistogram(TimeRange timeRange,
+                                                                        Bucketing.BucketingConfiguration bucketing,
+                                                                        Filters filters,
+                                                                        UUID organizationId,
+                                                                        UUID tenantId) {
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new AssetFilters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("WITH minute_buckets AS (SELECT generate_series(date_trunc(:date_trunc, " +
+                                "now() - interval '24 hours'), date_trunc(:date_trunc, now())," +
+                                " ('1 ' || :date_trunc)::interval) AS bucket_start), " +
+                                "recent_assets AS (" +
+                                "SELECT id, last_seen FROM assets WHERE last_seen >= :tr_from " +
+                                "AND last_seen <= :tr_to AND organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id " + filterFragment.whereSql() + " " +
+                                ") SELECT mb.bucket_start AS bucket, COUNT(ra.id) AS value FROM minute_buckets mb " +
+                                "LEFT JOIN recent_assets ra ON ra.last_seen >= mb.bucket_start - " +
+                                "interval '" + ACTIVE_ASSET_TIMEOUT_MINUTES + " minute' " +
+                                "AND ra.last_seen <= mb.bucket_start " +
+                                "GROUP BY mb.bucket_start ORDER BY mb.bucket_start;")
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .mapTo(GenericIntegerHistogramEntry.class)
                         .list()
         );
     }

@@ -22,6 +22,9 @@ public abstract class AssetDetailsResponse {
     @JsonProperty("oui")
     public abstract String oui();
 
+    @JsonProperty("is_active")
+    public abstract boolean isActive();
+
     @Nullable
     @JsonProperty("name")
     public abstract String name();
@@ -57,11 +60,12 @@ public abstract class AssetDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static AssetDetailsResponse create(UUID uuid, EthernetMacAddressResponse mac, String oui, String name, String dhcpFingerprintInitial, String dhcpFingerprintRenew, String dhcpFingerprintReboot, String dhcpFingerprintRebind, boolean seenDhcp, boolean seenTcp, boolean seenUdp, DateTime firstSeen, DateTime lastSeen) {
+    public static AssetDetailsResponse create(UUID uuid, EthernetMacAddressResponse mac, String oui, boolean isActive, String name, String dhcpFingerprintInitial, String dhcpFingerprintRenew, String dhcpFingerprintReboot, String dhcpFingerprintRebind, boolean seenDhcp, boolean seenTcp, boolean seenUdp, DateTime firstSeen, DateTime lastSeen) {
         return builder()
                 .uuid(uuid)
                 .mac(mac)
                 .oui(oui)
+                .isActive(isActive)
                 .name(name)
                 .dhcpFingerprintInitial(dhcpFingerprintInitial)
                 .dhcpFingerprintRenew(dhcpFingerprintRenew)
@@ -86,6 +90,8 @@ public abstract class AssetDetailsResponse {
         public abstract Builder mac(EthernetMacAddressResponse mac);
 
         public abstract Builder oui(String oui);
+
+        public abstract Builder isActive(boolean isActive);
 
         public abstract Builder name(String name);
 

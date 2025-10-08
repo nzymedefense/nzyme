@@ -7,9 +7,9 @@ import moment from "moment";
 import AssetHostnames from "./AssetHostnames";
 import AssetIpAddresses from "./AssetIpAddresses";
 import Paginator from "../../misc/Paginator";
-import AssetName from "../shared/AssetName";
 import {truncate} from "../../../util/Tools";
 import ApiRoutes from "../../../util/ApiRoutes";
+import AssetActiveIndicator from "./AssetActiveIndicator";
 
 export default function AssetsTable(props) {
 
@@ -49,6 +49,7 @@ export default function AssetsTable(props) {
           <tr>
             <th style={{width: 170}}>MAC Address {columnSorting("mac")}</th>
             <th>OUI</th>
+            <th>Active</th>
             <th>Name</th>
             <th>Hostname</th>
             <th>IP Address</th>
@@ -62,6 +63,7 @@ export default function AssetsTable(props) {
                 <tr key={i}>
                   <td><EthernetMacAddress addressWithContext={a.mac} href={ApiRoutes.ETHERNET.ASSETS.DETAILS(a.uuid)} /></td>
                   <td>{a.oui ? truncate(a.oui, 30, false) : <span className="text-muted">Unknown</span>}</td>
+                  <td><AssetActiveIndicator active={a.is_active} /></td>
                   <td>{a.name ? <span className="context-name">{a.name}</span> : <span className="text-muted">None</span>}</td>
                   <td><AssetHostnames hostnames={a.hostnames} /></td>
                   <td><AssetIpAddresses addresses={a.ip_addresses} /></td>

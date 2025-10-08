@@ -8,6 +8,12 @@ export default class AssetsService {
     )
   }
 
+  getActiveAssetsHistogram(organizationId, tenantId, timeRange, filters, setHistogram) {
+    RESTClient.get("/ethernet/assets/active/histogram", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters },
+      (response) => setHistogram(response.data)
+    )
+  }
+
   findAsset(uuid, organizationId, tenantId, setAsset) {
     RESTClient.get(`/ethernet/assets/show/${uuid}`, { organization_id: organizationId, tenant_id: tenantId },
         (response) => setAsset(response.data)

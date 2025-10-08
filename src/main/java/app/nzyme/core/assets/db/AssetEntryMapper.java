@@ -17,6 +17,7 @@ public class AssetEntryMapper implements RowMapper<AssetEntry> {
                 UUID.fromString(rs.getString("organization_id")),
                 UUID.fromString(rs.getString("tenant_id")),
                 rs.getString("mac"),
+                rs.getBoolean("is_active"),
                 rs.getString("dhcp_fingerprint_initial"),
                 rs.getString("dhcp_fingerprint_renew"),
                 rs.getString("dhcp_fingerprint_reboot"),

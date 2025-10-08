@@ -12,6 +12,8 @@ import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.assets.*;
+import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.distributed.messaging.ClusterMessage;
@@ -19,6 +21,7 @@ import app.nzyme.plugin.distributed.messaging.MessageType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
@@ -28,6 +31,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.joda.time.DateTime;
 
 import java.util.*;
 
@@ -82,7 +86,7 @@ public class AssetsResource extends TapDataHandlingResource {
             /*
              * We pull the "summary" IP addresses from context and not the `assets_ip_addresses` table because we only
              * want recent addresses in the assets overviews. IP addresses from months ago are not relevant. The context
-             *  tables are retention cleaned.
+             * tables are retention cleaned.
              */
             if (context.isPresent()) {
                 for (MacAddressTransparentContextEntry tpx : nzyme.getContextService()
@@ -114,6 +118,7 @@ public class AssetsResource extends TapDataHandlingResource {
                             ).orElse(null)
                     ),
                     nzyme.getOuiService().lookup(asset.mac()).orElse(null),
+                    asset.isActive(),
                     context.map(MacAddressContextEntry::name).orElse(null),
                     hostnames,
                     ipAddresses,
@@ -127,6 +132,30 @@ public class AssetsResource extends TapDataHandlingResource {
         }
 
         return Response.ok(AssetSummariesListResponse.create(total, assets)).build();
+    }
+
+    @GET
+    @Path("/active/histogram")
+    public Response activeAssetHistogram(@Context SecurityContext sc,
+                              @QueryParam("organization_id") UUID organizationId,
+                              @QueryParam("tenant_id") UUID tenantId,
+                              @QueryParam("time_range") @Valid String timeRangeParameter,
+                              @QueryParam("filters") String filtersParameter) {
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Map<DateTime, Integer> histogram = Maps.newHashMap();
+        for (GenericIntegerHistogramEntry bucket : nzyme.getAssetsManager()
+                .activeAssetCountHistogram(timeRange, bucketing, filters, organizationId, tenantId)) {
+            histogram.put(bucket.bucket(), bucket.value());
+        }
+
+        return Response.ok(histogram).build();
     }
 
     @GET
@@ -163,6 +192,7 @@ public class AssetsResource extends TapDataHandlingResource {
                         ).orElse(null)
                 ),
                 nzyme.getOuiService().lookup(asset.get().mac()).orElse(null),
+                asset.get().isActive(),
                 context.map(MacAddressContextEntry::name).orElse(null),
                 asset.get().dhcpFingerprintInitial(),
                 asset.get().dhcpFingerprintRenew(),

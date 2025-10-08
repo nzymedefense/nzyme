@@ -11,6 +11,7 @@ import {useLocation} from "react-router-dom";
 import {queryParametersToFilters} from "../../shared/filtering/FilterQueryParameters";
 import {ASSET_FILTER_FIELDS} from "./AssetFilterFields";
 import Filters from "../../shared/filtering/Filters";
+import ActiveAssetsHistogram from "./ActiveAssetsHistogram";
 
 const assetsService = new AssetsService();
 
@@ -75,7 +76,27 @@ export default function EthernetAssetsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
+                <CardTitleWithControls title="Active Assets"
+                                       fixedAppliedTimeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <ActiveAssetsHistogram organizationId={organizationId}
+                                       tenantId={tenantId}
+                                       filters={filters}
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange}
+                                       revision={revision} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
                 <CardTitleWithControls title="Assets"
+                                       fixedAppliedTimeRange={timeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
                 <AssetsTable assets={assets}

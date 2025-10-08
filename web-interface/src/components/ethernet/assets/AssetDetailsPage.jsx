@@ -14,6 +14,7 @@ import AssetIpAddressesTable from "./AssetIpAddressesTable";
 import {notify} from "react-notify-toast";
 import AssetSourceProtocols from "./AssetSourceProtocols";
 import AssetDetailsDnsTransactions from "./AssetDetailsDnsTransactions";
+import AssetActiveIndicator from "./AssetActiveIndicator";
 
 const assetsService = new AssetsService();
 
@@ -118,6 +119,7 @@ export default function AssetDetailsPage() {
         <div className="row mt-3">
           <div className="col-md-8">
             <h1>
+              <AssetActiveIndicator active={asset.is_active} />{' '}
               Asset <span className="machine-data">{asset.mac.address}</span>{' '}
               {asset.name ? <span className="context-name">{asset.name}</span>
                   : null}

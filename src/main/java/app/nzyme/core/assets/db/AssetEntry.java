@@ -14,6 +14,7 @@ public abstract class AssetEntry {
     public abstract UUID organizationId();
     public abstract UUID tenantId();
     public abstract String mac();
+    public abstract boolean isActive();
     @Nullable
     public abstract String dhcpFingerprintInitial();
     @Nullable
@@ -30,13 +31,14 @@ public abstract class AssetEntry {
     public abstract DateTime updatedAt();
     public abstract DateTime createdAt();
 
-    public static AssetEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String mac, String dhcpFingerprintInitial, String dhcpFingerprintRenew, String dhcpFingerprintReboot, String dhcpFingerprintRebind, boolean seenDhcp, boolean seenTcp, boolean seenUdp, DateTime firstSeen, DateTime lastSeen, DateTime updatedAt, DateTime createdAt) {
+    public static AssetEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String mac, boolean isActive, String dhcpFingerprintInitial, String dhcpFingerprintRenew, String dhcpFingerprintReboot, String dhcpFingerprintRebind, boolean seenDhcp, boolean seenTcp, boolean seenUdp, DateTime firstSeen, DateTime lastSeen, DateTime updatedAt, DateTime createdAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
                 .mac(mac)
+                .isActive(isActive)
                 .dhcpFingerprintInitial(dhcpFingerprintInitial)
                 .dhcpFingerprintRenew(dhcpFingerprintRenew)
                 .dhcpFingerprintReboot(dhcpFingerprintReboot)
@@ -66,6 +68,8 @@ public abstract class AssetEntry {
         public abstract Builder tenantId(UUID tenantId);
 
         public abstract Builder mac(String mac);
+
+        public abstract Builder isActive(boolean isActive);
 
         public abstract Builder dhcpFingerprintInitial(String dhcpFingerprintInitial);
 
