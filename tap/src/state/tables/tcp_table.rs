@@ -133,48 +133,45 @@ impl TcpTable {
 
                         let session_state = Self::determine_session_state(segment, None);
 
-                        // We only record new sessions, not mid-session.
-                        if session_state == SynSent {
-                            let new_session = TcpSession {
-                                session_key: segment.session_key.clone(),
-                                state: session_state.clone(),
-                                start_time: segment.timestamp,
-                                end_time: None,
-                                most_recent_segment_time: segment.timestamp,
-                                source_mac: segment.source_mac.clone(),
-                                destination_mac: segment.destination_mac.clone(),
-                                source_address: segment.source_address,
-                                source_port: segment.source_port,
-                                destination_address: segment.destination_address,
-                                destination_port: segment.destination_port,
-                                segments_count: 1,
-                                bytes_count: segment.size as u64,
-                                segments_client_to_server: BTreeMap::new(),
-                                segments_server_to_client: BTreeMap::new(),
-                                syn_ip_ttl: segment.ip_ttl,
-                                syn_ip_tos: segment.ip_tos,
-                                syn_ip_df: segment.ip_df,
-                                syn_cwr: segment.flags.cwr,
-                                syn_ece: segment.flags.ece,
-                                syn_window_size: segment.window_size,
-                                syn_maximum_segment_size: segment.maximum_segment_size,
-                                syn_window_scale_multiplier: segment.window_scale_multiplier,
-                                syn_options: segment.options.clone(),
-                                tags: vec![]
-                            };
+                        let new_session = TcpSession {
+                            session_key: segment.session_key.clone(),
+                            state: session_state.clone(),
+                            start_time: segment.timestamp,
+                            end_time: None,
+                            most_recent_segment_time: segment.timestamp,
+                            source_mac: segment.source_mac.clone(),
+                            destination_mac: segment.destination_mac.clone(),
+                            source_address: segment.source_address,
+                            source_port: segment.source_port,
+                            destination_address: segment.destination_address,
+                            destination_port: segment.destination_port,
+                            segments_count: 1,
+                            bytes_count: segment.size as u64,
+                            segments_client_to_server: BTreeMap::new(),
+                            segments_server_to_client: BTreeMap::new(),
+                            syn_ip_ttl: segment.ip_ttl,
+                            syn_ip_tos: segment.ip_tos,
+                            syn_ip_df: segment.ip_df,
+                            syn_cwr: segment.flags.cwr,
+                            syn_ece: segment.flags.ece,
+                            syn_window_size: segment.window_size,
+                            syn_maximum_segment_size: segment.maximum_segment_size,
+                            syn_window_scale_multiplier: segment.window_scale_multiplier,
+                            syn_options: segment.options.clone(),
+                            tags: vec![]
+                        };
 
-                            trace!("New TCP Session: {:?}, State: {:?}, Flags: {:?}",
-                            segment.session_key, session_state, segment.flags);
+                        trace!("New TCP Session: {:?}, State: {:?}, Flags: {:?}",
+                        segment.session_key, session_state, segment.flags);
 
-                            sessions.insert(segment.session_key.clone(), new_session);
+                        sessions.insert(segment.session_key.clone(), new_session);
 
-                            timer.stop();
-                            record_timer(
-                                timer.elapsed_microseconds(),
-                                "tables.tcp.sessions.timer.register_new",
-                                &self.metrics
-                            );
-                        }
+                        timer.stop();
+                        record_timer(
+                            timer.elapsed_microseconds(),
+                            "tables.tcp.sessions.timer.register_new",
+                            &self.metrics
+                        );
                     }
                 }
             },
