@@ -15,6 +15,7 @@ export default function EthernetMacAddress(props) {
   const withAssetName = props.withAssetName;
   const onClick = props.onClick;
   const filterElement = props.filterElement;
+  const hideActiveIndicator = props.hideActiveIndicator;
 
   return (
       <span className="mac-address">
@@ -29,6 +30,7 @@ export default function EthernetMacAddress(props) {
                     onClick={onClick}
                     filterElement={filterElement}
                     highlighted={highlighted}
+                    hideActiveIndicator={hideActiveIndicator}
                     withAssetLink={withAssetLink}
                     withAssetName={withAssetName} />
       </span>

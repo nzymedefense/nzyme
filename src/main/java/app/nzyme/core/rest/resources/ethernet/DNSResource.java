@@ -168,7 +168,7 @@ public class DNSResource extends TapDataHandlingResource {
             ));
         }
 
-        return Response.ok(ThreeColumnTableHistogramResponse.create(total, values)).build();
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, true, values)).build();
     }
 
     @GET

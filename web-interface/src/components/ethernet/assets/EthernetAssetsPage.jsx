@@ -12,6 +12,8 @@ import {queryParametersToFilters} from "../../shared/filtering/FilterQueryParame
 import {ASSET_FILTER_FIELDS} from "./AssetFilterFields";
 import Filters from "../../shared/filtering/Filters";
 import ActiveAssetsHistogram from "./ActiveAssetsHistogram";
+import LatestAssetsHistogram from "./LatestAssetsHistogram";
+import DisappearedAssetsHistogram from "./DisappearedAssetsHistogram";
 
 const assetsService = new AssetsService();
 
@@ -86,6 +88,40 @@ export default function EthernetAssetsPage() {
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange}
                                        revision={revision} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Newest Assets"
+                                       fixedAppliedTimeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <LatestAssetsHistogram organizationId={organizationId}
+                                       tenantId={tenantId}
+                                       filters={filters}
+                                       timeRange={timeRange}
+                                       revision={revision} />
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Recently Disappeared Assets"
+                                       fixedAppliedTimeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <DisappearedAssetsHistogram organizationId={organizationId}
+                                            tenantId={tenantId}
+                                            filters={filters}
+                                            timeRange={timeRange}
+                                            revision={revision} />
               </div>
             </div>
           </div>

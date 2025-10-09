@@ -142,6 +142,39 @@ public class AssetManager {
         );
     }
 
+    public List<AssetEntry> findAllInactiveAssets(UUID organizationId,
+                                                  UUID tenantId,
+                                                  TimeRange timeRange,
+                                                  Filters filters,
+                                                  int limit,
+                                                  int offset,
+                                                  OrderColumn orderColumn,
+                                                  OrderDirection orderDirection) {
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new AssetFilters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT *, " +
+                                "(last_seen >= (NOW() - interval '" + ACTIVE_ASSET_TIMEOUT_MINUTES + " minute')) " +
+                                "AS is_active FROM assets WHERE organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id AND last_seen >= :tr_from " +
+                                "AND last_seen <= :tr_to " + filterFragment.whereSql() + " AND " +
+                                "(last_seen < (NOW() - interval '" + ACTIVE_ASSET_TIMEOUT_MINUTES + " minute')) " +
+                                "ORDER BY <order_column> <order_direction> " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .define("order_column", orderColumn.getColumnName())
+                        .define("order_direction", orderDirection)
+                        .bindMap(filterFragment.bindings())
+                        .mapTo(AssetEntry.class)
+                        .list()
+        );
+    }
+
     public Optional<AssetEntry> findAsset(UUID uuid, UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT *, " +

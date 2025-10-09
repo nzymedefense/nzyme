@@ -154,7 +154,9 @@ public class ArpResource extends TapDataHandlingResource {
                 "Request", organizationId, tenantId, timeRange, filters, limit, offset, taps
         );
 
-        return Response.ok(ThreeColumnTableHistogramResponse.create(topRequesterPairsCount, topRequesterPairs)).build();
+        return Response.ok(
+                ThreeColumnTableHistogramResponse.create(topRequesterPairsCount, true, topRequesterPairs)
+        ).build();
     }
 
     @GET
@@ -182,7 +184,9 @@ public class ArpResource extends TapDataHandlingResource {
                 "Reply", organizationId, tenantId, timeRange, filters, limit, offset, taps
         );
 
-        return Response.ok(ThreeColumnTableHistogramResponse.create(topRequesterPairsCount, topRequesterPairs)).build();
+        return Response.ok(ThreeColumnTableHistogramResponse.create(
+                topRequesterPairsCount, true, topRequesterPairs)
+        ).build();
     }
 
     private ArpPacketDetailsResponse buildDetailsResponse(ArpPacketEntry packet, UUID organizationId, UUID tenantId) {
@@ -201,6 +205,7 @@ public class ArpResource extends TapDataHandlingResource {
                         packet.ethernetSourceMac(),
                         nzyme.getOuiService().lookup(packet.ethernetSourceMac()).orElse(null),
                         ethernetSourceAsset.map(AssetEntry::uuid).orElse(null),
+                        ethernetSourceAsset.map(AssetEntry::isActive).orElse(null),
                         ethernetSourceMacContext.map(ctx ->
                                 EthernetMacAddressContextResponse.create(
                                         ctx.name(),
@@ -212,6 +217,7 @@ public class ArpResource extends TapDataHandlingResource {
                         packet.ethernetDestinationMac(),
                         nzyme.getOuiService().lookup(packet.ethernetDestinationMac()).orElse(null),
                         ethernetDestinationAsset.map(AssetEntry::uuid).orElse(null),
+                        ethernetDestinationAsset.map(AssetEntry::isActive).orElse(null),
                         ethernetDestinationMacContext.map(ctx ->
                                 EthernetMacAddressContextResponse.create(
                                         ctx.name(),
@@ -276,6 +282,7 @@ public class ArpResource extends TapDataHandlingResource {
                                     pair.senderMac(),
                                     nzyme.getOuiService().lookup(pair.senderMac()).orElse(null),
                                     senderAsset.map(AssetEntry::uuid).orElse(null),
+                                    senderAsset.map(AssetEntry::isActive).orElse(null),
                                     senderMacContext.map(ctx ->
                                             EthernetMacAddressContextResponse.create(
                                                     ctx.name(),
@@ -291,6 +298,7 @@ public class ArpResource extends TapDataHandlingResource {
                                     pair.targetMac(),
                                     nzyme.getOuiService().lookup(pair.targetMac()).orElse(null),
                                     targetAsset.map(AssetEntry::uuid).orElse(null),
+                                    targetAsset.map(AssetEntry::isActive).orElse(null),
                                     targetMacContext.map(ctx ->
                                             EthernetMacAddressContextResponse.create(
                                                     ctx.name(),

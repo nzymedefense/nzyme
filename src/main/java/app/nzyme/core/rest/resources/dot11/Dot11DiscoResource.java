@@ -213,7 +213,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                             )
                     ));
                 }
-                return Response.ok(TwoColumnTableHistogramResponse.create(total, sendersValues)).build();
+                return Response.ok(TwoColumnTableHistogramResponse.create(total, true, sendersValues)).build();
             case RECEIVERS:
                 List<TwoColumnTableHistogramValueResponse> receiversValues = Lists.newArrayList();
                 total = nzyme.getDot11().countDiscoTopReceivers(timeRange, tapUuids, selectedBssids);
@@ -248,7 +248,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                             )
                     ));
                 }
-                return Response.ok(TwoColumnTableHistogramResponse.create(total, receiversValues)).build();
+                return Response.ok(TwoColumnTableHistogramResponse.create(total, true, receiversValues)).build();
             case PAIRS:
                 List<ThreeColumnTableHistogramValueResponse> pairsValues = Lists.newArrayList();
                 total = nzyme.getDot11().countDiscoTopPairs(timeRange, tapUuids, selectedBssids);
@@ -307,7 +307,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                     ));
                 }
 
-                return Response.ok(ThreeColumnTableHistogramResponse.create(total, pairsValues)).build();
+                return Response.ok(ThreeColumnTableHistogramResponse.create(total, true, pairsValues)).build();
             default:
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }

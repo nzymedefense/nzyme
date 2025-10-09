@@ -7,6 +7,8 @@ public enum HistogramValueType {
     DOT11_MAC,
     ETHERNET_MAC,
     L4_ADDRESS,
-    DNS_TRANSACTION_LOG_LINK
+    DNS_TRANSACTION_LOG_LINK,
+    DATETIME,
+    ASSET_HOSTNAMES
 
 }

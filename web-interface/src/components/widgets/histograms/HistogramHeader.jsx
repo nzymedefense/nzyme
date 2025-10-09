@@ -9,6 +9,7 @@ function HistogramHeader(props) {
   const setLimit = props.setLimit;
   const mode = props.mode;
   const setMode = props.setMode;
+  const showBarChart = props.showBarChart;
 
   return (
       <div className="mb-1 mt-2">
@@ -21,6 +22,7 @@ function HistogramHeader(props) {
                   limit={limit}
                   setLimit={setLimit}
                   mode={mode}
+                  showBarChart={showBarChart}
                   setMode={setMode} />
             </span>
       </div>

@@ -91,6 +91,7 @@ public class RestHelpers {
                     data.mac(),
                     nzyme.getOuiService().lookup(data.mac()).orElse(null),
                     assetId,
+                    asset.map(AssetEntry::isActive).orElse(null),
                     context.map(ctx ->
                             EthernetMacAddressContextResponse.create(
                                     ctx.name(),
@@ -184,6 +185,7 @@ public class RestHelpers {
                     mac,
                     nzyme.getOuiService().lookup(mac).orElse(null),
                     asset.map(AssetEntry::uuid).orElse(null),
+                    asset.map(AssetEntry::isActive).orElse(null),
                     context.map(ctx ->
                             EthernetMacAddressContextResponse.create(
                                     ctx.name(),

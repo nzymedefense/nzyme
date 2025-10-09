@@ -7,6 +7,8 @@ import L4Address from "../../ethernet/shared/L4Address";
 import EthernetMacAddress from "../../shared/context/macs/EthernetMacAddress";
 import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 import {ARP_FILTER_FIELDS} from "../../ethernet/assets/arp/ARPFilterFields";
+import moment from "moment";
+import AssetHostnames from "../../ethernet/assets/AssetHostnames";
 
 function HistogramValue(props) {
 
@@ -38,6 +40,12 @@ function HistogramValue(props) {
       return <span className={value.value === highlightValue ? "highlighted" : null}>{numeral(value.value).format("0,0")}</span>
     case "GENERIC":
       return <span className={value.value === highlightValue ? "highlighted" : null}>{value.value}</span>
+    case "DATETIME":
+      return <span className={value.value === highlightValue ? "highlighted" : null} title={moment(value.value).format()}>
+        {moment(value.value).fromNow()}
+      </span>
+    case "ASSET_HOSTNAMES":
+      return <AssetHostnames hostnames={value.value} />
     default:
       return <span>[unknown value type]</span>
   }

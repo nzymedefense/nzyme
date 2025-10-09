@@ -12,6 +12,7 @@ import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.assets.*;
+import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
@@ -81,28 +82,9 @@ public class AssetsResource extends TapDataHandlingResource {
                     asset.mac(), organizationId, tenantId
             );
 
-            Set<String> hostnames = Sets.newHashSet();
-            Set<String> ipAddresses = Sets.newHashSet();
-            /*
-             * We pull the "summary" IP addresses from context and not the `assets_ip_addresses` table because we only
-             * want recent addresses in the assets overviews. IP addresses from months ago are not relevant. The context
-             * tables are retention cleaned.
-             */
-            if (context.isPresent()) {
-                for (MacAddressTransparentContextEntry tpx : nzyme.getContextService()
-                        .findTransparentMacAddressContext(context.get().id())) {
-                    switch (tpx.type()) {
-                        case "HOSTNAME":
-                            hostnames.add(tpx.hostname());
-                            break;
-                        case "IP_ADDRESS":
-                            if (tpx.ipAddress() != null) {
-                                ipAddresses.add(tpx.ipAddress().getHostAddress());
-                            }
-                            break;
-                    }
-                }
-            }
+
+            Set<String> hostnames = getHostnamesOfContext(context);
+            Set<String> ipAddresses = getIpAddressesOfContext(context);
 
             assets.add(AssetSummaryResponse.create(
                     asset.uuid(),
@@ -110,6 +92,7 @@ public class AssetsResource extends TapDataHandlingResource {
                             asset.mac(),
                             nzyme.getOuiService().lookup(asset.mac()).orElse(null),
                             asset.uuid(),
+                            asset.isActive(),
                             context.map(ctx ->
                                     EthernetMacAddressContextResponse.create(
                                             ctx.name(),
@@ -159,6 +142,135 @@ public class AssetsResource extends TapDataHandlingResource {
     }
 
     @GET
+    @Path("/latest/histogram")
+    public Response latestAssets(@Context SecurityContext sc,
+                                 @QueryParam("organization_id") UUID organizationId,
+                                 @QueryParam("tenant_id") UUID tenantId,
+                                 @QueryParam("time_range") @Valid String timeRangeParameter,
+                                 @QueryParam("filters") String filtersParameter,
+                                 @QueryParam("limit") int limit,
+                                 @QueryParam("offset") int offset) {
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total = nzyme.getAssetsManager().countAssets(timeRange, filters, organizationId, tenantId);
+
+        List<ThreeColumnTableHistogramValueResponse> columns = Lists.newArrayList();
+        for (AssetEntry asset : nzyme.getAssetsManager()
+                .findAllAssets(organizationId, tenantId, timeRange, filters, limit,
+                        offset, AssetManager.OrderColumn.FIRST_SEEN, OrderDirection.DESC)) {
+            Optional<MacAddressContextEntry> context = nzyme.getContextService().findMacAddressContext(
+                    asset.mac(),
+                    organizationId,
+                    tenantId
+            );
+
+            Set<String> hostnames = getHostnamesOfContext(context);
+
+            HistogramValueStructureResponse columnOne = HistogramValueStructureResponse.create(
+                    asset.mac(),
+                    HistogramValueType.ETHERNET_MAC,
+                    EthernetMacAddressResponse.create(
+                            asset.mac(),
+                            nzyme.getOuiService().lookup(asset.mac()).orElse(null),
+                            asset.uuid(),
+                            asset.isActive(),
+                            context.map(ctx ->
+                                    EthernetMacAddressContextResponse.create(
+                                            ctx.name(),
+                                            ctx.description()
+                                    )
+                            ).orElse(null)
+                    )
+            );
+
+            HistogramValueStructureResponse columnTwo = HistogramValueStructureResponse.create(
+                    hostnames, HistogramValueType.ASSET_HOSTNAMES, null
+            );
+
+
+            HistogramValueStructureResponse columnThree = HistogramValueStructureResponse.create(
+                    asset.firstSeen(), HistogramValueType.DATETIME, null
+            );
+
+
+            columns.add(ThreeColumnTableHistogramValueResponse.create(columnOne, columnTwo, columnThree, asset.mac()));
+        }
+
+
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, false, columns)).build();
+    }
+
+
+    @GET
+    @Path("/disappeared/histogram")
+    public Response recentlyDisappearedAssets(@Context SecurityContext sc,
+                                              @QueryParam("organization_id") UUID organizationId,
+                                              @QueryParam("tenant_id") UUID tenantId,
+                                              @QueryParam("time_range") @Valid String timeRangeParameter,
+                                              @QueryParam("filters") String filtersParameter,
+                                              @QueryParam("limit") int limit,
+                                              @QueryParam("offset") int offset) {
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total = nzyme.getAssetsManager().countAssets(timeRange, filters, organizationId, tenantId);
+
+        List<ThreeColumnTableHistogramValueResponse> columns = Lists.newArrayList();
+        for (AssetEntry asset : nzyme.getAssetsManager()
+                .findAllInactiveAssets(organizationId, tenantId, timeRange, filters, limit,
+                        offset, AssetManager.OrderColumn.LAST_SEEN, OrderDirection.DESC)) {
+            Optional<MacAddressContextEntry> context = nzyme.getContextService().findMacAddressContext(
+                    asset.mac(),
+                    organizationId,
+                    tenantId
+            );
+
+            Set<String> hostnames = getHostnamesOfContext(context);
+
+            HistogramValueStructureResponse columnOne = HistogramValueStructureResponse.create(
+                    asset.mac(),
+                    HistogramValueType.ETHERNET_MAC,
+                    EthernetMacAddressResponse.create(
+                            asset.mac(),
+                            nzyme.getOuiService().lookup(asset.mac()).orElse(null),
+                            asset.uuid(),
+                            asset.isActive(),
+                            context.map(ctx ->
+                                    EthernetMacAddressContextResponse.create(
+                                            ctx.name(),
+                                            ctx.description()
+                                    )
+                            ).orElse(null)
+                    )
+            );
+
+            HistogramValueStructureResponse columnTwo = HistogramValueStructureResponse.create(
+                    hostnames, HistogramValueType.ASSET_HOSTNAMES, null
+            );
+
+
+            HistogramValueStructureResponse columnThree = HistogramValueStructureResponse.create(
+                    asset.lastSeen(), HistogramValueType.DATETIME, null
+            );
+
+
+            columns.add(ThreeColumnTableHistogramValueResponse.create(columnOne, columnTwo, columnThree, asset.mac()));
+        }
+
+
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, false, columns)).build();
+    }
+
+    @GET
     @Path("/show/{asset_id}")
     public Response one(@Context SecurityContext sc,
                         @PathParam("asset_id") UUID assetId,
@@ -184,6 +296,7 @@ public class AssetsResource extends TapDataHandlingResource {
                         asset.get().mac(),
                         nzyme.getOuiService().lookup(asset.get().mac()).orElse(null),
                         asset.get().uuid(),
+                        asset.map(AssetEntry::isActive).orElse(null),
                         context.map(ctx ->
                                 EthernetMacAddressContextResponse.create(
                                         ctx.name(),
@@ -365,6 +478,36 @@ public class AssetsResource extends TapDataHandlingResource {
                 Map.of("cache_type", "asset_by_mac"),
                 false
         ));
+    }
+
+    private Set<String> getHostnamesOfContext(Optional<MacAddressContextEntry> context) {
+        Set<String> result = Sets.newHashSet();
+        if (context.isPresent()) {
+            for (MacAddressTransparentContextEntry tpx : nzyme.getContextService()
+                    .findTransparentMacAddressContext(context.get().id())) {
+                if (tpx.type().equals("HOSTNAME")) {
+                        result.add(tpx.hostname());
+                        break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private Set<String> getIpAddressesOfContext(Optional<MacAddressContextEntry> context) {
+        Set<String> result = Sets.newHashSet();
+        if (context.isPresent()) {
+            for (MacAddressTransparentContextEntry tpx : nzyme.getContextService()
+                    .findTransparentMacAddressContext(context.get().id())) {
+                if (tpx.type().equals("IP_ADDRESS") && tpx.ipAddress() != null) {
+                    result.add(tpx.ipAddress().getHostAddress());
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 
 }

@@ -46,6 +46,7 @@ function TwoColumnHistogram(props) {
   const header = () => {
     return <HistogramHeader limit={limit} setLimit={setLimit}
                             mode={mode} setMode={setMode}
+                            showBarChart={data.show_bar_chart}
                             count={data.total} />
   }
 

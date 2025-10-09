@@ -8,6 +8,7 @@ function HistogramActions(props) {
   const setLimit = props.setLimit;
   const mode = props.mode;
   const setMode = props.setMode;
+  const showBarChart = props.showBarChart;
 
   return (
       <React.Fragment>
@@ -23,6 +24,7 @@ function HistogramActions(props) {
           <i className="fa-solid fa-table-list"></i>
         </a>
 
+        {showBarChart ?
         <a href="#" className={"btn btn-sm " + (mode === MODE_BAR_CHART ? "btn-secondary btn-disabled" : "btn-outline-secondary")}
            style={{marginRight: 2}}
            title="Switch to bar chart view"
@@ -31,7 +33,7 @@ function HistogramActions(props) {
              setMode(MODE_BAR_CHART);
            }}>
           <i className="fa-solid fa-chart-bar"></i>
-        </a>
+        </a> : null }
 
         <a href="#" className={"btn btn-sm " + (mode === MODE_EXPORT ? "btn-secondary btn-disabled" : "btn-outline-secondary")}
            title="Switch to data export view"

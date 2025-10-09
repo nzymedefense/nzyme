@@ -11,12 +11,16 @@ public abstract class TwoColumnTableHistogramResponse {
     @JsonProperty("total")
     public abstract long total();
 
+    @JsonProperty("show_bar_chart")
+    public abstract boolean showBarChart();
+
     @JsonProperty("values")
     public abstract List<TwoColumnTableHistogramValueResponse> values();
 
-    public static TwoColumnTableHistogramResponse create(long total, List<TwoColumnTableHistogramValueResponse> values) {
+    public static TwoColumnTableHistogramResponse create(long total, boolean showBarChart, List<TwoColumnTableHistogramValueResponse> values) {
         return builder()
                 .total(total)
+                .showBarChart(showBarChart)
                 .values(values)
                 .build();
     }
@@ -28,6 +32,8 @@ public abstract class TwoColumnTableHistogramResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder total(long total);
+
+        public abstract Builder showBarChart(boolean showBarChart);
 
         public abstract Builder values(List<TwoColumnTableHistogramValueResponse> values);
 

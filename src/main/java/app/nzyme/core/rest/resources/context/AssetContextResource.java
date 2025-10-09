@@ -1,7 +1,6 @@
 package app.nzyme.core.rest.resources.context;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.context.ContextService;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
 import app.nzyme.core.dot11.Dot11MacAddressMetadata;
@@ -16,8 +15,6 @@ import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
 import app.nzyme.core.rest.requests.UpdateMacAddressContextRequest;
 import app.nzyme.core.rest.responses.context.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
-import app.nzyme.core.security.authentication.db.OrganizationEntry;
-import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.distributed.messaging.ClusterMessage;
 import app.nzyme.plugin.distributed.messaging.MessageType;
@@ -33,9 +30,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;

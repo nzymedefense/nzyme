@@ -14,6 +14,18 @@ export default class AssetsService {
     )
   }
 
+  getLatestAssetsHistogram(organizationId, tenantId, timeRange, filters, limit, offset, setHistogram) {
+    RESTClient.get("/ethernet/assets/latest/histogram", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset },
+      (response) => setHistogram(response.data)
+    )
+  }
+
+  getRecentlyDisappearedAssetsHistogram(organizationId, tenantId, timeRange, filters, limit, offset, setHistogram) {
+    RESTClient.get("/ethernet/assets/disappeared/histogram", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset },
+      (response) => setHistogram(response.data)
+    )
+  }
+
   findAsset(uuid, organizationId, tenantId, setAsset) {
     RESTClient.get(`/ethernet/assets/show/${uuid}`, { organization_id: organizationId, tenant_id: tenantId },
         (response) => setAsset(response.data)

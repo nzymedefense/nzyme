@@ -151,6 +151,7 @@ public class DHCPResource extends TapDataHandlingResource {
                         tx.clientMac(),
                         nzyme.getOuiService().lookup(tx.clientMac()).orElse(null),
                         asset.map(AssetEntry::uuid).orElse(null),
+                        asset.map(AssetEntry::isActive).orElse(null),
                         clientMacContext.map(macAddressContextEntry ->
                                         EthernetMacAddressContextResponse.create(
                                                 macAddressContextEntry.name(),
@@ -199,6 +200,7 @@ public class DHCPResource extends TapDataHandlingResource {
                     tx.serverMac(),
                     nzyme.getOuiService().lookup(tx.serverMac()).orElse(null),
                     asset.map(AssetEntry::uuid).orElse(null),
+                    asset.map(AssetEntry::isActive).orElse(null),
                     serverMacContext.map(macAddressContextEntry ->
                                     EthernetMacAddressContextResponse.create(
                                             macAddressContextEntry.name(),

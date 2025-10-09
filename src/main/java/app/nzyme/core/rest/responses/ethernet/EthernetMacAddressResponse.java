@@ -20,15 +20,20 @@ public abstract class EthernetMacAddressResponse {
     @Nullable
     public abstract UUID assetId();
 
+    @JsonProperty("asset_is_active")
+    @Nullable
+    public abstract Boolean assetIsActive();
+
     @JsonProperty("context")
     @Nullable
     public abstract EthernetMacAddressContextResponse context();
 
-    public static EthernetMacAddressResponse create(String address, String oui, UUID assetId, EthernetMacAddressContextResponse context) {
+    public static EthernetMacAddressResponse create(String address, String oui, UUID assetId, Boolean assetIsActive, EthernetMacAddressContextResponse context) {
         return builder()
                 .address(address)
                 .oui(oui)
                 .assetId(assetId)
+                .assetIsActive(assetIsActive)
                 .context(context)
                 .build();
     }
@@ -44,6 +49,8 @@ public abstract class EthernetMacAddressResponse {
         public abstract Builder oui(String oui);
 
         public abstract Builder assetId(UUID assetId);
+
+        public abstract Builder assetIsActive(Boolean assetIsActive);
 
         public abstract Builder context(EthernetMacAddressContextResponse context);
 

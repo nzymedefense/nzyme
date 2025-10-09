@@ -61,7 +61,11 @@ export default function AssetsTable(props) {
           {assets.assets.map((a, i) => {
             return (
                 <tr key={i}>
-                  <td><EthernetMacAddress addressWithContext={a.mac} href={ApiRoutes.ETHERNET.ASSETS.DETAILS(a.uuid)} /></td>
+                  <td>
+                    <EthernetMacAddress addressWithContext={a.mac}
+                                        href={ApiRoutes.ETHERNET.ASSETS.DETAILS(a.uuid)}
+                                        hideActiveIndicator={true} />
+                  </td>
                   <td>{a.oui ? truncate(a.oui, 30, false) : <span className="text-muted">Unknown</span>}</td>
                   <td><AssetActiveIndicator active={a.is_active} /></td>
                   <td>{a.name ? <span className="context-name">{a.name}</span> : <span className="text-muted">None</span>}</td>

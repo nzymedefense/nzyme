@@ -2,12 +2,14 @@ import React, {useState} from "react";
 import ContextOverlayVisibilityWrapper from "../ContextOverlayVisibilityWrapper";
 import Dot11MacAddressType from "./Dot11MacAddressType";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import AssetActiveIndicator from "../../../ethernet/assets/AssetActiveIndicator";
 
 function MacAddress(props) {
 
   const addressWithContext = props.addressWithContext;
   const overlay = props.overlay ? props.overlay : null;
   const address = addressWithContext ? addressWithContext.address : props.address;
+  const assetIsActive = addressWithContext ? addressWithContext.asset_is_active : null;
   const context = addressWithContext ? addressWithContext.context : null;
   const oui = addressWithContext ? addressWithContext.oui : null;
   const isRandomized = addressWithContext ? addressWithContext.is_randomized : props.address.is_randomized;
@@ -16,6 +18,7 @@ function MacAddress(props) {
   const withAssetLink = props.withAssetLink;
   const withAssetName = props.withAssetName;
   const onClick = props.onClick;
+  const hideActiveIndicator = props.hideActiveIndicator;
 
   const type = props.type;
 
@@ -103,6 +106,7 @@ function MacAddress(props) {
 
   return (
       <span onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
+        {hideActiveIndicator ? null : <AssetActiveIndicator active={assetIsActive} hideText={true} />}
         {typeElement()}{addressElement()}{randomizedIcon()}{contextElement()}{ouiElement()}{assetNameElement()}{filterElement ? filterElement : null}
 
         {overlay ? <ContextOverlayVisibilityWrapper visible={overlayVisible} overlay={overlay} /> : null }
