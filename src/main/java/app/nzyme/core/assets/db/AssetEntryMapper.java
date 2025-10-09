@@ -22,6 +22,7 @@ public class AssetEntryMapper implements RowMapper<AssetEntry> {
                 rs.getString("dhcp_fingerprint_renew"),
                 rs.getString("dhcp_fingerprint_reboot"),
                 rs.getString("dhcp_fingerprint_rebind"),
+                rs.getBoolean("seen_arp"),
                 rs.getBoolean("seen_dhcp"),
                 rs.getBoolean("seen_tcp"),
                 rs.getBoolean("seen_udp"),

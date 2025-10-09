@@ -295,9 +295,8 @@ public class TCPTable implements DataTable {
                     // We have an existing asset.
                     updateBatch
                             .bind("id", asset.get().id())
-                            .bind("last_seen", assetInfo.lastSeen());
-
-                    updateBatch.add();
+                            .bind("last_seen", assetInfo.lastSeen())
+                            .add();
                 } else {
                     // First time we are seeing this asset.
                     UUID uuid = UUID.randomUUID();

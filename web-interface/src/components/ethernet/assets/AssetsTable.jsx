@@ -10,6 +10,7 @@ import Paginator from "../../misc/Paginator";
 import {truncate} from "../../../util/Tools";
 import ApiRoutes from "../../../util/ApiRoutes";
 import AssetActiveIndicator from "./AssetActiveIndicator";
+import GenericWidgetLoadingSpinner from "../../widgets/GenericWidgetLoadingSpinner";
 
 export default function AssetsTable(props) {
 
@@ -31,7 +32,7 @@ export default function AssetsTable(props) {
   }
 
   if (assets === null) {
-    return <LoadingSpinner />
+    return <GenericWidgetLoadingSpinner height={1000} />
   }
 
   if (assets.assets.length === 0) {

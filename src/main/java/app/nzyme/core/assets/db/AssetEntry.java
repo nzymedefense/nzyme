@@ -23,6 +23,7 @@ public abstract class AssetEntry {
     public abstract String dhcpFingerprintReboot();
     @Nullable
     public abstract String dhcpFingerprintRebind();
+    public abstract boolean seenArp();
     public abstract boolean seenDhcp();
     public abstract boolean seenTcp();
     public abstract boolean seenUdp();
@@ -31,7 +32,7 @@ public abstract class AssetEntry {
     public abstract DateTime updatedAt();
     public abstract DateTime createdAt();
 
-    public static AssetEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String mac, boolean isActive, String dhcpFingerprintInitial, String dhcpFingerprintRenew, String dhcpFingerprintReboot, String dhcpFingerprintRebind, boolean seenDhcp, boolean seenTcp, boolean seenUdp, DateTime firstSeen, DateTime lastSeen, DateTime updatedAt, DateTime createdAt) {
+    public static AssetEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String mac, boolean isActive, String dhcpFingerprintInitial, String dhcpFingerprintRenew, String dhcpFingerprintReboot, String dhcpFingerprintRebind, boolean seenArp, boolean seenDhcp, boolean seenTcp, boolean seenUdp, DateTime firstSeen, DateTime lastSeen, DateTime updatedAt, DateTime createdAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -43,6 +44,7 @@ public abstract class AssetEntry {
                 .dhcpFingerprintRenew(dhcpFingerprintRenew)
                 .dhcpFingerprintReboot(dhcpFingerprintReboot)
                 .dhcpFingerprintRebind(dhcpFingerprintRebind)
+                .seenArp(seenArp)
                 .seenDhcp(seenDhcp)
                 .seenTcp(seenTcp)
                 .seenUdp(seenUdp)
@@ -78,6 +80,8 @@ public abstract class AssetEntry {
         public abstract Builder dhcpFingerprintReboot(String dhcpFingerprintReboot);
 
         public abstract Builder dhcpFingerprintRebind(String dhcpFingerprintRebind);
+
+        public abstract Builder seenArp(boolean seenArp);
 
         public abstract Builder seenDhcp(boolean seenDhcp);
 

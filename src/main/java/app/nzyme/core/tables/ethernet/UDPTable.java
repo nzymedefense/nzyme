@@ -15,7 +15,6 @@ import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.Subsystem;
 import com.codahale.metrics.Timer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,8 +86,6 @@ public class UDPTable implements DataTable {
                                     Tap tap,
                                     DateTime timestamp,
                                     List<UdpConversationReport> conversations) {
-        ObjectMapper om = new ObjectMapper();
-
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO l4_sessions(tap_uuid, l4_type, " +
                 "session_key, source_mac, source_address, source_address_is_site_local, " +
                 "source_address_is_loopback, source_address_is_multicast, source_port, destination_mac, " +
@@ -259,9 +256,8 @@ public class UDPTable implements DataTable {
                     // We have an existing asset.
                     updateBatch
                             .bind("id", asset.get().id())
-                            .bind("last_seen", assetInfo.lastSeen());
-
-                    updateBatch.add();
+                            .bind("last_seen", assetInfo.lastSeen())
+                            .add();
                 } else {
                     // First time we are seeing this asset.
                     UUID uuid = UUID.randomUUID();

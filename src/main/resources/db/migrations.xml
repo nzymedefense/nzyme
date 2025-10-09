@@ -7185,4 +7185,12 @@
         <modifyDataType tableName="socks_tunnels" columnName="tunneled_bytes" newDataType="bigint" />
     </changeSet>
 
+    <changeSet id="add_seen_arp_flag_to_assets" author="lennartkoopmann">
+        <addColumn tableName="assets">
+            <column name="seen_arp" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -222,7 +222,7 @@ public class AssetsResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        long total = nzyme.getAssetsManager().countAssets(timeRange, filters, organizationId, tenantId);
+        long total = nzyme.getAssetsManager().countAllInactiveAssets(timeRange, filters, organizationId, tenantId);
 
         List<ThreeColumnTableHistogramValueResponse> columns = Lists.newArrayList();
         for (AssetEntry asset : nzyme.getAssetsManager()
@@ -311,6 +311,7 @@ public class AssetsResource extends TapDataHandlingResource {
                 asset.get().dhcpFingerprintRenew(),
                 asset.get().dhcpFingerprintReboot(),
                 asset.get().dhcpFingerprintRebind(),
+                asset.get().seenArp(),
                 asset.get().seenDhcp(),
                 asset.get().seenTcp(),
                 asset.get().seenUdp(),

@@ -142,6 +142,27 @@ public class AssetManager {
         );
     }
 
+    public long countAllInactiveAssets(TimeRange timeRange,
+                                       Filters filters,
+                                       UUID organizationId,
+                                       UUID tenantId) {
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new AssetFilters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM assets WHERE organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id AND last_seen >= :tr_from " +
+                                "AND last_seen <= :tr_to " + filterFragment.whereSql() + " AND " +
+                                "(last_seen < (NOW() - interval '" + ACTIVE_ASSET_TIMEOUT_MINUTES + " minute'))")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindMap(filterFragment.bindings())
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
     public List<AssetEntry> findAllInactiveAssets(UUID organizationId,
                                                   UUID tenantId,
                                                   TimeRange timeRange,

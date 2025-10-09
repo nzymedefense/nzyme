@@ -4,6 +4,10 @@ export default function AssetSourceProtocols(props) {
 
   const protocols = [];
 
+  if (asset.seen_arp) {
+    protocols.push("ARP");
+  }
+
   if (asset.seen_dhcp) {
     protocols.push("DHCP");
   }
