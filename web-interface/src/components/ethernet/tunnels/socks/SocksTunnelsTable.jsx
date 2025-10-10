@@ -59,15 +59,16 @@ export default function SocksTunnelsTable(props) {
           <thead>
           <tr>
             <th>Tunnel ID {columnSorting("tunnel_id")}</th>
-            <th>Client {columnSorting("client_address")}</th>
-            <th>Tunnel Server {columnSorting("server_address")}</th>
-            <th>Tunnel Destination</th>
+            <th>Client Address {columnSorting("client_address")}</th>
+            <th>Client MAC {columnSorting("client_mac")}</th>
+            <th>Server Address {columnSorting("server_address")}</th>
+            <th>Server MAC {columnSorting("server_mac")}</th>
+            <th>Destination</th>
             <th>Type {columnSorting("type")}</th>
             <th>Status {columnSorting("connection_status")}</th>
             <th>Bytes {columnSorting("tunneled_bytes")}</th>
             <th>Duration</th>
             <th>Established At {columnSorting("established_at")}</th>
-            <th>Terminated At {columnSorting("terminated_at")}</th>
           </tr>
           </thead>
           <tbody>

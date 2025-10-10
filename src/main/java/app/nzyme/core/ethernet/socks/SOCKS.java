@@ -21,7 +21,9 @@ public class SOCKS {
 
         TUNNEL_ID("ANY_VALUE(socks.uuid)"),
         CLIENT_ADDRESS("ANY_VALUE(tcp.source_address)"),
+        CLIENT_MAC("ANY_VALUE(tcp.source_mac)"),
         SERVER_ADDRESS("ANY_VALUE(tcp.destination_address)"),
+        SERVER_MAC("ANY_VALUE(tcp.destination_mac)"),
         TYPE("socks_type"),
         CONNECTION_STATUS("connection_status"),
         TUNNELED_BYTES("tunneled_bytes"),

@@ -51,7 +51,7 @@ export default function SSHSessionsTableRow(props) {
             address={session.client}
             inner={<EthernetMacAddress addressWithContext={session.client.mac}
                                        filterElement={macFilter(session.client.mac, "client_mac")}
-                                       withAssetLink />} />
+                                       withAssetLink withAssetName />} />
         </td>
         <td><SSHVersion version={session.client_version} /></td>
         <td>
@@ -66,7 +66,7 @@ export default function SSHSessionsTableRow(props) {
             address={session.server}
             inner={<EthernetMacAddress addressWithContext={session.server.mac}
                                        filterElement={macFilter(session.server.mac, "server_mac")}
-                                       withAssetLink />} />
+                                       withAssetLink withAssetName />} />
         </td>
         <td><SSHVersion version={session.server_version} /></td>
         <td>
