@@ -53,7 +53,14 @@ export default function SSHSessionsTableRow(props) {
                                        filterElement={macFilter(session.client.mac, "client_mac")}
                                        withAssetLink withAssetName />} />
         </td>
-        <td><SSHVersion version={session.client_version} /></td>
+        <td>
+          <SSHVersion version={session.client_version} />
+
+          <FilterValueIcon setFilters={setFilters}
+                           fields={SSH_FILTER_FIELDS}
+                           field="client_version_software"
+                           value={session.client_version.software} />
+        </td>
         <td>
           <L4Address address={session.server}
                      filterElement={<FilterValueIcon setFilters={setFilters}
@@ -68,7 +75,14 @@ export default function SSHSessionsTableRow(props) {
                                        filterElement={macFilter(session.server.mac, "server_mac")}
                                        withAssetLink withAssetName />} />
         </td>
-        <td><SSHVersion version={session.server_version} /></td>
+        <td>
+          <SSHVersion version={session.server_version} />
+
+          <FilterValueIcon setFilters={setFilters}
+                           fields={SSH_FILTER_FIELDS}
+                           field="server_version_software"
+                           value={session.server_version.software} />
+        </td>
         <td>
           <GenericConnectionStatus status={session.connection_status}/>
           <FilterValueIcon setFilters={setFilters}

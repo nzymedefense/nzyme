@@ -42,7 +42,16 @@ export default function SocksTunnelsTableRow(props) {
 
   const destination = () => {
     if (tunnel.tunneled_destination_address) {
-      return <IPAddressLink ip={tunnel.tunneled_destination_address} port={tunnel.tunneled_destination_port} />
+      return (
+          <>
+            <IPAddressLink ip={tunnel.tunneled_destination_address} port={tunnel.tunneled_destination_port} />
+
+            <FilterValueIcon setFilters={setFilters}
+                             fields={SOCKS_FILTER_FIELDS}
+                             field="tunneled_destination_address"
+                             value={tunnel.tunneled_destination_address}  />
+          </>
+      )
     }
 
     if (tunnel.tunneled_destination_host) {
@@ -50,7 +59,12 @@ export default function SocksTunnelsTableRow(props) {
         <>
           <Hostname hostname={tunnel.tunneled_destination_host} />
           {tunnel.tunneled_destination_port === undefined || tunnel.tunneled_destination_port === null ? null
-            : <Port port={tunnel.tunneled_destination_port} />};
+            : <Port port={tunnel.tunneled_destination_port} />}
+
+          <FilterValueIcon setFilters={setFilters}
+                           fields={SOCKS_FILTER_FIELDS}
+                           field="tunneled_destination_host"
+                           value={tunnel.tunneled_destination_host}  />
         </>
       )
     }

@@ -26,6 +26,12 @@ public class SOCKSFilters implements SqlFilterProvider {
                 return GeneratedSql.create(stringMatch(bindId, "connection_status", operator), "");
             case "tunneled_bytes":
                 return GeneratedSql.create(numericMatch(bindId, "tunneled_bytes", operator), "");
+            case "tunneled_destination_address":
+                return GeneratedSql.create(ipAddressMatch(bindId, "tunneled_destination_address", operator), "");
+            case "tunneled_destination_host":
+                return GeneratedSql.create(stringMatch(bindId, "tunneled_destination_host", operator), "");
+            case "tunneled_destination_port":
+                return GeneratedSql.create(numericMatch(bindId, "tunneled_destination_port", operator), "");
             default:
                 throw new RuntimeException("Unknown field name [" + fieldName + "].");
         }
