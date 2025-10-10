@@ -15,8 +15,12 @@ public class SSHFilters implements SqlFilterProvider {
                 return GeneratedSql.create(stringMatch(bindId, "tcp_session_key", operator), "");
             case "client_address":
                 return GeneratedSql.create("", ipAddressMatch(bindId, "ANY_VALUE(tcp.source_address)", operator));
+            case "client_mac":
+                return GeneratedSql.create("", stringMatch(bindId, "ANY_VALUE(tcp.source_mac)", operator));
             case "server_address":
                 return GeneratedSql.create("", ipAddressMatch(bindId, "ANY_VALUE(tcp.destination_address)", operator));
+            case "server_mac":
+                return GeneratedSql.create("", stringMatch(bindId, "ANY_VALUE(tcp.destination_mac)", operator));
             case "connection_status":
                 return GeneratedSql.create(stringMatch(bindId, "connection_status", operator), "");
             case "tunneled_bytes":

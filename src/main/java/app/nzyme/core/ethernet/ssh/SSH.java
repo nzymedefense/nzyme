@@ -19,7 +19,9 @@ public class SSH {
 
         SESSION_ID("ANY_VALUE(ssh.uuid)"),
         CLIENT_ADDRESS("ANY_VALUE(tcp.source_address)"),
+        CLIENT_MAC("ANY_VALUE(tcp.source_mac)"),
         SERVER_ADDRESS("ANY_VALUE(tcp.destination_address)"),
+        SERVER_MAC("ANY_VALUE(tcp.destination_mac)"),
         CONNECTION_STATUS("connection_status"),
         TUNNELED_BYTES("tunneled_bytes"),
         ESTABLISHED_AT("established_at"),
