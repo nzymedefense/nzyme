@@ -15,7 +15,7 @@ import FullCopy from "../../../shared/FullCopy";
 import InternalAddressOnlyWrapper from "../../shared/InternalAddressOnlyWrapper";
 import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress";
 
-export default function SocksTunnelsTableRow(props) {
+export default function SOCKSTunnelsTableRow(props) {
 
   const tunnel = props.tunnel;
   const setFilters = props.setFilters;
@@ -29,15 +29,6 @@ export default function SocksTunnelsTableRow(props) {
                             fields={SOCKS_FILTER_FIELDS}
                             field={fieldName}
                             value={address.address} />
-  }
-
-  const socksType = () => {
-    switch (tunnel.socks_type) {
-      case "Socks5": return "SOCKS5";
-      case "Socks4": return "SOCKS4";
-      case "Socks4A": return "SOCKS4-A";
-      default: return tunnel.socks_type
-    }
   }
 
   const destination = () => {
@@ -112,11 +103,11 @@ export default function SocksTunnelsTableRow(props) {
         </td>
         <td>{destination()}</td>
         <td>
-          {socksType()}
+          {tunnel.socks_type}
           <FilterValueIcon setFilters={setFilters}
                            fields={SOCKS_FILTER_FIELDS}
                            field="type"
-                           value={socksType()}  />
+                           value={tunnel.socks_type}  />
         </td>
         <td>
           <GenericConnectionStatus status={tunnel.connection_status} />

@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from "react";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 import {Presets} from "../../../shared/timerange/TimeRange";
-import SocksTunnelsTable from "./SocksTunnelsTable";
+import SOCKSTunnelsTable from "./SOCKSTunnelsTable";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import {TapContext} from "../../../../App";
 import {SOCKS_FILTER_FIELDS} from "./SOCKSFilterFields";
@@ -68,7 +68,7 @@ export default function SOCKSTunnelsPage() {
 
                 <hr />
 
-                <SocksTunnelsTable timeRange={socksTunnelsTimeRange}
+                <SOCKSTunnelsTable timeRange={socksTunnelsTimeRange}
                                    filters={socksTunnelsFilters}
                                    setFilters={setSocksTunnelsFilters}
                                    revision={revision} />

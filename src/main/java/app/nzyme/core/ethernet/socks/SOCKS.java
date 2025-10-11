@@ -11,6 +11,7 @@ import app.nzyme.core.util.filters.Filters;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class SOCKS {
@@ -128,6 +129,37 @@ public class SOCKS {
                         .define("order_direction", orderDirection)
                         .mapTo(SocksTunnelEntry.class)
                         .list()
+        );
+    }
+
+    public Optional<SocksTunnelEntry> findTunnel(String sessionKey, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT socks.tcp_session_key, " +
+                                "ANY_VALUE(socks.socks_type) AS socks_type, " +
+                                "ANY_VALUE(socks.authentication_status) AS authentication_status, " +
+                                "ANY_VALUE(socks.handshake_status) AS handshake_status, " +
+                                "ANY_VALUE(socks.connection_status) AS connection_status, " +
+                                "ANY_VALUE(socks.username) AS username, " +
+                                "MAX(socks.tunneled_bytes) AS tunneled_bytes, " +
+                                "ANY_VALUE(socks.tunneled_destination_address) AS tunneled_destination_address, " +
+                                "ANY_VALUE(socks.tunneled_destination_host) AS tunneled_destination_host, " +
+                                "ANY_VALUE(socks.tunneled_destination_port) AS tunneled_destination_port, " +
+                                "MIN(socks.established_at) AS established_at, " +
+                                "MAX(socks.terminated_at) AS terminated_at, " +
+                                "MAX(socks.most_recent_segment_time) AS most_recent_segment_time " +
+                                "FROM socks_tunnels AS socks " +
+                                "LEFT JOIN l4_sessions AS tcp ON tcp.session_key = socks.tcp_session_key " +
+                                "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid IN (<taps>) " +
+                                "WHERE socks.tcp_session_key = :tcp_session_key AND socks.tap_uuid IN (<taps>) " +
+                                "GROUP BY tcp_session_key")
+                        .bindList("taps", taps)
+                        .bind("tcp_session_key", sessionKey)
+                        .mapTo(SocksTunnelEntry.class)
+                        .findOne()
         );
     }
 

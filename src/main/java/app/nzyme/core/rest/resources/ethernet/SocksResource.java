@@ -19,10 +19,7 @@ import com.google.common.collect.Lists;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -74,44 +71,74 @@ public class SocksResource extends TapDataHandlingResource {
         long total = nzyme.getEthernet().socks().countAllTunnels(timeRange, filters, taps);
 
         List<SocksTunnelDetailsResponse> tunnels = Lists.newArrayList();
-        for (SocksTunnelEntry t : nzyme.getEthernet().socks()
+        for (SocksTunnelEntry tunnel : nzyme.getEthernet().socks()
                 .findAllTunnels(timeRange, filters, orderColumn, orderDirection, limit, offset, taps)) {
-            // Get underlying TCP session. (Can be NULL)
-            Optional<TcpSessionEntry> tcpSession = nzyme.getEthernet().tcp()
-                    .findSessionBySessionKey(t.tcpSessionKey(), t.establishedAt(), taps);
-
-            L4AddressResponse client = null;
-            L4AddressResponse socksServer = null;
-            if (tcpSession.isPresent()) {
-                client = RestHelpers.L4AddressDataToResponse(
-                        nzyme, organizationId, tenantId, L4Type.TCP, tcpSession.get().source()
-                );
-                socksServer = RestHelpers.L4AddressDataToResponse(
-                        nzyme, organizationId, tenantId, L4Type.TCP, tcpSession.get().destination()
-                );
-            }
-
-            tunnels.add(SocksTunnelDetailsResponse.create(
-                    client,
-                    socksServer,
-                    t.tcpSessionKey(),
-                    t.socksType(),
-                    t.authenticationStatus(),
-                    t.handshakeStatus(),
-                    tcpSession.map(tcpSessionEntry -> RestHelpers.tcpSessionStateToGeneric(tcpSessionEntry.state()))
-                            .orElse("Invalid"),
-                    t.username(),
-                    t.tunneledBytes(),
-                    t.tunneledDestinationAddress(),
-                    t.tunneledDestinationHost(),
-                    t.tunneledDestinationPort(),
-                    t.establishedAt(),
-                    t.terminatedAt(),
-                    t.mostRecentSegmentTime()
-            ));
+            tunnels.add(buildTunnelDetails(tunnel, organizationId, tenantId, taps));
         }
 
         return Response.ok(SocksTunnelsListResponse.create(total, tunnels)).build();
+    }
+
+    @GET
+    @Path("/tunnels/show/{session_key}")
+    public Response tunnel(@Context SecurityContext sc,
+                           @PathParam("session_key") String sessionKey,
+                           @QueryParam("organization_id") UUID organizationId,
+                           @QueryParam("tenant_id") UUID tenantId,
+                           @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<SocksTunnelEntry> tunnel = nzyme.getEthernet().socks().findTunnel(sessionKey, taps);
+
+        if (tunnel.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(buildTunnelDetails(tunnel.get(), organizationId, tenantId, taps)).build();
+    }
+
+    private SocksTunnelDetailsResponse buildTunnelDetails(SocksTunnelEntry t,
+                                                          UUID organizationId,
+                                                          UUID tenantId,
+                                                          List<UUID> taps) {
+        // Get underlying TCP session. (Can be NULL)
+        Optional<TcpSessionEntry> tcpSession = nzyme.getEthernet().tcp()
+                .findSessionBySessionKey(t.tcpSessionKey(), t.establishedAt(), taps);
+
+        L4AddressResponse client = null;
+        L4AddressResponse socksServer = null;
+        if (tcpSession.isPresent()) {
+            client = RestHelpers.L4AddressDataToResponse(
+                    nzyme, organizationId, tenantId, L4Type.TCP, tcpSession.get().source()
+            );
+            socksServer = RestHelpers.L4AddressDataToResponse(
+                    nzyme, organizationId, tenantId, L4Type.TCP, tcpSession.get().destination()
+            );
+        }
+
+        return SocksTunnelDetailsResponse.create(
+                client,
+                socksServer,
+                t.tcpSessionKey(),
+                t.socksType(),
+                t.authenticationStatus(),
+                t.handshakeStatus(),
+                tcpSession.map(tcp -> RestHelpers
+                                .tcpSessionStateToGeneric(tcp.state()))
+                        .orElse("Invalid"),
+                t.username(),
+                t.tunneledBytes(),
+                t.tunneledDestinationAddress(),
+                t.tunneledDestinationHost(),
+                t.tunneledDestinationPort(),
+                t.establishedAt(),
+                t.terminatedAt(),
+                t.mostRecentSegmentTime()
+        );
     }
 
 }

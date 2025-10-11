@@ -122,7 +122,7 @@ import SSHSessionsPage from "./components/ethernet/remote/ssh/SSHSessionsPage";
 import DNSTransactionLogsPage from "./components/ethernet/dns/logs/DNSTransactionLogsPage";
 import ConnectPage from "./components/system/connect/ConnectPage";
 import BluetoothDevicesPage from "./components/bluetooth/devices/BluetoothDevicesPage";
-import SocksTunnelDetailsPage from "./components/ethernet/tunnels/socks/SocksTunnelDetailsPage";
+import SOCKSTunnelDetailsPage from "./components/ethernet/tunnels/socks/SOCKSTunnelDetailsPage";
 import SSHSessionDetailsPage from "./components/ethernet/remote/ssh/SSHSessionDetailsPage";
 import L4OverviewPage from "./components/ethernet/l4/L4OverviewPage";
 import BluetoothDeviceDetailsPage from "./components/bluetooth/devices/BluetoothDeviceDetailsPage";
@@ -562,7 +562,7 @@ function App() {
 
                                 { /* Ethernet/Tunnels. */}
                                 <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.INDEX} element={<SOCKSTunnelsPage />}/>
-                                <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.TUNNEL_DETAILS(':tunnelId')} element={<SocksTunnelDetailsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.TUNNEL_DETAILS(':tunnelId')} element={<SOCKSTunnelDetailsPage />}/>
 
                                 { /* Ethernet/Beacons. */}
                                 <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>

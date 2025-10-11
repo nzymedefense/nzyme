@@ -3,14 +3,14 @@ import SocksService from "../../../../services/ethernet/SocksService";
 import {TapContext} from "../../../../App";
 import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSpinner";
 import Paginator from "../../../misc/Paginator";
-import SocksTunnelsTableRow from "./SocksTunnelsTableRow";
+import SOCKSTunnelsTableRow from "./SOCKSTunnelsTableRow";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import numeral from "numeral";
 import ColumnSorting from "../../../shared/ColumnSorting";
 
 const socksService = new SocksService();
 
-export default function SocksTunnelsTable(props) {
+export default function SOCKSTunnelsTable(props) {
 
   const [organizationId, tenantId] = useSelectedTenant();
 
@@ -73,7 +73,7 @@ export default function SocksTunnelsTable(props) {
           </thead>
           <tbody>
           {data.tunnels.map((tunnel, i) => {
-            return <SocksTunnelsTableRow tunnel={tunnel} key={i} setFilters={setFilters} />
+            return <SOCKSTunnelsTableRow tunnel={tunnel} key={i} setFilters={setFilters} />
           })}
           </tbody>
         </table>

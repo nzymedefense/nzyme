@@ -10,4 +10,12 @@ export default class SocksService {
     )
   }
 
+  findTunnel(sessionId, organizationId, tenantId, taps, setTunnel) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get(`/ethernet/socks/tunnels/show/${sessionId}`, { organization_id: organizationId, tenant_id: tenantId, taps: tapsList },
+      (response) => setTunnel(response.data)
+    )
+  }
+
 }
