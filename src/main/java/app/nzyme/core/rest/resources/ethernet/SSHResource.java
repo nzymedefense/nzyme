@@ -21,10 +21,7 @@ import com.google.common.collect.Lists;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -78,45 +75,75 @@ public class SSHResource extends TapDataHandlingResource {
         List<SSHSessionDetailsResponse> sessions = Lists.newArrayList();
         for (SSHSessionEntry s : nzyme.getEthernet().ssh()
                 .findAllSessions(timeRange, filters, orderColumn, orderDirection, limit, offset, taps)) {
-            // Get underlying TCP session. (Can be NULL)
-            Optional<TcpSessionEntry> tcpSession = nzyme.getEthernet().tcp()
-                    .findSessionBySessionKey(s.tcpSessionKey(), s.establishedAt(), taps);
-
-            L4AddressResponse client = null;
-            L4AddressResponse server = null;
-            if (tcpSession.isPresent()) {
-                client = RestHelpers.L4AddressDataToResponse(
-                        nzyme, organizationId, tenantId, L4Type.TCP, tcpSession.get().source()
-                );
-                server = RestHelpers.L4AddressDataToResponse(
-                        nzyme, organizationId, tenantId, L4Type.TCP, tcpSession.get().destination()
-                );
-            }
-
-            sessions.add(SSHSessionDetailsResponse.create(
-                    s.tcpSessionKey(),
-                    client,
-                    server,
-                    SSHVersionResponse.create(
-                            s.clientVersionVersion(),
-                            s.clientVersionSoftware(),
-                            s.clientVersionComments()
-                    ),
-                    SSHVersionResponse.create(
-                            s.serverVersionVersion(),
-                            s.serverVersionSoftware(),
-                            s.serverVersionComments()
-                    ),
-                    tcpSession.map(tcpSessionEntry -> RestHelpers.tcpSessionStateToGeneric(tcpSessionEntry.state()))
-                            .orElse("Invalid"),
-                    s.tunneledBytes(),
-                    s.establishedAt(),
-                    s.terminatedAt(),
-                    s.mostRecentSegmentTime()
-            ));
+            sessions.add(buildSessionDetails(s, organizationId, tenantId, taps));
         }
 
         return Response.ok(SSHSessionsListResponse.create(total, sessions)).build();
+    }
+
+
+    @GET
+    @Path("/sessions/show/{session_key}")
+    public Response session(@Context SecurityContext sc,
+                            @PathParam("session_key") String sessionKey,
+                            @QueryParam("organization_id") UUID organizationId,
+                            @QueryParam("tenant_id") UUID tenantId,
+                            @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<SSHSessionEntry> session = nzyme.getEthernet().ssh().findSession(sessionKey, taps);
+
+        if (session.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(buildSessionDetails(session.get(), organizationId, tenantId, taps)).build();
+    }
+
+    private SSHSessionDetailsResponse buildSessionDetails(SSHSessionEntry s,
+                                                          UUID organizationId,
+                                                          UUID tenantId,
+                                                          List<UUID> taps) {
+        // Get underlying TCP session. (Can be NULL)
+        Optional<TcpSessionEntry> tcpSession = nzyme.getEthernet().tcp()
+                .findSessionBySessionKey(s.tcpSessionKey(), s.establishedAt(), taps);
+
+        L4AddressResponse client = null;
+        L4AddressResponse server = null;
+        if (tcpSession.isPresent()) {
+            client = RestHelpers.L4AddressDataToResponse(
+                    nzyme, organizationId, tenantId, L4Type.TCP, tcpSession.get().source()
+            );
+            server = RestHelpers.L4AddressDataToResponse(
+                    nzyme, organizationId, tenantId, L4Type.TCP, tcpSession.get().destination()
+            );
+        }
+
+        return SSHSessionDetailsResponse.create(
+                s.tcpSessionKey(),
+                client,
+                server,
+                SSHVersionResponse.create(
+                        s.clientVersionVersion(),
+                        s.clientVersionSoftware(),
+                        s.clientVersionComments()
+                ),
+                SSHVersionResponse.create(
+                        s.serverVersionVersion(),
+                        s.serverVersionSoftware(),
+                        s.serverVersionComments()
+                ),
+                tcpSession.map(tcpSessionEntry -> RestHelpers.tcpSessionStateToGeneric(tcpSessionEntry.state()))
+                        .orElse("Invalid"),
+                s.tunneledBytes(),
+                s.establishedAt(),
+                s.terminatedAt(),
+                s.mostRecentSegmentTime()
+        );
     }
 
 }

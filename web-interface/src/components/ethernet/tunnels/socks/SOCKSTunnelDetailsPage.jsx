@@ -40,7 +40,7 @@ export default function SOCKSTunnelDetailsPage() {
   useEffect(() => {
     setTunnel(null);
     socksService.findTunnel(tunnelId, organizationId, tenantId, selectedTaps, setTunnel);
-  }, [tunnelId])
+  }, [tunnelId, organizationId, tenantId])
 
   if (tunnel == null) {
     return <LoadingSpinner />
@@ -97,24 +97,26 @@ export default function SOCKSTunnelDetailsPage() {
                 <CardTitleWithControls title="Tunnel Source &amp; Destination" />
 
                 <dl className="mb-0">
-                  <dt>Source Address</dt>
+                  <dt>Client Address</dt>
                   <dd><L4Address address={tunnel.client} /></dd>
-                  <dt>Source Asset</dt>
+                  <dt>Client Asset</dt>
                   <dd>
                     <InternalAddressOnlyWrapper
                         address={tunnel.client}
                         inner={<EthernetMacAddress addressWithContext={tunnel.client.mac}
                                                    withAssetLink withAssetName />} />
                   </dd>
-                  <dt>Destination Address</dt>
+                  <dt>Server Address</dt>
                   <dd><SOCKSTunnelDestination tunnel={tunnel} /></dd>
-                  <dt>Destination Asset</dt>
+                  <dt>Server Asset</dt>
                   <dd>
                     <InternalAddressOnlyWrapper
                         address={tunnel.socks_server}
                         inner={<EthernetMacAddress addressWithContext={tunnel.socks_server.mac}
                                                    withAssetLink withAssetName />} />
                   </dd>
+                  <dt>Tunnel Destination</dt>
+                  <dt><SOCKSTunnelDestination tunnel={tunnel} /></dt>
                 </dl>
               </div>
             </div>
@@ -133,7 +135,10 @@ export default function SOCKSTunnelDetailsPage() {
                   <dt>Established at</dt>
                   <dd>{moment(tunnel.established_at).format()}</dd>
                   <dt>Terminated at</dt>
-                  <dd>{moment(tunnel.terminated_at).format()}</dd>
+                  <dd>
+                    {tunnel.terminated_at ? moment(tunnel.terminated_at).format() :
+                        <span className="text-muted">n/a</span>}
+                  </dd>
                 </dl>
               </div>
             </div>

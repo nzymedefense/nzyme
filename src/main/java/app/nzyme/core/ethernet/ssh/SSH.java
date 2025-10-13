@@ -11,6 +11,7 @@ import app.nzyme.core.util.filters.Filters;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class SSH {
@@ -126,6 +127,36 @@ public class SSH {
                         .define("order_direction", orderDirection)
                         .mapTo(SSHSessionEntry.class)
                         .list()
+        );
+    }
+
+    public Optional<SSHSessionEntry> findSession(String sessionKey, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT ssh.tcp_session_key, " +
+                                "ANY_VALUE(ssh.client_version_version) AS client_version_version, " +
+                                "ANY_VALUE(ssh.client_version_software) AS client_version_software, " +
+                                "ANY_VALUE(ssh.client_version_comments) AS client_version_comments, " +
+                                "ANY_VALUE(ssh.server_version_version) AS server_version_version, " +
+                                "ANY_VALUE(ssh.server_version_software) AS server_version_software, " +
+                                "ANY_VALUE(ssh.server_version_comments) AS server_version_comments, " +
+                                "ANY_VALUE(ssh.connection_status) AS connection_status, " +
+                                "MAX(ssh.tunneled_bytes) AS tunneled_bytes, " +
+                                "MIN(ssh.established_at) AS established_at, " +
+                                "MAX(ssh.terminated_at) AS terminated_at, " +
+                                "MAX(ssh.most_recent_segment_time) AS most_recent_segment_time " +
+                                "FROM ssh_sessions AS ssh " +
+                                "LEFT JOIN l4_sessions AS tcp ON tcp.session_key = ssh.tcp_session_key " +
+                                "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid IN (<taps>) " +
+                                "WHERE ssh.tcp_session_key = :tcp_session_key AND ssh.tap_uuid IN (<taps>) " +
+                                "GROUP BY tcp_session_key")
+                        .bindList("taps", taps)
+                        .bind("tcp_session_key", sessionKey)
+                        .mapTo(SSHSessionEntry.class)
+                        .findOne()
         );
     }
 

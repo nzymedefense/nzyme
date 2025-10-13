@@ -1,10 +1,52 @@
-import React from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import {TapContext} from "../../../../App";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
+import LoadingSpinner from "../../../misc/LoadingSpinner";
+import SSHService from "../../../../services/ethernet/SSHService";
+import CardTitleWithControls from "../../../shared/CardTitleWithControls";
+import numeral from "numeral";
+import {calculateConnectionDuration} from "../../../../util/Tools";
+import moment from "moment";
+import SSHVersion from "./SSHVersion";
+import GenericConnectionStatus from "../../shared/GenericConnectionStatus";
+import L4Address from "../../shared/L4Address";
+import FilterValueIcon from "../../../shared/filtering/FilterValueIcon";
+import {SSH_FILTER_FIELDS} from "./SSHFilterFields";
+import InternalAddressOnlyWrapper from "../../shared/InternalAddressOnlyWrapper";
+import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress";
+
+const sshService = new SSHService();
 
 export default function SSHSessionDetailsPage() {
 
   const { sessionId } = useParams()
+
+  const tapContext = useContext(TapContext);
+  const selectedTaps = tapContext.taps;
+
+  const [organizationId, tenantId] = useSelectedTenant();
+
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
+
+  useEffect(() => {
+    setSession(null);
+    sshService.findSession(sessionId, organizationId, tenantId, selectedTaps, setSession);
+  }, [sessionId, organizationId, tenantId])
+
+  if (session == null) {
+    return <LoadingSpinner />
+  }
 
   return (
       <React.Fragment>
@@ -29,12 +71,71 @@ export default function SSHSessionDetailsPage() {
           </div>
         </div>
 
-        <div className="row">
-          <div className="col-md-12">
+        <div className="row mt-3">
+          <div className="col-md-4">
             <div className="card">
               <div className="card-body">
-                This page will show all details about the SSH session, including meta information of the underlying
-                network layers.
+                <CardTitleWithControls title="Details" />
+
+                <dl className="mb-0">
+                  <dt>Connection Status</dt>
+                  <dd><GenericConnectionStatus status={session.connection_status}/></dd>
+                  <dt>Client SSH Version</dt>
+                  <dd><SSHVersion version={session.client_version} /></dd>
+                  <dt>Server SSH Version</dt>
+                  <dd><SSHVersion version={session.server_version} /></dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-4">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Session Source &amp; Destination" />
+
+                <dl className="mb-0">
+                  <dt>Client Address</dt>
+                  <dd><L4Address address={session.client} hidePort={true}/></dd>
+                  <dt>Client Asset</dt>
+                  <dd>
+                    <InternalAddressOnlyWrapper
+                        address={session.client}
+                        inner={<EthernetMacAddress addressWithContext={session.client.mac}
+                                                   withAssetLink withAssetName />} />
+                  </dd>
+                  <dt>Server Address</dt>
+                  <dd><L4Address address={session.server} hidePort={true}/></dd>
+                  <dt>Server Asset</dt>
+                  <dd>
+                    <InternalAddressOnlyWrapper
+                        address={session.server}
+                        inner={<EthernetMacAddress addressWithContext={session.server.mac}
+                                                   withAssetLink withAssetName />} />
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-4">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Metadata" />
+
+                <dl className="mb-0">
+                  <dt>Tunneled Bytes</dt>
+                  <dd>{numeral(session.tunneled_bytes).format("0,0b")}</dd>
+                  <dt>Duration</dt>
+                  <dd>{calculateConnectionDuration(session.connection_status, session.established_at, session.terminated_at)}</dd>
+                  <dt>Established at</dt>
+                  <dd>{moment(session.established_at).format()}</dd>
+                  <dt>Terminated at</dt>
+                  <dd>
+                    {session.terminated_at ? moment(session.terminated_at).format() :
+                        <span className="text-muted">n/a</span>}
+                  </dd>
+                </dl>
               </div>
             </div>
           </div>

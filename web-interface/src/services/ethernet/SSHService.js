@@ -10,4 +10,12 @@ export default class SSHService {
     )
   }
 
+  findSession(sessionId, organizationId, tenantId, taps, setSession) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get(`/ethernet/ssh/sessions/show/${sessionId}`, { organization_id: organizationId, tenant_id: tenantId, taps: tapsList },
+        (response) => setSession(response.data)
+    )
+  }
+
 }
