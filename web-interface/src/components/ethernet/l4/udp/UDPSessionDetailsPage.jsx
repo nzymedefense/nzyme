@@ -1,10 +1,11 @@
-import React from "react";
 import {useParams} from "react-router-dom";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import CardTitleWithControls from "../../../shared/CardTitleWithControls";
+import React from "react";
 
-export default function IPDetailsPage() {
+export default function UDPSessionDetailsPage() {
 
-  const { address } = useParams()
+  const {sessionId} = useParams();
 
   return (
       <React.Fragment>
@@ -13,33 +14,32 @@ export default function IPDetailsPage() {
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={ApiRoutes.ETHERNET.OVERVIEW}>Ethernet</a></li>
-                <li className="breadcrumb-item">IP</li>
-                <li className="breadcrumb-item">Addresses</li>
-                <li className="breadcrumb-item active" aria-current="page">{address}</li>
+                <li className="breadcrumb-item">TCP/UDP</li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.ETHERNET.L4.OVERVIEW}>Sessions</a></li>
+                <li className="breadcrumb-item">UDP</li>
+                <li className="breadcrumb-item active" aria-current="page">{sessionId}</li>
               </ol>
             </nav>
           </div>
         </div>
 
-        <div className="row">
+        <div className="row mt-3">
           <div className="col-md-12">
             <h1>
-              IP Address &quot;{address}&quot;
+              UDP Session &quot;{sessionId}&quot;
             </h1>
           </div>
         </div>
 
-        <div className="row">
-          <div className="col-md-12">
+        <div className="row mt-3">
+          <div className="col-md-4">
             <div className="card">
               <div className="card-body">
-                This page will show all details about the IP address, including an overview of where it connected
-                to, using which services and protocols.
+                <CardTitleWithControls title="Details" />
               </div>
             </div>
           </div>
         </div>
-
       </React.Fragment>
   )
 

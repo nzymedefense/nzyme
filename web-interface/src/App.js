@@ -181,6 +181,8 @@ import GNSSMonitoringRuleDetailsPage from "./components/gnss/monitoring/GNSSMoni
 import EditGNSSMonitoringRulePage from "./components/gnss/monitoring/EditGNSSMonitoringRulePage";
 import GNSSMonitoringSettingsPage from "./components/gnss/monitoring/GNSSMonitoringSettingsPage";
 import ReconPage from "./components/ethernet/recon/ReconPage";
+import TCPSessionDetailsPage from "./components/ethernet/l4/tcp/TCPSessionDetailsPage";
+import UDPSessionDetailsPage from "./components/ethernet/l4/udp/UDPSessionDetailsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -541,9 +543,13 @@ function App() {
 
                               { /* Ethernet. */ }
                               <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "ethernet")} />}>
+                                { /* Ethernet/IP. */}
+                                <Route path={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(':address')} element={<IPDetailsPage />}/>
+
                                 { /* Ethernet/L4. */}
                                 <Route path={ApiRoutes.ETHERNET.L4.OVERVIEW} element={<L4OverviewPage />}/>
-                                <Route path={ApiRoutes.ETHERNET.L4.IP(':ipParam')} element={<IPDetailsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.L4.TCP.SESSION_DETAILS(':sessionId')} element={<TCPSessionDetailsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.L4.UDP.SESSION_DETAILS(':sessionId')} element={<UDPSessionDetailsPage />}/>
 
                                 { /* Ethernet/Assets. */}
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.INDEX} element={<EthernetAssetsPage />}/>

@@ -15,6 +15,7 @@ import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import InternalAddressOnlyWrapper from "../../shared/InternalAddressOnlyWrapper";
 import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress";
 import L4Address from "../../shared/L4Address";
+import TCPSessionLink from "../../shared/TCPSessionLink";
 
 const socksService = new SocksService();
 
@@ -139,6 +140,8 @@ export default function SOCKSTunnelDetailsPage() {
                     {tunnel.terminated_at ? moment(tunnel.terminated_at).format() :
                         <span className="text-muted">n/a</span>}
                   </dd>
+                  <dt>Underlying TCP Session</dt>
+                  <dd><TCPSessionLink sessionId={tunnel.tcp_session_key} /></dd>
                 </dl>
               </div>
             </div>

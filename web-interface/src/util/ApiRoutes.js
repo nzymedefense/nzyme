@@ -143,9 +143,17 @@ const ApiRoutes = {
   },
   ETHERNET: {
     OVERVIEW: '/ethernet/overview',
+    IP: {
+      ADDRESS_DETAILS: address => `/ethernet/l4/ip/show/${address}`
+    },
     L4: {
       OVERVIEW: '/ethernet/l4',
-      IP: ip => `/ethernet/l4/ip/show/${ip}`
+      TCP: {
+        SESSION_DETAILS: sessionId => `/ethernet/l4/tcp/${sessionId}`
+      },
+      UDP: {
+        SESSION_DETAILS: sessionId => `/ethernet/l4/udp/${sessionId}`
+      }
     },
     ASSETS: {
       INDEX: '/ethernet/assets',

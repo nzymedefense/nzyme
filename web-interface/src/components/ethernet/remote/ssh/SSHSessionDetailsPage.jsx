@@ -13,10 +13,9 @@ import moment from "moment";
 import SSHVersion from "./SSHVersion";
 import GenericConnectionStatus from "../../shared/GenericConnectionStatus";
 import L4Address from "../../shared/L4Address";
-import FilterValueIcon from "../../../shared/filtering/FilterValueIcon";
-import {SSH_FILTER_FIELDS} from "./SSHFilterFields";
 import InternalAddressOnlyWrapper from "../../shared/InternalAddressOnlyWrapper";
 import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress";
+import TCPSessionLink from "../../shared/TCPSessionLink";
 
 const sshService = new SSHService();
 
@@ -135,6 +134,8 @@ export default function SSHSessionDetailsPage() {
                     {session.terminated_at ? moment(session.terminated_at).format() :
                         <span className="text-muted">n/a</span>}
                   </dd>
+                  <dt>Underlying TCP Session</dt>
+                  <dd><TCPSessionLink sessionId={session.tcp_session_key} /></dd>
                 </dl>
               </div>
             </div>

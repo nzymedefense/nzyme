@@ -12,6 +12,7 @@ import L4SessionState from "./L4SessionState";
 import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 import {L4_SESSIONS_FILTER_FIELDS} from "./L4SessionFilterFields";
 import ApiRoutes from "../../../util/ApiRoutes";
+import FullCopyShortenedId from "../../shared/FullCopyShortenedId";
 
 export default function L4SessionsTable(props) {
 
@@ -42,6 +43,19 @@ export default function L4SessionsTable(props) {
                             fields={L4_SESSIONS_FILTER_FIELDS}
                             field={fieldName}
                             value={address.address} />
+  }
+
+  const sessionLink = (sessionId, type) => {
+    switch (type) {
+      case "TCP":
+        return <a href={ApiRoutes.ETHERNET.L4.TCP.SESSION_DETAILS(sessionId)} className="machine-data">
+          <FullCopyShortenedId value={sessionId} />
+        </a>
+      case "UDP":
+        return <a href={ApiRoutes.ETHERNET.L4.UDP.SESSION_DETAILS(sessionId)} className="machine-data">
+          <FullCopyShortenedId value={sessionId} />
+        </a>
+    }
   }
 
   if (!sessions) {
@@ -79,7 +93,8 @@ export default function L4SessionsTable(props) {
             return (
                 <tr key={i}>
                   <td>
-                    <a href="#" className="machine-data">{s.session_key.substr(0, 6)}</a>
+                    {sessionLink(s.session_key, s.l4_type)}
+
                     <FilterValueIcon setFilters={setFilters}
                                      fields={L4_SESSIONS_FILTER_FIELDS}
                                      field="session_key"

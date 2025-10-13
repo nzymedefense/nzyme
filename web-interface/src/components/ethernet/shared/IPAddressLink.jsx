@@ -11,7 +11,7 @@ export default function IPAddressLink(props) {
   const port = props.port;
 
   return (
-      <a href={ApiRoutes.ETHERNET.L4.IP(ip)}>
+      <a href={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(ip)}>
         <IPAddress ip={ip} />{port === undefined || port === null ? null : <Port port={port} />}
       </a>
   )
