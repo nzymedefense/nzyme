@@ -71,7 +71,10 @@ public class SOCKS {
                                 "FROM socks_tunnels AS socks " +
                                 "LEFT JOIN l4_sessions AS tcp ON tcp.session_key = socks.tcp_session_key " +
                                 "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid IN (<taps>) " +
-                                "WHERE socks.most_recent_segment_time >= :tr_from AND socks.most_recent_segment_time <= :tr_to " +
+                                "AND tcp.start_time >= (socks.established_at - interval '1 minute') " +
+                                "AND tcp.start_time <= (socks.established_at + interval '1 minute') " +
+                                "WHERE socks.most_recent_segment_time >= :tr_from " +
+                                "AND socks.most_recent_segment_time <= :tr_to " +
                                 "AND socks.tap_uuid IN (<taps>) " + filterFragment.whereSql() +
                                 "GROUP BY tcp_session_key HAVING 1=1 " +  filterFragment.havingSql() +
                                 ") AS ignored")
@@ -113,8 +116,11 @@ public class SOCKS {
                                 "MAX(socks.most_recent_segment_time) AS most_recent_segment_time " +
                                 "FROM socks_tunnels AS socks " +
                                 "LEFT JOIN l4_sessions AS tcp ON tcp.session_key = socks.tcp_session_key " +
-                                "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid IN (<taps>) " +
-                                "WHERE socks.most_recent_segment_time >= :tr_from AND socks.most_recent_segment_time <= :tr_to " +
+                                "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid = socks.tap_uuid " +
+                                "AND tcp.start_time >= (socks.established_at - interval '1 minute') " +
+                                "AND tcp.start_time <= (socks.established_at + interval '1 minute') " +
+                                "WHERE socks.most_recent_segment_time >= :tr_from " +
+                                "AND socks.most_recent_segment_time <= :tr_to " +
                                 "AND socks.tap_uuid IN (<taps>) " + filterFragment.whereSql() +
                                 "GROUP BY tcp_session_key HAVING 1=1 " +  filterFragment.havingSql() +
                                 "ORDER BY <order_column> <order_direction> " +
@@ -153,7 +159,7 @@ public class SOCKS {
                                 "MAX(socks.most_recent_segment_time) AS most_recent_segment_time " +
                                 "FROM socks_tunnels AS socks " +
                                 "LEFT JOIN l4_sessions AS tcp ON tcp.session_key = socks.tcp_session_key " +
-                                "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid IN (<taps>) " +
+                                "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid = socks.tap_uuid " +
                                 "WHERE socks.tcp_session_key = :tcp_session_key AND socks.tap_uuid IN (<taps>) " +
                                 "GROUP BY tcp_session_key")
                         .bindList("taps", taps)

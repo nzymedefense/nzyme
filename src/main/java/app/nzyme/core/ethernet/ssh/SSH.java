@@ -111,8 +111,11 @@ public class SSH {
                                 "MAX(ssh.most_recent_segment_time) AS most_recent_segment_time " +
                                 "FROM ssh_sessions AS ssh " +
                                 "LEFT JOIN l4_sessions AS tcp ON tcp.session_key = ssh.tcp_session_key " +
-                                "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid IN (<taps>) " +
-                                "WHERE ssh.most_recent_segment_time >= :tr_from AND ssh.most_recent_segment_time <= :tr_to " +
+                                "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid = ssh.tap_uuid " +
+                                "AND tcp.start_time >= (ssh.established_at - interval '1 minute') " +
+                                "AND tcp.start_time <= (ssh.established_at + interval '1 minute') " +
+                                "WHERE ssh.most_recent_segment_time >= :tr_from " +
+                                "AND ssh.most_recent_segment_time <= :tr_to " +
                                 "AND ssh.tap_uuid IN (<taps>) " + filterFragment.whereSql() +
                                 "GROUP BY tcp_session_key HAVING 1=1 " + filterFragment.havingSql() +
                                 "ORDER BY <order_column> <order_direction> " +
@@ -150,7 +153,9 @@ public class SSH {
                                 "MAX(ssh.most_recent_segment_time) AS most_recent_segment_time " +
                                 "FROM ssh_sessions AS ssh " +
                                 "LEFT JOIN l4_sessions AS tcp ON tcp.session_key = ssh.tcp_session_key " +
-                                "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid IN (<taps>) " +
+                                "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid = ssh.tap_uuid " +
+                                "AND tcp.start_time >= (ssh.established_at - interval '1 minute') " +
+                                "AND tcp.start_time <= (ssh.established_at + interval '1 minute') " +
                                 "WHERE ssh.tcp_session_key = :tcp_session_key AND ssh.tap_uuid IN (<taps>) " +
                                 "GROUP BY tcp_session_key")
                         .bindList("taps", taps)
