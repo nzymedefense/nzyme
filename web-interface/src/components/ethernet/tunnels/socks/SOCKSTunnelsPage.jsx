@@ -36,7 +36,6 @@ export default function SOCKSTunnelsPage() {
     }
   }, [tapContext]);
 
-
   return (
       <React.Fragment>
         <div className="row">

@@ -2,18 +2,16 @@ import React from "react";
 
 import numeral from "numeral";
 import moment from "moment";
-import IPAddressLink from "../../shared/IPAddressLink";
 import L4Address from "../../shared/L4Address";
 import {calculateConnectionDuration} from "../../../../util/Tools";
 import GenericConnectionStatus from "../../shared/GenericConnectionStatus";
-import Hostname from "../../shared/Hostname";
-import Port from "../../shared/Port";
 import FilterValueIcon from "../../../shared/filtering/FilterValueIcon";
 import SocksTunnelId from "../../shared/SocksTunnelId";
 import {SOCKS_FILTER_FIELDS} from "./SOCKSFilterFields";
 import FullCopy from "../../../shared/FullCopy";
 import InternalAddressOnlyWrapper from "../../shared/InternalAddressOnlyWrapper";
 import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress";
+import SOCKSTunnelDestination from "./SOCKSTunnelDestination";
 
 export default function SOCKSTunnelsTableRow(props) {
 
@@ -29,38 +27,6 @@ export default function SOCKSTunnelsTableRow(props) {
                             fields={SOCKS_FILTER_FIELDS}
                             field={fieldName}
                             value={address.address} />
-  }
-
-  const destination = () => {
-    if (tunnel.tunneled_destination_address) {
-      return (
-          <>
-            <IPAddressLink ip={tunnel.tunneled_destination_address} port={tunnel.tunneled_destination_port} />
-
-            <FilterValueIcon setFilters={setFilters}
-                             fields={SOCKS_FILTER_FIELDS}
-                             field="tunneled_destination_address"
-                             value={tunnel.tunneled_destination_address}  />
-          </>
-      )
-    }
-
-    if (tunnel.tunneled_destination_host) {
-      return (
-        <>
-          <Hostname hostname={tunnel.tunneled_destination_host} />
-          {tunnel.tunneled_destination_port === undefined || tunnel.tunneled_destination_port === null ? null
-            : <Port port={tunnel.tunneled_destination_port} />}
-
-          <FilterValueIcon setFilters={setFilters}
-                           fields={SOCKS_FILTER_FIELDS}
-                           field="tunneled_destination_host"
-                           value={tunnel.tunneled_destination_host}  />
-        </>
-      )
-    }
-
-    return "[Invalid]"
   }
 
   return (
@@ -101,7 +67,7 @@ export default function SOCKSTunnelsTableRow(props) {
                                        filterElement={macFilter(tunnel.socks_server.mac, "server_mac")}
                                        withAssetLink withAssetName />} />
         </td>
-        <td>{destination()}</td>
+        <td><SOCKSTunnelDestination tunnel={tunnel} setFilters={setFilters} /></td>
         <td>
           {tunnel.socks_type}
           <FilterValueIcon setFilters={setFilters}

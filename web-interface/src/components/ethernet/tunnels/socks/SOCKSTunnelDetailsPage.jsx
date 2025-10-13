@@ -8,6 +8,13 @@ import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant"
 import {TapContext} from "../../../../App";
 import GenericConnectionStatus from "../../shared/GenericConnectionStatus";
 import numeral from "numeral";
+import moment from "moment/moment";
+import {calculateConnectionDuration} from "../../../../util/Tools";
+import SOCKSTunnelDestination from "./SOCKSTunnelDestination";
+import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
+import InternalAddressOnlyWrapper from "../../shared/InternalAddressOnlyWrapper";
+import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress";
+import L4Address from "../../shared/L4Address";
 
 const socksService = new SocksService();
 
@@ -21,6 +28,14 @@ export default function SOCKSTunnelDetailsPage() {
   const [organizationId, tenantId] = useSelectedTenant();
 
   const [tunnel, setTunnel] = useState(null);
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
 
   useEffect(() => {
     setTunnel(null);
@@ -79,10 +94,27 @@ export default function SOCKSTunnelDetailsPage() {
           <div className="col-md-4">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Tunnel Destination" />
+                <CardTitleWithControls title="Tunnel Source &amp; Destination" />
 
                 <dl className="mb-0">
-
+                  <dt>Source Address</dt>
+                  <dd><L4Address address={tunnel.client} /></dd>
+                  <dt>Source Asset</dt>
+                  <dd>
+                    <InternalAddressOnlyWrapper
+                        address={tunnel.client}
+                        inner={<EthernetMacAddress addressWithContext={tunnel.client.mac}
+                                                   withAssetLink withAssetName />} />
+                  </dd>
+                  <dt>Destination Address</dt>
+                  <dd><SOCKSTunnelDestination tunnel={tunnel} /></dd>
+                  <dt>Destination Asset</dt>
+                  <dd>
+                    <InternalAddressOnlyWrapper
+                        address={tunnel.socks_server}
+                        inner={<EthernetMacAddress addressWithContext={tunnel.socks_server.mac}
+                                                   withAssetLink withAssetName />} />
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -96,17 +128,13 @@ export default function SOCKSTunnelDetailsPage() {
                 <dl className="mb-0">
                   <dt>Tunneled Bytes</dt>
                   <dd>{numeral(tunnel.tunneled_bytes).format("0,0b")}</dd>
+                  <dt>Duration</dt>
+                  <dd>{calculateConnectionDuration(tunnel.connection_status, tunnel.established_at, tunnel.terminated_at)}</dd>
+                  <dt>Established at</dt>
+                  <dd>{moment(tunnel.established_at).format()}</dd>
+                  <dt>Terminated at</dt>
+                  <dd>{moment(tunnel.terminated_at).format()}</dd>
                 </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Underlying TCP Session" />
               </div>
             </div>
           </div>
