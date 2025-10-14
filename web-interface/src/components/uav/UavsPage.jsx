@@ -7,6 +7,8 @@ import CardTitleWithControls from "../shared/CardTitleWithControls";
 import UavsTable from "./UavsTable";
 import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 import UavTacticalMap from "./UavTacticalMap";
+import ApiRoutes from "../../util/ApiRoutes";
+import {Navigate} from "react-router-dom";
 
 const uavService = new UavService();
 
@@ -22,6 +24,8 @@ export default function UavsPage() {
   const [page, setPage] = useState(1);
   const perPage = 25;
 
+  const [uavRedirect, setUavRedirect] = useState(null);
+
   const [revision, setRevision] = useState(new Date());
 
   useEffect(() => {
@@ -36,6 +40,14 @@ export default function UavsPage() {
       disableTapSelector(tapContext);
     }
   }, [tapContext]);
+
+  const onUavClick = (uav) => {
+    setUavRedirect(uav);
+  }
+
+  if (uavRedirect) {
+    return <Navigate to={ApiRoutes.UAV.DETAILS(uavRedirect.identifier)} />
+  }
 
   return (
       <React.Fragment>
@@ -71,7 +83,7 @@ export default function UavsPage() {
                                        fixedAppliedTimeRange={timeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
-                <UavTacticalMap containerHeight={600} uavs={uavs} />
+                <UavTacticalMap containerHeight={600} uavs={uavs} onUavClick={onUavClick} />
               </div>
             </div>
           </div>

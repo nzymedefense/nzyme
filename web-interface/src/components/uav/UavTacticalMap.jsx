@@ -18,6 +18,7 @@ export default function UavTacticalMap(props) {
 
   // Optional.
   const onRefresh = props.onRefresh;
+  const onUavClick = props.onUavClick;
 
   const [map, setMap] = useState(null);
   const [mapInitialized, setMapInitialized] = useState(false);
@@ -57,7 +58,7 @@ export default function UavTacticalMap(props) {
     if (mapInitialized) {
       map.invalidateSize(true);
       map.attributionControl.setPrefix("");
-      ///// TODO SET TO PROVIDED CENTER
+
       map.setView([uavs.map_center.latitude, uavs.map_center.longitude], uavs.map_center.zoom)
 
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -76,7 +77,7 @@ export default function UavTacticalMap(props) {
         }).addTo(map);
       }
 
-      // FOR EACH UAV
+      // Paint each UAV on map.
       for (const uav of uavs.uavs) {
         const uavMarker = L.marker(latLng(uav.latitude, uav.longitude), {
           icon: uavIcon,
@@ -84,7 +85,11 @@ export default function UavTacticalMap(props) {
           autoPan: true
         }).addTo(map);
 
-        uavMarker.bindTooltip(uavTooltip(uav))
+        uavMarker.bindTooltip(uavTooltip(uav));
+
+        uavMarker.on('click', () => {
+          onUavClick(uav);
+        });
       }
     }
   }, [mapInitialized])
