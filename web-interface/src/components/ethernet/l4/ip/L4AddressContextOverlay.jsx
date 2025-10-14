@@ -84,7 +84,7 @@ export default function L4AddressContextOverlay(props) {
               <dd>{attributes()}</dd>
             </dl>
 
-            <a href={ApiRoutes.ETHERNET.L4.IP(address.address)} className="btn btn-sm btn-outline-primary">
+            <a href={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(address.address)} className="btn btn-sm btn-outline-primary">
               Open Address Details
             </a>
           </React.Fragment>
@@ -109,7 +109,7 @@ export default function L4AddressContextOverlay(props) {
               <dd>{city()}</dd>
             </dl>
 
-            <a href={ApiRoutes.ETHERNET.L4.IP(address.address)} className="btn btn-sm btn-outline-primary">
+            <a href={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(address.address)} className="btn btn-sm btn-outline-primary">
               Open Address Details
             </a>
           </React.Fragment>
@@ -137,7 +137,7 @@ export default function L4AddressContextOverlay(props) {
             <dd>Site-Local</dd>
           </dl>
 
-          <a href={ApiRoutes.ETHERNET.L4.IP(address.address)} className="btn btn-sm btn-outline-primary">
+          <a href={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(address.address)} className="btn btn-sm btn-outline-primary">
             Open Address Details
           </a>
         </React.Fragment>

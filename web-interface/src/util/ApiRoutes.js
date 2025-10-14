@@ -166,9 +166,6 @@ const ApiRoutes = {
         INDEX: '/ethernet/assets/arp'
       }
     },
-    HOSTNAMES: {
-      HOSTNAME: hostname => `/ethernet/hostnames/show/${hostname}`
-    },
     DNS: {
       INDEX: '/ethernet/dns',
       TRANSACTION_LOGS: '/ethernet/dns/logs'
