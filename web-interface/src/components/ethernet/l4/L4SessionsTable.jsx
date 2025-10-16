@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useContext, useEffect, useState} from "react";
 import ColumnSorting from "../../shared/ColumnSorting";
 import GenericWidgetLoadingSpinner from "../../widgets/GenericWidgetLoadingSpinner";
 import numeral from "numeral";
@@ -13,18 +13,55 @@ import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 import {L4_SESSIONS_FILTER_FIELDS} from "./L4SessionFilterFields";
 import ApiRoutes from "../../../util/ApiRoutes";
 import FullCopyShortenedId from "../../shared/FullCopyShortenedId";
+import {TapContext} from "../../../App";
+import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import L4Service from "../../../services/ethernet/L4Service";
+
+const l4Service = new L4Service();
 
 export default function L4SessionsTable(props) {
 
-  const sessions = props.sessions;
-  const page = props.page;
-  const setPage = props.setPage;
-  const perPage = props.perPage;
-  const setOrderColumn = props.setOrderColumn;
-  const orderColumn = props.orderColumn;
-  const setOrderDirection = props.setOrderDirection;
-  const orderDirection = props.orderDirection;
+  const tapContext = useContext(TapContext);
+  const selectedTaps = tapContext.taps;
+  const [organizationId, tenantId] = useSelectedTenant();
+
+  const filters = props.filters;
   const setFilters = props.setFilters;
+  const revision = props.revision;
+  const timeRange = props.timeRange;
+
+  const [sessions, setSessions] = useState(null);
+
+  const [orderColumn, setOrderColumn] = useState("most_recent_segment_time");
+  const [orderDirection, setOrderDirection] = useState("DESC");
+
+  const perPage = props.perPage ? props.perPage : 25;
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
+
+  useEffect(() => {
+    setSessions(null);
+    l4Service.findAllSessions(
+      organizationId,
+      tenantId,
+      selectedTaps,
+      filters,
+      timeRange,
+      orderColumn,
+      orderDirection,
+      perPage,
+      (page-1)*perPage,
+      setSessions
+    )
+  }, [organizationId, tenantId, selectedTaps, filters, timeRange, page, perPage, orderColumn, orderDirection, revision]);
 
   const columnSorting = (columnName) => {
     return <ColumnSorting thisColumn={columnName}

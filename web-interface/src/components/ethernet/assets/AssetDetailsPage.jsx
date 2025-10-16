@@ -18,6 +18,7 @@ import AssetActiveIndicator from "./AssetActiveIndicator";
 import AssetDetailsSSHSessions from "./AssetDetailsSSHSessions";
 import ComponentCycle from "../../shared/ComponentCycle";
 import AssetDetailsSOCKSTunnels from "./AssetDetailsSOCKSTunnels";
+import AssetDetailsL4Sessions from "./AssetDetailsL4Sessions";
 
 const assetsService = new AssetsService();
 
@@ -261,20 +262,49 @@ export default function AssetDetailsPage() {
                 <ComponentCycle components={[
                   {name: "Outbound SOCKS Tunnels", element:
                         <AssetDetailsSOCKSTunnels title="Outbound SOCKS Tunnels"
-                                                 filters={{
-                                                   "client_mac": [{
-                                                     field: "client_mac",
-                                                     operator: "equals",
-                                                     value: asset.mac.address,
-                                                   }]}} />},
+                                                  filters={{
+                                                    "client_mac": [{
+                                                      field: "client_mac",
+                                                      operator: "equals",
+                                                      value: asset.mac.address,
+                                                    }]}} />},
                   {name: "Inbound SOCKS Tunnels", element:
                         <AssetDetailsSOCKSTunnels title="Inbound SOCKS Tunnels"
                                                   filters={{
-                                                   "server_mac": [{
-                                                     field: "server_mac",
-                                                     operator: "equals",
-                                                     value: asset.mac.address,
-                                                   }]}} />},
+                                                    "server_mac": [{
+                                                      field: "server_mac",
+                                                      operator: "equals",
+                                                      value: asset.mac.address,
+                                                    }]}} />},
+                ]} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="TCP/UDP Sessions"  />
+
+                <ComponentCycle components={[
+                  {name: "Outbound Sessions", element:
+                      <AssetDetailsL4Sessions title="Outbound Sessions"
+                                              filters={{
+                                                "source_mac": [{
+                                                  field: "source_mac",
+                                                  operator: "equals",
+                                                  value: asset.mac.address,
+                                                }]}} />},
+                  {name: "Inbound Sessions", element:
+                      <AssetDetailsL4Sessions title="Outbound Sessions"
+                                              filters={{
+                                                "destination_mac": [{
+                                                  field: "destination_mac",
+                                                  operator: "equals",
+                                                  value: asset.mac.address,
+                                                }]}} />},
                 ]} />
               </div>
             </div>
