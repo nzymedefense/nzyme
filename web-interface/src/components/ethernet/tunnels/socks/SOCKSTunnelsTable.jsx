@@ -27,7 +27,7 @@ export default function SOCKSTunnelsTable(props) {
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
-  const perPage = 25;
+  const perPage = props.perPage ? props.perPage : 25;
   const [page, setPage] = useState(1);
 
   const columnSorting = (columnName) => {

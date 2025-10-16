@@ -13,8 +13,11 @@ import {Presets} from "../../shared/timerange/TimeRange";
 import AssetIpAddressesTable from "./AssetIpAddressesTable";
 import {notify} from "react-notify-toast";
 import AssetSourceProtocols from "./AssetSourceProtocols";
-import AssetDetailsDnsTransactions from "./AssetDetailsDnsTransactions";
+import AssetDetailsDNSTransactions from "./AssetDetailsDNSTransactions";
 import AssetActiveIndicator from "./AssetActiveIndicator";
+import AssetDetailsSSHSessions from "./AssetDetailsSSHSessions";
+import ComponentCycle from "../../shared/ComponentCycle";
+import AssetDetailsSOCKSTunnels from "./AssetDetailsSOCKSTunnels";
 
 const assetsService = new AssetsService();
 
@@ -218,7 +221,66 @@ export default function AssetDetailsPage() {
           </div>
         </div>
 
-        <AssetDetailsDnsTransactions asset={asset}/>
+        <AssetDetailsDNSTransactions asset={asset}/>
+
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Remote Access" />
+
+                <ComponentCycle components={[
+                    {name: "Outbound SSH Sessions", element:
+                          <AssetDetailsSSHSessions title="Outbound SSH Sessions"
+                                                   filters={{
+                                                     "client_mac": [{
+                                                       field: "client_mac",
+                                                       operator: "equals",
+                                                       value: asset.mac.address,
+                                                     }]}} />},
+                  {name: "Inbound SSH Sessions", element:
+                        <AssetDetailsSSHSessions title="Inbound SSH Sessions"
+                                                 filters={{
+                                                   "server_mac": [{
+                                                     field: "server_mac",
+                                                     operator: "equals",
+                                                     value: asset.mac.address,
+                                                   }]}} />},
+                ]} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Tunnels"  />
+
+                <ComponentCycle components={[
+                  {name: "Outbound SOCKS Tunnels", element:
+                        <AssetDetailsSOCKSTunnels title="Outbound SOCKS Tunnels"
+                                                 filters={{
+                                                   "client_mac": [{
+                                                     field: "client_mac",
+                                                     operator: "equals",
+                                                     value: asset.mac.address,
+                                                   }]}} />},
+                  {name: "Inbound SOCKS Tunnels", element:
+                        <AssetDetailsSOCKSTunnels title="Inbound SOCKS Tunnels"
+                                                  filters={{
+                                                   "server_mac": [{
+                                                     field: "server_mac",
+                                                     operator: "equals",
+                                                     value: asset.mac.address,
+                                                   }]}} />},
+                ]} />
+              </div>
+            </div>
+          </div>
+        </div>
+
       </React.Fragment>
   )
 

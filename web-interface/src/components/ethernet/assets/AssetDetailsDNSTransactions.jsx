@@ -7,7 +7,7 @@ import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import DNSTransactionsTable from "../dns/logs/DNSTransactionsTable";
 import ApiRoutes from "../../../util/ApiRoutes";
 
-export default function AssetDetailsDnsTransactions(props) {
+export default function AssetDetailsDNSTransactions(props) {
 
   const tapContext = useContext(TapContext);
 
