@@ -1,7 +1,7 @@
 package app.nzyme.core.ethernet.dns;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.database.generic.NumberBucketAggregationResult;
+import app.nzyme.core.database.generic.DateTimeNumberAggregationResult;
 import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.dns.db.*;
 import app.nzyme.core.ethernet.dns.filters.DnsFilters;
@@ -13,7 +13,6 @@ import app.nzyme.core.util.filters.Filters;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import jakarta.annotation.Nullable;
 import org.jdbi.v3.core.Handle;
 import org.joda.time.DateTime;
 
@@ -162,11 +161,11 @@ public class DNS {
         );
     }
 
-    public List<NumberBucketAggregationResult> getTransactionCountHistogram(String dnsType,
-                                                                            TimeRange timeRange,
-                                                                            Filters filters,
-                                                                            Bucketing.BucketingConfiguration bucketing,
-                                                                            List<UUID> taps) {
+    public List<DateTimeNumberAggregationResult> getTransactionCountHistogram(String dnsType,
+                                                                              TimeRange timeRange,
+                                                                              Filters filters,
+                                                                              Bucketing.BucketingConfiguration bucketing,
+                                                                              List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -186,7 +185,7 @@ public class DNS {
                         .bind("dns_type", dnsType)
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .mapTo(NumberBucketAggregationResult.class)
+                        .mapTo(DateTimeNumberAggregationResult.class)
                         .list()
         );
     }

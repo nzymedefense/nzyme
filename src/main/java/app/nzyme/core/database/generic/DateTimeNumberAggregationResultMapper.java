@@ -8,11 +8,11 @@ import org.joda.time.DateTime;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class NumberBucketAggregationResultMapper implements RowMapper<NumberBucketAggregationResult> {
+public class DateTimeNumberAggregationResultMapper implements RowMapper<DateTimeNumberAggregationResult> {
 
     @Override
-    public NumberBucketAggregationResult map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return NumberBucketAggregationResult.create(
+    public DateTimeNumberAggregationResult map(ResultSet rs, StatementContext ctx) throws SQLException {
+        return DateTimeNumberAggregationResult.create(
                 new DateTime(rs.getTimestamp("bucket")),
                 rs.getLong("value")
         );

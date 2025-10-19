@@ -9,37 +9,50 @@ import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 import {ARP_FILTER_FIELDS} from "../../ethernet/assets/arp/ARPFilterFields";
 import moment from "moment";
 import AssetHostnames from "../../ethernet/assets/AssetHostnames";
+import LoadingSpinner from "../../misc/LoadingSpinner";
+import {MODE_TABLE} from "./HistogramModes";
 
 function HistogramValue(props) {
 
   const highlightValue = props.highlightValue;
   const value = props.value;
+  const filterElement = props.filterElement;
 
   switch (value.type) {
     case "DOT11_MAC":
       if (value.metadata && value.metadata.type) {
-        return <AutomaticDot11MacAddressLink
-            highlighted={value.value === highlightValue}
-            mac={value.value}
-            type={value.metadata.type}
-            addressWithContext={value.metadata.mac} />
+        return (
+            <>
+              <AutomaticDot11MacAddressLink
+              highlighted={value.value === highlightValue}
+              mac={value.value}
+              type={value.metadata.type}
+              addressWithContext={value.metadata.mac} />
+
+              {filterElement}
+            </>
+        )
       } else {
-        return <span className={value.value === highlightValue ? "highlighted" : null}>{value.value}</span>
+        return <span className={value.value === highlightValue ? "highlighted" : null}>{value.value} {filterElement}</span>
       }
     case "ETHERNET_MAC":
       if (value.metadata) {
-        return <EthernetMacAddress addressWithContext={value.metadata} withAssetLink withAssetName />
+        return <EthernetMacAddress addressWithContext={value.metadata} filterElement={filterElement} withAssetLink withAssetName />
       } else {
-        return "XX"
+        return "[missing metadata]"
       }
     case "L4_ADDRESS":
-      return <L4Address address={value.value} />
+      return <L4Address address={value.value} filterElement={filterElement} />
+    case "L4_PORT":
+      return <><span className="machine-data">{value.value}</span> {filterElement}</>
+    case "BYTES":
+      return <>{numeral(value.value).format("0,0b")} {filterElement}</>
     case "DNS_TRANSACTION_LOG_LINK":
       return <a href={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS + "?filters=" + value.metadata.filter_parameters}>{numeral(value.value.title).format("0,0")}</a>
     case "INTEGER":
-      return <span className={value.value === highlightValue ? "highlighted" : null}>{numeral(value.value).format("0,0")}</span>
+      return <span className={value.value === highlightValue ? "highlighted" : null}>{numeral(value.value).format("0,0")} {filterElement}</span>
     case "GENERIC":
-      return <span className={value.value === highlightValue ? "highlighted" : null}>{value.value}</span>
+      return <span className={value.value === highlightValue ? "highlighted" : null}>{value.value} {filterElement}</span>
     case "DATETIME":
       return <span className={value.value === highlightValue ? "highlighted" : null} title={moment(value.value).format()}>
         {moment(value.value).fromNow()}

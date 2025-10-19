@@ -25,7 +25,9 @@ public abstract class TcpSessionReport {
     public abstract DateTime endTime();
     public abstract DateTime mostRecentSegmentTime();
     public abstract long segmentsCount();
+    public abstract long segmentsCountIncremental();
     public abstract long bytesCount();
+    public abstract long bytesCountIncremental();
     public abstract int synIpTtl();
     public abstract int synIpTos();
     public abstract boolean synIpDf();
@@ -52,7 +54,9 @@ public abstract class TcpSessionReport {
                                           @JsonProperty("end_time") DateTime endTime,
                                           @JsonProperty("most_recent_segment_time") DateTime mostRecentSegmentTime,
                                           @JsonProperty("segments_count") long segmentsCount,
+                                          @JsonProperty("segments_count_incremental") long segmentsCountIncremental,
                                           @JsonProperty("bytes_count") long bytesCount,
+                                          @JsonProperty("bytes_count_incremental") long bytesCountIncremental,
                                           @JsonProperty("syn_ip_ttl") int synIpTtl,
                                           @JsonProperty("syn_ip_tos") int synIpTos,
                                           @JsonProperty("syn_ip_df") boolean synIpDf,
@@ -75,7 +79,9 @@ public abstract class TcpSessionReport {
                 .endTime(endTime)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
                 .segmentsCount(segmentsCount)
+                .segmentsCountIncremental(segmentsCountIncremental)
                 .bytesCount(bytesCount)
+                .bytesCountIncremental(bytesCountIncremental)
                 .synIpTtl(synIpTtl)
                 .synIpTos(synIpTos)
                 .synIpDf(synIpDf)
@@ -117,7 +123,11 @@ public abstract class TcpSessionReport {
 
         public abstract Builder segmentsCount(long segmentCount);
 
+        public abstract Builder segmentsCountIncremental(long segmentCountIncremental);
+
         public abstract Builder bytesCount(long bytesCount);
+
+        public abstract Builder bytesCountIncremental(long bytesCountIncremental);
 
         public abstract Builder synIpTtl(int synIpTtl);
 

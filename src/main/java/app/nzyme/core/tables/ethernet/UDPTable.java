@@ -115,6 +115,11 @@ public class UDPTable implements DataTable {
                 "bytes_count = :bytes_count, segments_count = :segments_count, end_time = :end_time, " +
                 "most_recent_segment_time = :most_recent_segment_time WHERE id = :id");
 
+        long totalBytes = 0;
+        long totalInternalBytes = 0;
+        long totalDatagrams = 0;
+        long totalSessions = 0;
+        long totalInternalSessions = 0;
 
         for (UdpConversationReport conversation : conversations) {
             try {
@@ -193,10 +198,33 @@ public class UDPTable implements DataTable {
                             .bind("created_at", timestamp)
                             .add();
                 }
+
+                totalBytes += conversation.bytesCountIncremental();
+                totalDatagrams += conversation.datagramsCountIncremental();
+                totalSessions += 1;
+
+                if (sourceAddress.isSiteLocalAddress() && destinationAddress.isSiteLocalAddress()) {
+                    totalInternalSessions += 1;
+                    totalInternalBytes += conversation.bytesCountIncremental();
+                }
             } catch(Exception e) {
                 LOG.error("Could not handle UDP conversation.", e);
             }
         }
+
+        // Aggregated statistics.
+        handle.createUpdate("INSERT INTO l4_statistics(tap_uuid, bytes_udp, bytes_internal_udp, datagrams_udp, " +
+                        "sessions_udp, sessions_internal_udp, timestamp, created_at) VALUES(:tap_uuid, :bytes_udp, " +
+                        ":bytes_internal_udp, :datagrams_udp, :sessions_udp, :sessions_internal_udp, :timestamp, " +
+                        "NOW())")
+                .bind("tap_uuid", tap.uuid())
+                .bind("bytes_udp", totalBytes)
+                .bind("bytes_internal_udp", totalInternalBytes)
+                .bind("datagrams_udp", totalDatagrams)
+                .bind("sessions_udp", totalSessions)
+                .bind("sessions_internal_udp", totalInternalSessions)
+                .bind("timestamp", timestamp)
+                .execute();
 
         try {
             updateBatch.execute();

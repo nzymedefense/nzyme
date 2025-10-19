@@ -43,7 +43,7 @@ performance: {
 
 protocols: {
     tcp: {
-      session_timeout_seconds: 43200
+      session_timeout_seconds: 1800
     }
 }
 

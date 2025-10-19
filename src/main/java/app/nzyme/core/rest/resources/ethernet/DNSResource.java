@@ -1,7 +1,7 @@
 package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.database.generic.NumberBucketAggregationResult;
+import app.nzyme.core.database.generic.DateTimeNumberAggregationResult;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.dns.DNSTransaction;
 import app.nzyme.core.ethernet.dns.db.*;
@@ -18,11 +18,8 @@ import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import jakarta.inject.Inject;
@@ -300,7 +297,7 @@ public class DNSResource extends TapDataHandlingResource {
         Filters filters = parseFiltersQueryParameter(filtersParameter);
 
         Map<DateTime, Long> response = Maps.newHashMap();
-        for (NumberBucketAggregationResult r : nzyme.getEthernet().dns()
+        for (DateTimeNumberAggregationResult r : nzyme.getEthernet().dns()
                 .getTransactionCountHistogram("query", timeRange, filters, bucketing, taps)) {
 
             response.put(r.bucket(), r.count());

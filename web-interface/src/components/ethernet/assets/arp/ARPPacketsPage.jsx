@@ -62,7 +62,7 @@ export default function ARPPacketsPage() {
     setPackets(null);
     setStatistics(null);
 
-    assetsService.getArpStatistics(organizationId, tenantId, timeRange, filters, selectedTaps, setStatistics);
+    assetsService.getArpStatistics(timeRange, filters, selectedTaps, setStatistics);
 
     assetsService.findAllArpPackets(
         organizationId,

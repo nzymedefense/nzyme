@@ -21,7 +21,9 @@ public abstract class UdpConversationReport {
     public abstract String destinationAddress();
     public abstract int destinationPort();
     public abstract long bytesCount();
+    public abstract long bytesCountIncremental();
     public abstract long datagramsCount();
+    public abstract long datagramsCountIncremental();
     public abstract DateTime startTime();
     @Nullable
     public abstract DateTime endTime();
@@ -38,7 +40,9 @@ public abstract class UdpConversationReport {
                                                @JsonProperty("destination_address") String destinationAddress,
                                                @JsonProperty("destination_port") int destinationPort,
                                                @JsonProperty("bytes_count") long bytesCount,
+                                               @JsonProperty("bytes_count_incremental") long bytesCountIncremental,
                                                @JsonProperty("datagrams_count") long datagramsCount,
+                                               @JsonProperty("datagrams_count_incremental") long datagramsCountIncremental,
                                                @JsonProperty("start_time") DateTime startTime,
                                                @JsonProperty("end_time") DateTime endTime,
                                                @JsonProperty("most_recent_segment_time") DateTime mostRecentSegmentTime,
@@ -52,7 +56,9 @@ public abstract class UdpConversationReport {
                 .destinationAddress(destinationAddress)
                 .destinationPort(destinationPort)
                 .bytesCount(bytesCount)
+                .bytesCountIncremental(bytesCountIncremental)
                 .datagramsCount(datagramsCount)
+                .datagramsCountIncremental(datagramsCountIncremental)
                 .startTime(startTime)
                 .endTime(endTime)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
@@ -82,7 +88,11 @@ public abstract class UdpConversationReport {
 
         public abstract Builder bytesCount(long bytesCount);
 
+        public abstract Builder bytesCountIncremental(long bytesCountIncremental);
+
         public abstract Builder datagramsCount(long datagramsCount);
+
+        public abstract Builder datagramsCountIncremental(long datagramsCountIncremental);
 
         public abstract Builder startTime(DateTime startTime);
 

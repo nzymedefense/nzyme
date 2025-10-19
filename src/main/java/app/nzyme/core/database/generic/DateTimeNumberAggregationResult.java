@@ -4,12 +4,12 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 @AutoValue
-public abstract class NumberBucketAggregationResult {
+public abstract class DateTimeNumberAggregationResult {
 
     public abstract DateTime bucket();
     public abstract long count();
 
-    public static NumberBucketAggregationResult create(DateTime bucket, long count) {
+    public static DateTimeNumberAggregationResult create(DateTime bucket, long count) {
         return builder()
                 .bucket(bucket)
                 .count(count)
@@ -17,7 +17,7 @@ public abstract class NumberBucketAggregationResult {
     }
 
     public static Builder builder() {
-        return new AutoValue_NumberBucketAggregationResult.Builder();
+        return new AutoValue_DateTimeNumberAggregationResult.Builder();
     }
 
     @AutoValue.Builder
@@ -26,6 +26,6 @@ public abstract class NumberBucketAggregationResult {
 
         public abstract Builder count(long count);
 
-        public abstract NumberBucketAggregationResult build();
+        public abstract DateTimeNumberAggregationResult build();
     }
 }

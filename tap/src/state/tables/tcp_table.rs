@@ -39,7 +39,9 @@ pub struct TcpSession {
     pub end_time: Option<DateTime<Utc>>,
     pub most_recent_segment_time: DateTime<Utc>,
     pub segments_count: u64,
+    pub segments_count_incremental: u64, // New segments since last report.
     pub bytes_count: u64,
+    pub bytes_count_incremental: u64, // New bytes since last report.
     pub segments_client_to_server: BTreeMap<u32, Vec<u8>>,
     pub segments_server_to_client: BTreeMap<u32, Vec<u8>>,
     pub syn_ip_ttl: u8,
@@ -95,7 +97,9 @@ impl TcpTable {
                         session.most_recent_segment_time = segment.timestamp;
                         session.state = session_state.clone();
                         session.segments_count += 1;
+                        session.segments_count_incremental += 1;
                         session.bytes_count += segment.size as u64;
+                        session.bytes_count_incremental += segment.size as u64;
 
                         if session.end_time.is_none() && (session_state == ClosedFin || session_state == ClosedRst) {
                             session.end_time = Some(segment.timestamp);
@@ -146,7 +150,9 @@ impl TcpTable {
                             destination_address: segment.destination_address,
                             destination_port: segment.destination_port,
                             segments_count: 1,
+                            segments_count_incremental: 1,
                             bytes_count: segment.size as u64,
+                            bytes_count_incremental: segment.size as u64,
                             segments_client_to_server: BTreeMap::new(),
                             segments_server_to_client: BTreeMap::new(),
                             syn_ip_ttl: segment.ip_ttl,
@@ -232,6 +238,9 @@ impl TcpTable {
 
                 // Delete all timed out and closedfin/closedrst sessions in table.
                 retention_sweep(&mut sessions);
+
+                // Reset all incremental counters.
+                incremental_counter_sweep(&mut sessions);
             },
             Err(e) => {
                 error!("Could not acquire TCP sessions table mutex for report generation: {}", e);
@@ -358,4 +367,11 @@ fn timeout_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>, timeout:
 
 fn retention_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>) {
     sessions.retain(|_, s| s.state != ClosedTimeout && s.state != ClosedRst && s.state != ClosedFin)
+}
+
+fn incremental_counter_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>) {
+    for session in sessions.values_mut() {
+        session.segments_count_incremental = 0;
+        session.bytes_count_incremental = 0;
+    }
 }

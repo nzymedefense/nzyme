@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::net::IpAddr;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 use chrono::{DateTime, Duration, Utc};
 use log::{error, info};
 use strum_macros::Display;
@@ -11,6 +11,7 @@ use crate::link::reports::udp_conversations_report;
 use crate::metrics::Metrics;
 use crate::protocols::detection::l7_tagger::L7Tag;
 use crate::protocols::parsers::l4_key::L4Key;
+use crate::state::tables::tcp_table::TcpSession;
 
 pub struct UdpTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
@@ -20,7 +21,6 @@ pub struct UdpTable {
 
 #[derive(Debug)]
 pub struct UdpConversation {
-    pub conversation_key: L4Key,
     pub state: UdpConversationState,
     pub source_mac: Option<String>,
     pub destination_mac: Option<String>,
@@ -32,7 +32,9 @@ pub struct UdpConversation {
     pub end_time: Option<DateTime<Utc>>,
     pub most_recent_segment_time: DateTime<Utc>,
     pub datagrams_count: u64,
+    pub datagrams_count_incremental: u64, // New datagrams since last report.
     pub bytes_count: u64,
+    pub bytes_count_incremental: u64, // New bytes since last report.
     pub datagrams: Vec<Arc<Datagram>>,
     pub tags: Vec<L7Tag>
 }
@@ -63,7 +65,9 @@ impl UdpTable {
 
                         c.most_recent_segment_time = datagram.timestamp;
                         c.datagrams_count += 1;
+                        c.datagrams_count_incremental += 1;
                         c.bytes_count += datagram.payload.len() as u64;
+                        c.bytes_count_incremental += datagram.payload.len() as u64;
                         c.datagrams.push(datagram);
 
                         timer.stop();
@@ -80,7 +84,6 @@ impl UdpTable {
                         conversations.insert(
                             datagram.session_key.clone(),
                             UdpConversation {
-                                conversation_key: datagram.session_key.clone(),
                                 state: UdpConversationState::Active,
                                 source_mac: datagram.source_mac.clone(),
                                 destination_mac: datagram.destination_mac.clone(),
@@ -92,7 +95,9 @@ impl UdpTable {
                                 end_time: None,
                                 most_recent_segment_time: datagram.timestamp,
                                 datagrams_count: 1,
+                                datagrams_count_incremental: 1,
                                 bytes_count: datagram.payload.len() as u64,
+                                bytes_count_incremental: datagram.payload.len() as u64,
                                 datagrams: vec![datagram],
                                 tags: vec![],
                             }
@@ -155,6 +160,9 @@ impl UdpTable {
 
                 // Delete all closed conversations.
                 conversations.retain(|_key, c| c.state != UdpConversationState::Closed);
+
+                // Reset all incremental counters.
+                incremental_counter_sweep(&mut conversations);
             },
             Err(e) => {
                 error!("Could not acquire UDP conversations table mutex for report \
@@ -181,4 +189,11 @@ impl UdpTable {
         }
     }
 
+}
+
+fn incremental_counter_sweep(sessions: &mut MutexGuard<HashMap<L4Key, UdpConversation>>) {
+    for session in sessions.values_mut() {
+        session.datagrams_count_incremental = 0;
+        session.bytes_count_incremental = 0;
+    }
 }

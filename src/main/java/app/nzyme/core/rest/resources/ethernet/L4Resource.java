@@ -1,29 +1,47 @@
 package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.assets.db.AssetEntry;
+import app.nzyme.core.context.db.MacAddressContextEntry;
+import app.nzyme.core.database.NumberNumberAggregationResult;
 import app.nzyme.core.database.OrderDirection;
+import app.nzyme.core.database.generic.StringNumberAggregationResult;
 import app.nzyme.core.ethernet.l4.L4;
+import app.nzyme.core.ethernet.l4.db.L4Numbers;
 import app.nzyme.core.ethernet.l4.db.L4Session;
+import app.nzyme.core.ethernet.l4.db.L4StatisticsBucket;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.ethernet.*;
+import app.nzyme.core.rest.responses.ethernet.l4.L4NumbersResponse;
 import app.nzyme.core.rest.responses.ethernet.l4.L4SessionDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.l4.L4SessionsListResponse;
+import app.nzyme.core.rest.responses.ethernet.l4.L4StatisticsBucketResponse;
+import app.nzyme.core.rest.responses.shared.HistogramValueStructureResponse;
+import app.nzyme.core.rest.responses.shared.HistogramValueType;
+import app.nzyme.core.rest.responses.shared.TwoColumnTableHistogramResponse;
+import app.nzyme.core.rest.responses.shared.TwoColumnTableHistogramValueResponse;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.net.InetAddresses;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/ethernet/l4")
@@ -90,6 +108,131 @@ public class L4Resource extends TapDataHandlingResource  {
         }
 
         return Response.ok(L4SessionsListResponse.create(total, sessions)).build();
+    }
+
+    @GET
+    @Path("/sessions/statistics")
+    public Response sessionsStatistics(@Context SecurityContext sc,
+                                       @QueryParam("time_range") @Valid String timeRangeParameter,
+                                       @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        Map<DateTime, L4StatisticsBucketResponse> statistics = Maps.newHashMap();
+        for (L4StatisticsBucket b : nzyme.getEthernet().l4().getStatistics(timeRange, bucketing, taps)) {
+            statistics.put(b.bucket(), L4StatisticsBucketResponse.create(
+                    b.bytesTcp(),
+                    b.bytesInternalTcp(),
+                    b.bytesUdp(),
+                    b.bytesInternalUdp(),
+                    b.segmentsTcp(),
+                    b.datagramsUdp(),
+                    b.sessionsTcp(),
+                    b.sessionsUdp(),
+                    b.sessionsInternalTcp(),
+                    b.sessionsInternalUdp()
+            ));
+        }
+
+        L4Numbers totals = nzyme.getEthernet().l4().getTotals(timeRange, taps);
+        L4NumbersResponse numbers = L4NumbersResponse.create(
+                totals.bytesTcp(),
+                totals.bytesInternalTcp(),
+                totals.bytesUdp(),
+                totals.bytesInternalUdp(),
+                totals.segmentsTcp(),
+                totals.datagramsUdp()
+        );
+
+        Map<String, Object> response = Maps.newHashMap();
+        response.put("statistics", statistics);
+        response.put("numbers", numbers);
+
+        return Response.ok(response).build();
+    }
+
+    @GET
+    @Path("/sessions/histograms/sources/traffic/top")
+    public Response topTrafficSources(@Context SecurityContext sc,
+                                      @QueryParam("organization_id") UUID organizationId,
+                                      @QueryParam("tenant_id") UUID tenantId,
+                                      @QueryParam("time_range") String timeRangeParameter,
+                                      @QueryParam("filters") String filtersParameter,
+                                      @QueryParam("limit") int limit,
+                                      @QueryParam("offset") int offset,
+                                      @QueryParam("taps") String tapIds) {
+
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total = nzyme.getEthernet().l4().countTopTrafficSources(timeRange, filters, taps);
+
+        List<TwoColumnTableHistogramValueResponse> values = Lists.newArrayList();
+        for (StringNumberAggregationResult port : nzyme.getEthernet().l4()
+                .getTopTrafficSources(timeRange, filters, limit, offset, taps)) {
+            Optional<MacAddressContextEntry> sourceContext = nzyme.getContextService().findMacAddressContext(
+                    port.key(),
+                    organizationId,
+                    tenantId
+            );
+
+            Optional<AssetEntry> sourceAsset = nzyme.getAssetsManager()
+                    .findAssetByMac(port.key(), organizationId, tenantId);
+
+            values.add(TwoColumnTableHistogramValueResponse.create(
+                    HistogramValueStructureResponse.create(port.key(),
+                            HistogramValueType.ETHERNET_MAC,
+                            EthernetMacAddressResponse.create(
+                                    port.key(),
+                                    nzyme.getOuiService().lookup(port.key()).orElse(null),
+                                    sourceAsset.map(AssetEntry::uuid).orElse(null),
+                                    sourceAsset.map(AssetEntry::isActive).orElse(null),
+                                    sourceContext.map(ctx ->
+                                            EthernetMacAddressContextResponse.create(
+                                                    ctx.name(),
+                                                    ctx.description()
+                                            )
+                                    ).orElse(null)
+                            )
+                    ),
+                    HistogramValueStructureResponse.create(port.value(), HistogramValueType.BYTES, null)
+            ));
+        }
+
+        return Response.ok(TwoColumnTableHistogramResponse.create(total, true, values)).build();
+    }
+
+    @GET
+    @Path("/sessions/histograms/ports/destination/non-ephemeral/bottom")
+    public Response leastCommonNonEphemeralDestinationPorts(@Context SecurityContext sc,
+                                                            @QueryParam("time_range") String timeRangeParameter,
+                                                            @QueryParam("filters") String filtersParameter,
+                                                            @QueryParam("limit") int limit,
+                                                            @QueryParam("offset") int offset,
+                                                            @QueryParam("taps") String tapIds) {
+
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        long total = nzyme.getEthernet().l4().countDestinationPorts(timeRange, filters, taps);
+
+        List<TwoColumnTableHistogramValueResponse> values = Lists.newArrayList();
+        for (NumberNumberAggregationResult port : nzyme.getEthernet().l4()
+                .getLeastCommonNonEphemeralDestinationPorts(timeRange, filters, limit, offset, taps)) {
+            values.add(TwoColumnTableHistogramValueResponse.create(
+                    HistogramValueStructureResponse.create(port.key(), HistogramValueType.L4_PORT, null),
+                    HistogramValueStructureResponse.create(port.value(), HistogramValueType.INTEGER, null)
+            ));
+        }
+
+        return Response.ok(TwoColumnTableHistogramResponse.create(total, false, values)).build();
     }
 
     @GET

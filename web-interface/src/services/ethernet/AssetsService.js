@@ -3,25 +3,29 @@ import RESTClient from "../../util/RESTClient";
 export default class AssetsService {
 
   findAllAssets(organizationId, tenantId, timeRange, orderColumn, orderDirection, filters, limit, offset, setAssets) {
-    RESTClient.get("/ethernet/assets", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, filters: filters, limit: limit, offset: offset },
+    RESTClient.get("/ethernet/assets", {
+      organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, filters: filters, limit: limit, offset: offset },
         (response) => setAssets(response.data)
     )
   }
 
   getActiveAssetsHistogram(organizationId, tenantId, timeRange, filters, setHistogram) {
-    RESTClient.get("/ethernet/assets/active/histogram", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters },
+    RESTClient.get("/ethernet/assets/active/histogram", {
+      organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters },
       (response) => setHistogram(response.data)
     )
   }
 
   getLatestAssetsHistogram(organizationId, tenantId, timeRange, filters, limit, offset, setHistogram) {
-    RESTClient.get("/ethernet/assets/latest/histogram", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset },
+    RESTClient.get("/ethernet/assets/latest/histogram", {
+      organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset },
       (response) => setHistogram(response.data)
     )
   }
 
   getRecentlyDisappearedAssetsHistogram(organizationId, tenantId, timeRange, filters, limit, offset, setHistogram) {
-    RESTClient.get("/ethernet/assets/disappeared/histogram", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset },
+    RESTClient.get("/ethernet/assets/disappeared/histogram", {
+      organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset },
       (response) => setHistogram(response.data)
     )
   }
@@ -33,7 +37,8 @@ export default class AssetsService {
   }
 
   findAssetHostnames(assetId, organizationId, tenantId, timeRange, orderColumn, orderDirection, limit, offset, setHostnames) {
-    RESTClient.get(`/ethernet/assets/show/${assetId}/hostnames`, { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, limit: limit, offset: offset },
+    RESTClient.get(`/ethernet/assets/show/${assetId}/hostnames`, {
+      organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, limit: limit, offset: offset },
         (response) => setHostnames(response.data)
     )
   }
@@ -43,7 +48,8 @@ export default class AssetsService {
   }
 
   findAssetIpAddresses(assetId, organizationId, tenantId, timeRange, orderColumn, orderDirection, limit, offset, setIpAddresses) {
-    RESTClient.get(`/ethernet/assets/show/${assetId}/ip_addresses`, { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, limit: limit, offset: offset },
+    RESTClient.get(`/ethernet/assets/show/${assetId}/ip_addresses`, {
+      organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, limit: limit, offset: offset },
         (response) => setIpAddresses(response.data)
     )
   }
@@ -55,7 +61,8 @@ export default class AssetsService {
   findAllDHCPTransactions(organizationId, tenantId, timeRange, orderColumn, orderDirection, filters, taps, limit, offset, setTransactions) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/ethernet/dhcp/transactions", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, filters: filters, taps: tapsList, limit: limit, offset: offset },
+    RESTClient.get("/ethernet/dhcp/transactions", {
+      organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, order_column: orderColumn, order_direction: orderDirection, filters: filters, taps: tapsList, limit: limit, offset: offset },
         (response) => setTransactions(response.data)
     )
   }
@@ -63,7 +70,8 @@ export default class AssetsService {
   findDHCPTransaction(organizationId, tenantId, transactionId, transactionTime, taps, setTransaction) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get(`/ethernet/dhcp/transactions/show/${transactionId}`, { organization_id: organizationId, tenant_id: tenantId, transaction_time: transactionTime, taps: tapsList },
+    RESTClient.get(`/ethernet/dhcp/transactions/show/${transactionId}`, {
+      organization_id: organizationId, tenant_id: tenantId, transaction_time: transactionTime, taps: tapsList },
         (response) => setTransaction(response.data)
     )
   }
@@ -76,10 +84,10 @@ export default class AssetsService {
     )
   }
 
-  getArpStatistics(organizationId, tenantId, timeRange, filters, taps, setStatistics) {
+  getArpStatistics(timeRange, filters, taps, setStatistics) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/ethernet/arp/statistics", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, taps: tapsList },
+    RESTClient.get("/ethernet/arp/statistics", { time_range: timeRange, filters: filters, taps: tapsList },
         (response) => setStatistics(response.data)
     )
   }
@@ -87,7 +95,8 @@ export default class AssetsService {
   getArpRequesterPairs(organizationId, tenantId, timeRange, filters, limit, offset, taps, setRequesterPairs) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/ethernet/arp/histograms/requesters/pairs", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset, taps: tapsList },
+    RESTClient.get("/ethernet/arp/histograms/requesters/pairs", {
+      organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset, taps: tapsList },
         (response) => setRequesterPairs(response.data)
     )
   }
@@ -95,7 +104,8 @@ export default class AssetsService {
   getArpResponderPairs(organizationId, tenantId, timeRange, filters, limit, offset, taps, setRequesterPairs) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/ethernet/arp/histograms/responders/pairs", { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset, taps: tapsList },
+    RESTClient.get("/ethernet/arp/histograms/responders/pairs", {
+      organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, filters: filters, limit: limit, offset: offset, taps: tapsList },
         (response) => setRequesterPairs(response.data)
     )
   }

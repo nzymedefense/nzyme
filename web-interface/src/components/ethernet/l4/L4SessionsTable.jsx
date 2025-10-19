@@ -117,10 +117,8 @@ export default function L4SessionsTable(props) {
             <th>Type {columnSorting("l4_type")}</th>
             <th>Source MAC {columnSorting("source_mac")}</th>
             <th>Source Address {columnSorting("source_address")}</th>
-            <th title="Source Name">Src. Name</th>
             <th>Destination MAC {columnSorting("destination_mac")}</th>
             <th>Destination Address {columnSorting("destination_address")}</th>
-            <th title="Destination Name">Dest. Name</th>
             <th>Bytes {columnSorting("bytes_count")}</th>
             <th>Last Activity {columnSorting("most_recent_segment_time")}</th>
           </tr>
@@ -158,7 +156,7 @@ export default function L4SessionsTable(props) {
                             filterElement={macFilter(s.source.mac, "source_mac")}
                             addressWithContext={s.source.mac}
                             assetId={s.source && s.source.asset_id ? s.source.asset_id : null}
-                            withAssetLink />} />
+                            withAssetLink withAssetName />} />
                   </td>
                   <td>
                     <L4Address address={s.source}
@@ -167,14 +165,13 @@ export default function L4SessionsTable(props) {
                                                                field="source_address"
                                                                value={s.source.address} />}/>
                   </td>
-                  <td><AssetName addressWithContext={s.source ? s.source.mac : null} /></td>
                   <td>
                     <InternalAddressOnlyWrapper
                         address={s.destination}
                         inner={<EthernetMacAddress
                             filterElement={macFilter(s.destination.mac, "destination_mac")}
                             addressWithContext={s.destination.mac}
-                            withAssetLink />} />
+                            withAssetLink withAssetName/>} />
                   </td>
                   <td>
                     <L4Address address={s.destination}
@@ -183,7 +180,6 @@ export default function L4SessionsTable(props) {
                                                                field="destination_address"
                                                                value={s.destination.address} />}/>
                   </td>
-                  <td><AssetName addressWithContext={s.destination ? s.destination.mac : null} /></td>
                   <td>
                     {numeral(s.bytes_count).format("0b")}
                     <FilterValueIcon setFilters={setFilters}
@@ -191,8 +187,8 @@ export default function L4SessionsTable(props) {
                                      field="bytes_count"
                                      value={s.bytes_count} />
                   </td>
-                  <td title={moment(s.most_recent_segment_time).format()}>
-                    {moment(s.most_recent_segment_time).fromNow()}
+                  <td title={moment(s.most_recent_segment_time).fromNow()}>
+                    {moment(s.most_recent_segment_time).format()}
                   </td>
                 </tr>
             )

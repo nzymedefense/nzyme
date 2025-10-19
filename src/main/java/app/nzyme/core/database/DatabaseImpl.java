@@ -11,7 +11,8 @@ import app.nzyme.core.context.db.MacAddressTransparentContextEntryMapper;
 import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntryMapper;
 import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntryMapper;
 import app.nzyme.core.database.generic.LatLonResultMapper;
-import app.nzyme.core.database.generic.NumberBucketAggregationResultMapper;
+import app.nzyme.core.database.generic.DateTimeNumberAggregationResultMapper;
+import app.nzyme.core.database.generic.StringNumberAggregationResultMapper;
 import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntryMapper;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntryMapper;
 import app.nzyme.core.detection.alerts.db.DetectionAlertTimelineEntryMapper;
@@ -29,7 +30,9 @@ import app.nzyme.core.ethernet.arp.db.ArpPacketEntryMapper;
 import app.nzyme.core.ethernet.arp.db.ArpSenderTargetCountPairMapper;
 import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionMapper;
 import app.nzyme.core.ethernet.dns.db.*;
+import app.nzyme.core.ethernet.l4.db.L4NumbersMapper;
 import app.nzyme.core.ethernet.l4.db.L4SessionMapper;
+import app.nzyme.core.ethernet.l4.db.L4StatisticsBucketMapper;
 import app.nzyme.core.ethernet.socks.db.SocksTunnelEntryMapper;
 import app.nzyme.core.ethernet.ssh.db.SSHSessionEntryMapper;
 import app.nzyme.core.ethernet.l4.tcp.db.TcpSessionEntryMapper;
@@ -170,7 +173,7 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new DNSLogEntryMapper())
                 .registerRowMapper(new SocksTunnelEntryMapper())
                 .registerRowMapper(new SSHSessionEntryMapper())
-                .registerRowMapper(new NumberBucketAggregationResultMapper())
+                .registerRowMapper(new DateTimeNumberAggregationResultMapper())
                 .registerRowMapper(new TimerEntryMapper())
                 .registerRowMapper(new BluetoothDeviceEntryMapper())
                 .registerRowMapper(new BluetoothDeviceSummaryMapper())
@@ -205,7 +208,11 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new GaugeEntryAverageMapper())
                 .registerRowMapper(new TapMetricsGaugeAggregationMapper())
                 .registerRowMapper(new TapMetricsTimerAggregationMapper())
-                .registerRowMapper(new EngagementLogEntryMapper());
+                .registerRowMapper(new EngagementLogEntryMapper())
+                .registerRowMapper(new L4StatisticsBucketMapper())
+                .registerRowMapper(new L4NumbersMapper())
+                .registerRowMapper(new NumberNumberAggregationResultMapper())
+                .registerRowMapper(new StringNumberAggregationResultMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());
@@ -425,6 +432,12 @@ public class DatabaseImpl implements Database {
                         "l4_sessions",
                         "SELECT COUNT(*) FROM l4_sessions WHERE tap_uuid IN (<taps>)",
                         "DELETE FROM l4_sessions WHERE most_recent_segment_time < :since AND tap_uuid IN (<taps>)"
+                ));
+
+                tables.add(new DataTableInformation(
+                        "l4_statistics",
+                        "SELECT COUNT(*) FROM l4_statistics WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM l4_statistics WHERE timestamp < :since AND tap_uuid IN (<taps>)"
                 ));
 
                 tables.add(new DataTableInformation(

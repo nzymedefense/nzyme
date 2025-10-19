@@ -7193,4 +7193,79 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="create_l4_statistics" author="lennartkoopmann">
+        <createTable tableName="l4_statistics">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="bytes_tcp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="bytes_udp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="segments_tcp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="segments_udp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="sessions_tcp" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="sessions_udp" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="sessions_internal_tcp" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="sessions_internal_udp" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="timestamp" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="rename_udp_segments_to_datagrams" author="lennartkoopmann">
+        <renameColumn tableName="l4_statistics" oldColumnName="segments_udp" newColumnName="datagrams_udp" />
+    </changeSet>
+
+    <changeSet id="add_l4_statistics_indices" author="lennartkoopmann">
+        <createIndex tableName="l4_statistics" indexName="l4_statistics_lookup">
+            <column name="tap_uuid" />
+            <column name="timestamp" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add_l4_statistics_internal_bytes" author="lennartkoopmann">
+        <addColumn tableName="l4_statistics">
+            <column name="bytes_internal_tcp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="bytes_internal_udp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

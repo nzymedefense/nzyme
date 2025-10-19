@@ -9,6 +9,8 @@ import {MODE_BAR_CHART, MODE_EXPORT, MODE_TABLE} from "./HistogramModes";
 import {EXPORT_TYPE_CSV, EXPORT_TYPE_JSON, EXPORT_TYPE_TEXT} from "./ExportTypes";
 import HistogramValue from "./HistogramValue";
 import Store from "../../../util/Store";
+import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
+import {L4_SESSIONS_FILTER_FIELDS} from "../../ethernet/l4/L4SessionFilterFields";
 
 function TwoColumnHistogram(props) {
 
@@ -17,6 +19,8 @@ function TwoColumnHistogram(props) {
   const customChartMarginLeft = props.customChartMarginLeft;
   const limit = props.limit;
   const setLimit = props.setLimit;
+
+  const columnFilterElements = props.columnFilterElements;
 
   const [mode, setMode] = useState(MODE_TABLE);
 
@@ -50,6 +54,17 @@ function TwoColumnHistogram(props) {
                             count={data.total} />
   }
 
+  const filterElement = (element, value) => {
+    if (!element) {
+      return null;
+    }
+
+    return <FilterValueIcon setFilters={element.setFilters}
+                            fields={element.fields}
+                            field={element.field}
+                            value={value.value} />
+  }
+
   const formatExport = () => {
     const formatted = [];
 
@@ -80,7 +95,6 @@ function TwoColumnHistogram(props) {
 
     return result;
   }
-
 
   const exportData = () => {
     switch (exportType) {
@@ -123,8 +137,14 @@ function TwoColumnHistogram(props) {
               return (
                   <tr key={i}>
                     <td className="text-muted">{i+1}</td>
-                    <td><HistogramValue value={d.column_one} /></td>
-                    <td><HistogramValue value={d.column_two} /></td>
+                    <td>
+                      <HistogramValue value={d.column_one}
+                                      filterElement={filterElement(columnFilterElements[0], d.column_one)} />
+                    </td>
+                    <td>
+                      <HistogramValue value={d.column_two}
+                                      filterElement={filterElement(columnFilterElements[1], d.column_two)} />
+                    </td>
                   </tr>
               )
             })}

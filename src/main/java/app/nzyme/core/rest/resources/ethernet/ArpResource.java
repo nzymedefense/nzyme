@@ -98,8 +98,6 @@ public class ArpResource extends TapDataHandlingResource {
     @GET
     @Path("/statistics")
     public Response statistics(@Context SecurityContext sc,
-                               @QueryParam("organization_id") UUID organizationId,
-                               @QueryParam("tenant_id") UUID tenantId,
                                @QueryParam("time_range") @Valid String timeRangeParameter,
                                @QueryParam("filters") String filtersParameter,
                                @QueryParam("taps") String tapIds) {
@@ -109,10 +107,6 @@ public class ArpResource extends TapDataHandlingResource {
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Filters filters = parseFiltersQueryParameter(filtersParameter);
-
-        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
 
         Map<DateTime, ArpStatisticsBucketResponse> statistics = Maps.newHashMap();
         for (ARPStatisticsBucket s : nzyme.getEthernet().arp().getStatistics(timeRange, bucketing, filters, taps)) {
