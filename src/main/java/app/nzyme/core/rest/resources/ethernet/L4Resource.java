@@ -5,6 +5,7 @@ import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.NumberNumberAggregationResult;
 import app.nzyme.core.database.OrderDirection;
+import app.nzyme.core.database.generic.NumberNumberNumberAggregationResult;
 import app.nzyme.core.database.generic.StringNumberAggregationResult;
 import app.nzyme.core.ethernet.l4.L4;
 import app.nzyme.core.ethernet.l4.db.L4Numbers;
@@ -17,10 +18,7 @@ import app.nzyme.core.rest.responses.ethernet.l4.L4NumbersResponse;
 import app.nzyme.core.rest.responses.ethernet.l4.L4SessionDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.l4.L4SessionsListResponse;
 import app.nzyme.core.rest.responses.ethernet.l4.L4StatisticsBucketResponse;
-import app.nzyme.core.rest.responses.shared.HistogramValueStructureResponse;
-import app.nzyme.core.rest.responses.shared.HistogramValueType;
-import app.nzyme.core.rest.responses.shared.TwoColumnTableHistogramResponse;
-import app.nzyme.core.rest.responses.shared.TwoColumnTableHistogramValueResponse;
+import app.nzyme.core.rest.responses.shared.*;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.Filters;
@@ -205,7 +203,7 @@ public class L4Resource extends TapDataHandlingResource  {
             ));
         }
 
-        return Response.ok(TwoColumnTableHistogramResponse.create(total, true, values)).build();
+        return Response.ok(TwoColumnTableHistogramResponse.create(total, false, values)).build();
     }
 
     @GET
@@ -223,16 +221,18 @@ public class L4Resource extends TapDataHandlingResource  {
 
         long total = nzyme.getEthernet().l4().countDestinationPorts(timeRange, filters, taps);
 
-        List<TwoColumnTableHistogramValueResponse> values = Lists.newArrayList();
-        for (NumberNumberAggregationResult port : nzyme.getEthernet().l4()
+        List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
+        for (NumberNumberNumberAggregationResult port : nzyme.getEthernet().l4()
                 .getLeastCommonNonEphemeralDestinationPorts(timeRange, filters, limit, offset, taps)) {
-            values.add(TwoColumnTableHistogramValueResponse.create(
+            values.add(ThreeColumnTableHistogramValueResponse.create(
                     HistogramValueStructureResponse.create(port.key(), HistogramValueType.L4_PORT, null),
-                    HistogramValueStructureResponse.create(port.value(), HistogramValueType.INTEGER, null)
+                    HistogramValueStructureResponse.create(port.value1(), HistogramValueType.INTEGER, null),
+                    HistogramValueStructureResponse.create(port.value2(), HistogramValueType.BYTES, null),
+                    String.valueOf(port.key())
             ));
         }
 
-        return Response.ok(TwoColumnTableHistogramResponse.create(total, false, values)).build();
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, false, values)).build();
     }
 
     @GET

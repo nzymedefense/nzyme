@@ -40,7 +40,8 @@ pub struct TcpSession {
     pub most_recent_segment_time: DateTime<Utc>,
     pub segments_count: u64,
     pub segments_count_incremental: u64, // New segments since last report.
-    pub bytes_count: u64,
+    pub bytes_count_rx: u64,
+    pub bytes_count_tx: u64,
     pub bytes_count_incremental: u64, // New bytes since last report.
     pub segments_client_to_server: BTreeMap<u32, Vec<u8>>,
     pub segments_server_to_client: BTreeMap<u32, Vec<u8>>,

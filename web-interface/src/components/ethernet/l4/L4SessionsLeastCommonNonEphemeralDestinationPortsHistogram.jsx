@@ -3,8 +3,8 @@ import L4Service from "../../../services/ethernet/L4Service";
 import {DEFAULT_LIMIT} from "../../widgets/LimitSelector";
 import {TapContext} from "../../../App";
 import GenericWidgetLoadingSpinner from "../../widgets/GenericWidgetLoadingSpinner";
-import TwoColumnHistogram from "../../widgets/histograms/TwoColumnHistogram";
 import {L4_SESSIONS_FILTER_FIELDS} from "./L4SessionFilterFields";
+import ThreeColumnHistogram from "../../widgets/histograms/ThreeColumnHistogram";
 
 const l4Service = new L4Service();
 
@@ -33,12 +33,13 @@ export default function L4SessionsLeastCommonNonEphemeralDestinationPortsHistogr
     )
   }
 
-  return <TwoColumnHistogram data={data}
+  return <ThreeColumnHistogram data={data}
                              columnFilterElements={[
                                {field: "destination_port", fields: L4_SESSIONS_FILTER_FIELDS, setFilters: setFilters},
+                               {field: "bytes", fields: L4_SESSIONS_FILTER_FIELDS, setFilters: setFilters},
                                null
                              ]}
-                             columnTitles={["Port", "Sessions Count"]}
+                             columnTitles={["Port", "Sessions", "Traffic"]}
                              limit={limit}
                              setLimit={setLimit} />
 

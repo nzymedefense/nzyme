@@ -3,6 +3,7 @@ package app.nzyme.core.ethernet.l4;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.NumberNumberAggregationResult;
 import app.nzyme.core.database.OrderDirection;
+import app.nzyme.core.database.generic.NumberNumberNumberAggregationResult;
 import app.nzyme.core.database.generic.StringNumberAggregationResult;
 import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.l4.db.L4Numbers;
@@ -267,11 +268,11 @@ public class L4 {
         );
     }
 
-    public List<NumberNumberAggregationResult> getLeastCommonNonEphemeralDestinationPorts(TimeRange timeRange,
-                                                                                          Filters filters,
-                                                                                          int limit,
-                                                                                          int offset,
-                                                                                          List<UUID> taps) {
+    public List<NumberNumberNumberAggregationResult> getLeastCommonNonEphemeralDestinationPorts(TimeRange timeRange,
+                                                                                                Filters filters,
+                                                                                                int limit,
+                                                                                                int offset,
+                                                                                                List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -279,20 +280,21 @@ public class L4 {
         FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT destination_port AS key, COUNT(*) AS value " +
+                handle.createQuery("SELECT destination_port AS key, COUNT(*) AS value1, " +
+                                "SUM(bytes_count) AS value2 " +
                                 "FROM l4_sessions WHERE destination_port < 32768 " +
                                 "AND most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
                                 "GROUP BY destination_port HAVING 1=1 " + filterFragment.havingSql() + " " +
-                                "ORDER BY value ASC LIMIT :limit OFFSET :offset")
+                                "ORDER BY value1 ASC LIMIT :limit OFFSET :offset")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bind("limit", limit)
                         .bind("offset", offset)
                         .bindMap(filterFragment.bindings())
                         .bindList("taps", taps)
-                        .mapTo(NumberNumberAggregationResult.class)
+                        .mapTo(NumberNumberNumberAggregationResult.class)
                         .list()
         );
     }
