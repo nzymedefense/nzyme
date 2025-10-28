@@ -182,19 +182,6 @@ export default function L4OverviewPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Inbound Connections to Ephemeral Ports"
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       refreshAction={() => setRevision(new Date())} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
                 <CardTitleWithControls title="Longest Sessions"
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange}

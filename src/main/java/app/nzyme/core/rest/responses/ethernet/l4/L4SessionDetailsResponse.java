@@ -44,10 +44,13 @@ public abstract class L4SessionDetailsResponse {
     @JsonProperty("most_recent_segment_time")
     public abstract DateTime mostRecentSegmentTime();
 
+    @JsonProperty("duration_ms")
+    public abstract long durationMs();
+
     @JsonProperty("state")
     public abstract String state();
 
-    public static L4SessionDetailsResponse create(String sessionKey, L4AddressTypeResponse l4Type, L4AddressResponse source, L4AddressResponse destination, long bytesCount, long bytesRxCount, long bytesTxCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, String state) {
+    public static L4SessionDetailsResponse create(String sessionKey, L4AddressTypeResponse l4Type, L4AddressResponse source, L4AddressResponse destination, long bytesCount, long bytesRxCount, long bytesTxCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, long durationMs, String state) {
         return builder()
                 .sessionKey(sessionKey)
                 .l4Type(l4Type)
@@ -60,6 +63,7 @@ public abstract class L4SessionDetailsResponse {
                 .startTime(startTime)
                 .endTime(endTime)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
+                .durationMs(durationMs)
                 .state(state)
                 .build();
     }
@@ -91,6 +95,8 @@ public abstract class L4SessionDetailsResponse {
         public abstract Builder endTime(DateTime endTime);
 
         public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
+
+        public abstract Builder durationMs(long durationMs);
 
         public abstract Builder state(String state);
 

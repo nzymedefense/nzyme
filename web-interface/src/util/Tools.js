@@ -129,6 +129,22 @@ export function calculateConnectionDuration(connectionStatus, establishedAt, ter
   }
 }
 
+export function formatDurationMs(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const milliseconds = Math.floor(ms % 1000);
+
+  const parts = [];
+  if (hours) parts.push(`${hours}h`);
+  if (minutes) parts.push(`${minutes}m`);
+  if (seconds) parts.push(`${seconds}s`);
+  if (milliseconds && parts.length === 0) parts.push(`${milliseconds}ms`);
+
+  return parts.join(' ') || '0ms';
+}
+
 export function convertGenericChartData(data) {
   const result = {}
 

@@ -38,7 +38,8 @@ public class L4 {
         BYTES_TX_COUNT("bytes_tx_count"),
         START_TIME("start_time"),
         END_TIME("end_time"),
-        MOST_RECENT_SEGMENT_TIME("most_recent_segment_time");
+        MOST_RECENT_SEGMENT_TIME("most_recent_segment_time"),
+        DURATION("duration_ms");
 
         private final String columnName;
 
@@ -121,6 +122,7 @@ public class L4 {
                                 "MAX(segments_count) AS segments_count, " +
                                 "MIN(start_time) AS start_time, MAX(end_time) AS end_time, " +
                                 "MAX(most_recent_segment_time) AS most_recent_segment_time, " +
+                                "(EXTRACT(EPOCH FROM (MAX(most_recent_segment_time) - MIN(start_time))) * 1000) AS duration_ms, " +
                                 "MIN(created_at) AS created_at " +
                                 "FROM l4_sessions " +
                                 "WHERE most_recent_segment_time >= :tr_from AND most_recent_segment_time <= :tr_to " +

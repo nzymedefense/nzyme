@@ -24,6 +24,7 @@ public class L4SessionMapper implements RowMapper<L4Session> {
                 new DateTime(rs.getTimestamp("start_time")),
                 rs.getTimestamp("end_time") == null ? null : new DateTime(rs.getTimestamp("end_time")),
                 new DateTime(rs.getTimestamp("most_recent_segment_time")),
+                rs.getLong("duration_ms"),
                 rs.getString("state"),
                 new DateTime(rs.getTimestamp("created_at"))
         );

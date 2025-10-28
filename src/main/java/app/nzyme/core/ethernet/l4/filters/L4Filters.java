@@ -49,6 +49,8 @@ public class L4Filters implements SqlFilterProvider  {
                 return GeneratedSql.create(stringMatch(bindId, "destination_address_geo_country_code", operator), "");
             case "tcp_fingerprint":
                 return GeneratedSql.create(stringMatch(bindId, "tcp_fingerprint", operator), "");
+            case "duration":
+                return GeneratedSql.create("", numericMatch(bindId, "(EXTRACT(EPOCH FROM (MAX(most_recent_segment_time) - MIN(start_time))) * 1000)", operator));
             default:
                 throw new RuntimeException("Unknown field name [" + fieldName + "].");
         }

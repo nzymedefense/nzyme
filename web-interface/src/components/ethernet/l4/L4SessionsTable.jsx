@@ -7,7 +7,6 @@ import moment from "moment";
 import L4Address from "../shared/L4Address";
 import EthernetMacAddress from "../../shared/context/macs/EthernetMacAddress";
 import InternalAddressOnlyWrapper from "../shared/InternalAddressOnlyWrapper";
-import AssetName from "../shared/AssetName";
 import L4SessionState from "./L4SessionState";
 import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 import {L4_SESSIONS_FILTER_FIELDS} from "./L4SessionFilterFields";
@@ -17,6 +16,8 @@ import {TapContext} from "../../../App";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import L4Service from "../../../services/ethernet/L4Service";
+import {formatDurationMs} from "../../../util/Tools";
+import FullCopy from "../../shared/FullCopy";
 
 const l4Service = new L4Service();
 
@@ -121,6 +122,7 @@ export default function L4SessionsTable(props) {
             <th>Destination Address {columnSorting("destination_address")}</th>
             <th>RX {columnSorting("bytes_rx_count")}</th>
             <th>TX {columnSorting("bytes_tx_count")}</th>
+            <th>Duration {columnSorting("duration")}</th>
             <th>Last Activity {columnSorting("most_recent_segment_time")}</th>
           </tr>
           </thead>
@@ -194,6 +196,14 @@ export default function L4SessionsTable(props) {
                                      fields={L4_SESSIONS_FILTER_FIELDS}
                                      field="bytes_tx_count"
                                      value={s.bytes_tx_count} />
+                  </td>
+                  <td>
+                    <FullCopy shortValue={formatDurationMs(s.duration_ms)} fullValue={s.duration_ms} />
+
+                    <FilterValueIcon setFilters={setFilters}
+                                     fields={L4_SESSIONS_FILTER_FIELDS}
+                                     field="duration"
+                                     value={s.duration_ms} />
                   </td>
                   <td title={moment(s.most_recent_segment_time).fromNow()}>
                     {moment(s.most_recent_segment_time).format()}

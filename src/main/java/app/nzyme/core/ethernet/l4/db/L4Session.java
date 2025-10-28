@@ -20,10 +20,11 @@ public abstract class L4Session {
     @Nullable
     public abstract DateTime endTime();
     public abstract DateTime mostRecentSegmentTime();
+    public abstract long durationMs();
     public abstract String state();
     public abstract DateTime createdAt();
 
-    public static L4Session create(String sessionKey, L4Type l4Type, L4AddressData source, L4AddressData destination, long bytesRxCount, long bytesTxCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, String state, DateTime createdAt) {
+    public static L4Session create(String sessionKey, L4Type l4Type, L4AddressData source, L4AddressData destination, long bytesRxCount, long bytesTxCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, long durationMs, String state, DateTime createdAt) {
         return builder()
                 .sessionKey(sessionKey)
                 .l4Type(l4Type)
@@ -35,6 +36,7 @@ public abstract class L4Session {
                 .startTime(startTime)
                 .endTime(endTime)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
+                .durationMs(durationMs)
                 .state(state)
                 .createdAt(createdAt)
                 .build();
@@ -65,6 +67,8 @@ public abstract class L4Session {
         public abstract Builder endTime(DateTime endTime);
 
         public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
+
+        public abstract Builder durationMs(long durationMs);
 
         public abstract Builder state(String state);
 
