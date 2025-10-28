@@ -179,23 +179,23 @@ public class L4Resource extends TapDataHandlingResource  {
         long total = nzyme.getEthernet().l4().countTopTrafficSources(timeRange, filters, taps);
 
         List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
-        for (StringNumberNumberAggregationResult port : nzyme.getEthernet().l4()
+        for (StringNumberNumberAggregationResult source : nzyme.getEthernet().l4()
                 .getTopTrafficSources(timeRange, filters, limit, offset, taps)) {
             Optional<MacAddressContextEntry> sourceContext = nzyme.getContextService().findMacAddressContext(
-                    port.key(),
+                    source.key(),
                     organizationId,
                     tenantId
             );
 
             Optional<AssetEntry> sourceAsset = nzyme.getAssetsManager()
-                    .findAssetByMac(port.key(), organizationId, tenantId);
+                    .findAssetByMac(source.key(), organizationId, tenantId);
 
             values.add(ThreeColumnTableHistogramValueResponse.create(
-                    HistogramValueStructureResponse.create(port.key(),
+                    HistogramValueStructureResponse.create(source.key(),
                             HistogramValueType.ETHERNET_MAC,
                             EthernetMacAddressResponse.create(
-                                    port.key(),
-                                    nzyme.getOuiService().lookup(port.key()).orElse(null),
+                                    source.key(),
+                                    nzyme.getOuiService().lookup(source.key()).orElse(null),
                                     sourceAsset.map(AssetEntry::uuid).orElse(null),
                                     sourceAsset.map(AssetEntry::isActive).orElse(null),
                                     sourceContext.map(ctx ->
@@ -206,9 +206,67 @@ public class L4Resource extends TapDataHandlingResource  {
                                     ).orElse(null)
                             )
                     ),
-                    HistogramValueStructureResponse.create(port.value1(), HistogramValueType.BYTES, null),
-                    HistogramValueStructureResponse.create(port.value2(), HistogramValueType.BYTES, null),
-                    port.key()
+                    HistogramValueStructureResponse.create(source.value1(), HistogramValueType.BYTES, null),
+                    HistogramValueStructureResponse.create(source.value2(), HistogramValueType.BYTES, null),
+                    source.key()
+            ));
+        }
+
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, false, values)).build();
+    }
+
+    @GET
+    @Path("/sessions/histograms/destinations/traffic/top")
+    public Response topTrafficDestinations(@Context SecurityContext sc,
+                                           @QueryParam("organization_id") UUID organizationId,
+                                           @QueryParam("tenant_id") UUID tenantId,
+                                           @QueryParam("time_range") String timeRangeParameter,
+                                           @QueryParam("filters") String filtersParameter,
+                                           @QueryParam("limit") int limit,
+                                           @QueryParam("offset") int offset,
+                                           @QueryParam("taps") String tapIds) {
+
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total = nzyme.getEthernet().l4().countTopTrafficDestinations(timeRange, filters, taps);
+
+        List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
+        for (StringNumberNumberAggregationResult dest : nzyme.getEthernet().l4()
+                .getTopTrafficDestinations(timeRange, filters, limit, offset, taps)) {
+            Optional<MacAddressContextEntry> destinationContext = nzyme.getContextService().findMacAddressContext(
+                    dest.key(),
+                    organizationId,
+                    tenantId
+            );
+
+            Optional<AssetEntry> destinationAsset = nzyme.getAssetsManager()
+                    .findAssetByMac(dest.key(), organizationId, tenantId);
+
+            values.add(ThreeColumnTableHistogramValueResponse.create(
+                    HistogramValueStructureResponse.create(dest.key(),
+                            HistogramValueType.ETHERNET_MAC,
+                            EthernetMacAddressResponse.create(
+                                    dest.key(),
+                                    nzyme.getOuiService().lookup(dest.key()).orElse(null),
+                                    destinationAsset.map(AssetEntry::uuid).orElse(null),
+                                    destinationAsset.map(AssetEntry::isActive).orElse(null),
+                                    destinationContext.map(ctx ->
+                                            EthernetMacAddressContextResponse.create(
+                                                    ctx.name(),
+                                                    ctx.description()
+                                            )
+                                    ).orElse(null)
+                            )
+                    ),
+                    HistogramValueStructureResponse.create(dest.value1(), HistogramValueType.BYTES, null),
+                    HistogramValueStructureResponse.create(dest.value2(), HistogramValueType.BYTES, null),
+                    dest.key()
             ));
         }
 

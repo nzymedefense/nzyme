@@ -16,6 +16,7 @@ import L4SessionsInternalBytesChart from "./L4SessionsInternalBytesChart";
 import L4SessionsNumbers from "./L4SessionsNumbers";
 import L4SessionsLeastCommonNonEphemeralDestinationPortsHistogram from "./L4SessionsLeastCommonNonEphemeralDestinationPortsHistogram";
 import L4SessionsTopTrafficSourcesHistogram from "./L4SessionsTopTrafficSourcesHistogram";
+import L4SessionsTopTrafficDestinationsHistogram from "./L4SessionsTopTrafficDestinationsHistogram";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -151,6 +152,11 @@ export default function L4OverviewPage() {
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
+
+                <L4SessionsTopTrafficDestinationsHistogram filters={filters}
+                                                           setFilters={setFilters}
+                                                           timeRange={timeRange}
+                                                           revision={revision} />
               </div>
             </div>
           </div>
