@@ -22,7 +22,7 @@ function ThreeColumnHistogram(props) {
   const chartColumnValue = props.customChartColumnValue ? props.customChartColumnValue : "column_three";
   const chartColumnValueField = props.customChartColumnValueField;
 
-  const columnFilterElements = props.columnFilterElements;
+  const columnFilterElements = props.columnFilterElements ? props.columnFilterElements : [];
 
   const [mode, setMode] = useState(MODE_TABLE);
 

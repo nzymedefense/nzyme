@@ -20,7 +20,7 @@ function TwoColumnHistogram(props) {
   const limit = props.limit;
   const setLimit = props.setLimit;
 
-  const columnFilterElements = props.columnFilterElements;
+  const columnFilterElements = props.columnFilterElements ? props.columnFilterElements : [];
 
   const [mode, setMode] = useState(MODE_TABLE);
 
