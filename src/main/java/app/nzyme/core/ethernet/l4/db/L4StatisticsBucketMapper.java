@@ -13,10 +13,14 @@ public class L4StatisticsBucketMapper implements RowMapper<L4StatisticsBucket> {
     public L4StatisticsBucket map(ResultSet rs, StatementContext ctx) throws SQLException {
         return L4StatisticsBucket.create(
                 new DateTime(rs.getTimestamp("bucket")),
-                rs.getLong("bytes_tcp"),
-                rs.getLong("bytes_internal_tcp"),
-                rs.getLong("bytes_udp"),
-                rs.getLong("bytes_internal_udp"),
+                rs.getLong("bytes_rx_tcp"),
+                rs.getLong("bytes_tx_tcp"),
+                rs.getLong("bytes_rx_internal_tcp"),
+                rs.getLong("bytes_tx_internal_tcp"),
+                rs.getLong("bytes_rx_udp"),
+                rs.getLong("bytes_tx_udp"),
+                rs.getLong("bytes_rx_internal_udp"),
+                rs.getLong("bytes_tx_internal_udp"),
                 rs.getLong("segments_tcp"),
                 rs.getLong("datagrams_udp"),
                 rs.getLong("sessions_tcp"),

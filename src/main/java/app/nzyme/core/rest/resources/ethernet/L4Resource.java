@@ -7,6 +7,7 @@ import app.nzyme.core.database.NumberNumberAggregationResult;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.database.generic.NumberNumberNumberAggregationResult;
 import app.nzyme.core.database.generic.StringNumberAggregationResult;
+import app.nzyme.core.database.generic.StringNumberNumberAggregationResult;
 import app.nzyme.core.ethernet.l4.L4;
 import app.nzyme.core.ethernet.l4.db.L4Numbers;
 import app.nzyme.core.ethernet.l4.db.L4Session;
@@ -96,7 +97,9 @@ public class L4Resource extends TapDataHandlingResource  {
                     RestHelpers.L4AddressDataToResponse(
                             nzyme, organizationId, tenantId, session.l4Type(), session.destination()
                     ),
-                    session.bytesCount(),
+                    session.bytesRxCount()+session.bytesTxCount(),
+                    session.bytesRxCount(),
+                    session.bytesTxCount(),
                     session.segmentsCount(),
                     session.startTime(),
                     session.endTime(),
@@ -120,10 +123,14 @@ public class L4Resource extends TapDataHandlingResource  {
         Map<DateTime, L4StatisticsBucketResponse> statistics = Maps.newHashMap();
         for (L4StatisticsBucket b : nzyme.getEthernet().l4().getStatistics(timeRange, bucketing, taps)) {
             statistics.put(b.bucket(), L4StatisticsBucketResponse.create(
-                    b.bytesTcp(),
-                    b.bytesInternalTcp(),
-                    b.bytesUdp(),
-                    b.bytesInternalUdp(),
+                    b.bytesRxTcp(),
+                    b.bytesTxTcp(),
+                    b.bytesRxInternalTcp(),
+                    b.bytesTxInternalTcp(),
+                    b.bytesRxUdp(),
+                    b.bytesTxUdp(),
+                    b.bytesRxInternalUdp(),
+                    b.bytesTxInternalUdp(),
                     b.segmentsTcp(),
                     b.datagramsUdp(),
                     b.sessionsTcp(),
@@ -171,8 +178,8 @@ public class L4Resource extends TapDataHandlingResource  {
 
         long total = nzyme.getEthernet().l4().countTopTrafficSources(timeRange, filters, taps);
 
-        List<TwoColumnTableHistogramValueResponse> values = Lists.newArrayList();
-        for (StringNumberAggregationResult port : nzyme.getEthernet().l4()
+        List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
+        for (StringNumberNumberAggregationResult port : nzyme.getEthernet().l4()
                 .getTopTrafficSources(timeRange, filters, limit, offset, taps)) {
             Optional<MacAddressContextEntry> sourceContext = nzyme.getContextService().findMacAddressContext(
                     port.key(),
@@ -183,7 +190,7 @@ public class L4Resource extends TapDataHandlingResource  {
             Optional<AssetEntry> sourceAsset = nzyme.getAssetsManager()
                     .findAssetByMac(port.key(), organizationId, tenantId);
 
-            values.add(TwoColumnTableHistogramValueResponse.create(
+            values.add(ThreeColumnTableHistogramValueResponse.create(
                     HistogramValueStructureResponse.create(port.key(),
                             HistogramValueType.ETHERNET_MAC,
                             EthernetMacAddressResponse.create(
@@ -199,11 +206,13 @@ public class L4Resource extends TapDataHandlingResource  {
                                     ).orElse(null)
                             )
                     ),
-                    HistogramValueStructureResponse.create(port.value(), HistogramValueType.BYTES, null)
+                    HistogramValueStructureResponse.create(port.value1(), HistogramValueType.BYTES, null),
+                    HistogramValueStructureResponse.create(port.value2(), HistogramValueType.BYTES, null),
+                    port.key()
             ));
         }
 
-        return Response.ok(TwoColumnTableHistogramResponse.create(total, false, values)).build();
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, false, values)).build();
     }
 
     @GET

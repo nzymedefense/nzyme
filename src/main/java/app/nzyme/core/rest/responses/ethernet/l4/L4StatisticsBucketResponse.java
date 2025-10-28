@@ -6,17 +6,29 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class L4StatisticsBucketResponse {
 
-    @JsonProperty("bytes_tcp")
-    public abstract long bytesTcp();
+    @JsonProperty("bytes_rx_tcp")
+    public abstract long bytesRxTcp();
 
-    @JsonProperty("bytes_internal_tcp")
-    public abstract long bytesInternalTcp();
+    @JsonProperty("bytes_tx_tcp")
+    public abstract long bytesTxTcp();
 
-    @JsonProperty("bytes_udp")
-    public abstract long bytesUdp();
+    @JsonProperty("bytes_rx_internal_tcp")
+    public abstract long bytesRxInternalTcp();
 
-    @JsonProperty("bytes_internal_udp")
-    public abstract long bytesInternalUdp();
+    @JsonProperty("bytes_tx_internal_tcp")
+    public abstract long bytesTxInternalTcp();
+
+    @JsonProperty("bytes_rx_udp")
+    public abstract long bytesRxUdp();
+
+    @JsonProperty("bytes_tx_udp")
+    public abstract long bytesTxUdp();
+
+    @JsonProperty("bytes_rx_internal_udp")
+    public abstract long bytesRxInternalUdp();
+
+    @JsonProperty("bytes_tx_internal_udp")
+    public abstract long bytesTxInternalUdp();
 
     @JsonProperty("segments_tcp")
     public abstract long segmentsTcp();
@@ -36,12 +48,16 @@ public abstract class L4StatisticsBucketResponse {
     @JsonProperty("sessions_internal_udp")
     public abstract long sessionsInternalUdp();
 
-    public static L4StatisticsBucketResponse create(long bytesTcp, long bytesInternalTcp, long bytesUdp, long bytesInternalUdp, long segmentsTcp, long datagramsUdp, long sessionsTcp, long sessionsUdp, long sessionsInternalTcp, long sessionsInternalUdp) {
+    public static L4StatisticsBucketResponse create(long bytesRxTcp, long bytesTxTcp, long bytesRxInternalTcp, long bytesTxInternalTcp, long bytesRxUdp, long bytesTxUdp, long bytesRxInternalUdp, long bytesTxInternalUdp, long segmentsTcp, long datagramsUdp, long sessionsTcp, long sessionsUdp, long sessionsInternalTcp, long sessionsInternalUdp) {
         return builder()
-                .bytesTcp(bytesTcp)
-                .bytesInternalTcp(bytesInternalTcp)
-                .bytesUdp(bytesUdp)
-                .bytesInternalUdp(bytesInternalUdp)
+                .bytesRxTcp(bytesRxTcp)
+                .bytesTxTcp(bytesTxTcp)
+                .bytesRxInternalTcp(bytesRxInternalTcp)
+                .bytesTxInternalTcp(bytesTxInternalTcp)
+                .bytesRxUdp(bytesRxUdp)
+                .bytesTxUdp(bytesTxUdp)
+                .bytesRxInternalUdp(bytesRxInternalUdp)
+                .bytesTxInternalUdp(bytesTxInternalUdp)
                 .segmentsTcp(segmentsTcp)
                 .datagramsUdp(datagramsUdp)
                 .sessionsTcp(sessionsTcp)
@@ -57,13 +73,21 @@ public abstract class L4StatisticsBucketResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder bytesTcp(long bytesTcp);
+        public abstract Builder bytesRxTcp(long bytesRxTcp);
 
-        public abstract Builder bytesInternalTcp(long bytesInternalTcp);
+        public abstract Builder bytesTxTcp(long bytesTxTcp);
 
-        public abstract Builder bytesUdp(long bytesUdp);
+        public abstract Builder bytesRxInternalTcp(long bytesRxInternalTcp);
 
-        public abstract Builder bytesInternalUdp(long bytesInternalUdp);
+        public abstract Builder bytesTxInternalTcp(long bytesTxInternalTcp);
+
+        public abstract Builder bytesRxUdp(long bytesRxUdp);
+
+        public abstract Builder bytesTxUdp(long bytesTxUdp);
+
+        public abstract Builder bytesRxInternalUdp(long bytesRxInternalUdp);
+
+        public abstract Builder bytesTxInternalUdp(long bytesTxInternalUdp);
 
         public abstract Builder segmentsTcp(long segmentsTcp);
 

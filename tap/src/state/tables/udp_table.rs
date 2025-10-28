@@ -33,8 +33,10 @@ pub struct UdpConversation {
     pub most_recent_segment_time: DateTime<Utc>,
     pub datagrams_count: u64,
     pub datagrams_count_incremental: u64, // New datagrams since last report.
-    pub bytes_count: u64,
-    pub bytes_count_incremental: u64, // New bytes since last report.
+    pub bytes_count_rx: u64,
+    pub bytes_count_tx: u64,
+    pub bytes_count_rx_incremental: u64, // New bytes since last report.
+    pub bytes_count_tx_incremental: u64, // New bytes since last report.
     pub datagrams: Vec<Arc<Datagram>>,
     pub tags: Vec<L7Tag>
 }
@@ -63,11 +65,16 @@ impl UdpTable {
                         // Existing conversation.
                         let mut timer = Timer::new();
 
+                        let (bytes_tx, bytes_rx) = datagram.get_directional_byte_counts();
+
+                        c.bytes_count_rx += bytes_rx;
+                        c.bytes_count_tx += bytes_tx;
+                        c.bytes_count_rx_incremental += bytes_rx;
+                        c.bytes_count_tx_incremental += bytes_tx;
+
                         c.most_recent_segment_time = datagram.timestamp;
                         c.datagrams_count += 1;
                         c.datagrams_count_incremental += 1;
-                        c.bytes_count += datagram.payload.len() as u64;
-                        c.bytes_count_incremental += datagram.payload.len() as u64;
                         c.datagrams.push(datagram);
 
                         timer.stop();
@@ -80,6 +87,8 @@ impl UdpTable {
                     None => {
                         // New conversation.
                         let mut timer = Timer::new();
+
+                        let (bytes_tx, bytes_rx) = datagram.get_directional_byte_counts();
 
                         conversations.insert(
                             datagram.session_key.clone(),
@@ -96,8 +105,10 @@ impl UdpTable {
                                 most_recent_segment_time: datagram.timestamp,
                                 datagrams_count: 1,
                                 datagrams_count_incremental: 1,
-                                bytes_count: datagram.payload.len() as u64,
-                                bytes_count_incremental: datagram.payload.len() as u64,
+                                bytes_count_rx: bytes_rx,
+                                bytes_count_tx: bytes_tx,
+                                bytes_count_rx_incremental: bytes_rx,
+                                bytes_count_tx_incremental: bytes_tx,
                                 datagrams: vec![datagram],
                                 tags: vec![],
                             }
@@ -194,6 +205,7 @@ impl UdpTable {
 fn incremental_counter_sweep(sessions: &mut MutexGuard<HashMap<L4Key, UdpConversation>>) {
     for session in sessions.values_mut() {
         session.datagrams_count_incremental = 0;
-        session.bytes_count_incremental = 0;
+        session.bytes_count_rx_incremental = 0;
+        session.bytes_count_tx_incremental = 0;
     }
 }

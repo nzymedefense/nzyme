@@ -42,7 +42,7 @@ export default function L4OverviewPage() {
   useEffect(() => {
     setStatistics(null);
     l4Service.getSessionsStatistics(timeRange, selectedTaps, setStatistics);
-  }, [selectedTaps, timeRange, revision]);
+  }, [selectedTaps, timeRange, revision, filters]);
 
   return (
       <React.Fragment>
@@ -52,7 +52,7 @@ export default function L4OverviewPage() {
           </div>
         </div>
 
-        <L4SessionsNumbers statistics={statistics} timeRange={timeRange} setTimeRange={setTimeRange} />
+        <L4SessionsNumbers statistics={statistics} timeRange={timeRange} setTimeRange={setTimeRange} filters={filters} />
 
         <div className="row mt-3">
           <div className="col-md-6">
@@ -63,7 +63,7 @@ export default function L4OverviewPage() {
                                        setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
-                <L4SessionsTotalBytesChart statistics={statistics} setTimeRange={setTimeRange} />
+                <L4SessionsTotalBytesChart statistics={statistics} setTimeRange={setTimeRange} filters={filters} />
               </div>
             </div>
           </div>
@@ -76,7 +76,7 @@ export default function L4OverviewPage() {
                                        setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
-                <L4SessionsInternalBytesChart statistics={statistics} setTimeRange={setTimeRange} />
+                <L4SessionsInternalBytesChart statistics={statistics} setTimeRange={setTimeRange} filters={filters} />
               </div>
             </div>
           </div>
@@ -91,7 +91,7 @@ export default function L4OverviewPage() {
                                        setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
-                <L4SessionsTotalSessionsChart statistics={statistics} setTimeRange={setTimeRange} />
+                <L4SessionsTotalSessionsChart statistics={statistics} setTimeRange={setTimeRange} filters={filters} />
               </div>
             </div>
           </div>
@@ -104,7 +104,7 @@ export default function L4OverviewPage() {
                                        setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
-                <L4SessionsInternalSessionsChart statistics={statistics} setTimeRange={setTimeRange} />
+                <L4SessionsInternalSessionsChart statistics={statistics} setTimeRange={setTimeRange} filters={filters} />
               </div>
             </div>
           </div>

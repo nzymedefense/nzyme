@@ -18,7 +18,8 @@ public abstract class UdpConversationEntry {
     public abstract L4Type l4Type();
     public abstract L4AddressData source();
     public abstract L4AddressData destination();
-    public abstract long bytesCount();
+    public abstract long bytesRxCount();
+    public abstract long bytesTxCount();
     public abstract long segmentsCount();
     public abstract DateTime startTime();
     @Nullable
@@ -27,7 +28,7 @@ public abstract class UdpConversationEntry {
     public abstract UdpConversationState state();
     public abstract DateTime createdAt();
 
-    public static UdpConversationEntry create(long id, String sessionKey, UUID tapUuid, L4Type l4Type, L4AddressData source, L4AddressData destination, long bytesCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, UdpConversationState state, DateTime createdAt) {
+    public static UdpConversationEntry create(long id, String sessionKey, UUID tapUuid, L4Type l4Type, L4AddressData source, L4AddressData destination, long bytesRxCount, long bytesTxCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, UdpConversationState state, DateTime createdAt) {
         return builder()
                 .id(id)
                 .sessionKey(sessionKey)
@@ -35,7 +36,8 @@ public abstract class UdpConversationEntry {
                 .l4Type(l4Type)
                 .source(source)
                 .destination(destination)
-                .bytesCount(bytesCount)
+                .bytesRxCount(bytesRxCount)
+                .bytesTxCount(bytesTxCount)
                 .segmentsCount(segmentsCount)
                 .startTime(startTime)
                 .endTime(endTime)
@@ -63,7 +65,9 @@ public abstract class UdpConversationEntry {
 
         public abstract Builder destination(L4AddressData destination);
 
-        public abstract Builder bytesCount(long bytesCount);
+        public abstract Builder bytesRxCount(long bytesRxCount);
+
+        public abstract Builder bytesTxCount(long bytesTxCount);
 
         public abstract Builder segmentsCount(long segmentsCount);
 

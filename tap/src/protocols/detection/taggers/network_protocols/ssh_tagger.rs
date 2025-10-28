@@ -79,7 +79,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SshSession> {
             server_version,
             connection_status,
             tcp_session_key: session.session_key.clone(),
-            tunneled_bytes: session.bytes_count,
+            tunneled_bytes: session.bytes_count(),
             source_mac: session.source_mac.clone(),
             destination_mac: session.destination_mac.clone(),
             source_address: session.source_address,

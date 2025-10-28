@@ -25,8 +25,10 @@ public class L4Filters implements SqlFilterProvider  {
                 return GeneratedSql.create(ipAddressMatch(bindId, "destination_address", operator), "");
             case "destination_port":
                 return GeneratedSql.create(numericMatch(bindId, "destination_port", operator), "");
-            case "bytes_count":
-                return GeneratedSql.create(numericMatch(bindId, "bytes_count", operator), "");
+            case "bytes_rx_count":
+                return GeneratedSql.create(numericMatch(bindId, "bytes_rx_count", operator), "");
+            case "bytes_tx_count":
+                return GeneratedSql.create(numericMatch(bindId, "bytes_tx_count", operator), "");
             case "segments_count":
                 return GeneratedSql.create(numericMatch(bindId, "segments_count", operator), "");
             case "state":

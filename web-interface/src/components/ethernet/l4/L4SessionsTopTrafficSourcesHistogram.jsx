@@ -3,10 +3,9 @@ import L4Service from "../../../services/ethernet/L4Service";
 import {DEFAULT_LIMIT} from "../../widgets/LimitSelector";
 import {TapContext} from "../../../App";
 import GenericWidgetLoadingSpinner from "../../widgets/GenericWidgetLoadingSpinner";
-import TwoColumnHistogram from "../../widgets/histograms/TwoColumnHistogram";
-import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 import {L4_SESSIONS_FILTER_FIELDS} from "./L4SessionFilterFields";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import ThreeColumnHistogram from "../../widgets/histograms/ThreeColumnHistogram";
 
 const l4Service = new L4Service();
 
@@ -37,12 +36,12 @@ export default function L4SessionsTopTrafficSourcesHistogram({filters, setFilter
     )
   }
 
-  return <TwoColumnHistogram data={data}
+  return <ThreeColumnHistogram data={data}
                              columnFilterElements={[
                                {field: "source_mac", fields: L4_SESSIONS_FILTER_FIELDS, setFilters: setFilters},
-                               null
+                               null, null
                              ]}
-                             columnTitles={["Source Asset", "Bytes"]}
+                             columnTitles={["Source Asset", "RX", "TX"]}
                              limit={limit}
                              setLimit={setLimit} />
 

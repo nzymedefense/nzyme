@@ -42,7 +42,8 @@ pub struct TcpSession {
     pub segments_count_incremental: u64, // New segments since last report.
     pub bytes_count_rx: u64,
     pub bytes_count_tx: u64,
-    pub bytes_count_incremental: u64, // New bytes since last report.
+    pub bytes_count_rx_incremental: u64, // New bytes since last report.
+    pub bytes_count_tx_incremental: u64, // New bytes since last report.
     pub segments_client_to_server: BTreeMap<u32, Vec<u8>>,
     pub segments_server_to_client: BTreeMap<u32, Vec<u8>>,
     pub syn_ip_ttl: u8,
@@ -55,6 +56,14 @@ pub struct TcpSession {
     pub syn_window_scale_multiplier: Option<u8>,
     pub syn_options: Vec<u8>,
     pub tags: Vec<L7Tag>
+}
+
+impl TcpSession {
+
+    pub fn bytes_count(&self) -> u64 {
+        self.bytes_count_rx + self.bytes_count_tx
+    }
+
 }
 
 #[derive(PartialEq, Debug, Display, Clone)]
@@ -99,15 +108,20 @@ impl TcpTable {
                         session.state = session_state.clone();
                         session.segments_count += 1;
                         session.segments_count_incremental += 1;
-                        session.bytes_count += segment.size as u64;
-                        session.bytes_count_incremental += segment.size as u64;
+
+                        let (bytes_tx, bytes_rx) = segment.get_directional_byte_counts();
+
+                        session.bytes_count_rx += bytes_rx;
+                        session.bytes_count_tx += bytes_tx;
+                        session.bytes_count_rx_incremental += bytes_rx;
+                        session.bytes_count_tx_incremental += bytes_tx;
 
                         if session.end_time.is_none() && (session_state == ClosedFin || session_state == ClosedRst) {
                             session.end_time = Some(segment.timestamp);
                         }
 
                         if !segment.payload.is_empty() {
-                            if session.bytes_count <= self.reassembly_buffer_size as u64 {
+                            if session.bytes_count() <= self.reassembly_buffer_size as u64 {
                                 match segment.determine_direction() {
                                     TrafficDirection::ClientToServer => {
                                         insert_session_segment(segment, &mut session.segments_client_to_server);
@@ -138,47 +152,54 @@ impl TcpTable {
 
                         let session_state = Self::determine_session_state(segment, None);
 
-                        let new_session = TcpSession {
-                            session_key: segment.session_key.clone(),
-                            state: session_state.clone(),
-                            start_time: segment.timestamp,
-                            end_time: None,
-                            most_recent_segment_time: segment.timestamp,
-                            source_mac: segment.source_mac.clone(),
-                            destination_mac: segment.destination_mac.clone(),
-                            source_address: segment.source_address,
-                            source_port: segment.source_port,
-                            destination_address: segment.destination_address,
-                            destination_port: segment.destination_port,
-                            segments_count: 1,
-                            segments_count_incremental: 1,
-                            bytes_count: segment.size as u64,
-                            bytes_count_incremental: segment.size as u64,
-                            segments_client_to_server: BTreeMap::new(),
-                            segments_server_to_client: BTreeMap::new(),
-                            syn_ip_ttl: segment.ip_ttl,
-                            syn_ip_tos: segment.ip_tos,
-                            syn_ip_df: segment.ip_df,
-                            syn_cwr: segment.flags.cwr,
-                            syn_ece: segment.flags.ece,
-                            syn_window_size: segment.window_size,
-                            syn_maximum_segment_size: segment.maximum_segment_size,
-                            syn_window_scale_multiplier: segment.window_scale_multiplier,
-                            syn_options: segment.options.clone(),
-                            tags: vec![]
-                        };
+                        // We only record new sessions, not mid-session.
+                        if session_state == SynSent {
+                            let (bytes_tx, bytes_rx) = segment.get_directional_byte_counts();
 
-                        trace!("New TCP Session: {:?}, State: {:?}, Flags: {:?}",
-                        segment.session_key, session_state, segment.flags);
+                            let new_session = TcpSession {
+                                session_key: segment.session_key.clone(),
+                                state: session_state.clone(),
+                                start_time: segment.timestamp,
+                                end_time: None,
+                                most_recent_segment_time: segment.timestamp,
+                                source_mac: segment.source_mac.clone(),
+                                destination_mac: segment.destination_mac.clone(),
+                                source_address: segment.source_address,
+                                source_port: segment.source_port,
+                                destination_address: segment.destination_address,
+                                destination_port: segment.destination_port,
+                                segments_count: 1,
+                                segments_count_incremental: 1,
+                                bytes_count_rx: bytes_rx,
+                                bytes_count_tx: bytes_tx,
+                                bytes_count_rx_incremental: bytes_rx,
+                                bytes_count_tx_incremental: bytes_tx,
+                                segments_client_to_server: BTreeMap::new(),
+                                segments_server_to_client: BTreeMap::new(),
+                                syn_ip_ttl: segment.ip_ttl,
+                                syn_ip_tos: segment.ip_tos,
+                                syn_ip_df: segment.ip_df,
+                                syn_cwr: segment.flags.cwr,
+                                syn_ece: segment.flags.ece,
+                                syn_window_size: segment.window_size,
+                                syn_maximum_segment_size: segment.maximum_segment_size,
+                                syn_window_scale_multiplier: segment.window_scale_multiplier,
+                                syn_options: segment.options.clone(),
+                                tags: vec![]
+                            };
 
-                        sessions.insert(segment.session_key.clone(), new_session);
+                            trace!("New TCP Session: {:?}, State: {:?}, Flags: {:?}",
+                            segment.session_key, session_state, segment.flags);
 
-                        timer.stop();
-                        record_timer(
-                            timer.elapsed_microseconds(),
-                            "tables.tcp.sessions.timer.register_new",
-                            &self.metrics
-                        );
+                            sessions.insert(segment.session_key.clone(), new_session);
+
+                            timer.stop();
+                            record_timer(
+                                timer.elapsed_microseconds(),
+                                "tables.tcp.sessions.timer.register_new",
+                                &self.metrics
+                            );
+                        }
                     }
                 }
             },
@@ -253,7 +274,7 @@ impl TcpTable {
         let (sessions_size, sessions_bytes): (i128, i128) = match self.sessions.lock() {
             Ok(sessions) => {
                 let mut bytes: i128 = 0;
-                sessions.values().for_each(|s| bytes += s.bytes_count as i128);
+                sessions.values().for_each(|s| bytes += s.bytes_count() as i128);
                 (sessions.len() as i128, bytes)
             },
             Err(e) => {
@@ -373,6 +394,7 @@ fn retention_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>) {
 fn incremental_counter_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>) {
     for session in sessions.values_mut() {
         session.segments_count_incremental = 0;
-        session.bytes_count_incremental = 0;
+        session.bytes_count_rx_incremental = 0;
+        session.bytes_count_tx_incremental = 0;
     }
 }

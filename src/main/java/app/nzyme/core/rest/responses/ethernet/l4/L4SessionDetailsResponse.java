@@ -25,6 +25,12 @@ public abstract class L4SessionDetailsResponse {
     @JsonProperty("bytes_count")
     public abstract long bytesCount();
 
+    @JsonProperty("bytes_rx_count")
+    public abstract long bytesRxCount();
+
+    @JsonProperty("bytes_tx_count")
+    public abstract long bytesTxCount();
+
     @JsonProperty("segments_count")
     public abstract long segmentsCount();
 
@@ -41,13 +47,15 @@ public abstract class L4SessionDetailsResponse {
     @JsonProperty("state")
     public abstract String state();
 
-    public static L4SessionDetailsResponse create(String sessionKey, L4AddressTypeResponse l4Type, L4AddressResponse source, L4AddressResponse destination, long bytesCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, String state) {
+    public static L4SessionDetailsResponse create(String sessionKey, L4AddressTypeResponse l4Type, L4AddressResponse source, L4AddressResponse destination, long bytesCount, long bytesRxCount, long bytesTxCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, String state) {
         return builder()
                 .sessionKey(sessionKey)
                 .l4Type(l4Type)
                 .source(source)
                 .destination(destination)
                 .bytesCount(bytesCount)
+                .bytesRxCount(bytesRxCount)
+                .bytesTxCount(bytesTxCount)
                 .segmentsCount(segmentsCount)
                 .startTime(startTime)
                 .endTime(endTime)
@@ -71,6 +79,10 @@ public abstract class L4SessionDetailsResponse {
         public abstract Builder destination(L4AddressResponse destination);
 
         public abstract Builder bytesCount(long bytesCount);
+
+        public abstract Builder bytesRxCount(long bytesRxCount);
+
+        public abstract Builder bytesTxCount(long bytesTxCount);
 
         public abstract Builder segmentsCount(long segmentsCount);
 

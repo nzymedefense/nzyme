@@ -7268,4 +7268,61 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_l4_statistics_traffic_direction" author="lennartkoopmann">
+        <sql>DELETE FROM l4_statistics;</sql>
+        
+        <dropColumn tableName="l4_statistics" columnName="bytes_tcp" />
+        <dropColumn tableName="l4_statistics" columnName="bytes_udp" />
+
+        <addColumn tableName="l4_statistics">
+            <column name="bytes_rx_tcp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="bytes_tx_tcp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="bytes_rx_internal_tcp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="bytes_tx_internal_tcp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="bytes_rx_udp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="bytes_tx_udp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="bytes_rx_internal_udp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="bytes_tx_internal_udp" type="bigint">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_l4_sessions_traffic_direction" author="lennartkoopmann">
+        <sql>DELETE FROM l4_sessions;</sql>
+
+        <dropColumn tableName="l4_sessions" columnName="bytes_count" />
+
+        <addColumn tableName="l4_sessions">
+            <column name="bytes_rx_count" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="bytes_tx_count" type="bigint">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -21,12 +21,14 @@ export default function L4SessionsInternalBytesChart({statistics, setTimeRange})
     Object.keys(data).sort().forEach(timestamp => {
       const row = data[timestamp] || {};
 
-      const tcp = row["bytes_internal_tcp"] ?? 0;
-      const udp = row["bytes_internal_udp"] ?? 0;
+      const tcp_rx = row["bytes_rx_internal_tcp"] ?? 0;
+      const tcp_tx = row["bytes_tx_internal_tcp"] ?? 0;
+      const udp_rx = row["bytes_rx_internal_udp"] ?? 0;
+      const udp_tx = row["bytes_tx_internal_udp"] ?? 0;
 
-      bytesTcp[timestamp] = byteConversion(tcp);
-      bytesUdp[timestamp] = byteConversion(udp);
-      bytesTotal[timestamp] = byteConversion(tcp + udp);
+      bytesTcp[timestamp] = byteConversion(tcp_rx+tcp_tx);
+      bytesUdp[timestamp] = byteConversion(udp_rx+udp_tx);
+      bytesTotal[timestamp] = byteConversion(tcp_rx+tcp_tx+udp_rx+udp_tx);
     });
 
     return {

@@ -91,6 +91,13 @@ impl TcpSegment {
             TrafficDirection::ClientToServer
         }
     }
+
+    pub fn get_directional_byte_counts(&self) -> (u64, u64) {
+        match self.determine_direction() {
+            TrafficDirection::ClientToServer => (self.size as u64, 0),
+            TrafficDirection::ServerToClient => (0, self.size as u64)
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -116,6 +123,24 @@ pub struct Datagram {
     pub size: u32,
     pub timestamp: DateTime<Utc>,
     pub tags: Mutex<Vec<L7Tag>>
+}
+
+impl Datagram {
+    pub fn determine_direction(&self) -> TrafficDirection {
+        if self.session_key.address_low == self.source_address
+            && self.session_key.port_low == self.source_port {
+            TrafficDirection::ServerToClient
+        } else {
+            TrafficDirection::ClientToServer
+        }
+    }
+
+    pub fn get_directional_byte_counts(&self) -> (u64, u64) {
+        match self.determine_direction() {
+            TrafficDirection::ClientToServer => (self.size as u64, 0),
+            TrafficDirection::ServerToClient => (0, self.size as u64)
+        }
+    }
 }
 
 #[derive(Debug)]

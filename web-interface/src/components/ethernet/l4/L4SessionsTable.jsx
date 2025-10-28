@@ -119,7 +119,8 @@ export default function L4SessionsTable(props) {
             <th>Source Address {columnSorting("source_address")}</th>
             <th>Destination MAC {columnSorting("destination_mac")}</th>
             <th>Destination Address {columnSorting("destination_address")}</th>
-            <th>Bytes {columnSorting("bytes_count")}</th>
+            <th>RX {columnSorting("bytes_rx_count")}</th>
+            <th>TX {columnSorting("bytes_tx_count")}</th>
             <th>Last Activity {columnSorting("most_recent_segment_time")}</th>
           </tr>
           </thead>
@@ -181,11 +182,18 @@ export default function L4SessionsTable(props) {
                                                                value={s.destination.address} />}/>
                   </td>
                   <td>
-                    {numeral(s.bytes_count).format("0b")}
+                    {numeral(s.bytes_rx_count).format("0b")}
                     <FilterValueIcon setFilters={setFilters}
                                      fields={L4_SESSIONS_FILTER_FIELDS}
-                                     field="bytes_count"
-                                     value={s.bytes_count} />
+                                     field="bytes_rx_count"
+                                     value={s.bytes_rx_count} />
+                  </td>
+                  <td>
+                    {numeral(s.bytes_tx_count).format("0b")}
+                    <FilterValueIcon setFilters={setFilters}
+                                     fields={L4_SESSIONS_FILTER_FIELDS}
+                                     field="bytes_tx_count"
+                                     value={s.bytes_tx_count} />
                   </td>
                   <td title={moment(s.most_recent_segment_time).fromNow()}>
                     {moment(s.most_recent_segment_time).format()}

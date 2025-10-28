@@ -90,7 +90,7 @@ public class UDPTable implements DataTable {
                 "session_key, source_mac, source_address, source_address_is_site_local, " +
                 "source_address_is_loopback, source_address_is_multicast, source_port, destination_mac, " +
                 "destination_address, destination_address_is_site_local, destination_address_is_loopback, " +
-                "destination_address_is_multicast, destination_port, bytes_count, segments_count, " +
+                "destination_address_is_multicast, destination_port, bytes_rx_count, bytes_tx_count, segments_count, " +
                 "start_time, end_time, most_recent_segment_time, state, source_address_geo_asn_number, " +
                 "source_address_geo_asn_name, source_address_geo_asn_domain, source_address_geo_city, " +
                 "source_address_geo_country_code, source_address_geo_latitude, " +
@@ -102,8 +102,8 @@ public class UDPTable implements DataTable {
                 ":source_address_is_site_local, :source_address_is_loopback, :source_address_is_multicast, " +
                 ":source_port, :destination_mac, :destination_address::inet, " +
                 ":destination_address_is_site_local, :destination_address_is_loopback, " +
-                ":destination_address_is_multicast, :destination_port, :bytes_count, :segments_count, " +
-                ":start_time, :end_time, :most_recent_segment_time, :state, " +
+                ":destination_address_is_multicast, :destination_port, :bytes_rx_count, :bytes_tx_count, " +
+                ":segments_count, :start_time, :end_time, :most_recent_segment_time, :state, " +
                 ":source_address_geo_asn_number, :source_address_geo_asn_name, " +
                 ":source_address_geo_asn_domain, :source_address_geo_city, " +
                 ":source_address_geo_country_code, :source_address_geo_latitude, " +
@@ -112,11 +112,14 @@ public class UDPTable implements DataTable {
                 ":destination_address_geo_city, :destination_address_geo_country_code, " +
                 ":destination_address_geo_latitude, :destination_address_geo_longitude, :created_at)");
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE l4_sessions SET state = :state, " +
-                "bytes_count = :bytes_count, segments_count = :segments_count, end_time = :end_time, " +
+                "bytes_rx_count = :bytes_rx_count, bytes_tx_count = :bytes_tx_count, " +
+                "segments_count = :segments_count, end_time = :end_time, " +
                 "most_recent_segment_time = :most_recent_segment_time WHERE id = :id");
 
-        long totalBytes = 0;
-        long totalInternalBytes = 0;
+        long totalRxBytes = 0;
+        long totalTxBytes = 0;
+        long totalRxInternalBytes = 0;
+        long totalTxInternalBytes = 0;
         long totalDatagrams = 0;
         long totalSessions = 0;
         long totalInternalSessions = 0;
@@ -151,7 +154,8 @@ public class UDPTable implements DataTable {
                     // Existing session. Update.
                     updateBatch
                             .bind("state", UdpConversationState.valueOf(conversation.state().toUpperCase()))
-                            .bind("bytes_count", conversation.bytesCount())
+                            .bind("bytes_rx_count", conversation.bytesCountRx())
+                            .bind("bytes_tx_count", conversation.bytesCountTx())
                             .bind("segments_count", conversation.datagramsCount())
                             .bind("end_time", conversation.endTime())
                             .bind("most_recent_segment_time", conversation.mostRecentSegmentTime())
@@ -175,7 +179,8 @@ public class UDPTable implements DataTable {
                             .bind("destination_address_is_loopback", destinationAddress.isLoopbackAddress())
                             .bind("destination_address_is_multicast", destinationAddress.isMulticastAddress())
                             .bind("destination_port", conversation.destinationPort())
-                            .bind("bytes_count", conversation.bytesCount())
+                            .bind("bytes_rx_count", conversation.bytesCountRx())
+                            .bind("bytes_tx_count", conversation.bytesCountTx())
                             .bind("segments_count", conversation.datagramsCount())
                             .bind("start_time", conversation.startTime())
                             .bind("end_time", conversation.endTime())
@@ -199,34 +204,40 @@ public class UDPTable implements DataTable {
                             .add();
                 }
 
-                totalBytes += conversation.bytesCountIncremental();
+                totalRxBytes += conversation.bytesCountRxIncremental();
+                totalTxBytes += conversation.bytesCountTxIncremental();
                 totalDatagrams += conversation.datagramsCountIncremental();
                 totalSessions += 1;
 
                 if (sourceAddress.isSiteLocalAddress() && destinationAddress.isSiteLocalAddress()) {
                     totalInternalSessions += 1;
-                    totalInternalBytes += conversation.bytesCountIncremental();
+                    totalRxInternalBytes += conversation.bytesCountRxIncremental();
+                    totalTxInternalBytes += conversation.bytesCountTxIncremental();
                 }
             } catch(Exception e) {
                 LOG.error("Could not handle UDP conversation.", e);
             }
         }
 
-        // Aggregated statistics.
-        handle.createUpdate("INSERT INTO l4_statistics(tap_uuid, bytes_udp, bytes_internal_udp, datagrams_udp, " +
-                        "sessions_udp, sessions_internal_udp, timestamp, created_at) VALUES(:tap_uuid, :bytes_udp, " +
-                        ":bytes_internal_udp, :datagrams_udp, :sessions_udp, :sessions_internal_udp, :timestamp, " +
-                        "NOW())")
-                .bind("tap_uuid", tap.uuid())
-                .bind("bytes_udp", totalBytes)
-                .bind("bytes_internal_udp", totalInternalBytes)
-                .bind("datagrams_udp", totalDatagrams)
-                .bind("sessions_udp", totalSessions)
-                .bind("sessions_internal_udp", totalInternalSessions)
-                .bind("timestamp", timestamp)
-                .execute();
-
         try {
+            // Aggregated statistics.
+            handle.createUpdate("INSERT INTO l4_statistics(tap_uuid, bytes_rx_udp, bytes_tx_udp, " +
+                            "bytes_rx_internal_udp, bytes_tx_internal_udp, datagrams_udp, " +
+                            "sessions_udp, sessions_internal_udp, timestamp, created_at) VALUES(:tap_uuid, " +
+                            ":bytes_rx_udp, :bytes_tx_udp, :bytes_rx_internal_udp, :bytes_tx_internal_udp, " +
+                            ":datagrams_udp, :sessions_udp, :sessions_internal_udp, " +
+                            ":timestamp, NOW())")
+                    .bind("tap_uuid", tap.uuid())
+                    .bind("bytes_rx_udp", totalRxBytes)
+                    .bind("bytes_tx_udp", totalTxBytes)
+                    .bind("bytes_rx_internal_udp", totalRxInternalBytes)
+                    .bind("bytes_tx_internal_udp", totalTxInternalBytes)
+                    .bind("datagrams_udp", totalDatagrams)
+                    .bind("sessions_udp", totalSessions)
+                    .bind("sessions_internal_udp", totalInternalSessions)
+                    .bind("timestamp", timestamp)
+                    .execute();
+
             updateBatch.execute();
             insertBatch.execute();
         } catch (Exception e) {

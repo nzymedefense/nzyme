@@ -89,7 +89,7 @@ public class TCPTable implements DataTable {
                 "session_key, source_mac, source_address, source_address_is_site_local, " +
                 "source_address_is_loopback, source_address_is_multicast, source_port, destination_mac, " +
                 "destination_address, destination_address_is_site_local, destination_address_is_loopback, " +
-                "destination_address_is_multicast, destination_port, bytes_count, segments_count, " +
+                "destination_address_is_multicast, destination_port, bytes_rx_count, bytes_tx_count, segments_count, " +
                 "start_time, end_time, most_recent_segment_time, state, source_address_geo_asn_number, " +
                 "source_address_geo_asn_name, source_address_geo_asn_domain, source_address_geo_city, " +
                 "source_address_geo_country_code, source_address_geo_latitude, " +
@@ -103,8 +103,8 @@ public class TCPTable implements DataTable {
                 ":source_address_is_site_local, :source_address_is_loopback, :source_address_is_multicast, " +
                 ":source_port, :destination_mac, :destination_address::inet, " +
                 ":destination_address_is_site_local, :destination_address_is_loopback, " +
-                ":destination_address_is_multicast, :destination_port, :bytes_count, :segments_count, " +
-                ":start_time, :end_time, :most_recent_segment_time, :state, " +
+                ":destination_address_is_multicast, :destination_port, :bytes_rx_count, :bytes_tx_count, " +
+                ":segments_count, :start_time, :end_time, :most_recent_segment_time, :state, " +
                 ":source_address_geo_asn_number, :source_address_geo_asn_name, " +
                 ":source_address_geo_asn_domain, :source_address_geo_city, " +
                 ":source_address_geo_country_code, :source_address_geo_latitude, " +
@@ -115,11 +115,14 @@ public class TCPTable implements DataTable {
                 ":tcp_syn_window_size, :tcp_syn_maximum_segment_size, :tcp_syn_window_scale_multiplier, " +
                 ":tcp_syn_cwr, :tcp_syn_ece, :tcp_syn_options::jsonb, :tcp_fingerprint, :created_at)");
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE l4_sessions SET state = :state, " +
-                "bytes_count = :bytes_count, segments_count = :segments_count, end_time = :end_time, " +
+                "bytes_rx_count = :bytes_rx_count, bytes_tx_count = :bytes_tx_count, " +
+                "segments_count = :segments_count, end_time = :end_time, " +
                 "most_recent_segment_time = :most_recent_segment_time WHERE id = :id");
 
-        long totalBytes = 0;
-        long totalInternalBytes = 0;
+        long totalRxBytes = 0;
+        long totalTxBytes = 0;
+        long totalRxInternalBytes = 0;
+        long totalTxInternalBytes = 0;
         long totalSegments = 0;
         long totalSessions = 0;
         long totalInternalSessions = 0;
@@ -155,7 +158,8 @@ public class TCPTable implements DataTable {
                         // Existing session. Update.
                         updateBatch
                                 .bind("state", TcpSessionState.valueOf(session.state().toUpperCase()))
-                                .bind("bytes_count", session.bytesCount())
+                                .bind("bytes_rx_count", session.bytesCountRx())
+                                .bind("bytes_tx_count", session.bytesCountTx())
                                 .bind("segments_count", session.segmentsCount())
                                 .bind("end_time", session.endTime())
                                 .bind("most_recent_segment_time", session.mostRecentSegmentTime())
@@ -196,7 +200,8 @@ public class TCPTable implements DataTable {
                                 .bind("destination_address_is_loopback", destinationAddress.isLoopbackAddress())
                                 .bind("destination_address_is_multicast", destinationAddress.isMulticastAddress())
                                 .bind("destination_port", session.destinationPort())
-                                .bind("bytes_count", session.bytesCount())
+                                .bind("bytes_rx_count", session.bytesCountRx())
+                                .bind("bytes_tx_count", session.bytesCountTx())
                                 .bind("segments_count", session.segmentsCount())
                                 .bind("start_time", session.startTime())
                                 .bind("end_time", session.endTime())
@@ -230,13 +235,15 @@ public class TCPTable implements DataTable {
                                 .add();
                     }
 
-                    totalBytes += session.bytesCountIncremental();
+                    totalRxBytes += session.bytesCountRxIncremental();
+                    totalTxBytes += session.bytesCountTxIncremental();
                     totalSegments += session.segmentsCountIncremental();
                     totalSessions += 1;
 
                     if (sourceAddress.isSiteLocalAddress() && destinationAddress.isSiteLocalAddress()) {
                         totalInternalSessions += 1;
-                        totalInternalBytes += session.bytesCountIncremental();
+                        totalRxInternalBytes += session.bytesCountRxIncremental();
+                        totalTxInternalBytes += session.bytesCountTxIncremental();
                     }
                 } catch (Exception e) {
                     LOG.error("Could not handle TCP session.", e);
@@ -244,21 +251,25 @@ public class TCPTable implements DataTable {
             }
         }
 
-        // Aggregated statistics.
-        handle.createUpdate("INSERT INTO l4_statistics(tap_uuid, bytes_tcp, bytes_internal_tcp, segments_tcp, " +
-                        "sessions_tcp, sessions_internal_tcp, timestamp, created_at) VALUES(:tap_uuid, " +
-                        ":bytes_tcp, :bytes_internal_tcp, :segments_tcp, :sessions_tcp, :sessions_internal_tcp, " +
-                        ":timestamp, NOW())")
-                .bind("tap_uuid", tap.uuid())
-                .bind("bytes_tcp", totalBytes)
-                .bind("bytes_internal_tcp", totalInternalBytes)
-                .bind("segments_tcp", totalSegments)
-                .bind("sessions_tcp", totalSessions)
-                .bind("sessions_internal_tcp", totalInternalSessions)
-                .bind("timestamp", timestamp)
-                .execute();
-
         try {
+            // Aggregated statistics.
+            handle.createUpdate("INSERT INTO l4_statistics(tap_uuid, bytes_rx_tcp, bytes_tx_tcp, " +
+                            "bytes_rx_internal_tcp, bytes_tx_internal_tcp, segments_tcp, " +
+                            "sessions_tcp, sessions_internal_tcp, timestamp, created_at) VALUES(:tap_uuid, " +
+                            ":bytes_rx_tcp, :bytes_tx_tcp, :bytes_rx_internal_tcp, :bytes_tx_internal_tcp, " +
+                            ":segments_tcp, :sessions_tcp, :sessions_internal_tcp, " +
+                            ":timestamp, NOW())")
+                    .bind("tap_uuid", tap.uuid())
+                    .bind("bytes_rx_tcp", totalRxBytes)
+                    .bind("bytes_tx_tcp", totalTxBytes)
+                    .bind("bytes_rx_internal_tcp", totalRxInternalBytes)
+                    .bind("bytes_tx_internal_tcp", totalTxInternalBytes)
+                    .bind("segments_tcp", totalSegments)
+                    .bind("sessions_tcp", totalSessions)
+                    .bind("sessions_internal_tcp", totalInternalSessions)
+                    .bind("timestamp", timestamp)
+                    .execute();
+
             updateBatch.execute();
             insertBatch.execute();
         } catch (Exception e) {

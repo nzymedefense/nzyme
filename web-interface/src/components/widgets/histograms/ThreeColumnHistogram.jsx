@@ -9,6 +9,7 @@ import {EXPORT_TYPE_CSV, EXPORT_TYPE_JSON, EXPORT_TYPE_TEXT} from "./ExportTypes
 import {MODE_BAR_CHART, MODE_EXPORT, MODE_TABLE} from "./HistogramModes";
 import HistogramValue from "./HistogramValue";
 import Store from "../../../util/Store";
+import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 
 function ThreeColumnHistogram(props) {
 
@@ -20,6 +21,8 @@ function ThreeColumnHistogram(props) {
   const highlightValue = props.highlightValue;
   const chartColumnValue = props.customChartColumnValue ? props.customChartColumnValue : "column_three";
   const chartColumnValueField = props.customChartColumnValueField;
+
+  const columnFilterElements = props.columnFilterElements;
 
   const [mode, setMode] = useState(MODE_TABLE);
 
@@ -51,6 +54,17 @@ function ThreeColumnHistogram(props) {
                             mode={mode} setMode={setMode}
                             showBarChart={data.show_bar_chart}
                             count={data.total} />
+  }
+
+  const filterElement = (element, value) => {
+    if (!element) {
+      return null;
+    }
+
+    return <FilterValueIcon setFilters={element.setFilters}
+                            fields={element.fields}
+                            field={element.field}
+                            value={value.value} />
   }
 
   const formatExport = () => {
@@ -127,9 +141,21 @@ function ThreeColumnHistogram(props) {
               return (
                   <tr key={i}>
                     <td className="text-muted">{i+1}</td>
-                    <td><HistogramValue value={d.column_one} highlightValue={highlightValue} /></td>
-                    <td><HistogramValue value={d.column_two} highlightValue={highlightValue} /></td>
-                    <td><HistogramValue value={d.column_three} /></td>
+                    <td>
+                      <HistogramValue value={d.column_one}
+                                      filterElement={filterElement(columnFilterElements[0], d.column_one)}
+                                      highlightValue={highlightValue} />
+                    </td>
+                    <td>
+                      <HistogramValue value={d.column_two}
+                                      filterElement={filterElement(columnFilterElements[1], d.column_two)}
+                                      highlightValue={highlightValue} />
+                    </td>
+                    <td>
+                      <HistogramValue value={d.column_three}
+                                      filterElement={filterElement(columnFilterElements[2], d.column_three)}
+                                      highlightValue={highlightValue} />
+                    </td>
                   </tr>
               )
             })}

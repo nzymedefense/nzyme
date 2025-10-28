@@ -1,10 +1,9 @@
 package app.nzyme.core.ethernet.l4;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.database.NumberNumberAggregationResult;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.database.generic.NumberNumberNumberAggregationResult;
-import app.nzyme.core.database.generic.StringNumberAggregationResult;
+import app.nzyme.core.database.generic.StringNumberNumberAggregationResult;
 import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.l4.db.L4Numbers;
 import app.nzyme.core.ethernet.l4.db.L4Session;
@@ -35,7 +34,8 @@ public class L4 {
         DESTINATION_MAC("destination_mac"),
         DESTINATION_ADDRESS("destination_address"),
         DESTINATION_PORT("destination_port"),
-        BYTES_COUNT("bytes_count"),
+        BYTES_RX_COUNT("bytes_rx_count"),
+        BYTES_TX_COUNT("bytes_tx_count"),
         START_TIME("start_time"),
         END_TIME("end_time"),
         MOST_RECENT_SEGMENT_TIME("most_recent_segment_time");
@@ -114,10 +114,11 @@ public class L4 {
                                 "ANY_VALUE(destination_address_geo_country_code) AS destination_address_geo_country_code, " +
                                 "ANY_VALUE(destination_address_geo_latitude) AS destination_address_geo_latitude, " +
                                 "ANY_VALUE(destination_address_geo_longitude) AS destination_address_geo_longitude, " +
-                                "ANY_VALUE(destination_address_is_site_local) AS destination_address_is_site_local," +
-                                " ANY_VALUE(destination_address_is_loopback) AS destination_address_is_loopback, " +
+                                "ANY_VALUE(destination_address_is_site_local) AS destination_address_is_site_local, " +
+                                "ANY_VALUE(destination_address_is_loopback) AS destination_address_is_loopback, " +
                                 "ANY_VALUE(destination_address_is_multicast) AS destination_address_is_multicast, " +
-                                "MAX(bytes_count) AS bytes_count, MAX(segments_count) AS segments_count, " +
+                                "MAX(bytes_rx_count) AS bytes_rx_count, MAX(bytes_tx_count) AS bytes_tx_count, " +
+                                "MAX(segments_count) AS segments_count, " +
                                 "MIN(start_time) AS start_time, MAX(end_time) AS end_time, " +
                                 "MAX(most_recent_segment_time) AS most_recent_segment_time, " +
                                 "MIN(created_at) AS created_at " +
@@ -150,9 +151,12 @@ public class L4 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
-                                "SUM(bytes_tcp) AS bytes_tcp, SUM(bytes_udp) AS bytes_udp, " +
-                                "SUM(bytes_internal_tcp) AS bytes_internal_tcp, " +
-                                "SUM(bytes_internal_udp) AS bytes_internal_udp, " +
+                                "SUM(bytes_rx_tcp) AS bytes_rx_tcp, SUM(bytes_tx_tcp) AS bytes_tx_tcp, " +
+                                "SUM(bytes_rx_internal_tcp) AS bytes_rx_internal_tcp, " +
+                                "SUM(bytes_tx_internal_tcp) AS bytes_tx_internal_tcp, " +
+                                "SUM(bytes_rx_udp) AS bytes_rx_udp, SUM(bytes_tx_udp) AS bytes_tx_udp, " +
+                                "SUM(bytes_rx_internal_udp) AS bytes_rx_internal_udp, " +
+                                "SUM(bytes_tx_internal_udp) AS bytes_tx_internal_udp, " +
                                 "SUM(segments_tcp) AS segments_tcp, SUM(datagrams_udp) AS datagrams_udp, " +
                                 "MAX(sessions_tcp) AS sessions_tcp, MAX(sessions_udp) AS sessions_udp, " +
                                 "MAX(sessions_internal_tcp) AS sessions_internal_tcp, " +
@@ -176,9 +180,10 @@ public class L4 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT NOW() AS bucket, " +
-                                "SUM(bytes_tcp) AS bytes_tcp, SUM(bytes_udp) AS bytes_udp, " +
-                                "SUM(bytes_internal_tcp) AS bytes_internal_tcp, " +
-                                "SUM(bytes_internal_udp) AS bytes_internal_udp, " +
+                                "SUM(bytes_rx_tcp+bytes_tx_tcp) AS bytes_tcp, " +
+                                "SUM(bytes_rx_udp+bytes_tx_udp) AS bytes_udp, " +
+                                "SUM(bytes_rx_internal_tcp+bytes_tx_internal_tcp) AS bytes_internal_tcp, " +
+                                "SUM(bytes_rx_internal_udp+bytes_tx_internal_udp) AS bytes_internal_udp, " +
                                 "SUM(segments_tcp) AS segments_tcp, SUM(datagrams_udp) AS datagrams_udp " +
                                 "FROM l4_statistics WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
                                 "AND tap_uuid IN (<taps>)")
@@ -217,14 +222,14 @@ public class L4 {
                                        Filters filters,
                                        List<UUID> taps) {
         if (taps.isEmpty()) {
-            return
-                    0;
+            return 0;
         }
 
         FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM (SELECT source_mac AS key, SUM(bytes_count) AS value " +
+                handle.createQuery("SELECT COUNT(*) FROM (SELECT source_mac AS key, " +
+                                "SUM(bytes_rx_count+bytes_tx_count) AS value " +
                                 "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
@@ -238,11 +243,11 @@ public class L4 {
         );
     }
 
-    public List<StringNumberAggregationResult> getTopTrafficSources(TimeRange timeRange,
-                                                                    Filters filters,
-                                                                    int limit,
-                                                                    int offset,
-                                                                    List<UUID> taps) {
+    public List<StringNumberNumberAggregationResult> getTopTrafficSources(TimeRange timeRange,
+                                                                          Filters filters,
+                                                                          int limit,
+                                                                          int offset,
+                                                                          List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -250,20 +255,21 @@ public class L4 {
         FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT source_mac AS key, SUM(bytes_count) AS value " +
+                handle.createQuery("SELECT source_mac AS key, SUM(bytes_rx_count) AS value1, " +
+                                "SUM(bytes_tx_count) AS value2 " +
                                 "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " +
                                 "AND source_mac IS NOT NULL " + filterFragment.whereSql() + " " +
                                 "GROUP BY source_mac HAVING 1=1 " + filterFragment.havingSql() + " " +
-                                "ORDER BY value DESC LIMIT :limit OFFSET :offset")
+                                "ORDER BY SUM(bytes_rx_count+bytes_tx_count) DESC LIMIT :limit OFFSET :offset")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bind("limit", limit)
                         .bind("offset", offset)
                         .bindMap(filterFragment.bindings())
                         .bindList("taps", taps)
-                        .mapTo(StringNumberAggregationResult.class)
+                        .mapTo(StringNumberNumberAggregationResult.class)
                         .list()
         );
     }
@@ -281,7 +287,7 @@ public class L4 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT destination_port AS key, COUNT(*) AS value1, " +
-                                "SUM(bytes_count) AS value2 " +
+                                "SUM(bytes_rx_count+bytes_tx_count) AS value2 " +
                                 "FROM l4_sessions WHERE destination_port < 32768 " +
                                 "AND most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to " +
