@@ -41,31 +41,31 @@ export default function SOCKSTunnelsTableRow(props) {
         </td>
         <td>
           <L4Address address={tunnel.client}
-                     filterElement={<FilterValueIcon setFilters={setFilters}
-                                                     fields={SOCKS_FILTER_FIELDS}
-                                                     field="client_address"
-                                                     value={tunnel.client.address} />}/>
+                     filterElement={tunnel.client ? <FilterValueIcon setFilters={setFilters}
+                                                                     fields={SOCKS_FILTER_FIELDS}
+                                                                     field="client_address"
+                                                                     value={tunnel.client.address} /> : null}/>
         </td>
         <td>
           <InternalAddressOnlyWrapper
             address={tunnel.client}
-            inner={<EthernetMacAddress addressWithContext={tunnel.client.mac}
-                                       filterElement={macFilter(tunnel.client.mac, "client_mac")}
-                                       withAssetLink withAssetName />} />
+            inner={tunnel.client ? <EthernetMacAddress addressWithContext={tunnel.client.mac}
+                                                       filterElement={macFilter(tunnel.client.mac, "client_mac")}
+                                                       withAssetLink withAssetName /> :null} />
         </td>
         <td>
           <L4Address address={tunnel.socks_server}
-                     filterElement={<FilterValueIcon setFilters={setFilters}
-                                                     fields={SOCKS_FILTER_FIELDS}
-                                                     field="server_address"
-                                                     value={tunnel.socks_server.address} />}/>
+                     filterElement={tunnel.socks_server ? <FilterValueIcon setFilters={setFilters}
+                                                                           fields={SOCKS_FILTER_FIELDS}
+                                                                           field="server_address"
+                                                                           value={tunnel.socks_server.address} /> : null }/>
         </td>
         <td>
           <InternalAddressOnlyWrapper
             address={tunnel.socks_server}
-            inner={<EthernetMacAddress addressWithContext={tunnel.socks_server.mac}
-                                       filterElement={macFilter(tunnel.socks_server.mac, "server_mac")}
-                                       withAssetLink withAssetName />} />
+            inner={tunnel.socks_server ? <EthernetMacAddress addressWithContext={tunnel.socks_server.mac}
+                                                             filterElement={macFilter(tunnel.socks_server.mac, "server_mac")}
+                                                             withAssetLink withAssetName /> : null } />
         </td>
         <td><SOCKSTunnelDestination tunnel={tunnel} setFilters={setFilters} /></td>
         <td>

@@ -41,17 +41,17 @@ export default function SSHSessionsTableRow(props) {
         <td>
           <L4Address address={session.client}
                      hidePort={true}
-                     filterElement={<FilterValueIcon setFilters={setFilters}
-                                                     fields={SSH_FILTER_FIELDS}
-                                                     field="client_address"
-                                                     value={session.client.address} />} />
+                     filterElement={session.client ? <FilterValueIcon setFilters={setFilters}
+                                                                      fields={SSH_FILTER_FIELDS}
+                                                                      field="client_address"
+                                                                      value={session.client.address} /> : null } />
         </td>
         <td>
           <InternalAddressOnlyWrapper
             address={session.client}
-            inner={<EthernetMacAddress addressWithContext={session.client.mac}
+            inner={session.client ? <EthernetMacAddress addressWithContext={session.client.mac}
                                        filterElement={macFilter(session.client.mac, "client_mac")}
-                                       withAssetLink withAssetName />} />
+                                       withAssetLink withAssetName /> : null} />
         </td>
         <td>
           <SSHVersion version={session.client_version} />
@@ -63,17 +63,17 @@ export default function SSHSessionsTableRow(props) {
         </td>
         <td>
           <L4Address address={session.server}
-                     filterElement={<FilterValueIcon setFilters={setFilters}
-                                                     fields={SSH_FILTER_FIELDS}
-                                                     field="server_address"
-                                                     value={session.server.address} />}/>
+                     filterElement={session.server ? <FilterValueIcon setFilters={setFilters}
+                                                                      fields={SSH_FILTER_FIELDS}
+                                                                      field="server_address"
+                                                                      value={session.server.address} /> : null}/>
         </td>
         <td>
           <InternalAddressOnlyWrapper
             address={session.server}
-            inner={<EthernetMacAddress addressWithContext={session.server.mac}
-                                       filterElement={macFilter(session.server.mac, "server_mac")}
-                                       withAssetLink withAssetName />} />
+            inner={session.server ? <EthernetMacAddress addressWithContext={session.server.mac}
+                                                        filterElement={macFilter(session.server.mac, "server_mac")}
+                                                        withAssetLink withAssetName /> : null} />
         </td>
         <td>
           <SSHVersion version={session.server_version} />
