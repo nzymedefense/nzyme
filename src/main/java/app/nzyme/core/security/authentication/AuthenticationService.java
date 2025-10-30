@@ -1321,8 +1321,8 @@ public class AuthenticationService {
                                             "LEFT JOIN auth_sessions AS s ON s.user_id = u.uuid " +
                                             "WHERE (u.is_orgadmin = true OR u.is_superadmin = true) " +
                                             "AND (s.created_at < :session_timeout OR (s.mfa_valid = true " +
-                                            "AND u.last_activity < :inactivity_timeout) OR (s.mfa_valid = false " +
-                                            "AND s.mfa_requested_at < :mfa_timeout))")
+                                            "AND u.last_activity < :inactivity_timeout) OR (mfa_disabled = false AND " +
+                                            "s.mfa_valid = false AND s.mfa_requested_at < :mfa_timeout))")
                                     .bind("session_timeout", DateTime.now().minusMinutes(sessionTimeoutMinutes))
                                     .bind("inactivity_timeout", DateTime.now().minusMinutes(sessionInactivityTimeoutMinutes))
                                     .bind("mfa_timeout", DateTime.now().minusMinutes(mfaTimeoutMinutes))
