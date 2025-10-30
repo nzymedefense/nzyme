@@ -197,29 +197,6 @@ public class L4 {
         );
     }
 
-
-    public long countDestinationPorts(TimeRange timeRange, Filters filters, List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return 0;
-        }
-
-        FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
-
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM (SELECT destination_port AS key, COUNT(*) AS value " +
-                                "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
-                                "AND most_recent_segment_time <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
-                                "GROUP BY destination_port HAVING 1=1 " + filterFragment.havingSql() + ")")
-                        .bind("tr_from", timeRange.from())
-                        .bind("tr_to", timeRange.to())
-                        .bindMap(filterFragment.bindings())
-                        .bindList("taps", taps)
-                        .mapTo(Long.class)
-                        .one()
-        );
-    }
-
     public long countTopTrafficSources(TimeRange timeRange,
                                        Filters filters,
                                        List<UUID> taps) {
@@ -329,6 +306,83 @@ public class L4 {
                         .bindList("taps", taps)
                         .mapTo(StringNumberNumberAggregationResult.class)
                         .list()
+        );
+    }
+
+
+    public long countTopDestinationPorts(TimeRange timeRange, Filters filters, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM (SELECT destination_port AS key, COUNT(*) AS value " +
+                                "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
+                                "AND most_recent_segment_time <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
+                                "GROUP BY destination_port HAVING 1=1 " + filterFragment.havingSql() + ")")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<NumberNumberNumberAggregationResult> getTopDestinationPorts(TimeRange timeRange,
+                                                                            Filters filters,
+                                                                            int limit,
+                                                                            int offset,
+                                                                            List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT destination_port AS key, COUNT(*) AS value1, " +
+                                "SUM(bytes_rx_count+bytes_tx_count) AS value2 " +
+                                "FROM l4_sessions WHERE  most_recent_segment_time >= :tr_from " +
+                                "AND most_recent_segment_time <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
+                                "GROUP BY destination_port HAVING 1=1 " + filterFragment.havingSql() + " " +
+                                "ORDER BY value2 DESC LIMIT :limit OFFSET :offset")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(NumberNumberNumberAggregationResult.class)
+                        .list()
+        );
+    }
+
+
+    public long countLeastCommonNonEphemeralDestinationPorts(TimeRange timeRange, Filters filters, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM (SELECT destination_port AS key, COUNT(*) AS value " +
+                                "FROM l4_sessions WHERE destination_port < 32768 " +
+                                "AND most_recent_segment_time >= :tr_from " +
+                                "AND most_recent_segment_time <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
+                                "GROUP BY destination_port HAVING 1=1 " + filterFragment.havingSql() + ")")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(Long.class)
+                        .one()
         );
     }
 

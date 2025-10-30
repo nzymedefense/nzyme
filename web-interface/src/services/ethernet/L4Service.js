@@ -60,6 +60,15 @@ export default class L4Service {
     )
   }
 
+  getTopDestinationPorts(taps, filters, timeRange, limit, offset, setData) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/ethernet/l4/sessions/histograms/ports/destination/all/top",
+        { taps: tapsList, filters: filters, time_range: timeRange, limit: limit, offset: offset },
+        (response) => setData(response.data)
+    )
+  }
+
   getLeastCommonNonEphemeralDestinationPorts(taps, filters, timeRange, limit, offset, setData) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 

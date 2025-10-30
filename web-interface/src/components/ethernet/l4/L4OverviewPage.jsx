@@ -17,6 +17,7 @@ import L4SessionsNumbers from "./L4SessionsNumbers";
 import L4SessionsLeastCommonNonEphemeralDestinationPortsHistogram from "./L4SessionsLeastCommonNonEphemeralDestinationPortsHistogram";
 import L4SessionsTopTrafficSourcesHistogram from "./L4SessionsTopTrafficSourcesHistogram";
 import L4SessionsTopTrafficDestinationsHistogram from "./L4SessionsTopTrafficDestinationsHistogram";
+import L4SessionsTopDestinationPortsHistogram from "./L4SessionsTopDestinationPortsHistogram";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -166,15 +167,17 @@ export default function L4OverviewPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Least Common Non-Ephemeral Destination Ports"
+                <CardTitleWithControls title="Top Destination Ports"
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
-                <L4SessionsLeastCommonNonEphemeralDestinationPortsHistogram filters={filters}
-                                                                            setFilters={setFilters}
-                                                                            timeRange={timeRange}
-                                                                            revision={revision} />
+                <p className="help-text">Sorted by traffic bytes.</p>
+
+                <L4SessionsTopDestinationPortsHistogram filters={filters}
+                                                        setFilters={setFilters}
+                                                        timeRange={timeRange}
+                                                        revision={revision} />
               </div>
             </div>
           </div>
@@ -182,10 +185,17 @@ export default function L4OverviewPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Longest Sessions"
+                <CardTitleWithControls title="Least Common Non-Ephemeral Destination Ports"
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
+
+                <p className="help-text">Sorted by session count.</p>
+
+                <L4SessionsLeastCommonNonEphemeralDestinationPortsHistogram filters={filters}
+                                                                            setFilters={setFilters}
+                                                                            timeRange={timeRange}
+                                                                            revision={revision} />
               </div>
             </div>
           </div>

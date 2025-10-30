@@ -275,6 +275,35 @@ public class L4Resource extends TapDataHandlingResource  {
     }
 
     @GET
+    @Path("/sessions/histograms/ports/destination/all/top")
+    public Response topDestinationPorts(@Context SecurityContext sc,
+                                        @QueryParam("time_range") String timeRangeParameter,
+                                        @QueryParam("filters") String filtersParameter,
+                                        @QueryParam("limit") int limit,
+                                        @QueryParam("offset") int offset,
+                                        @QueryParam("taps") String tapIds) {
+
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        long total = nzyme.getEthernet().l4().countTopDestinationPorts(timeRange, filters, taps);
+
+        List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
+        for (NumberNumberNumberAggregationResult port : nzyme.getEthernet().l4()
+                .getTopDestinationPorts(timeRange, filters, limit, offset, taps)) {
+            values.add(ThreeColumnTableHistogramValueResponse.create(
+                    HistogramValueStructureResponse.create(port.key(), HistogramValueType.L4_PORT, null),
+                    HistogramValueStructureResponse.create(port.value1(), HistogramValueType.INTEGER, null),
+                    HistogramValueStructureResponse.create(port.value2(), HistogramValueType.BYTES, null),
+                    String.valueOf(port.key())
+            ));
+        }
+
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, false, values)).build();
+    }
+
+    @GET
     @Path("/sessions/histograms/ports/destination/non-ephemeral/bottom")
     public Response leastCommonNonEphemeralDestinationPorts(@Context SecurityContext sc,
                                                             @QueryParam("time_range") String timeRangeParameter,
@@ -287,7 +316,7 @@ public class L4Resource extends TapDataHandlingResource  {
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Filters filters = parseFiltersQueryParameter(filtersParameter);
 
-        long total = nzyme.getEthernet().l4().countDestinationPorts(timeRange, filters, taps);
+        long total = nzyme.getEthernet().l4().countLeastCommonNonEphemeralDestinationPorts(timeRange, filters, taps);
 
         List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
         for (NumberNumberNumberAggregationResult port : nzyme.getEthernet().l4()
