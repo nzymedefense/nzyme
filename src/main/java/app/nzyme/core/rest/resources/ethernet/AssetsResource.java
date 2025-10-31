@@ -122,10 +122,8 @@ public class AssetsResource extends TapDataHandlingResource {
     public Response activeAssetHistogram(@Context SecurityContext sc,
                               @QueryParam("organization_id") UUID organizationId,
                               @QueryParam("tenant_id") UUID tenantId,
-                              @QueryParam("time_range") @Valid String timeRangeParameter,
-                              @QueryParam("filters") String filtersParameter) {
+                              @QueryParam("time_range") @Valid String timeRangeParameter) {
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
-        Filters filters = parseFiltersQueryParameter(filtersParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
@@ -134,7 +132,7 @@ public class AssetsResource extends TapDataHandlingResource {
 
         Map<DateTime, Integer> histogram = Maps.newHashMap();
         for (GenericIntegerHistogramEntry bucket : nzyme.getAssetsManager()
-                .activeAssetCountHistogram(timeRange, bucketing, filters, organizationId, tenantId)) {
+                .activeAssetCountHistogram(timeRange, bucketing, organizationId, tenantId)) {
             histogram.put(bucket.bucket(), bucket.value());
         }
 

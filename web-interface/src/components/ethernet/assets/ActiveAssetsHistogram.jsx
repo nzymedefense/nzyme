@@ -5,14 +5,14 @@ import SimpleLineChart from "../../widgets/charts/SimpleLineChart";
 
 const assetsService = new AssetsService();
 
-export default function ActiveAssetsHistogram({timeRange, setTimeRange, filters, organizationId, tenantId, revision}) {
+export default function ActiveAssetsHistogram({timeRange, setTimeRange, organizationId, tenantId, revision}) {
 
   const [histogram, setHistogram] = useState(null);
 
   useEffect(() => {
     setHistogram(null);
-    assetsService.getActiveAssetsHistogram(organizationId, tenantId, timeRange, filters, setHistogram)
-  }, [timeRange, filters, organizationId, tenantId, revision]);
+    assetsService.getActiveAssetsHistogram(organizationId, tenantId, timeRange, setHistogram)
+  }, [timeRange, organizationId, tenantId, revision]);
 
   if (histogram === null) {
     return <GenericWidgetLoadingSpinner height={200} />

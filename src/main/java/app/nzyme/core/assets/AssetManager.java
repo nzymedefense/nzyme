@@ -92,7 +92,7 @@ public class AssetManager {
         this.nzyme = nzyme;
     }
 
-    public long countActiveAssetsOfTenant(UUID organizationId, UUID tenantId) {
+    public long countActiveAssets(UUID organizationId, UUID tenantId) {
         DateTime now = DateTime.now();
 
         return nzyme.getDatabase().withHandle(handle ->
@@ -401,24 +401,14 @@ public class AssetManager {
 
     public List<GenericIntegerHistogramEntry> activeAssetCountHistogram(TimeRange timeRange,
                                                                         Bucketing.BucketingConfiguration bucketing,
-                                                                        Filters filters,
                                                                         UUID organizationId,
                                                                         UUID tenantId) {
-        FilterSqlFragment filterFragment = FilterSql.generate(filters, new AssetFilters());
-
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("WITH minute_buckets AS (SELECT generate_series(date_trunc(:date_trunc, " +
-                                "now() - interval '24 hours'), date_trunc(:date_trunc, now())," +
-                                " ('1 ' || :date_trunc)::interval) AS bucket_start), " +
-                                "recent_assets AS (" +
-                                "SELECT id, last_seen FROM assets WHERE last_seen >= :tr_from " +
-                                "AND last_seen <= :tr_to AND organization_id = :organization_id " +
-                                "AND tenant_id = :tenant_id " + filterFragment.whereSql() + " " +
-                                ") SELECT mb.bucket_start AS bucket, COUNT(ra.id) AS value FROM minute_buckets mb " +
-                                "LEFT JOIN recent_assets ra ON ra.last_seen >= mb.bucket_start - " +
-                                "interval '" + ACTIVE_ASSET_TIMEOUT_MINUTES + " minute' " +
-                                "AND ra.last_seen <= mb.bucket_start " +
-                                "GROUP BY mb.bucket_start ORDER BY mb.bucket_start;")
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "MAX(asset_count) AS value FROM assets_statistics " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND timestamp >= :tr_from AND timestamp <= :tr_to " +
+                                "GROUP BY bucket ORDER BY bucket DESC;")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)

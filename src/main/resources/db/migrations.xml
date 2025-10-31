@@ -7354,4 +7354,14 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="adapt_assets_statistics_indices" author="lennartkoopmann">
+        <dropIndex tableName="assets_statistics" indexName="assets_statistics_lookup" />
+
+        <createIndex tableName="assets_statistics" indexName="assets_statistics_lookup">
+            <column name="timestamp" />
+            <column name="organization_id" />
+            <column name="tenant_id" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

@@ -24,7 +24,7 @@ public class AssetMonitor extends Periodical {
             try {
                 LOG.debug("Processing asset statistics for tenant [{}/{}]", tenant.organizationUuid(), tenant.uuid());
                 DateTime now = DateTime.now();
-                long assetCount = nzyme.getAssetsManager().countActiveAssetsOfTenant(
+                long assetCount = nzyme.getAssetsManager().countActiveAssets(
                         tenant.organizationUuid(), tenant.uuid()
                 );
 

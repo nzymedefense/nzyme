@@ -62,6 +62,25 @@ export default function EthernetAssetsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
+                <CardTitleWithControls title="Active Assets"
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <ActiveAssetsHistogram organizationId={organizationId}
+                                       tenantId={tenantId}
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange}
+                                       revision={revision} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
                 <CardTitleWithControls title="Asset Filters"
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange} />
@@ -75,30 +94,12 @@ export default function EthernetAssetsPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Active Assets"
-                                       fixedAppliedTimeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
-
-                <ActiveAssetsHistogram organizationId={organizationId}
-                                       tenantId={tenantId}
-                                       filters={filters}
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       revision={revision} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row mt-3">
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Newest Assets"
-                                       fixedAppliedTimeRange={timeRange}
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
                 <LatestAssetsHistogram organizationId={organizationId}
@@ -114,7 +115,8 @@ export default function EthernetAssetsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Recently Disappeared Assets"
-                                       fixedAppliedTimeRange={timeRange}
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
                 <DisappearedAssetsHistogram organizationId={organizationId}
@@ -132,7 +134,8 @@ export default function EthernetAssetsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Assets"
-                                       fixedAppliedTimeRange={timeRange}
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
                 <AssetsTable assets={assets}
