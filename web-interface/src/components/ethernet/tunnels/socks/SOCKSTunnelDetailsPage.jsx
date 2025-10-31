@@ -9,7 +9,7 @@ import {TapContext} from "../../../../App";
 import GenericConnectionStatus from "../../shared/GenericConnectionStatus";
 import numeral from "numeral";
 import moment from "moment/moment";
-import {calculateConnectionDuration} from "../../../../util/Tools";
+import {formatDurationMs} from "../../../../util/Tools";
 import SOCKSTunnelDestination from "./SOCKSTunnelDestination";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import InternalAddressOnlyWrapper from "../../shared/InternalAddressOnlyWrapper";
@@ -132,7 +132,7 @@ export default function SOCKSTunnelDetailsPage() {
                   <dt>Tunneled Bytes</dt>
                   <dd>{numeral(tunnel.tunneled_bytes).format("0,0b")}</dd>
                   <dt>Duration</dt>
-                  <dd>{calculateConnectionDuration(tunnel.connection_status, tunnel.established_at, tunnel.terminated_at)}</dd>
+                  <dd>{formatDurationMs(tunnel.duration_ms)}</dd>
                   <dt>Established at</dt>
                   <dd>{moment(tunnel.established_at).format()}</dd>
                   <dt>Terminated at</dt>

@@ -67,7 +67,7 @@ export default function SSHSessionsTable(props) {
             <th>Server Type {columnSorting("server_type")}</th>
             <th>Status {columnSorting("connection_status")}</th>
             <th>Bytes {columnSorting("tunneled_bytes")}</th>
-            <th>Duration</th>
+            <th>Duration {columnSorting("duration")}</th>
             <th>Established At {columnSorting("established_at")}</th>
           </tr>
           </thead>

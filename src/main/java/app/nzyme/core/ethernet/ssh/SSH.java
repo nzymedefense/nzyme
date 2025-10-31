@@ -28,7 +28,8 @@ public class SSH {
         CONNECTION_STATUS("connection_status"),
         TUNNELED_BYTES("tunneled_bytes"),
         ESTABLISHED_AT("established_at"),
-        TERMINATED_AT("terminated_at");
+        TERMINATED_AT("terminated_at"),
+        DURATION("duration_ms");
 
         private final String columnName;
 
@@ -108,7 +109,10 @@ public class SSH {
                                 "MAX(ssh.tunneled_bytes) AS tunneled_bytes, " +
                                 "MIN(ssh.established_at) AS established_at, " +
                                 "MAX(ssh.terminated_at) AS terminated_at, " +
-                                "MAX(ssh.most_recent_segment_time) AS most_recent_segment_time " +
+                                "MAX(ssh.most_recent_segment_time) AS most_recent_segment_time, " +
+                                "(EXTRACT(EPOCH FROM " +
+                                "(MAX(ssh.most_recent_segment_time) - MIN(ssh.established_at))) * 1000" +
+                                ") AS duration_ms " +
                                 "FROM ssh_sessions AS ssh " +
                                 "LEFT JOIN l4_sessions AS tcp ON tcp.session_key = ssh.tcp_session_key " +
                                 "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid = ssh.tap_uuid " +
@@ -150,7 +154,10 @@ public class SSH {
                                 "MAX(ssh.tunneled_bytes) AS tunneled_bytes, " +
                                 "MIN(ssh.established_at) AS established_at, " +
                                 "MAX(ssh.terminated_at) AS terminated_at, " +
-                                "MAX(ssh.most_recent_segment_time) AS most_recent_segment_time " +
+                                "MAX(ssh.most_recent_segment_time) AS most_recent_segment_time, " +
+                                "(EXTRACT(EPOCH FROM " +
+                                "(MAX(ssh.most_recent_segment_time) - MIN(ssh.established_at))) * 1000" +
+                                ") AS duration_ms " +
                                 "FROM ssh_sessions AS ssh " +
                                 "LEFT JOIN l4_sessions AS tcp ON tcp.session_key = ssh.tcp_session_key " +
                                 "AND tcp.l4_type = 'TCP' AND tcp.tap_uuid = ssh.tap_uuid " +

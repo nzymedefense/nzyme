@@ -11,5 +11,6 @@ export const SSH_FILTER_FIELDS = {
   server_version_software: { title: "Server Version (Software)", type: FILTER_TYPE.STRING },
   server_version_comments: { title: "Server Version (Comments)", type: FILTER_TYPE.STRING },
   connection_status: { title: "Status", type: FILTER_TYPE.STRING },
-  tunneled_bytes: { title: "Tunneled Bytes", type: FILTER_TYPE.NUMERIC }
+  tunneled_bytes: { title: "Tunneled Bytes", type: FILTER_TYPE.NUMERIC },
+  duration: { title: "Duration (ms)", type: FILTER_TYPE.NUMERIC }
 }

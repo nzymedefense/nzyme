@@ -62,7 +62,10 @@ public abstract class SocksTunnelDetailsResponse {
     @JsonProperty("most_recent_segment_time")
     public abstract DateTime mostRecentSegmentTime();
 
-    public static SocksTunnelDetailsResponse create(L4AddressResponse client, L4AddressResponse socksServer, String tcpSessionKey, String socksType, String authenticationStatus, String handshakeStatus, String connectionStatus, String username, int tunneledBytes, String tunneledDestinationAddress, String tunneledDestinationHost, int tunneledDestinationPort, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime) {
+    @JsonProperty("duration_ms")
+    public abstract long durationMs();
+
+    public static SocksTunnelDetailsResponse create(L4AddressResponse client, L4AddressResponse socksServer, String tcpSessionKey, String socksType, String authenticationStatus, String handshakeStatus, String connectionStatus, String username, int tunneledBytes, String tunneledDestinationAddress, String tunneledDestinationHost, int tunneledDestinationPort, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime, long durationMs) {
         return builder()
                 .client(client)
                 .socksServer(socksServer)
@@ -79,6 +82,7 @@ public abstract class SocksTunnelDetailsResponse {
                 .establishedAt(establishedAt)
                 .terminatedAt(terminatedAt)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
+                .durationMs(durationMs)
                 .build();
     }
 
@@ -117,6 +121,8 @@ public abstract class SocksTunnelDetailsResponse {
         public abstract Builder terminatedAt(DateTime terminatedAt);
 
         public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
+
+        public abstract Builder durationMs(long durationMs);
 
         public abstract SocksTunnelDetailsResponse build();
     }

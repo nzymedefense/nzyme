@@ -12,4 +12,5 @@ export const SOCKS_FILTER_FIELDS = {
   type: { title: "Type", type: FILTER_TYPE.STRING },
   status: { title: "Status", type: FILTER_TYPE.STRING },
   tunneled_bytes: { title: "Tunneled Bytes", type: FILTER_TYPE.NUMERIC },
+  duration: { title: "Duration (ms)", type: FILTER_TYPE.NUMERIC }
 }

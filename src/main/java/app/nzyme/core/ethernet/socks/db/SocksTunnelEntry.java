@@ -26,8 +26,9 @@ public abstract class SocksTunnelEntry {
     @Nullable
     public abstract DateTime terminatedAt();
     public abstract DateTime mostRecentSegmentTime();
+    public abstract long durationMs();
 
-    public static SocksTunnelEntry create(String tcpSessionKey, String socksType, String authenticationStatus, String handshakeStatus, String connectionStatus, String username, int tunneledBytes, String tunneledDestinationAddress, String tunneledDestinationHost, int tunneledDestinationPort, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime) {
+    public static SocksTunnelEntry create(String tcpSessionKey, String socksType, String authenticationStatus, String handshakeStatus, String connectionStatus, String username, int tunneledBytes, String tunneledDestinationAddress, String tunneledDestinationHost, int tunneledDestinationPort, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime, long durationMs) {
         return builder()
                 .tcpSessionKey(tcpSessionKey)
                 .socksType(socksType)
@@ -42,6 +43,7 @@ public abstract class SocksTunnelEntry {
                 .establishedAt(establishedAt)
                 .terminatedAt(terminatedAt)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
+                .durationMs(durationMs)
                 .build();
     }
 
@@ -51,7 +53,6 @@ public abstract class SocksTunnelEntry {
 
     @AutoValue.Builder
     public abstract static class Builder {
-
         public abstract Builder tcpSessionKey(String tcpSessionKey);
 
         public abstract Builder socksType(String socksType);
@@ -77,6 +78,8 @@ public abstract class SocksTunnelEntry {
         public abstract Builder terminatedAt(DateTime terminatedAt);
 
         public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
+
+        public abstract Builder durationMs(long durationMs);
 
         public abstract SocksTunnelEntry build();
     }

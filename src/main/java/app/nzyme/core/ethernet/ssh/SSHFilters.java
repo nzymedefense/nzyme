@@ -33,6 +33,8 @@ public class SSHFilters implements SqlFilterProvider {
                 return GeneratedSql.create(stringMatch(bindId, "connection_status", operator), "");
             case "tunneled_bytes":
                 return GeneratedSql.create(numericMatch(bindId, "tunneled_bytes", operator), "");
+            case "duration":
+                return GeneratedSql.create("", numericMatch(bindId, "(EXTRACT(EPOCH FROM (MAX(ssh.most_recent_segment_time) - MIN(ssh.established_at))) * 1000)", operator));
             default:
                 throw new RuntimeException("Unknown field name [" + fieldName + "].");
         }

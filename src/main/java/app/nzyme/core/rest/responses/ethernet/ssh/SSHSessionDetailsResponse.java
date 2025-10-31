@@ -44,7 +44,10 @@ public abstract class SSHSessionDetailsResponse {
     @JsonProperty("most_recent_segment_time")
     public abstract DateTime mostRecentSegmentTime();
 
-    public static SSHSessionDetailsResponse create(String tcpSessionKey, L4AddressResponse client, L4AddressResponse server, SSHVersionResponse clientVersion, SSHVersionResponse serverVersion, String connectionStatus, int tunneledBytes, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime) {
+    @JsonProperty("duration_ms")
+    public abstract long durationMs();
+
+    public static SSHSessionDetailsResponse create(String tcpSessionKey, L4AddressResponse client, L4AddressResponse server, SSHVersionResponse clientVersion, SSHVersionResponse serverVersion, String connectionStatus, int tunneledBytes, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime, long durationMs) {
         return builder()
                 .tcpSessionKey(tcpSessionKey)
                 .client(client)
@@ -56,6 +59,7 @@ public abstract class SSHSessionDetailsResponse {
                 .establishedAt(establishedAt)
                 .terminatedAt(terminatedAt)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
+                .durationMs(durationMs)
                 .build();
     }
 
@@ -84,6 +88,8 @@ public abstract class SSHSessionDetailsResponse {
         public abstract Builder terminatedAt(DateTime terminatedAt);
 
         public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
+
+        public abstract Builder durationMs(long durationMs);
 
         public abstract SSHSessionDetailsResponse build();
     }

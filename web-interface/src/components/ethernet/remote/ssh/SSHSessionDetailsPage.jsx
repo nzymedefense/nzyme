@@ -8,7 +8,7 @@ import LoadingSpinner from "../../../misc/LoadingSpinner";
 import SSHService from "../../../../services/ethernet/SSHService";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 import numeral from "numeral";
-import {calculateConnectionDuration} from "../../../../util/Tools";
+import {calculateConnectionDuration, formatDurationMs} from "../../../../util/Tools";
 import moment from "moment";
 import SSHVersion from "./SSHVersion";
 import GenericConnectionStatus from "../../shared/GenericConnectionStatus";
@@ -126,7 +126,7 @@ export default function SSHSessionDetailsPage() {
                   <dt>Tunneled Bytes</dt>
                   <dd>{numeral(session.tunneled_bytes).format("0,0b")}</dd>
                   <dt>Duration</dt>
-                  <dd>{calculateConnectionDuration(session.connection_status, session.established_at, session.terminated_at)}</dd>
+                  <dd>{formatDurationMs(session.duration_ms)}</dd>
                   <dt>Established at</dt>
                   <dd>{moment(session.established_at).format()}</dd>
                   <dt>Terminated at</dt>

@@ -142,7 +142,8 @@ public class SSHResource extends TapDataHandlingResource {
                 s.tunneledBytes(),
                 s.establishedAt(),
                 s.terminatedAt(),
-                s.mostRecentSegmentTime()
+                s.mostRecentSegmentTime(),
+                s.durationMs()
         );
     }
 

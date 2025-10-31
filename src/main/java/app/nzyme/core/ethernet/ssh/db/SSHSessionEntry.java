@@ -24,8 +24,9 @@ public abstract class SSHSessionEntry {
     @Nullable
     public abstract DateTime terminatedAt();
     public abstract DateTime mostRecentSegmentTime();
+    public abstract long durationMs();
 
-    public static SSHSessionEntry create(String tcpSessionKey, String clientVersionVersion, String clientVersionSoftware, String clientVersionComments, String serverVersionVersion, String serverVersionSoftware, String serverVersionComments, String connectionStatus, int tunneledBytes, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime) {
+    public static SSHSessionEntry create(String tcpSessionKey, String clientVersionVersion, String clientVersionSoftware, String clientVersionComments, String serverVersionVersion, String serverVersionSoftware, String serverVersionComments, String connectionStatus, int tunneledBytes, DateTime establishedAt, DateTime terminatedAt, DateTime mostRecentSegmentTime, long durationMs) {
         return builder()
                 .tcpSessionKey(tcpSessionKey)
                 .clientVersionVersion(clientVersionVersion)
@@ -39,6 +40,7 @@ public abstract class SSHSessionEntry {
                 .establishedAt(establishedAt)
                 .terminatedAt(terminatedAt)
                 .mostRecentSegmentTime(mostRecentSegmentTime)
+                .durationMs(durationMs)
                 .build();
     }
 
@@ -71,6 +73,8 @@ public abstract class SSHSessionEntry {
         public abstract Builder terminatedAt(DateTime terminatedAt);
 
         public abstract Builder mostRecentSegmentTime(DateTime mostRecentSegmentTime);
+
+        public abstract Builder durationMs(long durationMs);
 
         public abstract SSHSessionEntry build();
     }

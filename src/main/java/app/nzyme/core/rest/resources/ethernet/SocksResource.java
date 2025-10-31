@@ -137,7 +137,8 @@ public class SocksResource extends TapDataHandlingResource {
                 t.tunneledDestinationPort(),
                 t.establishedAt(),
                 t.terminatedAt(),
-                t.mostRecentSegmentTime()
+                t.mostRecentSegmentTime(),
+                t.durationMs()
         );
     }
 

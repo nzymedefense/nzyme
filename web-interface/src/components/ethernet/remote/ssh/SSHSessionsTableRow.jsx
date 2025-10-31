@@ -2,7 +2,7 @@ import React from "react";
 import L4Address from "../../shared/L4Address";
 import GenericConnectionStatus from "../../shared/GenericConnectionStatus";
 import numeral from "numeral";
-import {calculateConnectionDuration} from "../../../../util/Tools";
+import {formatDurationMs} from "../../../../util/Tools";
 import moment from "moment/moment";
 import SSHVersion from "./SSHVersion";
 import SSHSessionKey from "../../shared/SSHSessionKey";
@@ -98,7 +98,14 @@ export default function SSHSessionsTableRow(props) {
                            field="tunneled_bytes"
                            value={session.tunneled_bytes} />
         </td>
-        <td>{calculateConnectionDuration(session.connection_status, session.established_at, session.terminated_at, session.most_recent_segment_time)}</td>
+        <td>
+          <FullCopy shortValue={formatDurationMs(session.duration_ms)} fullValue={session.duration_ms} />
+
+          <FilterValueIcon setFilters={setFilters}
+                           fields={SSH_FILTER_FIELDS}
+                           field="duration"
+                           value={session.duration_ms} />
+        </td>
         <td>{moment(session.established_at).format()}</td>
       </tr>
   )

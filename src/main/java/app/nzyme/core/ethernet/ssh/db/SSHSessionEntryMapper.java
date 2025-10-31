@@ -24,7 +24,8 @@ public class SSHSessionEntryMapper implements RowMapper<SSHSessionEntry> {
                 rs.getInt("tunneled_bytes"),
                 new DateTime(rs.getTimestamp("established_at")),
                 rs.getTimestamp("terminated_at") == null ? null : new DateTime(rs.getTimestamp("terminated_at")),
-                new DateTime(rs.getTimestamp("most_recent_segment_time"))
+                new DateTime(rs.getTimestamp("most_recent_segment_time")),
+                rs.getLong("duration_ms")
         );
     }
 

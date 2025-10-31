@@ -32,6 +32,9 @@ public class SOCKSFilters implements SqlFilterProvider {
                 return GeneratedSql.create(stringMatch(bindId, "tunneled_destination_host", operator), "");
             case "tunneled_destination_port":
                 return GeneratedSql.create(numericMatch(bindId, "tunneled_destination_port", operator), "");
+            case "duration":
+                return GeneratedSql.create("", numericMatch(bindId, "(EXTRACT(EPOCH FROM (MAX(socks.most_recent_segment_time) - MIN(socks.established_at))) * 1000)", operator));
+
             default:
                 throw new RuntimeException("Unknown field name [" + fieldName + "].");
         }

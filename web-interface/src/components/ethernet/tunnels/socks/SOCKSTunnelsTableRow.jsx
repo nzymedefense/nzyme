@@ -3,7 +3,7 @@ import React from "react";
 import numeral from "numeral";
 import moment from "moment";
 import L4Address from "../../shared/L4Address";
-import {calculateConnectionDuration} from "../../../../util/Tools";
+import {formatDurationMs} from "../../../../util/Tools";
 import GenericConnectionStatus from "../../shared/GenericConnectionStatus";
 import FilterValueIcon from "../../../shared/filtering/FilterValueIcon";
 import SocksTunnelId from "../../shared/SocksTunnelId";
@@ -90,7 +90,14 @@ export default function SOCKSTunnelsTableRow(props) {
                            field="tunneled_bytes"
                            value={tunnel.tunneled_bytes} />
         </td>
-        <td>{calculateConnectionDuration(tunnel.connection_status, tunnel.established_at, tunnel.terminated_at)}</td>
+        <td>
+          <FullCopy shortValue={formatDurationMs(tunnel.duration_ms)} fullValue={tunnel.duration_ms} />
+
+          <FilterValueIcon setFilters={setFilters}
+                           fields={SOCKS_FILTER_FIELDS}
+                           field="duration"
+                           value={tunnel.duration_ms} />
+        </td>
         <td>{moment(tunnel.established_at).format()}</td>
       </tr>
   )
