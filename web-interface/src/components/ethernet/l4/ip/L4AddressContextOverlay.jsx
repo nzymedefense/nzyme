@@ -8,6 +8,10 @@ export default function L4AddressContextOverlay(props) {
 
   const address = props.address;
   const attributeSummary = () => {
+    if (address.attributes === null) {
+      return null;
+    }
+
     if (address.attributes.is_site_local) {
       return "Site-Local / RFC 1918 IP Address"
     }
@@ -22,6 +26,10 @@ export default function L4AddressContextOverlay(props) {
   }
 
   const attributes = () => {
+    if (address.attributes === null) {
+      return ["None"];
+    }
+
     let attributes = [];
 
     if (address.attributes.is_site_local) {
@@ -116,25 +124,17 @@ export default function L4AddressContextOverlay(props) {
       )
     }
   } else {
-    // Not a GEO-enriched address. Happens for purely internal addresses.
-
-    /*
-     * TODO this should be generated just like any geo-derived site-local address above. This approach can cause issues
-     * when passing a local multicast address for example, because the hard coded attributes here would no longer be
-     * accurate/complete.
-     */
+    // Not a GEO-enriched address and no attributes.
 
     return (
         <React.Fragment>
           <h6><i className="fa-solid fa-map-location-dot"/> {address.address}</h6>
 
-          <p className="context-description">
-            <i className="fa-solid fa-circle-info"></i> Site-Local / RFC 1918 IP Address
-          </p>
+          <p className="context-description">No attributes.</p>
 
           <dl style={{marginBottom: 120}}>
             <dt>Attributes:</dt>
-            <dd>Site-Local</dd>
+            <dd>{attributes()}</dd>
           </dl>
 
           <a href={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(address.address)} className="btn btn-sm btn-outline-primary">

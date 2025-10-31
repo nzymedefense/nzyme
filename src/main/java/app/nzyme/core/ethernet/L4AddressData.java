@@ -10,7 +10,9 @@ public abstract class L4AddressData {
     public abstract String mac();
 
     public abstract String address();
-    public abstract int port();
+
+    @Nullable
+    public abstract Integer port();
 
     @Nullable
     public abstract GeoData geo();
@@ -18,7 +20,7 @@ public abstract class L4AddressData {
     @Nullable
     public abstract L4AddressAttributes attributes();
 
-    public static L4AddressData create(String mac, String address, int port, GeoData geo, L4AddressAttributes attributes) {
+    public static L4AddressData create(String mac, String address, Integer port, GeoData geo, L4AddressAttributes attributes) {
         return builder()
                 .mac(mac)
                 .address(address)
@@ -38,7 +40,7 @@ public abstract class L4AddressData {
 
         public abstract Builder address(String address);
 
-        public abstract Builder port(int port);
+        public abstract Builder port(Integer port);
 
         public abstract Builder geo(GeoData geo);
 

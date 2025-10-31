@@ -43,6 +43,9 @@ public class RestHelpers {
             case UDP:
                 typeResponse = L4AddressTypeResponse.UDP;
                 break;
+            case NONE:
+                typeResponse = L4AddressTypeResponse.NONE;
+                break;
             default:
                 throw new RuntimeException("Unknown L4 type [" + type + "].");
         }

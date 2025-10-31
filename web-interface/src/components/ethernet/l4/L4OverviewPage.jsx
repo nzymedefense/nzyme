@@ -7,7 +7,6 @@ import {useLocation} from "react-router-dom";
 import L4SessionsTable from "./L4SessionsTable";
 import {L4_SESSIONS_FILTER_FIELDS} from "./L4SessionFilterFields";
 import L4Service from "../../../services/ethernet/L4Service";
-import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import {TapContext} from "../../../App";
 import L4SessionsTotalBytesChart from "./L4SessionsTotalBytesChart";
 import L4SessionsTotalSessionsChart from "./L4SessionsTotalSessionsChart";
@@ -15,9 +14,11 @@ import L4SessionsInternalSessionsChart from "./L4SessionsInternallSessionsChart"
 import L4SessionsInternalBytesChart from "./L4SessionsInternalBytesChart";
 import L4SessionsNumbers from "./L4SessionsNumbers";
 import L4SessionsLeastCommonNonEphemeralDestinationPortsHistogram from "./L4SessionsLeastCommonNonEphemeralDestinationPortsHistogram";
-import L4SessionsTopTrafficSourcesHistogram from "./L4SessionsTopTrafficSourcesHistogram";
-import L4SessionsTopTrafficDestinationsHistogram from "./L4SessionsTopTrafficDestinationsHistogram";
+import L4SessionsTopTrafficSourceMacsHistogram from "./L4SessionsTopTrafficSourceMacsHistogram";
+import L4SessionsTopTrafficDestinationMacsHistogram from "./L4SessionsTopTrafficDestinationMacsHistogram";
 import L4SessionsTopDestinationPortsHistogram from "./L4SessionsTopDestinationPortsHistogram";
+import L4SessionsTopTrafficSourceAddressesHistogram from "./L4SessionsTopTrafficSourceAddressesHistogram";
+import L4SessionsTopTrafficDestinationAddressesHistogram from "./L4SessionsTopTrafficDestinationAddressesHistogram";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -133,15 +134,15 @@ export default function L4OverviewPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Top Traffic Sources"
+                <CardTitleWithControls title="Top Traffic Source MACs/Assets"
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
-                <L4SessionsTopTrafficSourcesHistogram filters={filters}
-                                                      setFilters={setFilters}
-                                                      timeRange={timeRange}
-                                                      revision={revision} />
+                <L4SessionsTopTrafficSourceMacsHistogram filters={filters}
+                                                         setFilters={setFilters}
+                                                         timeRange={timeRange}
+                                                         revision={revision} />
               </div>
             </div>
           </div>
@@ -149,15 +150,49 @@ export default function L4OverviewPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Top Traffic Destinations"
+                <CardTitleWithControls title="Top Traffic Destination MACs/Assets"
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
-                <L4SessionsTopTrafficDestinationsHistogram filters={filters}
-                                                           setFilters={setFilters}
-                                                           timeRange={timeRange}
-                                                           revision={revision} />
+                <L4SessionsTopTrafficDestinationMacsHistogram filters={filters}
+                                                              setFilters={setFilters}
+                                                              timeRange={timeRange}
+                                                              revision={revision} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Top Traffic Source Addresses"
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <L4SessionsTopTrafficSourceAddressesHistogram filters={filters}
+                                                              setFilters={setFilters}
+                                                              timeRange={timeRange}
+                                                              revision={revision} />
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Top Traffic Destination Addresses"
+                                       timeRange={timeRange}
+                                       setTimeRange={setTimeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <L4SessionsTopTrafficDestinationAddressesHistogram filters={filters}
+                                                                   setFilters={setFilters}
+                                                                   timeRange={timeRange}
+                                                                   revision={revision} />
               </div>
             </div>
           </div>

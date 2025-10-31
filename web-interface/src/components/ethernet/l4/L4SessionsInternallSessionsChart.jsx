@@ -8,8 +8,6 @@ export default function L4SessionsInternalSessionsChart({statistics, setTimeRang
     return <GenericWidgetLoadingSpinner height={200} />
   }
 
-  console.log(statistics);
-
   const formatData = data => {
     const sessionsTcp = {};
     const sessionsUdp = {};
@@ -21,8 +19,6 @@ export default function L4SessionsInternalSessionsChart({statistics, setTimeRang
 
       const tcp = row["sessions_internal_tcp"] ?? 0;
       const udp = row["sessions_internal_udp"] ?? 0;
-
-      console.log(tcp);
 
       sessionsTcp[timestamp] = tcp;
       sessionsUdp[timestamp] = udp;

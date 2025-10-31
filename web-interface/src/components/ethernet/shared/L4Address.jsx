@@ -57,7 +57,7 @@ export default function L4Address(props) {
   return (
       <span onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
         {flag()}{' '}
-        <IPAddressLink ip={address.address} port={hidePort ? null : address.port} />{' '}
+        <IPAddressLink ip={address.address} port={hidePort || !address.port ? null : address.port} />{' '}
         {filterElement ? filterElement : null}{' '}
         {suffixElement ? suffixElement : null}
 

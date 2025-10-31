@@ -9,7 +9,7 @@ import ThreeColumnHistogram from "../../widgets/histograms/ThreeColumnHistogram"
 
 const l4Service = new L4Service();
 
-export default function L4SessionsTopTrafficDestinationsHistogram({filters, setFilters, timeRange, revision}) {
+export default function L4SessionsTopTrafficSourceMacsHistogram({filters, setFilters, timeRange, revision}) {
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -21,7 +21,7 @@ export default function L4SessionsTopTrafficDestinationsHistogram({filters, setF
 
   useEffect(() => {
     setData(null);
-    l4Service.getTopTrafficDestinations(organizationId, tenantId, selectedTaps, filters, timeRange, limit, 0, setData)
+    l4Service.getTopTrafficSourceMacs(organizationId, tenantId, selectedTaps, filters, timeRange, limit, 0, setData)
   }, [organizationId, tenantId, selectedTaps, limit, filters, timeRange, revision])
 
   if (!data) {
@@ -37,12 +37,12 @@ export default function L4SessionsTopTrafficDestinationsHistogram({filters, setF
   }
 
   return <ThreeColumnHistogram data={data}
-                               columnFilterElements={[
-                                 {field: "destination_mac", fields: L4_SESSIONS_FILTER_FIELDS, setFilters: setFilters},
-                                 null, null
-                               ]}
-                               columnTitles={["Destination Asset", "RX", "TX"]}
-                               limit={limit}
-                               setLimit={setLimit} />
+                             columnFilterElements={[
+                               {field: "source_mac", fields: L4_SESSIONS_FILTER_FIELDS, setFilters: setFilters},
+                               null, null
+                             ]}
+                             columnTitles={["Source Asset", "RX", "TX"]}
+                             limit={limit}
+                             setLimit={setLimit} />
 
 }

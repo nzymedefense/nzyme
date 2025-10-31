@@ -2,6 +2,7 @@ package app.nzyme.core.ethernet.l4;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
+import app.nzyme.core.database.generic.L4AddressDataAddressNumberNumberAggregationResult;
 import app.nzyme.core.database.generic.NumberNumberNumberAggregationResult;
 import app.nzyme.core.database.generic.StringNumberNumberAggregationResult;
 import app.nzyme.core.ethernet.Ethernet;
@@ -197,9 +198,7 @@ public class L4 {
         );
     }
 
-    public long countTopTrafficSources(TimeRange timeRange,
-                                       Filters filters,
-                                       List<UUID> taps) {
+    public long countTopTrafficSourceMacs(TimeRange timeRange, Filters filters, List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
@@ -210,8 +209,8 @@ public class L4 {
                 handle.createQuery("SELECT COUNT(*) FROM (SELECT source_mac AS key, " +
                                 "SUM(bytes_rx_count+bytes_tx_count) AS value " +
                                 "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
-                                "AND most_recent_segment_time <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
+                                "AND most_recent_segment_time <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "AND source_mac IS NOT NULL " + filterFragment.whereSql() + " " +
                                 "GROUP BY source_mac HAVING 1=1 " + filterFragment.havingSql() + ")")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
@@ -222,11 +221,11 @@ public class L4 {
         );
     }
 
-    public List<StringNumberNumberAggregationResult> getTopTrafficSources(TimeRange timeRange,
-                                                                          Filters filters,
-                                                                          int limit,
-                                                                          int offset,
-                                                                          List<UUID> taps) {
+    public List<StringNumberNumberAggregationResult> getTopTrafficSourceMacs(TimeRange timeRange,
+                                                                             Filters filters,
+                                                                             int limit,
+                                                                             int offset,
+                                                                             List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -253,9 +252,7 @@ public class L4 {
         );
     }
 
-    public long countTopTrafficDestinations(TimeRange timeRange,
-                                            Filters filters,
-                                            List<UUID> taps) {
+    public long countTopTrafficDestinationMacs(TimeRange timeRange, Filters filters, List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
@@ -266,8 +263,8 @@ public class L4 {
                 handle.createQuery("SELECT COUNT(*) FROM (SELECT destination_mac AS key, " +
                                 "SUM(bytes_rx_count+bytes_tx_count) AS value " +
                                 "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
-                                "AND most_recent_segment_time <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
+                                "AND most_recent_segment_time <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "AND destination_mac IS NOT NULL " + filterFragment.whereSql() + " " +
                                 "GROUP BY destination_mac HAVING 1=1 " + filterFragment.havingSql() + ")")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
@@ -278,11 +275,11 @@ public class L4 {
         );
     }
 
-    public List<StringNumberNumberAggregationResult> getTopTrafficDestinations(TimeRange timeRange,
-                                                                               Filters filters,
-                                                                               int limit,
-                                                                               int offset,
-                                                                               List<UUID> taps) {
+    public List<StringNumberNumberAggregationResult> getTopTrafficDestinationMacs(TimeRange timeRange,
+                                                                                  Filters filters,
+                                                                                  int limit,
+                                                                                  int offset,
+                                                                                  List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -309,6 +306,131 @@ public class L4 {
         );
     }
 
+
+    public long countTopTrafficSourceAddresses(TimeRange timeRange, Filters filters, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM (SELECT source_address AS ignored FROM l4_sessions " +
+                                "WHERE most_recent_segment_time >= :tr_from " +
+                                "AND most_recent_segment_time <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
+                                "GROUP BY source_address HAVING 1=1 " + filterFragment.havingSql() + ")")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<L4AddressDataAddressNumberNumberAggregationResult> getTopTrafficSourceAddresses(TimeRange timeRange,
+                                                                                                Filters filters,
+                                                                                                int limit,
+                                                                                                int offset,
+                                                                                                List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT source_address AS key_address, NULL as key_port, " +
+                                "ANY_VALUE(source_address_geo_asn_number) AS key_address_geo_asn_number, " +
+                                "ANY_VALUE(source_address_geo_asn_name) AS key_address_geo_asn_name, " +
+                                "ANY_VALUE(source_address_geo_asn_domain) AS key_address_geo_asn_domain, " +
+                                "ANY_VALUE(source_address_geo_city) AS key_address_geo_city, " +
+                                "ANY_VALUE(source_address_geo_country_code) AS key_address_geo_country_code, " +
+                                "ANY_VALUE(source_address_geo_latitude) AS key_address_geo_latitude, " +
+                                "ANY_VALUE(source_address_geo_longitude) AS key_address_geo_longitude, " +
+                                "ANY_VALUE(source_address_is_site_local) AS key_address_is_site_local, " +
+                                "ANY_VALUE(source_address_is_loopback) AS key_address_is_loopback, " +
+                                "ANY_VALUE(source_address_is_multicast) AS key_address_is_multicast, " +
+                                "SUM(bytes_rx_count) AS value1, SUM(bytes_tx_count) AS value2 " +
+                                "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
+                                "AND most_recent_segment_time <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
+                                "GROUP BY source_address HAVING 1=1 " + filterFragment.havingSql() + " " +
+                                "ORDER BY SUM(bytes_rx_count+bytes_tx_count) DESC LIMIT :limit OFFSET :offset")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(L4AddressDataAddressNumberNumberAggregationResult.class)
+                        .list()
+        );
+    }
+
+    public long countTopTrafficDestinationAddresses(TimeRange timeRange, Filters filters, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM (SELECT destination_address AS ignored, " +
+                                "SUM(bytes_rx_count+bytes_tx_count) AS value " +
+                                "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
+                                "AND most_recent_segment_time <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
+                                "GROUP BY destination_address HAVING 1=1 " + filterFragment.havingSql() + ")")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<L4AddressDataAddressNumberNumberAggregationResult> getTopTrafficDestinationAddresses(TimeRange timeRange,
+                                                                                                     Filters filters,
+                                                                                                     int limit,
+                                                                                                     int offset,
+                                                                                                     List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT destination_address AS key_address, NULL as key_port, " +
+                                "ANY_VALUE(destination_address_geo_asn_number) AS key_address_geo_asn_number, " +
+                                "ANY_VALUE(destination_address_geo_asn_name) AS key_address_geo_asn_name, " +
+                                "ANY_VALUE(destination_address_geo_asn_domain) AS key_address_geo_asn_domain, " +
+                                "ANY_VALUE(destination_address_geo_city) AS key_address_geo_city, " +
+                                "ANY_VALUE(destination_address_geo_country_code) AS key_address_geo_country_code, " +
+                                "ANY_VALUE(destination_address_geo_latitude) AS key_address_geo_latitude, " +
+                                "ANY_VALUE(destination_address_geo_longitude) AS key_address_geo_longitude, " +
+                                "ANY_VALUE(destination_address_is_site_local) AS key_address_is_site_local, " +
+                                "ANY_VALUE(destination_address_is_loopback) AS key_address_is_loopback, " +
+                                "ANY_VALUE(destination_address_is_multicast) AS key_address_is_multicast, " +
+                                "SUM(bytes_rx_count) AS value1, SUM(bytes_tx_count) AS value2 " +
+                                "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
+                                "AND most_recent_segment_time <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +  filterFragment.whereSql() + " " +
+                                "GROUP BY destination_address HAVING 1=1 " + filterFragment.havingSql() + " " +
+                                "ORDER BY SUM(bytes_rx_count+bytes_tx_count) DESC LIMIT :limit OFFSET :offset")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(L4AddressDataAddressNumberNumberAggregationResult.class)
+                        .list()
+        );
+    }
 
     public long countTopDestinationPorts(TimeRange timeRange, Filters filters, List<UUID> taps) {
         if (taps.isEmpty()) {

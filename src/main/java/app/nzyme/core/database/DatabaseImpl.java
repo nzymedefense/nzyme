@@ -212,7 +212,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new NumberNumberAggregationResultMapper())
                 .registerRowMapper(new StringNumberAggregationResultMapper())
                 .registerRowMapper(new NumberNumberNumberAggregationResultMapper())
-                .registerRowMapper(new StringNumberNumberAggregationResultMapper());
+                .registerRowMapper(new StringNumberNumberAggregationResultMapper())
+                .registerRowMapper(new L4AddressDataAddressNumberNumberAggregationResultMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

@@ -57,14 +57,20 @@ function ThreeColumnHistogram(props) {
   }
 
   const filterElement = (element, value) => {
-    if (!element) {
+    if (!element || !value.value) {
       return null;
     }
+
+    /*
+     * If the value is not a simple string or number, but, for example a L4Address, we can pass a "sub field" to
+     * select a field on top of the value element.
+     */
+    let selectedValue = element.valueSubField ? value.value[element.valueSubField] : value.value;
 
     return <FilterValueIcon setFilters={element.setFilters}
                             fields={element.fields}
                             field={element.field}
-                            value={value.value} />
+                            value={selectedValue} />
   }
 
   const formatExport = () => {

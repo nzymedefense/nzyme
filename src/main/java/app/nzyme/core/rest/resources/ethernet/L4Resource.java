@@ -3,11 +3,11 @@ package app.nzyme.core.rest.resources.ethernet;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.context.db.MacAddressContextEntry;
-import app.nzyme.core.database.NumberNumberAggregationResult;
 import app.nzyme.core.database.OrderDirection;
+import app.nzyme.core.database.generic.L4AddressDataAddressNumberNumberAggregationResult;
 import app.nzyme.core.database.generic.NumberNumberNumberAggregationResult;
-import app.nzyme.core.database.generic.StringNumberAggregationResult;
 import app.nzyme.core.database.generic.StringNumberNumberAggregationResult;
+import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.l4.L4;
 import app.nzyme.core.ethernet.l4.db.L4Numbers;
 import app.nzyme.core.ethernet.l4.db.L4Session;
@@ -159,15 +159,15 @@ public class L4Resource extends TapDataHandlingResource  {
     }
 
     @GET
-    @Path("/sessions/histograms/sources/traffic/top")
-    public Response topTrafficSources(@Context SecurityContext sc,
-                                      @QueryParam("organization_id") UUID organizationId,
-                                      @QueryParam("tenant_id") UUID tenantId,
-                                      @QueryParam("time_range") String timeRangeParameter,
-                                      @QueryParam("filters") String filtersParameter,
-                                      @QueryParam("limit") int limit,
-                                      @QueryParam("offset") int offset,
-                                      @QueryParam("taps") String tapIds) {
+    @Path("/sessions/histograms/sources/traffic/macs/top")
+    public Response topTrafficSourceMacs(@Context SecurityContext sc,
+                                         @QueryParam("organization_id") UUID organizationId,
+                                         @QueryParam("tenant_id") UUID tenantId,
+                                         @QueryParam("time_range") String timeRangeParameter,
+                                         @QueryParam("filters") String filtersParameter,
+                                         @QueryParam("limit") int limit,
+                                         @QueryParam("offset") int offset,
+                                         @QueryParam("taps") String tapIds) {
 
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
@@ -177,11 +177,11 @@ public class L4Resource extends TapDataHandlingResource  {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        long total = nzyme.getEthernet().l4().countTopTrafficSources(timeRange, filters, taps);
+        long total = nzyme.getEthernet().l4().countTopTrafficSourceMacs(timeRange, filters, taps);
 
         List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
         for (StringNumberNumberAggregationResult source : nzyme.getEthernet().l4()
-                .getTopTrafficSources(timeRange, filters, limit, offset, taps)) {
+                .getTopTrafficSourceMacs(timeRange, filters, limit, offset, taps)) {
             Optional<MacAddressContextEntry> sourceContext = nzyme.getContextService().findMacAddressContext(
                     source.key(),
                     organizationId,
@@ -217,15 +217,15 @@ public class L4Resource extends TapDataHandlingResource  {
     }
 
     @GET
-    @Path("/sessions/histograms/destinations/traffic/top")
-    public Response topTrafficDestinations(@Context SecurityContext sc,
-                                           @QueryParam("organization_id") UUID organizationId,
-                                           @QueryParam("tenant_id") UUID tenantId,
-                                           @QueryParam("time_range") String timeRangeParameter,
-                                           @QueryParam("filters") String filtersParameter,
-                                           @QueryParam("limit") int limit,
-                                           @QueryParam("offset") int offset,
-                                           @QueryParam("taps") String tapIds) {
+    @Path("/sessions/histograms/sources/traffic/addresses/top")
+    public Response topTrafficSourceAddresses(@Context SecurityContext sc,
+                                              @QueryParam("organization_id") UUID organizationId,
+                                              @QueryParam("tenant_id") UUID tenantId,
+                                              @QueryParam("time_range") String timeRangeParameter,
+                                              @QueryParam("filters") String filtersParameter,
+                                              @QueryParam("limit") int limit,
+                                              @QueryParam("offset") int offset,
+                                              @QueryParam("taps") String tapIds) {
 
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
@@ -235,11 +235,54 @@ public class L4Resource extends TapDataHandlingResource  {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        long total = nzyme.getEthernet().l4().countTopTrafficDestinations(timeRange, filters, taps);
+        long total = nzyme.getEthernet().l4().countTopTrafficSourceAddresses(timeRange, filters, taps);
+
+        List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
+        for (L4AddressDataAddressNumberNumberAggregationResult source : nzyme.getEthernet().l4()
+                .getTopTrafficSourceAddresses(timeRange, filters, limit, offset, taps)) {
+
+            values.add(ThreeColumnTableHistogramValueResponse.create(
+                    HistogramValueStructureResponse.create(
+                            RestHelpers.L4AddressDataToResponse(
+                                    nzyme, organizationId, tenantId, L4Type.NONE, source.key()
+                            ),
+                            HistogramValueType.L4_ADDRESS,
+                            null
+                    ),
+                    HistogramValueStructureResponse.create(source.value1(), HistogramValueType.BYTES, null),
+                    HistogramValueStructureResponse.create(source.value2(), HistogramValueType.BYTES, null),
+                    source.key().address()
+            ));
+        }
+
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, false, values)).build();
+    }
+
+
+    @GET
+    @Path("/sessions/histograms/destinations/traffic/macs/top")
+    public Response topTrafficDestinationMacs(@Context SecurityContext sc,
+                                              @QueryParam("organization_id") UUID organizationId,
+                                              @QueryParam("tenant_id") UUID tenantId,
+                                              @QueryParam("time_range") String timeRangeParameter,
+                                              @QueryParam("filters") String filtersParameter,
+                                              @QueryParam("limit") int limit,
+                                              @QueryParam("offset") int offset,
+                                              @QueryParam("taps") String tapIds) {
+
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total = nzyme.getEthernet().l4().countTopTrafficDestinationMacs(timeRange, filters, taps);
 
         List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
         for (StringNumberNumberAggregationResult dest : nzyme.getEthernet().l4()
-                .getTopTrafficDestinations(timeRange, filters, limit, offset, taps)) {
+                .getTopTrafficDestinationMacs(timeRange, filters, limit, offset, taps)) {
             Optional<MacAddressContextEntry> destinationContext = nzyme.getContextService().findMacAddressContext(
                     dest.key(),
                     organizationId,
@@ -268,6 +311,48 @@ public class L4Resource extends TapDataHandlingResource  {
                     HistogramValueStructureResponse.create(dest.value1(), HistogramValueType.BYTES, null),
                     HistogramValueStructureResponse.create(dest.value2(), HistogramValueType.BYTES, null),
                     dest.key()
+            ));
+        }
+
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, false, values)).build();
+    }
+
+    @GET
+    @Path("/sessions/histograms/destinations/traffic/addresses/top")
+    public Response topTrafficDestinationAddresses(@Context SecurityContext sc,
+                                                   @QueryParam("organization_id") UUID organizationId,
+                                                   @QueryParam("tenant_id") UUID tenantId,
+                                                   @QueryParam("time_range") String timeRangeParameter,
+                                                   @QueryParam("filters") String filtersParameter,
+                                                   @QueryParam("limit") int limit,
+                                                   @QueryParam("offset") int offset,
+                                                   @QueryParam("taps") String tapIds) {
+
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total = nzyme.getEthernet().l4().countTopTrafficDestinationAddresses(timeRange, filters, taps);
+
+        List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
+        for (L4AddressDataAddressNumberNumberAggregationResult dest : nzyme.getEthernet().l4()
+                .getTopTrafficDestinationAddresses(timeRange, filters, limit, offset, taps)) {
+
+            values.add(ThreeColumnTableHistogramValueResponse.create(
+                    HistogramValueStructureResponse.create(
+                            RestHelpers.L4AddressDataToResponse(
+                                    nzyme, organizationId, tenantId, L4Type.NONE, dest.key()
+                            ),
+                            HistogramValueType.L4_ADDRESS,
+                            null
+                    ),
+                    HistogramValueStructureResponse.create(dest.value1(), HistogramValueType.BYTES, null),
+                    HistogramValueStructureResponse.create(dest.value2(), HistogramValueType.BYTES, null),
+                    dest.key().address()
             ));
         }
 
