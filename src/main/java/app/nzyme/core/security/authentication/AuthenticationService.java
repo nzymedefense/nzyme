@@ -364,6 +364,14 @@ public class AuthenticationService {
         );
     }
 
+    public List<TenantEntry> findAllTenantsOfAllOrganizations() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM auth_tenants")
+                        .mapTo(TenantEntry.class)
+                        .list()
+        );
+    }
+
     public Optional<TenantEntry> findTenant(UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_tenants WHERE uuid = :id")

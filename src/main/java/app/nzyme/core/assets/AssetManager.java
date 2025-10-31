@@ -92,6 +92,21 @@ public class AssetManager {
         this.nzyme = nzyme;
     }
 
+    public long countActiveAssetsOfTenant(UUID organizationId, UUID tenantId) {
+        DateTime now = DateTime.now();
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM assets WHERE organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id AND last_seen >= :tr_from AND last_seen <= :tr_to")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("tr_from", now.minusMinutes(ACTIVE_ASSET_TIMEOUT_MINUTES))
+                        .bind("tr_to", now)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
     public long countAssets(TimeRange timeRange, Filters filters, UUID organizationId, UUID tenantId) {
         FilterSqlFragment filterFragment = FilterSql.generate(filters, new AssetFilters());
 
@@ -108,7 +123,6 @@ public class AssetManager {
                         .one()
         );
     }
-
 
     public List<AssetEntry> findAllAssets(UUID organizationId,
                                           UUID tenantId,
@@ -420,6 +434,18 @@ public class AssetManager {
                 handle.createUpdate("DELETE FROM assets_ip_addresses WHERE asset_id = :asset_id AND uuid = :uuid")
                         .bind("asset_id", assetId)
                         .bind("uuid", addressId)
+                        .execute()
+        );
+    }
+
+    public void writeAssetStatistics(UUID organizationId, UUID tenantId, long assetCount, DateTime timestamp) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO assets_statistics(organization_id, tenant_id, asset_count, " +
+                                "timestamp) VALUES(:organization_id, :tenant_id, :asset_count, :timestamp)")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("asset_count", assetCount)
+                        .bind("timestamp", timestamp)
                         .execute()
         );
     }
