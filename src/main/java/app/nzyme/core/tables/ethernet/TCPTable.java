@@ -98,7 +98,7 @@ public class TCPTable implements DataTable {
                 "destination_address_geo_city, destination_address_geo_country_code, " +
                 "destination_address_geo_latitude, destination_address_geo_longitude, ip_ttl, ip_tos, ip_df, " +
                 "tcp_syn_window_size, tcp_syn_maximum_segment_size, tcp_syn_window_scale_multiplier, tcp_syn_cwr, " +
-                "tcp_syn_ece, tcp_syn_options, tcp_fingerprint, created_at) " +
+                "tcp_syn_ece, tcp_syn_options, tcp_fingerprint, tags, created_at) " +
                 "VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, :source_address::inet, " +
                 ":source_address_is_site_local, :source_address_is_loopback, :source_address_is_multicast, " +
                 ":source_port, :destination_mac, :destination_address::inet, " +
@@ -113,10 +113,10 @@ public class TCPTable implements DataTable {
                 ":destination_address_geo_city, :destination_address_geo_country_code, " +
                 ":destination_address_geo_latitude, :destination_address_geo_longitude, :ip_ttl, :ip_tos, :ip_df, " +
                 ":tcp_syn_window_size, :tcp_syn_maximum_segment_size, :tcp_syn_window_scale_multiplier, " +
-                ":tcp_syn_cwr, :tcp_syn_ece, :tcp_syn_options::jsonb, :tcp_fingerprint, :created_at)");
+                ":tcp_syn_cwr, :tcp_syn_ece, :tcp_syn_options::jsonb, :tcp_fingerprint, :tags::jsonb, :created_at)");
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE l4_sessions SET state = :state, " +
                 "bytes_rx_count = :bytes_rx_count, bytes_tx_count = :bytes_tx_count, " +
-                "segments_count = :segments_count, end_time = :end_time, " +
+                "segments_count = :segments_count, tags = tags::jsonb, end_time = :end_time, " +
                 "most_recent_segment_time = :most_recent_segment_time WHERE id = :id");
 
         long totalRxBytes = 0;
@@ -128,6 +128,19 @@ public class TCPTable implements DataTable {
         long totalInternalSessions = 0;
 
         for (TcpSessionReport session : sessions) {
+
+            String tags;
+            if (session.tags() != null && !session.tags().isEmpty()) {
+                try {
+                    tags = om.writeValueAsString(session.tags());
+                } catch (JsonProcessingException e) {
+                     LOG.error("Could not serialize session tags.", e);
+                     tags = null;
+                }
+            } else {
+                tags = null;
+            }
+
             if (session.mostRecentSegmentTime().isAfter(DateTime.now().minusMinutes(1))) {
                 try {
                     String sessionKey = Tools.buildL4Key(
@@ -163,6 +176,7 @@ public class TCPTable implements DataTable {
                                 .bind("segments_count", session.segmentsCount())
                                 .bind("end_time", session.endTime())
                                 .bind("most_recent_segment_time", session.mostRecentSegmentTime())
+                                .bind("tags", tags)
                                 .bind("id", existingSession.get().id())
                                 .add();
                     } else {
@@ -232,6 +246,7 @@ public class TCPTable implements DataTable {
                                 .bind("tcp_syn_options", synOptions)
                                 .bind("tcp_fingerprint", fingerprint)
                                 .bind("created_at", timestamp)
+                                .bind("tags", tags)
                                 .add();
                     }
 

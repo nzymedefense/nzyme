@@ -7364,4 +7364,12 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_tags_to_l4_sessions" author="lennartkoopmann">
+        <addColumn tableName="l4_sessions">
+            <column name="tags" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
