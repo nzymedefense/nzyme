@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, MutexGuard};
 use chrono::{DateTime, Utc};
 use serde::Serialize;
@@ -28,7 +28,7 @@ pub struct UdpConversationReport {
     pub start_time: DateTime<Utc>,
     pub end_time: Option<DateTime<Utc>>,
     pub most_recent_segment_time: DateTime<Utc>,
-    pub tags: Vec<String>
+    pub tags: HashSet<String>
 }
 
 pub fn generate(cvs: &MutexGuard<HashMap<L4Key, UdpConversation>>)
@@ -53,7 +53,9 @@ pub fn generate(cvs: &MutexGuard<HashMap<L4Key, UdpConversation>>)
             start_time: c.start_time,
             end_time: c.end_time,
             most_recent_segment_time: c.most_recent_segment_time,
-            tags: vec![],
+            tags: c.tags.clone().into_iter()
+                .map(|t| t.to_string())
+                .collect()
         })
     }
 

@@ -122,7 +122,7 @@ pub struct Datagram {
     pub payload: Vec<u8>,
     pub size: u32,
     pub timestamp: DateTime<Utc>,
-    pub tags: Mutex<Vec<L7Tag>>
+    pub tags: Mutex<HashSet<L7Tag>>
 }
 
 impl Datagram {

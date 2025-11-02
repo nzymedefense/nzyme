@@ -18,6 +18,7 @@ import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import L4Service from "../../../services/ethernet/L4Service";
 import {formatDurationMs} from "../../../util/Tools";
 import FullCopy from "../../shared/FullCopy";
+import L4SessionTags from "./L4SessionTags";
 
 const l4Service = new L4Service();
 
@@ -120,6 +121,7 @@ export default function L4SessionsTable(props) {
             <th>Source Address {columnSorting("source_address")}</th>
             <th>Destination MAC {columnSorting("destination_mac")}</th>
             <th>Destination Address {columnSorting("destination_address")}</th>
+            <th>Tags</th>
             <th>RX {columnSorting("bytes_rx_count")}</th>
             <th>TX {columnSorting("bytes_tx_count")}</th>
             <th>Duration {columnSorting("duration")}</th>
@@ -183,6 +185,7 @@ export default function L4SessionsTable(props) {
                                                                field="destination_address"
                                                                value={s.destination.address} />}/>
                   </td>
+                  <td><L4SessionTags tags={s.tags} /></td>
                   <td>
                     {numeral(s.bytes_rx_count).format("0b")}
                     <FilterValueIcon setFilters={setFilters}

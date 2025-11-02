@@ -7,6 +7,8 @@ import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
+import java.util.List;
+
 @AutoValue
 public abstract class L4SessionDetailsResponse {
 
@@ -50,7 +52,15 @@ public abstract class L4SessionDetailsResponse {
     @JsonProperty("state")
     public abstract String state();
 
-    public static L4SessionDetailsResponse create(String sessionKey, L4AddressTypeResponse l4Type, L4AddressResponse source, L4AddressResponse destination, long bytesCount, long bytesRxCount, long bytesTxCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, long durationMs, String state) {
+    @JsonProperty("tags")
+    @Nullable
+    public abstract List<String> tags();
+
+    @JsonProperty("fingerprint")
+    @Nullable
+    public abstract String fingerprint();
+
+    public static L4SessionDetailsResponse create(String sessionKey, L4AddressTypeResponse l4Type, L4AddressResponse source, L4AddressResponse destination, long bytesCount, long bytesRxCount, long bytesTxCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, long durationMs, String state, List<String> tags, String fingerprint) {
         return builder()
                 .sessionKey(sessionKey)
                 .l4Type(l4Type)
@@ -65,6 +75,8 @@ public abstract class L4SessionDetailsResponse {
                 .mostRecentSegmentTime(mostRecentSegmentTime)
                 .durationMs(durationMs)
                 .state(state)
+                .tags(tags)
+                .fingerprint(fingerprint)
                 .build();
     }
 
@@ -99,6 +111,10 @@ public abstract class L4SessionDetailsResponse {
         public abstract Builder durationMs(long durationMs);
 
         public abstract Builder state(String state);
+
+        public abstract Builder tags(List<String> tags);
+
+        public abstract Builder fingerprint(String fingerprint);
 
         public abstract L4SessionDetailsResponse build();
     }

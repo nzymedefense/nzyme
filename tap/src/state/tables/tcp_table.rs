@@ -1,5 +1,5 @@
 use std::{sync::{Arc}};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::net::IpAddr;
 use std::sync::{Mutex, MutexGuard};
 use chrono::{DateTime, Duration, Utc};
@@ -55,7 +55,7 @@ pub struct TcpSession {
     pub syn_maximum_segment_size: Option<u16>,
     pub syn_window_scale_multiplier: Option<u8>,
     pub syn_options: Vec<u8>,
-    pub tags: Vec<L7Tag>
+    pub tags: HashSet<L7Tag>
 }
 
 impl TcpSession {
@@ -185,7 +185,7 @@ impl TcpTable {
                                 syn_maximum_segment_size: segment.maximum_segment_size,
                                 syn_window_scale_multiplier: segment.window_scale_multiplier,
                                 syn_options: segment.options.clone(),
-                                tags: vec![]
+                                tags: HashSet::new()
                             };
 
                             trace!("New TCP Session: {:?}, State: {:?}, Flags: {:?}",

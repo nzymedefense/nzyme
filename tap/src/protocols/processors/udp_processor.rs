@@ -4,7 +4,7 @@ use crate::context::context_engine::ContextEngine;
 use crate::context::context_source::ContextSource;
 use crate::to_pipeline;
 use crate::protocols::detection::l7_tagger::L7Tag;
-use crate::protocols::detection::l7_tagger::L7Tag::{Dhcpv4, Dns, Unencrypted};
+use crate::protocols::detection::l7_tagger::L7Tag::{Unencrypted, DHCP4, DNS};
 use crate::protocols::parsers::{dhcpv4_parser, dns_parser};
 use crate::state::tables::udp_table::UdpTable;
 use crate::helpers::timer::{record_timer, Timer};
@@ -65,7 +65,7 @@ impl UDPProcessor {
         let mut tags = vec![];
 
         if let Some(dns) = dns_parser::parse(datagram) {
-            tags.push(Dns);
+            tags.push(DNS);
             tags.push(Unencrypted);
             
             // To DNS pipeline.
@@ -79,7 +79,7 @@ impl UDPProcessor {
         }
 
         if let Some(dhcp) = dhcpv4_parser::parse(datagram) {
-            tags.push(Dhcpv4);
+            tags.push(DHCP4);
             tags.push(Unencrypted);
 
             // To DHCPv4 pipeline.

@@ -7372,4 +7372,8 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="rename_tcp_fingerprint" author="lennartkoopmann">
+        <renameColumn tableName="l4_sessions" oldColumnName="tcp_fingerprint" newColumnName="fingerprint" />
+    </changeSet>
+
 </databaseChangeLog>

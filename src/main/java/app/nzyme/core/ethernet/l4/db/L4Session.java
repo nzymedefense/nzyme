@@ -6,6 +6,8 @@ import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
+import java.util.List;
+
 @AutoValue
 public abstract class L4Session {
 
@@ -22,9 +24,13 @@ public abstract class L4Session {
     public abstract DateTime mostRecentSegmentTime();
     public abstract long durationMs();
     public abstract String state();
+    @Nullable
+    public abstract String fingerprint();
+    @Nullable
+    public abstract List<String> tags();
     public abstract DateTime createdAt();
 
-    public static L4Session create(String sessionKey, L4Type l4Type, L4AddressData source, L4AddressData destination, long bytesRxCount, long bytesTxCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, long durationMs, String state, DateTime createdAt) {
+    public static L4Session create(String sessionKey, L4Type l4Type, L4AddressData source, L4AddressData destination, long bytesRxCount, long bytesTxCount, long segmentsCount, DateTime startTime, DateTime endTime, DateTime mostRecentSegmentTime, long durationMs, String state, String fingerprint, List<String> tags, DateTime createdAt) {
         return builder()
                 .sessionKey(sessionKey)
                 .l4Type(l4Type)
@@ -38,6 +44,8 @@ public abstract class L4Session {
                 .mostRecentSegmentTime(mostRecentSegmentTime)
                 .durationMs(durationMs)
                 .state(state)
+                .fingerprint(fingerprint)
+                .tags(tags)
                 .createdAt(createdAt)
                 .build();
     }
@@ -71,6 +79,10 @@ public abstract class L4Session {
         public abstract Builder durationMs(long durationMs);
 
         public abstract Builder state(String state);
+
+        public abstract Builder fingerprint(String fingerprint);
+
+        public abstract Builder tags(List<String> tags);
 
         public abstract Builder createdAt(DateTime createdAt);
 

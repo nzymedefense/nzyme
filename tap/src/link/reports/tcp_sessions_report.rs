@@ -1,4 +1,4 @@
-use std::collections::{HashMap};
+use std::collections::{HashMap, HashSet};
 use std::sync::MutexGuard;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
@@ -37,7 +37,7 @@ pub struct TcpSessionReport {
     pub syn_maximum_segment_size: Option<u16>,
     pub syn_window_scale_multiplier: Option<u8>,
     pub syn_options: Vec<u8>,
-    pub tags: Vec<String>
+    pub tags: HashSet<String>
 }
 
 pub fn generate(s: &MutexGuard<HashMap<L4Key, TcpSession>>) -> TcpSessionsReport {

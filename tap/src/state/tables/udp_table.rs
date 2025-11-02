@@ -1,20 +1,22 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::net::IpAddr;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, LockResult, Mutex, MutexGuard};
 use chrono::{DateTime, Duration, Utc};
-use log::{error, info};
+use log::{error};
 use strum_macros::Display;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::wired::packets::Datagram;
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::udp_conversations_report;
+use crate::messagebus::bus::Bus;
 use crate::metrics::Metrics;
-use crate::protocols::detection::l7_tagger::L7Tag;
+use crate::protocols::detection::l7_tagger::{tag_udp_sessions, L7Tag};
 use crate::protocols::parsers::l4_key::L4Key;
-use crate::state::tables::tcp_table::TcpSession;
+use crate::wired::traffic_direction::TrafficDirection;
 
 pub struct UdpTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
+    ethernet_bus: Arc<Bus>,
     metrics: Arc<Mutex<Metrics>>,
     conversations: Mutex<HashMap<L4Key, UdpConversation>>,
 }
@@ -37,8 +39,9 @@ pub struct UdpConversation {
     pub bytes_count_tx: u64,
     pub bytes_count_rx_incremental: u64, // New bytes since last report.
     pub bytes_count_tx_incremental: u64, // New bytes since last report.
-    pub datagrams: Vec<Arc<Datagram>>,
-    pub tags: Vec<L7Tag>
+    pub datagrams_client_to_server: Vec<Vec<u8>>,
+    pub datagrams_server_to_client: Vec<Vec<u8>>,
+    pub tags: HashSet<L7Tag>
 }
 
 #[derive(PartialEq, Debug, Display, Clone)]
@@ -49,15 +52,28 @@ pub enum UdpConversationState {
 
 impl UdpTable {
 
-    pub fn new(leaderlink: Arc<Mutex<Leaderlink>>, metrics: Arc<Mutex<Metrics>>) -> Self {
+    pub fn new(leaderlink: Arc<Mutex<Leaderlink>>,
+               ethernet_bus: Arc<Bus>,
+               metrics: Arc<Mutex<Metrics>>) -> Self {
         Self {
             leaderlink,
+            ethernet_bus,
             metrics,
             conversations: Mutex::new(HashMap::new())
         }
     }
 
     pub fn register_datagram(&mut self, datagram: Arc<Datagram>) {
+        let traffic_direction = datagram.determine_direction();
+
+        let tags = match datagram.tags.lock() {
+            Ok(tags) => tags.clone(),
+            Err(e) => {
+                error!("Could not acquire datagram tags mutex: {}", e);
+                HashSet::new()
+            }
+        };
+
         match self.conversations.lock() {
             Ok(mut conversations) => {
                 match conversations.get_mut(&datagram.session_key) {
@@ -75,7 +91,15 @@ impl UdpTable {
                         c.most_recent_segment_time = datagram.timestamp;
                         c.datagrams_count += 1;
                         c.datagrams_count_incremental += 1;
-                        c.datagrams.push(datagram);
+
+                        match traffic_direction {
+                            TrafficDirection::ClientToServer =>
+                                c.datagrams_client_to_server.push(datagram.payload.clone()),
+                            TrafficDirection::ServerToClient =>
+                                c.datagrams_server_to_client.push(datagram.payload.clone())
+                        }
+
+                        c.tags.extend(tags);
 
                         timer.stop();
                         record_timer(
@@ -89,6 +113,16 @@ impl UdpTable {
                         let mut timer = Timer::new();
 
                         let (bytes_tx, bytes_rx) = datagram.get_directional_byte_counts();
+
+                        let mut datagrams_client_to_server = vec![];
+                        let mut datagrams_server_to_client = vec![];
+
+                        match traffic_direction {
+                            TrafficDirection::ClientToServer =>
+                                datagrams_client_to_server.push(datagram.payload.clone()),
+                            TrafficDirection::ServerToClient =>
+                                datagrams_server_to_client.push(datagram.payload.clone())
+                        }
 
                         conversations.insert(
                             datagram.session_key.clone(),
@@ -109,8 +143,9 @@ impl UdpTable {
                                 bytes_count_tx: bytes_tx,
                                 bytes_count_rx_incremental: bytes_rx,
                                 bytes_count_tx_incremental: bytes_tx,
-                                datagrams: vec![datagram],
-                                tags: vec![],
+                                datagrams_client_to_server,
+                                datagrams_server_to_client,
+                                tags,
                             }
                         );
 
@@ -141,6 +176,16 @@ impl UdpTable {
                         c.state = UdpConversationState::Closed;
                     }
                 }
+
+                // Scan session payloads and tag.
+                let mut timer = Timer::new();
+                tag_udp_sessions(&mut conversations, self.ethernet_bus.clone(), self.metrics.clone());
+                timer.stop();
+                record_timer(
+                    timer.elapsed_microseconds(),
+                    "tables.tcp.timer.sessions.tagging",
+                    &self.metrics
+                );
 
                 // Generate JSON.
                 let mut timer = Timer::new();

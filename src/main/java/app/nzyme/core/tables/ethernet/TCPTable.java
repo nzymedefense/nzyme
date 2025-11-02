@@ -36,6 +36,8 @@ public class TCPTable implements DataTable {
 
     private final TablesService tablesService;
 
+    private final ObjectMapper om;
+
     private final Timer totalReportTimer;
     private final Timer sessionsReportTimer;
     private final Timer sessionDiscoveryTimer;
@@ -47,6 +49,8 @@ public class TCPTable implements DataTable {
         this.tablesService = tablesService;
 
         this.geoIp = tablesService.getNzyme().getGeoIpService();
+
+        this.om = new ObjectMapper();
 
         this.totalReportTimer = tablesService.getNzyme().getMetrics()
                 .timer(MetricNames.TCP_TOTAL_REPORT_PROCESSING_TIMER);
@@ -83,8 +87,6 @@ public class TCPTable implements DataTable {
     }
 
     private void writeSessions(Handle handle, Tap tap, DateTime timestamp, List<TcpSessionReport> sessions) {
-        ObjectMapper om = new ObjectMapper();
-
         PreparedBatch insertBatch = handle.prepareBatch("INSERT INTO l4_sessions(tap_uuid, l4_type, " +
                 "session_key, source_mac, source_address, source_address_is_site_local, " +
                 "source_address_is_loopback, source_address_is_multicast, source_port, destination_mac, " +
@@ -98,7 +100,7 @@ public class TCPTable implements DataTable {
                 "destination_address_geo_city, destination_address_geo_country_code, " +
                 "destination_address_geo_latitude, destination_address_geo_longitude, ip_ttl, ip_tos, ip_df, " +
                 "tcp_syn_window_size, tcp_syn_maximum_segment_size, tcp_syn_window_scale_multiplier, tcp_syn_cwr, " +
-                "tcp_syn_ece, tcp_syn_options, tcp_fingerprint, tags, created_at) " +
+                "tcp_syn_ece, tcp_syn_options, fingerprint, tags, created_at) " +
                 "VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, :source_address::inet, " +
                 ":source_address_is_site_local, :source_address_is_loopback, :source_address_is_multicast, " +
                 ":source_port, :destination_mac, :destination_address::inet, " +
@@ -113,7 +115,7 @@ public class TCPTable implements DataTable {
                 ":destination_address_geo_city, :destination_address_geo_country_code, " +
                 ":destination_address_geo_latitude, :destination_address_geo_longitude, :ip_ttl, :ip_tos, :ip_df, " +
                 ":tcp_syn_window_size, :tcp_syn_maximum_segment_size, :tcp_syn_window_scale_multiplier, " +
-                ":tcp_syn_cwr, :tcp_syn_ece, :tcp_syn_options::jsonb, :tcp_fingerprint, :tags::jsonb, :created_at)");
+                ":tcp_syn_cwr, :tcp_syn_ece, :tcp_syn_options::jsonb, :fingerprint, :tags::jsonb, :created_at)");
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE l4_sessions SET state = :state, " +
                 "bytes_rx_count = :bytes_rx_count, bytes_tx_count = :bytes_tx_count, " +
                 "segments_count = :segments_count, tags = tags::jsonb, end_time = :end_time, " +
@@ -244,7 +246,7 @@ public class TCPTable implements DataTable {
                                 .bind("tcp_syn_cwr", session.synCwr())
                                 .bind("tcp_syn_ece", session.synEce())
                                 .bind("tcp_syn_options", synOptions)
-                                .bind("tcp_fingerprint", fingerprint)
+                                .bind("fingerprint", fingerprint)
                                 .bind("created_at", timestamp)
                                 .bind("tags", tags)
                                 .add();
@@ -306,7 +308,7 @@ public class TCPTable implements DataTable {
                 continue;
             }
 
-            /*String fingerprint = new TCPFingerprint(
+            String fingerprint = new TCPFingerprint(
                     session.synIpTtl(),
                     session.synIpTos(),
                     session.synIpDf(),
@@ -314,7 +316,7 @@ public class TCPTable implements DataTable {
                     session.synMaximumSegmentSize(),
                     session.synMaximumScaleMultiplier(),
                     session.synOptions()
-            ).generate();*/
+            ).generate();
 
             AssetInformation existingAsset = assets.get(session.sourceMac());
             if (existingAsset != null) {

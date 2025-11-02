@@ -58,7 +58,7 @@ impl Tables {
                 configuration.protocols.tcp.reassembly_buffer_size,
                 configuration.protocols.tcp.session_timeout_seconds
             ))),
-            udp: Arc::new(Mutex::new(UdpTable::new(leaderlink.clone(), metrics.clone()))),
+            udp: Arc::new(Mutex::new(UdpTable::new(leaderlink.clone(), ethernet_bus.clone(), metrics.clone()))),
             ssh: Arc::new(Mutex::new(SshTable::new(leaderlink.clone(), metrics.clone()))),
             socks: Arc::new(Mutex::new(SocksTable::new(leaderlink.clone(), metrics.clone()))),
             uav: Arc::new(Mutex::new(UavTable::new(leaderlink.clone(), metrics.clone(), engagement_control))),

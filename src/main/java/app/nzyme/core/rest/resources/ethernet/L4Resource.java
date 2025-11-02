@@ -105,7 +105,9 @@ public class L4Resource extends TapDataHandlingResource  {
                     session.endTime(),
                     session.mostRecentSegmentTime(),
                     session.durationMs(),
-                    session.state()
+                    session.state(),
+                    session.tags(),
+                    session.fingerprint()
             ));
         }
 

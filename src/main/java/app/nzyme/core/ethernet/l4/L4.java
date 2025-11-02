@@ -119,6 +119,7 @@ public class L4 {
                                 "ANY_VALUE(destination_address_is_site_local) AS destination_address_is_site_local, " +
                                 "ANY_VALUE(destination_address_is_loopback) AS destination_address_is_loopback, " +
                                 "ANY_VALUE(destination_address_is_multicast) AS destination_address_is_multicast, " +
+                                "ANY_VALUE(fingerprint) AS fingerprint, ANY_VALUE(tags) AS tags, " +
                                 "MAX(bytes_rx_count) AS bytes_rx_count, MAX(bytes_tx_count) AS bytes_tx_count, " +
                                 "MAX(segments_count) AS segments_count, " +
                                 "MIN(start_time) AS start_time, MAX(end_time) AS end_time, " +

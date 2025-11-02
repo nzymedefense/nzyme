@@ -15,6 +15,8 @@ import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.Subsystem;
 import com.codahale.metrics.Timer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,6 +38,8 @@ public class UDPTable implements DataTable {
 
     private final TablesService tablesService;
 
+    private final ObjectMapper om;
+
     private final Timer totalReportTimer;
     private final Timer conversationsReportTimer;
     private final Timer conversationsDiscoveryTimer;
@@ -47,6 +51,8 @@ public class UDPTable implements DataTable {
         this.tablesService = tablesService;
 
         this.geoIp = tablesService.getNzyme().getGeoIpService();
+
+        this.om = new ObjectMapper();
 
         this.totalReportTimer = tablesService.getNzyme().getMetrics()
                 .timer(MetricNames.UDP_TOTAL_REPORT_PROCESSING_TIMER);
@@ -97,7 +103,7 @@ public class UDPTable implements DataTable {
                 "source_address_geo_longitude, destination_address_geo_asn_number, " +
                 "destination_address_geo_asn_name, destination_address_geo_asn_domain, " +
                 "destination_address_geo_city, destination_address_geo_country_code, " +
-                "destination_address_geo_latitude, destination_address_geo_longitude, created_at) " +
+                "destination_address_geo_latitude, destination_address_geo_longitude, tags, created_at) " +
                 "VALUES(:tap_uuid, :l4_type, :session_key, :source_mac, :source_address::inet, " +
                 ":source_address_is_site_local, :source_address_is_loopback, :source_address_is_multicast, " +
                 ":source_port, :destination_mac, :destination_address::inet, " +
@@ -110,10 +116,10 @@ public class UDPTable implements DataTable {
                 ":source_address_geo_longitude, :destination_address_geo_asn_number, " +
                 ":destination_address_geo_asn_name, :destination_address_geo_asn_domain, " +
                 ":destination_address_geo_city, :destination_address_geo_country_code, " +
-                ":destination_address_geo_latitude, :destination_address_geo_longitude, :created_at)");
+                ":destination_address_geo_latitude, :destination_address_geo_longitude, :tags::jsonb, :created_at)");
         PreparedBatch updateBatch = handle.prepareBatch("UPDATE l4_sessions SET state = :state, " +
                 "bytes_rx_count = :bytes_rx_count, bytes_tx_count = :bytes_tx_count, " +
-                "segments_count = :segments_count, end_time = :end_time, " +
+                "segments_count = :segments_count, tags = :tags::jsonb, end_time = :end_time, " +
                 "most_recent_segment_time = :most_recent_segment_time WHERE id = :id");
 
         long totalRxBytes = 0;
@@ -125,6 +131,18 @@ public class UDPTable implements DataTable {
         long totalInternalSessions = 0;
 
         for (UdpConversationReport conversation : conversations) {
+            String tags;
+            if (conversation.tags() != null && !conversation.tags().isEmpty()) {
+                try {
+                    tags = om.writeValueAsString(conversation.tags());
+                } catch (JsonProcessingException e) {
+                    LOG.error("Could not serialize session tags.", e);
+                    tags = null;
+                }
+            } else {
+                tags = null;
+            }
+
             try {
                 String sessionKey = Tools.buildL4Key(
                         conversation.startTime(),
@@ -157,6 +175,7 @@ public class UDPTable implements DataTable {
                             .bind("bytes_rx_count", conversation.bytesCountRx())
                             .bind("bytes_tx_count", conversation.bytesCountTx())
                             .bind("segments_count", conversation.datagramsCount())
+                            .bind("tags", tags)
                             .bind("end_time", conversation.endTime())
                             .bind("most_recent_segment_time", conversation.mostRecentSegmentTime())
                             .bind("id", existingConversation.get().id())
@@ -200,6 +219,7 @@ public class UDPTable implements DataTable {
                             .bind("destination_address_geo_country_code", destinationGeo.map(g -> g.geo().countryCode()).orElse(null))
                             .bind("destination_address_geo_latitude", destinationGeo.map(g -> g.geo().latitude()).orElse(null))
                             .bind("destination_address_geo_longitude", destinationGeo.map(g -> g.geo().longitude()).orElse(null))
+                            .bind("tags", tags)
                             .bind("created_at", timestamp)
                             .add();
                 }
