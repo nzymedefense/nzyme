@@ -23,6 +23,7 @@ export const L4_SESSIONS_FILTER_FIELDS = {
   bytes_tx_count: { title: "TX Bytes", type: FILTER_TYPE.NUMERIC },
   segments_count: { title: "Segments", type: FILTER_TYPE.NUMERIC },
   session_key: { title: "Session Key", type: FILTER_TYPE.STRING },
-  tcp_fingerprint: { title: "TCP Fingerprint", type: FILTER_TYPE.STRING },
-  duration: { title: "Duration (ms)", type: FILTER_TYPE.NUMERIC }
+  fingerprint: { title: "Fingerprint", type: FILTER_TYPE.STRING },
+  duration: { title: "Duration (ms)", type: FILTER_TYPE.NUMERIC },
+  tags: { title: "Tags", type: FILTER_TYPE.STRING_ARRAY }
 }

@@ -23,6 +23,11 @@ export const FILTER_TYPE = {
     validators: [validateStringNotEmpty],
     placeholder: null
   },
+  STRING_ARRAY: {
+    name: "stringarray",
+    validators: [validateStringNotEmpty],
+    placeholder: null
+  },
   NUMERIC: {
     name: "numeric",
     validators: [validateNumber],
@@ -171,7 +176,39 @@ export const OPERATORS = {
     no_value: true,
     validators: [() => { return true; }],
     field_type: FIELD_TYPE.NO_VALUE
-  }
+  },
+  CONTAINS: {
+    name: "contains",
+    sign: "Contains",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    field_type: FIELD_TYPE.ANY_TEXT
+  },
+  NOT_CONTAINS: {
+    name: "not_contains",
+    sign: "Does not contain",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    field_type: FIELD_TYPE.ANY_TEXT
+  },
+  IS_EMPTY: {
+    name: "is_empty",
+    sign: "Is empty",
+    placeholder: null,
+    no_value: true,
+    validators: [() => { return true; }],
+    field_type: FIELD_TYPE.NO_VALUE
+  },
+  IS_NOT_EMPTY: {
+    name: "is_not_empty",
+    sign: "Is not empty",
+    placeholder: null,
+    no_value: true,
+    validators: [() => { return true; }],
+    field_type: FIELD_TYPE.NO_VALUE
+  },
 }
 
 export default function Filters(props) {
@@ -263,6 +300,14 @@ export default function Filters(props) {
             OPERATORS.IS_PRIVATE,
             OPERATORS.IS_NOT_PRIVATE
           ]);
+          break;
+        case FILTER_TYPE.STRING_ARRAY:
+          setAllowedOperators([
+              OPERATORS.CONTAINS,
+              OPERATORS.NOT_CONTAINS,
+              OPERATORS.IS_EMPTY,
+              OPERATORS.IS_NOT_EMPTY
+          ])
           break;
       }
     }

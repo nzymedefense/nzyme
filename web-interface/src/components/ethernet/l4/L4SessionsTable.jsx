@@ -185,7 +185,7 @@ export default function L4SessionsTable(props) {
                                                                field="destination_address"
                                                                value={s.destination.address} />}/>
                   </td>
-                  <td><L4SessionTags tags={s.tags} /></td>
+                  <td><L4SessionTags tags={s.tags} setFilters={setFilters} /></td>
                   <td>
                     {numeral(s.bytes_rx_count).format("0b")}
                     <FilterValueIcon setFilters={setFilters}

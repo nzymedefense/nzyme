@@ -13,6 +13,10 @@ public enum FilterOperator {
     IN_CIDR,
     NOT_IN_CIDR,
     IS_PRIVATE,
-    IS_NOT_PRIVATE
+    IS_NOT_PRIVATE,
+    CONTAINS,
+    NOT_CONTAINS,
+    IS_EMPTY,
+    IS_NOT_EMPTY
 
 }

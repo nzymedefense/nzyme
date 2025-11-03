@@ -63,7 +63,6 @@ public class L4Resource extends TapDataHandlingResource  {
                                 @QueryParam("order_column") @Nullable String orderColumnParam,
                                 @QueryParam("order_direction") @Nullable String orderDirectionParam,
                                 @QueryParam("taps") String tapIds) {
-
         List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Filters filters = parseFiltersQueryParameter(filtersParameter);

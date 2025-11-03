@@ -63,6 +63,22 @@ public class FilterFactory {
                 return Filter.create(
                         parameter.field(), FilterOperator.IS_NOT_PRIVATE, optionallyTransformedValue(parameter), parameter.value()
                 );
+            case "contains":
+                return Filter.create(
+                        parameter.field(), FilterOperator.CONTAINS, optionallyTransformedValue(parameter), parameter.value()
+                );
+            case "not_contains":
+                return Filter.create(
+                        parameter.field(), FilterOperator.NOT_CONTAINS, optionallyTransformedValue(parameter), parameter.value()
+                );
+            case "is_empty":
+                return Filter.create(
+                        parameter.field(), FilterOperator.IS_EMPTY, optionallyTransformedValue(parameter), parameter.value()
+                );
+            case "is_not_empty":
+                return Filter.create(
+                        parameter.field(), FilterOperator.IS_NOT_EMPTY, optionallyTransformedValue(parameter), parameter.value()
+                );
             default:
                 throw new RuntimeException("Unknown filter operator: [" + parameter.operator() + "]");
         }
