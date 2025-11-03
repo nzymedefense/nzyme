@@ -8,6 +8,10 @@ import React from "react";
  */
 export default function FullCopy({ shortValue, fullValue }) {
 
+  if (!shortValue || !fullValue) {
+    return <span className="text-muted">n/a</span>
+  }
+
   return (
     <span title={fullValue}
           onCopy={(e) => {

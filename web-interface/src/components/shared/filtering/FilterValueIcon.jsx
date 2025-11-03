@@ -17,7 +17,7 @@ export default function FilterValueIcon(props) {
     setShow(!show);
   }
 
-  if (!setFilters) {
+  if (!setFilters || !value) {
     return null;
   }
 
