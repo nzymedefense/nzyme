@@ -175,13 +175,13 @@ public class FilterSql {
             case NOT_EQUALS:
                 return fieldName + " <> :" + bindId + "::inet";
             case REGEX_MATCH:
-                return fieldName + " ~ :" + bindId;
+                return fieldName + "::text ~ :" + bindId;
             case NOT_REGEX_MATCH:
-                return fieldName + " !~ :" + bindId;
+                return fieldName + "::text !~ :" + bindId;
             case IN_CIDR:
                 return fieldName + " <<= :" + bindId + "::cidr";
             case NOT_IN_CIDR:
-                return fieldName + " <<| :" + bindId + "::cidr";
+                return "NOT (" + fieldName + " <<= :" + bindId + "::cidr)";
             case IS_PRIVATE:
                 return "(" + fieldName + " <<= '10.0.0.0/8'::cidr OR "
                         + fieldName + " <<= '172.16.0.0/12'::cidr OR "
