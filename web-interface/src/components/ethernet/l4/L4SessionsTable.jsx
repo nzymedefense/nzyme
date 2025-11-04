@@ -122,7 +122,7 @@ export default function L4SessionsTable(props) {
             <th>Destination MAC {columnSorting("destination_mac")}</th>
             <th>Destination Address {columnSorting("destination_address")}</th>
             <th>Tags</th>
-            <th>Fingerprint</th>
+            <th>Fingerprint {columnSorting("fingerprint")}</th>
             <th>RX {columnSorting("bytes_rx_count")}</th>
             <th>TX {columnSorting("bytes_tx_count")}</th>
             <th>Duration {columnSorting("duration")}</th>

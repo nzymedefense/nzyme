@@ -37,6 +37,7 @@ public class L4 {
         DESTINATION_PORT("destination_port"),
         BYTES_RX_COUNT("bytes_rx_count"),
         BYTES_TX_COUNT("bytes_tx_count"),
+        FINGERPRINT("fingerprint"),
         START_TIME("start_time"),
         END_TIME("end_time"),
         MOST_RECENT_SEGMENT_TIME("most_recent_segment_time"),
