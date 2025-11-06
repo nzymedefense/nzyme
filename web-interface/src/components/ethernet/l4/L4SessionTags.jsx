@@ -11,7 +11,7 @@ export default function L4SessionTags({tags, setFilters}) {
 
     return <FilterValueIcon setFilters={setFilters}
                             fields={L4_SESSIONS_FILTER_FIELDS}
-                            field="tag"
+                            field="tags"
                             value={tag} />
   }
 
