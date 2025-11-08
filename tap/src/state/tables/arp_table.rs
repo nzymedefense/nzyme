@@ -97,6 +97,11 @@ impl ArpTable {
         let sha = &packet.arp_sender_mac;
         let now = packet.timestamp;
 
+        if spa.is_unspecified() {
+            // Don't consider 0.0.0.0.
+            return
+        }
+
         match self.ip_mappings.lock() {
             Ok(mut map) => {
                 let entry = map.entry(spa).or_insert_with(Vec::new);
