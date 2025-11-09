@@ -84,14 +84,14 @@ export default function L4SessionsTable(props) {
                             value={address.address} />
   }
 
-  const sessionLink = (sessionId, type) => {
+  const sessionLink = (sessionId, startTime, type) => {
     switch (type) {
       case "TCP":
-        return <a href={ApiRoutes.ETHERNET.L4.TCP.SESSION_DETAILS(sessionId)} className="machine-data">
+        return <a href={ApiRoutes.ETHERNET.L4.TCP.SESSION_DETAILS(sessionId, startTime)} className="machine-data">
           <FullCopyShortenedId value={sessionId} />
         </a>
       case "UDP":
-        return <a href={ApiRoutes.ETHERNET.L4.UDP.SESSION_DETAILS(sessionId)} className="machine-data">
+        return <a href={ApiRoutes.ETHERNET.L4.UDP.SESSION_DETAILS(sessionId, startTime)} className="machine-data">
           <FullCopyShortenedId value={sessionId} />
         </a>
     }
@@ -134,7 +134,7 @@ export default function L4SessionsTable(props) {
             return (
                 <tr key={i}>
                   <td>
-                    {sessionLink(s.session_key, s.l4_type)}
+                    {sessionLink(s.session_key, s.start_time, s.l4_type)}
 
                     <FilterValueIcon setFilters={setFilters}
                                      fields={L4_SESSIONS_FILTER_FIELDS}

@@ -141,7 +141,7 @@ export default function SOCKSTunnelDetailsPage() {
                         <span className="text-muted">n/a</span>}
                   </dd>
                   <dt>Underlying TCP Session</dt>
-                  <dd><TCPSessionLink sessionId={tunnel.tcp_session_key} /></dd>
+                  <dd><TCPSessionLink sessionId={tunnel.tcp_session_key} startTime={tunnel.established_at} /></dd>
                 </dl>
               </div>
             </div>

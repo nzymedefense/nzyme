@@ -1,11 +1,33 @@
 import {useParams} from "react-router-dom";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
-import React from "react";
+import React, {useContext, useEffect, useState} from "react";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import L4Service from "../../../../services/ethernet/L4Service";
+import LoadingSpinner from "../../../misc/LoadingSpinner";
+import {TapContext} from "../../../../App";
+
+const l4Service = new L4Service();
 
 export default function TCPSessionDetailsPage() {
 
-  const {sessionId} = useParams();
+  const {sessionKey} = useParams();
+  const {startTime} = useParams();
+
+  const tapContext = useContext(TapContext);
+  const selectedTaps = tapContext.taps;
+  const [organizationId, tenantId] = useSelectedTenant();
+
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    setSession(null);
+    l4Service.findSession(sessionKey, "TCP", startTime, organizationId, tenantId, selectedTaps, setSession);
+  }, [sessionKey, startTime, organizationId, tenantId]);
+
+  if (!session) {
+    return <LoadingSpinner />
+  }
 
   return (
       <React.Fragment>
@@ -17,7 +39,7 @@ export default function TCPSessionDetailsPage() {
                 <li className="breadcrumb-item">TCP/UDP</li>
                 <li className="breadcrumb-item"><a href={ApiRoutes.ETHERNET.L4.OVERVIEW}>Sessions</a></li>
                 <li className="breadcrumb-item">TCP</li>
-                <li className="breadcrumb-item active" aria-current="page">{sessionId}</li>
+                <li className="breadcrumb-item active" aria-current="page">{sessionKey}</li>
               </ol>
             </nav>
           </div>
@@ -26,7 +48,7 @@ export default function TCPSessionDetailsPage() {
         <div className="row mt-3">
           <div className="col-md-12">
             <h1>
-              TCP Session &quot;{sessionId}&quot;
+              TCP Session &quot;{sessionKey}&quot;
             </h1>
           </div>
         </div>

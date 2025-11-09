@@ -87,30 +87,43 @@ public class L4Resource extends TapDataHandlingResource  {
         List<L4SessionDetailsResponse> sessions = Lists.newArrayList();
         for (L4Session session : nzyme.getEthernet().l4()
                 .findAllSessions(timeRange, filters, limit, offset, orderColumn, orderDirection, taps)) {
-            sessions.add(L4SessionDetailsResponse.create(
-                    session.sessionKey(),
-                    L4AddressTypeResponse.valueOf(session.l4Type().toString()),
-                    RestHelpers.L4AddressDataToResponse(
-                            nzyme, organizationId, tenantId, session.l4Type(), session.source()
-                    ),
-                    RestHelpers.L4AddressDataToResponse(
-                            nzyme, organizationId, tenantId, session.l4Type(), session.destination()
-                    ),
-                    session.bytesRxCount()+session.bytesTxCount(),
-                    session.bytesRxCount(),
-                    session.bytesTxCount(),
-                    session.segmentsCount(),
-                    session.startTime(),
-                    session.endTime(),
-                    session.mostRecentSegmentTime(),
-                    session.durationMs(),
-                    session.state(),
-                    session.tags(),
-                    session.fingerprint()
-            ));
+            sessions.add(buildSessionDetailsResponse(organizationId, tenantId, session));
         }
 
         return Response.ok(L4SessionsListResponse.create(total, sessions)).build();
+    }
+
+    @GET
+    @Path("/sessions/show/{type}/{session_key}/{start_time}")
+    public Response session(@Context SecurityContext sc,
+                            @PathParam("type") String typeP,
+                            @PathParam("session_key") String sessionKey,
+                            @PathParam("start_time") String startTimeP,
+                            @QueryParam("organization_id") UUID organizationId,
+                            @QueryParam("tenant_id") UUID tenantId,
+                            @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        DateTime startTime;
+        L4Type type;
+        try {
+            startTime = DateTime.parse(startTimeP);
+            type = L4Type.valueOf(typeP.toUpperCase());
+        } catch(IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Optional<L4Session> session = nzyme.getEthernet().l4().findSession(type, startTime, sessionKey, taps);
+
+        if (session.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(buildSessionDetailsResponse(organizationId, tenantId, session.get())).build();
     }
 
     @GET
@@ -440,6 +453,30 @@ public class L4Resource extends TapDataHandlingResource  {
         // just return L4AddressResponse? check how we query data and if that gives all we need.
 
         return Response.ok().build();
+    }
+
+    private L4SessionDetailsResponse buildSessionDetailsResponse(UUID organizationId, UUID tenantId, L4Session session) {
+        return L4SessionDetailsResponse.create(
+                session.sessionKey(),
+                L4AddressTypeResponse.valueOf(session.l4Type().toString()),
+                RestHelpers.L4AddressDataToResponse(
+                        nzyme, organizationId, tenantId, session.l4Type(), session.source()
+                ),
+                RestHelpers.L4AddressDataToResponse(
+                        nzyme, organizationId, tenantId, session.l4Type(), session.destination()
+                ),
+                session.bytesRxCount() + session.bytesTxCount(),
+                session.bytesRxCount(),
+                session.bytesTxCount(),
+                session.segmentsCount(),
+                session.startTime(),
+                session.endTime(),
+                session.mostRecentSegmentTime(),
+                session.durationMs(),
+                session.state(),
+                session.tags(),
+                session.fingerprint()
+        );
     }
 
 }

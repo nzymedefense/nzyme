@@ -20,6 +20,17 @@ export default class L4Service {
     )
   }
 
+  findSession(sessionKey, type, startTime, organizationId, tenantId, taps, setSession) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get(`/ethernet/l4/sessions/show/${type}/${sessionKey}/${startTime}`, {
+          organization_id: organizationId,
+          tenant_id: tenantId,
+          taps: tapsList
+        }, (response) => setSession(response.data)
+    )
+  }
+
   getSessionsStatistics(timeRange, taps, setStatistics) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 

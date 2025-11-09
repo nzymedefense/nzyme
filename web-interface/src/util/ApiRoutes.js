@@ -149,10 +149,10 @@ const ApiRoutes = {
     L4: {
       OVERVIEW: '/ethernet/l4',
       TCP: {
-        SESSION_DETAILS: sessionId => `/ethernet/l4/tcp/${sessionId}`
+        SESSION_DETAILS: (sessionKey, startTime) => `/ethernet/l4/tcp/${sessionKey}/${startTime}`
       },
       UDP: {
-        SESSION_DETAILS: sessionId => `/ethernet/l4/udp/${sessionId}`
+        SESSION_DETAILS: (sessionKey, startTime) => `/ethernet/l4/udp/${sessionKey}/${startTime}`
       }
     },
     ASSETS: {

@@ -6,6 +6,7 @@ import app.nzyme.core.database.generic.L4AddressDataAddressNumberNumberAggregati
 import app.nzyme.core.database.generic.NumberNumberNumberAggregationResult;
 import app.nzyme.core.database.generic.StringNumberNumberAggregationResult;
 import app.nzyme.core.ethernet.Ethernet;
+import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.l4.db.L4Numbers;
 import app.nzyme.core.ethernet.l4.db.L4Session;
 import app.nzyme.core.ethernet.l4.db.L4StatisticsBucket;
@@ -15,9 +16,11 @@ import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.FilterSql;
 import app.nzyme.core.util.filters.FilterSqlFragment;
 import app.nzyme.core.util.filters.Filters;
+import org.joda.time.DateTime;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class L4 {
@@ -144,6 +147,58 @@ public class L4 {
                         .define("order_direction", orderDirection)
                         .mapTo(L4Session.class)
                         .list()
+        );
+    }
+
+    public Optional<L4Session> findSession(L4Type type, DateTime startTime, String sessionKey, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT session_key, ANY_VALUE(l4_type) AS l4_type, " +
+                                "ANY_VALUE(state) AS state, ANY_VALUE(source_mac) AS source_mac, " +
+                                "ANY_VALUE(source_address) AS source_address, ANY_VALUE(source_port) AS source_port, " +
+                                "ANY_VALUE(source_address_geo_asn_number) AS source_address_geo_asn_number, " +
+                                "ANY_VALUE(source_address_geo_asn_name) AS source_address_geo_asn_name, " +
+                                "ANY_VALUE(source_address_geo_asn_domain) AS source_address_geo_asn_domain, " +
+                                "ANY_VALUE(source_address_geo_city) AS source_address_geo_city, " +
+                                "ANY_VALUE(source_address_geo_country_code) AS source_address_geo_country_code, " +
+                                "ANY_VALUE(source_address_geo_latitude) AS source_address_geo_latitude, " +
+                                "ANY_VALUE(source_address_geo_longitude) AS source_address_geo_longitude, " +
+                                "ANY_VALUE(source_address_is_site_local) AS source_address_is_site_local, " +
+                                "ANY_VALUE(source_address_is_loopback) AS source_address_is_loopback, " +
+                                "ANY_VALUE(source_address_is_multicast) AS source_address_is_multicast, " +
+                                "ANY_VALUE(destination_mac) AS destination_mac, " +
+                                "ANY_VALUE(destination_address) AS destination_address, " +
+                                "ANY_VALUE(destination_port) AS destination_port, " +
+                                "ANY_VALUE(destination_address_geo_asn_number) AS destination_address_geo_asn_number, " +
+                                "ANY_VALUE(destination_address_geo_asn_name) AS destination_address_geo_asn_name, " +
+                                "ANY_VALUE(destination_address_geo_asn_domain) AS destination_address_geo_asn_domain, " +
+                                "ANY_VALUE(destination_address_geo_city) AS destination_address_geo_city, " +
+                                "ANY_VALUE(destination_address_geo_country_code) AS destination_address_geo_country_code, " +
+                                "ANY_VALUE(destination_address_geo_latitude) AS destination_address_geo_latitude, " +
+                                "ANY_VALUE(destination_address_geo_longitude) AS destination_address_geo_longitude, " +
+                                "ANY_VALUE(destination_address_is_site_local) AS destination_address_is_site_local, " +
+                                "ANY_VALUE(destination_address_is_loopback) AS destination_address_is_loopback, " +
+                                "ANY_VALUE(destination_address_is_multicast) AS destination_address_is_multicast, " +
+                                "ANY_VALUE(fingerprint) AS fingerprint, ANY_VALUE(tags) AS tags, " +
+                                "MAX(bytes_rx_count) AS bytes_rx_count, MAX(bytes_tx_count) AS bytes_tx_count, " +
+                                "MAX(segments_count) AS segments_count, " +
+                                "MIN(start_time) AS start_time, MAX(end_time) AS end_time, " +
+                                "MAX(most_recent_segment_time) AS most_recent_segment_time, " +
+                                "(EXTRACT(EPOCH FROM (MAX(most_recent_segment_time) - MIN(start_time))) * 1000) AS duration_ms, " +
+                                "MIN(created_at) AS created_at " +
+                                "FROM l4_sessions WHERE session_key = :session_key AND l4_type = :l4_type " +
+                                "AND start_time >= :start_time_from AND start_time <= :start_time_to " +
+                                "AND tap_uuid IN (<taps>) GROUP BY session_key LIMIT 1 ")
+                        .bindList("taps", taps)
+                        .bind("l4_type", type)
+                        .bind("session_key", sessionKey)
+                        .bind("start_time_from", startTime.minusMinutes(1))
+                        .bind("start_time_to", startTime.plusMinutes(1))
+                        .mapTo(L4Session.class)
+                        .findOne()
         );
     }
 

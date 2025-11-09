@@ -135,7 +135,7 @@ export default function SSHSessionDetailsPage() {
                         <span className="text-muted">n/a</span>}
                   </dd>
                   <dt>Underlying TCP Session</dt>
-                  <dd><TCPSessionLink sessionId={session.tcp_session_key} /></dd>
+                  <dd><TCPSessionLink sessionId={session.tcp_session_key} startTime={session.established_at} /></dd>
                 </dl>
               </div>
             </div>
