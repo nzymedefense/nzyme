@@ -266,6 +266,8 @@ export default function Filters(props) {
       switch (fields[field].type) {
         case FILTER_TYPE.STRING:
         case FILTER_TYPE.DNS_TYPE:
+        case FILTER_TYPE.L4_SESSION_STATE:
+        case FILTER_TYPE.L4_SESSION_TYPE:
         case FILTER_TYPE.MAC_ADDRESS:
           setAllowedOperators([
             OPERATORS.EQUALS,

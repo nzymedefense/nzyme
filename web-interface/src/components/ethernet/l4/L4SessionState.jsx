@@ -1,22 +1,20 @@
 import React from 'react';
 
-export default function L4SessionState(props) {
-
-  const state = props.state;
+export default function L4SessionState({state, showFull}) {
 
   switch (state) {
     case "ACTIVE":
     case "ESTABLISHED":
       // Open.
-      return <span className="badge bg-success" title={"Established (" + props.state + ")"}>ESTB</span>
+      return <span className={showFull ? null : "badge bg-success"} title={"Established (" + state + ")"}>{showFull ? "Established (ESTB)" : "ESTB"}</span>
     case "SYNSENT":
     case "SYNRECEIVED":
       // Setup.
-      return <span className="badge bg-info" title={"Setting Up (" + props.state + ")"}>SETP</span>
+      return <span className={showFull ? null : "badge bg-info"} title={"Setting Up (" + state + ")"}>{showFull ? "Setting Up (SETP)" : "SETP"}</span>
     case "FINWAIT1":
     case "FINWAIT2":
       // Teardown.
-      return <span className="badge bg-warning" title={"Tearing Down (" + props.state + ")"}>TDWN</span>
+      return <span className={showFull ? null : "badge bg-warning"} title={"Tearing Down (" + state + ")"}>{showFull ? "Tearing Down (TDWN)" : "TDWN"}</span>
     case "CLOSED":
     case "CLOSEDNODE":
     case "CLOSEDFIN":
@@ -24,12 +22,12 @@ export default function L4SessionState(props) {
     case "CLOSEDTIMEOUT":
     case "CLOSEDTIMEOUTNODE":
       // Closed.
-      return <span className="badge bg-warning" title={"Closed (" + props.state + ")"}>CLSD</span>
+      return <span className={showFull ? null : "badge bg-warning"} title={"Closed (" + state + ")"}>{showFull ? "Closed (CLSD)" : "CLSD"}</span>
     case "REFUSED":
       // Refused.
-      return <span className="badge bg-danger" title={"Refused (" + props.state + ")"}>RFSD</span>
+      return <span className={showFull ? null : "badge bg-danger"} title={"Refused (" + state + ")"}>{showFull ? "Refused (RFSD)" : "RFSD"}</span>
     default:
-      return <span className="badge bg-black" title={"Unknown (" + props.state + ")"}>UNKN</span>;
+      return <span className={showFull ? null : "badge bg-black"} title={"Unknown (" + state + ")"}>{showFull ? "Unknown (UNKN)" : "UNKN"}</span>;
   }
 
 }

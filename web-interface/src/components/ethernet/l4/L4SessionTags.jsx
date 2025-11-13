@@ -9,10 +9,10 @@ export default function L4SessionTags({tags, setFilters}) {
       return null;
     }
 
-    return <FilterValueIcon setFilters={setFilters}
+    return <><FilterValueIcon setFilters={setFilters}
                             fields={L4_SESSIONS_FILTER_FIELDS}
                             field="tags"
-                            value={tag} />
+                            value={tag} />{' '}</>
   }
 
   if (!tags || tags.length === 0) {
@@ -24,7 +24,7 @@ export default function L4SessionTags({tags, setFilters}) {
         {tags.sort().map((tag, i) => {
           return (
               <React.Fragment key={i}>
-                {tag}{filterElement(tag)}{i < tags.length-1 ? " , " : null}
+                {tag}{filterElement(tag)}{i < tags.length-1 ? ", " : null}
               </React.Fragment>
           )
         })}
