@@ -2,6 +2,7 @@ package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.assets.AssetManager;
+import app.nzyme.core.assets.AssetRegistryKeys;
 import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.assets.db.AssetHostnameEntry;
 import app.nzyme.core.assets.db.AssetIpAddressEntry;
@@ -9,6 +10,7 @@ import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.requests.GenericConfigurationUpdateRequest;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.assets.*;
@@ -19,6 +21,9 @@ import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.distributed.messaging.ClusterMessage;
 import app.nzyme.plugin.distributed.messaging.MessageType;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -467,6 +472,68 @@ public class AssetsResource extends TapDataHandlingResource {
         nzyme.getAssetsManager().deleteIpAddressOfAsset(asset.get().id(), addressId);
 
         invalidateAssetByMacCachesClusterWide();
+
+        return Response.ok().build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "ethernet_assets_manage" })
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/configuration")
+    public Response getConfiguration(@Context SecurityContext sc,
+                                     @PathParam("organization_id") UUID organizationId,
+                                     @PathParam("tenant_id") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        int retentionTimeDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry().getValue(
+                AssetRegistryKeys.ASSETS_STATISTICS_RETENTION_TIME_DAYS.key(),
+                organizationId,
+                tenantId
+        ).orElse(AssetRegistryKeys.ASSETS_STATISTICS_RETENTION_TIME_DAYS.defaultValue().get()));
+
+        return Response.ok(AssetsConfigurationResponse.create(ConfigurationEntryResponse.create(
+                AssetRegistryKeys.ASSETS_STATISTICS_RETENTION_TIME_DAYS.key(),
+                "Asset Statistics Retention Time (Days)",
+                retentionTimeDays,
+                ConfigurationEntryValueType.NUMBER,
+                AssetRegistryKeys.ASSETS_STATISTICS_RETENTION_TIME_DAYS.defaultValue().orElse(null),
+                AssetRegistryKeys.ASSETS_STATISTICS_RETENTION_TIME_DAYS.requiresRestart(),
+                AssetRegistryKeys.ASSETS_STATISTICS_RETENTION_TIME_DAYS.constraints().orElse(Collections.emptyList()),
+                "assets-config"
+        ))).build();
+
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "ethernet_assets_manage" })
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/configuration")
+    public Response setConfiguration(@Context SecurityContext sc,
+                                     @PathParam("organization_id") UUID organizationId,
+                                     @PathParam("tenant_id") UUID tenantId,
+                                     @Valid GenericConfigurationUpdateRequest req) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        if (req.change().isEmpty()) {
+            return Response.status(422).build();
+        }
+
+        for (Map.Entry<String, Object> c : req.change().entrySet()) {
+            //noinspection SwitchStatementWithTooFewBranches
+            switch (c.getKey()) {
+                case "assets_statistics_retention_time_days":
+                    if (!ConfigurationEntryConstraintValidator
+                            .checkConstraints(AssetRegistryKeys.ASSETS_STATISTICS_RETENTION_TIME_DAYS, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                default:
+                    return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+
+            nzyme.getDatabaseCoreRegistry().setValue(c.getKey(), c.getValue().toString(), organizationId, tenantId);
+        }
 
         return Response.ok().build();
     }

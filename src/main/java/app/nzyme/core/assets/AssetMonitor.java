@@ -13,7 +13,6 @@ public class AssetMonitor extends Periodical {
 
     private final NzymeNode nzyme;
 
-
     public AssetMonitor(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }

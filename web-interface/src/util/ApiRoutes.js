@@ -164,7 +164,8 @@ const ApiRoutes = {
       },
       ARP: {
         INDEX: '/ethernet/assets/arp'
-      }
+      },
+      SETTINGS: '/ethernet/assets/settings'
     },
     DNS: {
       INDEX: '/ethernet/dns',

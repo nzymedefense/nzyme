@@ -110,4 +110,15 @@ export default class AssetsService {
     )
   }
 
+  getAssetsConfiguration(organizationId, tenantId, setConfiguration) {
+    RESTClient.get(`/ethernet/assets/organization/${organizationId}/tenant/${tenantId}/configuration`, {},
+      (response) => setConfiguration(response.data)
+    )
+  }
+
+  updateAssetsConfiguration(newConfig, organizationId, tenantId, successCallback, errorCallback) {
+    RESTClient.put(`/ethernet/assets/organization/${organizationId}/tenant/${tenantId}/configuration`,
+      { change: newConfig }, successCallback, errorCallback)
+  }
+
 }

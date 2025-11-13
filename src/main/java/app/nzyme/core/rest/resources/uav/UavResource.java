@@ -308,6 +308,7 @@ public class UavResource extends TapDataHandlingResource {
         return Response.ok(UavCustomTypeListResponse.create(count, types)).build();
     }
 
+    // Organization and tenant ID are not used and only here to keep API paths consistent.
     @GET
     @RESTSecured(value = PermissionLevel.ANY)
     @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/types/connect")
@@ -517,7 +518,7 @@ public class UavResource extends TapDataHandlingResource {
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "uav_monitoring_manage" })
     @Path("/uavs/organization/{organization_id}/tenant/{tenant_id}/monitoring")
-    public Response getMonitoringConfiguration(@Context SecurityContext sc,
+    public Response setMonitoringConfiguration(@Context SecurityContext sc,
                                                @PathParam("organization_id") UUID organizationId,
                                                @PathParam("tenant_id") UUID tenantId,
                                                UavMonitoringConfigurationRequest req) {

@@ -183,6 +183,7 @@ import GNSSMonitoringSettingsPage from "./components/gnss/monitoring/GNSSMonitor
 import ReconPage from "./components/ethernet/recon/ReconPage";
 import TCPSessionDetailsPage from "./components/ethernet/l4/tcp/TCPSessionDetailsPage";
 import UDPSessionDetailsPage from "./components/ethernet/l4/udp/UDPSessionDetailsPage";
+import EthernetAssetsSettingsPage from "./components/ethernet/assets/EthernetAssetsSettingsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -557,6 +558,7 @@ function App() {
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.DHCP.INDEX} element={<DHCPTransactionsPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.DHCP.TRANSACTION_DETAILS(':transactionId')} element={<DHCPTransactionDetailsPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.ASSETS.ARP.INDEX} element={<ARPPacketsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.ASSETS.SETTINGS} element={<EthernetAssetsSettingsPage />}/>
 
                                 { /* Ethernet/DNS. */}
                                 <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>

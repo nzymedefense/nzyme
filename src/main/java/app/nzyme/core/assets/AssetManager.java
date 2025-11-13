@@ -440,4 +440,15 @@ public class AssetManager {
         );
     }
 
+    public void retentionCleanAssetStatistics(UUID organizationId, UUID tenantId, DateTime cutoff) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM assets_statistics WHERE organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id AND timestamp < :cutoff")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("cutoff", cutoff)
+                        .execute()
+        );
+    }
+
 }
