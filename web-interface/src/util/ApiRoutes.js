@@ -174,7 +174,7 @@ const ApiRoutes = {
     TUNNELS: {
       SOCKS: {
         INDEX: '/ethernet/tunnels/socks',
-        TUNNEL_DETAILS: tunnelId => `/ethernet/tunnels/socks/tunnels/show/${tunnelId}`
+        TUNNEL_DETAILS: sessionId => `/ethernet/tunnels/socks/tunnels/show/${sessionId}`
       }
     },
     REMOTE: {

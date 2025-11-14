@@ -6,8 +6,8 @@ import {TapContext} from "../../../../App";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import L4Service from "../../../../services/ethernet/L4Service";
-import SessionDetailsPage from "../SessionDetails";
-import SessionDetails from "../SessionDetails";
+import SessionDetailsPage from "../L4SessionDetails";
+import L4SessionDetails from "../L4SessionDetails";
 
 const l4Service = new L4Service();
 
@@ -54,7 +54,7 @@ export default function UDPSessionDetailsPage() {
           </div>
         </div>
 
-        <SessionDetails type="UDP" session={session} />
+        <L4SessionDetails type="UDP" session={session} />
       </React.Fragment>
   )
 

@@ -6,7 +6,7 @@ import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant"
 import L4Service from "../../../../services/ethernet/L4Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import {TapContext} from "../../../../App";
-import SessionDetails from "../SessionDetails";
+import L4SessionDetails from "../L4SessionDetails";
 
 const l4Service = new L4Service();
 
@@ -54,7 +54,7 @@ export default function TCPSessionDetailsPage() {
           </div>
         </div>
 
-        <SessionDetails type="TCP" session={session} />
+        <L4SessionDetails type="TCP" session={session} />
 
       </React.Fragment>
   )

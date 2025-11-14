@@ -291,6 +291,11 @@ div.card {
     border-color: #e6e6e6;
 }
 
+div.card-container div.card {
+    border: 0;
+    margin-bottom: 0;
+}
+
 a {
     color: #1d30d7;
 }
