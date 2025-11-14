@@ -100,8 +100,9 @@ export default function SSHSessionDetailsPage() {
                   <dd>
                     <InternalAddressOnlyWrapper
                         address={session.client}
-                        inner={<EthernetMacAddress addressWithContext={session.client.mac}
-                                                   withAssetLink withAssetName />} />
+                        inner={session.client ?
+                            <EthernetMacAddress addressWithContext={session.client.mac} withAssetLink withAssetName />
+                            : null } />
                   </dd>
                   <dt>Server Address</dt>
                   <dd><L4Address address={session.server} hidePort={true}/></dd>
@@ -109,8 +110,9 @@ export default function SSHSessionDetailsPage() {
                   <dd>
                     <InternalAddressOnlyWrapper
                         address={session.server}
-                        inner={<EthernetMacAddress addressWithContext={session.server.mac}
-                                                   withAssetLink withAssetName />} />
+                        inner={session.server ?
+                            <EthernetMacAddress addressWithContext={session.server.mac} withAssetLink withAssetName />
+                            : null} />
                   </dd>
                 </dl>
               </div>
