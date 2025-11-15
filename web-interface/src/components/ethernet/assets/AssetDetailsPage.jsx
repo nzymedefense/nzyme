@@ -19,6 +19,8 @@ import AssetDetailsSSHSessions from "./AssetDetailsSSHSessions";
 import ComponentCycle from "../../shared/ComponentCycle";
 import AssetDetailsSOCKSTunnels from "./AssetDetailsSOCKSTunnels";
 import AssetDetailsL4Sessions from "./AssetDetailsL4Sessions";
+import AssetDetailsL4Histograms from "./AssetDetailsL4Histograms";
+import AssetDetailsL4Ports from "./AssetDetailsL4Ports";
 
 const assetsService = new AssetsService();
 
@@ -289,6 +291,22 @@ export default function AssetDetailsPage() {
                 <CardTitleWithControls title="TCP/UDP Sessions"  />
 
                 <ComponentCycle components={[
+                  {name: "Destinations", element:
+                        <AssetDetailsL4Histograms title="Destinations"
+                                                  filters={{
+                                                    "source_mac": [{
+                                                      field: "source_mac",
+                                                      operator: "equals",
+                                                      value: asset.mac.address,
+                                                    }]}} />},
+                  {name: "Ports", element:
+                        <AssetDetailsL4Ports title="Ports"
+                                                  filters={{
+                                                    "source_mac": [{
+                                                      field: "source_mac",
+                                                      operator: "equals",
+                                                      value: asset.mac.address,
+                                                    }]}} />},
                   {name: "Outbound Sessions", element:
                       <AssetDetailsL4Sessions title="Outbound Sessions"
                                               filters={{
@@ -298,7 +316,7 @@ export default function AssetDetailsPage() {
                                                   value: asset.mac.address,
                                                 }]}} />},
                   {name: "Inbound Sessions", element:
-                      <AssetDetailsL4Sessions title="Outbound Sessions"
+                      <AssetDetailsL4Sessions title="Inbound Sessions"
                                               filters={{
                                                 "destination_mac": [{
                                                   field: "destination_mac",
