@@ -3,7 +3,9 @@ package app.nzyme.core.ethernet.dhcp;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.Ethernet;
+import app.nzyme.core.ethernet.dhcp.db.DHCPStatisticsBucket;
 import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionEntry;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.FilterSql;
 import app.nzyme.core.util.filters.FilterSqlFragment;
@@ -146,6 +148,34 @@ public class DHCP {
                         .bindList("taps", taps)
                         .mapTo(DHCPTransactionEntry.class)
                         .findOne()
+        );
+    }
+
+    public List<DHCPStatisticsBucket> getStatistics(TimeRange timeRange,
+                                                    Bucketing.BucketingConfiguration bucketing,
+                                                    Filters filters,
+                                                    List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new DHCPFilters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, first_packet) AS bucket, " +
+                                "COUNT(*) AS total_transaction_count, " +
+                                "COUNT(*) FILTER (WHERE is_successful = true) AS successful_transaction_count, " +
+                                "COUNT(*) FILTER (WHERE is_successful = false) AS failed_transaction_count " +
+                                "FROM dhcp_transactions WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(DHCPStatisticsBucket.class)
+                        .list()
         );
     }
 

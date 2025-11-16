@@ -67,6 +67,15 @@ export default class AssetsService {
     )
   }
 
+  getDHCPStatistics(timeRange, filters, taps, setStatistics) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/ethernet/dhcp/transactions/statistics",
+        { time_range: timeRange, filters: filters, taps: tapsList },
+        (response) => setStatistics(response.data)
+    )
+  }
+
   findDHCPTransaction(organizationId, tenantId, transactionId, transactionTime, taps, setTransaction) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 

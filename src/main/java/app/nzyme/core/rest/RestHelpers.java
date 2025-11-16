@@ -174,10 +174,14 @@ public class RestHelpers {
     }
 
     public static InternalAddressResponse internalAddressDataToResponse(NzymeNode nzyme,
-                                                                  @Nullable String mac,
-                                                                  String address,
-                                                                  UUID organizationId,
-                                                                  UUID tenantId) {
+                                                                        @Nullable String mac,
+                                                                        String address,
+                                                                        UUID organizationId,
+                                                                        UUID tenantId) {
+        if (address == null) {
+            return null;
+        }
+
         Optional<AssetEntry> asset;
         EthernetMacAddressResponse macResponse;
         if (mac != null) {

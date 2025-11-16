@@ -186,7 +186,9 @@ export default function DHCPTransactionDetailsPage() {
                   <dt>Offered IP Addresses</dt>
                   <dd><DHCPOfferedIpAddresses ips={tx.offered_ip_addresses} /></dd>
                   <dt>Requested IP Address</dt>
-                  <dd><L4Address address={tx.requested_ip_address} hideFlag /></dd>
+                  <dd>
+                    {tx.requested_ip_address ? tx.requested_ip_address.address : <span className="text-muted">n/a</span>}
+                  </dd>
                 </dl>
 
                 <table className="table table-sm table-hover table-striped">

@@ -13,6 +13,7 @@ import {useLocation} from "react-router-dom";
 import Filters from "../../../shared/filtering/Filters";
 import AssetsService from "../../../../services/ethernet/AssetsService";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import DHCPTransactionsChart from "./DHCPTransactionsChart";
 
 const assetsService = new AssetsService();
 
@@ -31,6 +32,8 @@ export default function DHCPTransactionsPage() {
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   const [data, setData] = useState(null);
+
+  const [statistics, setStatistics] = useState(null);
 
   const [orderColumn, setOrderColumn] = useState("initiated_at");
   const [orderDirection, setOrderDirection] = useState("DESC");
@@ -54,6 +57,10 @@ export default function DHCPTransactionsPage() {
 
   useEffect(() => {
     setData(null);
+    setStatistics(null);
+
+    assetsService.getDHCPStatistics(timeRange, filters, selectedTaps, setStatistics);
+
     assetsService.findAllDHCPTransactions(
         organizationId,
         tenantId,
@@ -88,6 +95,20 @@ export default function DHCPTransactionsPage() {
                 <Filters filters={filters}
                          setFilters={setFilters}
                          fields={DHCP_FILTER_FIELDS} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Total DHCP Transactions"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <DHCPTransactionsChart statistics={statistics} setTimeRange={setTimeRange} />
               </div>
             </div>
           </div>

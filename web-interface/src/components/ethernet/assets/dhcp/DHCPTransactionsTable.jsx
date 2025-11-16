@@ -103,12 +103,7 @@ export default function DHCPTransactionsTable(props) {
                       : <span className="text-muted">n/a</span>}</td>
                   <td><AssetName addressWithContext={t.server_mac} /></td>
                   <td>
-                    <L4Address address={t.requested_ip_address}
-                               filterElement={<FilterValueIcon setFilters={setFilters}
-                                                               fields={DHCP_FILTER_FIELDS}
-                                                               field="requested_ip"
-                                                               value={t.requested_ip_address.address} />}
-                               hideFlag />
+                    {t.requested_ip_address ? t.requested_ip_address.address : <span className="text-muted">n/a</span>}
                   </td>
                   <td>
                     <FullCopyShortenedId value={t.fingerprint} />

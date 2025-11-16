@@ -5,12 +5,14 @@ import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.ethernet.dhcp.DHCP;
+import app.nzyme.core.ethernet.dhcp.db.DHCPStatisticsBucket;
 import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionEntry;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
 import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
+import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPStatisticsBucketResponse;
 import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTimelineStepResponse;
 import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTransactionDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.dhcp.DHCPTransactionsListResponse;
@@ -21,6 +23,7 @@ import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -81,6 +84,29 @@ public class DHCPResource extends TapDataHandlingResource {
         }
 
         return Response.ok(DHCPTransactionsListResponse.create(total, txs)).build();
+    }
+
+    @GET
+    @Path("/transactions/statistics")
+    public Response statistics(@Context SecurityContext sc,
+                               @QueryParam("time_range") @Valid String timeRangeParameter,
+                               @QueryParam("filters") String filtersParameter,
+                               @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        Map<DateTime, DHCPStatisticsBucketResponse> statistics = Maps.newHashMap();
+        for (DHCPStatisticsBucket s : nzyme.getEthernet().dhcp().getStatistics(timeRange, bucketing, filters, taps)) {
+            statistics.put(s.bucket(), DHCPStatisticsBucketResponse.create(
+                    s.totalTransactionCount(), s.successfulTransactionCount(), s.failedTransactionCount())
+            );
+        }
+
+        return Response.ok(statistics).build();
     }
 
     @GET
