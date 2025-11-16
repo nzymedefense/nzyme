@@ -61,6 +61,7 @@ function Sidebar(props) {
                 href={ApiRoutes.ETHERNET.TUNNELS.SOCKS.INDEX}
                 title="Tunnels"
                 icon={<i className="sidebar-icon fa-solid fa-car-tunnel"/>}/>
+            {/*
             <NavigationLink
               href={ApiRoutes.ETHERNET.RECON.INDEX}
               title="Recon"
@@ -68,7 +69,7 @@ function Sidebar(props) {
             <NavigationLink
                 href={ApiRoutes.ETHERNET.BEACONS.INDEX}
                 title="Beacons"
-                icon={<i className="sidebar-icon fa-solid fa-location-arrow"/>}/>
+                icon={<i className="sidebar-icon fa-solid fa-location-arrow"/>}/> */}
           </SidebarSubmenu>
 
           <SidebarSubmenu title="WiFi"
