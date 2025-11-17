@@ -27,7 +27,7 @@ public class AssetStatisticsCleaner extends Periodical {
                         tenant.uuid()
                 ).orElse(AssetRegistryKeys.ASSETS_STATISTICS_RETENTION_TIME_DAYS.defaultValue().get()));
 
-                LOG.info("Retention cleaning asset statistics for tenant [{}/{}]: <{}> days.",
+                LOG.debug("Retention cleaning asset statistics for tenant [{}/{}]: <{}> days.",
                         tenant.organizationUuid(), tenant.uuid(), retentionTimeDays);
                 DateTime cutoff = DateTime.now().minusDays(retentionTimeDays);
 
