@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -247,6 +248,33 @@ public class AssetContextResource extends UserAuthenticatedResource {
         invalidateContextCachesClusterWide();
 
         return Response.status(Response.Status.OK).build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_context_manage" })
+    @Path("/mac/organization/show/{organization_id}/tenant/show/{tenant_id}/uuid/{uuid}/name")
+    public Response updateMacName(@Context SecurityContext sc,
+                                  @QueryParam("name") @NotBlank String name,
+                                  @PathParam("organization_id") UUID organizationId,
+                                  @PathParam("tenant_id") UUID tenantId,
+                                  @PathParam("uuid") UUID uuid) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Does this context exist for org and tenant? Don't allow to change org or tenant on existing context.
+        if (nzyme.getContextService().findMacAddressContext(uuid, organizationId, tenantId).isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getContextService().updateMacAddressContextName(
+                uuid, organizationId, tenantId, name
+        );
+
+        // Invalidate caches.
+        invalidateContextCachesClusterWide();
+
+        return Response.ok().build();
     }
 
     private MacAddressContextDetailsResponse entryToResponse(MacAddressContextEntry m,
