@@ -21,6 +21,7 @@ import AssetDetailsSOCKSTunnels from "./AssetDetailsSOCKSTunnels";
 import AssetDetailsL4Sessions from "./AssetDetailsL4Sessions";
 import AssetDetailsL4Histograms from "./AssetDetailsL4Histograms";
 import AssetDetailsL4Ports from "./AssetDetailsL4Ports";
+import AssetDetailsAssetName from "./AssetDetailsAssetName";
 
 const assetsService = new AssetsService();
 
@@ -147,10 +148,7 @@ export default function AssetDetailsPage() {
                   <dt>MAC Address</dt>
                   <dd><span className="mac-address">{asset.mac.address}</span></dd>
                   <dt>Name</dt>
-                  <dd>{asset.name ?
-                      <span className="context-name">{asset.name}</span>
-                      : <span className="text-muted">n/a</span>
-                  }</dd>
+                  <dd><AssetDetailsAssetName asset={asset} /></dd>
                   <dt>OUI</dt>
                   <dd>{asset.oui ? asset.oui : <span className="text-muted">n/a</span>}</dd>
                 </dl>

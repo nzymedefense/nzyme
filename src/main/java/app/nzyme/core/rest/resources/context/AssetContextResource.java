@@ -12,6 +12,7 @@ import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.constraints.MacAddress;
 import app.nzyme.core.rest.misc.CategorizedTransparentContextData;
 import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
+import app.nzyme.core.rest.requests.UpdateMacAddressContextNameRequest;
 import app.nzyme.core.rest.requests.UpdateMacAddressContextRequest;
 import app.nzyme.core.rest.responses.context.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
@@ -254,7 +255,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_context_manage" })
     @Path("/mac/organization/show/{organization_id}/tenant/show/{tenant_id}/uuid/{uuid}/name")
     public Response updateMacName(@Context SecurityContext sc,
-                                  @QueryParam("name") @NotBlank String name,
+                                  @Valid UpdateMacAddressContextNameRequest req,
                                   @PathParam("organization_id") UUID organizationId,
                                   @PathParam("tenant_id") UUID tenantId,
                                   @PathParam("uuid") UUID uuid) {
@@ -268,7 +269,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
         }
 
         nzyme.getContextService().updateMacAddressContextName(
-                uuid, organizationId, tenantId, name
+                uuid, organizationId, tenantId, req.name()
         );
 
         // Invalidate caches.
