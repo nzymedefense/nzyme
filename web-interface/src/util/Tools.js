@@ -238,3 +238,7 @@ export function uavVerticalAccuracyNoHtml(x) {
       return "Unknown Accuracy"
   }
 }
+
+export function formatAssetName(name) {
+  return name.toUpperCase().replace(/[^a-z0-9_]/gi, '');
+}

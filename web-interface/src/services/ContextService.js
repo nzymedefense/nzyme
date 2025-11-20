@@ -50,8 +50,8 @@ class ContextService {
         successCallback)
   }
 
-  setMacAddressName(uuid, name, organizationId, tenantId, successCallback, errorCallback) {
-    RESTClient.put("/context/mac/organization/show/" + organizationId + "/tenant/show/" + tenantId + "/uuid/" + uuid + "/name",
+  setMacAddressName(mac, name, organizationId, tenantId, successCallback, errorCallback) {
+    RESTClient.put("/context/mac/organization/show/" + organizationId + "/tenant/show/" + tenantId + "/mac/" + mac + "/name",
       {name: name},
       successCallback, errorCallback
     )

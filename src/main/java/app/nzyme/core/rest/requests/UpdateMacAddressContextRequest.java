@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
 @AutoValue
 public abstract class UpdateMacAddressContextRequest {
 
-    @NotEmpty @Size(max = 12)
+    @Nullable @Size(max = 12)
     public abstract String name();
 
     @Nullable

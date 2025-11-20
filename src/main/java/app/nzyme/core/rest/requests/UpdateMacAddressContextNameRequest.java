@@ -3,12 +3,12 @@ package app.nzyme.core.rest.requests;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.annotation.Nullable;
 
 @AutoValue
 public abstract class UpdateMacAddressContextNameRequest {
 
-    @NotBlank
+    @Nullable
     public abstract String name();
 
     @JsonCreator
@@ -24,7 +24,7 @@ public abstract class UpdateMacAddressContextNameRequest {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder name(@NotBlank String name);
+        public abstract Builder name(String name);
 
         public abstract UpdateMacAddressContextNameRequest build();
     }

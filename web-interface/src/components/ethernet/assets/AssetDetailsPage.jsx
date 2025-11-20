@@ -148,7 +148,7 @@ export default function AssetDetailsPage() {
                   <dt>MAC Address</dt>
                   <dd><span className="mac-address">{asset.mac.address}</span></dd>
                   <dt>Name</dt>
-                  <dd><AssetDetailsAssetName asset={asset} /></dd>
+                  <dd><AssetDetailsAssetName asset={asset} setRevision={setRevision} /></dd>
                   <dt>OUI</dt>
                   <dd>{asset.oui ? asset.oui : <span className="text-muted">n/a</span>}</dd>
                 </dl>

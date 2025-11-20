@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {isValidMACAddress} from "../../../util/Tools";
+import {formatAssetName, isValidMACAddress} from "../../../util/Tools";
 import FormSubmitErrorMessage from "../../misc/FormSubmitErrorMessage";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
@@ -12,14 +12,10 @@ function MacAddressContextForm(props) {
   const errorMessage = props.errorMessage;
   const macAddressDisabled = props.macAddressDisabled;
 
-  const formatName = (name) => {
-    return name.toUpperCase().replace(/[^a-z0-9_]/gi, '');
-  }
-
   const [macAddress, setMacAddress] = useState(
       (props.macAddress && isValidMACAddress(props.macAddress)) ? props.macAddress.toUpperCase() : ""
   );
-  const [name, setName] = useState(props.name ? formatName(props.name) : "");
+  const [name, setName] = useState(props.name ? formatAssetName(props.name) : "");
   const [description, setDescription] = useState(props.description ? props.description : "");
   const [notes, setNotes] = useState(props.notes ? props.notes : "");
 
@@ -52,7 +48,7 @@ function MacAddressContextForm(props) {
       <div className="mb-3">
         <label htmlFor="name" className="form-label">Name</label>
         <input type="text" className="form-control" id="name" maxLength={12}
-               value={name} onChange={(e) => { setName(formatName(e.target.value)) }} />
+               value={name} onChange={(e) => { setName(formatAssetName(e.target.value)) }} />
         <div className="form-text">
           A short name describing the MAC address. This name will appear next to the address. It cannot be longer than
           12 characters, cannot include special characters except underscores and must be uppercase.

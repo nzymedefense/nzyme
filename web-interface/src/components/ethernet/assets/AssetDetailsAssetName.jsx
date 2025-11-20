@@ -1,12 +1,22 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
+import ContextService from "../../../services/ContextService";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import {notify} from "react-notify-toast";
+import {formatAssetName, userHasPermission} from "../../../util/Tools";
+import {UserContext} from "../../../App";
 
-export default function AssetDetailsAssetName({asset}) {
+const contextService = new ContextService();
+
+export default function AssetDetailsAssetName({asset, setRevision}) {
+
+  const [organizationId, tenantId] = useSelectedTenant();
+  const user = useContext(UserContext);
 
   const SAVE_BUTTON_TEXT = "Set Name";
 
   const [showForm, setShowForm] = useState(false);
 
-  const [newName, setNewName] = useState(asset.name ? asset.name : "")
+  const [newName, setNewName] = useState(asset.name ? formatAssetName(asset.name) : "")
 
   const [saveButtonText, setSaveButtonText] = useState(SAVE_BUTTON_TEXT);
   const [isSaving, setIsSaving] = useState(false);
@@ -14,6 +24,22 @@ export default function AssetDetailsAssetName({asset}) {
   const toggleForm = (e) => {
     e.preventDefault();
     setShowForm(!showForm);
+  }
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+
+    setIsSaving(true);
+    setSaveButtonText("Please wait...");
+
+    contextService.setMacAddressName(asset.mac.address, newName, organizationId, tenantId, () => {
+      notify.show("Asset name updated.", "success");
+      setRevision(new Date());
+    }, () => {
+      notify.show("Could not update asset name.", "error");
+      setIsSaving(false);
+      setSaveButtonText(SAVE_BUTTON_TEXT);
+    })
   }
 
   const name = () => {
@@ -25,7 +51,7 @@ export default function AssetDetailsAssetName({asset}) {
   }
 
   const button = () => {
-    if (showForm) {
+    if (showForm || !userHasPermission(user, "mac_context_manage")) {
       return;
     }
 
@@ -42,18 +68,22 @@ export default function AssetDetailsAssetName({asset}) {
     }
 
     return (
-      <div className="input-group mt-2">
-        <input type="text" className="form-control" id="new-asset-name"
-               value={name} onChange={(e) => { setNewName(e.target.value) }} />
+        <>
+          <div className="input-group mt-2 mb-2">
+            <input type="text" className="form-control" id="new-asset-name" maxLength={12}
+                   value={newName} onChange={(e) => { setNewName(formatAssetName(e.target.value)) }} />
 
-        <button className="btn btn-sm btn-primary" type="button" disabled={isSaving}>
-          {saveButtonText}
-        </button>
+            <button className="btn btn-sm btn-primary" type="button" disabled={isSaving} onClick={onSubmit}>
+              {saveButtonText}
+            </button>
 
-        <button className="btn btn-sm btn-secondary" type="button" onClick={toggleForm} disabled={isSaving}>
-          Cancel
-        </button>
-      </div>
+            <button className="btn btn-sm btn-secondary" type="button" onClick={toggleForm} disabled={isSaving}>
+              Cancel
+            </button>
+          </div>
+
+          <p className="text-muted mb-0">Note that it can take a few seconds until the new name updates across the system.</p>
+        </>
     )
   }
 
