@@ -22,6 +22,8 @@ import AssetDetailsL4Sessions from "./AssetDetailsL4Sessions";
 import AssetDetailsL4Histograms from "./AssetDetailsL4Histograms";
 import AssetDetailsL4Ports from "./AssetDetailsL4Ports";
 import AssetDetailsAssetName from "./AssetDetailsAssetName";
+import WithPermission from "../../misc/WithPermission";
+import EthernetMacAddress from "../../shared/context/macs/EthernetMacAddress";
 
 const assetsService = new AssetsService();
 
@@ -146,7 +148,10 @@ export default function AssetDetailsPage() {
 
                 <dl className="mb-0">
                   <dt>MAC Address</dt>
-                  <dd><span className="mac-address">{asset.mac.address}</span></dd>
+                  <dd>
+                    <EthernetMacAddress addressWithContext={asset.mac}
+                                        hideActiveIndicator={true} />
+                  </dd>
                   <dt>Name</dt>
                   <dd><AssetDetailsAssetName asset={asset} setRevision={setRevision} /></dd>
                   <dt>OUI</dt>
