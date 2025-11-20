@@ -1354,7 +1354,7 @@ public class AuthenticationService {
                                                     "AND u.tenant_id = :tenant_id " +
                                                     "AND (s.created_at < :session_timeout OR (s.mfa_valid = true " +
                                                     "AND u.last_activity < :inactivity_timeout) " +
-                                                    "OR (u.mfa_disabled = true AND s.mfa_valid = false " +
+                                                    "OR (u.mfa_disabled = false AND s.mfa_valid = false " +
                                                     "AND s.mfa_requested_at < :mfa_timeout))")
                                             .bind("organization_id", organization.uuid())
                                             .bind("tenant_id", tenant.uuid())
