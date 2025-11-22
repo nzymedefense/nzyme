@@ -48,6 +48,7 @@ export default function UavDetailsPage() {
   const [plottedTrackLoading, setPlottedTrackLoading] = useState(null);
 
   const [revision, setRevision] = useState(new Date());
+  const [mapRevision, setMapRevision] = useState(new Date());
 
   const [timeline, setTimeline] = useState(null);
   const [timelineTimeRange, setTimelineTimeRange] = useState(Presets.ALL_TIME);
@@ -83,7 +84,7 @@ export default function UavDetailsPage() {
         (timelinePage - 1) * perPageTimeline
       );
     }
-  }, [revision, organizationId, tenantId, timelinePage, timelineTimeRange, identifierParam]);
+  }, [revision, mapRevision, organizationId, tenantId, timelinePage, timelineTimeRange, identifierParam]);
 
   const onPlotTrack = (e, timelineId) => {
     e.preventDefault();
@@ -239,7 +240,7 @@ export default function UavDetailsPage() {
                         timestamp: uav.summary.latest_vector_timestamp
                       }}
                       lastKnownOperatorPosition={lastKnownOperatorPosition()}
-                      onRefresh={() => setRevision(new Date()) } />
+                      onRefresh={() => setMapRevision(new Date()) } />
             </div>
           </div>
         </div>
