@@ -42,49 +42,53 @@ public class RegistryChangeMonitorImpl implements RegistryChangeMonitor {
     }
 
     private void processChanges() {
-        if (snapshot == null) {
-            // First run. Fill image.
-            snapshot = takeSnapshot();
+        try {
+            if (snapshot == null) {
+                // First run. Fill image.
+                snapshot = takeSnapshot();
 
-            // Exit. (No changes on first run)
-            return;
-        }
-
-        Map<String, String> previous = Maps.newHashMap(this.snapshot);
-
-        // Create new snapshot. Do this immediately to avoid missing changes that happen during processing.
-        this.snapshot = takeSnapshot();
-
-        Map<String, String> current = takeSnapshot();
-
-        for (Map.Entry<String, String> entry : current.entrySet()) {
-            if (ignoredKeys.contains(entry.getKey())) {
-                continue;
+                // Exit. (No changes on first run)
+                return;
             }
 
-            if (!previous.containsKey(entry.getKey())) {
-                // New entry.
-                LOG.info("Registry key [{}] now has a value. Notifying subscribers.", entry.getKey());
-                notifyChange(entry.getKey());
-            } else {
-                // Existing entry. Compare.
-                if (!entry.getValue().equals(previous.get(entry.getKey()))) {
-                    // Value changed.
-                    LOG.info("Registry key [{}] has a new value. Notifying subscribers.", entry.getKey());
+            Map<String, String> previous = Maps.newHashMap(this.snapshot);
+
+            // Create new snapshot. Do this immediately to avoid missing changes that happen during processing.
+            this.snapshot = takeSnapshot();
+
+            Map<String, String> current = takeSnapshot();
+
+            for (Map.Entry<String, String> entry : current.entrySet()) {
+                if (ignoredKeys.contains(entry.getKey())) {
+                    continue;
+                }
+
+                if (!previous.containsKey(entry.getKey())) {
+                    // New entry.
+                    LOG.info("Registry key [{}] now has a value. Notifying subscribers.", entry.getKey());
+                    notifyChange(entry.getKey());
+                } else {
+                    // Existing entry. Compare.
+                    if (!entry.getValue().equals(previous.get(entry.getKey()))) {
+                        // Value changed.
+                        LOG.info("Registry key [{}] has a new value. Notifying subscribers.", entry.getKey());
+                        notifyChange(entry.getKey());
+                    }
+                }
+            }
+
+            for (Map.Entry<String, String> entry : previous.entrySet()) {
+                if (ignoredKeys.contains(entry.getKey())) {
+                    continue;
+                }
+                // Did a value disappear?
+                if (!current.containsKey(entry.getKey())) {
+                    LOG.info("Registry key [{}] has disappeared. Notifying subscribers.", entry.getKey());
                     notifyChange(entry.getKey());
                 }
             }
-        }
-
-        for (Map.Entry<String, String> entry : previous.entrySet()) {
-            if (ignoredKeys.contains(entry.getKey())) {
-                continue;
-            }
-            // Did a value disappear?
-            if (!current.containsKey(entry.getKey())) {
-                LOG.info("Registry key [{}] has disappeared. Notifying subscribers.", entry.getKey());
-                notifyChange(entry.getKey());
-            }
+        } catch (Exception e) {
+            LOG.error("Error while processing registry changes.", e);
         }
     }
 
@@ -97,6 +101,10 @@ public class RegistryChangeMonitorImpl implements RegistryChangeMonitor {
          */
 
         List<Runnable> reactions = subscribers.get(key);
+
+        if (reactions == null) {
+            return;
+        }
 
         for (Runnable reaction : reactions) {
             if (reaction != null) {
