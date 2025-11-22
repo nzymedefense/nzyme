@@ -184,6 +184,7 @@ import ReconPage from "./components/ethernet/recon/ReconPage";
 import TCPSessionDetailsPage from "./components/ethernet/l4/tcp/TCPSessionDetailsPage";
 import UDPSessionDetailsPage from "./components/ethernet/l4/udp/UDPSessionDetailsPage";
 import EthernetAssetsSettingsPage from "./components/ethernet/assets/EthernetAssetsSettingsPage";
+import EthernetOverviewPage from "./components/ethernet/EthernetOverviewPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -544,6 +545,8 @@ function App() {
 
                               { /* Ethernet. */ }
                               <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "ethernet")} />}>
+                                <Route path={ApiRoutes.ETHERNET.OVERVIEW} element={<EthernetOverviewPage />}/>
+
                                 { /* Ethernet/IP. */}
                                 <Route path={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(':address')} element={<IPDetailsPage />}/>
 
