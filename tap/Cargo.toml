@@ -1,6 +1,5 @@
 [package]
 name = "nzyme-tap"
-description = "The nzyme Network Defense System tap"
 license = "SSPL-1.0"
 version = "2.0.0-alpha.18-SNAPSHOT"
 edition = "2024"
@@ -22,10 +21,10 @@ inherits = "release"
 debug = true
 
 [package.metadata.deb]
-maintainer = "nzyme LLC <hello@nzyme.org>"
-copyright = "nzyme LLC <hello@nzyme.org>"
+maintainer = "Nzyme LLC <hello@nzyme.org>"
+copyright = "Nzyme LLC <hello@nzyme.org>"
 license-file = ["COPYING", "0"]
-extended-description = "The nzyme tap"
+extended-description = "The Nzyme tap"
 depends = "$auto"
 section = "net"
 priority = "optional"
