@@ -1,2 +1,2 @@
 pub mod usb;
-mod nzyme_usb_device;
+pub mod nzyme_usb_device;

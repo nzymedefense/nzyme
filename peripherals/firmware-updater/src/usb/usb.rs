@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use rusb::{Context as UsbContextType, Device, DeviceDescriptor, UsbContext};
+use crate::firmware::firmware_version::FirmwareVersion;
 use crate::usb::nzyme_usb_device::NzymeUsbDevice;
 
 const NZYME_VID: u16 = 0x390C;
@@ -15,6 +16,7 @@ pub fn detect_nzyme_usb_devices() -> Result<Vec<NzymeUsbDevice>>  {
 
         if desc.vendor_id() == NZYME_VID {
             nzyme_devices.push(build_nzyme_device_info(&device, &desc)?);
+            nzyme_devices.push(build_nzyme_device_info(&device, &desc)?); // TODO delete
         }
     }
 
@@ -29,28 +31,41 @@ fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescrip
     let vid = desc.vendor_id();
     let pid = desc.product_id();
 
+    // Version. (from `bcdDevice` parameter)
+    let dv = desc.device_version();
+    let firmware_version = FirmwareVersion {
+        major: dv.major() as u32,
+        minor: dv.sub_minor() as u32 // `rusb` is inventing a patch/sub-minor version that the
+                                     // USB spec does not define. We'll use it as minor.
+    };
+
     // Try to open the device to read string descriptors (may fail if permissions are missing)
-    let (serial, acm_port) = match device.open() {
+    let (product, manufacturer, serial, acm_port) = match device.open() {
         Ok(handle) => {
             let serial = handle
                 .read_serial_number_string_ascii(desc)
                 .unwrap_or_else(|_| "<unavailable>".to_string());
 
+            let manufacturer = handle
+                .read_manufacturer_string_ascii(desc)
+                .unwrap_or_else(|_| "<unavailable>".to_string());
+            let product = handle
+                .read_product_string_ascii(desc)
+                .unwrap_or_else(|_| "<unavailable>".to_string());
+
             let tty = find_tty_for_usb_device(bus, address)
                 .with_context(|| "Failed to enumerate tty devices")?;
 
-            if let Some(tty) = tty {
-                (serial, Some(tty))
-            } else {
-                (serial, None)
-            }
+            (product, manufacturer, serial, tty)
         }
         Err(e) => {
             bail!("Could not open USB device. Make sure you have sufficient permissions.")
         }
     };
 
-    Ok(NzymeUsbDevice { bus, address, pid, vid, serial, acm_port })
+    Ok(NzymeUsbDevice {
+        product, manufacturer, serial, firmware_version, pid, vid, bus, address, acm_port
+    })
 }
 
 fn find_tty_for_usb_device(bus: u8, address: u8) -> Result<Option<String>> {
