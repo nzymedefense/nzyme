@@ -10,6 +10,7 @@ use crate::ui::tui::tui_app::TuiApp;
 use crate::usb::usb::detect_nzyme_usb_devices;
 
 fn main() {
+    println!("Fetching current firmware directory ...");
     let directory = match fetch_firmware_directory() {
         Ok(directory) => directory,
         Err(e) => {
@@ -19,6 +20,7 @@ fn main() {
         }
     };
 
+    println!("Detecting connected Nzyme USB peripherals ...");
     let devices = match detect_nzyme_usb_devices() {
         Ok(devices) => devices,
         Err(e) => {
@@ -27,18 +29,22 @@ fn main() {
         }
     };
 
+    println!("Launching TUI ...");
     if let Err(e) = color_eyre::install() {
         eprintln!("ERROR: {}", e);
     }
 
     let terminal = ratatui::init();
 
-    if let Err(e) = TuiApp::new(devices).run(terminal) {
+    if let Err(e) = TuiApp::new(devices, directory).run(terminal) {
         eprintln!("ERROR: {}", e);
         std::process::exit(EX_INTERNAL_ERR);
 
     }
 
     ratatui::restore();
+
+    println!("Thanks! Goodbye.");
+
     std::process::exit(EX_OK);
 }
