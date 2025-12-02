@@ -104,6 +104,7 @@ pub struct Metrics {
     channels: Channels,
     engagement_log: Vec<EngagementLogEntry>,
     gauges_long: HashMap<String, i128>,
+    gauges_float: HashMap<String, f32>,
     timers: Mutex<HashMap<String, BTreeMap<DateTime<Utc>, i64>>>,
     log_monitor: Arc<LogMonitor>
 }
@@ -117,6 +118,7 @@ impl Metrics {
             captures: HashMap::new(),
             engagement_log: Vec::new(),
             gauges_long: HashMap::new(),
+            gauges_float: HashMap::new(),
             timers: Mutex::new(HashMap::new()),
             log_monitor
         }
@@ -269,6 +271,10 @@ impl Metrics {
         self.gauges_long.insert(name.to_string(), value);
     }
 
+    pub fn set_gauge_float(&mut self, name: &str, value: f32) {
+        self.gauges_float.insert(name.to_string(), value);
+    }
+
     pub fn record_timer(&mut self, name: &str, microseconds: i64) {
         match self.timers.lock() {
             Ok(mut timers) => {
@@ -313,6 +319,13 @@ impl Metrics {
         let mut cloned = HashMap::new();
         cloned.clone_from(&self.gauges_long);
         
+        cloned
+    }
+
+    pub fn get_gauges_float(&self) -> HashMap<String, f32> {
+        let mut cloned = HashMap::new();
+        cloned.clone_from(&self.gauges_float);
+
         cloned
     }
 

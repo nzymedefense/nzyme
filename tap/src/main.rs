@@ -20,7 +20,6 @@ mod usb;
 
 use std::{process::exit, sync::{Arc, Mutex}, thread::{self, sleep}, time, time::Duration};
 use anyhow::Error;
-use chrono::Utc;
 use clap::Parser;
 use configuration::Configuration;
 use state::tables::tables::Tables;
@@ -39,6 +38,7 @@ use crate::helpers::network::Channel;
 use crate::link::payloads::ConfigurationReport;
 use crate::log_monitor::LogMonitor;
 use crate::peripherals::limina::limina;
+use crate::peripherals::limina::limina::Limina;
 use crate::processor_controller::ProcessorController;
 use crate::state::state::State;
 use crate::wireless::dot11::engagement::engagement_control::EngagementControl;
@@ -133,9 +133,6 @@ fn main() {
 
     info!("Starting nzyme tap version [{}].", env!("CARGO_PKG_VERSION"));
 
-    // TODO
-    //limina::read_loop();
-
     // Load configuration.
     let configuration: Configuration = match configuration::load(args.configuration_file.unwrap()) { // can unwrap here due to clap requirement
         Ok(configuration) => {
@@ -185,6 +182,12 @@ fn main() {
             exit(exit_code::EX_CONFIG);
         }
     };
+
+    // Launch limina if enabled.
+    if configuration.general.limina == Some(true) {
+        let limina = Limina::new(metrics.clone());
+        limina.launch_monitor();
+    }
 
     // Engagement control.
     let engagement_control = Arc::new(EngagementControl::new(

@@ -167,6 +167,7 @@ impl Leaderlink {
         let mut generic_channels: Vec<ChannelReport> = Vec::new();
         let mut captures: Vec<CaptureReport> = Vec::new();
         let mut gauges_long: HashMap<String, i128> = HashMap::new();
+        let mut gauges_float: HashMap<String, f32> = HashMap::new();
         let mut timers: HashMap<String, TimerReport> = HashMap::new();
         let mut log_counts: HashMap<String, u128> = HashMap::new();
         let mut engagement_logs: Vec<EngagementLogReport> = Vec::new();
@@ -212,6 +213,7 @@ impl Leaderlink {
                 }
 
                 gauges_long = metrics.get_gauges_long();
+                gauges_float = metrics.get_gauges_float();
 
                 for (name, timer) in metrics.get_timer_snapshots().iter() {
                     timers.insert(name.clone(), TimerReport {
@@ -283,6 +285,7 @@ impl Leaderlink {
             system_metrics,
             captures,
             gauges_long,
+            gauges_float,
             timers,
             log_counts,
             engagement_logs,

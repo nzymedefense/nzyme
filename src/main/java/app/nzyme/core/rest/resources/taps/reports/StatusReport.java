@@ -36,6 +36,7 @@ public abstract class StatusReport {
     public abstract SystemMetrics systemMetrics();
     public abstract List<CapturesReport> captures();
     public abstract Map<String, Long> gaugesLong();
+    public abstract Map<String, Double> gaugesFloat();
     public abstract Map<String, TimersReport> timers();
     public abstract Map<String, Long> logCounts();
     public abstract List<EngagementLogReport> engagementLogs();
@@ -52,6 +53,7 @@ public abstract class StatusReport {
                                       @JsonProperty("system_metrics") SystemMetrics systemMetrics,
                                       @JsonProperty("captures") List<CapturesReport> captures,
                                       @JsonProperty("gauges_long") Map<String, Long> gaugesLong,
+                                      @JsonProperty("gauges_float") Map<String, Double> gaugesFloat,
                                       @JsonProperty("timers") Map<String, TimersReport> timers,
                                       @JsonProperty("log_counts") Map<String, Long> logCounts,
                                       @JsonProperty("engagement_logs") List<EngagementLogReport> engagementLogs,
@@ -65,6 +67,7 @@ public abstract class StatusReport {
                 .buses(buses)
                 .captures(captures)
                 .gaugesLong(gaugesLong)
+                .gaugesFloat(gaugesFloat)
                 .timers(timers)
                 .logCounts(logCounts)
                 .configuration(configuration)
@@ -92,6 +95,8 @@ public abstract class StatusReport {
         public abstract Builder captures(List<CapturesReport> captures);
 
         public abstract Builder gaugesLong(Map<String, Long> gaugesLong);
+
+        public abstract Builder gaugesFloat(Map<String, Double> gaugesFloat);
 
         public abstract Builder timers(Map<String, TimersReport> timers);
 

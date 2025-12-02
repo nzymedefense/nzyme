@@ -369,6 +369,9 @@ public class TapManager {
         for (Map.Entry<String, Long> metric : report.gaugesLong().entrySet()) {
             writeGauge(tapUUID, metric.getKey(), metric.getValue(), report.timestamp());
         }
+        for (Map.Entry<String, Double> metric : report.gaugesFloat().entrySet()) {
+            writeGauge(tapUUID, metric.getKey(), metric.getValue(), report.timestamp());
+        }
 
         // Timers.
         for (Map.Entry<String, TimersReport> timer : report.timers().entrySet()) {

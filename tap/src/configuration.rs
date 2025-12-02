@@ -27,7 +27,8 @@ pub struct Configuration {
 pub struct General {
     pub leader_secret: String,
     pub leader_uri: String,
-    pub accept_insecure_certs: bool
+    pub accept_insecure_certs: bool,
+    pub limina: Option<bool>
 }
 
 #[derive(Debug, Clone, Deserialize)]

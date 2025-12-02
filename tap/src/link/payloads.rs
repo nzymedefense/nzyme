@@ -14,6 +14,7 @@ pub struct StatusReport {
     pub captures: Vec<CaptureReport>,
     pub system_metrics: SystemMetricsReport,
     pub gauges_long: HashMap<String, i128>,
+    pub gauges_float: HashMap<String, f32>,
     pub timers: HashMap<String, TimerReport>,
     pub log_counts: HashMap<String, u128>,
     pub engagement_logs: Vec<EngagementLogReport>,
@@ -34,7 +35,8 @@ pub struct ConfigurationReport {
 pub struct ConfigurationReportGeneral {
     pub leader_secret: String,
     pub leader_uri: String,
-    pub accept_insecure_certs: bool
+    pub accept_insecure_certs: bool,
+    pub limina: Option<bool>
 }
 
 #[derive(Serialize)]
@@ -134,7 +136,8 @@ impl TryFrom<Configuration> for ConfigurationReport {
             general: ConfigurationReportGeneral {
                 leader_secret: privacy_hash(&c.general.leader_secret),
                 leader_uri: privacy_hash(&c.general.leader_uri),
-                accept_insecure_certs: c.general.accept_insecure_certs
+                accept_insecure_certs: c.general.accept_insecure_certs,
+                limina: c.general.limina,
             },
             performance: ConfigurationReportPerformance {
                 ethernet_brokers: c.performance.ethernet_brokers,
