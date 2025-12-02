@@ -42,11 +42,13 @@ public class GNSSTable implements DataTable {
                         "constellation, fixes, maximum_time_deviation_ms, positions, maximum_fix_satellite_count, " +
                         "minimum_fix_satellite_count, fix_satellites, maximum_altitude_meters, " +
                         "minimum_altitude_meters, maximum_pdop, minimum_pdop, maximum_satellites_in_view_count, " +
-                        "minimum_satellites_in_view_count, timestamp, created_at) VALUES(:tap_uuid, :constellation, " +
+                        "minimum_satellites_in_view_count, maximum_jamming_indicator, maximum_agc_count, " +
+                        "maximum_noise, timestamp, created_at) VALUES(:tap_uuid, :constellation, " +
                         ":fixes::jsonb, :maximum_time_deviation_ms, :positions::jsonb, " +
                         ":maximum_fix_satellite_count, :minimum_fix_satellite_count, :fix_satellites::jsonb, " +
                         ":maximum_altitude_meters, :minimum_altitude_meters, :maximum_pdop, :minimum_pdop, " +
-                        ":maximum_satellites_in_view_count, :minimum_satellites_in_view_count, :timestamp, NOW())");
+                        ":maximum_satellites_in_view_count, :minimum_satellites_in_view_count, " +
+                        ":maximum_jamming_indicator, :maximum_agc_count, :maximum_noise, :timestamp, NOW())");
 
                 // Keep a parallel list so we can match rows/ids for additional linked inserts.
                 List<GNSSConstellationReport> rowsInOrder = Lists.newArrayList();
@@ -73,6 +75,9 @@ public class GNSSTable implements DataTable {
                                 .bind("minimum_pdop", data.minimumPdop())
                                 .bind("maximum_satellites_in_view_count", data.maximumSatellitesInViewCount())
                                 .bind("minimum_satellites_in_view_count", data.minimumSatellitesInViewCount())
+                                .bind("maximum_jamming_indicator", data.maximumJammingIndicator())
+                                .bind("maximum_agc_count", data.maximumAgcCount())
+                                .bind("maximum_noise", data.maximumNoise())
                                 .bind("timestamp", data.timestamp())
                                 .add();
                     } catch (JsonProcessingException e) {

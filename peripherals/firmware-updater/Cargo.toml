@@ -43,3 +43,4 @@ serde = { version = "1", features = ["derive"] }
 anyhow = "1"
 rusb = "0.9"
 udev = "0.8"
+unicode-width = "0.1"

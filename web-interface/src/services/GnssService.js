@@ -74,6 +74,30 @@ export default class GnssService {
     )
   }
 
+  getRfMonJammingIndicatorHistogram(timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/gnss/rfmon/jamming-indicator/histogram", { time_range: timeRange, taps: tapsList },
+      (response) => setHistogram(response.data)
+    )
+  }
+
+  getRfMonAgcCountHistogram(timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/gnss/rfmon/agc-count/histogram", { time_range: timeRange, taps: tapsList },
+      (response) => setHistogram(response.data)
+    )
+  }
+
+  getRfMonNoiseHistogram(timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/gnss/rfmon/noise/histogram", { time_range: timeRange, taps: tapsList },
+      (response) => setHistogram(response.data)
+    )
+  }
+
   getPrnSnrHistogram(constellation, prn, timeRange, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 

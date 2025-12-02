@@ -13,6 +13,9 @@ import GNSSCoordinatesHeatmap from "./GNSSCoordinatesHeatmap";
 import GNSSSatellitesInViewTable from "./GNSSSatellitesInViewTable";
 import GNSSFixStatusHistogram from "./GNSSFixStatusHistogram";
 import GNSSDistancesTable from "./GNSSDistancesTable";
+import GNSSRfMonJammingIndicatorHistogram from "./GNSSRfMonJammingIndicatorHistogram";
+import GNSSRfMonAgcCountHistogram from "./GNSSRfMonAgcCountHistogram";
+import GNSSRfMonNoiseHistogram from "./GNSSRfMonNoiseHistogram";
 
 const gnssService = new GnssService();
 
@@ -30,6 +33,10 @@ export default function GNSSConstellationsPage() {
   const [satellitesInViewHistogram, setSatellitesInViewHistogram] = useState(null);
   const [altitudeHistogram, setAltitudeHistogram] = useState(null);
   const [distances, setDistances] = useState(null);
+
+  const [rfMonJammingIndicatorHistogram, setRfMonJammingIndicatorHistogram] = useState(null);
+  const [rfMonAgcCountHistogram, setRfMonAgcCountHistogram] = useState(null);
+  const [rfMonNoiseHistogram, setRfMonNoiseHistogram] = useState(null);
 
   const [constellationCoordinatesConstellation, setConstellationCoordinatesConstellation] = useState("GPS");
   const [constellationCoordinatesTimeRange, setConstellationCoordinatesTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
@@ -56,6 +63,9 @@ export default function GNSSConstellationsPage() {
     setSatellitesInViewHistogram(null);
     setAltitudeHistogram(null);
     setConstellationCoordinates(null);
+    setRfMonJammingIndicatorHistogram(null);
+    setRfMonAgcCountHistogram(null);
+    setRfMonNoiseHistogram(null);
 
     gnssService.getPdopHistogram(timeRange, selectedTaps, setPdopHistogram);
     gnssService.getTimeDeviationHistogram(timeRange, selectedTaps, setTimeDeviationHistogram);
@@ -63,6 +73,10 @@ export default function GNSSConstellationsPage() {
     gnssService.getFixStatusHistogram(timeRange, selectedTaps, setFixStatusHistogram);
     gnssService.getSatellitesInViewHistogram(timeRange, selectedTaps, setSatellitesInViewHistogram);
     gnssService.getAltitudeHistogram(timeRange, selectedTaps, setAltitudeHistogram);
+    gnssService.getRfMonJammingIndicatorHistogram(timeRange, selectedTaps, setRfMonJammingIndicatorHistogram)
+    gnssService.getRfMonAgcCountHistogram(timeRange, selectedTaps, setRfMonAgcCountHistogram)
+    gnssService.getRfMonNoiseHistogram(timeRange, selectedTaps, setRfMonNoiseHistogram)
+
   }, [timeRange, selectedTaps, revision])
 
   useEffect(() => {
@@ -93,6 +107,22 @@ export default function GNSSConstellationsPage() {
       </div>
 
       <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Noise"
+                                     timeRange={timeRange}
+                                     setTimeRange={setTimeRange}
+                                     refreshAction={() => setRevision(new Date())} />
+
+
+              <GNSSRfMonNoiseHistogram histogram={rfMonNoiseHistogram} setTimeRange={setTimeRange} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
         <div className="col-md-6">
           <div className="card">
             <div className="card-body">
@@ -102,7 +132,7 @@ export default function GNSSConstellationsPage() {
                                      refreshAction={() => setRevision(new Date())} />
 
 
-              <GNSSFixStatusHistogram fixStatusHistogram={fixStatusHistogram} />
+              <GNSSFixStatusHistogram fixStatusHistogram={fixStatusHistogram} setTimeRange={setTimeRange} />
             </div>
           </div>
         </div>
@@ -116,6 +146,38 @@ export default function GNSSConstellationsPage() {
                                      refreshAction={() => setRevision(new Date())} />
 
               <GNSSPdopHistogram histogram={pdopHistogram} setTimeRange={setTimeRange} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Jamming Indicator"
+                                     timeRange={timeRange}
+                                     setTimeRange={setTimeRange}
+                                     refreshAction={() => setRevision(new Date())} />
+
+
+              <GNSSRfMonJammingIndicatorHistogram histogram={rfMonJammingIndicatorHistogram}
+                                                  setTimeRange={setTimeRange} />
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="AGC Adjustment Counts"
+                                     timeRange={timeRange}
+                                     setTimeRange={setTimeRange}
+                                     refreshAction={() => setRevision(new Date())} />
+
+
+              <GNSSRfMonAgcCountHistogram histogram={rfMonAgcCountHistogram}
+                                          setTimeRange={setTimeRange}/>
             </div>
           </div>
         </div>
@@ -153,7 +215,7 @@ export default function GNSSConstellationsPage() {
         <div className="col-md-6">
           <div className="card">
             <div className="card-body">
-              <CardTitleWithControls title="Time Deviation"
+              <CardTitleWithControls title="Clock Drift"
                                      timeRange={timeRange}
                                      setTimeRange={setTimeRange}
                                      refreshAction={() => setRevision(new Date())} />

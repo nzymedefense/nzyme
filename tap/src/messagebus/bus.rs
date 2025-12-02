@@ -17,6 +17,7 @@ use crate::wired::packets::{
     TcpSegment
 };
 use crate::wireless::dot11::frames::{Dot11Frame, Dot11RawFrame};
+use crate::wireless::positioning::axia::ubx::UbxMonRfMessage;
 use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 
 pub struct Bus {
@@ -39,7 +40,8 @@ pub struct Bus {
     
     pub uav_remote_id_pipeline: NzymeChannel<UavRemoteIdMessage>,
 
-    pub gnss_nmea_pipeline: NzymeChannel<NMEAMessage>
+    pub gnss_nmea_pipeline: NzymeChannel<NMEAMessage>,
+    pub gnss_ubx_mon_rf_pipeline: NzymeChannel<UbxMonRfMessage>
 }
 
 pub struct NzymeChannelSender<T> {
@@ -115,6 +117,9 @@ impl Bus<> {
             bounded(configuration.protocols.uav_remote_id.pipeline_size as usize);
 
         let (gnss_nmea_sender, gnss_nmea_receiver) =
+            bounded(configuration.protocols.gnss.nmea_pipeline_size as usize);
+
+        let (gnss_ubx_monrf_sender, gnss_ubx_monrf_receiver) =
             bounded(configuration.protocols.gnss.nmea_pipeline_size as usize);
 
         Self {
@@ -217,11 +222,19 @@ impl Bus<> {
             },
             gnss_nmea_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {
-                    metrics,
+                    metrics: metrics.clone(),
                     sender: gnss_nmea_sender,
                     name: GenericChannelName::GnssNmeaMessagesPipeline.to_string()
                 }),
                 receiver: Arc::new(gnss_nmea_receiver),
+            },
+            gnss_ubx_mon_rf_pipeline: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics,
+                    sender: gnss_ubx_monrf_sender,
+                    name: GenericChannelName::GnssUbxMonRfPipeline.to_string()
+                }),
+                receiver: Arc::new(gnss_ubx_monrf_receiver),
             }
         }
     }

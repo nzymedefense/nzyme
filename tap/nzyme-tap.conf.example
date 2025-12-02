@@ -23,6 +23,13 @@ channels_2g = [2, 3, 4, 5, 7, 8, 9, 10, 12, 13]
 channels_5g = [36, 40, 44, 48, 52, 56, 60, 64, 173]
 channels_6g = [5, 9, 13, 17, 21, 25, 29, 109, 113, 153, 157, 161, 165, 169, 173, 177, 181, 185, 189, 229, 233]
 
+[wifi_engagement_interfaces.wlx00c0ca000002]
+active = false
+engage = ["UAV"]
+supported_channels_2g = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14]
+supported_channels_5g = [36, 40, 44, 48, 52, 56, 60, 64, 173, 100, 102, 104, 106, 108, 110, 112, 136, 138, 140, 149, 151, 153, 155, 157, 159, 161, 165]
+supported_channels_6g = []
+
 [bluetooth_interfaces.hci0]
 active = false
 bt_classic_enabled = true
@@ -30,15 +37,9 @@ bt_le_enabled = true
 discovery_period_seconds = 15
 dbus_method_call_timeout_seconds = 2
 
-[gnss_interfaces.ttyACM0]
+[gnss_interfaces.axia]
 active = false
-
-[wifi_engagement_interfaces.wlx00c0ca000002]
-active = false
-engage = ["UAV"]
-supported_channels_2g = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14]
-supported_channels_5g = [36, 40, 44, 48, 52, 56, 60, 64, 173, 100, 102, 104, 106, 108, 110, 112, 136, 138, 140, 149, 151, 153, 155, 157, 159, 161, 165]
-supported_channels_6g = []
+delay_seconds = 60
 
 [performance]
 ethernet_brokers = 1

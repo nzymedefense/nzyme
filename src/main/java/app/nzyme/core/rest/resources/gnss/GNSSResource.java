@@ -267,6 +267,66 @@ public class GNSSResource extends TapDataHandlingResource {
     }
 
     @GET
+    @Path("/rfmon/jamming-indicator/histogram")
+    public Response rfmonJammingIndicatorHistogram(@Context SecurityContext sc,
+                                                   @QueryParam("time_range") @Valid String timeRangeParameter,
+                                                   @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        Map<DateTime, GNSSIntegerBucketResponse> histogram = Maps.newHashMap();
+        for (GNSSIntegerBucket bucket : nzyme.getGnss().getMonRfJammingIndicatorHistogram(timeRange, bucketing, taps)) {
+            histogram.put(bucket.bucket(), GNSSIntegerBucketResponse.create(
+                    bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
+            ));
+        }
+
+        return Response.ok(histogram).build();
+    }
+
+    @GET
+    @Path("/rfmon/agc-count/histogram")
+    public Response rfmonAgcCountHistogram(@Context SecurityContext sc,
+                                           @QueryParam("time_range") @Valid String timeRangeParameter,
+                                           @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        Map<DateTime, GNSSIntegerBucketResponse> histogram = Maps.newHashMap();
+        for (GNSSIntegerBucket bucket : nzyme.getGnss().getMonRfAgcCountHistogram(timeRange, bucketing, taps)) {
+            histogram.put(bucket.bucket(), GNSSIntegerBucketResponse.create(
+                    bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
+            ));
+        }
+
+        return Response.ok(histogram).build();
+    }
+
+    @GET
+    @Path("/rfmon/noise/histogram")
+    public Response rfmonNoiseHistogram(@Context SecurityContext sc,
+                                        @QueryParam("time_range") @Valid String timeRangeParameter,
+                                        @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+
+        Map<DateTime, GNSSIntegerBucketResponse> histogram = Maps.newHashMap();
+        for (GNSSIntegerBucket bucket : nzyme.getGnss().getMonRfNoiseHistogram(timeRange, bucketing, taps)) {
+            histogram.put(bucket.bucket(), GNSSIntegerBucketResponse.create(
+                    bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
+            ));
+        }
+
+        return Response.ok(histogram).build();
+    }
+
+    @GET
     @Path("/constellations/{constellation}/prns/show/{prn}/snr/histogram")
     public Response constellationPrnSnrHistogram(@Context SecurityContext sc,
                                                  @PathParam("constellation") String constellationParam,

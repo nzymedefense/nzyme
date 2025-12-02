@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use strum_macros::Display;
-use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation;
+use crate::wireless::positioning::gnss_constellation::GNSSConstellation;
 
 #[derive(Debug)]
 pub struct GGASentence {

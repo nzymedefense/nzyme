@@ -7376,4 +7376,20 @@
         <renameColumn tableName="l4_sessions" oldColumnName="tcp_fingerprint" newColumnName="fingerprint" />
     </changeSet>
 
+    <changeSet id="add_ubx_mon_rf_data_to_gnss" author="lennartkoopmann">
+        <addColumn tableName="gnss_constellations">
+            <column name="maximum_jamming_indicator" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="maximum_agc_count" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="maximum_noise" type="integer">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

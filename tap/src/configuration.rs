@@ -84,6 +84,7 @@ pub enum EngagementTarget {
 #[derive(Debug, Clone, Deserialize)]
 pub struct GNSSInterface {
     pub active: bool,
+    pub delay_seconds: Option<u32>,
     pub offset_lat: Option<f64>,
     pub offset_lon: Option<f64>
 }
@@ -373,7 +374,7 @@ pub fn load(path: String) -> Result<Configuration, Error> {
 
     // GNSS NMEA messages.
     if doc.protocols.gnss.nmea_pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.gnss.nmea_pipeline_size` must be set to a value \
+        bail!("Configuration variable `protocols.gnss_generic.nmea_pipeline_size` must be set to a value \
             greater than 0.");
     }
 

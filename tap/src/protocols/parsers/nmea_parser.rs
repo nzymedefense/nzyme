@@ -2,7 +2,7 @@ use std::sync::Arc;
 use anyhow::{bail, Error};
 use chrono::{DateTime, NaiveTime, Utc};
 use log::{warn};
-use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation;
+use crate::wireless::positioning::gnss_constellation::GNSSConstellation;
 use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 use crate::wireless::positioning::nmea::nmea_sentences::{FixType, GGASentence, GSASentence, GSVSentence, SatelliteInfo};
 

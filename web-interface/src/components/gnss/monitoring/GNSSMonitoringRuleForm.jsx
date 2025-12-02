@@ -301,6 +301,9 @@ export default function GNSSMonitoringRuleForm(props) {
             <option value="FIX_DISTANCE">Fix Distance from Tap</option>
             <option value="PDOP">Dilution of Precision (PDOP)</option>
             <option value="CLOCK_DRIFT">Clock Drift</option>
+            <option value="NOISE">Noise</option>
+            <option value="JAMMING_INDICATOR">Jamming Indicator</option>
+            <option value="AGC_COUNT">AGC Adjustment Counts</option>
           </select>
           <button className="btn btn-primary"
                   onClick={(e) => { e.preventDefault(); setConditionFormType(selectedConditionType) }}>

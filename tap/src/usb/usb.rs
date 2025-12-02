@@ -1,11 +1,20 @@
 use anyhow::{bail, Context, Result};
 use rusb::{Context as UsbContextType, Device, DeviceDescriptor, UsbContext};
-use crate::firmware::firmware_version::FirmwareVersion;
-use crate::usb::nzyme_usb_device::NzymeUsbDevice;
+use crate::usb::nzyme_usb_device::{FirmwareVersion, NzymeUsbDevice};
 
 const NZYME_VID: u16 = 0x390C;
 
-pub fn detect_nzyme_usb_devices() -> Result<Vec<NzymeUsbDevice>>  {
+pub fn find_first_nzyme_usb_device_with_device_id(device_id: u16) -> Result<Option<NzymeUsbDevice>> {
+    for device in detect_nzyme_usb_devices()? {
+        if device.pid == device_id {
+            return Ok(Some(device))
+        }
+    }
+
+    Ok(None)
+}
+
+fn detect_nzyme_usb_devices() -> Result<Vec<NzymeUsbDevice>>  {
     let context = UsbContextType::new()?;
     let devices = context.devices()?;
 
@@ -23,7 +32,7 @@ pub fn detect_nzyme_usb_devices() -> Result<Vec<NzymeUsbDevice>>  {
 }
 
 fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescriptor)
-    -> Result<NzymeUsbDevice> {
+                           -> Result<NzymeUsbDevice> {
 
     let bus = device.bus_number();
     let address = device.address();
@@ -35,7 +44,7 @@ fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescrip
     let firmware_version = FirmwareVersion {
         major: dv.major() as u32,
         minor: dv.sub_minor() as u32 // `rusb` is inventing a patch/sub-minor version that the
-                                     // USB spec does not define. We'll use it as minor.
+                                    // USB spec does not define. We'll use it as minor.
     };
 
     // Try to open the device to read string descriptors (may fail if permissions are missing)

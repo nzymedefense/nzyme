@@ -2,21 +2,22 @@ use anyhow::Error;
 use crossterm::event;
 use crossterm::event::{Event, KeyCode, KeyEventKind};
 use ratatui::{DefaultTerminal, Frame};
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span, Text};
-use ratatui::widgets::{Block, Borders, Cell, Padding, Paragraph, Row, ScrollbarState, Table, TableState};
+use ratatui::widgets::{Block, Borders, Cell, HighlightSpacing, Padding, Paragraph, Row, ScrollbarState, Table, TableState};
+use unicode_width::UnicodeWidthStr;
 use crate::connect::connect_firmware_directory::Peripheral;
 use crate::usb::nzyme_usb_device::NzymeUsbDevice;
 
-const INFO_TEXT: &str = "(Esc, q) quit | (d) show connected devices | (s) show supported devices | (↑) move up | (↓) move down ";
+const INFO_TEXT: &str = "(Esc, q) quit | (↑) move up | (↓) move down | (Return) open selected device ";
 const ITEM_HEIGHT: usize = 1;
 
 pub struct TuiApp {
-    connected_devices: Vec<NzymeUsbDevice>,
-    connected_devices_table_state: TableState,
-    connected_devices_scroll_state: ScrollbarState,
-    connected_devices_longest_items: (u16, u16, u16, u16, u16, u16), // Order is table column order
+    devices: Vec<NzymeUsbDevice>,
+    table: TableState,
+    scroll_state: ScrollbarState,
+    devices_longest_items: (u16, u16, u16, u16, u16, u16), // Order is table column order
     firmware_directory: Vec<Peripheral>
 }
 
@@ -60,13 +61,14 @@ impl NzymeUsbDevice {
         let outdated = self.has_outdated_firmware(firmware_directory);
 
         let status_span = if outdated {
-            Span::styled("❢ Outdated", Style::default().fg(Color::Red))
+            Span::styled("❢ Update Available", Style::default().fg(Color::Red))
         } else {
             Span::styled("✔ Most Recent", Style::default().fg(Color::Green))
         };
 
         Line::from(vec![
-            Span::raw(format!("v{}.{} (", self.firmware_version.major, self.firmware_version.minor)),
+            Span::raw(format!("v{}.{} (",
+                              self.firmware_version.major, self.firmware_version.minor)),
             status_span,
             Span::raw(")"),
         ])
@@ -97,12 +99,16 @@ impl TuiApp {
             &connected_devices, &firmware_directory
         );
 
-        let cd_len = connected_devices.len();
+        let connected_devices_scroll_state = match connected_devices.len() {
+            0 => ScrollbarState::new(0),
+            len => ScrollbarState::new(len-1)
+        };
+
         Self {
-            connected_devices,
-            connected_devices_table_state: TableState::default().with_selected(0),
-            connected_devices_scroll_state: ScrollbarState::new((cd_len - 1)),
-            connected_devices_longest_items,
+            devices: connected_devices,
+            table: TableState::default().with_selected(0),
+            scroll_state: connected_devices_scroll_state,
+            devices_longest_items: connected_devices_longest_items,
             firmware_directory
         }
     }
@@ -116,6 +122,8 @@ impl TuiApp {
                     match key.code {
                         KeyCode::Esc => return Ok(()),
                         KeyCode::Char('q') => return Ok(()),
+                        KeyCode::Down => self.next_row(),
+                        KeyCode::Up => self.previous_row(),
                         _ => {}
                     }
                 }
@@ -132,16 +140,50 @@ impl TuiApp {
             ])
             .split(frame.area());
 
-        self.render_connected_devices_table(frame, layout[0]);
+        if self.devices.is_empty() {
+            self.render_no_devices_connected_warning(frame, layout[0]);
+        } else {
+            self.render_connected_devices_table(frame, layout[0]);
+        }
 
-        frame.render_widget(
-            Paragraph::new(INFO_TEXT)
-                .block(Block::new().borders(Borders::ALL).title("Commands")),
-            layout[1]);
+        self.render_footer(frame, layout[1]);
+    }
+
+    pub fn next_row(&mut self) {
+        let i = match self.table.selected() {
+            Some(i) => {
+                if i >= self.devices.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.table.select(Some(i));
+        self.scroll_state = self.scroll_state.position(i * ITEM_HEIGHT);
+    }
+
+    pub fn previous_row(&mut self) {
+        let i = match self.table.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.devices.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.table.select(Some(i));
+        self.scroll_state = self.scroll_state.position(i * ITEM_HEIGHT);
     }
 
     fn render_connected_devices_table(&mut self, frame: &mut Frame, area: Rect) {
         let header_style = Style::default()
+            .add_modifier(Modifier::BOLD);
+
+        let selected_row_style = Style::default()
             .add_modifier(Modifier::BOLD);
 
         let header = Row::new(
@@ -150,7 +192,7 @@ impl TuiApp {
                 .map(|h| Cell::from(h).style(header_style))
         ).height(1);
 
-        let rows = self.connected_devices.iter().map(|data| {
+        let rows = self.devices.iter().map(|data| {
             let item = data.table_row(&self.firmware_directory);
             item.into_iter()
                 // keep styles by passing Line -> Text directly
@@ -160,16 +202,21 @@ impl TuiApp {
         });
 
         let widths = [
-            Constraint::Length(self.connected_devices_longest_items.0 + 1),
-            Constraint::Min(self.connected_devices_longest_items.1 + 1),
-            Constraint::Min(self.connected_devices_longest_items.2 + 1),
-            Constraint::Min(self.connected_devices_longest_items.3 + 1),
-            Constraint::Min(self.connected_devices_longest_items.4 + 1),
-            Constraint::Min(self.connected_devices_longest_items.5 + 1)
+            Constraint::Length(self.devices_longest_items.0 + 1),
+            Constraint::Min(self.devices_longest_items.1 + 1),
+            Constraint::Min(self.devices_longest_items.2 + 1),
+            Constraint::Min(self.devices_longest_items.3 + 1),
+            Constraint::Min(self.devices_longest_items.4 + 1),
+            Constraint::Min(self.devices_longest_items.5 + 1)
         ];
+
+        let bar = " █ ";
 
         let t = Table::new(rows, widths)
             .header(header)
+            .row_highlight_style(selected_row_style)
+            .highlight_symbol("❯ ")
+            .highlight_spacing(HighlightSpacing::Always)
             .block(
                 Block::default()
                     .borders(Borders::ALL)
@@ -177,8 +224,72 @@ impl TuiApp {
                     .title("Connected Devices"),
             );
 
-        frame.render_stateful_widget(t, area, &mut self.connected_devices_table_state);
+        frame.render_stateful_widget(t, area, &mut self.table);
     }
+
+    fn render_no_devices_connected_warning(&mut self, frame: &mut Frame, area: Rect) {
+        let warning_text = Text::from(Line::from(
+            Span::styled(
+                "⚠  No Nzyme USB devices connected.",
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD)
+            )
+        ));
+
+        let warning_box = Paragraph::new(warning_text)
+            .alignment(Alignment::Center)
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .padding(Padding::top(3))
+            );
+
+        frame.render_widget(warning_box, area);
+    }
+
+    fn render_footer(&self, frame: &mut Frame, area: Rect) {
+        let version = format!("Nzyme Firmware Updater v{}", env!("CARGO_PKG_VERSION"));
+
+        // Inner width. (excluding borders)
+        let inner_width = area.width.saturating_sub(2) as usize;
+
+        // Compute display widths.
+        let info_width = UnicodeWidthStr::width(INFO_TEXT);
+        let version_width = UnicodeWidthStr::width(version.as_str());
+
+        /*
+         * We add:
+         *   +1 leading space before INFO_TEXT
+         *   +1 trailing space after version
+         *
+         * Layout:
+         *   " " + INFO_TEXT + padding + " " + version + " "
+         *
+         */
+        let total_content_width = 1 + info_width + 1 + version_width + 1;
+
+        let padding = inner_width.saturating_sub(total_content_width);
+
+        let line = Line::from(vec![
+            Span::raw(" "), // Left padding.
+            Span::raw(INFO_TEXT),
+            Span::raw(" ".repeat(padding)),
+            Span::raw(" "), // Space before version.
+            Span::raw(version),
+            Span::raw(" "), // Right padding.
+        ]);
+
+        let widget = Paragraph::new(line)
+            .block(
+                Block::new()
+                    .borders(Borders::ALL)
+                    .title("Commands"),
+            );
+
+        frame.render_widget(widget, area);
+    }
+
 }
 
 fn constraint_len_calculator(

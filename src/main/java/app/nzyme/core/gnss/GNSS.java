@@ -327,6 +327,93 @@ public class GNSS {
         );
     }
 
+    public List<GNSSIntegerBucket> getMonRfJammingIndicatorHistogram(TimeRange timeRange,
+                                                                     Bucketing.BucketingConfiguration bucketing,
+                                                                     List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "ROUND(AVG(maximum_jamming_indicator) FILTER " +
+                                "(WHERE constellation = 'GPS'))::int AS gps, " +
+                                "ROUND(AVG(maximum_jamming_indicator) FILTER " +
+                                "(WHERE constellation = 'GLONASS'))::int AS glonass, " +
+                                "ROUND(AVG(maximum_jamming_indicator) FILTER " +
+                                "(WHERE constellation = 'BeiDou'))::int AS beidou, " +
+                                "ROUND(AVG(maximum_jamming_indicator) FILTER " +
+                                "(WHERE constellation = 'Galileo'))::int AS galileo " +
+                                "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GNSSIntegerBucket.class)
+                        .list()
+        );
+    }
+
+    public List<GNSSIntegerBucket> getMonRfAgcCountHistogram(TimeRange timeRange,
+                                                             Bucketing.BucketingConfiguration bucketing,
+                                                             List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "ROUND(AVG(maximum_agc_count) FILTER " +
+                                "(WHERE constellation = 'GPS'))::int AS gps, " +
+                                "ROUND(AVG(maximum_agc_count) FILTER " +
+                                "(WHERE constellation = 'GLONASS'))::int AS glonass, " +
+                                "ROUND(AVG(maximum_agc_count) FILTER " +
+                                "(WHERE constellation = 'BeiDou'))::int AS beidou, " +
+                                "ROUND(AVG(maximum_agc_count) FILTER " +
+                                "(WHERE constellation = 'Galileo'))::int AS galileo " +
+                                "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GNSSIntegerBucket.class)
+                        .list()
+        );
+    }
+
+    public List<GNSSIntegerBucket> getMonRfNoiseHistogram(TimeRange timeRange,
+                                                          Bucketing.BucketingConfiguration bucketing,
+                                                          List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "ROUND(AVG(maximum_noise) FILTER " +
+                                "(WHERE constellation = 'GPS'))::int AS gps, " +
+                                "ROUND(AVG(maximum_noise) FILTER " +
+                                "(WHERE constellation = 'GLONASS'))::int AS glonass, " +
+                                "ROUND(AVG(maximum_noise) FILTER " +
+                                "(WHERE constellation = 'BeiDou'))::int AS beidou, " +
+                                "ROUND(AVG(maximum_noise) FILTER " +
+                                "(WHERE constellation = 'Galileo'))::int AS galileo " +
+                                "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GNSSIntegerBucket.class)
+                        .list()
+        );
+    }
+
     public List<GenericIntegerHistogramEntry> getPrnSnrHistogram(Constellation constellation,
                                                                  int prn,
                                                                  TimeRange timeRange,

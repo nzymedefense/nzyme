@@ -3,7 +3,7 @@ use std::sync::MutexGuard;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use crate::state::tables::gnss_monitor_table::GNSSConstellationData;
-use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation;
+use crate::wireless::positioning::gnss_constellation::GNSSConstellation;
 
 #[derive(Serialize)]
 pub struct GNSSConstellationsReport {
@@ -25,6 +25,9 @@ pub struct GNSSConstellationReport {
     satellites_in_view: Vec<SatelliteInfoReport>,
     minimum_satellites_in_view_count: Option<u8>,
     maximum_satellites_in_view_count: Option<u8>,
+    maximum_jamming_indicator: Option<u8>,
+    maximum_noise: Option<u16>,
+    maximum_agc_count: Option<u16>,
     timestamp: DateTime<Utc>
 }
 
@@ -68,6 +71,9 @@ pub fn generate(constellations: &MutexGuard<HashMap<GNSSConstellation, GNSSConst
                 } ).collect(),
             minimum_satellites_in_view_count: data.minimum_satellites_in_view_count,
             maximum_satellites_in_view_count: data.maximum_satellites_in_view_count,
+            maximum_jamming_indicator: data.maximum_jamming_indicator,
+            maximum_agc_count: data.maximum_agc_count,
+            maximum_noise: data.maximum_noise,
             timestamp
         };
 

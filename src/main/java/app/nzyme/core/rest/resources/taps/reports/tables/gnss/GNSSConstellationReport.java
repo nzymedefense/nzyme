@@ -35,6 +35,12 @@ public abstract class GNSSConstellationReport {
     public abstract Integer maximumSatellitesInViewCount();
     @Nullable
     public abstract Integer minimumSatellitesInViewCount();
+    @Nullable
+    public abstract Integer maximumJammingIndicator();
+    @Nullable
+    public abstract Integer maximumAgcCount();
+    @Nullable
+    public abstract Integer maximumNoise();
     public abstract DateTime timestamp();
 
     @JsonCreator
@@ -51,6 +57,9 @@ public abstract class GNSSConstellationReport {
                                                  @JsonProperty("satellites_in_view") List<GNSSSatelliteInfoReport> satellitesInView,
                                                  @JsonProperty("maximum_satellites_in_view_count") Integer maximumSatellitesInViewCount,
                                                  @JsonProperty("minimum_satellites_in_view_count") Integer minimumSatellitesInViewCount,
+                                                 @JsonProperty("maximum_jamming_indicator") Integer maximumJammingIndicator,
+                                                 @JsonProperty("maximum_agc_count") Integer maximumAgcCount,
+                                                 @JsonProperty("maximum_noise") Integer maximumNoise,
                                                  @JsonProperty("timestamp") DateTime timestamp) {
         return builder()
                 .fixes(fixes)
@@ -66,6 +75,9 @@ public abstract class GNSSConstellationReport {
                 .satellitesInView(satellitesInView)
                 .maximumSatellitesInViewCount(maximumSatellitesInViewCount)
                 .minimumSatellitesInViewCount(minimumSatellitesInViewCount)
+                .maximumJammingIndicator(maximumJammingIndicator)
+                .maximumAgcCount(maximumAgcCount)
+                .maximumNoise(maximumNoise)
                 .timestamp(timestamp)
                 .build();
     }
@@ -101,6 +113,12 @@ public abstract class GNSSConstellationReport {
         public abstract Builder maximumSatellitesInViewCount(Integer maximumSatellitesInViewCount);
 
         public abstract Builder minimumSatellitesInViewCount(Integer minimumSatellitesInViewCount);
+
+        public abstract Builder maximumJammingIndicator(Integer maximumJammingIndicator);
+
+        public abstract Builder maximumAgcCount(Integer maximumAgcCount);
+
+        public abstract Builder maximumNoise(Integer maximumNoise);
 
         public abstract Builder timestamp(DateTime timestamp);
 

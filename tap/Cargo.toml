@@ -73,6 +73,8 @@ cidr = "0.2.3"
 pnet = "0.35.0"
 uuid = { version = "1.13.1", features = ["v4"] }
 serialport = "4.7.2"
+rusb = "0.9"
+udev = "0.8"
 
 [features]
 fuzzing = []

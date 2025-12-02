@@ -2,13 +2,14 @@ use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex, MutexGuard};
 use anyhow::Error;
 use chrono::Utc;
-use log::{error, info};
+use log::{error};
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::gnss_constellations_report;
 use crate::metrics::Metrics;
 use crate::state::tables::table_helpers::clear_mutex_hashmap;
-use crate::wireless::positioning::gnss::gnss_constellation::GNSSConstellation;
+use crate::wireless::positioning::axia::ubx::UbxMonRfMessage;
+use crate::wireless::positioning::gnss_constellation::GNSSConstellation;
 use crate::wireless::positioning::nmea::nmea_sentences::{FixType, GGASentence, GSASentence, GSVSentence};
 
 pub struct GnssMonitorTable {
@@ -32,7 +33,10 @@ pub struct GNSSConstellationData {
     pub minimum_pdop: Option<f32>,
     pub satellites_in_view: HashMap<u8, SatelliteInfo>,
     pub minimum_satellites_in_view_count: Option<u8>,
-    pub maximum_satellites_in_view_count: Option<u8>
+    pub maximum_satellites_in_view_count: Option<u8>,
+    pub maximum_jamming_indicator: Option<u8>,
+    pub maximum_noise: Option<u16>,
+    pub maximum_agc_count: Option<u16>
 }
 
 impl GNSSConstellationData {
@@ -92,7 +96,13 @@ impl GnssMonitorTable {
                     error!("Could not ensure constellation: {}", e);
                 };
 
-                let constellation = constellations.get_mut(&sentence.constellation).unwrap();
+                let constellation = match constellations.get_mut(&sentence.constellation) {
+                    Some(constellation) => constellation,
+                    None => {
+                        error!("Could not get GNSS constellation {}", sentence.constellation);
+                        return;
+                    }
+                };
 
                 // Maximum time deviation.
                 let time_delta_ms = sentence.time
@@ -198,7 +208,13 @@ impl GnssMonitorTable {
                     error!("Could not ensure constellation: {}", e);
                 }
 
-                let constellation = constellations.get_mut(&sentence.constellation).unwrap();
+                let constellation = match constellations.get_mut(&sentence.constellation) {
+                    Some(constellation) => constellation,
+                    None => {
+                        error!("Could not get GNSS constellation {}", sentence.constellation);
+                        return;
+                    }
+                };
 
                 constellation.fixes.insert(sentence.fix);
                 constellation.fix_satellites.extend(sentence.fix_satellites);
@@ -251,7 +267,13 @@ impl GnssMonitorTable {
                     error!("Could not ensure constellation: {}", e);
                 }
 
-                let constellation = constellations.get_mut(&sentence.constellation).unwrap();
+                let constellation = match constellations.get_mut(&sentence.constellation) {
+                    Some(constellation) => constellation,
+                    None => {
+                        error!("Could not get GNSS constellation {}", sentence.constellation);
+                        return;
+                    }
+                };
 
                 if let Some(count) = sentence.satellites_in_view {
                     // Max satellite in view count.
@@ -284,6 +306,15 @@ impl GnssMonitorTable {
                 }
 
                 for satellite in sentence.satellites {
+                    if satellite.snr.is_none() || satellite.snr == Some(0) {
+                        /*
+                         * Satellites reported with no SNR are not actively seen, but only expected
+                         * based on GNSS almanac. We skip those for now, but may collect them later
+                         * for more advanced detection techniques.
+                         */
+                        continue;
+                    }
+
                     match constellation.satellites_in_view.get_mut(&satellite.prn) {
                         Some(existing) => {
                             existing.elevation_degrees = satellite.elevation_degrees;
@@ -300,6 +331,61 @@ impl GnssMonitorTable {
                             });
                         }
                     }
+                }
+            },
+            Err(e) => error!("Could not acquire constellations lock: {}", e)
+        }
+    }
+
+    pub fn register_ubx_monrf_message(&mut self, message: Arc<UbxMonRfMessage>) {
+        match self.constellations.lock() {
+            Ok(mut constellations) => {
+                if let Err(e) = Self::ensure_constellation(&message.constellation, &mut constellations) {
+                    error!("Could not ensure constellation: {}", e);
+                }
+
+                let constellation = match constellations.get_mut(&message.constellation) {
+                    Some(constellation) => constellation,
+                    None => {
+                        error!("Could not get GNSS constellation {}", message.constellation);
+                        return;
+                    }
+                };
+
+                let monrf_block = match message.blocks.len() {
+                    1 => message.blocks.get(0).unwrap(),
+                    _ => {
+                        error!("Unexpected number of blocks in UBX MON-RF message: [{}]",
+                            message.blocks.len());
+                        return;
+                    }
+                };
+
+                match constellation.maximum_jamming_indicator {
+                    Some(x) => {
+                        if monrf_block.jam_ind > x {
+                            constellation.maximum_jamming_indicator = Some(x);
+                        }
+                    },
+                    None => constellation.maximum_jamming_indicator = Some(monrf_block.jam_ind)
+                }
+
+                match constellation.maximum_noise {
+                    Some(x) => {
+                        if monrf_block.noise_per_ms > x {
+                            constellation.maximum_noise = Some(x);
+                        }
+                    },
+                    None => constellation.maximum_noise = Some(monrf_block.noise_per_ms)
+                }
+
+                match constellation.maximum_agc_count {
+                    Some(x) => {
+                        if monrf_block.agc_cnt > x {
+                            constellation.maximum_agc_count = Some(x);
+                        }
+                    },
+                    None => constellation.maximum_agc_count = Some(monrf_block.agc_cnt)
                 }
             },
             Err(e) => error!("Could not acquire constellations lock: {}", e)

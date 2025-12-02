@@ -1,11 +1,9 @@
-use std::process::exit;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use crossbeam_channel::select;
 use log::{error, info};
 use crate::configuration::Configuration;
 use crate::context::context_engine::ContextEngine;
-use crate::exit_code;
 use crate::messagebus::bus::Bus;
 use crate::metrics::Metrics;
 use crate::protocols::processors::arp_processor::ARPProcessor;
@@ -22,6 +20,7 @@ use crate::state::tables::tables::Tables;
 use crate::system_state::SystemState;
 use crate::protocols::processors::bluetooth_device_processor::BluetoothDeviceProcessor;
 use crate::protocols::processors::gnss_nmea_processor::GnssNmeaProcessor;
+use crate::protocols::processors::gnss_ubx_monrf_processor::GnssUbxMonRfProcessor;
 
 const DEFAULT_WIFI_PROCESSORS: i32 = 1;
 const DEFAULT_TCP_PROCESSORS: i32 = 2;
@@ -163,6 +162,7 @@ impl ProcessorController {
             let mut uav_processor = UavRemoteIdProcessor::new(self.tables.uav.clone());
 
             let mut gnss_nmea_processor = GnssNmeaProcessor::new(self.tables.gnss_monitor.clone());
+            let mut gnss_ubx_monrf_processor = GnssUbxMonRfProcessor::new(self.tables.gnss_monitor.clone());
 
             let mut arp_processor = ARPProcessor::new(self.tables.clone(), self.state.clone(), self.context.clone());
             let mut dhcp4_processor = Dhcpv4Processor::new(self.state.clone(), self.tables.dhcp.clone(), self.context.clone());
@@ -205,6 +205,16 @@ impl ProcessorController {
                                 Ok(message) => gnss_nmea_processor.process(message),
                                 Err(e) => {
                                     error!("GNSS NMEA receiver disconnected: {}", e);
+                                    break;
+                                }
+                            }
+                        }
+
+                       recv(generic_bus.gnss_ubx_mon_rf_pipeline.receiver) -> msg => {
+                            match msg {
+                                Ok(message) => gnss_ubx_monrf_processor.process(message),
+                                Err(e) => {
+                                    error!("GNSS UBX MON-RF receiver disconnected: {}", e);
                                     break;
                                 }
                             }
