@@ -5,12 +5,13 @@ use ratatui::{DefaultTerminal, Frame};
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span, Text};
-use ratatui::widgets::{Block, Borders, Cell, HighlightSpacing, Padding, Paragraph, Row, ScrollbarState, Table, TableState};
+use ratatui::widgets::{Block, Borders, Cell, HighlightSpacing, Padding, Paragraph, Row, Scrollbar, ScrollbarOrientation, ScrollbarState, Table, TableState, Wrap};
 use unicode_width::UnicodeWidthStr;
 use crate::connect::connect_firmware_directory::Peripheral;
+use crate::usb::bootloader::send_enter_bootloader;
 use crate::usb::nzyme_usb_device::NzymeUsbDevice;
 
-const INFO_TEXT: &str = "(Esc, q) quit | (↑) move up | (↓) move down | (Return) open selected device ";
+const INFO_TEXT: &str = "(Esc, q) quit | (↑) up | (↓) down | (Return) open device | (c) close device";
 const ITEM_HEIGHT: usize = 1;
 
 pub struct TuiApp {
@@ -18,7 +19,9 @@ pub struct TuiApp {
     table: TableState,
     scroll_state: ScrollbarState,
     devices_longest_items: (u16, u16, u16, u16, u16, u16), // Order is table column order
-    firmware_directory: Vec<Peripheral>
+    firmware_directory: Vec<Peripheral>,
+    selected_device: Option<NzymeUsbDevice>,
+    error: Option<String>
 }
 
 /*
@@ -109,7 +112,9 @@ impl TuiApp {
             table: TableState::default().with_selected(0),
             scroll_state: connected_devices_scroll_state,
             devices_longest_items: connected_devices_longest_items,
-            firmware_directory
+            firmware_directory,
+            selected_device: None,
+            error: None
         }
     }
 
@@ -124,6 +129,9 @@ impl TuiApp {
                         KeyCode::Char('q') => return Ok(()),
                         KeyCode::Down => self.next_row(),
                         KeyCode::Up => self.previous_row(),
+                        KeyCode::Enter => self.callback_enter(),
+                        KeyCode::Char('c') => self.exit_device_details(),
+                        KeyCode::Char('u') => self.start_upgrade(),
                         _ => {}
                     }
                 }
@@ -140,10 +148,21 @@ impl TuiApp {
             ])
             .split(frame.area());
 
-        if self.devices.is_empty() {
-            self.render_no_devices_connected_warning(frame, layout[0]);
+        if let Some(error) = &self.error {
+            // We have an error to show.
+            self.render_error(frame, layout[0], error.clone());
         } else {
-            self.render_connected_devices_table(frame, layout[0]);
+            if let Some(selected_device) = &self.selected_device {
+                // Device selected. Render upgrade overview.
+                self.render_upgrade_overview(frame, layout[0], selected_device.clone());
+            } else {
+                // No device selected. Render table.
+                if self.devices.is_empty() {
+                    self.render_no_devices_connected_warning(frame, layout[0]);
+                } else {
+                    self.render_connected_devices_table(frame, layout[0]);
+                }
+            }
         }
 
         self.render_footer(frame, layout[1]);
@@ -179,6 +198,31 @@ impl TuiApp {
         self.scroll_state = self.scroll_state.position(i * ITEM_HEIGHT);
     }
 
+    pub fn callback_enter(&mut self) {
+        // A) Clear current error.
+        if self.error.is_some() {
+            self.error = None;
+            return;
+        }
+
+        // ... or ...
+
+        // B) Select current row.
+        let i = self.table.selected().unwrap_or_else(|| 0);
+
+        match self.devices.get(i) {
+            Some(device) => self.selected_device = Some(device.clone()),
+            None => {
+                eprintln!("Selected device not found");
+                return
+            }
+        }
+    }
+
+    pub fn exit_device_details(&mut self) {
+        self.selected_device = None
+    }
+
     fn render_connected_devices_table(&mut self, frame: &mut Frame, area: Rect) {
         let header_style = Style::default()
             .add_modifier(Modifier::BOLD);
@@ -210,8 +254,6 @@ impl TuiApp {
             Constraint::Min(self.devices_longest_items.5 + 1)
         ];
 
-        let bar = " █ ";
-
         let t = Table::new(rows, widths)
             .header(header)
             .row_highlight_style(selected_row_style)
@@ -221,7 +263,7 @@ impl TuiApp {
                 Block::default()
                     .borders(Borders::ALL)
                     .padding(Padding::new(3, 3, 1, 1))
-                    .title("Connected Devices"),
+                    .title(" Connected Devices "),
             );
 
         frame.render_stateful_widget(t, area, &mut self.table);
@@ -233,19 +275,148 @@ impl TuiApp {
                 "⚠  No Nzyme USB devices connected.",
                 Style::default()
                     .fg(Color::Yellow)
-                    .add_modifier(Modifier::BOLD)
-            )
+                    .add_modifier(Modifier::BOLD),
+            ),
         ));
 
         let warning_box = Paragraph::new(warning_text)
             .alignment(Alignment::Center)
+            .wrap(Wrap { trim: false })
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .padding(Padding::top(3))
+                    .padding(Padding::top(3)),
             );
 
         frame.render_widget(warning_box, area);
+    }
+
+    fn render_error(&mut self, frame: &mut Frame, area: Rect, error: String) {
+        let warning_text = Text::from(vec![
+            // First line: error message
+            Line::from(Span::styled(
+                format!("⚠ Error: {}", error),
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            )),
+
+            // Blank line for spacing
+            Line::raw(""),
+
+            // Second line: fake button / instruction
+            Line::from(Span::styled(
+                "[ Press Enter to close ]",
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            )),
+        ]);
+
+        let warning_box = Paragraph::new(warning_text)
+            .alignment(Alignment::Center)
+            .wrap(Wrap { trim: false })
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .padding(Padding::top(2))
+                    .padding(Padding::bottom(1)),
+            );
+
+        frame.render_widget(warning_box, area);
+    }
+
+    fn render_upgrade_overview(&mut self, frame: &mut Frame, area: Rect, device: NzymeUsbDevice) {
+        let firmware = device.most_recent_firmware_release_available(&self.firmware_directory);
+        let device_outdated = device.has_outdated_firmware(&self.firmware_directory);
+
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .title(format!(" Upgrade Device {} (USB {}:{}) ",
+                           device.product, device.bus, device.address));
+        frame.render_widget(block.clone(), area);
+
+        let inner = block.inner(area);
+
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(4),
+                Constraint::Length(1),
+                Constraint::Length(1),
+                Constraint::Min(1),
+            ])
+            .split(inner);
+
+        let upgrade_action_line = if device_outdated {
+            Line::from(
+                Span::styled(
+                    "Press (u) to start upgrade.",
+                    Style::default()
+                        .fg(Color::Green)
+                        .add_modifier(Modifier::BOLD),
+                )
+            )
+        } else {
+            Line::from(
+                Span::styled(
+                    "No upgrade available.",
+                    Style::default()
+                        .fg(Color::Red)
+                        .add_modifier(Modifier::BOLD),
+                )
+            )
+        };
+
+        let latest_version = match &firmware {
+            Some(firmware) => format!("v{}.{}", firmware.version.major, firmware.version.minor),
+            None => "No firmware available".to_string()
+        };
+
+        let header_text = Text::from(vec![
+            Line::from(format!("Current version: v{}.{}",
+                               device.firmware_version.major, device.firmware_version.minor)),
+            Line::from(format!("Latest version: {}", latest_version)),
+            Line::from(""),
+            upgrade_action_line
+        ]);
+
+        let header = Paragraph::new(header_text);
+        frame.render_widget(header, chunks[0]);
+
+        if device_outdated && let Some(fw) = firmware {
+            let notes_body = Paragraph::new(fw.release_notes)
+                .wrap(Wrap { trim: false });
+
+            frame.render_widget(Paragraph::new("Release Notes:"), chunks[2]);
+            frame.render_widget(notes_body, chunks[3]);
+        }  else {
+            frame.render_widget(Line::from(""), chunks[2]);
+            frame.render_widget(Line::from(""), chunks[3]);
+        }
+    }
+
+    fn start_upgrade(&mut self) {
+        let device = match self.selected_device.clone() {
+            Some(device) => device,
+            None => {
+                // Don't react on upgrade button press when not in device details.
+                return;
+            }
+        };
+
+        let acm_port = match device.acm_port {
+            Some(port) => port,
+            None => {
+                eprintln!("Device [{:?}] exposes no ACM port.", device);
+                return;
+            }
+        };
+
+        if let Err(e) = send_enter_bootloader(acm_port) {
+            self.error = Some("Could not send command to enter bootloader. Make sure the device is \
+                not in use and stop the `nzyme-tap` service.".to_string());
+        }
     }
 
     fn render_footer(&self, frame: &mut Frame, area: Rect) {
@@ -263,28 +434,25 @@ impl TuiApp {
          *   +1 leading space before INFO_TEXT
          *   +1 trailing space after version
          *
-         * Layout:
-         *   " " + INFO_TEXT + padding + " " + version + " "
-         *
          */
         let total_content_width = 1 + info_width + 1 + version_width + 1;
 
         let padding = inner_width.saturating_sub(total_content_width);
 
         let line = Line::from(vec![
-            Span::raw(" "), // Left padding.
+            Span::raw(" "),
             Span::raw(INFO_TEXT),
             Span::raw(" ".repeat(padding)),
-            Span::raw(" "), // Space before version.
+            Span::raw(" "),
             Span::raw(version),
-            Span::raw(" "), // Right padding.
+            Span::raw(" "),
         ]);
 
         let widget = Paragraph::new(line)
             .block(
                 Block::new()
                     .borders(Borders::ALL)
-                    .title("Commands"),
+                    .title(" Commands "),
             );
 
         frame.render_widget(widget, area);

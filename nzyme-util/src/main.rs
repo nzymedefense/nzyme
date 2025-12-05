@@ -10,6 +10,7 @@ use crate::ui::tui::tui_app::TuiApp;
 use crate::usb::usb::detect_nzyme_usb_devices;
 
 fn main() {
+
     println!("Fetching current firmware directory ...");
     let directory = match fetch_firmware_directory() {
         Ok(directory) => directory,

@@ -2,7 +2,7 @@ use crate::connect::connect_firmware_directory::Peripheral;
 use crate::firmware::firmware_release::FirmwareRelease;
 use crate::firmware::firmware_version::FirmwareVersion;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NzymeUsbDevice {
     pub product: String,
     pub manufacturer: String,

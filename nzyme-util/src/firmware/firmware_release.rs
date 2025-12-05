@@ -1,5 +1,6 @@
 use crate::firmware::firmware_version::FirmwareVersion;
 
+#[derive(Debug,)]
 pub struct FirmwareRelease {
     pub version: FirmwareVersion,
     pub firmware_url: String,

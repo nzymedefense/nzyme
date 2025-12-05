@@ -1,5 +1,5 @@
 [package]
-name = "nzyme-firmware-updater"
+name = "nzyme-util"
 license = "SSPL-1.0"
 version = "0.1.0"
 edition = "2024"
@@ -24,13 +24,13 @@ debug = true
 maintainer = "Nzyme LLC <hello@nzyme.org>"
 copyright = "Nzyme LLC <hello@nzyme.org>"
 license-file = ["COPYING", "0"]
-extended-description = "The Nzyme peripherals firmware updater"
+extended-description = "The Nzyme Utility Command"
 depends = "$auto"
 section = "net"
 priority = "optional"
 assets = [
-    ["target/release/nzyme-firmware-updater", "usr/bin/nzyme-firmware-updater", "755"],
-    ["README.md", "usr/share/doc/nzyme-firmware-updater/README", "644"]
+    ["target/release/nzyme-util", "usr/bin/nzyme-util", "755"],
+    ["README.md", "usr/share/doc/nzyme-util/README", "644"]
 ]
 conf-files = []
 
@@ -44,3 +44,4 @@ anyhow = "1"
 rusb = "0.9"
 udev = "0.8"
 unicode-width = "0.1"
+serialport = "4.8.1"

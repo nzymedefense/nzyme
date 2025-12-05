@@ -36,6 +36,6 @@ tap/nzyme-tap.conf
 tap/data*
 tap/perf.data*
 
-peripherals/firmware-updater/target/
-peripherals/firmware-updater/data*
-peripherals/firmware-updater//perf.data*
+nzyme-util/target/
+nzyme-util/data*
+nzyme-util/perf.data*
