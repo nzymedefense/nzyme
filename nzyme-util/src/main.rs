@@ -3,49 +3,41 @@ mod connect;
 mod firmware;
 mod usb;
 mod ui;
+mod arguments;
+mod apps;
 
-use crate::connect::connect_firmware_directory::fetch_firmware_directory;
-use crate::exit_codes::{EX_INTERNAL_ERR, EX_OK, EX_PERMISSION_DENIED, EX_UNAVAILABLE};
-use crate::ui::tui::tui_app::TuiApp;
-use crate::usb::usb::detect_nzyme_usb_devices;
+use clap::Parser;
+use crate::apps::firmware::{firmware_gui_app, flash_firmware_app};
+use crate::apps::devices::list_devices_app;
+use crate::arguments::{CliArguments, Command, DevicesSubcommand, FirmwareSubcommand};
+use crate::exit_codes::EX_OK;
 
 fn main() {
+    let arguments = CliArguments::parse();
 
-    println!("Fetching current firmware directory ...");
-    let directory = match fetch_firmware_directory() {
-        Ok(directory) => directory,
-        Err(e) => {
-            eprintln!("ERROR: Could not fetch Nzyme device directory \
-                from [https://connect.nzyme.org/]: {}" ,e);
-            std::process::exit(EX_UNAVAILABLE);
+    match arguments.command {
+        Some(Command::Firmware(fw)) => match fw.command {
+            FirmwareSubcommand::Gui => {
+                // $ nzyme-util firmware gui
+                firmware_gui_app::run();
+            }
+            FirmwareSubcommand::Flash { file, serial } => {
+                // $ nzyme-util firmware flash --file foo.bin
+                flash_firmware_app::run(file, serial);
+            }
+        },
+
+        Some(Command::Devices(dev_cmd)) => match dev_cmd.command {
+            DevicesSubcommand::List => {
+                // $ nzyme-util devices list
+                list_devices_app::run();
+            }
+        },
+
+        None => {
+            // Because arg_required_else_help = true, we normally don’t get here
         }
-    };
-
-    println!("Detecting connected Nzyme USB peripherals ...");
-    let devices = match detect_nzyme_usb_devices() {
-        Ok(devices) => devices,
-        Err(e) => {
-            eprintln!("ERROR: Could not discover connected Nzyme USB devices: {}" ,e);
-            std::process::exit(EX_PERMISSION_DENIED);
-        }
-    };
-
-    println!("Launching TUI ...");
-    if let Err(e) = color_eyre::install() {
-        eprintln!("ERROR: {}", e);
     }
-
-    let terminal = ratatui::init();
-
-    if let Err(e) = TuiApp::new(devices, directory).run(terminal) {
-        eprintln!("ERROR: {}", e);
-        std::process::exit(EX_INTERNAL_ERR);
-
-    }
-
-    ratatui::restore();
-
-    println!("Thanks! Goodbye.");
 
     std::process::exit(EX_OK);
 }

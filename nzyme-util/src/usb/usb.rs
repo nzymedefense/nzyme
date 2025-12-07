@@ -1,9 +1,10 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, Context, Error, Result};
 use rusb::{Context as UsbContextType, Device, DeviceDescriptor, UsbContext};
 use crate::firmware::firmware_version::FirmwareVersion;
 use crate::usb::nzyme_usb_device::NzymeUsbDevice;
 
-const NZYME_VID: u16 = 0x390C;
+pub const NZYME_VID: u16 = 0x390C;
+pub const NZYME_BOOTLOADER_PID: u16 = 0x001;
 
 pub fn detect_nzyme_usb_devices() -> Result<Vec<NzymeUsbDevice>>  {
     let context = UsbContextType::new()?;
@@ -21,6 +22,40 @@ pub fn detect_nzyme_usb_devices() -> Result<Vec<NzymeUsbDevice>>  {
 
     Ok(nzyme_devices)
 }
+
+// Sometimes, we get transient errors, but it usually works on retry. USB OS/driver oddness.
+fn read_usb_string_with_retry(handle: &rusb::DeviceHandle<UsbContextType>,
+                              desc: &DeviceDescriptor,
+                              which: &str) -> String {
+    const MAX_RETRIES: u8 = 5;
+
+    for attempt in 1..=MAX_RETRIES {
+        let result = match which {
+            "serial" => handle.read_serial_number_string_ascii(desc),
+            "manufacturer" => handle.read_manufacturer_string_ascii(desc),
+            "product" => handle.read_product_string_ascii(desc),
+            _ => Err(rusb::Error::Other),
+        };
+
+        match result {
+            Ok(s) => {
+                if s != "?" {
+                    return s
+                } else {
+                    std::thread::sleep(std::time::Duration::from_millis(200));
+                    continue;
+                }
+            },
+            Err(_) => {
+                std::thread::sleep(std::time::Duration::from_millis(200));
+                continue;
+            }
+        }
+    }
+
+    "<unavailable>".to_string()
+}
+
 
 fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescriptor)
     -> Result<NzymeUsbDevice> {
@@ -41,16 +76,9 @@ fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescrip
     // Try to open the device to read string descriptors (may fail if permissions are missing)
     let (product, manufacturer, serial, acm_port) = match device.open() {
         Ok(handle) => {
-            let serial = handle
-                .read_serial_number_string_ascii(desc)
-                .unwrap_or_else(|_| "<unavailable>".to_string());
-
-            let manufacturer = handle
-                .read_manufacturer_string_ascii(desc)
-                .unwrap_or_else(|_| "<unavailable>".to_string());
-            let product = handle
-                .read_product_string_ascii(desc)
-                .unwrap_or_else(|_| "<unavailable>".to_string());
+            let serial = read_usb_string_with_retry(&handle, desc, "serial");
+            let manufacturer = read_usb_string_with_retry(&handle, desc, "manufacturer");
+            let product = read_usb_string_with_retry(&handle, desc, "product");
 
             let tty = find_tty_for_usb_device(bus, address)
                 .with_context(|| "Failed to enumerate tty devices")?;
@@ -106,4 +134,11 @@ fn find_tty_for_usb_device(bus: u8, address: u8) -> Result<Option<String>> {
     }
 
     Ok(None)
+}
+
+pub fn nzyme_device_is_connected(serial_number: &str, vid: u16, pid: u16) -> Result<bool, Error> {
+    Ok(detect_nzyme_usb_devices()?
+        .into_iter()
+        .find(|d| d.serial == serial_number && d.vid == vid && d.pid == pid)
+        .is_some())
 }
