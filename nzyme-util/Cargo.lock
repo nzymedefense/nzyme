@@ -1058,7 +1058,6 @@ dependencies = [
  "clap",
  "color-eyre",
  "crossterm",
- "log",
  "ratatui",
  "reqwest",
  "rusb",

@@ -76,7 +76,7 @@ pub fn flash_firmware(acm_port: &str, firmware: Vec<u8>) -> Result<(), Error> {
     const CMD_FLASH_APP: u8 = 0x10;
 
     let app_size = firmware.len() as u32;
-    
+
     let mut header = [0u8; 8];
     header[0] = NZ_MAGIC0;
     header[1] = NZ_MAGIC1;

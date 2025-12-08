@@ -1,6 +1,6 @@
 use std::thread::sleep;
 use std::time::{Duration, Instant};
-use crate::exit_codes::{EX_CONFIG, EX_IOERR, EX_OK, EX_OS_ERR, EX_PERMISSION_DENIED, EX_UNAVAILABLE};
+use crate::exit_codes::{EX_PERMISSION_DENIED, EX_UNAVAILABLE};
 use crate::firmware::firmware_loader::load_firmware_from_relative_path;
 use crate::usb::bootloader::{flash_firmware, send_enter_bootloader};
 use crate::usb::usb::{detect_nzyme_usb_devices, nzyme_device_is_connected, NZYME_BOOTLOADER_PID, NZYME_VID};
@@ -57,7 +57,7 @@ pub fn run(firmware_file: String, device_serial: String) {
     println!("{BOLD}==> Loading Firmware{RESET}");
     let firmware = match load_firmware_from_relative_path(&firmware_file) {
         Ok(f) => {
-            println!("{FG_GREEN}[*] Loaded firmware image.{RESET}");
+            println!("{FG_GREEN}[*] Loaded firmware image. Size <{}> byte.{RESET}", f.len());
             f
         }
         Err(e) => {
@@ -67,39 +67,52 @@ pub fn run(firmware_file: String, device_serial: String) {
         }
     };
 
-    println!("\n{BOLD}==> Entering Bootloader Mode{RESET}");
-    println!("{FG_YELLOW}[>] Sending bootloader command over {acm_port}...{RESET}");
+    if device.vid == NZYME_VID && device.pid == NZYME_BOOTLOADER_PID {
+        /*
+         * We are talking to a Nzyme bootloader. It's likely in the failure loop after it couldn't
+         * initialize the app or app has not successfully initialized on previous boot.
+         *
+         * In that case, we do not attempt to put app into bootloader mode (we are already in
+         * bootloader), but start to flash firmware immediately.
+         */
+        println!("{FG_YELLOW}[!!] We are connected to bootloader. Do not issue \
+            bootloader mode reset command.{RESET}");
+    } else {
+        // Put device into bootloader mode.
+        println!("\n{BOLD}==> Entering Bootloader Mode{RESET}");
+        println!("{FG_YELLOW}[>] Sending bootloader command over {acm_port}...{RESET}");
 
-    if let Err(e) = send_enter_bootloader(&acm_port) {
-        eprintln!("{FG_RED}[x] ERROR:{RESET} Bootloader request failed.");
-        eprintln!("    Details: {}", e);
-        std::process::exit(EX_UNAVAILABLE);
-    }
-
-    println!("{FG_YELLOW}[>] Waiting for bootloader enumeration ({:04X}:{:04X})...{RESET}",
-             NZYME_VID, NZYME_BOOTLOADER_PID);
-
-    // Wait until device enumerates as bootloader
-    let start = Instant::now();
-    let timeout = Duration::from_secs(10);
-    loop {
-        match nzyme_device_is_connected(&device_serial, NZYME_VID, NZYME_BOOTLOADER_PID) {
-            Ok(true) => {
-                println!("{FG_GREEN}[*] Bootloader mode detected.{RESET}");
-                break;
-            }
-            Ok(false) => {}
-            Err(e) => {
-                eprintln!("    Detection retry: {}", e);
-            }
-        }
-
-        if start.elapsed() > timeout {
-            eprintln!("{FG_RED}[x] ERROR:{RESET} Bootloader did not appear in time.");
+        if let Err(e) = send_enter_bootloader(&acm_port) {
+            eprintln!("{FG_RED}[x] ERROR:{RESET} Bootloader request failed.");
+            eprintln!("    Details: {}", e);
             std::process::exit(EX_UNAVAILABLE);
         }
 
-        sleep(Duration::from_millis(500));
+        println!("{FG_YELLOW}[>] Waiting for bootloader enumeration ({:04X}:{:04X})...{RESET}",
+                 NZYME_VID, NZYME_BOOTLOADER_PID);
+
+        // Wait until device enumerates as bootloader
+        let start = Instant::now();
+        let timeout = Duration::from_secs(10);
+        loop {
+            match nzyme_device_is_connected(&device_serial, NZYME_VID, NZYME_BOOTLOADER_PID) {
+                Ok(true) => {
+                    println!("{FG_GREEN}[*] Bootloader mode detected.{RESET}");
+                    break;
+                }
+                Ok(false) => {}
+                Err(e) => {
+                    eprintln!("    Detection retry: {}", e);
+                }
+            }
+
+            if start.elapsed() > timeout {
+                eprintln!("{FG_RED}[x] ERROR:{RESET} Bootloader did not appear in time.");
+                std::process::exit(EX_UNAVAILABLE);
+            }
+
+            sleep(Duration::from_millis(500));
+        }
     }
 
     println!("\n{BOLD}==> Flashing Firmware{RESET}");
