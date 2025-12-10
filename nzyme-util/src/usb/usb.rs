@@ -86,7 +86,7 @@ fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescrip
             (product, manufacturer, serial, tty)
         }
         Err(e) => {
-            bail!("Could not open USB device. Make sure you have sufficient permissions.")
+            bail!("Could not open USB device. Make sure you have sufficient permissions: {}", e)
         }
     };
 

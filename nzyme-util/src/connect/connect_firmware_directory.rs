@@ -5,6 +5,7 @@ use crate::firmware::firmware_version::FirmwareVersion;
 
 const PERIPHERALS_URL: &str = "https://api.connect.nzyme.org/peripherals/firmware/versions";
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct Peripheral {
     #[serde(rename = "peripheral_id")]

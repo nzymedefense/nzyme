@@ -5,7 +5,7 @@ use ratatui::{DefaultTerminal, Frame};
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span, Text};
-use ratatui::widgets::{Block, Borders, Cell, HighlightSpacing, Padding, Paragraph, Row, Scrollbar, ScrollbarOrientation, ScrollbarState, Table, TableState, Wrap};
+use ratatui::widgets::{Block, Borders, Cell, HighlightSpacing, Padding, Paragraph, Row, ScrollbarState, Table, TableState, Wrap};
 use unicode_width::UnicodeWidthStr;
 use crate::connect::connect_firmware_directory::Peripheral;
 use crate::usb::bootloader::send_enter_bootloader;
@@ -34,16 +34,15 @@ pub struct TuiApp {
  * 4: ACM Port
  * 5: Address
  */
-
 impl NzymeUsbDevice {
-    fn table_row(&self, firmware_directory: &Vec<Peripheral>) -> [Line; 6] {
+    fn table_row(&self, firmware_directory: &Vec<Peripheral>) -> [Line<'_>; 6] {
         [
             self.product(),
             self.serial(),
             self.firmware_version(firmware_directory),
             self.acm_port(),
             self.id(),
-            self.address()
+            self.address(),
         ]
     }
 
@@ -60,7 +59,7 @@ impl NzymeUsbDevice {
         Line::from(self.serial.as_str())
     }
 
-    fn firmware_version<'a>(&self, firmware_directory: &Vec<Peripheral>) -> Line<'a> {
+    fn firmware_version(&self, firmware_directory: &Vec<Peripheral>) -> Line<'_> {
         let outdated = self.has_outdated_firmware(firmware_directory);
 
         let status_span = if outdated {
@@ -70,19 +69,17 @@ impl NzymeUsbDevice {
         };
 
         Line::from(vec![
-            Span::raw(format!("v{}.{} (",
-                              self.firmware_version.major, self.firmware_version.minor)),
+            Span::raw(format!(
+                "v{}.{} (",
+                self.firmware_version.major, self.firmware_version.minor
+            )),
             status_span,
             Span::raw(")"),
         ])
     }
 
     fn acm_port(&self) -> Line<'_> {
-        Line::from(
-            self.acm_port
-                .as_deref()
-                .unwrap_or("NONE")
-        )
+        Line::from(self.acm_port.as_deref().unwrap_or("NONE"))
     }
 
     fn id(&self) -> Line<'_> {
@@ -93,6 +90,7 @@ impl NzymeUsbDevice {
         Line::from(format!("{}:{}", self.bus, self.address))
     }
 }
+
 
 impl TuiApp {
     pub fn new(connected_devices: Vec<NzymeUsbDevice>, firmware_directory: Vec<Peripheral>)
@@ -413,7 +411,7 @@ impl TuiApp {
             }
         };
 
-        if let Err(e) = send_enter_bootloader(acm_port) {
+        if let Err(_) = send_enter_bootloader(acm_port) {
             self.error = Some("Could not send command to enter bootloader. Make sure the device is \
                 not in use and stop the `nzyme-tap` service.".to_string());
         }

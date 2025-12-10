@@ -2,11 +2,11 @@ use std::fs;
 
 use crate::exit_codes::{EX_IOERR, EX_UNAVAILABLE};
 use crate::firmware::firmware::{
-    FILE_TYPE_FIRMWARE_BINARY, HEADER_VERSION, NZYME_USB_VENDOR_ID, NZ_MAGIC,
     V1_HEADER_LEN,
 };
 use crate::tools::as_path_buf;
 
+#[allow(dead_code)]
 pub struct FirmwareFile {
     pub path: String,
     pub total_size: usize,
