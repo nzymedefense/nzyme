@@ -124,7 +124,7 @@ pub fn run(firmware_file: String, device_serial: String) {
         std::process::exit(EX_UNAVAILABLE);
     }
 
-    println!("{FG_GREEN}[*] Firmware written successfully.{RESET}");
+    println!("{FG_GREEN}[*] All bytes written. Device is validating and rebooting.{RESET}");
 
     println!("\n{BOLD}==> Waiting for Device Reboot{RESET}");
     println!(
@@ -137,7 +137,7 @@ pub fn run(firmware_file: String, device_serial: String) {
     loop {
         match nzyme_device_is_connected(&device_serial, device.vid, device.pid) {
             Ok(true) => {
-                println!("{FG_GREEN}[*] Device reconnected in application mode.{RESET}");
+                println!("{FG_GREEN}[*] Device reconnected.{RESET}");
                 break;
             }
             Ok(false) => {}
@@ -175,5 +175,5 @@ pub fn run(firmware_file: String, device_serial: String) {
         new_device.firmware_version.major, new_device.firmware_version.minor
     );
 
-    println!("{BOLD}\n==> Firmware Upgrade Completed Successfully{RESET}");
+    println!("{BOLD}\n==> Process complete.{RESET}");
 }

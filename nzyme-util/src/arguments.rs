@@ -33,10 +33,18 @@ pub enum FirmwareSubcommand {
 
     Flash {
         #[arg(long)]
-        file: String,
+        firmware_file: String,
 
         #[arg(long)]
         serial: String,
+    },
+
+    Verify {
+        #[arg(long)]
+        firmware_file: String,
+
+        #[arg(long)]
+        public_key_file: String,
     },
 }
 

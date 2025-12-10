@@ -29,7 +29,7 @@ fn read_usb_string_with_retry(handle: &rusb::DeviceHandle<UsbContextType>,
                               which: &str) -> String {
     const MAX_RETRIES: u8 = 5;
 
-    for attempt in 1..=MAX_RETRIES {
+    for _ in 1..=MAX_RETRIES {
         let result = match which {
             "serial" => handle.read_serial_number_string_ascii(desc),
             "manufacturer" => handle.read_manufacturer_string_ascii(desc),
@@ -73,7 +73,7 @@ fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescrip
                                      // USB spec does not define. We'll use it as minor.
     };
 
-    // Try to open the device to read string descriptors (may fail if permissions are missing)
+    // Try to open the device to read string descriptors. (may fail if permissions are missing)
     let (product, manufacturer, serial, acm_port) = match device.open() {
         Ok(handle) => {
             let serial = read_usb_string_with_retry(&handle, desc, "serial");

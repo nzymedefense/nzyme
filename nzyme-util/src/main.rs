@@ -5,9 +5,10 @@ mod usb;
 mod ui;
 mod arguments;
 mod apps;
+mod tools;
 
 use clap::Parser;
-use crate::apps::firmware::{firmware_gui_app, flash_firmware_app};
+use crate::apps::firmware::{firmware_gui_app, flash_firmware_app, verify_firmware_app};
 use crate::apps::devices::list_devices_app;
 use crate::arguments::{CliArguments, Command, DevicesSubcommand, FirmwareSubcommand};
 use crate::exit_codes::EX_OK;
@@ -21,9 +22,15 @@ fn main() {
                 // $ nzyme-util firmware gui
                 firmware_gui_app::run();
             }
-            FirmwareSubcommand::Flash { file, serial } => {
-                // $ nzyme-util firmware flash --file foo.bin
-                flash_firmware_app::run(file, serial);
+
+            FirmwareSubcommand::Flash { firmware_file, serial } => {
+                // $ nzyme-util firmware flash
+                flash_firmware_app::run(firmware_file, serial);
+            }
+
+            FirmwareSubcommand::Verify { firmware_file, public_key_file } => {
+                // $ nzyme-util firmware flash
+                verify_firmware_app::run(firmware_file, public_key_file);
             }
         },
 

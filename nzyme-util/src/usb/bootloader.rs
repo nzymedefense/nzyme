@@ -1,4 +1,3 @@
-use std::fs;
 use anyhow::{bail, Context, Error, Result};
 use std::io::Write;
 use std::thread::sleep;
@@ -53,8 +52,8 @@ pub fn send_enter_bootloader<P: AsRef<std::path::Path>>(dev_path: P) -> Result<(
     frame[1] = header[1];
     frame[2] = header[2];
     frame[3] = header[3];
-    frame[4] = (crc & 0x00FF) as u8;        // low byte
-    frame[5] = ((crc >> 8) & 0x00FF) as u8; // high byte
+    frame[4] = (crc & 0x00FF) as u8;
+    frame[5] = ((crc >> 8) & 0x00FF) as u8;
 
     // Write the frame.
     port.write_all(&frame)
@@ -69,7 +68,7 @@ pub fn send_enter_bootloader<P: AsRef<std::path::Path>>(dev_path: P) -> Result<(
 }
 
 pub fn flash_firmware(acm_port: &str, firmware: Vec<u8>) -> Result<(), Error> {
-    // --- NZ bootloader protocol header --------------------------------------
+    // Bootloader command header.
     const NZ_MAGIC0: u8 = b'N';
     const NZ_MAGIC1: u8 = b'Z';
     const NZ_VER_BOOTLOADER: u8 = 0x01;
@@ -84,11 +83,11 @@ pub fn flash_firmware(acm_port: &str, firmware: Vec<u8>) -> Result<(), Error> {
     header[3] = CMD_FLASH_APP;
     header[4..8].copy_from_slice(&app_size.to_le_bytes());
 
-    // --- Open bootloader CDC port -------------------------------------------
-    //
-    // After send_enter_bootloader(), the device will reset and re-enumerate.
-    // We retry opening the port for up to ~9s so that the header still lands
-    // within your 10s bootloader command window.
+    /*
+     * We should be in bootloader mode already, with ACM port available. Just in case, we wait
+     * a while for it to become available, but this should really return immediately if this
+     * function is used correctly.
+     */
     let start = Instant::now();
     let mut port = loop {
         match serialport::new(acm_port, 115_200)
@@ -101,17 +100,17 @@ pub fn flash_firmware(acm_port: &str, firmware: Vec<u8>) -> Result<(), Error> {
                     bail!("Unable to open [{}] for bootloader within timeout: {e}", acm_port)
                 }
 
-                // Wait a bit and retry – gives udev/OS time to re-enumerate.
+                // Wait a bit and retry.
                 sleep(Duration::from_millis(200));
             }
         }
     };
 
-    // --- Send header ---------------------------------------------------------
+    // Send header.
     port.write_all(&header)?;
-    port.flush()?; // push header out quickly so bootloader can enter "upgrade" mode
+    port.flush()?;
 
-    // --- Stream firmware image ----------------------------------------------
+    // Stream firmware image.
     const CHUNK_SIZE: usize = 4096;
     let mut offset = 0;
 
