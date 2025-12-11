@@ -32,7 +32,7 @@ fn detect_nzyme_usb_devices() -> Result<Vec<NzymeUsbDevice>>  {
 }
 
 fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescriptor)
-                           -> Result<NzymeUsbDevice> {
+        -> Result<NzymeUsbDevice> {
 
     let bus = device.bus_number();
     let address = device.address();
@@ -44,22 +44,15 @@ fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescrip
     let firmware_version = FirmwareVersion {
         major: dv.major() as u32,
         minor: dv.sub_minor() as u32 // `rusb` is inventing a patch/sub-minor version that the
-                                    // USB spec does not define. We'll use it as minor.
+        // USB spec does not define. We'll use it as minor.
     };
 
-    // Try to open the device to read string descriptors (may fail if permissions are missing)
+    // Try to open the device to read string descriptors. (may fail if permissions are missing)
     let (product, manufacturer, serial, acm_port) = match device.open() {
         Ok(handle) => {
-            let serial = handle
-                .read_serial_number_string_ascii(desc)
-                .unwrap_or_else(|_| "<unavailable>".to_string());
-
-            let manufacturer = handle
-                .read_manufacturer_string_ascii(desc)
-                .unwrap_or_else(|_| "<unavailable>".to_string());
-            let product = handle
-                .read_product_string_ascii(desc)
-                .unwrap_or_else(|_| "<unavailable>".to_string());
+            let serial = read_usb_string_with_retry(&handle, desc, "serial");
+            let manufacturer = read_usb_string_with_retry(&handle, desc, "manufacturer");
+            let product = read_usb_string_with_retry(&handle, desc, "product");
 
             let tty = find_tty_for_usb_device(bus, address)
                 .with_context(|| "Failed to enumerate tty devices")?;
@@ -67,13 +60,46 @@ fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescrip
             (product, manufacturer, serial, tty)
         }
         Err(e) => {
-            bail!("Could not open USB device. Make sure you have sufficient permissions.")
+            bail!("Could not open USB device. Make sure you have sufficient permissions: {}", e)
         }
     };
 
     Ok(NzymeUsbDevice {
         product, manufacturer, serial, firmware_version, pid, vid, bus, address, acm_port
     })
+}
+
+// Sometimes, we get transient errors, but it usually works on retry. USB OS/driver oddness.
+fn read_usb_string_with_retry(handle: &rusb::DeviceHandle<UsbContextType>,
+                              desc: &DeviceDescriptor,
+                              which: &str) -> String {
+    const MAX_RETRIES: u8 = 5;
+
+    for _ in 1..=MAX_RETRIES {
+        let result = match which {
+            "serial" => handle.read_serial_number_string_ascii(desc),
+            "manufacturer" => handle.read_manufacturer_string_ascii(desc),
+            "product" => handle.read_product_string_ascii(desc),
+            _ => Err(rusb::Error::Other),
+        };
+
+        match result {
+            Ok(s) => {
+                if s != "?" {
+                    return s
+                } else {
+                    std::thread::sleep(std::time::Duration::from_millis(200));
+                    continue;
+                }
+            },
+            Err(_) => {
+                std::thread::sleep(std::time::Duration::from_millis(200));
+                continue;
+            }
+        }
+    }
+
+    "<unavailable>".to_string()
 }
 
 fn find_tty_for_usb_device(bus: u8, address: u8) -> Result<Option<String>> {

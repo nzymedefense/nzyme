@@ -90,15 +90,13 @@ impl Capture {
                     // Nothing read.
                 }
                 Err(e) => {
+                    // We ignore time out errors that happen sometimes.
                     if e.kind() != std::io::ErrorKind::TimedOut {
+                        // Exit on any other error. Likely a disconnected device.
                         error!("Serial read error: {:?}", e);
                         sleep(Duration::from_millis(1000));
+                        return;
                     }
-
-                    error!("Failed to read from serial port for Axia at [{}]: {}",
-                        acm_port, e);
-
-                    return
                 }
             }
         }

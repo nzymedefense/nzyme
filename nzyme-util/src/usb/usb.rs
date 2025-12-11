@@ -56,7 +56,6 @@ fn read_usb_string_with_retry(handle: &rusb::DeviceHandle<UsbContextType>,
     "<unavailable>".to_string()
 }
 
-
 fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescriptor)
     -> Result<NzymeUsbDevice> {
 
