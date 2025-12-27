@@ -11,21 +11,18 @@ use crate::wireless::dot11::frames::{Dot11RawFrame, Dot11Frame, RadiotapHeader, 
 pub fn parse(data: &Arc<Dot11RawFrame>) -> Result<(Dot11Frame, u32), Error> {
     // Parse header.
     if data.data.len() < 4 {
-        trace!("Received WiFi frame is too short. [{:?}]", data);
-        bail!("WiFi frame is too short");
+        bail!("Received WiFi frame is too short. [{:?}]", data);
     }
 
     let header_length = LittleEndian::read_u16(&data.data[2..4]) as usize;
 
     if header_length == 0 {
-        trace!("Header length is 0 or negative. Malformed radiotap header.");
-        bail!("Malformed radiotap header.");
+        bail!("Header length is 0 or negative. Malformed radiotap header.");
     }
 
     // check if we have enough data (minus the first 4 bytes we already consumed) to read a header
     if header_length < 8 || data.data.len() < header_length {
-        trace!("Received WiFi frame shorter than reported header length.");
-        bail!("WiFi frame data too short.");
+        bail!("Received WiFi frame shorter than reported header length.");
     }
 
     // Load the radiotap buffer according to the length on the header.

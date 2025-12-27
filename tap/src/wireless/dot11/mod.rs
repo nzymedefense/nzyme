@@ -8,4 +8,4 @@ pub mod supported_frequency;
 pub mod dot11_broker;
 pub mod engagement;
 pub mod capture_helpers;
-pub mod sona_capture;
+pub mod sona;

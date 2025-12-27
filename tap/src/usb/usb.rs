@@ -4,15 +4,20 @@ use crate::usb::nzyme_usb_device::{FirmwareVersion, NzymeUsbDevice};
 
 const NZYME_VID: u16 = 0x390C;
 
-pub fn find_first_nzyme_usb_device_with_device_id(device_id: u16) -> Result<Option<NzymeUsbDevice>> {
-    for device in detect_nzyme_usb_devices()? {
-        if device.pid == device_id {
-            return Ok(Some(device))
-        }
-    }
-
-    Ok(None)
+pub fn find_first_nzyme_usb_device_with_pid(pid: u16) -> Result<Option<NzymeUsbDevice>> {
+    Ok(detect_nzyme_usb_devices()?
+        .into_iter()
+        .find(|d| d.pid == pid))
 }
+
+pub fn find_first_nzyme_usb_device_with_pid_and_serial(pid: u16, serial: &str)
+    -> Result<Option<NzymeUsbDevice>> {
+
+    Ok(detect_nzyme_usb_devices()?
+            .into_iter()
+            .find(|d| d.pid == pid && d.serial == serial))
+}
+
 
 fn detect_nzyme_usb_devices() -> Result<Vec<NzymeUsbDevice>>  {
     let context = UsbContextType::new()?;

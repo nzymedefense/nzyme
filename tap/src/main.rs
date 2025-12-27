@@ -19,8 +19,10 @@ mod peripherals;
 mod usb;
 
 use std::{process::exit, sync::{Arc, Mutex}, thread::{self, sleep}, time, time::Duration};
+use std::collections::HashMap;
 use anyhow::Error;
 use clap::Parser;
+use crossbeam_channel::{Receiver, Sender};
 use configuration::Configuration;
 use state::tables::tables::Tables;
 use link::leaderlink::Leaderlink;
@@ -37,11 +39,14 @@ use wireless::{bluetooth, dot11};
 use crate::helpers::network::Channel;
 use crate::link::payloads::ConfigurationReport;
 use crate::log_monitor::LogMonitor;
-use crate::peripherals::limina::limina;
 use crate::peripherals::limina::limina::Limina;
 use crate::processor_controller::ProcessorController;
 use crate::state::state::State;
 use crate::wireless::dot11::engagement::engagement_control::EngagementControl;
+use crate::wireless::dot11::sona;
+use crate::wireless::dot11::sona::command_router::SonaCommandRouter;
+use crate::wireless::dot11::sona::commands::{AddressedSonaCommand, SonaCommand};
+use crate::wireless::dot11::sona::sona_tools::extract_serial_from_interface_name;
 use crate::wireless::positioning;
 use crate::wireless::positioning::axia;
 
@@ -304,6 +309,30 @@ fn main() {
         }
     }
 
+    // Set up Sona command router infrastructure.
+    let mut sona_command_router = SonaCommandRouter::new();
+    let sona_command_router_sender = sona_command_router.sender.clone();
+    let mut cmd_receivers: HashMap<String, Receiver<SonaCommand>> = HashMap::new();
+    if let Some(wifi_interfaces) = &configuration.wifi_interfaces {
+        for (interface_name, interface_config) in wifi_interfaces {
+            if !interface_config.active {
+                continue;
+            }
+
+            if interface_name.starts_with("sona-") {
+                if let Some(serial) = extract_serial_from_interface_name(interface_name) {
+                    let rx = sona_command_router.register_capture(&serial);
+                    cmd_receivers.insert(serial, rx);
+                }
+            }
+        }
+    }
+
+    // Run Sona command router.
+    std::thread::spawn(move || {
+        sona_command_router.run();
+    });
+
     // WiFi capture.
     if let Some(wifi_interfaces) = &configuration.wifi_interfaces {
         for (interface_name, interface_config) in wifi_interfaces {
@@ -315,49 +344,84 @@ fn main() {
             let capture_metrics = metrics.clone();
             let capture_bus = dot11_bus.clone();
             let interface_name = interface_name.clone();
-            thread::spawn(move || {
-                let mut dot11_capture = dot11::capture::Capture {
-                    metrics: capture_metrics.clone(),
-                    bus: capture_bus.clone()
+
+            if interface_name.starts_with("sona-") {
+                // Sona capture.
+                let Some(serial) = extract_serial_from_interface_name(&interface_name) else {
+                    error!("Could not extract Sona serial from interface name [{}].", interface_name);
+                    continue;
                 };
 
-                match capture_metrics.lock() {
-                    Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::WiFi),
-                    Err(e) => error!("Could not acquire mutex of metrics: {}", e)
-                }
+                // Remove so the receiver is moved exactly once into exactly one thread
+                let Some(cmd_rx) = cmd_receivers.remove(&serial) else {
+                    error!("No command receiver registered for Sona [{}].", serial);
+                    continue;
+                };
 
-                loop {
-                    dot11_capture.run(&interface_name);
+                thread::spawn(move || {
+                    if let Some(sona_serial) = extract_serial_from_interface_name(&interface_name) {
+                        let mut sona_capture = sona::capture::Capture {
+                            metrics: capture_metrics.clone(),
+                            bus: capture_bus.clone(),
+                            command_receiver: cmd_rx
+                        };
 
-                    error!("WiFi capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
+                        loop {
+                            sona_capture.run(&sona_serial);
+
+                            error!("Sona capture [{}] disconnected. Retrying in 5 seconds.",
+                                &sona_serial);
+                            match capture_metrics.lock() {
+                                Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                                Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                            }
+                            thread::sleep(time::Duration::from_secs(5));
+                        }
+                    } else {
+                        warn!("Sona with invalid interface name: [{}].", &interface_name);
+                    }
+                });
+            } else {
+                // Classic netlink/libpcap capture.
+                thread::spawn(move || {
+                    let mut dot11_capture = dot11::capture::Capture {
+                        metrics: capture_metrics.clone(),
+                        bus: capture_bus.clone()
+                    };
+
                     match capture_metrics.lock() {
-                        Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                        Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::WiFi),
                         Err(e) => error!("Could not acquire mutex of metrics: {}", e)
                     }
-                    thread::sleep(time::Duration::from_secs(5));
-                }
-            });
+
+                    loop {
+                        dot11_capture.run(&interface_name);
+
+                        error!("WiFi capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
+                        match capture_metrics.lock() {
+                            Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                            Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                        }
+                        thread::sleep(time::Duration::from_secs(5));
+                    }
+                });
+            }
         }
     }
-
-    // XXX TODO SONA
-    /*thread::spawn(move || {
-        sona_capture::run();
-    });*/
 
     let covered_wifi_spectrum;
     let wifi_device_cycle_times;
     if let Some(wifi_interfaces) = configuration.clone().wifi_interfaces {
-        let ch = match ChannelHopper::new(wifi_interfaces) {
+        let hopper = match ChannelHopper::new(wifi_interfaces, sona_command_router_sender) {
             Ok(ch) => ch,
             Err(e) => {
                 error!("Could not initialize ChannelHopper: {}", e);
                 exit(exit_code::EX_OSERR);
             }
         };
-        covered_wifi_spectrum = Some(ch.get_device_assignments());
-        wifi_device_cycle_times = Some(ch.get_device_cycle_times());
-        ch.spawn_loop();
+        covered_wifi_spectrum = Some(hopper.get_device_assignments());
+        wifi_device_cycle_times = Some(hopper.get_device_cycle_times());
+        hopper.spawn_loop();
     } else {
         covered_wifi_spectrum = None;
         wifi_device_cycle_times = None;

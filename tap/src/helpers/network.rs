@@ -174,7 +174,7 @@ pub fn dot11_channel_to_frequency(f: u16, band: Nl80211Band) -> Result<u16, Erro
             }
         },
         Nl80211Band::Band5GHz => {
-            if f < 15 || f > 173 {
+            if f < 15 || f > 177 {
                 bail!("Invalid channel <{}>", f);
             }
             return if f >= 182 && f <= 196 {

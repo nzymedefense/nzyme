@@ -14,8 +14,7 @@ use crate::peripherals::limina::sensors::frames::{
     MPU_METRICS_V1_FRAME_SIZE,
     MPU_METRICS_V1_PAYLOAD_SIZE,
 };
-
-use crate::usb::usb::find_first_nzyme_usb_device_with_device_id;
+use crate::usb::usb::find_first_nzyme_usb_device_with_pid;
 
 const MAGIC: &[u8; 2] = b"NZ";
 const VERSION: u8 = 0x01;
@@ -51,7 +50,7 @@ impl Limina {
 
                 info!("Attempting to detect Limina.");
 
-                let device = match find_first_nzyme_usb_device_with_device_id(LIMINA_1_PID) {
+                let device = match find_first_nzyme_usb_device_with_pid(LIMINA_1_PID) {
                     Ok(device) => {
                         match device {
                             Some(device) => device,
@@ -90,7 +89,7 @@ impl Limina {
                             if let Some(parsed) = Self::process_buffer(&mut buffer) {
                                 match parsed {
                                     ParsedFrame::Limina(frame) => {
-                                        info!("Limina Frame: {:?}", frame);
+                                        debug!("Limina Frame: {:?}", frame);
 
                                         match metrics.lock() {
                                             Ok(mut metrics) => {
@@ -115,7 +114,7 @@ impl Limina {
                                     }
 
                                     ParsedFrame::MpuMetrics(frame) => {
-                                        info!("Limina MCU metrics: {:?}", frame);
+                                        debug!("Limina MCU metrics: {:?}", frame);
 
                                         match metrics.lock() {
                                             Ok(mut metrics) => {

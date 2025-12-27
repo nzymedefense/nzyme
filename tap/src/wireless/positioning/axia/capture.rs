@@ -9,7 +9,7 @@ use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::GenericChannelName;
 use crate::metrics::Metrics;
 use crate::to_pipeline;
-use crate::usb::usb::find_first_nzyme_usb_device_with_device_id;
+use crate::usb::usb::find_first_nzyme_usb_device_with_pid;
 use crate::wireless::positioning::axia::axia::AXIA_1_PID;
 use crate::wireless::positioning::axia::sentence_type::SentenceType;
 use crate::wireless::positioning::axia::ubx::{AntennaPower, AntennaStatus, JammingState, UbxMonRfMessage, UbxMonRfBlock};
@@ -39,7 +39,7 @@ impl Capture {
 
     pub fn run(&mut self, device_config: &GNSSInterface) {
         info!("Attempting to detect Axia.");
-        let device = match find_first_nzyme_usb_device_with_device_id(AXIA_1_PID) {
+        let device = match find_first_nzyme_usb_device_with_pid(AXIA_1_PID) {
             Ok(device) => {
                 match device {
                     Some(device) => device,

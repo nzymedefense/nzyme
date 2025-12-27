@@ -63,9 +63,9 @@ pub struct WifiInterface {
     pub active: bool,
     pub channel_width_hopping_mode: Option<ChannelWidthHoppingMode>,
     pub disable_hopper: Option<bool>,
-    pub channels_2g: Vec<u16>,
-    pub channels_5g: Vec<u16>,
-    pub channels_6g: Vec<u16>,
+    pub channels_2g: Option<Vec<u16>>,
+    pub channels_5g: Option<Vec<u16>>,
+    pub channels_6g: Option<Vec<u16>>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -386,28 +386,36 @@ pub fn load(path: String) -> Result<Configuration, Error> {
         let mut assigned_channels_6g: Vec<u16> = Vec::new();
         for interface in wifi_interfaces.values() {
             // Make sure every channel is only assigned once.
-            for channel in &*interface.channels_2g {
-                if assigned_channels_2g.contains(channel) {
-                    bail!("WiFi channel <{}> on 2G band already assigned to another interface. \
-                        Channels can only be assigned once.", *channel);
-                } else {
-                    assigned_channels_2g.push(*channel);
+            if let Some(channels) = &interface.channels_2g {
+                for channel in channels {
+                    if assigned_channels_2g.contains(&channel) {
+                        bail!("WiFi channel <{}> on 2G band already assigned to another interface. \
+                        Channels can only be assigned once.", channel);
+                    } else {
+                        assigned_channels_2g.push(*channel);
+                    }
                 }
             }
-            for channel in &*interface.channels_5g {
-                if assigned_channels_5g.contains(channel) {
-                    bail!("WiFi channel <{}> on 5G band already assigned to another interface. \
-                        Channels can only be assigned once.", *channel);
-                } else {
-                    assigned_channels_5g.push(*channel);
+
+            if let Some(channels) = &interface.channels_5g {
+                for channel in channels {
+                    if assigned_channels_5g.contains(&channel) {
+                        bail!("WiFi channel <{}> on 5G band already assigned to another interface. \
+                        Channels can only be assigned once.", channel);
+                    } else {
+                        assigned_channels_5g.push(*channel);
+                    }
                 }
             }
-            for channel in &*interface.channels_6g {
-                if assigned_channels_6g.contains(channel) {
-                    bail!("WiFi channel <{}> on 6G band already assigned to another interface. \
-                        Channels can only be assigned once.", *channel);
-                } else {
-                    assigned_channels_6g.push(*channel);
+
+            if let Some(channels) = &interface.channels_6g {
+                for channel in channels {
+                    if assigned_channels_6g.contains(channel) {
+                        bail!("WiFi channel <{}> on 6G band already assigned to another interface. \
+                        Channels can only be assigned once.", channel);
+                    } else {
+                        assigned_channels_6g.push(*channel);
+                    }
                 }
             }
         }
