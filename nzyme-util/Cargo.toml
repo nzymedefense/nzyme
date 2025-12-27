@@ -40,6 +40,7 @@ crossterm = "0.28.1"
 ratatui = "0.29.0"
 reqwest = { version = "0.12", features = ["blocking", "json"] }
 serde = { version = "1", features = ["derive"] }
+serde_cbor = "0.11"
 anyhow = "1"
 rusb = "0.9"
 udev = "0.8"
@@ -48,3 +49,4 @@ serialport = "4.8.1"
 clap = { version = "4.5", features = ["derive"] }
 ed25519-dalek = { version = "2.2", features = ["rand_core", "digest"] }
 sha2 = "0.10"
+base64 = "0.22"

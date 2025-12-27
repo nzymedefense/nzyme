@@ -5,6 +5,8 @@ use crate::usb::nzyme_usb_device::NzymeUsbDevice;
 
 pub const NZYME_VID: u16 = 0x390C;
 pub const NZYME_BOOTLOADER_PID: u16 = 0x001;
+pub const SONA_BOOTLOADER_PID: u16 =  0x002;
+pub const SONA_PID: u16 = 0x100;
 
 pub fn detect_nzyme_usb_devices() -> Result<Vec<NzymeUsbDevice>>  {
     let context = UsbContextType::new()?;
@@ -68,8 +70,7 @@ fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescrip
     let dv = desc.device_version();
     let firmware_version = FirmwareVersion {
         major: dv.major() as u32,
-        minor: dv.sub_minor() as u32 // `rusb` is inventing a patch/sub-minor version that the
-                                     // USB spec does not define. We'll use it as minor.
+        minor: dv.minor() as u32
     };
 
     // Try to open the device to read string descriptors. (may fail if permissions are missing)

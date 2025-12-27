@@ -3,7 +3,8 @@ use std::time::{Duration, Instant};
 use crate::exit_codes::{EX_PERMISSION_DENIED, EX_UNAVAILABLE};
 use crate::firmware::firmware_loader::load_firmware_from_relative_path;
 use crate::usb::bootloader::{flash_firmware, send_enter_bootloader};
-use crate::usb::usb::{detect_nzyme_usb_devices, nzyme_device_is_connected, NZYME_BOOTLOADER_PID, NZYME_VID};
+use crate::usb::mcuboot;
+use crate::usb::usb::{detect_nzyme_usb_devices, nzyme_device_is_connected, NZYME_BOOTLOADER_PID, NZYME_VID, SONA_BOOTLOADER_PID, SONA_PID};
 
 pub fn run(firmware_file: String, device_serial: String) {
     const RESET: &str = "\x1b[0m";
@@ -36,10 +37,23 @@ pub fn run(firmware_file: String, device_serial: String) {
         }
     };
 
+    /*
+     * Sona boards use MCUboot and need a different flashing and reset process. We are using MCUboot
+     * instead of our own bootloader (like on STM32) because Zephyr pretty much forces you to use
+     * it. The goal is to keep both bootloader types as aligned as possible, sometimes at the
+     * cost of efficiency, to keep the process simpler.
+     */
+    let (is_sona, bootloader_pid) = match device.pid {
+        SONA_PID | SONA_BOOTLOADER_PID => (true, SONA_BOOTLOADER_PID),
+        _ => (false, NZYME_BOOTLOADER_PID)
+    };
+
     println!("{FG_CYAN}Device Information:{RESET}");
     println!("    Product        : {}", device.product);
     println!("    Manufacturer   : {}", device.manufacturer);
     println!("    Serial Number  : {}", device.serial);
+    println!("    Bootloader     : {}", if is_sona { "Sona" } else { "Default" });
+
     println!("    Firmware       : v{}.{}",
              device.firmware_version.major, device.firmware_version.minor);
     println!("    USB VID:PID    : {:04X}:{:04X}", device.vid, device.pid);
@@ -67,7 +81,7 @@ pub fn run(firmware_file: String, device_serial: String) {
         }
     };
 
-    if device.vid == NZYME_VID && device.pid == NZYME_BOOTLOADER_PID {
+    if device.vid == NZYME_VID && device.pid == bootloader_pid {
         /*
          * We are talking to a Nzyme bootloader. It's likely in the failure loop after it couldn't
          * initialize the app or app has not successfully initialized on previous boot.
@@ -82,20 +96,31 @@ pub fn run(firmware_file: String, device_serial: String) {
         println!("\n{BOLD}==> Entering Bootloader Mode{RESET}");
         println!("{FG_YELLOW}[>] Sending bootloader command over {acm_port}...{RESET}");
 
-        if let Err(e) = send_enter_bootloader(&acm_port) {
-            eprintln!("{FG_RED}[x] ERROR:{RESET} Bootloader request failed.");
-            eprintln!("    Details: {}", e);
-            std::process::exit(EX_UNAVAILABLE);
+        if is_sona {
+            if let Err(e) = mcuboot::send_enter_bootloader(&acm_port) {
+                eprintln!("{FG_RED}[x] ERROR:{RESET} Bootloader request failed.");
+                eprintln!("    Details: {}", e);
+                std::process::exit(EX_UNAVAILABLE);
+            }
+        } else {
+            if let Err(e) = send_enter_bootloader(&acm_port) {
+                eprintln!("{FG_RED}[x] ERROR:{RESET} Bootloader request failed.");
+                eprintln!("    Details: {}", e);
+                std::process::exit(EX_UNAVAILABLE);
+            }
         }
 
         println!("{FG_YELLOW}[>] Waiting for bootloader enumeration ({:04X}:{:04X})...{RESET}",
-                 NZYME_VID, NZYME_BOOTLOADER_PID);
+                 NZYME_VID, bootloader_pid);
 
         // Wait until device enumerates as bootloader
         let start = Instant::now();
         let timeout = Duration::from_secs(10);
+
         loop {
-            match nzyme_device_is_connected(&device_serial, NZYME_VID, NZYME_BOOTLOADER_PID) {
+            sleep(Duration::from_millis(500));
+            
+            match nzyme_device_is_connected(&device_serial, NZYME_VID, bootloader_pid) {
                 Ok(true) => {
                     println!("{FG_GREEN}[*] Bootloader mode detected.{RESET}");
                     break;
@@ -110,18 +135,58 @@ pub fn run(firmware_file: String, device_serial: String) {
                 eprintln!("{FG_RED}[x] ERROR:{RESET} Bootloader did not appear in time.");
                 std::process::exit(EX_UNAVAILABLE);
             }
-
-            sleep(Duration::from_millis(500));
         }
     }
+
+    // Detect ACM port again. It may have changed for bootloader.
+    let devices = match detect_nzyme_usb_devices() {
+        Ok(devices) => devices,
+        Err(e) => {
+            eprintln!("{FG_RED}[x] ERROR:{RESET} Could not detect Nzyme USB devices.");
+            eprintln!("    Details: {}", e);
+            std::process::exit(EX_PERMISSION_DENIED);
+        }
+    };
+
+    let bootloader_device = match devices.into_iter()
+            .find(|d| d.serial == device_serial && d.vid == NZYME_VID && d.pid == bootloader_pid) {
+        Some(d) => d,
+        None => {
+            eprintln!("{FG_RED}[x] ERROR:{RESET} No device with serial [{device_serial}] found.");
+            std::process::exit(EX_UNAVAILABLE);
+        }
+    };
+    let bl_acm_port = match bootloader_device.acm_port {
+        Some(port) => port,
+        None => {
+            eprintln!("{FG_RED}[x] ERROR:{RESET} Device exposes no ACM port.");
+            std::process::exit(EX_UNAVAILABLE);
+        }
+    };
 
     println!("\n{BOLD}==> Flashing Firmware{RESET}");
     println!("{FG_YELLOW}[>] Writing firmware image...{RESET}");
 
-    if let Err(e) = flash_firmware(&acm_port, firmware) {
-        eprintln!("{FG_RED}[x] ERROR:{RESET} Firmware flash failed.");
-        eprintln!("    Details: {}", e);
-        std::process::exit(EX_UNAVAILABLE);
+    if is_sona {
+        if let Err(e) = mcuboot::flash_firmware(&bl_acm_port, firmware) {
+            eprintln!("{FG_RED}[x] ERROR:{RESET} Firmware flash failed.");
+            eprintln!("    Details: {}", e);
+            std::process::exit(EX_UNAVAILABLE);
+        }
+
+        // MCUboot needs an explicit reset command.
+        sleep(Duration::from_secs(1));
+        if let Err(e) = mcuboot::send_reset(&bl_acm_port) {
+            eprintln!("{FG_RED}[x] ERROR:{RESET} Bootloader reset failed.");
+            eprintln!("    Details: {}", e);
+            std::process::exit(EX_UNAVAILABLE);
+        }
+    } else {
+        if let Err(e) = flash_firmware(&bl_acm_port, firmware) {
+            eprintln!("{FG_RED}[x] ERROR:{RESET} Firmware flash failed.");
+            eprintln!("    Details: {}", e);
+            std::process::exit(EX_UNAVAILABLE);
+        }
     }
 
     println!("{FG_GREEN}[*] All bytes written. Device is validating and rebooting.{RESET}");
