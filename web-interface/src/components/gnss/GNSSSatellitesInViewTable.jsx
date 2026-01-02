@@ -2,10 +2,11 @@ import React from 'react';
 import GenericWidgetLoadingSpinner from "../widgets/GenericWidgetLoadingSpinner";
 import moment from "moment";
 import numeral from "numeral";
-import {GNSSSNR} from "./GNSSSNR";
 import GNSSDegrees from "./GNSSDegrees";
 import ApiRoutes from "../../util/ApiRoutes";
 import GNSSPRN from "./GNSSPRN";
+import GNSSCn0 from "./GNSSCn0";
+import GNSSMultipathIndicator from "./GNSSMultipathIndicator";
 
 export default function GNSSSatellitesInViewTable(props) {
 
@@ -32,7 +33,9 @@ export default function GNSSSatellitesInViewTable(props) {
           <th>PRN</th>
           <th>Fix</th>
           <th>Last Seen</th>
-          <th title="Signal-to-Noise Ratio">SNR (0-99)</th>
+          <th title="Carrier-to-Noise Density Ratio">C/N&#8320;</th>
+          <th>Doppler Shift</th>
+          <th>Multipath</th>
           <th>Azimuth</th>
           <th>Elevation</th>
           <th>&nbsp;</th>
@@ -47,7 +50,9 @@ export default function GNSSSatellitesInViewTable(props) {
               <td>{sat.used_for_fix ? <i className="fa fa-check-circle text-success" title="Used for fix." />
                 : <i className="fa fa-cancel text-muted" title="Not used for fix." />}</td>
               <td title={moment(sat.last_seen).format()}>{moment(sat.last_seen).fromNow()}</td>
-              <td><GNSSSNR snr={sat.snr} /></td>
+              <td><GNSSCn0 cn0={sat.average_sno} /></td>
+              <td>{sat.average_doppler_hz ? numeral(sat.average_doppler_hz).format("0,0") + " Hz" : <span className="text-muted">n/a</span>}</td>
+              <td><GNSSMultipathIndicator indicator={sat.maximum_multipath_indicator} /></td>
               <td><GNSSDegrees degrees={sat.azimuth_degrees} /></td>
               <td><GNSSDegrees degrees={sat.elevation_degrees} /></td>
               <td><a href={ApiRoutes.GNSS.PRN(sat.constellation, sat.prn)}>Details</a></td>

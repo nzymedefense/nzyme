@@ -7392,4 +7392,148 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_metrics_to_sats_in_view_20251227" author="lennartkoopmann">
+        <addColumn tableName="gnss_sats_in_view">
+            <column name="average_doppler_hz" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="maximum_multipath_indicator" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="average_pseurange_rms_err" type="integer">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="create_gnss_elevation_mask" author="lennartkoopmann">
+        <createTable tableName="gnss_elevation_mask">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="azimuth_bin" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="skyline_elevation" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="cn0_median" type="float">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="cn0_p10" type="float">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="sample_count" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="window_start" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="window_end" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="gnss_elevation_mask"
+                             columnNames="tap_uuid, window_end, azimuth_bin"
+                             constraintName="uq_gem_tap_window_end_bin" />
+
+        <createIndex indexName="idx_gem_tap_bin_created_desc" tableName="gnss_elevation_mask">
+            <column name="tap_uuid" />
+            <column name="azimuth_bin" />
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex indexName="idx_gem_tap_window_end_desc" tableName="gnss_elevation_mask">
+            <column name="tap_uuid"/>
+            <column name="window_end" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="rename_gnss_elevation_mask_azimuth_bin" author="lennartkoopmann">
+        <renameColumn tableName="gnss_elevation_mask" oldColumnName="azimuth_bin" newColumnName="azimuth_bucket" />
+    </changeSet>
+
+    <changeSet id="add_updated_at_to_elevation_mask" author="lennartkoopmann">
+        <addColumn tableName="gnss_elevation_mask">
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_additional_fields_to_elevation_mask" author="lennartkoopmann">
+        <addColumn tableName="gnss_elevation_mask">
+            <column name="skyline_elevation_best_effort" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="used_fallback" type="boolean">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="low_subset_count" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="min_elevation_observed" type="float">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="change_gnss_elevation_mask_uniqueness" author="lennartkoopmann">
+        <dropUniqueConstraint tableName="gnss_elevation_mask" constraintName="uq_gem_tap_window_end_bin" />
+        <addUniqueConstraint tableName="gnss_elevation_mask"
+                             columnNames="tap_uuid, azimuth_bucket"
+                             constraintName="uq_gem_tap_and_bucket"/>
+    </changeSet>
+
+    <changeSet id="make_gnss_elevation_mask_elevation_nullable" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="gnss_elevation_mask" columnName="skyline_elevation" />
+    </changeSet>
+
+    <changeSet id="rename_gnss_prn_to_sno" author="lennartkoopmann">
+        <renameColumn tableName="gnss_sats_in_view" oldColumnName="prn" newColumnName="sno" />
+    </changeSet>
+
+    <changeSet id="rename_gnss_sno_to_prn_fix" author="lennartkoopmann">
+        <renameColumn tableName="gnss_sats_in_view" oldColumnName="sno" newColumnName="prn" />
+        <renameColumn tableName="gnss_sats_in_view" oldColumnName="snr" newColumnName="sno" />
+    </changeSet>
+
+    <changeSet id="rename_gnss_sno_to_average_sno" author="lennartkoopmann">
+        <renameColumn tableName="gnss_sats_in_view" oldColumnName="sno" newColumnName="average_sno" />
+    </changeSet>
+
+    <changeSet id="rename_gnss_elevation_mask_cn0_to_sno" author="lennartkoopmann">
+        <renameColumn tableName="gnss_elevation_mask" oldColumnName="cn0_median" newColumnName="sno_media" />
+        <renameColumn tableName="gnss_elevation_mask" oldColumnName="cn0_p10" newColumnName="sno_pro" />
+    </changeSet>
+
+    <changeSet id="rename_gnss_elevation_mask_cn0_to_sno_fix" author="lennartkoopmann">
+        <renameColumn tableName="gnss_elevation_mask" oldColumnName="sno_media" newColumnName="sno_median" />
+    </changeSet>
+
+    <changeSet id="rename_gnss_elevation_mask_cn0_to_sno_fix2" author="lennartkoopmann">
+        <renameColumn tableName="gnss_elevation_mask" oldColumnName="sno_pro" newColumnName="sno_p10" />
+    </changeSet>
+
 </databaseChangeLog>

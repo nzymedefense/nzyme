@@ -3,6 +3,7 @@ package app.nzyme.core.gnss;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.generic.LatLonResult;
 import app.nzyme.core.gnss.db.*;
+import app.nzyme.core.gnss.db.elevationmasks.GNSSElevationMaskAzimuthBucket;
 import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntry;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import app.nzyme.core.taps.Tap;
@@ -11,6 +12,7 @@ import app.nzyme.core.util.TimeRange;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nullable;
+import org.joda.time.DateTime;
 
 import java.util.*;
 
@@ -55,7 +57,10 @@ public class GNSS {
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT gnss.constellation, s.prn, (AVG(s.snr))::int as snr, " +
+                handle.createQuery("SELECT gnss.constellation, s.prn, (AVG(s.average_sno))::int as average_sno, " +
+                                "(AVG(s.average_doppler_hz))::int as average_doppler_hz, " +
+                                "MAX(s.maximum_multipath_indicator) AS maximum_multipath_indicator, " +
+                                "(AVG(s.average_pseurange_rms_err))::int as average_pseurange_rms_err, " +
                                 "(AVG(s.azimuth_degrees))::int AS azimuth_degrees, " +
                                 "(AVG(s.elevation_degrees))::int AS elevation_degrees, " +
                                 "BOOL_OR(gnss.fix_satellites IS NOT NULL AND EXISTS (" +
@@ -75,31 +80,26 @@ public class GNSS {
                         .list()
         );
     }
-    public List<GNSSIntegerBucket> getTimeDeviationHistogram(TimeRange timeRange,
-                                                             Bucketing.BucketingConfiguration bucketing,
-                                                             List<UUID> taps) {
+
+    public List<GNSSPRNTrackPoint> findRecentSatelliteTrack(Constellation constellation,
+                                                            int prn,
+                                                            DateTime since,
+                                                            List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
-                                "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
-                                "(WHERE constellation = 'GPS'))::int AS gps, " +
-                                "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
-                                "(WHERE constellation = 'GLONASS'))::int AS glonass, " +
-                                "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
-                                "(WHERE constellation = 'BeiDou'))::int AS beidou, " +
-                                "ROUND(AVG(maximum_time_deviation_ms) FILTER " +
-                                "(WHERE constellation = 'Galileo'))::int AS galileo " +
-                                "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
-                                "GROUP BY bucket ORDER BY bucket DESC")
-                        .bind("date_trunc", bucketing.type().getDateTruncName())
-                        .bind("tr_from", timeRange.from())
-                        .bind("tr_to", timeRange.to())
+                handle.createQuery("SELECT s.azimuth_degrees, s.elevation_degrees, s.average_sno, c.timestamp " +
+                                "FROM gnss_sats_in_view AS s " +
+                                "LEFT JOIN public.gnss_constellations c on s.gnss_constellation_id = c.id " +
+                                "WHERE s.prn = :prn AND c.constellation = :constellation AND c.timestamp > :since " +
+                                "AND c.tap_uuid IN (<taps>) ORDER BY c.timestamp DESC")
+                        .bind("prn", prn)
+                        .bind("constellation", constellation)
+                        .bind("since", since)
                         .bindList("taps", taps)
-                        .mapTo(GNSSIntegerBucket.class)
+                        .mapTo(GNSSPRNTrackPoint.class)
                         .list()
         );
     }
@@ -414,7 +414,7 @@ public class GNSS {
         );
     }
 
-    public List<GenericIntegerHistogramEntry> getPrnSnrHistogram(Constellation constellation,
+    public List<GenericIntegerHistogramEntry> getPrnSnoHistogram(Constellation constellation,
                                                                  int prn,
                                                                  TimeRange timeRange,
                                                                  Bucketing.BucketingConfiguration bucketing,
@@ -425,7 +425,7 @@ public class GNSS {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
-                                "ROUND(AVG(snr)) AS value FROM gnss_constellations AS gnss " +
+                                "ROUND(AVG(average_sno)) AS value FROM gnss_constellations AS gnss " +
                                 "LEFT JOIN public.gnss_sats_in_view AS sats on gnss.id = sats.gnss_constellation_id " +
                                 "WHERE gnss.constellation = :constellation AND sats.prn = :prn " +
                                 "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
@@ -491,6 +491,46 @@ public class GNSS {
                         .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(GenericIntegerHistogramEntry.class)
+                        .list()
+        );
+    }
+
+    public List<GenericIntegerHistogramEntry> getPrnDopplerHistogram(Constellation constellation,
+                                                                     int prn,
+                                                                     TimeRange timeRange,
+                                                                     Bucketing.BucketingConfiguration bucketing,
+                                                                     List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
+                                "ROUND(AVG(average_doppler_hz)) AS value FROM gnss_constellations AS gnss " +
+                                "LEFT JOIN public.gnss_sats_in_view AS sats on gnss.id = sats.gnss_constellation_id " +
+                                "WHERE gnss.constellation = :constellation AND sats.prn = :prn " +
+                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("constellation", constellation)
+                        .bind("prn", prn)
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GenericIntegerHistogramEntry.class)
+                        .list()
+        );
+    }
+
+    public List<GNSSElevationMaskAzimuthBucket> getElevationMask(List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM gnss_elevation_mask WHERE tap_uuid IN (<taps>)")
+                        .bindList("taps", taps)
+                        .mapTo(GNSSElevationMaskAzimuthBucket.class)
                         .list()
         );
     }

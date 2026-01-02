@@ -258,7 +258,11 @@ const ApiRoutes = {
     }
   },
   GNSS: {
-    CONSTELLATIONS: '/gnss/constellations',
+    CONSTELLATIONS: {
+      FIX: '/gnss/constellations',
+      RF: '/gnss/constellations/rf',
+      SATELLITES: '/gnss/constellations/satellites'
+    },
     PRN: (constellation, prn) => `/gnss/constellations/${constellation}/prns/show/${prn}`,
     MONITORING: {
       SETTINGS: '/gnss/monitoring/settings',

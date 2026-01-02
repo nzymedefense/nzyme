@@ -173,7 +173,7 @@ import DHCPTransactionDetailsPage from "./components/ethernet/assets/dhcp/DHCPTr
 import GlobalTenantSelectorForm from "./components/system/tenantselector/GlobalTenantSelectorForm";
 import AssetDetailsPage from "./components/ethernet/assets/AssetDetailsPage";
 import ARPPacketsPage from "./components/ethernet/assets/arp/ARPPacketsPage";
-import GNSSConstellationsPage from "./components/gnss/GNSSConstellationsPage";
+import GNSSConstellationsFixPage from "./components/gnss/GNSSConstellationsFixPage";
 import GNSSPRNDetailsPage from "./components/gnss/prn/GNSSPRNDetailsPage";
 import GNSSMonitoringRulesPage from "./components/gnss/monitoring/GNSSMonitoringRulesPage";
 import CreateGNSSMonitoringRulePage from "./components/gnss/monitoring/CreateGNSSMonitoringRulePage";
@@ -185,6 +185,8 @@ import TCPSessionDetailsPage from "./components/ethernet/l4/tcp/TCPSessionDetail
 import UDPSessionDetailsPage from "./components/ethernet/l4/udp/UDPSessionDetailsPage";
 import EthernetAssetsSettingsPage from "./components/ethernet/assets/EthernetAssetsSettingsPage";
 import EthernetOverviewPage from "./components/ethernet/EthernetOverviewPage";
+import GNSSConstellationsRFPage from "./components/gnss/GNSSConstellationsRFPage";
+import GNSSConstellationsSatellitesPage from "./components/gnss/GNSSConstellationsSatellitesPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -643,7 +645,10 @@ function App() {
                               { /* GNSS. */ }
                               <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "gnss")} />}>
                                 { /* GNSS Constellations and PRNs. */}
-                                <Route path={ApiRoutes.GNSS.CONSTELLATIONS} element={<GNSSConstellationsPage />}/>
+                                <Route path={ApiRoutes.GNSS.CONSTELLATIONS.FIX} element={<GNSSConstellationsFixPage />}/>
+                                <Route path={ApiRoutes.GNSS.CONSTELLATIONS.RF} element={<GNSSConstellationsRFPage />}/>
+                                <Route path={ApiRoutes.GNSS.CONSTELLATIONS.SATELLITES} element={<GNSSConstellationsSatellitesPage />}/>
+
                                 <Route path={ApiRoutes.GNSS.PRN(':constellation', ':prn')} element={<GNSSPRNDetailsPage />}/>
 
                                 { /* GNSS Monitoring Rules. */}

@@ -40,6 +40,14 @@ small {
     color: #ff6a00 !important;
 }
 
+.text-success-brighter {
+    color: #15cc78 !important;
+}
+
+.text-danger-brighter {
+    color: #f13244 !important;
+}
+
 .text-bold {
     font-weight: 600;
 }

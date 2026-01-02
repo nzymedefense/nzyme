@@ -92,3 +92,45 @@ impl AntennaPower {
         }
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct UbxRxmMeasxMessage {
+    pub version: u8,
+    pub gps_tow_ms: u32,
+    pub glo_tow_ms: u32,
+    pub bds_tow_ms: u32,
+    pub qzss_tow_ms: u32,
+    pub gps_tow_acc: u16,
+    pub glo_tow_acc: u16,
+    pub bds_tow_acc: u16,
+    pub qzss_tow_acc: u16,
+    pub num_sv: u8,
+    pub flags: u8,
+    pub tow_set: u8,
+    pub sats: Vec<UbxRxmMeasxSat>,
+    pub constellation: GNSSConstellation,
+}
+
+#[derive(Debug, Clone)]
+pub struct UbxRxmMeasxSat {
+    pub gnss_id: u8,
+    pub sv_id: u8,
+    pub sno: u8,
+    pub mpath_indic: u8,
+    pub doppler_ms: i32,
+    pub doppler_hz: i32,
+    pub whole_chips: u16,
+    pub frac_chips: u16,
+    pub code_phase: u32,
+    pub int_code_phase: u8,
+    pub pseurange_rms_err: u8,
+}
+
+impl UbxRxmMeasxMessage {
+    pub fn estimate_size(&self) -> usize {
+        const FIXED_PAYLOAD_SIZE: usize = 32;
+        const PER_SAT_SIZE: usize = 24;
+
+        FIXED_PAYLOAD_SIZE + self.sats.len() * PER_SAT_SIZE
+    }
+}

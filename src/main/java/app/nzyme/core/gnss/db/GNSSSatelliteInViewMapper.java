@@ -15,10 +15,13 @@ public class GNSSSatelliteInViewMapper implements RowMapper<GNSSSatelliteInView>
                 rs.getString("constellation"),
                 new DateTime(rs.getTimestamp("last_seen")),
                 rs.getInt("prn"),
-                rs.getObject("snr", Integer.class),
+                rs.getObject("average_sno", Integer.class),
                 rs.getObject("azimuth_degrees", Integer.class),
                 rs.getObject("elevation_degrees", Integer.class),
-                rs.getBoolean("used_for_fix")
+                rs.getBoolean("used_for_fix"),
+                rs.getInt("average_doppler_hz"),
+                rs.getInt("maximum_multipath_indicator"),
+                rs.getInt("average_pseurange_rms_err")
         );
     }
 

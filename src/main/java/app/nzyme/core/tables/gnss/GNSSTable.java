@@ -2,6 +2,7 @@ package app.nzyme.core.tables.gnss;
 
 import app.nzyme.core.rest.resources.taps.reports.tables.gnss.GNSSConstellationReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.gnss.GNSSConstellationsReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.gnss.GNSSSatelliteInfoReport;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
@@ -93,21 +94,26 @@ public class GNSSTable implements DataTable {
                         .list();
 
                 PreparedBatch satellitesInsertBatch = handle.prepareBatch("INSERT INTO " +
-                        "gnss_sats_in_view(gnss_constellation_id, prn, snr, azimuth_degrees, " +
-                        "elevation_degrees) VALUES(:gnss_constellation_id, :prn, :snr, :azimuth_degrees, " +
-                        ":elevation_degrees)");
+                        "gnss_sats_in_view(gnss_constellation_id, prn, average_sno, azimuth_degrees, " +
+                        "elevation_degrees, average_doppler_hz, maximum_multipath_indicator, " +
+                        "average_pseurange_rms_err) VALUES(:gnss_constellation_id, :prn, :average_sno, " +
+                        ":azimuth_degrees, :elevation_degrees, :average_doppler_hz, :maximum_multipath_indicator, " +
+                        ":average_pseurange_rms_err)");
 
                 for (int i = 0; i < constellationIds.size(); i++) {
                     long constellationId = constellationIds.get(i);
                     GNSSConstellationReport data = rowsInOrder.get(i);
 
-                    for (var s : data.satellitesInView()) {
+                    for (GNSSSatelliteInfoReport s : data.satellitesInView()) {
                         satellitesInsertBatch
                                 .bind("gnss_constellation_id", constellationId)
                                 .bind("prn", s.prn())
-                                .bind("snr", s.snr())
+                                .bind("average_sno", s.averageSno())
                                 .bind("azimuth_degrees", s.azimuthDegrees())
                                 .bind("elevation_degrees", s.elevationDegrees())
+                                .bind("average_doppler_hz", s.averageDopplerHz())
+                                .bind("maximum_multipath_indicator", s.maximumMultipathIndicator())
+                                .bind("average_pseurange_rms_err", s.averagePseudorangeRmsError())
                                 .add();
                     }
                 }

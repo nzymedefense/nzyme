@@ -5,6 +5,7 @@ use log::{error, info};
 use crate::configuration::Configuration;
 use crate::context::context_engine::ContextEngine;
 use crate::messagebus::bus::Bus;
+use crate::messagebus::channel_names::GenericChannelName::GnssUbxRxmMeasxPipeline;
 use crate::metrics::Metrics;
 use crate::protocols::processors::arp_processor::ARPProcessor;
 use crate::protocols::processors::dhcpv4_processor::Dhcpv4Processor;
@@ -21,6 +22,7 @@ use crate::system_state::SystemState;
 use crate::protocols::processors::bluetooth_device_processor::BluetoothDeviceProcessor;
 use crate::protocols::processors::gnss_nmea_processor::GnssNmeaProcessor;
 use crate::protocols::processors::gnss_ubx_monrf_processor::GnssUbxMonRfProcessor;
+use crate::protocols::processors::gnss_ubx_rxm_measx_processor::GnssUbxRxmMeasxProcessor;
 
 const DEFAULT_WIFI_PROCESSORS: i32 = 1;
 const DEFAULT_TCP_PROCESSORS: i32 = 2;
@@ -163,6 +165,7 @@ impl ProcessorController {
 
             let mut gnss_nmea_processor = GnssNmeaProcessor::new(self.tables.gnss_monitor.clone());
             let mut gnss_ubx_monrf_processor = GnssUbxMonRfProcessor::new(self.tables.gnss_monitor.clone());
+            let mut gnss_ubx_rxm_measx_processor = GnssUbxRxmMeasxProcessor::new(self.tables.gnss_monitor.clone());
 
             let mut arp_processor = ARPProcessor::new(self.tables.clone(), self.state.clone(), self.context.clone());
             let mut dhcp4_processor = Dhcpv4Processor::new(self.state.clone(), self.tables.dhcp.clone(), self.context.clone());
@@ -219,6 +222,16 @@ impl ProcessorController {
                                 }
                             }
                         }
+
+                       recv(generic_bus.gnss_ubx_rxm_measx_pipeline.receiver) -> msg => {
+                            match msg {
+                                Ok(message) => gnss_ubx_rxm_measx_processor.process(message),
+                                Err(e) => {
+                                    error!("GNSS UBX RXM-MEASX receiver disconnected: {}", e);
+                                    break;
+                                }
+                            }
+                       }
 
                         recv(ethernet_bus.arp_pipeline.receiver) -> msg => {
                             match msg {

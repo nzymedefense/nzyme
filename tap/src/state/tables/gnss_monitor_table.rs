@@ -2,14 +2,16 @@ use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex, MutexGuard};
 use anyhow::Error;
 use chrono::Utc;
-use log::{error};
+use log::{error, info};
 use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
 use crate::link::reports::gnss_constellations_report;
 use crate::metrics::Metrics;
 use crate::state::tables::table_helpers::clear_mutex_hashmap;
-use crate::wireless::positioning::axia::ubx::UbxMonRfMessage;
+use crate::wireless::positioning::axia::ubx::{UbxMonRfMessage, UbxRxmMeasxMessage};
 use crate::wireless::positioning::gnss_constellation::GNSSConstellation;
+use crate::wireless::positioning::gnss_constellation::GNSSConstellation::{GLONASS, GPS};
+use crate::wireless::positioning::gnss_tools::{ubx_to_nmea_prn};
 use crate::wireless::positioning::nmea::nmea_sentences::{FixType, GGASentence, GSASentence, GSVSentence};
 
 pub struct GnssMonitorTable {
@@ -36,7 +38,7 @@ pub struct GNSSConstellationData {
     pub maximum_satellites_in_view_count: Option<u8>,
     pub maximum_jamming_indicator: Option<u8>,
     pub maximum_noise: Option<u16>,
-    pub maximum_agc_count: Option<u16>
+    pub maximum_agc_count: Option<u16>,
 }
 
 impl GNSSConstellationData {
@@ -66,7 +68,10 @@ pub struct SatelliteInfo {
     pub prn: u8,
     pub elevation_degrees: Option<u8>,
     pub azimuth_degrees: Option<u16>,
-    pub snr: Option<u8>,
+    pub sno_readings: Vec<u8>,
+    pub doppler_readings: Vec<i32>,
+    pub multipath_indicator_max: Option<u8>,
+    pub pseurange_rms_err_readings: Vec<u8>,
 }
 
 impl GnssMonitorTable {
@@ -319,7 +324,6 @@ impl GnssMonitorTable {
                         Some(existing) => {
                             existing.elevation_degrees = satellite.elevation_degrees;
                             existing.azimuth_degrees = satellite.azimuth_degrees;
-                            existing.snr = satellite.snr;
                         },
                         None => {
                             // First time we see this satellite.
@@ -327,7 +331,10 @@ impl GnssMonitorTable {
                                 prn: satellite.prn,
                                 elevation_degrees: satellite.elevation_degrees,
                                 azimuth_degrees: satellite.azimuth_degrees,
-                                snr: satellite.snr,
+                                sno_readings: vec![],
+                                doppler_readings: vec![],
+                                multipath_indicator_max: None,
+                                pseurange_rms_err_readings: vec![],
                             });
                         }
                     }
@@ -386,6 +393,69 @@ impl GnssMonitorTable {
                         }
                     },
                     None => constellation.maximum_agc_count = Some(monrf_block.agc_cnt)
+                }
+            },
+            Err(e) => error!("Could not acquire constellations lock: {}", e)
+        }
+    }
+
+    pub fn register_ubx_rxm_measx_message(&mut self, message: Arc<UbxRxmMeasxMessage>) {
+        match self.constellations.lock() {
+            Ok(mut constellations) => {
+                if let Err(e) = Self::ensure_constellation(&message.constellation, &mut constellations) {
+                    error!("Could not ensure constellation: {}", e);
+                }
+
+                let constellation = match constellations.get_mut(&message.constellation) {
+                    Some(constellation) => constellation,
+                    None => {
+                        error!("Could not get GNSS constellation {}", message.constellation);
+                        return;
+                    }
+                };
+
+                for satellite in &message.sats {
+                    if satellite.sno == 0 {
+                        continue;
+                    }
+
+                    let prn = match ubx_to_nmea_prn(&message.constellation, satellite.sv_id) {
+                        Some(p) => p,
+                        None => continue,
+                    };
+
+                    match constellation.satellites_in_view.get_mut(&prn) {
+                        Some(existing) => {
+                            // Existing satellite.
+                            existing.doppler_readings.push(satellite.doppler_hz);
+                            existing.pseurange_rms_err_readings.push(satellite.pseurange_rms_err);
+                            existing.sno_readings.push(satellite.sno);
+
+                            match existing.multipath_indicator_max {
+                                Some(mpi) => {
+                                    if satellite.mpath_indic > mpi {
+                                        existing.multipath_indicator_max = Some(satellite.mpath_indic);
+                                    }
+                                },
+                                None => {
+                                    existing.multipath_indicator_max = Some(satellite.mpath_indic);
+                                }
+                            }
+
+                        },
+                        None => {
+                            // First time we see this satellite.
+                            constellation.satellites_in_view.insert(prn, SatelliteInfo {
+                                prn,
+                                elevation_degrees: None,
+                                azimuth_degrees: None,
+                                sno_readings: vec![satellite.sno],
+                                doppler_readings: vec![satellite.doppler_hz],
+                                multipath_indicator_max: Some(satellite.mpath_indic),
+                                pseurange_rms_err_readings: vec![satellite.pseurange_rms_err],
+                            });
+                        }
+                    }
                 }
             },
             Err(e) => error!("Could not acquire constellations lock: {}", e)

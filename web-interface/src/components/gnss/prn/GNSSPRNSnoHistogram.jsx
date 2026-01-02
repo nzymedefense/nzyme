@@ -2,7 +2,7 @@ import React from "react";
 import GenericWidgetLoadingSpinner from "../../widgets/GenericWidgetLoadingSpinner";
 import SimpleLineChart from "../../widgets/charts/SimpleLineChart";
 
-export default function GNSSPRNSNRHistogram({histogram, setTimeRange}) {
+export default function GNSSPRNSnoHistogram({histogram, setTimeRange}) {
 
   if (!histogram) {
     return <GenericWidgetLoadingSpinner height={200} />;

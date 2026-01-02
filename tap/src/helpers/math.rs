@@ -27,3 +27,21 @@ pub fn std_deviation(data: &[f32]) -> Option<f32> {
         _ => None
     }
 }
+
+pub fn average_i32(values: &[i32]) -> Option<i32> {
+    if values.is_empty() {
+        return None;
+    }
+
+    let sum: i64 = values.iter().map(|&v| v as i64).sum();
+    Some((sum / values.len() as i64) as i32)
+}
+
+pub fn average_u8(values: &[u8]) -> Option<u8> {
+    if values.is_empty() {
+        return None;
+    }
+
+    let sum: u32 = values.iter().map(|&v| v as u32).sum();
+    Some((sum / values.len() as u32) as u8)
+}

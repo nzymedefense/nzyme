@@ -5,11 +5,12 @@ import {Presets} from "../../shared/timerange/TimeRange";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import GnssService from "../../../services/GnssService";
 import ApiRoutes from "../../../util/ApiRoutes";
-import GNSSPRNSNRHistogram from "./GNSSPRNSNRHistogram";
+import GNSSPRNSnoHistogram from "./GNSSPRNSnoHistogram";
 import GNSSPRNDegreesHistogram from "./GNSSPRNDegreesHistogram";
-import GNSSPRNSkyChart from "./GNSSPRNSkyChart";
+import GNSSPRNSkyPlot from "./GNSSPRNSkyPlot";
 import GNSSPRN from "../GNSSPRN";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
+import GNSSPRNDopplerHistogram from "./GNSSPRNDopplerHistogram";
 
 const gnssService = new GnssService();
 
@@ -24,9 +25,11 @@ export default function GNSSPRNDetailsPage(props) {
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [revision, setRevision] = useState(new Date());
 
-  const [snrHistogram, setSnrHistogram] = useState(null);
+  const [snoHistogram, setSnoHistogram] = useState(null);
   const [elevationHistogram, setElevationHistogram] = useState(null);
   const [azimuthHistogram, setAzimuthHistogram] = useState(null);
+  const [dopplerHistogram, setDopplerHistogram] = useState(null);
+  const [elevationMask, setElevationMask] = useState(null);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -37,14 +40,17 @@ export default function GNSSPRNDetailsPage(props) {
   }, [tapContext]);
 
   useEffect(() => {
-    setSnrHistogram(null);
+    setSnoHistogram(null);
     setElevationHistogram(null);
     setAzimuthHistogram(null);
+    setDopplerHistogram(null);
+    setElevationMask(null);
 
-    gnssService.getPrnSnrHistogram(constellation, prn, timeRange, selectedTaps, setSnrHistogram);
+    gnssService.getPrnSnoHistogram(constellation, prn, timeRange, selectedTaps, setSnoHistogram);
     gnssService.getPrnElevationHistogram(constellation, prn, timeRange, selectedTaps, setElevationHistogram);
     gnssService.getPrnAzimuthHistogram(constellation, prn, timeRange, selectedTaps, setAzimuthHistogram);
-
+    gnssService.getPrnDopplerHistogram(constellation, prn, timeRange, selectedTaps, setDopplerHistogram);
+    gnssService.getElevationMask(selectedTaps, setElevationMask);
   }, [constellation, prn, selectedTaps, timeRange, revision]);
 
   return (
@@ -53,7 +59,8 @@ export default function GNSSPRNDetailsPage(props) {
         <div className="col-10">
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
-              <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.CONSTELLATIONS}>GNSS</a></li>
+              <li className="breadcrumb-item">GNSS</li>
+              <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.CONSTELLATIONS.SATELLITES}>Satellites</a></li>
               <li className="breadcrumb-item">{constellation} PRN <span className="machine-data">{prn}</span></li>
               <li className="breadcrumb-item active" aria-current="page">Details</li>
             </ol>
@@ -61,7 +68,7 @@ export default function GNSSPRNDetailsPage(props) {
         </div>
 
         <div className="col-2">
-          <a href={ApiRoutes.GNSS.CONSTELLATIONS} className="btn btn-secondary float-end">Back</a>
+          <a href={ApiRoutes.GNSS.CONSTELLATIONS.SATELLITES} className="btn btn-secondary float-end">Back</a>
         </div>
       </div>
 
@@ -75,12 +82,38 @@ export default function GNSSPRNDetailsPage(props) {
         <div className="col-12">
           <div className="card">
             <div className="card-body">
-              <CardTitleWithControls title="Signal-to-Noise Ratio (SNR)"
+              <CardTitleWithControls title="Carrier-to-Noise Density Ratio (C/N&#8320;)"
                                      timeRange={timeRange}
                                      setTimeRange={setTimeRange}
                                      refreshAction={() => setRevision(new Date())} />
 
-              <GNSSPRNSNRHistogram histogram={snrHistogram} setTimeRange={setTimeRange} />
+              <GNSSPRNSnoHistogram histogram={snoHistogram} setTimeRange={setTimeRange} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-6">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Mulipath Index"
+                                     timeRange={timeRange}
+                                     setTimeRange={setTimeRange}
+                                     refreshAction={() => setRevision(new Date())} />
+
+            </div>
+          </div>
+        </div>
+        <div className="col-6">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Doppler Shift"
+                                     timeRange={timeRange}
+                                     setTimeRange={setTimeRange}
+                                     refreshAction={() => setRevision(new Date())} />
+
+              <GNSSPRNDopplerHistogram histogram={dopplerHistogram} setTimeRange={setTimeRange} />
             </div>
           </div>
         </div>
@@ -90,14 +123,17 @@ export default function GNSSPRNDetailsPage(props) {
         <div className="col-md-6">
           <div className="card">
             <div className="card-body">
-              <CardTitleWithControls title="Sky Chart"
+              <CardTitleWithControls title="Sky Plot"
                                      timeRange={timeRange}
                                      setTimeRange={setTimeRange}
                                      refreshAction={() => setRevision(new Date())} />
 
-              <GNSSPRNSkyChart elevationHistogram={elevationHistogram}
-                               azimuthHistogram={azimuthHistogram}
-                               snrHistogram={snrHistogram} />
+              <div className="d-flex justify-content-center">
+                <GNSSPRNSkyPlot elevationHistogram={elevationHistogram}
+                                azimuthHistogram={azimuthHistogram}
+                                snoHistogram={snoHistogram}
+                                elevationMask={elevationMask} />
+              </div>
             </div>
           </div>
         </div>

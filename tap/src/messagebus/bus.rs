@@ -17,7 +17,7 @@ use crate::wired::packets::{
     TcpSegment
 };
 use crate::wireless::dot11::frames::{Dot11Frame, Dot11RawFrame};
-use crate::wireless::positioning::axia::ubx::UbxMonRfMessage;
+use crate::wireless::positioning::axia::ubx::{UbxMonRfMessage, UbxRxmMeasxMessage};
 use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 
 pub struct Bus {
@@ -41,7 +41,8 @@ pub struct Bus {
     pub uav_remote_id_pipeline: NzymeChannel<UavRemoteIdMessage>,
 
     pub gnss_nmea_pipeline: NzymeChannel<NMEAMessage>,
-    pub gnss_ubx_mon_rf_pipeline: NzymeChannel<UbxMonRfMessage>
+    pub gnss_ubx_mon_rf_pipeline: NzymeChannel<UbxMonRfMessage>,
+    pub gnss_ubx_rxm_measx_pipeline: NzymeChannel<UbxRxmMeasxMessage>
 }
 
 pub struct NzymeChannelSender<T> {
@@ -120,6 +121,9 @@ impl Bus<> {
             bounded(configuration.protocols.gnss.nmea_pipeline_size as usize);
 
         let (gnss_ubx_monrf_sender, gnss_ubx_monrf_receiver) =
+            bounded(configuration.protocols.gnss.nmea_pipeline_size as usize);
+
+        let (gnss_ubx_rxm_measx_sender, gnss_ubx_rxm_measx_receiver) =
             bounded(configuration.protocols.gnss.nmea_pipeline_size as usize);
 
         Self {
@@ -230,12 +234,21 @@ impl Bus<> {
             },
             gnss_ubx_mon_rf_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {
-                    metrics,
+                    metrics: metrics.clone(),
                     sender: gnss_ubx_monrf_sender,
                     name: GenericChannelName::GnssUbxMonRfPipeline.to_string()
                 }),
                 receiver: Arc::new(gnss_ubx_monrf_receiver),
-            }
+            },
+            gnss_ubx_rxm_measx_pipeline: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics,
+                    sender: gnss_ubx_rxm_measx_sender,
+                    name: GenericChannelName::GnssUbxRxmMeasxPipeline.to_string()
+                }),
+                receiver: Arc::new(gnss_ubx_rxm_measx_receiver),
+            },
+
         }
     }
 

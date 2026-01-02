@@ -42,6 +42,7 @@ import app.nzyme.core.ethernet.L4ConnectionCleaner;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.gnss.GNSS;
+import app.nzyme.core.gnss.GNSSElevationMaskThread;
 import app.nzyme.core.integrations.ScheduledIntegrationsManager;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.integrations.tenant.cot.CotService;
@@ -313,6 +314,7 @@ public class NzymeNodeImpl implements NzymeNode {
         periodicalManager.scheduleAtFixedRate(new DatabaseRetentionCleaner(this), 1, 60, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new AssetMonitor(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new AssetStatisticsCleaner(this), 1, 10, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new GNSSElevationMaskThread(this), 0, 30, TimeUnit.MINUTES);
         if (configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {

@@ -1,33 +1,29 @@
 import React from "react";
 
-export const GNSSSNR = ({ snr }) => {
-  if (snr == null || isNaN(snr)) {
+export default function GNSSCn0({ cn0 }) {
+  if (cn0 == null || isNaN(cn0)) {
     return <span className="text-danger">n/a</span>;
   }
 
-  const v = Math.max(0, Math.min(99, Number(snr)));
+  const v = Math.max(0, Math.min(99, Number(cn0)));
 
   if (v === 0) {
     return <span className="text-danger">n/a</span>;
   }
 
-  let label = "Excellent";
   let className = "text-success";
 
   if (v <= 20) {
-    label = "Low";
     className = "text-danger";
   } else if (v <= 30) {
-    label = "Fair";
     className = "text-warning";
   } else if (v <= 40) {
-    label = "Good";
     className = "text-success";
   }
 
   return (
     <span className={className}>
-      {label} ({Math.trunc(v)})
+      {Math.trunc(v)} dB-Hz
     </span>
   );
 };

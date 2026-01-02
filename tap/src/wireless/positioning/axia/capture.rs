@@ -12,15 +12,16 @@ use crate::to_pipeline;
 use crate::usb::usb::find_first_nzyme_usb_device_with_pid;
 use crate::wireless::positioning::axia::axia::AXIA_1_PID;
 use crate::wireless::positioning::axia::sentence_type::SentenceType;
-use crate::wireless::positioning::axia::ubx::{AntennaPower, AntennaStatus, JammingState, UbxMonRfMessage, UbxMonRfBlock};
+use crate::wireless::positioning::axia::ubx::{AntennaPower, AntennaStatus, JammingState, UbxMonRfMessage, UbxMonRfBlock, UbxRxmMeasxMessage, UbxRxmMeasxSat};
 use crate::wireless::positioning::gnss_constellation::GNSSConstellation;
+use crate::wireless::positioning::gnss_constellation::GNSSConstellation::{Galileo, GPS};
 use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 
 const FRAME_MAGIC0: u8 = b'n';
 const FRAME_MAGIC1: u8 = b'z';
 
 const HEADER_LEN: usize = 6;
-const MAX_PAYLOAD_LEN: usize = 1024;
+const MAX_PAYLOAD_LEN: usize = 4096;
 
 #[derive(Debug)]
 pub struct DataFrame {
@@ -137,7 +138,7 @@ impl Capture {
 
             // Sanity check payload length.
             if payload_len == 0 || payload_len > MAX_PAYLOAD_LEN {
-                log::warn!("Invalid payload length {} – dropping frame & resyncing", payload_len);
+                warn!("Invalid payload length {} – dropping frame & resyncing", payload_len);
                 buf.drain(0..2); // drop the "nz" and resync
                 continue;
             }
@@ -179,6 +180,7 @@ impl Capture {
         match frame.sentence_type {
             SentenceType::Nmea => self.handle_nmea_frame(device_config, frame),
             SentenceType::UbxMonRf => self.handle_ubx_mon_rf_frame(frame),
+            SentenceType::UbxRxmMeasx => self.handle_ubx_rxm_measx_frame(frame),
             SentenceType::Unknown(t) => warn!("Unknown Axia sentence type {}", t)
         }
     }
@@ -231,6 +233,22 @@ impl Capture {
             }
             None => {
                 error!("Could not parse Axia MON-RF payload");
+            }
+        }
+    }
+
+    fn handle_ubx_rxm_measx_frame(&self, frame: &DataFrame) {
+        match self.parse_ubx_rxm_measx(&frame.payload, &frame.constellation) {
+            Some(measx) => {
+                let size = measx.estimate_size() as u32;
+                to_pipeline!(GenericChannelName::GnssUbxRxmMeasxPipeline,
+                    self.bus.gnss_ubx_rxm_measx_pipeline.sender,
+                    Arc::new(measx),
+                    size
+                );
+            }
+            None => {
+                error!("Could not parse Axia RXM-MEASX payload");
             }
         }
     }
@@ -329,4 +347,134 @@ impl Capture {
 
         Some(UbxMonRfMessage { version, blocks, constellation: constellation.clone() })
     }
+
+    fn parse_ubx_rxm_measx(&self, ubx: &[u8], constellation: &GNSSConstellation)
+            -> Option<UbxRxmMeasxMessage> {
+
+        // UBX header sanity checks.
+        if ubx.len() < 8 {
+            error!("UBX buffer too short for header: len={}", ubx.len());
+            return None;
+        }
+        if ubx[0] != 0xB5 || ubx[1] != 0x62 {
+            error!("UBX sync mismatch: {:02X} {:02X}", ubx[0], ubx[1]);
+            return None;
+        }
+
+        let msg_class = ubx[2];
+        let msg_id = ubx[3];
+        if msg_class != 0x02 || msg_id != 0x14 {
+            error!("Unexpected UBX message class/id for MEASX: class=0x{:02X} id=0x{:02X}",
+                msg_class, msg_id);
+            return None;
+        }
+
+        let payload_len = u16::from_le_bytes([ubx[4], ubx[5]]) as usize;
+        if ubx.len() < 6 + payload_len + 2 {
+            error!("UBX buffer too short for declared payload: len={} payload_len={}",
+                ubx.len(), payload_len);
+            return None;
+        }
+
+        let payload = &ubx[6..6 + payload_len];
+
+        // Per NEO-M9N interface description: payload is 44 + numSV*24.
+        if payload_len < 44 {
+            error!("UBX-RXM-MEASX payload too short: {}", payload_len);
+            return None;
+        }
+
+        let version = payload[0];
+
+        let gps_tow_ms = u32::from_le_bytes([payload[4], payload[5], payload[6], payload[7]]);
+        let glo_tow_ms = u32::from_le_bytes([payload[8], payload[9], payload[10], payload[11]]);
+        let bds_tow_ms = u32::from_le_bytes([payload[12], payload[13], payload[14], payload[15]]);
+        let qzss_tow_ms = u32::from_le_bytes([payload[20], payload[21], payload[22], payload[23]]);
+        let gps_tow_acc = u16::from_le_bytes([payload[24], payload[25]]);
+        let glo_tow_acc = u16::from_le_bytes([payload[26], payload[27]]);
+        let bds_tow_acc = u16::from_le_bytes([payload[28], payload[29]]);
+        let qzss_tow_acc = u16::from_le_bytes([payload[32], payload[33]]);
+
+        let num_sv = payload[34];
+        let flags = payload[35];
+        let tow_set = flags & 0x03;
+
+
+        let expected_len = 44usize + (num_sv as usize) * 24usize;
+        if payload_len != expected_len {
+            error!("UBX-RXM-MEASX length mismatch: payload_len={} expected={}",
+                payload_len, expected_len);
+            return None;
+        }
+
+        let mut sats = Vec::with_capacity(num_sv as usize);
+
+        for n in 0..(num_sv as usize) {
+            let base = 44 + n * 24;
+
+            let gnss_id = payload[base + 0];
+            let sv_id = payload[base + 1];
+            let sno = payload[base + 2];
+            let mpath_indic = payload[base + 3];
+
+            let doppler_ms = i32::from_le_bytes([
+                payload[base + 4],
+                payload[base + 5],
+                payload[base + 6],
+                payload[base + 7],
+            ]);
+
+            let doppler_hz = i32::from_le_bytes([
+                payload[base + 8],
+                payload[base + 9],
+                payload[base + 10],
+                payload[base + 11],
+            ]);
+
+            let whole_chips = u16::from_le_bytes([payload[base + 12], payload[base + 13]]);
+            let frac_chips = u16::from_le_bytes([payload[base + 14], payload[base + 15]]);
+
+            let code_phase = u32::from_le_bytes([
+                payload[base + 16],
+                payload[base + 17],
+                payload[base + 18],
+                payload[base + 19],
+            ]);
+
+            let int_code_phase = payload[base + 20];
+            let pseurange_rms_err = payload[base + 21];
+
+            sats.push(UbxRxmMeasxSat {
+                gnss_id,
+                sv_id,
+                sno,
+                mpath_indic,
+                doppler_ms,
+                doppler_hz,
+                whole_chips,
+                frac_chips,
+                code_phase,
+                int_code_phase,
+                pseurange_rms_err,
+            });
+        }
+
+        Some(UbxRxmMeasxMessage {
+            version,
+            gps_tow_ms,
+            glo_tow_ms,
+            bds_tow_ms,
+            qzss_tow_ms,
+            gps_tow_acc,
+            glo_tow_acc,
+            bds_tow_acc,
+            qzss_tow_acc,
+            num_sv,
+            flags,
+            tow_set,
+            sats,
+            constellation: constellation.clone(),
+        })
+    }
+
 }

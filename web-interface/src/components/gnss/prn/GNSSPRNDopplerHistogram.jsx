@@ -2,7 +2,7 @@ import React from "react";
 import GenericWidgetLoadingSpinner from "../../widgets/GenericWidgetLoadingSpinner";
 import SimpleLineChart from "../../widgets/charts/SimpleLineChart";
 
-export default function GNSSPRNDegreesHistogram({histogram, setTimeRange}) {
+export default function GNSSPRNDopplerHistogram({histogram, setTimeRange}) {
 
   if (!histogram) {
     return <GenericWidgetLoadingSpinner height={200} />;
@@ -24,8 +24,11 @@ export default function GNSSPRNDegreesHistogram({histogram, setTimeRange}) {
         height={200}
         lineWidth={1}
         scattermode="markers"
-        customMarginLeft={35}
-        ticksuffix="&deg;"
+        customMarginLeft={50}
+        ticksuffix="Hz"
+        horizontalLines={[
+          { y: 0, color: '#d72b1d', dash: 'dash', width: 1, opacity: 0.9 }
+        ]}
         setTimeRange={setTimeRange}
         data={formatData(histogram)} />
     </React.Fragment>

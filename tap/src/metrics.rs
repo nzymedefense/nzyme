@@ -67,7 +67,8 @@ pub struct Channels {
     uav_remote_id_pipeline: ChannelUtilization,
 
     gnss_nmea_pipeline: ChannelUtilization,
-    gnss_ubx_mon_rf_pipeline: ChannelUtilization
+    gnss_ubx_mon_rf_pipeline: ChannelUtilization,
+    gnss_ubx_rxm_measx_pipeline: ChannelUtilization
 }
 
 #[derive(Clone, Display)]
@@ -225,6 +226,7 @@ impl Metrics {
             "UavRemoteIdPipeline" => &mut self.channels.uav_remote_id_pipeline,
             "GnssNmeaMessagesPipeline" => &mut self.channels.gnss_nmea_pipeline,
             "GnssUbxMonRfPipeline" => &mut self.channels.gnss_ubx_mon_rf_pipeline,
+            "GnssUbxRxmMeasxPipeline" => &mut self.channels.gnss_ubx_rxm_measx_pipeline,
             _ => panic!("Unknown channel {}", channel)
         }
     }

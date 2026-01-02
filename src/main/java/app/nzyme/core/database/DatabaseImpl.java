@@ -42,6 +42,7 @@ import app.nzyme.core.events.db.SubscriptionEntryMapper;
 import app.nzyme.core.floorplans.db.TenantLocationEntryMapper;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntryMapper;
 import app.nzyme.core.gnss.db.*;
+import app.nzyme.core.gnss.db.elevationmasks.GNSSElevationMaskAzimuthBucketMapper;
 import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntryMapper;
 import app.nzyme.core.integrations.tenant.cot.db.CotOutputEntryMapper;
 import app.nzyme.core.monitoring.GaugeEntryAverageMapper;
@@ -215,7 +216,9 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new NumberNumberNumberAggregationResultMapper())
                 .registerRowMapper(new StringNumberNumberAggregationResultMapper())
                 .registerRowMapper(new L4AddressDataAddressNumberNumberAggregationResultMapper())
-                .registerRowMapper(new DHCPStatisticsBucketMapper());
+                .registerRowMapper(new DHCPStatisticsBucketMapper())
+                .registerRowMapper(new GNSSElevationMaskAzimuthBucketMapper())
+                .registerRowMapper(new GNSSPRNTrackPointMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

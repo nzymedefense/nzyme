@@ -52,6 +52,7 @@
     "react-notify-toast": "^0.5.1",
     "react-plotly.js": "^2.5.1",
     "react-qr-code": "^2.0.11",
-    "react-router-dom": "^6.2.1"
+    "react-router-dom": "^6.2.1",
+    "d3": "^7.9.0"
   }
 }

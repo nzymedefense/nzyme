@@ -5,8 +5,8 @@ import app.nzyme.core.database.generic.LatLonResult;
 import app.nzyme.core.gnss.Constellation;
 import app.nzyme.core.gnss.GNSSRegistryKeys;
 import app.nzyme.core.gnss.db.*;
+import app.nzyme.core.gnss.db.elevationmasks.GNSSElevationMaskAzimuthBucket;
 import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntry;
-import app.nzyme.core.integrations.smtp.SMTPConfigurationRegistryKeys;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.requests.CreateGNSSMonitoringRuleRequest;
 import app.nzyme.core.rest.requests.GenericConfigurationUpdateRequest;
@@ -90,26 +90,6 @@ public class GNSSResource extends TapDataHandlingResource {
         }
 
         return Response.ok(GNSSConstellationCoordinatesResponse.create(coordinates, tapLocations)).build();
-    }
-
-    @GET
-    @Path("/time/deviation/histogram")
-    public Response timeDeviationHistogram(@Context SecurityContext sc,
-                                           @QueryParam("time_range") @Valid String timeRangeParameter,
-                                           @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
-
-        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
-        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
-
-        Map<DateTime, GNSSIntegerBucketResponse> histogram = Maps.newHashMap();
-        for (GNSSIntegerBucket bucket : nzyme.getGnss().getTimeDeviationHistogram(timeRange, bucketing, taps)) {
-            histogram.put(bucket.bucket(), GNSSIntegerBucketResponse.create(
-                    bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
-            ));
-        }
-
-        return Response.ok(histogram).build();
     }
 
     @GET
@@ -252,18 +232,62 @@ public class GNSSResource extends TapDataHandlingResource {
 
         List<SatelliteInViewResponse> satellites = Lists.newArrayList();
         for (GNSSSatelliteInView sat : nzyme.getGnss().findAllSatellitesInView(timeRange, taps)) {
+            // Get previous positions to draw a track.
+            Constellation constellation = Constellation.valueOf(sat.constellation());
+
+            List<GNSSPRNTrackPointResponse> trackPoints = Lists.newArrayList();
+            for (GNSSPRNTrackPoint point : nzyme.getGnss()
+                    .findRecentSatelliteTrack(constellation, sat.prn(), DateTime.now().minusMinutes(15), taps)) {
+                trackPoints.add(GNSSPRNTrackPointResponse.create(
+                        point.averageSno(),
+                        point.azimuthDegrees(),
+                        point.elevationDegrees(),
+                        point.timestamp()
+                ));
+            }
+
             satellites.add(SatelliteInViewResponse.create(
                     sat.constellation(),
                     sat.lastSeen(),
                     sat.prn(),
-                    sat.snr(),
+                    sat.averageSno(),
                     sat.azimuthDegrees(),
                     sat.elevationDegrees(),
-                    sat.usedForFix()
+                    sat.usedForFix(),
+                    sat.averageDopplerHz(),
+                    sat.maximumMultipathIndicator(),
+                    sat.averagePseudorangeRmsError(),
+                    trackPoints
             ));
         }
 
         return Response.ok(SatellitesInViewListResponse.create(satellites)).build();
+    }
+
+    @GET
+    @Path("/elevationmask")
+    public Response elevationMask(@Context SecurityContext sc,
+                                  @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        Map<Integer, GNSSElevationMaskAzimuthBucketResponse> response = Maps.newHashMap();
+        for (GNSSElevationMaskAzimuthBucket bucket : nzyme.getGnss().getElevationMask(taps)) {
+            response.put(bucket.azimuthBucket(),  GNSSElevationMaskAzimuthBucketResponse.create(
+                    bucket.azimuthBucket(),
+                    bucket.skylineElevation(),
+                    bucket.skylineElevationBestEffort(),
+                    bucket.lowSubsetCount(),
+                    bucket.minElevationObserved(),
+                    bucket.usedFallback(),
+                    bucket.snoMedian(),
+                    bucket.snoP10(),
+                    bucket.sampleCount(),
+                    bucket.windowStart(),
+                    bucket.windowEnd()
+            ));
+        }
+
+        return Response.ok(response).build();
     }
 
     @GET
@@ -327,8 +351,8 @@ public class GNSSResource extends TapDataHandlingResource {
     }
 
     @GET
-    @Path("/constellations/{constellation}/prns/show/{prn}/snr/histogram")
-    public Response constellationPrnSnrHistogram(@Context SecurityContext sc,
+    @Path("/constellations/{constellation}/prns/show/{prn}/sno/histogram")
+    public Response constellationPrnSnoHistogram(@Context SecurityContext sc,
                                                  @PathParam("constellation") String constellationParam,
                                                  @PathParam("prn") @Min(1) int prn,
                                                  @QueryParam("time_range") @Valid String timeRangeParameter,
@@ -345,9 +369,8 @@ public class GNSSResource extends TapDataHandlingResource {
         }
 
         Map<DateTime, Integer> response = Maps.newHashMap();
-
         for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
-                .getPrnSnrHistogram(constellation, prn, timeRange, bucketing, taps)) {
+                .getPrnSnoHistogram(constellation, prn, timeRange, bucketing, taps)) {
             response.put(bucket.bucket(), bucket.value());
         }
 
@@ -404,6 +427,34 @@ public class GNSSResource extends TapDataHandlingResource {
 
         for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
                 .getPrnAzimuthHistogram(constellation, prn, timeRange, bucketing, taps)) {
+            response.put(bucket.bucket(), bucket.value());
+        }
+
+        return Response.ok(response).build();
+    }
+
+    @GET
+    @Path("/constellations/{constellation}/prns/show/{prn}/doppler/histogram")
+    public Response constellationPrnDopplerHistogram(@Context SecurityContext sc,
+                                                     @PathParam("constellation") String constellationParam,
+                                                     @PathParam("prn") @Min(1) int prn,
+                                                     @QueryParam("time_range") @Valid String timeRangeParameter,
+                                                     @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.BucketingConfiguration.create(Bucketing.Type.MINUTE);
+
+        Constellation constellation;
+        try {
+            constellation = Constellation.valueOf(constellationParam);
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Map<DateTime, Integer> response = Maps.newHashMap();
+
+        for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
+                .getPrnDopplerHistogram(constellation, prn, timeRange, bucketing, taps)) {
             response.put(bucket.bucket(), bucket.value());
         }
 

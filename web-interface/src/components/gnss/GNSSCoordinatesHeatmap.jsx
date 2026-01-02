@@ -3,6 +3,7 @@ import {latLng} from "leaflet/src/geo";
 import {sanitizeHtml} from "../../util/Tools";
 import '../../../lib/Control.FullScreen';
 import '../../../lib/Control.FullScreen.css';
+import LoadingSpinner from "../misc/LoadingSpinner";
 
 export default function GNSSCoordinatesHeatmap(props) {
 
@@ -57,7 +58,7 @@ export default function GNSSCoordinatesHeatmap(props) {
   }
 
   useEffect(() => {
-    if (!map) {
+    if (!map && coordinates != null) {
       setMap(L.map("gnss-coordinates-heatmap", {
         scrollWheelZoom: false,
         fullscreenControl: true,
@@ -65,11 +66,13 @@ export default function GNSSCoordinatesHeatmap(props) {
           position: "topleft"
         }
       }));
+    } else {
+      setMap(null)
     }
-  }, []);
+  }, [coordinates]);
 
   useEffect(() => {
-    if (map) {
+    if (map && coordinates != null) {
       map.attributionControl.setPrefix("");
 
       if (latitude && longitude) {
@@ -89,11 +92,11 @@ export default function GNSSCoordinatesHeatmap(props) {
         setZoomLevel(map.getZoom());
       });
     }
-  }, [map, latitude, longitude])
+  }, [map, coordinates, latitude, longitude])
 
   // Coordinates.
   useEffect(() => {
-    if (map) {
+    if (map && coordinates != null) {
       map.setView(getDefaultCenter(coordinates), zoomLevel)
 
       // Remove all previous positions.
@@ -139,6 +142,10 @@ export default function GNSSCoordinatesHeatmap(props) {
       })
     }
   }, [coordinates, map]);
+
+  if (props.coordinates === null) {
+    return <LoadingSpinner />
+  }
 
   return (
     <React.Fragment>

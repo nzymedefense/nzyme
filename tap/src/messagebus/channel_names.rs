@@ -27,5 +27,6 @@ pub enum BluetoothChannelName {
 pub enum GenericChannelName {
     UavRemoteIdPipeline,
     GnssNmeaMessagesPipeline,
-    GnssUbxMonRfPipeline
+    GnssUbxMonRfPipeline,
+    GnssUbxRxmMeasxPipeline
 }

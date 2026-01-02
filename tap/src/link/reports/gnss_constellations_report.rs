@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::MutexGuard;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
+use crate::helpers::math::{average_i32, average_u8};
 use crate::state::tables::gnss_monitor_table::GNSSConstellationData;
 use crate::wireless::positioning::gnss_constellation::GNSSConstellation;
 
@@ -42,7 +43,10 @@ pub struct SatelliteInfoReport {
     pub prn: u8,
     pub elevation_degrees: Option<u8>,
     pub azimuth_degrees: Option<u16>,
-    pub snr: Option<u8>,
+    pub average_sno: Option<u8>,
+    pub average_doppler_hz: Option<i32>,
+    pub maximum_multipath_indicator: Option<u8>,
+    pub average_pseurange_rms_err: Option<u8>,
 }
 
 pub fn generate(constellations: &MutexGuard<HashMap<GNSSConstellation, GNSSConstellationData>>,
@@ -67,7 +71,10 @@ pub fn generate(constellations: &MutexGuard<HashMap<GNSSConstellation, GNSSConst
                     prn: s.prn,
                     elevation_degrees: s.elevation_degrees,
                     azimuth_degrees: s.azimuth_degrees,
-                    snr: s.snr
+                    average_sno: average_u8(&s.sno_readings),
+                    average_doppler_hz: average_i32(&s.doppler_readings),
+                    maximum_multipath_indicator: s.multipath_indicator_max,
+                    average_pseurange_rms_err: average_u8(&s.pseurange_rms_err_readings),
                 } ).collect(),
             minimum_satellites_in_view_count: data.minimum_satellites_in_view_count,
             maximum_satellites_in_view_count: data.maximum_satellites_in_view_count,

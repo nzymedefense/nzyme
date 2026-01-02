@@ -76,6 +76,30 @@ class SimpleLineChart extends React.Component {
         ? false
         : (this.props.hovermode ?? (interactive ? "x" : "closest"))
 
+    const horizontalLineShapes = (this.props.horizontalLines ?? [])
+      .filter(l => l && typeof l.y === 'number' && Number.isFinite(l.y))
+      .map(l => ({
+        type: 'line',
+        xref: 'paper',
+        x0: 0,
+        x1: 1,
+        yref: 'y',
+        y0: l.y,
+        y1: l.y,
+        line: {
+          color: l.color ?? (Store.get('dark_mode') ? '#f9f9f9' : '#111111'),
+          width: l.width ?? 1,
+          dash: l.dash ?? 'dash'
+        },
+        opacity: l.opacity ?? 1
+      }))
+
+    // Merge all shapes.
+    const shapes = [
+      ...(this.props.shapes ?? []),
+      ...horizontalLineShapes
+    ]
+
     return (
         <Plot
             style={{ width: '100%', height: '100%' }}
@@ -123,7 +147,7 @@ class SimpleLineChart extends React.Component {
                 zeroline: false
               },
               annotations: this.props.annotations ? this.props.annotations : [],
-              shapes: this.props.shapes
+              shapes: shapes
             }}
             config={{
               showAxisDragHandles: false,

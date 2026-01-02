@@ -18,14 +18,6 @@ export default class GnssService {
     )
   }
 
-  getTimeDeviationHistogram(timeRange, taps, setHistogram) {
-    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
-
-    RESTClient.get("/gnss/time/deviation/histogram", { time_range: timeRange, taps: tapsList },
-      (response) => setHistogram(response.data)
-    )
-  }
-
   getFixSatellitesHistogram(timeRange, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
@@ -66,6 +58,14 @@ export default class GnssService {
     )
   }
 
+  getElevationMask(taps, setElevationMask) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/gnss/elevationmask", { taps: tapsList },
+      (response) => setElevationMask(response.data)
+    )
+  }
+
   findAllSatellitesInView(timeRange, taps, setSatellites) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
@@ -98,10 +98,10 @@ export default class GnssService {
     )
   }
 
-  getPrnSnrHistogram(constellation, prn, timeRange, taps, setHistogram) {
+  getPrnSnoHistogram(constellation, prn, timeRange, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get(`/gnss/constellations/${constellation}/prns/show/${prn}/snr/histogram`,
+    RESTClient.get(`/gnss/constellations/${constellation}/prns/show/${prn}/sno/histogram`,
       { time_range: timeRange, taps: tapsList },
       (response) => setHistogram(response.data)
     )
@@ -120,6 +120,15 @@ export default class GnssService {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get(`/gnss/constellations/${constellation}/prns/show/${prn}/azimuth/histogram`,
+      { time_range: timeRange, taps: tapsList },
+      (response) => setHistogram(response.data)
+    )
+  }
+
+  getPrnDopplerHistogram(constellation, prn, timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get(`/gnss/constellations/${constellation}/prns/show/${prn}/doppler/histogram`,
       { time_range: timeRange, taps: tapsList },
       (response) => setHistogram(response.data)
     )
