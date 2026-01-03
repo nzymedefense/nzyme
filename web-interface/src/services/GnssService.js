@@ -66,6 +66,10 @@ export default class GnssService {
     )
   }
 
+  cleanElevationMask(tapUuid, onSuccess) {
+    RESTClient.delete(`/gnss/elevationmask/tap/${tapUuid}`, onSuccess);
+  }
+
   findAllSatellitesInView(timeRange, taps, setSatellites) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 

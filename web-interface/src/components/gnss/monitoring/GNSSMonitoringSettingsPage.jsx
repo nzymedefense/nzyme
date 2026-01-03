@@ -4,6 +4,7 @@ import {GNSS_MONITORING_MENU_ITEMS} from "./GNSSMonitoringMenuItems";
 import ApiRoutes from "../../../util/ApiRoutes";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import GNSSMonitoringSettingsTable from "./GNSSMonitoringSettingsTable";
+import GNSSMonitoringSettingsResetElevationMasks from "./GNSSMonitoringSettingsResetElevationMasks";
 
 export default function GNSSMonitoringSettingsPage() {
 
@@ -27,6 +28,23 @@ export default function GNSSMonitoringSettingsPage() {
                 <CardTitleWithControls title="Monitoring Settings" />
 
                 <GNSSMonitoringSettingsTable />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-xl-12 col-xxl-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Tap Elevation Masks" />
+
+                <p>
+                  You can reset the elevation mask of taps. This is usually required when physically moving a GNSS tap
+                  or when new, significant obstructions appear.
+                </p>
+
+                <GNSSMonitoringSettingsResetElevationMasks />
               </div>
             </div>
           </div>

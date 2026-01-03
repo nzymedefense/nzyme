@@ -8,6 +8,7 @@ import app.nzyme.core.gnss.db.*;
 import app.nzyme.core.gnss.db.elevationmasks.GNSSElevationMaskAzimuthBucket;
 import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntry;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.CreateGNSSMonitoringRuleRequest;
 import app.nzyme.core.rest.requests.GenericConfigurationUpdateRequest;
 import app.nzyme.core.rest.requests.UpdateGNSSMonitoringRuleRequest;
@@ -288,6 +289,22 @@ public class GNSSResource extends TapDataHandlingResource {
         }
 
         return Response.ok(response).build();
+    }
+
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
+    @Path("/elevationmask/tap/{tapUuid}")
+    public Response cleanElevationMask(@Context SecurityContext sc, @PathParam("tapUuid") UUID tapUuid) {
+        AuthenticatedUser user = getAuthenticatedUser(sc);
+
+        List<UUID> userAccessibleTaps = nzyme.getTapManager().allTapUUIDsAccessibleByUser(user);
+        if (!userAccessibleTaps.contains(tapUuid)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        nzyme.getGnss().cleanElevationMask(tapUuid);
+
+        return Response.ok().build();
     }
 
     @GET

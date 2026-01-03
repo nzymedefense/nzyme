@@ -535,6 +535,14 @@ public class GNSS {
         );
     }
 
+    public void cleanElevationMask(UUID tap) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM gnss_elevation_mask WHERE tap_uuid = :tap_uuid")
+                        .bind("tap_uuid", tap)
+                        .execute()
+        );
+    }
+
     public void createMonitoringRule(String name,
                                      @Nullable String description,
                                      Map<String, List<Object>> conditions,

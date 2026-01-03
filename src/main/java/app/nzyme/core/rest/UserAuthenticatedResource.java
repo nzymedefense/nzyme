@@ -8,8 +8,6 @@ import app.nzyme.core.security.authentication.db.TenantEntry;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.SecurityContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -18,8 +16,6 @@ public class UserAuthenticatedResource extends RestResource {
 
     @Inject
     private NzymeNode nzyme;
-
-    private static final Logger LOG = LogManager.getLogger(UserAuthenticatedResource.class);
 
     protected AuthenticatedUser getAuthenticatedUser(SecurityContext sc) {
         return (AuthenticatedUser) sc.getUserPrincipal();
