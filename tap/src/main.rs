@@ -45,7 +45,7 @@ use crate::state::state::State;
 use crate::wireless::dot11::engagement::engagement_control::EngagementControl;
 use crate::wireless::dot11::sona;
 use crate::wireless::dot11::sona::command_router::SonaCommandRouter;
-use crate::wireless::dot11::sona::commands::{AddressedSonaCommand, SonaCommand};
+use crate::wireless::dot11::sona::commands::{SonaCommand};
 use crate::wireless::dot11::sona::sona_tools::extract_serial_from_interface_name;
 use crate::wireless::positioning;
 use crate::wireless::positioning::axia;
@@ -320,7 +320,7 @@ fn main() {
             }
 
             if interface_name.starts_with("sona-") {
-                if let Some(serial) = extract_serial_from_interface_name(interface_name) {
+                if let Ok(serial) = extract_serial_from_interface_name("sona", interface_name) {
                     let rx = sona_command_router.register_capture(&serial);
                     cmd_receivers.insert(serial, rx);
                 }
@@ -347,9 +347,12 @@ fn main() {
 
             if interface_name.starts_with("sona-") {
                 // Sona capture.
-                let Some(serial) = extract_serial_from_interface_name(&interface_name) else {
-                    error!("Could not extract Sona serial from interface name [{}].", interface_name);
-                    continue;
+                let serial = match extract_serial_from_interface_name("sona", &interface_name) {
+                    Ok(serial) => serial,
+                    Err(e) => {
+                        error!("Could not extract Sona serial from interface name [{}].", interface_name);
+                        continue;
+                    }
                 };
 
                 // Remove so the receiver is moved exactly once into exactly one thread
@@ -359,7 +362,7 @@ fn main() {
                 };
 
                 thread::spawn(move || {
-                    if let Some(sona_serial) = extract_serial_from_interface_name(&interface_name) {
+                    if let Ok(sona_serial) = extract_serial_from_interface_name("sona", &interface_name) {
                         let mut sona_capture = sona::capture::Capture {
                             metrics: capture_metrics.clone(),
                             bus: capture_bus.clone(),
@@ -479,7 +482,15 @@ fn main() {
             let interface_name = interface_name.clone();
             let interface_config = interface_config.clone();
             thread::spawn(move || {
-                if interface_name == "axia" {
+                if interface_name.starts_with("axia-") {
+                    let serial = match extract_serial_from_interface_name("axia", &interface_name) {
+                        Ok(serial) => serial,
+                        Err(e) => {
+                            error!("Could not extract Axia serial from interface name [{}].", interface_name);
+                            return;
+                        }
+                    };
+
                     // Axia.
                     if axias > 1 {
                         warn!("More than one Axia GNSS receiver configured. \
@@ -489,7 +500,7 @@ fn main() {
 
                     match capture_metrics.lock() {
                         Ok(mut metrics) => metrics.register_new_capture(
-                            "Axia", metrics::CaptureType::Gnss
+                            &interface_name, metrics::CaptureType::Gnss
                         ),
                         Err(e) => error!("Could not acquire mutex of metrics: {}", e)
                     }
@@ -507,7 +518,7 @@ fn main() {
                     }
 
                     loop {
-                        axia_capture.run(&interface_config);
+                        axia_capture.run(&interface_config, &serial);
 
                         error!("Axia capture disconnected. Retrying in 5 seconds.");
                         match capture_metrics.lock() {
@@ -535,7 +546,7 @@ fn main() {
                     }
 
                     if let Some(delay_seconds) = interface_config.delay_seconds {
-                        info!("Delaying start of GNSS capture [{}] for <{}> seconds.)",
+                        info!("Delaying start of GNSS capture [{}] for <{}> seconds.",
                             interface_name, delay_seconds);
 
                         sleep(Duration::from_secs(delay_seconds as u64));

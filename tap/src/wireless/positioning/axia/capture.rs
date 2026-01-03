@@ -9,7 +9,7 @@ use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::GenericChannelName;
 use crate::metrics::Metrics;
 use crate::to_pipeline;
-use crate::usb::usb::find_first_nzyme_usb_device_with_pid;
+use crate::usb::usb::{find_first_nzyme_usb_device_with_pid, find_first_nzyme_usb_device_with_pid_and_serial};
 use crate::wireless::positioning::axia::axia::AXIA_1_PID;
 use crate::wireless::positioning::axia::sentence_type::SentenceType;
 use crate::wireless::positioning::axia::ubx::{AntennaPower, AntennaStatus, JammingState, UbxMonRfMessage, UbxMonRfBlock, UbxRxmMeasxMessage, UbxRxmMeasxSat};
@@ -38,9 +38,9 @@ pub struct Capture {
 
 impl Capture {
 
-    pub fn run(&mut self, device_config: &GNSSInterface) {
-        info!("Attempting to detect Axia.");
-        let device = match find_first_nzyme_usb_device_with_pid(AXIA_1_PID) {
+    pub fn run(&mut self, device_config: &GNSSInterface, serial: &str) {
+        info!("Attempting to detect Axia [{}].", serial);
+        let device = match find_first_nzyme_usb_device_with_pid_and_serial(AXIA_1_PID, serial) {
             Ok(device) => {
                 match device {
                     Some(device) => device,
@@ -85,7 +85,7 @@ impl Capture {
             match port.read(&mut read_buf) {
                 Ok(n) if n > 0 => {
                     buffer.extend_from_slice(&read_buf[..n]);
-                    self.process_buffer(device_config, &mut buffer);
+                    self.process_buffer(device_config, &mut buffer, serial);
                 }
                 Ok(_) => {
                     // Nothing read.
@@ -103,7 +103,7 @@ impl Capture {
         }
     }
 
-    fn process_buffer(&self, device_config: &GNSSInterface, buf: &mut Vec<u8>) {
+    fn process_buffer(&self, device_config: &GNSSInterface, buf: &mut Vec<u8>, serial: &str) {
         loop {
             if buf.len() < HEADER_LEN {
                 return;
@@ -170,22 +170,22 @@ impl Capture {
                 timestamp: Utc::now(),
             };
 
-            self.handle_frame(device_config, &frame);
+            self.handle_frame(device_config, &frame, serial);
 
             buf.drain(0..frame_len);
         }
     }
 
-    fn handle_frame(&self, device_config: &GNSSInterface, frame: &DataFrame) {
+    fn handle_frame(&self, device_config: &GNSSInterface, frame: &DataFrame, serial: &str) {
         match frame.sentence_type {
-            SentenceType::Nmea => self.handle_nmea_frame(device_config, frame),
+            SentenceType::Nmea => self.handle_nmea_frame(device_config, frame, serial),
             SentenceType::UbxMonRf => self.handle_ubx_mon_rf_frame(frame),
             SentenceType::UbxRxmMeasx => self.handle_ubx_rxm_measx_frame(frame),
             SentenceType::Unknown(t) => warn!("Unknown Axia sentence type {}", t)
         }
     }
 
-    fn handle_nmea_frame(&self, device_config: &GNSSInterface, frame: &DataFrame) {
+    fn handle_nmea_frame(&self, device_config: &GNSSInterface, frame: &DataFrame, serial: &str) {
         // Payload is just NMEA at this point. We do need to remove trailing newlines though.
         let frame_msg = String::from_utf8_lossy(&frame.payload);
         let nmea = frame_msg.trim_end_matches(&['\r', '\n']);
@@ -209,7 +209,7 @@ impl Capture {
         match self.metrics.lock() {
             Ok(mut metrics) => {
                 metrics.increment_processed_bytes_total(nmea.len() as u32);
-                metrics.update_capture("Axia", true, 0, 0);
+                metrics.update_capture(&format!("axia-{}", serial), true, 0, 0);
             },
             Err(e) => error!("Could not acquire metrics mutex: {}", e)
         }

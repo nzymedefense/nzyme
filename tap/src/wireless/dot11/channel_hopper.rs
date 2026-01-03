@@ -223,12 +223,12 @@ impl ChannelHopper {
 
                         for width in &channel.channel_widths {
                             if device.starts_with("sona-") {
-                                let sona_device_serial = match extract_serial_from_interface_name(&device) {
-                                    Some(serial) => serial,
-                                    None => {
+                                let sona_device_serial = match extract_serial_from_interface_name("sona", &device) {
+                                    Ok(serial) => serial,
+                                    Err(e) => {
                                         // Should never happen.
                                         error!("Could not extract device serial from \
-                                            interface: {}", device);
+                                            interface [{}]: {}", device, e);
                                         continue
                                     }
                                 };

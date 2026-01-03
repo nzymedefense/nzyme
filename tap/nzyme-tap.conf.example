@@ -38,7 +38,7 @@ bt_le_enabled = true
 discovery_period_seconds = 15
 dbus_method_call_timeout_seconds = 2
 
-[gnss_interfaces.axia]
+[gnss_interfaces.axia-208E35905643]
 active = false
 delay_seconds = 60
 
