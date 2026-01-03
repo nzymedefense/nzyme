@@ -1,11 +1,11 @@
-import React, {useMemo, useState, useEffect} from "react";
-import GenericWidgetLoadingSpinner from "../widgets/GenericWidgetLoadingSpinner";
+import React, { useMemo, useState, useEffect } from "react";
+import GenericWidgetLoadingSpinner from "../../widgets/GenericWidgetLoadingSpinner";
 import Plot from "react-plotly.js";
 import moment from "moment";
-import Store from "../../util/Store";
+import Store from "../../../util/Store";
 
-const STATE_MAP = { NoFix: 0, Fix2D: 1, Fix3D: 2 };
-const STATE_LABELS = ["NoFix", "Fix2D", "Fix3D"];
+const MULTIPATH_MAP = { 1: 0, 2: 1, 3: 2 };
+const MULTIPATH_LABELS = ["Low", "Medium", "High"];
 
 const NICE_BUCKETS_MIN = [1, 2, 5, 10, 15, 30, 60, 120, 240];
 
@@ -22,7 +22,7 @@ function startOfBucket(tsMs, bucketMs) {
   return Math.floor(tsMs / bucketMs) * bucketMs;
 }
 
-export default function GNSSFixStatusHistogram({fixStatusHistogram}) {
+export default function GNSSPRNMultipathIndexHistogram({ histogram, setTimeRange }) {
   const [darkMode, setDarkMode] = useState(Store.get('dark_mode'));
 
   useEffect(() => {
@@ -38,21 +38,18 @@ export default function GNSSFixStatusHistogram({fixStatusHistogram}) {
     };
   }, [darkMode]);
 
-  const { x, yLabels, z, textMatrix } = useMemo(() => {
-    if (!fixStatusHistogram) {
-      return { x: [], yLabels: [], z: [], textMatrix: [] };
+  const { x, z, textArray } = useMemo(() => {
+    if (!histogram) {
+      return { x: [], z: [[]], textArray: [[]] };
     }
 
-    const rows = Object.entries(fixStatusHistogram).map(([ts, vals]) => ({
+    const rows = Object.entries(histogram).map(([ts, value]) => ({
       t: new Date(ts).getTime(),
-      gps: vals.gps,
-      glonass: vals.glonass,
-      beidou: vals.beidou,
-      galileo: vals.galileo
+      value: value
     })).sort((a, b) => a.t - b.t);
 
     if (rows.length === 0) {
-      return { x: [], yLabels: [], z: [], textMatrix: [] };
+      return { x: [], z: [[]], textArray: [[]] };
     }
 
     const spanMs = rows[rows.length - 1].t - rows[0].t || 1;
@@ -77,39 +74,29 @@ export default function GNSSFixStatusHistogram({fixStatusHistogram}) {
       return { bStart, samples };
     });
 
-    const constellations = [
-      { key: "gps", label: "GPS" },
-      { key: "glonass", label: "GLONASS" },
-      { key: "beidou", label: "BeiDou" },
-      { key: "galileo", label: "Galileo" }
-    ];
+    const z = [buckets.map(({ samples }) => {
+      if (samples.length === 0) return null;
 
-    const z = constellations.map(c =>
-      buckets.map(({samples}) => {
-        if (samples.length === 0) return null;
-        let maxState = 0;
-        for (const s of samples) {
-          const v = STATE_MAP[s[c.key]] ?? 0;
-          if (v > maxState) maxState = v;
-        }
-        return maxState;
-      })
+      let maxIndex = 1;
+      for (const s of samples) {
+        if (s.value > maxIndex) maxIndex = s.value;
+      }
+
+      return MULTIPATH_MAP[maxIndex] ?? 0;
+    })];
+
+    const x = buckets.map(({ bStart }) =>
+      moment(bStart + bucketMs / 2).format("YYYY-MM-DD HH:mm")
     );
 
-    const yLabels = constellations.map(c => c.label);
-    const x = buckets.map(({bStart}) => moment(bStart + bucketMs / 2).format("YYYY-MM-DD HH:mm"));
+    const textArray = [z[0].map((val, colIdx) => {
+      const ts = moment(x[colIdx]).format("MMM D, YYYY, HH:mm");
+      const label = (val == null) ? "No data" : (MULTIPATH_LABELS[val] ?? "Low");
+      return `Multipath: ${label}<br>${ts}`;
+    })];
 
-    const textMatrix = z.map((row, rowIdx) =>
-      row.map((val, colIdx) => {
-        const label = yLabels[rowIdx];
-        const ts = moment(x[colIdx]).format("MMM D, YYYY, HH:mm");
-        const stateLabel = (val == null) ? "No data" : (STATE_LABELS[val] ?? "NoFix");
-        return `${label}<br>${stateLabel}<br>${ts}`;
-      })
-    );
-
-    return { x, yLabels, z, textMatrix };
-  }, [fixStatusHistogram]);
+    return { x, z, textArray };
+  }, [histogram]);
 
   const colors = useMemo(() => {
     if (darkMode) {
@@ -127,7 +114,7 @@ export default function GNSSFixStatusHistogram({fixStatusHistogram}) {
     }
   }, [darkMode]);
 
-  if (!fixStatusHistogram) {
+  if (!histogram) {
     return <GenericWidgetLoadingSpinner height={200} />;
   }
 
@@ -139,19 +126,19 @@ export default function GNSSFixStatusHistogram({fixStatusHistogram}) {
         {
           type: "heatmap",
           x,
-          y: yLabels,
+          y: ["Multipath"],
           z,
-          text: textMatrix,
+          text: textArray,
           hoverinfo: "text",
           zmin: 0,
           zmax: 2,
           colorscale: [
-            [0.00, "#dc3545"], // NoFix
-            [0.33, "#dc3545"],
-            [0.34, "#f0ad4e"], // Fix2D
+            [0.00, "#198754"],
+            [0.33, "#198754"],
+            [0.34, "#f0ad4e"],
             [0.66, "#f0ad4e"],
-            [0.67, "#198754"], // Fix3D
-            [1.00, "#198754"]
+            [0.67, "#dc3545"],
+            [1.00, "#dc3545"]
           ],
           zauto: false,
           connectgaps: false,
@@ -159,12 +146,12 @@ export default function GNSSFixStatusHistogram({fixStatusHistogram}) {
           colorbar: {
             tickmode: "array",
             tickvals: [0, 1, 2],
-            ticktext: ["NoFix", "Fix2D", "Fix3D"],
+            ticktext: ["Low", "Medium", "High"],
             thickness: 12,
             tickfont: { color: colors.text }
           },
           xgap: 0,
-          ygap: 1
+          ygap: 0
         }
       ]}
       layout={{

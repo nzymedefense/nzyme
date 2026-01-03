@@ -11,6 +11,7 @@ import GNSSPRNSkyPlot from "./GNSSPRNSkyPlot";
 import GNSSPRN from "../GNSSPRN";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import GNSSPRNDopplerHistogram from "./GNSSPRNDopplerHistogram";
+import GNSSPRNMultipathIndexHistogram from "./GNSSPRNMultipathIndexHistogram";
 
 const gnssService = new GnssService();
 
@@ -29,6 +30,7 @@ export default function GNSSPRNDetailsPage(props) {
   const [elevationHistogram, setElevationHistogram] = useState(null);
   const [azimuthHistogram, setAzimuthHistogram] = useState(null);
   const [dopplerHistogram, setDopplerHistogram] = useState(null);
+  const [multipathHistogram, setMultipathHistogram] = useState(null);
   const [elevationMask, setElevationMask] = useState(null);
 
   useEffect(() => {
@@ -44,12 +46,14 @@ export default function GNSSPRNDetailsPage(props) {
     setElevationHistogram(null);
     setAzimuthHistogram(null);
     setDopplerHistogram(null);
+    setMultipathHistogram(null);
     setElevationMask(null);
 
     gnssService.getPrnSnoHistogram(constellation, prn, timeRange, selectedTaps, setSnoHistogram);
     gnssService.getPrnElevationHistogram(constellation, prn, timeRange, selectedTaps, setElevationHistogram);
     gnssService.getPrnAzimuthHistogram(constellation, prn, timeRange, selectedTaps, setAzimuthHistogram);
     gnssService.getPrnDopplerHistogram(constellation, prn, timeRange, selectedTaps, setDopplerHistogram);
+    gnssService.getPrnMultipathHistogram(constellation, prn, timeRange, selectedTaps, setMultipathHistogram);
     gnssService.getElevationMask(selectedTaps, setElevationMask);
   }, [constellation, prn, selectedTaps, timeRange, revision]);
 
@@ -102,6 +106,7 @@ export default function GNSSPRNDetailsPage(props) {
                                      setTimeRange={setTimeRange}
                                      refreshAction={() => setRevision(new Date())} />
 
+              <GNSSPRNMultipathIndexHistogram histogram={multipathHistogram} />
             </div>
           </div>
         </div>

@@ -479,6 +479,33 @@ public class GNSSResource extends TapDataHandlingResource {
     }
 
     @GET
+    @Path("/constellations/{constellation}/prns/show/{prn}/multipath/histogram")
+    public Response constellationPrnMultipathIndexHistogram(@Context SecurityContext sc,
+                                                            @PathParam("constellation") String constellationParam,
+                                                            @PathParam("prn") @Min(1) int prn,
+                                                            @QueryParam("time_range") @Valid String timeRangeParameter,
+                                                            @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Bucketing.BucketingConfiguration bucketing = Bucketing.BucketingConfiguration.create(Bucketing.Type.MINUTE);
+
+        Constellation constellation;
+        try {
+            constellation = Constellation.valueOf(constellationParam);
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Map<DateTime, Integer> response = Maps.newHashMap();
+        for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
+                .getPrnMultipathIndexHistogram(constellation, prn, timeRange, bucketing, taps)) {
+            response.put(bucket.bucket(), bucket.value());
+        }
+
+        return Response.ok(response).build();
+    }
+
+    @GET
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
     @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules/show/{uuid}")
     public Response findMonitoringRule(@Context SecurityContext sc,

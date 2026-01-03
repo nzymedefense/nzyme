@@ -138,6 +138,15 @@ export default class GnssService {
     )
   }
 
+  getPrnMultipathHistogram(constellation, prn, timeRange, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get(`/gnss/constellations/${constellation}/prns/show/${prn}/multipath/histogram`,
+      { time_range: timeRange, taps: tapsList },
+      (response) => setHistogram(response.data)
+    )
+  }
+
   findMonitoringRule(uuid, organizationId, tenantId, setRule) {
     RESTClient.get(`/gnss/monitoring/organization/${organizationId}/tenant/${tenantId}/rules/show/${uuid}`,
         {}, (response) => setRule(response.data)

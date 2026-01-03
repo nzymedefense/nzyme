@@ -522,6 +522,34 @@ public class GNSS {
         );
     }
 
+    public List<GenericIntegerHistogramEntry> getPrnMultipathIndexHistogram(Constellation constellation,
+                                                                            int prn,
+                                                                            TimeRange timeRange,
+                                                                            Bucketing.BucketingConfiguration bucketing,
+                                                                            List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT date_trunc(:date_trunc, c.timestamp) AS bucket, " +
+                                "MAX(s.maximum_multipath_indicator) AS value " +
+                                "FROM gnss_constellations AS c " +
+                                "LEFT JOIN public.gnss_sats_in_view s ON c.id = s.gnss_constellation_id " +
+                                "WHERE s.prn = :prn AND c.constellation = :constellation AND timestamp >= :tr_from " +
+                                "AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("constellation", constellation)
+                        .bind("prn", prn)
+                        .bind("date_trunc", bucketing.type().getDateTruncName())
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(GenericIntegerHistogramEntry.class)
+                        .list()
+        );
+    }
+
     public List<GNSSElevationMaskAzimuthBucket> getElevationMask(List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
