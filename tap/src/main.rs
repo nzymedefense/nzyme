@@ -470,7 +470,6 @@ fn main() {
 
     // GNSS capture.
     if let Some(gnss_interfaces) = &configuration.gnss_interfaces {
-        let mut axias = 0;
         for (interface_name, interface_config) in gnss_interfaces {
             if !interface_config.active {
                 info!("Skipping disabled GNSS interface [{}].", interface_name);
@@ -491,13 +490,6 @@ fn main() {
                         }
                     };
 
-                    // Axia.
-                    if axias > 1 {
-                        warn!("More than one Axia GNSS receiver configured. \
-                            Skipping any additional.");
-                        return;
-                    }
-
                     match capture_metrics.lock() {
                         Ok(mut metrics) => metrics.register_new_capture(
                             &interface_name, metrics::CaptureType::Gnss
@@ -505,7 +497,6 @@ fn main() {
                         Err(e) => error!("Could not acquire mutex of metrics: {}", e)
                     }
 
-                    axias = 1;
                     let mut axia_capture = axia::capture::Capture {
                         metrics: capture_metrics.clone(), bus: capture_bus
                     };
