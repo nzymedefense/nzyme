@@ -1,11 +1,11 @@
 use std::sync::{Arc, Mutex};
-use log::error;
+use log::{error, info};
 use crate::context::context_engine::ContextEngine;
 use crate::context::context_source::ContextSource;
 use crate::to_pipeline;
 use crate::protocols::detection::l7_tagger::L7Tag;
-use crate::protocols::detection::l7_tagger::L7Tag::{Unencrypted, DHCP4, DNS};
-use crate::protocols::parsers::{dhcpv4_parser, dns_parser};
+use crate::protocols::detection::l7_tagger::L7Tag::{Unencrypted, DHCP4, DNS, NTP};
+use crate::protocols::parsers::{dhcpv4_parser, dns_parser, ntp_parser};
 use crate::state::tables::udp_table::UdpTable;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::messagebus::bus::Bus;
@@ -90,6 +90,23 @@ impl UDPProcessor {
                 Arc::new(dhcp),
                 size
             );
+        }
+
+        if let Some(ntp) = ntp_parser::parse(datagram) {
+            tags.push(NTP);
+            tags.push(Unencrypted);
+
+            let transmit_timestamp = match ntp.transmit_timestamp {
+                Some(tt) => tt.to_datetime_utc(),
+                None => None
+            };
+
+            info!("NTP [{:?}]: {}:{} -> {}:{} = {:?} (Ver: {}, Mode: {}, Stratum: {})",
+                ntp.ntp_type,
+                ntp.source_address, ntp.source_port, ntp.destination_address,
+                ntp.destination_port, transmit_timestamp, ntp.version, ntp.mode, ntp.stratum);
+
+            // TODO: To NTP pipeline.
         }
 
         tags

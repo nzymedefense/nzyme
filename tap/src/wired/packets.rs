@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::mem;
 use std::net::IpAddr;
 use std::sync::Mutex;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc, TimeZone};
 use strum_macros::Display;
 use crate::protocols::detection::l7_tagger::L7Tag;
 use crate::protocols::parsers::l4_key::L4Key;
@@ -529,4 +529,71 @@ pub enum Dhcpv4TransactionNote {
     ServerMacChanged,
     OptionsChanged,
     VendorClassChanged
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NtpPacketType {
+    Client,
+    Server,
+    Broadcast,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct NtpTimestamp {
+    pub seconds: u32,
+    pub fraction: u32,
+}
+
+impl NtpTimestamp {
+    pub fn is_zero(&self) -> bool {
+        self.seconds == 0 && self.fraction == 0
+    }
+
+    pub fn to_datetime_utc(&self) -> Option<DateTime<Utc>> {
+        if self.is_zero() {
+            return None;
+        }
+
+        // NTP epoch (1900-01-01) to Unix epoch (1970-01-01) delta.
+        const NTP_UNIX_EPOCH_DELTA: i64 = 2_208_988_800;
+        let unix_secs = (self.seconds as i64).checked_sub(NTP_UNIX_EPOCH_DELTA)?;
+
+        // Fraction is / 2^32 seconds. Convert to nanoseconds.
+        // nanos = fraction * 1e9 / 2^32
+        let nanos = ((self.fraction as u64) * 1_000_000_000u64) >> 32;
+
+        // Chrono expects nanos < 1e9
+        if nanos >= 1_000_000_000 {
+            return None;
+        }
+
+        Some(Utc.timestamp_opt(unix_secs, nanos as u32).single()?)
+    }
+}
+
+#[derive(Debug)]
+pub struct NtpPacket {
+    pub source_mac: Option<String>,
+    pub destination_mac: Option<String>,
+    pub source_address: IpAddr,
+    pub destination_address: IpAddr,
+    pub source_port: u16,
+    pub destination_port: u16,
+    pub size: u32,
+    pub timestamp: DateTime<Utc>, // Packet/Receive timestamp
+    pub ntp_type: NtpPacketType,
+    pub leap_indicator: u8,
+    pub version: u8,
+    pub mode: u8,
+    pub stratum: u8,
+    pub poll: i8,
+    pub precision: i8,
+    pub root_delay_seconds: f64,
+    pub root_dispersion_seconds: f64,
+    pub reference_id: u32,
+    pub reference_timestamp: Option<NtpTimestamp>,
+    pub origin_timestamp: Option<NtpTimestamp>,
+    pub receive_timestamp: Option<NtpTimestamp>,
+    pub transmit_timestamp: Option<NtpTimestamp>,
+    pub transmit_time_utc: Option<DateTime<Utc>>,
 }

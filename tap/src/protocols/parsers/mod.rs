@@ -8,3 +8,4 @@ pub mod dhcpv4_parser;
 pub mod l4_key;
 pub mod udp_parser;
 pub mod nmea_parser;
+pub mod ntp_parser;

@@ -28,7 +28,8 @@ pub enum L7Tag {
     DNS,
     SSH,
     SOCKS,
-    DHCP4
+    DHCP4,
+    NTP
 }
 
 pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>,
