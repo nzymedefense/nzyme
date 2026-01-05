@@ -1,8 +1,8 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::net::IpAddr;
 use std::sync::{Arc, LockResult, Mutex, MutexGuard};
 use chrono::{DateTime, Duration, Utc};
-use log::{error};
+use log::{error, info};
 use strum_macros::Display;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::wired::packets::Datagram;
@@ -13,6 +13,8 @@ use crate::metrics::Metrics;
 use crate::protocols::detection::l7_tagger::{tag_udp_sessions, L7Tag};
 use crate::protocols::parsers::l4_key::L4Key;
 use crate::wired::traffic_direction::TrafficDirection;
+
+const MAX_BYTES_PER_DIRECTION: usize = 256;
 
 pub struct UdpTable {
     leaderlink: Arc<Mutex<Leaderlink>>,
@@ -39,8 +41,8 @@ pub struct UdpConversation {
     pub bytes_count_tx: u64,
     pub bytes_count_rx_incremental: u64, // New bytes since last report.
     pub bytes_count_tx_incremental: u64, // New bytes since last report.
-    pub datagrams_client_to_server: Vec<Vec<u8>>,
-    pub datagrams_server_to_client: Vec<Vec<u8>>,
+    pub datagrams_client_to_server: VecDeque<Vec<u8>>,
+    pub datagrams_server_to_client: VecDeque<Vec<u8>>,
     pub tags: HashSet<L7Tag>
 }
 
@@ -94,9 +96,9 @@ impl UdpTable {
 
                         match traffic_direction {
                             TrafficDirection::ClientToServer =>
-                                c.datagrams_client_to_server.push(datagram.payload.clone()),
+                                push_bounded(&mut c.datagrams_client_to_server, datagram.payload.clone()),
                             TrafficDirection::ServerToClient =>
-                                c.datagrams_server_to_client.push(datagram.payload.clone())
+                                push_bounded(&mut c.datagrams_server_to_client, datagram.payload.clone()),
                         }
 
                         c.tags.extend(tags);
@@ -114,14 +116,14 @@ impl UdpTable {
 
                         let (bytes_tx, bytes_rx) = datagram.get_directional_byte_counts();
 
-                        let mut datagrams_client_to_server = vec![];
-                        let mut datagrams_server_to_client = vec![];
+                        let mut datagrams_client_to_server = VecDeque::new();
+                        let mut datagrams_server_to_client = VecDeque::new();
 
                         match traffic_direction {
                             TrafficDirection::ClientToServer =>
-                                datagrams_client_to_server.push(datagram.payload.clone()),
+                                push_bounded(&mut datagrams_client_to_server, datagram.payload.clone()),
                             TrafficDirection::ServerToClient =>
-                                datagrams_server_to_client.push(datagram.payload.clone())
+                                push_bounded(&mut datagrams_server_to_client, datagram.payload.clone())
                         }
 
                         conversations.insert(
@@ -216,7 +218,6 @@ impl UdpTable {
 
                 // Delete all closed conversations.
                 conversations.retain(|_key, c| c.state != UdpConversationState::Closed);
-
                 // Reset all incremental counters.
                 incremental_counter_sweep(&mut conversations);
             },
@@ -253,4 +254,21 @@ fn incremental_counter_sweep(sessions: &mut MutexGuard<HashMap<L4Key, UdpConvers
         session.bytes_count_rx_incremental = 0;
         session.bytes_count_tx_incremental = 0;
     }
+}
+
+fn push_bounded(q: &mut VecDeque<Vec<u8>>, payload: Vec<u8>) {
+    // Current size.
+    let size: usize = q.iter().map(|v| v.len()).sum();
+
+    // If already full, exit.
+    if size >= MAX_BYTES_PER_DIRECTION {
+        return;
+    }
+
+    // If this datagram would exceed the maximum size, exit.
+    if size + payload.len() > MAX_BYTES_PER_DIRECTION {
+        return;
+    }
+
+    q.push_back(payload);
 }
