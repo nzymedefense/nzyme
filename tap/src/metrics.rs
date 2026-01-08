@@ -63,6 +63,7 @@ pub struct Channels {
     socks_pipeline: ChannelUtilization,
     ssh_pipeline: ChannelUtilization,
     dhcpv4_pipeline: ChannelUtilization,
+    ntp_pipeline: ChannelUtilization,
 
     uav_remote_id_pipeline: ChannelUtilization,
 
@@ -223,6 +224,7 @@ impl Metrics {
             "SocksPipeline" => &mut self.channels.socks_pipeline,
             "SshPipeline" => &mut self.channels.ssh_pipeline,
             "Dhcpv4Pipeline" => &mut self.channels.dhcpv4_pipeline,
+            "NtpPipeline" => &mut self.channels.ntp_pipeline,
             "UavRemoteIdPipeline" => &mut self.channels.uav_remote_id_pipeline,
             "GnssNmeaMessagesPipeline" => &mut self.channels.gnss_nmea_pipeline,
             "GnssUbxMonRfPipeline" => &mut self.channels.gnss_ubx_mon_rf_pipeline,

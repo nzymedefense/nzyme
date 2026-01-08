@@ -16,7 +16,9 @@ use crate::metrics::Metrics;
 use crate::state::tables::arp_table::ArpTable;
 use crate::state::tables::dhcp_table::DhcpTable;
 use crate::state::tables::gnss_monitor_table::GnssMonitorTable;
+use crate::state::tables::ntp_table::NtpTable;
 use crate::state::tables::uav_table::UavTable;
+use crate::wired::packets::NtpPacket;
 use crate::wireless::dot11::engagement::engagement_control::EngagementControl;
 
 pub struct Tables {
@@ -29,6 +31,7 @@ pub struct Tables {
     pub dns: Arc<Mutex<DnsTable>>,
     pub ssh: Arc<Mutex<SshTable>>,
     pub socks: Arc<Mutex<SocksTable>>,
+    pub ntp: Arc<Mutex<NtpTable>>,
     pub uav: Arc<Mutex<UavTable>>,
     pub gnss_monitor: Arc<Mutex<GnssMonitorTable>>
 }
@@ -61,6 +64,7 @@ impl Tables {
             udp: Arc::new(Mutex::new(UdpTable::new(leaderlink.clone(), ethernet_bus.clone(), metrics.clone()))),
             ssh: Arc::new(Mutex::new(SshTable::new(leaderlink.clone(), metrics.clone()))),
             socks: Arc::new(Mutex::new(SocksTable::new(leaderlink.clone(), metrics.clone()))),
+            ntp: Arc::new(Mutex::new(NtpTable::new(leaderlink.clone(), metrics.clone()))),
             uav: Arc::new(Mutex::new(UavTable::new(leaderlink.clone(), metrics.clone(), engagement_control))),
             gnss_monitor: Arc::new(Mutex::new(GnssMonitorTable::new(leaderlink.clone(), metrics)))
         }
@@ -135,6 +139,14 @@ impl Tables {
                 Ok(socks) => {
                     socks.calculate_metrics();
                     socks.process_report();
+                },
+                Err(e) => error!("Could not acquire SOCKS table lock for report processing: {}", e)
+            }
+
+            match self.ntp.lock() {
+                Ok(ntp) => {
+                    ntp.calculate_metrics();
+                    ntp.process_report();
                 },
                 Err(e) => error!("Could not acquire SOCKS table lock for report processing: {}", e)
             }

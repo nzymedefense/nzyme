@@ -11,3 +11,4 @@ pub mod bluetooth_device_processor;
 pub mod gnss_nmea_processor;
 pub mod gnss_ubx_monrf_processor;
 pub mod gnss_ubx_rxm_measx_processor;
+pub mod ntp_processor;

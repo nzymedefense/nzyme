@@ -9,7 +9,8 @@ pub enum WiredChannelName {
     DnsPipeline,
     SocksPipeline,
     SshPipeline,
-    Dhcpv4Pipeline
+    Dhcpv4Pipeline,
+    NtpPipeline
 }
 
 #[derive(Debug, Clone, EnumIter, Display)]

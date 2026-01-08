@@ -10,3 +10,4 @@ pub mod uav_table;
 pub mod dhcp_table;
 pub mod arp_table;
 pub mod gnss_monitor_table;
+pub mod ntp_table;

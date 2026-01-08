@@ -12,8 +12,8 @@ pub struct L4Key {
 impl L4Key {
     pub fn new(source_address: IpAddr,
                source_port: u16,
-               destination_address:
-               IpAddr, destination_port: u16) -> Self {
+               destination_address: IpAddr,
+               destination_port: u16) -> Self {
         if (source_address, source_port) <= (destination_address, destination_port) {
             L4Key {
                 address_low: source_address,

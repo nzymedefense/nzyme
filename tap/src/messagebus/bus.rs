@@ -6,7 +6,7 @@ use log::{debug, error};
 use crate::metrics::Metrics;
 use crate::wireless::bluetooth::bluetooth_device_advertisement::BluetoothDeviceAdvertisement;
 use crate::configuration::Configuration;
-use crate::wired::packets::{Dhcpv4Packet, SocksTunnel, SshSession};
+use crate::wired::packets::{Dhcpv4Packet, NtpPacket, SocksTunnel, SshSession};
 use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
 use crate::protocols::detection::taggers::remoteid::messages::UavRemoteIdMessage;
 use crate::wired::packets::{
@@ -37,6 +37,7 @@ pub struct Bus {
     pub ssh_pipeline: NzymeChannel<SshSession>,
     pub socks_pipeline: NzymeChannel<SocksTunnel>,
     pub dhcpv4_pipeline: NzymeChannel<Dhcpv4Packet>,
+    pub ntp_pipeline: NzymeChannel<NtpPacket>,
     
     pub uav_remote_id_pipeline: NzymeChannel<UavRemoteIdMessage>,
 
@@ -113,6 +114,8 @@ impl Bus<> {
             bounded(configuration.protocols.ssh.pipeline_size as usize);
         let (dhcpv4_pipeline_sender, dhcpv4_pipeline_receiver) =
             bounded(configuration.protocols.dhcpv4.pipeline_size as usize);
+        let (ntp_pipeline_sender, ntp_pipeline_receiver) =
+            bounded(configuration.protocols.ntp.pipeline_size as usize);
 
         let (uav_remote_id_sender, uav_remote_id_receiver) =
             bounded(configuration.protocols.uav_remote_id.pipeline_size as usize);
@@ -215,6 +218,14 @@ impl Bus<> {
                     name: WiredChannelName::Dhcpv4Pipeline.to_string()
                 }),
                 receiver: Arc::new(dhcpv4_pipeline_receiver),
+            },
+            ntp_pipeline: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics: metrics.clone(),
+                    sender: ntp_pipeline_sender,
+                    name: WiredChannelName::NtpPipeline.to_string()
+                }),
+                receiver: Arc::new(ntp_pipeline_receiver),
             },
             uav_remote_id_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {

@@ -96,17 +96,13 @@ impl UDPProcessor {
             tags.push(NTP);
             tags.push(Unencrypted);
 
-            let transmit_timestamp = match ntp.transmit_timestamp {
-                Some(tt) => tt.to_datetime_utc(),
-                None => None
-            };
-
-            info!("NTP [{:?}]: {}:{} -> {}:{} = {:?} (Ver: {}, Mode: {}, Stratum: {})",
-                ntp.ntp_type,
-                ntp.source_address, ntp.source_port, ntp.destination_address,
-                ntp.destination_port, transmit_timestamp, ntp.version, ntp.mode, ntp.stratum);
-
-            // TODO: To NTP pipeline.
+            let size = ntp.estimate_struct_size();
+            to_pipeline!(
+                WiredChannelName::NtpPipeline,
+                self.bus.ntp_pipeline.sender,
+                Arc::new(ntp),
+                size
+            );
         }
 
         tags

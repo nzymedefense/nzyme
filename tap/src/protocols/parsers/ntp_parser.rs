@@ -29,7 +29,6 @@ pub fn parse(udp: &Arc<Datagram>) -> Option<NtpPacket> {
     let ntp_type = match mode {
         3 => NtpPacketType::Client,
         4 => NtpPacketType::Server,
-        5 => NtpPacketType::Broadcast,
         _ => {
             tracemark!("Invalid mode: [{}]", mode);
             return None;

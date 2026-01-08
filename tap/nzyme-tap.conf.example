@@ -74,6 +74,9 @@ pipeline_size = 1024
 [protocols.socks]
 pipeline_size = 1024
 
+[protocols.ntp]
+pipeline_size = 1024
+
 [protocols.arp]
 pipeline_size = 1024
 poisoning_monitor = true

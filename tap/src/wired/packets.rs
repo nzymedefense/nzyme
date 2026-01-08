@@ -534,8 +534,7 @@ pub enum Dhcpv4TransactionNote {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NtpPacketType {
     Client,
-    Server,
-    Broadcast,
+    Server
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -571,7 +570,7 @@ impl NtpTimestamp {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NtpPacket {
     pub source_mac: Option<String>,
     pub destination_mac: Option<String>,
@@ -596,4 +595,51 @@ pub struct NtpPacket {
     pub receive_timestamp: Option<NtpTimestamp>,
     pub transmit_timestamp: Option<NtpTimestamp>,
     pub transmit_time_utc: Option<DateTime<Utc>>,
+}
+
+impl NtpPacket {
+    pub fn estimate_struct_size(&self) -> u32 {
+        let mut size: u32 = 0;
+
+        size += size_of::<IpAddr>() as u32 * 2;
+        size += size_of::<u16>() as u32 * 2;
+        size += size_of::<u32>() as u32 * 2;
+
+        size += size_of::<NtpPacketType>() as u32;
+
+        size += size_of::<u8>() as u32 * 4;
+        size += size_of::<i8>() as u32 * 2;
+
+        size += size_of::<f64>() as u32 * 2;
+
+        size += size_of::<DateTime<Utc>>() as u32;
+
+        const STRING_OVERHEAD: u32 = 0;
+
+        if let Some(s) = &self.source_mac {
+            size += STRING_OVERHEAD + s.len() as u32;
+        }
+        if let Some(s) = &self.destination_mac {
+            size += STRING_OVERHEAD + s.len() as u32;
+        }
+
+        if self.reference_timestamp.is_some() {
+            size += size_of::<NtpTimestamp>() as u32;
+        }
+        if self.origin_timestamp.is_some() {
+            size += size_of::<NtpTimestamp>() as u32;
+        }
+        if self.receive_timestamp.is_some() {
+            size += size_of::<NtpTimestamp>() as u32;
+        }
+        if self.transmit_timestamp.is_some() {
+            size += size_of::<NtpTimestamp>() as u32;
+        }
+
+        if self.transmit_time_utc.is_some() {
+            size += size_of::<DateTime<Utc>>() as u32;
+        }
+
+        size
+    }
 }

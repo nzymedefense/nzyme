@@ -5,7 +5,6 @@ use log::{error, info};
 use crate::configuration::Configuration;
 use crate::context::context_engine::ContextEngine;
 use crate::messagebus::bus::Bus;
-use crate::messagebus::channel_names::GenericChannelName::GnssUbxRxmMeasxPipeline;
 use crate::metrics::Metrics;
 use crate::protocols::processors::arp_processor::ARPProcessor;
 use crate::protocols::processors::dhcpv4_processor::Dhcpv4Processor;
@@ -23,6 +22,7 @@ use crate::protocols::processors::bluetooth_device_processor::BluetoothDevicePro
 use crate::protocols::processors::gnss_nmea_processor::GnssNmeaProcessor;
 use crate::protocols::processors::gnss_ubx_monrf_processor::GnssUbxMonRfProcessor;
 use crate::protocols::processors::gnss_ubx_rxm_measx_processor::GnssUbxRxmMeasxProcessor;
+use crate::protocols::processors::ntp_processor::NtpProcessor;
 
 const DEFAULT_WIFI_PROCESSORS: i32 = 1;
 const DEFAULT_TCP_PROCESSORS: i32 = 2;
@@ -179,7 +179,8 @@ impl ProcessorController {
             );
             let mut ssh_processor = SshProcessor::new(self.metrics.clone(), self.tables.ssh.clone());
             let mut socks_processor = SocksProcessor::new(self.metrics.clone(), self.tables.socks.clone());
-            
+            let mut ntp_processor = NtpProcessor::new(self.tables.ntp.clone());
+
             thread::spawn(move || {
                 loop {
                     select! {
@@ -278,6 +279,16 @@ impl ProcessorController {
                                 Ok(packet) => socks_processor.process(packet),
                                 Err(e) => {
                                     error!("SOCKS receiver disconnected: {}", e);
+                                    break;
+                                }
+                            }
+                        }
+
+                        recv(ethernet_bus.ntp_pipeline.receiver) -> msg => {
+                            match msg {
+                                Ok(packet) => ntp_processor.process(packet),
+                                Err(e) => {
+                                    error!("NTP receiver disconnected: {}", e);
                                     break;
                                 }
                             }
