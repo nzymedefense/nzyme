@@ -1,11 +1,14 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
 use std::sync::{Arc, Mutex};
+use anyhow::{bail, Error};
+use chrono::{Duration, Utc};
 use log::error;
+use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
+use crate::link::reports::ntp_transactions_report;
 use crate::metrics::Metrics;
 use crate::protocols::parsers::l4_key::L4Key;
-use crate::state::tables::table_helpers::clear_mutex_hashmap;
 use crate::wired::packets::{NtpPacket, NtpPacketType, NtpTimestamp};
 
 pub struct NtpTable {
@@ -18,6 +21,7 @@ pub struct NtpTable {
 pub struct NtpTransaction {
     pub request: Option<NtpPacket>,
     pub response: Option<NtpPacket>,
+    pub notes: HashSet<String>
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
@@ -76,7 +80,7 @@ impl NtpTable {
                 let t1 = match packet.transmit_timestamp.as_ref() {
                     Some(t1) => t1,
                     None => {
-                        // TODO trigger alert: client packet missing transmit timestamp
+                        // TODO add note: client packet missing transmit timestamp
                         return;
                     }
                 };
@@ -88,7 +92,7 @@ impl NtpTable {
                 let t1_echo = match packet.origin_timestamp.as_ref() {
                     Some(o) => o,
                     None => {
-                        // TODO trigger alert: server packet missing origin timestamp
+                        // TODO add note: server packet missing origin timestamp
                         return;
                     }
                 };
@@ -102,6 +106,7 @@ impl NtpTable {
                 let tx = transactions.entry(key).or_insert_with(|| NtpTransaction {
                     request: None,
                     response: None,
+                    notes: HashSet::new()
                 });
 
                 match packet.ntp_type {
@@ -124,21 +129,82 @@ impl NtpTable {
     }
 
     pub fn process_report(&self) {
-        match self.transactions.lock() {
-            Ok(mut txs) => {
-                // TODO
+        /*
+         * We report all transactions that are at least 5 seconds old. This gives them
+         * plenty of time to complete, while we can still detect things like multiple
+         * responses to a single request etc.
+         *
+         * This step also removes those transactions from the table.
+         */
+        match self.filter_and_clear_transactions_older_than(Duration::seconds(5)) {
+            Ok(filtered) => {
+                // Generate JSON.
+                let mut timer = Timer::new();
+                let report = match serde_json::to_string(
+                        &ntp_transactions_report::generate(&filtered)) {
+                    Ok(report) => report,
+                    Err(e) => {
+                        error!("Could not serialize NTP transactions report: {}", e);
+                        return;
+                    }
+                };
+                timer.stop();
+                record_timer(
+                    timer.elapsed_microseconds(),
+                    "tables.ntp.timer.report_generation",
+                    &self.metrics
+                );
 
-                // Report complete transactions. Give them 5 seconds to accum some notes.
-                // Report incomplete/failed transactions if no activity in 5 sec
-
+                // Send report.
+                match self.leaderlink.lock() {
+                    Ok(link) => {
+                        if let Err(e) = link.send_report("ntp/transactions", report) {
+                            error!("Could not submit NTP transactions report: {}", e);
+                        }
+                    },
+                    Err(e) => error!("Could not acquire leader link lock for NTP \
+                        transactions report submission: {}", e)
+                }
             },
             Err(e) => {
-                error!("Could not acquire NTP transactions mutex: {}", e);
+                error!("Could not filter NTP transactions for report processing: {}", e)
             }
         }
+    }
 
-        // TODO: REPLACE WITH REAL CLEANING
-        clear_mutex_hashmap(&self.transactions);
+    pub fn filter_and_clear_transactions_older_than(&self, min_age: Duration)
+            -> Result<Vec<NtpTransaction>, Error> {
+        let cutoff = Utc::now() - min_age;
+
+        match self.transactions.lock() {
+            Ok(mut transactions) => {
+                // Collect the keys to remove.
+                let keys_to_take: Vec<NtpTransactionKey> = transactions
+                    .iter()
+                    .filter_map(|(k, tx)| {
+                        let last_seen = match (tx.request.as_ref(), tx.response.as_ref()) {
+                            (Some(req), Some(resp)) => {
+                                if resp.timestamp > req.timestamp { resp.timestamp } else { req.timestamp }
+                            }
+                            (Some(req), None) => req.timestamp,
+                            (None, Some(resp)) => resp.timestamp,
+                            (None, None) => return None,
+                        };
+
+                        if last_seen <= cutoff { Some(k.clone()) } else { None }
+                    })
+                    .collect();
+
+                // Remove and return them
+                Ok(keys_to_take
+                    .into_iter()
+                    .filter_map(|k| transactions.remove(&k))
+                    .collect())
+            },
+            Err(e) => {
+                bail!("Could not acquire NTP transactions mutex: {}", e);
+            }
+        }
     }
 
     pub fn calculate_metrics(&self) {
