@@ -20,6 +20,10 @@ public class TCP {
     public Optional<TcpSessionEntry> findSessionBySessionKey(String sessionKey,
                                                              DateTime sessionStartTime,
                                                              List<UUID> taps) {
+        if (sessionKey == null || sessionStartTime == null || taps.isEmpty()) {
+            return Optional.empty();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
             handle.createQuery("SELECT * FROM l4_sessions WHERE session_key = :session_key " +
                             "AND start_time >= :tr_from AND start_time <= :tr_to AND tap_uuid IN (<taps>) " +
@@ -29,7 +33,7 @@ public class TCP {
                     .bind("tr_to", sessionStartTime.plusMinutes(1))
                     .bindList("taps", taps)
                     .mapTo(TcpSessionEntry.class)
-                    .findOne() // In case of the sane session recorded by multiple taps, we take the most recent one.
+                    .findOne() // In case of the same session recorded by multiple taps, we take the most recent one.
         );
     }
 

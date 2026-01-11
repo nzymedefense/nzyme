@@ -76,87 +76,60 @@ impl UdpTable {
             }
         };
 
+        // TODO only write to existing conversation if < 5 sec (configurable)
+
         match self.conversations.lock() {
             Ok(mut conversations) => {
                 match conversations.get_mut(&datagram.session_key) {
                     Some(c) => {
                         // Existing conversation.
-                        let mut timer = Timer::new();
 
-                        let (bytes_tx, bytes_rx) = datagram.get_directional_byte_counts();
+                        /*
+                         * Unlike TCP, UDP has no observable connection setup and teardown. This is
+                         * why we need to expire inactive conversations very fast. For example,
+                         * fast-acting NTP clients would be summarized into a single UDP
+                         * conversation, making it impossible to correlate the individual NTP
+                         * transactions to the underlying UDP conversation.
+                         */
 
-                        c.bytes_count_rx += bytes_rx;
-                        c.bytes_count_tx += bytes_tx;
-                        c.bytes_count_rx_incremental += bytes_rx;
-                        c.bytes_count_tx_incremental += bytes_tx;
+                        if c.most_recent_segment_time < Utc::now() - Duration::seconds(3) {
+                            self.insert_new_conversation(
+                                &traffic_direction, datagram, tags, &mut conversations
+                            )
+                        } else {
+                            let mut timer = Timer::new();
+                            let (bytes_tx, bytes_rx) = datagram.get_directional_byte_counts();
 
-                        c.most_recent_segment_time = datagram.timestamp;
-                        c.datagrams_count += 1;
-                        c.datagrams_count_incremental += 1;
+                            c.bytes_count_rx += bytes_rx;
+                            c.bytes_count_tx += bytes_tx;
+                            c.bytes_count_rx_incremental += bytes_rx;
+                            c.bytes_count_tx_incremental += bytes_tx;
 
-                        match traffic_direction {
-                            TrafficDirection::ClientToServer =>
-                                push_bounded(&mut c.datagrams_client_to_server, datagram.payload.clone()),
-                            TrafficDirection::ServerToClient =>
-                                push_bounded(&mut c.datagrams_server_to_client, datagram.payload.clone()),
+                            c.most_recent_segment_time = datagram.timestamp;
+                            c.datagrams_count += 1;
+                            c.datagrams_count_incremental += 1;
+
+                            match traffic_direction {
+                                TrafficDirection::ClientToServer =>
+                                    push_bounded(&mut c.datagrams_client_to_server, datagram.payload.clone()),
+                                TrafficDirection::ServerToClient =>
+                                    push_bounded(&mut c.datagrams_server_to_client, datagram.payload.clone()),
+                            }
+
+                            c.tags.extend(tags);
+
+                            timer.stop();
+                            record_timer(
+                                timer.elapsed_microseconds(),
+                                "tables.udp.conversations.timer.register_existing",
+                                &self.metrics
+                            );
                         }
-
-                        c.tags.extend(tags);
-
-                        timer.stop();
-                        record_timer(
-                            timer.elapsed_microseconds(),
-                            "tables.udp.conversations.timer.register_existing",
-                            &self.metrics
-                        );
                     },
                     None => {
-                        // New conversation.
-                        let mut timer = Timer::new();
-
-                        let (bytes_tx, bytes_rx) = datagram.get_directional_byte_counts();
-
-                        let mut datagrams_client_to_server = VecDeque::new();
-                        let mut datagrams_server_to_client = VecDeque::new();
-
-                        match traffic_direction {
-                            TrafficDirection::ClientToServer =>
-                                push_bounded(&mut datagrams_client_to_server, datagram.payload.clone()),
-                            TrafficDirection::ServerToClient =>
-                                push_bounded(&mut datagrams_server_to_client, datagram.payload.clone())
-                        }
-
-                        conversations.insert(
-                            datagram.session_key.clone(),
-                            UdpConversation {
-                                state: UdpConversationState::Active,
-                                source_mac: datagram.source_mac.clone(),
-                                destination_mac: datagram.destination_mac.clone(),
-                                source_address: datagram.source_address,
-                                source_port: datagram.source_port,
-                                destination_address: datagram.destination_address,
-                                destination_port: datagram.destination_port,
-                                start_time: datagram.timestamp,
-                                end_time: None,
-                                most_recent_segment_time: datagram.timestamp,
-                                datagrams_count: 1,
-                                datagrams_count_incremental: 1,
-                                bytes_count_rx: bytes_rx,
-                                bytes_count_tx: bytes_tx,
-                                bytes_count_rx_incremental: bytes_rx,
-                                bytes_count_tx_incremental: bytes_tx,
-                                datagrams_client_to_server,
-                                datagrams_server_to_client,
-                                tags,
-                            }
-                        );
-
-                        timer.stop();
-                        record_timer(
-                            timer.elapsed_microseconds(),
-                            "tables.udp.conversations.timer.register_new",
-                            &self.metrics
-                        );
+                        self.insert_new_conversation(
+                            &traffic_direction, datagram, tags, &mut conversations
+                        )
                     }
                 }
             }
@@ -164,6 +137,56 @@ impl UdpTable {
                 error!("Could not acquire UDP conversations table mutex: {}", e);
             }
         }
+    }
+
+
+    fn insert_new_conversation(&self, traffic_direction: &TrafficDirection, datagram: Arc<Datagram>, tags: HashSet<L7Tag>, conversations: &mut MutexGuard<HashMap<L4Key, UdpConversation>>) {
+        // New conversation.
+        let mut timer = Timer::new();
+
+        let (bytes_tx, bytes_rx) = datagram.get_directional_byte_counts();
+
+        let mut datagrams_client_to_server = VecDeque::new();
+        let mut datagrams_server_to_client = VecDeque::new();
+
+        match traffic_direction {
+            TrafficDirection::ClientToServer =>
+                push_bounded(&mut datagrams_client_to_server, datagram.payload.clone()),
+            TrafficDirection::ServerToClient =>
+                push_bounded(&mut datagrams_server_to_client, datagram.payload.clone())
+        }
+
+        conversations.insert(
+            datagram.session_key.clone(),
+            UdpConversation {
+                state: UdpConversationState::Active,
+                source_mac: datagram.source_mac.clone(),
+                destination_mac: datagram.destination_mac.clone(),
+                source_address: datagram.source_address,
+                source_port: datagram.source_port,
+                destination_address: datagram.destination_address,
+                destination_port: datagram.destination_port,
+                start_time: datagram.timestamp,
+                end_time: None,
+                most_recent_segment_time: datagram.timestamp,
+                datagrams_count: 1,
+                datagrams_count_incremental: 1,
+                bytes_count_rx: bytes_rx,
+                bytes_count_tx: bytes_tx,
+                bytes_count_rx_incremental: bytes_rx,
+                bytes_count_tx_incremental: bytes_tx,
+                datagrams_client_to_server,
+                datagrams_server_to_client,
+                tags,
+            }
+        );
+
+        timer.stop();
+        record_timer(
+            timer.elapsed_microseconds(),
+            "tables.udp.conversations.timer.register_new",
+            &self.metrics
+        );
     }
 
     pub fn process_report(&self) {

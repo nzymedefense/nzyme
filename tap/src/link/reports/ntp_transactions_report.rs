@@ -1,12 +1,26 @@
 use std::collections::{HashMap, HashSet};
+use std::fmt::Display;
 use std::sync::MutexGuard;
 use chrono::{DateTime, Duration, Utc};
-use serde::Serialize;
+use log::warn;
+use serde::{Serialize, Serializer};
+use crate::protocols::parsers::ntp_parser::NtpReferenceId;
 use crate::state::tables::ntp_table::NtpTransaction;
 
 #[derive(Serialize)]
 pub struct NtpTransactionsReport {
     transactions: Vec<NtpTransactionReport>
+}
+
+fn serialize_option_display<S, T>(value: &Option<T>, serializer: S, ) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+    T: Display
+{
+    match value {
+        Some(v) => serializer.serialize_str(&v.to_string()),
+        None => serializer.serialize_none(),
+    }
 }
 
 #[derive(Serialize)]
@@ -15,10 +29,10 @@ pub struct NtpTransactionReport {
     pub notes: HashSet<String>,
     pub client_mac: Option<String>,
     pub server_mac: Option<String>,
-    pub client_address: Option<String>,
-    pub server_address: Option<String>,
-    pub client_port: Option<u16>,
-    pub server_port: Option<u16>,
+    pub client_address: String,
+    pub server_address: String,
+    pub client_port: u16,
+    pub server_port: u16,
     pub request_size: Option<u32>,
     pub response_size: Option<u32>,
     pub timestamp_client_transmit: Option<DateTime<Utc>>,
@@ -36,10 +50,11 @@ pub struct NtpTransactionReport {
     pub poll_interval: Option<i8>,
     pub root_delay_seconds: Option<f64>,
     pub root_dispersion_seconds:Option<f64>,
-    pub reference_id: Option<u32>,
+    #[serde(serialize_with = "serialize_option_display")]
+    pub reference_id: Option<NtpReferenceId>,
     pub delay_seconds: Option<f64>,
     pub offset_seconds: Option<f64>,
-    pub sensor_rtt_seconds: Option<f64>,
+    pub rtt_seconds: Option<f64>,
     pub server_processing_seconds: Option<f64>
 }
 
@@ -50,19 +65,66 @@ pub fn generate(txs: &Vec<NtpTransaction>) -> NtpTransactionsReport {
         let (
             delay_seconds,
             offset_seconds,
-            sensor_rtt_seconds,
+            rtt_seconds,
             server_processing_seconds,
         ) = compute_ntp_timing_metrics(&tx);
 
+        /*
+         * We may not always have request and response, but we need MAC and address of both sides
+         * to build transactions and for analysis. This is why, if one side is missing, we simply
+         * take the data from the other side. For example, if we don't have a request, we take the
+         * destination of the response.
+         */
+        let (client_mac, client_address, client_port) = match tx.request.clone() {
+            Some(request) => {
+                // We have a request and can use it directly.
+                (request.source_mac, request.source_address.to_string(), request.source_port)
+            },
+            None => {
+                // We don't have a request. Use the response for client fields.
+                match tx.response.clone() {
+                    Some(response) => {
+                        (response.destination_mac,
+                         response.destination_address.to_string(),
+                         response.destination_port)
+                    },
+                    None => {
+                        warn!("Recorded NTP transaction without request or response. Skipping.");
+                        continue;
+                    }
+                }
+            }
+        };
+        let (server_mac, server_address, server_port) = match tx.response.clone() {
+            Some(response) => {
+                // We have a response and can use it directly.
+                (response.source_mac, response.source_address.to_string(), response.source_port)
+            },
+            None => {
+                // We don't have a response. Use the request for server fields.
+                match tx.request.clone() {
+                    Some(request) => {
+                        (request.destination_mac,
+                         request.destination_address.to_string(),
+                         request.destination_port)
+                    },
+                    None => {
+                        warn!("Recorded NTP transaction without request or response. Skipping.");
+                        continue;
+                    }
+                }
+            }
+        };
+
         transactions.push(NtpTransactionReport {
             complete: tx.request.is_some() && tx.response.is_some(),
-            notes: tx.notes.clone(),
-            client_mac: tx.request.as_ref().and_then(|r| r.source_mac.clone() ),
-            server_mac: tx.response.as_ref().and_then(|r| r.source_mac.clone() ),
-            client_address: tx.request.as_ref().map(|r| r.source_address.to_string() ),
-            server_address: tx.response.as_ref().map(|r| r.source_address.to_string() ),
-            client_port: tx.request.as_ref().map(|r| r.source_port ),
-            server_port: tx.response.as_ref().map(|r| r.source_port ),
+            notes: tx.notes.iter().map(|note| note.to_string()).collect(),
+            client_mac,
+            server_mac,
+            client_address,
+            server_address,
+            client_port,
+            server_port,
             request_size: tx.request.as_ref().map(|r| r.size ),
             response_size: tx.response.as_ref().map(|r| r.size ),
             timestamp_client_transmit: tx.request.as_ref()
@@ -83,10 +145,10 @@ pub fn generate(txs: &Vec<NtpTransaction>) -> NtpTransactionsReport {
             poll_interval: tx.response.as_ref().map(|r| r.poll ),
             root_delay_seconds: tx.response.as_ref().map(|r| r.root_delay_seconds ),
             root_dispersion_seconds: tx.response.as_ref().map(|r| r.root_dispersion_seconds ),
-            reference_id: tx.response.as_ref().map(|r| r.reference_id ),
+            reference_id: tx.response.as_ref().map(|r| r.reference_id.clone() ),
             delay_seconds,
             offset_seconds,
-            sensor_rtt_seconds,
+            rtt_seconds,
             server_processing_seconds
         })
     }
@@ -102,7 +164,8 @@ fn diff_seconds(a: DateTime<Utc>, b: DateTime<Utc>) -> f64 {
 
 // TODO awful signature, change to returning a more descriptive struct
 pub fn compute_ntp_timing_metrics(tx: &NtpTransaction)
-        -> (Option<f64>, Option<f64>, Option<f64>, Option<f64>) {
+    -> (Option<f64>, Option<f64>, Option<f64>, Option<f64>) {
+
     let req = match tx.request.as_ref() {
         Some(r) => r,
         None => return (None, None, None, None),
@@ -113,11 +176,10 @@ pub fn compute_ntp_timing_metrics(tx: &NtpTransaction)
         None => return (None, None, None, None),
     };
 
-    // Sensor receive times.
     let s_req = req.timestamp;
     let s_resp = resp.timestamp;
 
-    let sensor_rtt_seconds = {
+    let rtt_seconds = {
         let v = diff_seconds(s_resp, s_req);
         if v.is_finite() && v >= 0.0 { Some(v) } else { None }
     };
@@ -125,7 +187,6 @@ pub fn compute_ntp_timing_metrics(tx: &NtpTransaction)
     let server_processing_seconds = {
         let t2 = resp.receive_timestamp.as_ref().and_then(|t| t.to_datetime_utc());
         let t3 = resp.transmit_timestamp.as_ref().and_then(|t| t.to_datetime_utc());
-
         match (t2, t3) {
             (Some(t2), Some(t3)) => {
                 let v = diff_seconds(t3, t2);
@@ -139,12 +200,20 @@ pub fn compute_ntp_timing_metrics(tx: &NtpTransaction)
     let t2 = resp.receive_timestamp.as_ref().and_then(|t| t.to_datetime_utc());
     let t3 = resp.transmit_timestamp.as_ref().and_then(|t| t.to_datetime_utc());
 
+    let t1_is_realistic = t1.map(|t1| diff_seconds(s_req, t1).abs() <= 10.0).unwrap_or(false);
+
     let (delay_seconds, offset_seconds) = match (t1, t2, t3) {
-        (Some(t1), Some(t2), Some(t3)) => {
+        (Some(t1), Some(t2), Some(t3)) if t1_is_realistic => {
             let t4_approx = s_resp;
 
             let delta = diff_seconds(t4_approx, t1) - diff_seconds(t3, t2);
-            let delay = if delta.is_finite() && delta > -0.5 { Some(delta) } else { None };
+            let delay = if delta.is_finite() {
+                if delta >= 0.0 { Some(delta) }
+                else if delta >= -0.5 { Some(0.0) } // optional clamp
+                else { None }
+            } else {
+                None
+            };
 
             let theta = (diff_seconds(t2, t1) + diff_seconds(t3, t4_approx)) / 2.0;
             let offset = if theta.is_finite() { Some(theta) } else { None };
@@ -154,5 +223,5 @@ pub fn compute_ntp_timing_metrics(tx: &NtpTransaction)
         _ => (None, None),
     };
 
-    (delay_seconds, offset_seconds, sensor_rtt_seconds, server_processing_seconds)
+    (delay_seconds, offset_seconds, rtt_seconds, server_processing_seconds)
 }

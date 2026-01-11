@@ -183,6 +183,14 @@ const ApiRoutes = {
         SESSION_DETAILS: sessionId => `/ethernet/remoteaccess/ssh/sessions/show/${sessionId}`
       }
     },
+    TIME: {
+      NTP: {
+        INDEX: '/ethernet/time/ntp'
+      },
+      PTP: {
+        INDEX: '/ethernet/time/ptp'
+      }
+    },
     BEACONS: {
       INDEX: '/ethernet/beacons'
     },

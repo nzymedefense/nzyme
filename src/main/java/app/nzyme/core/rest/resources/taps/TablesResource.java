@@ -1,20 +1,3 @@
-/*
- * This file is part of nzyme.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the Server Side Public License, version 1,
- * as published by MongoDB, Inc.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * Server Side Public License for more details.
- *
- * You should have received a copy of the Server Side Public License
- * along with this program. If not, see
- * <http://www.mongodb.com/licensing/server-side-public-license>.
- */
-
 package app.nzyme.core.rest.resources.taps;
 
 import app.nzyme.core.NzymeNode;
@@ -26,6 +9,7 @@ import app.nzyme.core.rest.resources.taps.reports.tables.dhcp.DhcpTransactionsRe
 import app.nzyme.core.rest.resources.taps.reports.tables.dns.DnsTablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11TablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.gnss.GNSSConstellationsReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.ntp.NTPTransactionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.ssh.SshSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
@@ -217,6 +201,22 @@ public class TablesResource {
 
         LOG.debug("Received ARP packets report from tap [{}]: {}", tap.getUuid(), report);
         nzyme.getTablesService().arp().handleReport(tap.getUuid(), DateTime.now(), report);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("/ntp/transactions")
+    public Response ntpTransactions(@Context SecurityContext sc, NTPTransactionsReport report) {
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
+
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting NTP transactions report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        LOG.debug("Received NTP transactions report from tap [{}]: {}", tap.getUuid(), report);
+        nzyme.getTablesService().ntp().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

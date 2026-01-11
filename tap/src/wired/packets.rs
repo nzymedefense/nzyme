@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc, TimeZone};
 use strum_macros::Display;
 use crate::protocols::detection::l7_tagger::L7Tag;
 use crate::protocols::parsers::l4_key::L4Key;
+use crate::protocols::parsers::ntp_parser::NtpReferenceId;
 use crate::wired::traffic_direction::TrafficDirection;
 
 use crate::wired::types::{HardwareType, EtherType, ArpOpCode, DNSType, DNSClass, DNSDataType, Dhcpv4MessageType, Dhcpv4OpCode, Dhcp4TransactionType};
@@ -471,27 +472,6 @@ impl Dhcpv4Transaction {
         }
     }
 
-    // Handles `vendor_classs` and `additional_vendor_classes`.
-    pub fn record_vendor_class(&mut self, new_class: Option<String>) {
-        if new_class.is_none() {
-            return;
-        }
-
-        match &self.vendor_class {
-            None => {
-                // First time seeing the class. Record.
-                self.vendor_class = new_class
-            },
-            Some(existing) => {
-                if existing != &new_class.clone().unwrap() {
-                    // Vendor class changed.
-                    self.additional_vendor_classes.insert(new_class.unwrap());
-                    self.notes.insert(Dhcpv4TransactionNote::VendorClassChanged);
-                }
-            },
-        }
-    }
-
     // Handles `options` and `additional_client_options`.
     pub fn record_options(&mut self, new_options: Vec<u8>) {
         if new_options.is_empty() {
@@ -589,7 +569,7 @@ pub struct NtpPacket {
     pub precision: i8,
     pub root_delay_seconds: f64,
     pub root_dispersion_seconds: f64,
-    pub reference_id: u32,
+    pub reference_id: NtpReferenceId,
     pub reference_timestamp: Option<NtpTimestamp>,
     pub origin_timestamp: Option<NtpTimestamp>,
     pub receive_timestamp: Option<NtpTimestamp>,

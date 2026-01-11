@@ -82,7 +82,7 @@ public class RestHelpers {
         // Get asset info if we have it.
         UUID assetId;
         Optional<AssetEntry> asset = nzyme.getAssetsManager().findAssetByMac(data.mac(), organizationId, tenantId);
-        if (asset.isPresent() && data.attributes().isSiteLocal()) {
+        if (asset.isPresent() && data.attributes() != null && data.attributes().isSiteLocal()) {
             assetId = asset.get().uuid();
         } else {
             assetId = null;

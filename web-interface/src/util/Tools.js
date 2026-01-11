@@ -242,3 +242,22 @@ export function uavVerticalAccuracyNoHtml(x) {
 export function formatAssetName(name) {
   return name.toUpperCase().replace(/[^a-z0-9_]/gi, '');
 }
+
+export function formatSubMicro(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) {
+    return `${numeral(0).format("0,0")} µs`;
+  }
+
+  const ms = seconds * 1e3;
+  if (ms >= 1) {
+    return `${numeral(ms).format("0,0")} ms`;
+  }
+
+  const micro = seconds * 1e6;
+  if (micro >= 1) {
+    return `${numeral(micro).format("0,0")} µs`;
+  }
+
+  const nano = seconds * 1e9;
+  return `${numeral(nano).format("0,0")} ns`;
+}

@@ -61,6 +61,10 @@ function Sidebar(props) {
                 href={ApiRoutes.ETHERNET.TUNNELS.SOCKS.INDEX}
                 title="Tunnels"
                 icon={<i className="sidebar-icon fa-solid fa-car-tunnel"/>}/>
+            <NavigationLink
+              href={ApiRoutes.ETHERNET.TIME.NTP.INDEX}
+              title="Time"
+              icon={<i className="sidebar-icon fa-solid fa-clock"/>}/>
             {/*
             <NavigationLink
               href={ApiRoutes.ETHERNET.RECON.INDEX}

@@ -7536,4 +7536,196 @@
         <renameColumn tableName="gnss_elevation_mask" oldColumnName="sno_pro" newColumnName="sno_p10" />
     </changeSet>
 
+    <changeSet id="create_ntp_transactions" author="lennartkoopmann">
+        <createTable tableName="ntp_transactions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="complete" type="boolean">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="notes" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_mac" type="varchar(17)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_mac" type="varchar(17)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_address" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_address" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_port" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_port" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="request_size" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="response_size" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="timestamp_client_transmit" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="timestamp_server_receive" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="timestamp_server_transmit" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="timestamp_client_tap_receive" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="timestamp_server_tap_receive" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_version" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_version" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_mode" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="client_mode" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="stratum" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="leap_indicator" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="precision" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="poll_interval" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="root_delay_seconds" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="root_dispersion_seconds" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="reference_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="delay_seconds" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="offset_seconds" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="rtt_seconds" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_processing_seconds" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add_ntp_transactions_indices" author="lennartkoopmann">
+        <createIndex tableName="ntp_transactions" indexName="ntp_transactions_tap_lookup">
+            <column name="tap_uuid" />
+        </createIndex>
+
+        <createIndex tableName="ntp_transactions" indexName="ntp_transactions_ts_lookup">
+            <column name="timestamp_client_transmit" />
+            <column name="timestamp_server_receive" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="make_ntp_transaction_addresses_inet" author="lennartkoopmann">
+        <modifyDataType tableName="ntp_transactions" columnName="client_address" newDataType="inet" />
+        <modifyDataType tableName="ntp_transactions" columnName="server_address" newDataType="inet" />
+    </changeSet>
+
+    <changeSet id="make_ntp_transaction_reference_id_jsonb" author="lennartkoopmann">
+        <dropColumn tableName="ntp_transactions" columnName="reference_id" />
+        <addColumn tableName="ntp_transactions">
+            <column name="reference_id" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="make_ntp_address_fields_mandatory_and_add_session_key" author="lennartkoopmann">
+        <sql>DELETE FROM ntp_transactions;</sql>
+
+        <addNotNullConstraint tableName="ntp_transactions" columnName="client_mac" />
+        <addNotNullConstraint tableName="ntp_transactions" columnName="client_address" />
+        <addNotNullConstraint tableName="ntp_transactions" columnName="client_port" />
+        <addNotNullConstraint tableName="ntp_transactions" columnName="server_mac" />
+        <addNotNullConstraint tableName="ntp_transactions" columnName="server_address" />
+        <addNotNullConstraint tableName="ntp_transactions" columnName="server_port" />
+
+        <addColumn tableName="ntp_transactions">
+            <column name="session_key" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_ntp_session_key_index" author="lennartkoopmann">
+        <createIndex tableName="ntp_transactions" indexName="ntp_transactions_session_key">
+            <column name="session_key" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="rename_ntp_session_key_to_transaction_key" author="lennartkoopmann">
+        <renameColumn tableName="ntp_transactions" oldColumnName="session_key" newColumnName="transaction_key" />
+    </changeSet>
+
+    <changeSet id="make_ntp_transaction_reference_id_text" author="lennartkoopmann">
+        <modifyDataType tableName="ntp_transactions" columnName="reference_id"  newDataType="text" />
+    </changeSet>
+
 </databaseChangeLog>

@@ -187,6 +187,7 @@ import EthernetAssetsSettingsPage from "./components/ethernet/assets/EthernetAss
 import EthernetOverviewPage from "./components/ethernet/EthernetOverviewPage";
 import GNSSConstellationsRFPage from "./components/gnss/GNSSConstellationsRFPage";
 import GNSSConstellationsSatellitesPage from "./components/gnss/GNSSConstellationsSatellitesPage";
+import {NTPOverviewPage} from "./components/ethernet/time/ntp/NTPOverviewPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -576,6 +577,9 @@ function App() {
                                 { /* Ethernet/Tunnels. */}
                                 <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.INDEX} element={<SOCKSTunnelsPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.TUNNEL_DETAILS(':sessionId')} element={<SOCKSTunnelDetailsPage />}/>
+
+                                { /* Ethernet/Time. */}
+                                <Route path={ApiRoutes.ETHERNET.TIME.NTP.INDEX} element={<NTPOverviewPage />}/>
 
                                 { /* Ethernet/Beacons. */}
                                 <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>

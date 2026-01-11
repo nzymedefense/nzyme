@@ -5,7 +5,7 @@ public enum TcpSessionState {
     /*
      * Other places to consider when making any changes here:
      *
-     * * EthernetConnectionCleaner
+     * * L4ConnectionCleaner
      */
 
     SYNSENT,
@@ -17,6 +17,9 @@ public enum TcpSessionState {
     CLOSEDRST,
     CLOSEDTIMEOUT,
     CLOSEDTIMEOUTNODE,
-    REFUSED
+    CLOSEDNODE,
+    REFUSED,
+    ACTIVE,
+    CLOSED
 
 }
