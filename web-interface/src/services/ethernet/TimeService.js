@@ -32,4 +32,20 @@ export default class TimeService {
     )
   }
 
+  getNTPClientRequestResponseRatioHistogram(organizationId, tenantId, timeRange, filters, taps, limit, offset, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/ethernet/time/ntp/clients/requestresponseratio/histogram", {
+        organization_id: organizationId,
+        tenant_id: tenantId,
+        limit: limit,
+        offset: offset,
+        time_range: timeRange,
+        filters: filters,
+        taps: tapsList
+      },
+      (response) => setHistogram(response.data)
+    )
+  }
+
 }

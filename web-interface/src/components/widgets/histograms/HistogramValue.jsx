@@ -51,6 +51,8 @@ function HistogramValue(props) {
       return <a href={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS + "?filters=" + value.metadata.filter_parameters}>{numeral(value.value.title).format("0,0")}</a>
     case "INTEGER":
       return <span className={value.value === highlightValue ? "highlighted" : null}>{numeral(value.value).format("0,0")} {filterElement}</span>
+    case "DOUBLE_DECIMAL2":
+      return <span className={value.value === highlightValue ? "highlighted" : null}>{numeral(value.value).format("0,0.00")} {filterElement}</span>
     case "GENERIC":
       return <span className={value.value === highlightValue ? "highlighted" : null}>{value.value} {filterElement}</span>
     case "DATETIME":

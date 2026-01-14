@@ -1,7 +1,11 @@
 package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.assets.db.AssetEntry;
+import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
+import app.nzyme.core.database.generic.StringDoubleDoubleNumberAggregationResult;
+import app.nzyme.core.database.generic.StringNumberNumberAggregationResult;
 import app.nzyme.core.ethernet.L4AddressData;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.l4.tcp.db.TcpSessionEntry;
@@ -9,9 +13,15 @@ import app.nzyme.core.ethernet.time.ntp.NTP;
 import app.nzyme.core.ethernet.time.ntp.db.NTPTransactionEntry;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
+import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
 import app.nzyme.core.rest.responses.ethernet.L4AddressResponse;
 import app.nzyme.core.rest.responses.ethernet.ntp.NTPTransactionDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.ntp.NTPTransactionsListResponse;
+import app.nzyme.core.rest.responses.shared.HistogramValueStructureResponse;
+import app.nzyme.core.rest.responses.shared.HistogramValueType;
+import app.nzyme.core.rest.responses.shared.ThreeColumnTableHistogramResponse;
+import app.nzyme.core.rest.responses.shared.ThreeColumnTableHistogramValueResponse;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
@@ -111,6 +121,65 @@ public class TimeResource extends TapDataHandlingResource {
         }
 
         return Response.ok(response).build();
+    }
+
+    @GET
+    @Path("/ntp/clients/requestresponseratio/histogram")
+    public Response ClientRequestResponseRatioHistogram(@Context SecurityContext sc,
+                                         @QueryParam("organization_id") UUID organizationId,
+                                         @QueryParam("tenant_id") UUID tenantId,
+                                         @QueryParam("time_range") String timeRangeParameter,
+                                         @QueryParam("filters") String filtersParameter,
+                                         @QueryParam("limit") int limit,
+                                         @QueryParam("offset") int offset,
+                                         @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total = nzyme.getEthernet().ntp()
+                .countClientRequestResponseRatioHistogramClients(timeRange, filters, taps);
+
+        List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
+        for (StringDoubleDoubleNumberAggregationResult c : nzyme.getEthernet().ntp()
+                .getClientRequestResponseRatioHistogram(timeRange, filters, limit, offset, taps)) {
+
+            Optional<MacAddressContextEntry> sourceContext = nzyme.getContextService().findMacAddressContext(
+                    c.key(),
+                    organizationId,
+                    tenantId
+            );
+
+            Optional<AssetEntry> sourceAsset = nzyme.getAssetsManager()
+                    .findAssetByMac(c.key(), organizationId, tenantId);
+
+            values.add(ThreeColumnTableHistogramValueResponse.create(
+                    HistogramValueStructureResponse.create(c.key(),
+                            HistogramValueType.ETHERNET_MAC,
+                            EthernetMacAddressResponse.create(
+                                    c.key(),
+                                    nzyme.getOuiService().lookup(c.key()).orElse(null),
+                                    sourceAsset.map(AssetEntry::uuid).orElse(null),
+                                    sourceAsset.map(AssetEntry::isActive).orElse(null),
+                                    sourceContext.map(ctx ->
+                                            EthernetMacAddressContextResponse.create(
+                                                    ctx.name(),
+                                                    ctx.description()
+                                            )
+                                    ).orElse(null)
+                            )
+                    ),
+                    HistogramValueStructureResponse.create(c.value1(), HistogramValueType.DOUBLE_DECIMAL2, null),
+                    HistogramValueStructureResponse.create(c.value2(), HistogramValueType.INTEGER, null),
+                    c.key()
+            ));
+        }
+
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, true, values)).build();
     }
 
     private NTPTransactionDetailsResponse buildTransactionDetails(NTPTransactionEntry tx,

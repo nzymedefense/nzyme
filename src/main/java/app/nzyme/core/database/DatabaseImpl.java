@@ -220,7 +220,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new DHCPStatisticsBucketMapper())
                 .registerRowMapper(new GNSSElevationMaskAzimuthBucketMapper())
                 .registerRowMapper(new GNSSPRNTrackPointMapper())
-                .registerRowMapper(new NTPTransactionEntryMapper());
+                .registerRowMapper(new NTPTransactionEntryMapper())
+                .registerRowMapper(new StringDoubleDoubleNumberAggregationResultMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

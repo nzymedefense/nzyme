@@ -13,8 +13,8 @@ import {NTP_FILTER_FIELDS} from "./NTPFilterFields";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 import NTPTransactionsTable from "./NTPTransactionsTable";
 import Filters from "../../../shared/filtering/Filters";
-import {DHCP_FILTER_FIELDS} from "../../assets/dhcp/DHCPFilterFields";
 import NTPTransactionsHistogram from "./NTPTransactionsHistogram";
+import NTPClientRequestResponseRatioHistogram from "./NTPClientRequestResponseRatioHistogram";
 
 const timeService = new TimeService();
 
@@ -108,6 +108,23 @@ export function NTPOverviewPage() {
                                      refreshAction={() => setRevision(new Date())}/>
 
               <NTPTransactionsHistogram histogram={transactionsHistogram} setTimeRange={setTimeRange} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Client Request/Response Ratio"
+                                     fixedTimeRange={timeRange}
+                                     refreshAction={() => setRevision(new Date())}/>
+
+              <NTPClientRequestResponseRatioHistogram filters={filters}
+                                                      setFilters={setFilters}
+                                                      timeRange={timeRange}
+                                                      revision={revision} />
             </div>
           </div>
         </div>
