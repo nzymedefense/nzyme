@@ -38,7 +38,7 @@ export default function NTPTopServersHistogram({filters, setFilters, timeRange, 
 
   return <ThreeColumnHistogram data={data}
                                columnFilterElements={[
-                                 {field: "server_address", fields: NTP_FILTER_FIELDS, setFilters: setFilters},
+                                 {field: "server_address", valueSubField: "address", fields: NTP_FILTER_FIELDS, setFilters: setFilters},
                                  null, null
                                ]}
                                columnTitles={["Server Address", "Server Asset", "Transactions"]}
