@@ -1,5 +1,8 @@
 package app.nzyme.core.ethernet;
 
+import app.nzyme.core.ethernet.l4.db.L4AddressAttributes;
+import app.nzyme.core.ethernet.l4.db.L4AddressData;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

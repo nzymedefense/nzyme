@@ -5,7 +5,7 @@ import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.context.ContextService;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.context.db.MacAddressTransparentContextEntry;
-import app.nzyme.core.ethernet.L4AddressData;
+import app.nzyme.core.ethernet.l4.db.L4AddressData;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.l4.tcp.TcpSessionState;
 import app.nzyme.core.rest.misc.CategorizedTransparentContextData;

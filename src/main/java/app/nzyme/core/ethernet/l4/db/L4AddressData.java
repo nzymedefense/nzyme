@@ -1,5 +1,6 @@
-package app.nzyme.core.ethernet;
+package app.nzyme.core.ethernet.l4.db;
 
+import app.nzyme.core.ethernet.GeoData;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 

@@ -3,6 +3,7 @@ package app.nzyme.core.ethernet.time.ntp;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.database.generic.StringDoubleDoubleNumberAggregationResult;
+import app.nzyme.core.database.generic.StringStringNumberAggregationResult;
 import app.nzyme.core.ethernet.Ethernet;
 import app.nzyme.core.ethernet.time.ntp.db.NTPTransactionEntry;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
@@ -179,13 +180,12 @@ public class NTP {
         FilterSqlFragment filterFragment = FilterSql.generate(filters, new NTPFilters());
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM (SELECT client_mac AS ignored " +
+                handle.createQuery("SELECT COUNT(*) FROM (SELECT 1 " +
                                 "FROM ntp_transactions WHERE (timestamp_client_tap_receive >= :tr_from OR " +
                                 "timestamp_server_tap_receive >= :tr_from) AND " +
                                 "(timestamp_client_tap_receive <= :tr_to OR timestamp_server_tap_receive <= :tr_to) " +
                                 "AND client_mac IS NOT NULL AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
-                                "GROUP BY client_mac HAVING 1=1 " + filterFragment.havingSql() +
-                                ") AS ignored")
+                                "GROUP BY client_mac HAVING 1=1 " + filterFragment.havingSql() + ")")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindMap(filterFragment.bindings())
@@ -212,7 +212,7 @@ public class NTP {
                                 "FROM ntp_transactions WHERE (timestamp_client_tap_receive >= :tr_from OR " +
                                 "timestamp_server_tap_receive >= :tr_from) AND " +
                                 "(timestamp_client_tap_receive <= :tr_to OR timestamp_server_tap_receive <= :tr_to) " +
-                                "AND client_mac IS NOT NULL AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
                                 "GROUP BY client_mac HAVING 1=1 " + filterFragment.havingSql() +
                                 "ORDER BY value1 ASC LIMIT :limit OFFSET :offset ")
                         .bind("tr_from", timeRange.from())
@@ -226,5 +226,60 @@ public class NTP {
         );
     }
 
+    public long countTopServersHistogramServers(TimeRange timeRange,
+                                                Filters filters,
+                                                List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new NTPFilters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM (SELECT 1 FROM ntp_transactions WHERE " +
+                                "(timestamp_client_tap_receive >= :tr_from OR timestamp_server_tap_receive >= " +
+                                ":tr_from) AND (timestamp_client_tap_receive <= :tr_to OR " +
+                                "timestamp_server_tap_receive <= :tr_to) " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
+                                "GROUP BY server_mac, server_address HAVING 1=1 " + filterFragment.havingSql() + ")")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<StringStringNumberAggregationResult> getTopServersHistogram(TimeRange timeRange,
+                                                                            Filters filters,
+                                                                            int limit,
+                                                                            int offset,
+                                                                            List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        FilterSqlFragment filterFragment = FilterSql.generate(filters, new NTPFilters());
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT server_address AS key, server_mac AS value1, COUNT(*) AS value2 " +
+                                "FROM ntp_transactions WHERE (timestamp_client_tap_receive >= :tr_from OR " +
+                                "timestamp_server_tap_receive >= :tr_from) AND " +
+                                "(timestamp_client_tap_receive <= :tr_to OR " +
+                                "timestamp_server_tap_receive <= :tr_to) " +
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
+                                "GROUP BY server_mac, server_address HAVING 1=1 " + filterFragment.havingSql() +
+                                "ORDER BY value2 DESC LIMIT :limit OFFSET :offset")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .bindMap(filterFragment.bindings())
+                        .bindList("taps", taps)
+                        .mapTo(StringStringNumberAggregationResult.class)
+                        .list()
+        );
+    }
 
 }

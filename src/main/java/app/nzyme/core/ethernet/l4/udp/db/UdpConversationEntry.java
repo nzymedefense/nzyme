@@ -1,6 +1,6 @@
 package app.nzyme.core.ethernet.l4.udp.db;
 
-import app.nzyme.core.ethernet.L4AddressData;
+import app.nzyme.core.ethernet.l4.db.L4AddressData;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.l4.udp.UdpConversationState;
 import com.google.auto.value.AutoValue;

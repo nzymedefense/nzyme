@@ -2,8 +2,7 @@ package app.nzyme.core.rest.responses.shared;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 @AutoValue
 public abstract class HistogramValueStructureResponse {

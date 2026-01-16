@@ -15,6 +15,7 @@ import NTPTransactionsTable from "./NTPTransactionsTable";
 import Filters from "../../../shared/filtering/Filters";
 import NTPTransactionsHistogram from "./NTPTransactionsHistogram";
 import NTPClientRequestResponseRatioHistogram from "./NTPClientRequestResponseRatioHistogram";
+import NTPTopServersHistogram from "./NTPTopServersHistogram";
 
 const timeService = new TimeService();
 
@@ -114,6 +115,20 @@ export function NTPOverviewPage() {
       </div>
 
       <div className="row mt-3">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Top Servers"
+                                     fixedTimeRange={timeRange}
+                                     refreshAction={() => setRevision(new Date())}/>
+
+              <NTPTopServersHistogram filters={filters}
+                                      setFilters={setFilters}
+                                      timeRange={timeRange}
+                                      revision={revision} />
+            </div>
+          </div>
+        </div>
         <div className="col-md-6">
           <div className="card">
             <div className="card-body">

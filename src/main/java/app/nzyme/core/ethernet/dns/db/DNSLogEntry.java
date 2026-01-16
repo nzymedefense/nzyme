@@ -1,6 +1,6 @@
 package app.nzyme.core.ethernet.dns.db;
 
-import app.nzyme.core.ethernet.L4AddressData;
+import app.nzyme.core.ethernet.l4.db.L4AddressData;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;

@@ -7,6 +7,7 @@ public enum HistogramValueType {
     DOUBLE_DECIMAL2,
     DOT11_MAC,
     ETHERNET_MAC,
+    ETHERNET_MAC_NO_INTERNAL,
     L4_ADDRESS,
     L4_PORT,
     BYTES,

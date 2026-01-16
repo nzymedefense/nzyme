@@ -29,6 +29,7 @@ import app.nzyme.core.ethernet.arp.db.ArpSenderTargetCountPairMapper;
 import app.nzyme.core.ethernet.dhcp.db.DHCPStatisticsBucketMapper;
 import app.nzyme.core.ethernet.dhcp.db.DHCPTransactionMapper;
 import app.nzyme.core.ethernet.dns.db.*;
+import app.nzyme.core.ethernet.l4.db.L4AddressDataMapper;
 import app.nzyme.core.ethernet.l4.db.L4NumbersMapper;
 import app.nzyme.core.ethernet.l4.db.L4SessionMapper;
 import app.nzyme.core.ethernet.l4.db.L4StatisticsBucketMapper;
@@ -221,7 +222,9 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new GNSSElevationMaskAzimuthBucketMapper())
                 .registerRowMapper(new GNSSPRNTrackPointMapper())
                 .registerRowMapper(new NTPTransactionEntryMapper())
-                .registerRowMapper(new StringDoubleDoubleNumberAggregationResultMapper());
+                .registerRowMapper(new StringDoubleDoubleNumberAggregationResultMapper())
+                .registerRowMapper(new StringStringNumberAggregationResultMapper())
+                .registerRowMapper(new L4AddressDataMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

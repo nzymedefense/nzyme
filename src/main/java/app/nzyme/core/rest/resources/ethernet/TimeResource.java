@@ -5,17 +5,15 @@ import app.nzyme.core.assets.db.AssetEntry;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.database.generic.StringDoubleDoubleNumberAggregationResult;
-import app.nzyme.core.database.generic.StringNumberNumberAggregationResult;
-import app.nzyme.core.ethernet.L4AddressData;
+import app.nzyme.core.database.generic.StringStringNumberAggregationResult;
+import app.nzyme.core.ethernet.l4.db.L4AddressData;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.l4.tcp.db.TcpSessionEntry;
 import app.nzyme.core.ethernet.time.ntp.NTP;
 import app.nzyme.core.ethernet.time.ntp.db.NTPTransactionEntry;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
-import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressContextResponse;
-import app.nzyme.core.rest.responses.ethernet.EthernetMacAddressResponse;
-import app.nzyme.core.rest.responses.ethernet.L4AddressResponse;
+import app.nzyme.core.rest.responses.ethernet.*;
 import app.nzyme.core.rest.responses.ethernet.ntp.NTPTransactionDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.ntp.NTPTransactionsListResponse;
 import app.nzyme.core.rest.responses.shared.HistogramValueStructureResponse;
@@ -176,6 +174,96 @@ public class TimeResource extends TapDataHandlingResource {
                     HistogramValueStructureResponse.create(c.value1(), HistogramValueType.DOUBLE_DECIMAL2, null),
                     HistogramValueStructureResponse.create(c.value2(), HistogramValueType.INTEGER, null),
                     c.key()
+            ));
+        }
+
+        return Response.ok(ThreeColumnTableHistogramResponse.create(total, true, values)).build();
+    }
+
+    @GET
+    @Path("/ntp/servers/top/histogram")
+    public Response topServersHistogram(@Context SecurityContext sc,
+                                        @QueryParam("organization_id") UUID organizationId,
+                                        @QueryParam("tenant_id") UUID tenantId,
+                                        @QueryParam("time_range") String timeRangeParameter,
+                                        @QueryParam("filters") String filtersParameter,
+                                        @QueryParam("limit") int limit,
+                                        @QueryParam("offset") int offset,
+                                        @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total = nzyme.getEthernet().ntp()
+                .countTopServersHistogramServers(timeRange, filters, taps);
+
+        List<ThreeColumnTableHistogramValueResponse> values = Lists.newArrayList();
+        for (StringStringNumberAggregationResult s : nzyme.getEthernet().ntp()
+                .getTopServersHistogram(timeRange, filters, limit, offset, taps)) {
+
+            Optional<MacAddressContextEntry> serverContext = nzyme.getContextService().findMacAddressContext(
+                    s.key(),
+                    organizationId,
+                    tenantId
+            );
+
+            Optional<AssetEntry> serverAsset = nzyme.getAssetsManager()
+                    .findAssetByMac(s.value1(), organizationId, tenantId);
+
+            // Pull the most recent address data of this asset.
+            Optional<L4AddressData> addressData = nzyme.getEthernet().l4()
+                    .findMostRecentDestinationAddressData(taps, s.key());
+
+            EthernetMacAddressResponse value1;
+            L4AddressResponse l4AddressResponse;
+            if (addressData.isPresent()) {
+                if (addressData.get().attributes() != null && addressData.get().attributes().isSiteLocal()) {
+                    value1 = EthernetMacAddressResponse.create(
+                            s.value1(),
+                            nzyme.getOuiService().lookup(s.value1()).orElse(null),
+                            serverAsset.map(AssetEntry::uuid).orElse(null),
+                            serverAsset.map(AssetEntry::isActive).orElse(null),
+                            serverContext.map(ctx ->
+                                    EthernetMacAddressContextResponse.create(
+                                            ctx.name(),
+                                            ctx.description()
+                                    )
+                            ).orElse(null)
+                    );
+                } else {
+                    value1 = null;
+                }
+                l4AddressResponse = RestHelpers.L4AddressDataToResponse(
+                        nzyme, organizationId, tenantId, L4Type.NONE, addressData.get()
+                );
+            } else {
+                value1 = null;
+                l4AddressResponse = L4AddressResponse.create(
+                        L4AddressTypeResponse.UDP,
+                        null,
+                        s.key(),
+                        null,
+                        null,
+                        null,
+                        L4AddressContextResponse.create()
+                );
+            }
+
+            values.add(ThreeColumnTableHistogramValueResponse.create(
+                    HistogramValueStructureResponse.create(
+                            l4AddressResponse,
+                            HistogramValueType.L4_ADDRESS,
+                            null),
+                    HistogramValueStructureResponse.create(s.value1(),
+                            HistogramValueType.ETHERNET_MAC_NO_INTERNAL,
+                            value1
+                    ),
+                    HistogramValueStructureResponse.create(s.value2(), HistogramValueType.INTEGER, null),
+                    s.key()
             ));
         }
 

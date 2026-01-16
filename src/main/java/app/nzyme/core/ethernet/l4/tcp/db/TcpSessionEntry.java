@@ -1,6 +1,6 @@
 package app.nzyme.core.ethernet.l4.tcp.db;
 
-import app.nzyme.core.ethernet.L4AddressData;
+import app.nzyme.core.ethernet.l4.db.L4AddressData;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.l4.tcp.TcpSessionState;
 import com.google.auto.value.AutoValue;

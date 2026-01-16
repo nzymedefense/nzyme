@@ -1,6 +1,6 @@
 package app.nzyme.core.database.generic;
 
-import app.nzyme.core.ethernet.L4AddressData;
+import app.nzyme.core.ethernet.l4.db.L4AddressData;
 import com.google.auto.value.AutoValue;
 
 @AutoValue

@@ -48,4 +48,20 @@ export default class TimeService {
     )
   }
 
+  getNTPTopServersHistogram(organizationId, tenantId, timeRange, filters, taps, limit, offset, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get("/ethernet/time/ntp/servers/top/histogram", {
+        organization_id: organizationId,
+        tenant_id: tenantId,
+        limit: limit,
+        offset: offset,
+        time_range: timeRange,
+        filters: filters,
+        taps: tapsList
+      },
+      (response) => setHistogram(response.data)
+    )
+  }
+
 }

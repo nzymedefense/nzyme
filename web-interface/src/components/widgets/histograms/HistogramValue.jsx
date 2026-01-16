@@ -11,6 +11,7 @@ import moment from "moment";
 import AssetHostnames from "../../ethernet/assets/AssetHostnames";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {MODE_TABLE} from "./HistogramModes";
+import InternalAddressOnlyWrapper from "../../ethernet/shared/InternalAddressOnlyWrapper";
 
 function HistogramValue(props) {
 
@@ -40,6 +41,15 @@ function HistogramValue(props) {
         return <EthernetMacAddress addressWithContext={value.metadata} filterElement={filterElement} withAssetLink withAssetName />
       } else {
         return "[missing metadata]"
+      }
+    case "ETHERNET_MAC_NO_INTERNAL":
+      if (value.metadata) {
+        return (
+          <EthernetMacAddress addressWithContext={value.metadata} filterElement={filterElement} withAssetLink withAssetName />
+        )
+      } else {
+        // If no MAC provided, it's an internal address. Show the default "internal address" placeholder.
+        return <InternalAddressOnlyWrapper address="127.0.0.1" />
       }
     case "L4_ADDRESS":
       return <L4Address address={value.value} filterElement={filterElement} />

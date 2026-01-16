@@ -17,10 +17,8 @@
 
 package app.nzyme.core.ethernet.dns.db;
 
-import app.nzyme.core.ethernet.L4AddressData;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import app.nzyme.core.ethernet.l4.db.L4AddressData;
 import com.google.auto.value.AutoValue;
-import jakarta.annotation.Nullable;
 
 @AutoValue
 public abstract class DNSPairSummary {

@@ -6,6 +6,7 @@ import app.nzyme.core.database.generic.L4AddressDataAddressNumberNumberAggregati
 import app.nzyme.core.database.generic.NumberNumberNumberAggregationResult;
 import app.nzyme.core.database.generic.StringNumberNumberAggregationResult;
 import app.nzyme.core.ethernet.Ethernet;
+import app.nzyme.core.ethernet.l4.db.L4AddressData;
 import app.nzyme.core.ethernet.L4Type;
 import app.nzyme.core.ethernet.l4.db.L4Numbers;
 import app.nzyme.core.ethernet.l4.db.L4Session;
@@ -593,6 +594,34 @@ public class L4 {
                         .bindList("taps", taps)
                         .mapTo(NumberNumberNumberAggregationResult.class)
                         .list()
+        );
+    }
+
+    public Optional<L4AddressData> findMostRecentDestinationAddressData(List<UUID> taps, String address) {
+        if (taps.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT destination_mac AS mac, destination_address AS address, " +
+                                "destination_port AS port, destination_address_geo_asn_number AS geo_asn_number, " +
+                                "destination_address_geo_asn_name AS geo_asn_name, " +
+                                "destination_address_geo_asn_domain AS geo_asn_domain, " +
+                                "destination_address_geo_city AS geo_city, " +
+                                "destination_address_geo_country_code AS geo_country_code, " +
+                                "destination_address_geo_latitude AS geo_latitude, " +
+                                "destination_address_geo_longitude AS geo_longitude, " +
+                                "destination_address_is_site_local AS is_site_local, " +
+                                "destination_address_is_loopback AS is_loopback, " +
+                                "destination_address_is_multicast AS is_multicast " +
+                                "FROM l4_sessions WHERE destination_address = :address::inet AND " +
+                                "tap_uuid IN (<taps>) " +
+                                "ORDER BY most_recent_segment_time " +
+                                "DESC LIMIT 1")
+                        .bindList("taps", taps)
+                        .bind("address", address)
+                        .mapTo(L4AddressData.class)
+                        .findOne()
         );
     }
 
