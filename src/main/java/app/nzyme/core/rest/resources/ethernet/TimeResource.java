@@ -13,6 +13,7 @@ import app.nzyme.core.ethernet.time.ntp.NTP;
 import app.nzyme.core.ethernet.time.ntp.db.NTPTransactionEntry;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
+import app.nzyme.core.rest.responses.authentication.mgmt.UsersListResponse;
 import app.nzyme.core.rest.responses.ethernet.*;
 import app.nzyme.core.rest.responses.ethernet.ntp.NTPTransactionDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.ntp.NTPTransactionsListResponse;
@@ -31,10 +32,7 @@ import com.google.common.collect.Maps;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -98,6 +96,28 @@ public class TimeResource extends TapDataHandlingResource {
         }
 
         return Response.ok(NTPTransactionsListResponse.create(total, transactions)).build();
+    }
+
+    @GET
+    @Path("/ntp/transactions/show/{transaction_id}")
+    public Response ntpTransaction(@Context SecurityContext sc,
+                                   @PathParam("transaction_id") String transactionId,
+                                   @QueryParam("organization_id") UUID organizationId,
+                                   @QueryParam("tenant_id") UUID tenantId,
+                                   @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<NTPTransactionEntry> transaction = nzyme.getEthernet().ntp().findTransaction(transactionId, taps);
+
+        if (transaction.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(buildTransactionDetails(transaction.get(), organizationId, tenantId, taps)).build();
     }
 
     @GET

@@ -185,7 +185,8 @@ const ApiRoutes = {
     },
     TIME: {
       NTP: {
-        INDEX: '/ethernet/time/ntp'
+        INDEX: '/ethernet/time/ntp',
+        TRANSACTION_DETAILS: (transactionId) => `/ethernet/time/ntp/transactions/show/${transactionId}`,
       },
       PTP: {
         INDEX: '/ethernet/time/ptp'

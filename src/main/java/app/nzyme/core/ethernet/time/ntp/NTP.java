@@ -15,6 +15,7 @@ import app.nzyme.core.util.filters.Filters;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class NTP {
@@ -65,7 +66,8 @@ public class NTP {
                                 "WHERE (timestamp_client_tap_receive >= :tr_from OR " +
                                 "timestamp_server_tap_receive >= :tr_from) AND (timestamp_client_tap_receive <= :tr_to OR " +
                                 "timestamp_server_tap_receive <= :tr_to) " +
-                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql())
+                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
+                                " HAVING 1=1 " + filterFragment.havingSql())
                         .bindList("taps", taps)
                         .bindMap(filterFragment.bindings())
                         .bind("tr_from", timeRange.from())
@@ -125,7 +127,7 @@ public class NTP {
                                 "timestamp_server_tap_receive >= :tr_from) AND (timestamp_client_tap_receive <= :tr_to OR " +
                                 "timestamp_server_tap_receive <= :tr_to) " +
                                 "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
-                                "GROUP BY transaction_key " +
+                                "GROUP BY transaction_key HAVING 1=1 " + filterFragment.havingSql() + " " +
                                 "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")
                         .bindList("taps", taps)
@@ -138,6 +140,53 @@ public class NTP {
                         .define("order_direction", orderDirection)
                         .mapTo(NTPTransactionEntry.class)
                         .list()
+        );
+    }
+
+    public Optional<NTPTransactionEntry> findTransaction(String transactionKey, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT transaction_key, BOOL_OR(complete) AS complete, " +
+                                "JSONB_AGG(DISTINCT notes) notes, " +
+                                "ANY_VALUE(client_mac) AS client_mac, " +
+                                "ANY_VALUE(server_mac) AS server_mac, " +
+                                "ANY_VALUE(client_address) AS client_address, " +
+                                "ANY_VALUE(server_address) AS server_address, " +
+                                "ANY_VALUE(client_port) AS client_port, " +
+                                "ANY_VALUE(server_port) AS server_port, " +
+                                "ANY_VALUE(request_size) AS request_size, " +
+                                "ANY_VALUE(response_size) AS response_size, " +
+                                "ANY_VALUE(timestamp_client_transmit) AS timestamp_client_transmit, " +
+                                "ANY_VALUE(timestamp_server_receive) AS timestamp_server_receive, " +
+                                "ANY_VALUE(timestamp_server_transmit) AS timestamp_server_transmit, " +
+                                "MIN(timestamp_client_tap_receive) AS timestamp_client_tap_receive, " +
+                                "MIN(timestamp_server_tap_receive) AS timestamp_server_tap_receive, " +
+                                "ANY_VALUE(server_version) AS server_version, " +
+                                "ANY_VALUE(client_version) AS client_version, " +
+                                "ANY_VALUE(server_mode) AS server_mode, " +
+                                "ANY_VALUE(client_mode) AS client_mode, " +
+                                "ANY_VALUE(stratum) AS stratum, " +
+                                "ANY_VALUE(leap_indicator) AS leap_indicator, " +
+                                "ANY_VALUE(precision) AS precision, " +
+                                "ANY_VALUE(poll_interval) AS poll_interval, " +
+                                "ANY_VALUE(root_delay_seconds) AS root_delay_seconds, " +
+                                "ANY_VALUE(root_dispersion_seconds) AS root_dispersion_seconds, " +
+                                "ANY_VALUE(delay_seconds) AS delay_seconds, " +
+                                "ANY_VALUE(offset_seconds) AS offset_seconds, " +
+                                "ANY_VALUE(rtt_seconds) AS rtt_seconds, " +
+                                "ANY_VALUE(server_processing_seconds) AS server_processing_seconds, " +
+                                "ANY_VALUE(created_at) AS created_at, " +
+                                "ANY_VALUE(reference_id) AS reference_id, " +
+                                "ANY_VALUE(transaction_key) AS transaction_key " +
+                                "FROM ntp_transactions WHERE transaction_key = :transaction_key " +
+                                "AND tap_uuid IN (<taps>) GROUP BY transaction_key LIMIT 1")
+                        .bind("transaction_key", transactionKey)
+                        .bindList("taps", taps)
+                        .mapTo(NTPTransactionEntry.class)
+                        .findOne()
         );
     }
 
@@ -158,7 +207,8 @@ public class NTP {
                                 "timestamp_server_tap_receive >= :tr_from) AND (timestamp_client_tap_receive <= :tr_to " +
                                 "OR timestamp_server_tap_receive <= :tr_to) " +
                                 "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
-                                "GROUP BY bucket ORDER BY bucket DESC;")
+                                "GROUP BY bucket HAVING 1=1 " + filterFragment.havingSql() + " " +
+                                "ORDER BY bucket DESC;")
                         .bindList("taps", taps)
                         .bindMap(filterFragment.bindings())
                         .bind("date_trunc", bucketing.type().getDateTruncName())

@@ -3,6 +3,7 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import SSHSessionDetails from "../remote/ssh/SSHSessionDetails";
 import ApiRoutes from "../../../util/ApiRoutes";
 import SOCKSTunnelDetails from "../tunnels/socks/SOCKSTunnelDetails";
+import NTPTransactionDetails from "../time/ntp/NTPTransactionDetails";
 
 export default function L4TagDetails({session}) {
 
@@ -48,10 +49,29 @@ export default function L4TagDetails({session}) {
     }
   }
 
+  const ntp = () => {
+    if (session.tags.includes("NTP")) {
+      return (
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body card-container">
+                <CardTitleWithControls title="Encapsulated NTP Transaction" />
+
+                <NTPTransactionDetails transactionId={session.session_key} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  }
+
   return (
       <React.Fragment>
         {ssh()}
         {socks()}
+        {ntp()}
       </React.Fragment>
   )
 

@@ -20,6 +20,18 @@ export default class TimeService {
     )
   }
 
+  findNTPTransaction(transactionId, organizationId, tenantId, taps, setTransaction) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get( `/ethernet/time/ntp/transactions/show/${transactionId}`, {
+        organization_id: organizationId,
+        tenant_id: tenantId,
+        taps: tapsList
+      },
+      (response) => setTransaction(response.data)
+    )
+  }
+
   getNTPTransactionsHistogram(timeRange, filters, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 

@@ -12,6 +12,7 @@ import ColumnSorting from "../../../shared/ColumnSorting";
 import FilterValueIcon from "../../../shared/filtering/FilterValueIcon";
 import {DHCP_FILTER_FIELDS} from "../../assets/dhcp/DHCPFilterFields";
 import {NTP_FILTER_FIELDS} from "./NTPFilterFields";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
 export default function NTPTransactionsTable({ transactions,
                                                setFilters,
@@ -71,7 +72,9 @@ export default function NTPTransactionsTable({ transactions,
           return (
             <tr key={i}>
               <td>
-                <FullCopyShortenedId value={tx.transaction_key} />
+                <a href={ApiRoutes.ETHERNET.TIME.NTP.TRANSACTION_DETAILS(tx.transaction_key)} className="machine-data">
+                  <FullCopyShortenedId value={tx.transaction_key} />
+                </a>
 
                 <FilterValueIcon setFilters={setFilters}
                                  fields={NTP_FILTER_FIELDS}

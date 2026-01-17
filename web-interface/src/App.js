@@ -188,6 +188,7 @@ import EthernetOverviewPage from "./components/ethernet/EthernetOverviewPage";
 import GNSSConstellationsRFPage from "./components/gnss/GNSSConstellationsRFPage";
 import GNSSConstellationsSatellitesPage from "./components/gnss/GNSSConstellationsSatellitesPage";
 import {NTPOverviewPage} from "./components/ethernet/time/ntp/NTPOverviewPage";
+import NTPTransactionDetailsPage from "./components/ethernet/time/ntp/NTPTransactionDetailsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -580,6 +581,7 @@ function App() {
 
                                 { /* Ethernet/Time. */}
                                 <Route path={ApiRoutes.ETHERNET.TIME.NTP.INDEX} element={<NTPOverviewPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.TIME.NTP.TRANSACTION_DETAILS(':transactionId')} element={<NTPTransactionDetailsPage />}/>
 
                                 { /* Ethernet/Beacons. */}
                                 <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>

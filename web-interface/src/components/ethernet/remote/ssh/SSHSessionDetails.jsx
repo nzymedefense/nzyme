@@ -37,7 +37,7 @@ export default function SSHSessionDetails({ sessionId }) {
   useEffect(() => {
     setSession(null);
     sshService.findSession(sessionId, organizationId, tenantId, selectedTaps, setSession);
-  }, [sessionId, organizationId, tenantId])
+  }, [sessionId, organizationId, tenantId, selectedTaps])
 
   if (session == null) {
     return <LoadingSpinner />
