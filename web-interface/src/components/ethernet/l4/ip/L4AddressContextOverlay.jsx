@@ -83,18 +83,22 @@ export default function L4AddressContextOverlay(props) {
           <React.Fragment>
             <h6><i className="fa-solid fa-map-location-dot"/> {address.address}</h6>
 
-            <p className="context-description">
-              <i className="fa-solid fa-circle-info"></i> {attributeSummary()}
-            </p>
+            <div className="context-overlay-content">
+              <p className="context-description">
+                <i className="fa-solid fa-circle-info"></i> {attributeSummary()}
+              </p>
 
-            <dl style={{marginBottom: 120}}>
-              <dt>Attributes:</dt>
-              <dd>{attributes()}</dd>
-            </dl>
+              <dl>
+                <dt>Attributes:</dt>
+                <dd>{attributes()}</dd>
+              </dl>
+            </div>
 
-            <a href={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(address.address)} className="btn btn-sm btn-outline-primary">
-              Open Address Details
-            </a>
+            <div className="context-overlay-actions">
+              <a href={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(address.address)} className="btn btn-sm btn-outline-primary">
+                Open Address Details
+              </a>
+            </div>
           </React.Fragment>
       )
     } else {
@@ -103,23 +107,27 @@ export default function L4AddressContextOverlay(props) {
           <React.Fragment>
             <h6><i className="fa-solid fa-map-location-dot"/> {address.address}</h6>
 
-            <dl style={{marginBottom: 77}}>
-              <dt>Attributes:</dt>
-              <dd>{attributes()}</dd>
-              <dt>ASN:</dt>
-              <dd>{asn()}</dd>
-              <dt>ASN Domain:</dt>
-              <dd>{address.geo && address.geo.asn_domain ? address.geo.asn_domain :
-                  <span className="text-muted">n/a</span>}</dd>
-              <dt>Country:</dt>
-              <dd>{country()}</dd>
-              <dt>City:</dt>
-              <dd>{city()}</dd>
-            </dl>
+            <div className="context-overlay-content">
+              <dl>
+                <dt>Attributes:</dt>
+                <dd>{attributes()}</dd>
+                <dt>ASN:</dt>
+                <dd>{asn()}</dd>
+                <dt>ASN Domain:</dt>
+                <dd>{address.geo && address.geo.asn_domain ? address.geo.asn_domain :
+                    <span className="text-muted">n/a</span>}</dd>
+                <dt>Country:</dt>
+                <dd>{country()}</dd>
+                <dt>City:</dt>
+                <dd>{city()}</dd>
+              </dl>
+            </div>
 
-            <a href={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(address.address)} className="btn btn-sm btn-outline-primary">
-              Open Address Details
-            </a>
+            <div className="context-overlay-actions">
+              <a href={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(address.address)} className="btn btn-sm btn-outline-primary">
+                Open Address Details
+              </a>
+            </div>
           </React.Fragment>
       )
     }
@@ -130,16 +138,20 @@ export default function L4AddressContextOverlay(props) {
         <React.Fragment>
           <h6><i className="fa-solid fa-map-location-dot"/> {address.address}</h6>
 
-          <p className="context-description">No attributes.</p>
+          <div className="context-overlay-content">
+            <p className="context-description">No attributes.</p>
 
-          <dl style={{marginBottom: 120}}>
-            <dt>Attributes:</dt>
-            <dd>{attributes()}</dd>
-          </dl>
+            <dl>
+              <dt>Attributes:</dt>
+              <dd>{attributes()}</dd>
+            </dl>
+          </div>
 
-          <a href={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(address.address)} className="btn btn-sm btn-outline-primary">
-            Open Address Details
-          </a>
+          <div className="context-overlay-actions">
+            <a href={ApiRoutes.ETHERNET.IP.ADDRESS_DETAILS(address.address)} className="btn btn-sm btn-outline-primary">
+              Open Address Details
+            </a>
+          </div>
         </React.Fragment>
     )
   }

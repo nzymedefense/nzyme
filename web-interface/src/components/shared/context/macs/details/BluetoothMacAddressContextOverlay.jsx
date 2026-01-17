@@ -40,20 +40,22 @@ function BluetoothMacAddressContextOverlay(props) {
         <React.Fragment>
           <h6><i className="fa-regular fa-address-card" /> {address}</h6>
 
-          <p className="context-description">
-            <i className="fa-solid fa-circle-info"></i> This MAC address has no context.
-          </p>
+          <div className="context-overlay-content">
+            <p className="context-description">
+              <i className="fa-solid fa-circle-info"></i> This MAC address has no context.
+            </p>
 
-          <dl style={{marginBottom: 70}}>
-            <dt>Device Type:</dt>
-            <dd>Bluetooth Device</dd>
-            <dt>Has Notes:</dt>
-            <dd>No</dd>
-            <dt>Is Randomized:</dt>
-            <dd>{isRandomized === null ? "n/a" : (isRandomized ? "Yes" : "No")}</dd>
-          </dl>
+            <dl>
+              <dt>Device Type:</dt>
+              <dd>Bluetooth Device</dd>
+              <dt>Has Notes:</dt>
+              <dd>No</dd>
+              <dt>Is Randomized:</dt>
+              <dd>{isRandomized === null ? "n/a" : (isRandomized ? "Yes" : "No")}</dd>
+            </dl>
+          </div>
 
-          <div className="context-overlay-no-context-controls">
+          <div className="context-overlay-actions">
             <WithPermission permission="mac_context_manage">
               <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE + "?address=" + encodeURIComponent(address)}
                  className="btn btn-sm btn-outline-primary">
@@ -72,25 +74,29 @@ function BluetoothMacAddressContextOverlay(props) {
           <span className="context-name">{ctx.context.name}</span>
         </h6>
 
-        <p className="context-description">
-          <i className="fa-solid fa-angle-right"></i>{' '}
-          {ctx.context.description && ctx.context.description.trim().length > 0
-              ? ctx.context.description : "No Description"}
-        </p>
+        <div className="context-overlay-content">
+          <p className="context-description">
+            <i className="fa-solid fa-angle-right"></i>{' '}
+            {ctx.context.description && ctx.context.description.trim().length > 0
+                ? ctx.context.description : "No Description"}
+          </p>
 
-        <dl style={{marginBottom: 70}}>
-          <dt>Device Type:</dt>
-          <dd>Bluetooth Device</dd>
-          <dt>Has Notes:</dt>
-          <dd>{ctx.context.notes ? "Yes" : "No"}</dd>
-          <dt>Is Randomized:</dt>
-          <dd>{isRandomized === null ? "n/a" : (isRandomized ? "Yes" : "No")}</dd>
-        </dl>
+          <dl>
+            <dt>Device Type:</dt>
+            <dd>Bluetooth Device</dd>
+            <dt>Has Notes:</dt>
+            <dd>{ctx.context.notes ? "Yes" : "No"}</dd>
+            <dt>Is Randomized:</dt>
+            <dd>{isRandomized === null ? "n/a" : (isRandomized ? "Yes" : "No")}</dd>
+          </dl>
+        </div>
 
-        <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid, ctx.context.organization_id, ctx.context.tenant_id)}
-           className="btn btn-sm btn-outline-primary">
-          Context Details
-        </a>{' '}
+        <div className="context-overlay-actions">
+          <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid, ctx.context.organization_id, ctx.context.tenant_id)}
+             className="btn btn-sm btn-outline-primary">
+            Context Details
+          </a>
+        </div>
       </React.Fragment>
   )
 

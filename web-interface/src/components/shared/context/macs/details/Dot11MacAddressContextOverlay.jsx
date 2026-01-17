@@ -96,28 +96,30 @@ function Dot11MacAddressContextOverlay(props) {
         <React.Fragment>
           <h6><i className="fa-regular fa-address-card" /> {address}</h6>
 
-          <p className="context-description">
-            <i className="fa-solid fa-circle-info"></i> This MAC address has no context.
-          </p>
+          <div className="context-overlay-content">
+            <p className="context-description">
+              <i className="fa-solid fa-circle-info"></i> This MAC address has no context.
+            </p>
 
-          <dl>
-            <dt>Device Type:</dt>
-            <dd>{contextType(ctx.context_type)}</dd>
-            <dt>OUI:</dt>
-            <dd>{oui ? truncate(oui, 20) : <span className="text-muted">Unknown</span>}</dd>
-            <dt>Is Monitored:</dt>
-            <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
-            <dt>IP Address</dt>
-            <dd><span className="text-muted">None</span></dd>
-            <dt>Hostname</dt>
-            <dd><span className="text-muted">None</span></dd>
-            <dt>Has Notes:</dt>
-            <dd><span className="text-muted">No</span></dd>
-            <dt>Is Randomized:</dt>
-            <dd>{isRandomized === null ? <span className="text-muted">n/a</span> : (isRandomized ? "Yes" : "No")}</dd>
-          </dl>
+            <dl>
+              <dt>Device Type:</dt>
+              <dd>{contextType(ctx.context_type)}</dd>
+              <dt>OUI:</dt>
+              <dd>{oui ? truncate(oui, 20) : <span className="text-muted">Unknown</span>}</dd>
+              <dt>Is Monitored:</dt>
+              <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
+              <dt>IP Address</dt>
+              <dd><span className="text-muted">None</span></dd>
+              <dt>Hostname</dt>
+              <dd><span className="text-muted">None</span></dd>
+              <dt>Has Notes:</dt>
+              <dd><span className="text-muted">No</span></dd>
+              <dt>Is Randomized:</dt>
+              <dd>{isRandomized === null ? <span className="text-muted">n/a</span> : (isRandomized ? "Yes" : "No")}</dd>
+            </dl>
+          </div>
 
-          <div className="context-overlay-no-context-controls">
+          <div className="context-overlay-actions">
             <WithPermission permission="mac_context_manage">
               <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE + "?address=" + encodeURIComponent(address)}
                  className="btn btn-sm btn-outline-primary">
@@ -137,34 +139,38 @@ function Dot11MacAddressContextOverlay(props) {
           <span className="context-name">{ctx.context.name}</span>
         </h6>
 
-        <p className="context-description">
-          <i className="fa-solid fa-angle-right"></i>{' '}
-          {ctx.context.description && ctx.context.description.trim().length > 0
-              ? ctx.context.description : "No Description"}
-        </p>
+        <div className="context-overlay-content">
+          <p className="context-description">
+            <i className="fa-solid fa-angle-right"></i>{' '}
+            {ctx.context.description && ctx.context.description.trim().length > 0
+                ? ctx.context.description : "No Description"}
+          </p>
 
-        <dl>
-          <dt>Device Type:</dt>
-          <dd>{contextType(ctx.context_type)}</dd>
-          <dt>OUI:</dt>
-          <dd>{oui ? truncate(oui, 20) : <span className="text-muted">Unknown</span>}</dd>
-          <dt>IP Address</dt>
-          <dd><FirstContextIpAddress addresses={ctx.context.transparent_ip_addresses}/></dd>
-          <dt>Hostname</dt>
-          <dd><FirstContextHostname hostnames={ctx.context.transparent_hostnames}/></dd>
-          <dt>Is Monitored:</dt>
-          <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
-          <dt>Has Notes:</dt>
-          <dd>{ctx.context.notes ? "Yes" : "No"}</dd>
-          <dt>Is Randomized:</dt>
-          <dd>{isRandomized === null ? <span className="text-muted">n/a</span> : (isRandomized ? "Yes" : "No")}</dd>
-        </dl>
+          <dl>
+            <dt>Device Type:</dt>
+            <dd>{contextType(ctx.context_type)}</dd>
+            <dt>OUI:</dt>
+            <dd>{oui ? truncate(oui, 20) : <span className="text-muted">Unknown</span>}</dd>
+            <dt>IP Address</dt>
+            <dd><FirstContextIpAddress addresses={ctx.context.transparent_ip_addresses}/></dd>
+            <dt>Hostname</dt>
+            <dd><FirstContextHostname hostnames={ctx.context.transparent_hostnames}/></dd>
+            <dt>Is Monitored:</dt>
+            <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
+            <dt>Has Notes:</dt>
+            <dd>{ctx.context.notes ? "Yes" : "No"}</dd>
+            <dt>Is Randomized:</dt>
+            <dd>{isRandomized === null ? <span className="text-muted">n/a</span> : (isRandomized ? "Yes" : "No")}</dd>
+          </dl>
+        </div>
 
-        <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid, ctx.context.organization_id, ctx.context.tenant_id)}
-           className="btn btn-sm btn-outline-primary">
-          Context Details
-        </a>{' '}
-        {typeDetailsLink(ctx.context_type, address)}{' '}
+        <div className="context-overlay-actions">
+          <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid, ctx.context.organization_id, ctx.context.tenant_id)}
+             className="btn btn-sm btn-outline-primary">
+            Context Details
+          </a>{' '}
+          {typeDetailsLink(ctx.context_type, address)}{' '}
+        </div>
       </React.Fragment>
   )
 

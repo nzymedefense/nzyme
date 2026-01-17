@@ -916,12 +916,14 @@ ul.selected-org-tenant span {
 }
 
 div.context-overlay {
+    display: flex;
+    flex-direction: column;
     position: relative;
     top: -16px;
     left: -2px;
-    height: 253px;
+    height: 270px;
     width: 300px;
-    margin-top: -253px;
+    margin-top: -270px;
     margin-right: -300px;
     overflow: hidden;
     padding: 10px;
@@ -933,6 +935,19 @@ div.context-overlay {
     border: 1px solid #c5c5c5;
     border-radius: 8px;
     z-index: 1000;
+}
+
+div.context-overlay .context-overlay-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+/* footer pinned to bottom */
+div.context-overlay .context-overlay-actions {
+    flex: 0 0 auto;
+    margin-top: auto;
+    padding-top: 10px;
 }
 
 div.context-overlay img.loading-miller {
@@ -976,10 +991,6 @@ div.context-overlay dt {
 div.context-overlay dd {
     margin-left: 90px;
     margin-bottom: 1px;
-}
-
-div.context-overlay-no-context-controls {
-    margin-top: 10px;
 }
 
 span.context-name {

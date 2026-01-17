@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from "react";
-import AssetImage from "../../../../misc/AssetImage";
 import WithPermission from "../../../../misc/WithPermission";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import ContextService from "../../../../../services/ContextService";
@@ -52,27 +51,29 @@ export default function EthernetMacAddressContextOverlay(props) {
         <React.Fragment>
           <h6><i className="fa-regular fa-address-card" /> {address}</h6>
 
-          <p className="context-description">
-            <i className="fa-solid fa-circle-info"></i> This MAC address has no context.
-          </p>
+          <div className="context-overlay-content">
+            <p className="context-description">
+              <i className="fa-solid fa-circle-info"></i> This MAC address has no context.
+            </p>
 
-          <dl style={{marginBottom: 90}}>
-            <dt>Device Type:</dt>
-            <dd>Ethernet</dd>
-            <dt>OUI:</dt>
-            <dd>{oui ? truncate(oui, 20) : <span className="text-muted">Unknown</span>}</dd>
-            <dt>Has Notes:</dt>
-            <dd>No</dd>
-          </dl>
+            <dl>
+              <dt>Device Type:</dt>
+              <dd>Ethernet</dd>
+              <dt>OUI:</dt>
+              <dd>{oui ? truncate(oui, 20) : <span className="text-muted">Unknown</span>}</dd>
+              <dt>Has Notes:</dt>
+              <dd>No</dd>
+            </dl>
+          </div>
 
-          <div className="context-overlay-no-context-controls">
+          <div className="context-overlay-actions">
             {assetLink()}
 
             <WithPermission permission="mac_context_manage">
               <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE + "?address=" + encodeURIComponent(address)}
                  className="btn btn-sm btn-outline-secondary">
                 Add Context
-              </a>{' '}
+              </a>
             </WithPermission>
           </div>
         </React.Fragment>
@@ -86,31 +87,35 @@ export default function EthernetMacAddressContextOverlay(props) {
           <span className="context-name">{ctx.context.name}</span>
         </h6>
 
-        <p className="context-description">
-          <i className="fa-solid fa-angle-right"></i>{' '}
-          {ctx.context.description && ctx.context.description.trim().length > 0
-              ? ctx.context.description : "No Description"}
-        </p>
+        <div className="context-overlay-content">
+          <p className="context-description">
+            <i className="fa-solid fa-angle-right"></i>{' '}
+            {ctx.context.description && ctx.context.description.trim().length > 0
+                ? ctx.context.description : "No Description"}
+          </p>
 
-        <dl style={{marginBottom: 47}}>
-          <dt>Device Type:</dt>
-          <dd>Ethernet Device</dd>
-          <dt>OUI:</dt>
-          <dd>{oui ? truncate(oui, 20) : <span className="text-muted">Unknown</span>}</dd>
-          <dt>IP Address</dt>
-          <dd><FirstContextIpAddress addresses={ctx.context.transparent_ip_addresses}/></dd>
-          <dt>Hostname</dt>
-          <dd><FirstContextHostname hostnames={ctx.context.transparent_hostnames}/></dd>
-          <dt>Has Notes:</dt>
-          <dd>{ctx.context.notes ? "Yes" : "No"}</dd>
-        </dl>
+          <dl>
+            <dt>Device Type:</dt>
+            <dd>Ethernet Device</dd>
+            <dt>OUI:</dt>
+            <dd>{oui ? truncate(oui, 20) : <span className="text-muted">Unknown</span>}</dd>
+            <dt>IP Address</dt>
+            <dd><FirstContextIpAddress addresses={ctx.context.transparent_ip_addresses}/></dd>
+            <dt>Hostname</dt>
+            <dd><FirstContextHostname hostnames={ctx.context.transparent_hostnames}/></dd>
+            <dt>Has Notes:</dt>
+            <dd>{ctx.context.notes ? "Yes" : "No"}</dd>
+          </dl>
+        </div>
 
-        {assetLink()}
+        <div className="context-overlay-actions">
+          {assetLink()}
 
-        <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid, ctx.context.organization_id, ctx.context.tenant_id)}
-           className="btn btn-sm btn-outline-primary">
-          Context Details
-        </a>{' '}
+          <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid, ctx.context.organization_id, ctx.context.tenant_id)}
+             className="btn btn-sm btn-outline-primary">
+            Context Details
+          </a>
+        </div>
       </React.Fragment>
   )
 
