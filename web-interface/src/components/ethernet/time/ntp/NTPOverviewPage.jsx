@@ -7,7 +7,6 @@ import {TIME_MENU_ITEMS} from "../TimeMenuItems";
 import {Presets} from "../../../shared/timerange/TimeRange";
 import {useLocation} from "react-router-dom";
 import TimeService from "../../../../services/ethernet/TimeService";
-import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import {queryParametersToFilters} from "../../../shared/filtering/FilterQueryParameters";
 import {NTP_FILTER_FIELDS} from "./NTPFilterFields";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
@@ -25,22 +24,13 @@ const useQuery = () => {
 
 export function NTPOverviewPage() {
 
-  const [organizationId, tenantId] = useSelectedTenant();
-
   const urlQuery = useQuery();
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
-  const [transactions, setTransactions] = useState(null);
   const [transactionsHistogram, setTransactionsHistogram] = useState(null);
-
-  const [orderColumn, setOrderColumn] = useState("initiated_at");
-  const [orderDirection, setOrderDirection] = useState("DESC");
-
-  const perPage = 25;
-  const [page, setPage] = useState(1);
 
   const [revision, setRevision] = useState(new Date());
 
@@ -57,24 +47,10 @@ export function NTPOverviewPage() {
   }, [tapContext]);
 
   useEffect(() => {
-    setTransactions(null);
     setTransactionsHistogram(null);
 
-    timeService.findAllNTPTransactions(
-      organizationId,
-      tenantId,
-      timeRange,
-      filters,
-      orderColumn,
-      orderDirection,
-      selectedTaps,
-      perPage,
-      (page - 1) * perPage,
-      setTransactions
-    );
-
     timeService.getNTPTransactionsHistogram(timeRange, filters, selectedTaps, setTransactionsHistogram);
-  }, [selectedTaps, organizationId, tenantId, timeRange, orderColumn, orderDirection, filters, page, revision]);
+  }, [selectedTaps, timeRange, filters, revision]);
 
   return (
     <>
@@ -153,15 +129,10 @@ export function NTPOverviewPage() {
                                      fixedTimeRange={timeRange}
                                      refreshAction={() => setRevision(new Date())}/>
 
-              <NTPTransactionsTable transactions={transactions}
+              <NTPTransactionsTable filters={filters}
                                     setFilters={setFilters}
-                                    orderColumn={orderColumn}
-                                    setOrderColumn={setOrderColumn}
-                                    orderDirection={orderDirection}
-                                    setOrderDirection={setOrderDirection}
-                                    perPage={perPage}
-                                    page={page}
-                                    setPage={setPage} />
+                                    timeRange={timeRange}
+                                    revision={revision} />
             </div>
           </div>
         </div>

@@ -24,6 +24,7 @@ import AssetDetailsL4Ports from "./AssetDetailsL4Ports";
 import AssetDetailsAssetName from "./AssetDetailsAssetName";
 import WithPermission from "../../misc/WithPermission";
 import EthernetMacAddress from "../../shared/context/macs/EthernetMacAddress";
+import AssetDetailsNTPTransactions from "./AssetDetailsNTPTransactions";
 
 const assetsService = new AssetsService();
 
@@ -326,6 +327,35 @@ export default function AssetDetailsPage() {
                                                   operator: "equals",
                                                   value: asset.mac.address,
                                                 }]}} />},
+                ]} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Time"  />
+
+                <ComponentCycle components={[
+                  {name: "NTP Client Requests", element:
+                      <AssetDetailsNTPTransactions title="NTP Client Requests"
+                                                   filters={{
+                                                     "client_mac": [{
+                                                       field: "client_mac",
+                                                       operator: "equals",
+                                                       value: asset.mac.address,
+                                                     }]}} />},
+                  {name: "NTP Server Responses", element:
+                      <AssetDetailsNTPTransactions title="NTP Server Responses"
+                                                   filters={{
+                                                     "server_mac": [{
+                                                       field: "server_mac",
+                                                       operator: "equals",
+                                                       value: asset.mac.address,
+                                                     }]}} />},
                 ]} />
               </div>
             </div>
