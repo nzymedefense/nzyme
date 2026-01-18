@@ -11,7 +11,9 @@ public abstract class NTPTransactionEntry {
     public abstract String transactionKey();
     public abstract boolean complete();
     public abstract String notes();
+    @Nullable
     public abstract String clientMac();
+    @Nullable
     public abstract String serverMac();
     public abstract String clientAddress();
     public abstract String serverAddress();

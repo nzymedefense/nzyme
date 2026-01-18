@@ -234,7 +234,7 @@ public class NTP {
                                 "FROM ntp_transactions WHERE (timestamp_client_tap_receive >= :tr_from OR " +
                                 "timestamp_server_tap_receive >= :tr_from) AND " +
                                 "(timestamp_client_tap_receive <= :tr_to OR timestamp_server_tap_receive <= :tr_to) " +
-                                "AND client_mac IS NOT NULL AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
+                                "AND client_address IS NOT NULL AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
                                 "GROUP BY client_mac HAVING 1=1 " + filterFragment.havingSql() + ")")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
@@ -257,13 +257,13 @@ public class NTP {
         FilterSqlFragment filterFragment = FilterSql.generate(filters, new NTPFilters());
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT client_mac AS key, COUNT(*) FILTER " +
+                handle.createQuery("SELECT client_address AS key, COUNT(*) FILTER " +
                                 "(WHERE complete = true)::float / COUNT(*) AS value1, COUNT(*) as value2 " +
                                 "FROM ntp_transactions WHERE (timestamp_client_tap_receive >= :tr_from OR " +
                                 "timestamp_server_tap_receive >= :tr_from) AND " +
                                 "(timestamp_client_tap_receive <= :tr_to OR timestamp_server_tap_receive <= :tr_to) " +
-                                "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
-                                "GROUP BY client_mac HAVING 1=1 " + filterFragment.havingSql() +
+                                "AND client_address IS NOT NULL AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
+                                "GROUP BY client_address HAVING 1=1 " + filterFragment.havingSql() +
                                 "ORDER BY value1 ASC LIMIT :limit OFFSET :offset ")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())

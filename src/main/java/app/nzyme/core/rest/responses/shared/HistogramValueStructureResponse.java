@@ -8,6 +8,7 @@ import jakarta.annotation.Nullable;
 public abstract class HistogramValueStructureResponse {
 
     @JsonProperty("value")
+    @Nullable
     public abstract Object value();
 
     @JsonProperty("type")

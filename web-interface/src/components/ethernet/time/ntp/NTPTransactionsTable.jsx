@@ -87,7 +87,7 @@ export default function NTPTransactionsTable({ transactions,
                 <InternalAddressOnlyWrapper
                   address={tx.client}
                   inner={<EthernetMacAddress
-                    filterElement={tx.client ? <FilterValueIcon setFilters={setFilters}
+                    filterElement={tx.client && tx.client.mac ? <FilterValueIcon setFilters={setFilters}
                                                                 fields={NTP_FILTER_FIELDS}
                                                                 field="client_mac"
                                                                 value={tx.client.mac.address} /> : null}

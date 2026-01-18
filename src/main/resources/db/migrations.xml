@@ -7728,4 +7728,9 @@
         <modifyDataType tableName="ntp_transactions" columnName="reference_id"  newDataType="text" />
     </changeSet>
 
+    <changeSet id="make_ntp_transaction_mac_addresses_nullable" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="ntp_transactions" columnName="client_mac"  />
+        <dropNotNullConstraint tableName="ntp_transactions" columnName="server_mac"  />
+    </changeSet>
+
 </databaseChangeLog>

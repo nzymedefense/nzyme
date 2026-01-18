@@ -13,7 +13,9 @@ public abstract class NTPTransactionReport {
 
     public abstract boolean complete();
     public abstract Set<String> notes();
+    @Nullable
     public abstract String clientMac();
+    @Nullable
     public abstract String serverMac();
     public abstract String clientAddress();
     public abstract String serverAddress();

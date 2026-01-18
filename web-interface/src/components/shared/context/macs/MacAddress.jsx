@@ -12,7 +12,7 @@ function MacAddress(props) {
   const assetIsActive = addressWithContext ? addressWithContext.asset_is_active : null;
   const context = addressWithContext ? addressWithContext.context : null;
   const oui = addressWithContext ? addressWithContext.oui : null;
-  const isRandomized = addressWithContext ? addressWithContext.is_randomized : props.address.is_randomized;
+  const isRandomized = addressWithContext ? addressWithContext.is_randomized : (props.address ? props.address.is_randomized : null);
 
   const href = props.href;
   const withAssetLink = props.withAssetLink;
@@ -102,6 +102,10 @@ function MacAddress(props) {
     if (overlayTimeout) {
       clearTimeout(overlayTimeout);
     }
+  }
+
+  if (!address && !addressWithContext) {
+    return <span className="text-muted">n/a</span>;
   }
 
   return (

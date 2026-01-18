@@ -166,30 +166,21 @@ public class TimeResource extends TapDataHandlingResource {
         for (StringDoubleDoubleNumberAggregationResult c : nzyme.getEthernet().ntp()
                 .getClientRequestResponseRatioHistogram(timeRange, filters, limit, offset, taps)) {
 
-            Optional<MacAddressContextEntry> sourceContext = nzyme.getContextService().findMacAddressContext(
+            L4AddressResponse l4AddressResponse = L4AddressResponse.create(
+                    L4AddressTypeResponse.UDP,
+                    null,
                     c.key(),
-                    organizationId,
-                    tenantId
+                    null,
+                    null,
+                    null,
+                    L4AddressContextResponse.create()
             );
 
-            Optional<AssetEntry> sourceAsset = nzyme.getAssetsManager()
-                    .findAssetByMac(c.key(), organizationId, tenantId);
-
             values.add(ThreeColumnTableHistogramValueResponse.create(
-                    HistogramValueStructureResponse.create(c.key(),
-                            HistogramValueType.ETHERNET_MAC,
-                            EthernetMacAddressResponse.create(
-                                    c.key(),
-                                    nzyme.getOuiService().lookup(c.key()).orElse(null),
-                                    sourceAsset.map(AssetEntry::uuid).orElse(null),
-                                    sourceAsset.map(AssetEntry::isActive).orElse(null),
-                                    sourceContext.map(ctx ->
-                                            EthernetMacAddressContextResponse.create(
-                                                    ctx.name(),
-                                                    ctx.description()
-                                            )
-                                    ).orElse(null)
-                            )
+                    HistogramValueStructureResponse.create(
+                            l4AddressResponse,
+                            HistogramValueType.L4_ADDRESS,
+                            null
                     ),
                     HistogramValueStructureResponse.create(c.value1(), HistogramValueType.DOUBLE_DECIMAL2, null),
                     HistogramValueStructureResponse.create(c.value2(), HistogramValueType.INTEGER, null),
@@ -240,7 +231,7 @@ public class TimeResource extends TapDataHandlingResource {
 
             EthernetMacAddressResponse value1;
             L4AddressResponse l4AddressResponse;
-            if (addressData.isPresent()) {
+            if (addressData.isPresent() && s.value1() != null) {
                 if (addressData.get().attributes() != null && addressData.get().attributes().isSiteLocal()) {
                     value1 = EthernetMacAddressResponse.create(
                             s.value1(),

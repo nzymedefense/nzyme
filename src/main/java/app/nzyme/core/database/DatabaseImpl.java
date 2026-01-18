@@ -463,6 +463,11 @@ public class DatabaseImpl implements Database {
                         "SELECT COUNT(*) FROM socks_tunnels WHERE tap_uuid IN (<taps>)",
                         "DELETE FROM socks_tunnels WHERE most_recent_segment_time < :since AND tap_uuid IN (<taps>)"
                 ));
+                tables.add(new DataTableInformation(
+                        "ntp_transactions",
+                        "SELECT COUNT(*) FROM ntp_transactions WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM ntp_transactions WHERE (timestamp_client_tap_receive < :since OR timestamp_server_tap_receive < :since) AND tap_uuid IN (<taps>)"
+                ));
             }
             case ETHERNET_DNS -> {
                 tables.add(new DataTableInformation(

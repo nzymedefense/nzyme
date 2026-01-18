@@ -1,15 +1,18 @@
 package app.nzyme.core.database.generic;
 
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 
 @AutoValue
 public abstract class StringStringNumberAggregationResult {
 
     public abstract String key();
+    @Nullable
     public abstract String value1();
-    public abstract long value2();
+    @Nullable
+    public abstract Long value2();
 
-    public static StringStringNumberAggregationResult create(String key, String value1, long value2) {
+    public static StringStringNumberAggregationResult create(String key, String value1, Long value2) {
         return builder()
                 .key(key)
                 .value1(value1)
@@ -27,7 +30,7 @@ public abstract class StringStringNumberAggregationResult {
 
         public abstract Builder value1(String value1);
 
-        public abstract Builder value2(long value2);
+        public abstract Builder value2(Long value2);
 
         public abstract StringStringNumberAggregationResult build();
     }

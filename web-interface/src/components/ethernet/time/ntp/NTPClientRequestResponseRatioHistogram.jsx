@@ -38,10 +38,10 @@ export default function NTPClientRequestResponseRatioHistogram({filters, setFilt
 
   return <ThreeColumnHistogram data={data}
                                columnFilterElements={[
-                                 {field: "client_mac", fields: NTP_FILTER_FIELDS, setFilters: setFilters},
+                                 {field: "client_address", fields: NTP_FILTER_FIELDS, setFilters: setFilters},
                                  null, null
                                ]}
-                               columnTitles={["Source Asset", "Req/Resp Ratio", "Transactions"]}
+                               columnTitles={["Client", "Req/Resp Ratio", "Transactions"]}
                                limit={limit}
                                setLimit={setLimit} />
 
