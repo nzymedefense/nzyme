@@ -33,7 +33,7 @@ export default function AssetDetailsNTPTransactions({ title, filters }) {
                              internalLink={ApiRoutes.ETHERNET.TIME.NTP.INDEX + "?filters=" + JSON.stringify(filters)}
                              refreshAction={onRefresh} />
 
-      <NTPTransactionsTable filters={filters} timeRange={timerange} revision={revision} />
+      <NTPTransactionsTable filters={filters} timeRange={timerange} revision={revision} perPage={10} />
     </>
   )
 

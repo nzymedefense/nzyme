@@ -20,7 +20,7 @@ import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant"
 
 const timeService = new TimeService();
 
-export default function NTPTransactionsTable({ filters, setFilters, timeRange, revision }) {
+export default function NTPTransactionsTable({ filters, setFilters, timeRange, revision, perPage=25 }) {
 
   const [organizationId, tenantId] = useSelectedTenant();
 
@@ -30,7 +30,6 @@ export default function NTPTransactionsTable({ filters, setFilters, timeRange, r
   const [orderColumn, setOrderColumn] = useState("initiated_at");
   const [orderDirection, setOrderDirection] = useState("DESC");
 
-  const perPage = 25;
   const [page, setPage] = useState(1);
 
   const [transactions, setTransactions] = useState(null);

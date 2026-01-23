@@ -55,7 +55,7 @@ export default function AssetDetailsDNSTransactions(props) {
 
                 <DNSTransactionsTable timeRange={timerange}
                                       filters={FILTERS}
-                                      perPage={25}
+                                      perPage={10}
                                       revision={revision}/>
               </div>
             </div>

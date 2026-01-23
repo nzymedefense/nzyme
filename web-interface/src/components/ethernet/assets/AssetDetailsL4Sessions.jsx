@@ -35,7 +35,8 @@ export default function AssetDetailsL4Sessions({title, filters}) {
 
       <L4SessionsTable filters={filters}
                        timeRange={timerange}
-                       revision={revision} />
+                       revision={revision}
+                       perPage={10} />
     </>
   )
 

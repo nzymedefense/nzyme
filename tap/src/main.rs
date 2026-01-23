@@ -362,15 +362,22 @@ fn main() {
                 };
 
                 thread::spawn(move || {
-                    if let Ok(sona_serial) = extract_serial_from_interface_name("sona", &interface_name) {
+                    if let Ok(sona_serial) = extract_serial_from_interface_name("sona",
+                                                                                &interface_name) {
                         let mut sona_capture = sona::capture::Capture {
                             metrics: capture_metrics.clone(),
                             bus: capture_bus.clone(),
                             command_receiver: cmd_rx
                         };
 
+                        match capture_metrics.lock() {
+                            Ok(mut metrics) => metrics.register_new_capture(&interface_name,
+                                                                            metrics::CaptureType::WiFi),
+                            Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                        }
+
                         loop {
-                            sona_capture.run(&sona_serial);
+                            sona_capture.run(&interface_name, &sona_serial);
 
                             error!("Sona capture [{}] disconnected. Retrying in 5 seconds.",
                                 &sona_serial);
