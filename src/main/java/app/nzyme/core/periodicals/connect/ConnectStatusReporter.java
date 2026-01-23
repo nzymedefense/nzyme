@@ -251,7 +251,7 @@ public class ConnectStatusReporter extends Periodical {
                     status.indicatorName(),
                     status.indicatorId(),
                     status.lastChecked(),
-                    status.resultLevel(),
+                    status.resultLevel().toString().toUpperCase(),
                     status.active()
             ));
         }

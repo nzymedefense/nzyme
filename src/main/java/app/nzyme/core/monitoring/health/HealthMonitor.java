@@ -1,6 +1,7 @@
 package app.nzyme.core.monitoring.health;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.monitoring.health.indicators.*;
 import com.google.common.collect.ImmutableList;
@@ -61,6 +62,7 @@ public class HealthMonitor {
                     continue;
                 }
 
+                DateTime now = DateTime.now();
                 IndicatorStatus status = indicator.run();
 
                 // Write to database.
@@ -71,10 +73,21 @@ public class HealthMonitor {
                                         "level = :level, last_checked = :last_checked")
                                 .bind("indicator_id", indicator.getId())
                                 .bind("indicator_name", indicator.getName())
-                                .bind("level", status.resultLevel().toUpperCase())
-                                .bind("last_checked", DateTime.now())
+                                .bind("level", status.resultLevel().toString().toUpperCase())
+                                .bind("last_checked", now)
                                 .execute()
                 );
+
+                // Trigger notification if red or orange.
+                if (status.resultLevel() != IndicatorStatusLevel.GREEN)
+                    nzyme.getEventEngine().processEvent(
+                            SystemEvent.create(
+                                    indicator.getSystemEventType(),
+                                    now,
+                                    "Health Monitor [" + indicator.getName() + "]: <" + status.resultLevel() + ">"
+                            ),
+                            null, null
+                    );
             } catch(Exception e) {
                 LOG.error("Could not run health check indicator. Skipping.", e);
             }

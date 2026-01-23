@@ -1,6 +1,7 @@
 package app.nzyme.core.monitoring.health.indicators;
 
 import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.monitoring.health.Indicator;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 
@@ -26,6 +27,11 @@ public class CryptoSyncIndicator extends Indicator {
     @Override
     public String getName() {
         return "Crypto Sync";
+    }
+
+    @Override
+    public SystemEventType getSystemEventType() {
+        return SystemEventType.HEALTH_INDICATOR_CRYPTO_SYNC_TOGGLED;
     }
 
 }

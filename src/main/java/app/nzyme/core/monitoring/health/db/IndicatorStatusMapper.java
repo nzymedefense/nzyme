@@ -1,5 +1,6 @@
 package app.nzyme.core.monitoring.health.db;
 
+import app.nzyme.core.monitoring.health.IndicatorStatusLevel;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -15,7 +16,7 @@ public class IndicatorStatusMapper implements RowMapper<IndicatorStatus> {
                 rs.getString("indicator_name"),
                 rs.getString("indicator_id"),
                 new DateTime(rs.getTimestamp("last_checked")),
-                rs.getString("level"),
+                IndicatorStatusLevel.valueOf(rs.getString("level").toUpperCase()),
                 rs.getBoolean("active")
         );
     }

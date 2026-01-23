@@ -1,5 +1,6 @@
 package app.nzyme.core.monitoring.health.indicators;
 
+import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.monitoring.health.Indicator;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.taps.Tap;
@@ -49,6 +50,11 @@ public class TapThroughputIndicator extends Indicator {
     @Override
     public String getName() {
         return "Tap TPX";
+    }
+
+    @Override
+    public SystemEventType getSystemEventType() {
+        return SystemEventType.HEALTH_INDICATOR_TAP_TPX_TOGGLED;
     }
 
 }

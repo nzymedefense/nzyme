@@ -2,6 +2,7 @@ package app.nzyme.core.monitoring.health.indicators;
 
 import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.NodeManager;
+import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.monitoring.health.Indicator;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import org.apache.logging.log4j.LogManager;
@@ -43,6 +44,11 @@ public class NodeClockIndicator extends Indicator {
     @Override
     public String getName() {
         return "Node Clock";
+    }
+
+    @Override
+    public SystemEventType getSystemEventType() {
+        return SystemEventType.HEALTH_INDICATOR_NODE_CLOCK_TOGGLED;
     }
 
 }

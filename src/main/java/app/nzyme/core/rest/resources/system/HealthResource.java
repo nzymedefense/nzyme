@@ -39,7 +39,7 @@ public class HealthResource {
                 indicators.put(s.indicatorId(), HealthIndicatorResponse.create(
                         s.indicatorId(),
                         s.indicatorName(),
-                        s.resultLevel().toUpperCase(),
+                        s.resultLevel().toString().toUpperCase(),
                         s.lastChecked(),
                         s.lastChecked().isBefore(DateTime.now().minusMinutes(2)),
                         s.active()

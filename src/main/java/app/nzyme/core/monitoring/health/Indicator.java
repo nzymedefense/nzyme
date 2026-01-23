@@ -1,5 +1,6 @@
 package app.nzyme.core.monitoring.health;
 
+import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,5 +21,6 @@ public abstract class Indicator {
 
     public abstract String getId();
     public abstract String getName();
+    public abstract SystemEventType getSystemEventType();
 
 }

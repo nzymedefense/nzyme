@@ -11,26 +11,26 @@ public abstract class IndicatorStatus {
     public abstract String indicatorName();
     public abstract String indicatorId();
     public abstract DateTime lastChecked();
-    public abstract String resultLevel();
+    public abstract IndicatorStatusLevel resultLevel();
     public abstract boolean active();
 
     public static IndicatorStatus red(Indicator indicator) {
-        return create(indicator.getName(), indicator.getId(), DateTime.now(), IndicatorStatusLevel.RED.toString().toUpperCase(), true);
+        return create(indicator.getName(), indicator.getId(), DateTime.now(), IndicatorStatusLevel.RED, true);
     }
 
     public static IndicatorStatus orange(Indicator indicator) {
-        return create(indicator.getName(), indicator.getId(), DateTime.now(), IndicatorStatusLevel.ORANGE.toString().toUpperCase(), true);
+        return create(indicator.getName(), indicator.getId(), DateTime.now(), IndicatorStatusLevel.ORANGE, true);
     }
 
     public static IndicatorStatus green(Indicator indicator) {
-        return create(indicator.getName(), indicator.getId(), DateTime.now(), IndicatorStatusLevel.GREEN.toString().toUpperCase(), true);
+        return create(indicator.getName(), indicator.getId(), DateTime.now(), IndicatorStatusLevel.GREEN, true);
     }
 
     public static IndicatorStatus unavailable(Indicator indicator) {
-        return create(indicator.getName(), indicator.getId(), DateTime.now(), IndicatorStatusLevel.UNAVAILABLE.toString().toUpperCase(), true);
+        return create(indicator.getName(), indicator.getId(), DateTime.now(), IndicatorStatusLevel.UNAVAILABLE, true);
     }
 
-    public static IndicatorStatus create(String indicatorName, String indicatorId, DateTime lastChecked, String resultLevel, boolean active) {
+    public static IndicatorStatus create(String indicatorName, String indicatorId, DateTime lastChecked, IndicatorStatusLevel resultLevel, boolean active) {
         return builder()
                 .indicatorName(indicatorName)
                 .indicatorId(indicatorId)
@@ -52,7 +52,7 @@ public abstract class IndicatorStatus {
 
         public abstract Builder lastChecked(DateTime lastChecked);
 
-        public abstract Builder resultLevel(String resultLevel);
+        public abstract Builder resultLevel(IndicatorStatusLevel resultLevel);
 
         public abstract Builder active(boolean active);
 

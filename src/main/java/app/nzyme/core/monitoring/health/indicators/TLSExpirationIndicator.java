@@ -1,11 +1,11 @@
 package app.nzyme.core.monitoring.health.indicators;
 
-import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
 import app.nzyme.core.crypto.tls.TLSWildcardKeyAndCertificate;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.NodeManager;
+import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.monitoring.health.Indicator;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import org.joda.time.DateTime;
@@ -52,6 +52,11 @@ public class TLSExpirationIndicator extends Indicator  {
     @Override
     public String getName() {
         return "TLS Expiration";
+    }
+
+    @Override
+    public SystemEventType getSystemEventType() {
+        return SystemEventType.HEALTH_INDICATOR_TLS_EXPIRATION_TOGGLED;
     }
 
 }
