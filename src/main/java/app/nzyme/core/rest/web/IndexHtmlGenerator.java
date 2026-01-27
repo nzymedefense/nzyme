@@ -67,7 +67,7 @@ public class IndexHtmlGenerator {
 
     public String get(MultivaluedMap<String, String> headers) {
         String title = Strings.isNullOrEmpty(configuration.misc().customTitle()) ?
-                "nzyme - Network Defense System" : configuration.misc().customTitle();
+                "Nzyme" : configuration.misc().customTitle();
 
         String faviconUri = Strings.isNullOrEmpty(configuration.misc().customFaviconUrl()) ?
                 null : HtmlEscapers.htmlEscaper().escape(configuration.misc().customFaviconUrl());
