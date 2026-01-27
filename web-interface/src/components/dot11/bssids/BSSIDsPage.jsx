@@ -56,6 +56,10 @@ function BSSIDsPage() {
       return <LoadingSpinner />
     }
 
+    if (bssids.total === 0) {
+      return <div className="alert alert-info mb-0">No BSSIDs matching the filters found.</div>
+    }
+
     return <BSSIDsTable bssids={bssids}
                         timeRange={timeRange}
                         setFilters={setFilters}

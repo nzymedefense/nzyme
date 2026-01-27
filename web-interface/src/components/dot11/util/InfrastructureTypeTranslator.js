@@ -1,10 +1,10 @@
 export const translateInfrastructureType = (type) => {
   switch (type) {
-    case "accesspoint":
+    case "AccessPoint":
       return "Infrastructure";
-    case "adhoc":
+    case "AdHoc":
       return "Ad-Hoc";
-    case "invalid":
+    case "Invalid":
       return "Unknown/Invalid";
   }
 }

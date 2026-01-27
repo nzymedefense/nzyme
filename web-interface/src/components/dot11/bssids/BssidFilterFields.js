@@ -3,11 +3,11 @@ import {FILTER_TYPE} from "../../shared/filtering/Filters";
 const transformMode = (mode) => {
   switch (mode) {
     case "Infrastructure":
-      return "accesspoint";
+      return "AccessPoint";
     case "Ad-Hoc":
-      return "adhoc"
+      return "AdHoc"
     case "Unknown/Invalid":
-      return "invalid"
+      return "Invalid"
   }
 }
 
@@ -37,7 +37,7 @@ const transformSecurity = (security) => {
 export const BSSID_FILTER_FIELDS = {
   bssid: { title: "BSSID", type: FILTER_TYPE.MAC_ADDRESS },
   signal_strength: { title: "Signal Strength", type: FILTER_TYPE.NUMERIC },
-  mode: { title: "Mode", type: FILTER_TYPE.STRING_NO_REGEX, value_transform: transformMode },
+  mode: { title: "Mode", type: FILTER_TYPE.STRING_ARRAY, value_transform: transformMode },
   advertised_ssid: { title: "Advertised SSID", type: FILTER_TYPE.STRING },
   client_count: { title: "Client Count", type: FILTER_TYPE.NUMERIC },
   security: { title: "Security", type: FILTER_TYPE.STRING_NO_REGEX, value_transform: transformSecurity }

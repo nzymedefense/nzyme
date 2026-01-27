@@ -357,6 +357,7 @@ public class Dot11Table implements DataTable {
                            List<String> monitoredSSIDNames,
                            Map<String, PreLoadedMonitoredSSID> monitoredSSIDs,
                            SSIDProcessingTask task) {
+
         try {
             // Replace all non-printable characters.
             final String ssid = Tools.sanitizeSSID(task.ssid());
@@ -369,13 +370,18 @@ public class Dot11Table implements DataTable {
                 return;
             }
 
+            String rates = om.writeValueAsString(task.ssidReport().rates());
+            String infrastructureTypes = om.writeValueAsString(task.ssidReport().infrastructureTypes());
+
             Long ssidDatabaseId = handle.createQuery(
                     "INSERT INTO dot11_ssids(bssid_id, tap_uuid, ssid, bssid, " +
                             "signal_strength_average, signal_strength_max, signal_strength_min, " +
-                            "beacon_advertisements, proberesp_advertisements, created_at) " +
+                            "beacon_advertisements, proberesp_advertisements, rates, infrastructure_types, " +
+                            "created_at) " +
                             "VALUES(:bssid_id, :tap_uuid, :ssid, :bssid, :signal_strength_average, " +
                             ":signal_strength_max, :signal_strength_min, :beacon_advertisements, " +
-                            ":proberesp_advertisements, :created_at) RETURNING *")
+                            ":proberesp_advertisements, :rates::jsonb, :infrastructure_types::jsonb, " +
+                            ":created_at) RETURNING *")
                     .bind("bssid_id", task.bssidDatabaseId())
                     .bind("tap_uuid", task.tap().uuid())
                     .bind("ssid", ssid)
@@ -385,6 +391,8 @@ public class Dot11Table implements DataTable {
                     .bind("signal_strength_min", task.ssidReport().signalStrength().min())
                     .bind("beacon_advertisements", task.ssidReport().beaconAdvertisements())
                     .bind("proberesp_advertisements", task.ssidReport().probeResponseAdvertisements())
+                    .bind("rates", rates)
+                    .bind("infrastructure_types", infrastructureTypes)
                     .bind("created_at", task.timestamp())
                     .mapTo(Long.class)
                     .one();
@@ -453,14 +461,6 @@ public class Dot11Table implements DataTable {
             }
             fingerprintsBatch.execute();
 
-            // SSID Rates.
-            PreparedBatch ratesBatch = handle.prepareBatch("INSERT INTO dot11_rates(rate, ssid_id) " +
-                    "VALUES(:rate, :ssid_id)");
-            for (Float rate : task.ssidReport().rates()) {
-                ratesBatch.bind("rate", rate).bind("ssid_id", ssidDatabaseId).add();
-            }
-            ratesBatch.execute();
-
             // Channel Statistics.
             PreparedBatch statsBatch = handle.prepareBatch(
                     "INSERT INTO dot11_channels(ssid_id, frequency, " +
@@ -500,18 +500,6 @@ public class Dot11Table implements DataTable {
                 }
             }
             histoBatch.execute();
-
-            // Infrastructure Types.
-            PreparedBatch infraBatch = handle.prepareBatch(
-                    "INSERT INTO dot11_infrastructure_types(infrastructure_type, " +
-                            "ssid_id) VALUES(:infrastructure_type, :ssid_id)");
-            for (String infrastructureType : task.ssidReport().infrastructureTypes()) {
-                infraBatch
-                        .bind("infrastructure_type", infrastructureType.toLowerCase())
-                        .bind("ssid_id", ssidDatabaseId)
-                        .add();
-            }
-            infraBatch.execute();
 
             /*
              * Check if this SSID is similar to any monitored SSIDs or includes a monitored substring. Skip

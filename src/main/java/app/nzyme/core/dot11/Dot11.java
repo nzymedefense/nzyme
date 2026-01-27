@@ -235,14 +235,14 @@ public class Dot11 {
                                 "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
-                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
+                                "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
                                 "ARRAY_AGG(DISTINCT(ch.frequency)) AS frequencies, " +
                                 "COUNT(DISTINCT(c.client_mac)) AS client_count " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_channels AS ch ON s.id = ch.ssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
-                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(s.infrastructure_types) AS infratypes_elem ON TRUE " +
                                 "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
                                 "AND ssp.attribute = 'security_protocol' " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
@@ -319,13 +319,11 @@ public class Dot11 {
                                 "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
-                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
                                 "COUNT(DISTINCT(c.client_mac)) AS client_count, " +
                                 "ARRAY[]::integer[] AS frequencies " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
-                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
                                 "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
                                 "AND ssp.attribute = 'security_protocol' " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
@@ -361,13 +359,13 @@ public class Dot11 {
                                 "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
-                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
+                                "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
                                 "COUNT(DISTINCT(c.client_mac)) AS client_count, " +
                                 "ARRAY[]::integer[] AS frequencies " + // Part of BSSIDSummary but not needed.
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
-                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(s.infrastructure_types) AS infratypes_elem ON TRUE " +
                                 "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
                                 "AND ssp.attribute = 'security_protocol' " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
@@ -446,12 +444,12 @@ public class Dot11 {
                 handle.createQuery("SELECT s.ssid, c.frequency, MAX(s.created_at) AS last_seen, " +
                                 "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(ssw.value)) AS is_wps, " +
-                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
+                                "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
                                 "AVG(s.signal_strength_average) AS signal_strength_average, " +
                                 "SUM(c.stats_bytes) AS total_bytes, SUM(c.stats_frames) AS total_frames " +
                                 "FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channels AS c on s.id = c.ssid_id " +
-                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(s.infrastructure_types) AS infratypes_elem ON TRUE " +
                                 "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
                                 "AND ssp.attribute = 'security_protocol' " +
                                 "LEFT JOIN dot11_ssid_settings AS ssw on s.id = ssw.ssid_id " +
@@ -479,18 +477,18 @@ public class Dot11 {
                                 "ARRAY_AGG(DISTINCT(sss.value)) AS security_suites, " +
                                 "ARRAY_AGG(DISTINCT(ssw.value)) AS is_wps, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
-                                "ARRAY_AGG(DISTINCT(r.rate)) AS rates, " +
-                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) " +
-                                "AS infrastructure_types, AVG(s.signal_strength_average) AS signal_strength_average, " +
+                                "ARRAY_AGG(DISTINCT (rate_elem::text)::double precision) AS rates, " +
+                                "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
+                                "AVG(s.signal_strength_average) AS signal_strength_average, " +
                                 "ARRAY_AGG(DISTINCT(cl.client_mac)) AS access_point_clients, " +
                                 "ARRAY_AGG(DISTINCT(c.frequency)) AS frequencies, " +
                                 "SUM(c.stats_bytes) AS total_bytes, SUM(c.stats_frames) AS total_frames " +
                                 "FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_bssids AS b on s.bssid_id = b.id " +
                                 "LEFT JOIN dot11_channels AS c on s.id = c.ssid_id " +
-                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.rates) AS rate_elem ON TRUE " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(s.infrastructure_types) AS infratypes_elem ON TRUE " +
                                 "LEFT JOIN dot11_fingerprints AS f on s.id = f.ssid_id " +
-                                "LEFT JOIN dot11_rates AS r on s.id = r.ssid_id " +
                                 "LEFT JOIN dot11_bssid_clients cl on b.id = cl.bssid_id " +
                                 "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
                                 "AND ssp.attribute = 'security_protocol' " +
@@ -528,7 +526,6 @@ public class Dot11 {
                                 "DATE_TRUNC(:date_trunc, b.created_at) AS bucket " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
-                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
                                 "AND ssp.attribute = 'security_protocol' " +

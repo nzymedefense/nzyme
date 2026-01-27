@@ -7732,5 +7732,31 @@
         <dropNotNullConstraint tableName="ntp_transactions" columnName="client_mac"  />
         <dropNotNullConstraint tableName="ntp_transactions" columnName="server_mac"  />
     </changeSet>
+    
+    <changeSet id="delete_dot11_data" author="lennartkoopmann">
+        <sql>DELETE FROM dot11_bssids;</sql>
+        <sql>DELETE FROM dot11_ssids;</sql>
+        <sql>DELETE FROM dot11_clients;</sql>
+    </changeSet>
+
+    <changeSet id="refactor_dot11_rates" author="lennartkoopmann">
+        <dropTable tableName="dot11_rates" />
+
+        <addColumn tableName="dot11_ssids">
+            <column name="rates" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="refactor_dot11_infrastructure_types" author="lennartkoopmann">
+        <dropTable tableName="dot11_infrastructure_types" />
+
+        <addColumn tableName="dot11_ssids">
+            <column name="infrastructure_types" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

@@ -16,7 +16,7 @@ public class Dot11BSSIDFilters implements SqlFilterProvider {
             case "signal_strength":
                 return GeneratedSql.create(numericMatch(bindId, "b.signal_strength_average", operator), "");
             case "mode":
-                return GeneratedSql.create(stringNoRegexMatch(bindId, "i.infrastructure_type", operator), "");
+                return GeneratedSql.create(jsonbStringMatch(bindId, "s.infrastructure_types", operator), "");
             case "advertised_ssid":
                 return GeneratedSql.create(stringMatch(bindId, "s.ssid", operator), "");
             case "client_count":
