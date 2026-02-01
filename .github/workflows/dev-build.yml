@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   dev:
-    uses: nzymedefense/ci/.github/workflows/dev-build.yml@main
+    uses: nzymedefense/ci/.github/workflows/dev-build.yml@master
     with:
       repo: nzymedefense/nzyme
       ref: ${{ github.sha }}
