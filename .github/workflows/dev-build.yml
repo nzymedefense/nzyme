@@ -1,0 +1,18 @@
+name: Dev builds
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  dev:
+    uses: nzymedefense/ci/.github/workflows/dev-build.yml@main
+    with:
+      repo: nzymedefense/nzyme
+      ref: ${{ github.sha }}
+      branch: ${{ github.ref_name }}
+    secrets: inherit
