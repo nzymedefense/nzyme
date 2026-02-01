@@ -3,7 +3,7 @@ name: Dev builds
 on:
   push:
     branches:
-      - main
+      - master
 
 permissions:
   contents: read
