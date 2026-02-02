@@ -40,5 +40,5 @@ export const BSSID_FILTER_FIELDS = {
   mode: { title: "Mode", type: FILTER_TYPE.STRING_ARRAY, value_transform: transformMode },
   advertised_ssid: { title: "Advertised SSID", type: FILTER_TYPE.STRING },
   client_count: { title: "Client Count", type: FILTER_TYPE.NUMERIC },
-  security: { title: "Security", type: FILTER_TYPE.STRING_NO_REGEX, value_transform: transformSecurity }
+  security: { title: "Security", type: FILTER_TYPE.STRING_ARRAY, value_transform: transformSecurity }
 }

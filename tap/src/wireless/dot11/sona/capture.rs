@@ -1,5 +1,4 @@
 use std::fmt;
-use std::fmt::{Display};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use crossbeam_channel::Receiver;
@@ -91,7 +90,7 @@ impl Capture {
                     return;
                 }
 
-                info!("DTR set on Sona [{}]", serial);
+                debug!("DTR set on Sona [{}]", serial);
                 port
             },
             Err(e) => {

@@ -814,18 +814,12 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         List<String> monitoredSuites = nzyme.getDot11().findMonitoredSecuritySuitesOfMonitoredNetwork(ssid.get().id())
                 .stream().map(MonitoredSecuritySuite::securitySuite).collect(Collectors.toList());
         List<SecuritySuiteImportDataResponse> securitySuitesResponse = Lists.newArrayList();
-        for (String ss : nzyme.getDot11().findSecuritySuitesOfSSID(ssid.get().ssid(), allAccessibleTapUUIDs)) {
+        for (Dot11SecuritySuiteJson ss : nzyme.getDot11().findSecuritySuitesOfSSID(ssid.get().ssid(), allAccessibleTapUUIDs)) {
             if (ss != null) {
-                try {
-                    Dot11SecuritySuiteJson ssj = new ObjectMapper().readValue(ss, Dot11SecuritySuiteJson.class);
-                    String ssId = Dot11.securitySuitesToIdentifier(ssj);
-                    securitySuitesResponse.add(SecuritySuiteImportDataResponse.create(
-                            ssId, monitoredSuites.contains(ssId)
-                    ));
-                } catch (Exception e) {
-                    LOG.error("Could not build security suites response.", e);
-                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-                }
+                String ssId = Dot11.securitySuitesToIdentifier(ss);
+                securitySuitesResponse.add(SecuritySuiteImportDataResponse.create(
+                        ssId, monitoredSuites.contains(ssId)
+                ));
             }
         }
 

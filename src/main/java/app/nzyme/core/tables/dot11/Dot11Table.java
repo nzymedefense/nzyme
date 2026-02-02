@@ -32,6 +32,7 @@ import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 import com.codahale.metrics.Timer;
 
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -370,18 +371,20 @@ public class Dot11Table implements DataTable {
                 return;
             }
 
-            String rates = om.writeValueAsString(task.ssidReport().rates());
-            String infrastructureTypes = om.writeValueAsString(task.ssidReport().infrastructureTypes());
+            Double[] ratesArr = task.ssidReport().rates().toArray(new Double[0]);
+            String[] infraArr = task.ssidReport().infrastructureTypes().toArray(new String[0]);
+            Boolean[] wpsArr = task.ssidReport().wps().toArray(new Boolean[0]);
+            String securitySettingsJson = om.writeValueAsString(task.ssidReport().security());
 
             Long ssidDatabaseId = handle.createQuery(
                     "INSERT INTO dot11_ssids(bssid_id, tap_uuid, ssid, bssid, " +
                             "signal_strength_average, signal_strength_max, signal_strength_min, " +
                             "beacon_advertisements, proberesp_advertisements, rates, infrastructure_types, " +
-                            "created_at) " +
+                            "has_wps, security_settings, created_at) " +
                             "VALUES(:bssid_id, :tap_uuid, :ssid, :bssid, :signal_strength_average, " +
                             ":signal_strength_max, :signal_strength_min, :beacon_advertisements, " +
-                            ":proberesp_advertisements, :rates::jsonb, :infrastructure_types::jsonb, " +
-                            ":created_at) RETURNING *")
+                            ":proberesp_advertisements, :rates::double precision[], :infrastructure_types::text[], " +
+                            ":has_wps::bool[], :security_settings::jsonb, :created_at) RETURNING *")
                     .bind("bssid_id", task.bssidDatabaseId())
                     .bind("tap_uuid", task.tap().uuid())
                     .bind("ssid", ssid)
@@ -391,64 +394,13 @@ public class Dot11Table implements DataTable {
                     .bind("signal_strength_min", task.ssidReport().signalStrength().min())
                     .bind("beacon_advertisements", task.ssidReport().beaconAdvertisements())
                     .bind("proberesp_advertisements", task.ssidReport().probeResponseAdvertisements())
-                    .bind("rates", rates)
-                    .bind("infrastructure_types", infrastructureTypes)
+                    .bind("security_settings", securitySettingsJson)
+                    .bindBySqlType("rates", ratesArr, Types.ARRAY)
+                    .bindBySqlType("infrastructure_types", infraArr, Types.ARRAY)
+                    .bindBySqlType("has_wps", wpsArr, Types.ARRAY)
                     .bind("created_at", task.timestamp())
                     .mapTo(Long.class)
                     .one();
-
-            // WPS settings.
-            PreparedBatch wpsBatch = handle.prepareBatch(
-                    "INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
-                            "VALUES(:ssid_id, 'has_wps', :value)");
-            for (boolean hasWps : task.ssidReport().wps()) {
-                wpsBatch.bind("ssid_id", ssidDatabaseId).bind("value", String.valueOf(hasWps)).add();
-            }
-            wpsBatch.execute();
-
-            // Security protocols and suites.
-            PreparedBatch noneSettingsBatch = handle.prepareBatch(
-                    "INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
-                            "VALUES(:ssid_id, 'security_protocol', NULL"); // We insert NULL to signal "NONE".
-            PreparedBatch someSettingsBatch = handle.prepareBatch(
-                    "INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
-                            "VALUES(:ssid_id, 'security_protocol', :value)");
-            PreparedBatch suitesBatch = handle.prepareBatch(
-                    "INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
-                            "VALUES(:ssid_id, 'security_suite', :value)");
-            for (Dot11SecurityInformationReport sec : task.ssidReport().security()) {
-                if (sec.protocols().isEmpty()) {
-                    noneSettingsBatch.bind("ssid_id", ssidDatabaseId).add();
-                } else {
-                    for (String protocol : sec.protocols()) {
-                        someSettingsBatch
-                                .bind("ssid_id", ssidDatabaseId)
-                                .bind("value", protocol)
-                                .add();
-                    }
-                }
-
-                Map<String, String> suiteMap = Maps.newHashMap();
-                suiteMap.put("group_cipher", sec.suites().groupCipher());
-                suiteMap.put("pairwise_ciphers",
-                        Joiner.on(",").join(sec.suites().pairwiseCiphers()));
-                suiteMap.put("key_management_modes",
-                        Joiner.on(",").join(sec.suites().keyManagementModes()));
-                suiteMap.put("pmf_mode", sec.pmf());
-
-                try {
-                    suitesBatch
-                            .bind("ssid_id", ssidDatabaseId)
-                            .bind("value", this.om.writeValueAsString(suiteMap))
-                            .add();
-                } catch(JsonProcessingException e) {
-                    LOG.error("Could not serialize SSID <{}> security suites.", task.bssidDatabaseId(), e);
-                }
-            }
-
-            noneSettingsBatch.execute();
-            someSettingsBatch.execute();
-            suitesBatch.execute();
 
             // SSID Fingerprints.
             PreparedBatch fingerprintsBatch = handle.prepareBatch(

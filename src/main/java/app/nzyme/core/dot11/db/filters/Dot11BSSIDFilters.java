@@ -16,13 +16,13 @@ public class Dot11BSSIDFilters implements SqlFilterProvider {
             case "signal_strength":
                 return GeneratedSql.create(numericMatch(bindId, "b.signal_strength_average", operator), "");
             case "mode":
-                return GeneratedSql.create(jsonbStringMatch(bindId, "s.infrastructure_types", operator), "");
+                return GeneratedSql.create(textArrayStringMatch(bindId, "s.infrastructure_types", operator), "");
             case "advertised_ssid":
                 return GeneratedSql.create(stringMatch(bindId, "s.ssid", operator), "");
             case "client_count":
                 return GeneratedSql.create("", numericMatch(bindId, "COUNT(DISTINCT(c.client_mac))", operator));
             case "security":
-                return GeneratedSql.create(stringNoRegexMatch(bindId, "ssp.value", operator), "");
+                return GeneratedSql.create(jsonbNestedArrayMatchAny(bindId, "security_settings", "protocols", operator), "");
             default:
                 throw new RuntimeException("Unknown field name [" + fieldName + "].");
         }

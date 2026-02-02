@@ -367,12 +367,6 @@ public class DatabaseImpl implements Database {
                 ));
 
                 tables.add(new DataTableInformation(
-                        "dot11_ssid_settings",
-                        "SELECT COUNT(*) FROM dot11_ssid_settings LEFT JOIN dot11_ssids ON dot11_ssids.id = dot11_ssid_settings.ssid_id WHERE dot11_ssids.tap_uuid IN (<taps>)",
-                        null
-                ));
-
-                tables.add(new DataTableInformation(
                         "dot11_channel_histograms",
                         "SELECT COUNT(*) FROM dot11_channel_histograms LEFT JOIN dot11_ssids ON dot11_ssids.id = dot11_channel_histograms.ssid_id WHERE dot11_ssids.tap_uuid IN (<taps>)",
                         null

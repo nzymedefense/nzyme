@@ -7,6 +7,7 @@ import org.joda.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 public class SSIDChannelDetailsMapper implements RowMapper<SSIDChannelDetails> {
@@ -14,15 +15,13 @@ public class SSIDChannelDetailsMapper implements RowMapper<SSIDChannelDetails> {
     @Override
     public SSIDChannelDetails map(ResultSet rs, StatementContext ctx) throws SQLException {
         // The is_wps flag is stored as String for database simplicity reasons and we have to cast here.
-        List<Boolean> isWps = Lists.newArrayList();
-        for (String wps : ((String[]) rs.getArray("is_wps").getArray())) {
-            isWps.add(Boolean.valueOf(wps));
-        }
+        List<Boolean> hasWps = Lists.newArrayList();
+        hasWps.addAll(Arrays.asList(((Boolean[]) rs.getArray("has_wps").getArray())));
 
         return SSIDChannelDetails.create(
                 rs.getString("ssid"),
                 Lists.newArrayList((String[]) rs.getArray("security_protocols").getArray()),
-                isWps,
+                hasWps,
                 Lists.newArrayList((String[]) rs.getArray("infrastructure_types").getArray()),
                 rs.getFloat("signal_strength_average"),
                 rs.getInt("frequency"),

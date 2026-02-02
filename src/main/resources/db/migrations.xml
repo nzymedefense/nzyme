@@ -7759,4 +7759,58 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="change_dot11_infra_rates_to_simple_array" author="lennartkoopmann">
+        <dropColumn tableName="dot11_ssids" columnName="rates"/>
+        <dropColumn tableName="dot11_ssids" columnName="infrastructure_types"/>
+
+        <addColumn tableName="dot11_ssids">
+            <column name="rates" type="double precision[]">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="infrastructure_types" type="double precision[]">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="fix_change_dot11_infra_rates_to_simple_array" author="lennartkoopmann">
+        <sql>
+            ALTER TABLE dot11_ssids DROP COLUMN rates;
+            ALTER TABLE dot11_ssids ADD COLUMN rates double precision[] NOT NULL DEFAULT '{}';
+
+            ALTER TABLE dot11_ssids DROP COLUMN infrastructure_types;
+            ALTER TABLE dot11_ssids ADD COLUMN infrastructure_types text[] NOT NULL DEFAULT '{}';
+        </sql>
+    </changeSet>
+
+    <changeSet id="refactor_dot11_ssid_settings" author="lennartkoopmann">
+        <sql>
+            ALTER TABLE dot11_ssids ADD COLUMN has_wps boolean NOT NULL;
+            ALTER TABLE dot11_ssids ADD COLUMN security_protocol text NOT NULL;
+            ALTER TABLE dot11_ssids ADD COLUMN security_suites jsonb NOT NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="fix_refactor_dot11_ssid_settings" author="lennartkoopmann">
+        <dropColumn tableName="dot11_ssids" columnName="security_protocol" />
+        <dropColumn tableName="dot11_ssids" columnName="security_suites" />
+        <addColumn tableName="dot11_ssids">
+            <column name="security_settings" type="jsonb">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="drop_ssid_settings" author="lennartkoopmann">
+        <dropTable tableName="dot11_ssid_settings" />
+    </changeSet>
+
+    <changeSet id="change_ssid_settings_has_wps_type" author="lennartkoopmann">
+        <sql>
+            ALTER TABLE dot11_ssids DROP COLUMN has_wps;
+            ALTER TABLE dot11_ssids ADD COLUMN has_wps boolean[] NOT NULL;
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

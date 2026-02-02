@@ -12,7 +12,7 @@ public abstract class Dot11AdvertisedNetworkReport {
 
     public abstract List<Dot11SecurityInformationReport> security();
     public abstract List<String> fingerprints();
-    public abstract List<Float> rates();
+    public abstract List<Double> rates();
     public abstract List<Boolean> wps();
     public abstract Dot11SignalStrengthReport signalStrength();
     public abstract Map<Long, Map<Long, Long>> signalHistogram();
@@ -24,7 +24,7 @@ public abstract class Dot11AdvertisedNetworkReport {
     @JsonCreator
     public static Dot11AdvertisedNetworkReport create(@JsonProperty("security") List<Dot11SecurityInformationReport> security,
                                                       @JsonProperty("fingerprints") List<String> fingerprints,
-                                                      @JsonProperty("rates") List<Float> rates,
+                                                      @JsonProperty("rates") List<Double> rates,
                                                       @JsonProperty("wps") List<Boolean> wps,
                                                       @JsonProperty("signal_strength") Dot11SignalStrengthReport signalStrength,
                                                       @JsonProperty("signal_histogram") Map<Long, Map<Long, Long>> signalHistogram,
@@ -56,7 +56,7 @@ public abstract class Dot11AdvertisedNetworkReport {
 
         public abstract Builder fingerprints(List<String> fingerprints);
 
-        public abstract Builder rates(List<Float> rates);
+        public abstract Builder rates(List<Double> rates);
 
         public abstract Builder wps(List<Boolean> wps);
 

@@ -9,8 +9,13 @@ import java.util.List;
 @AutoValue
 public abstract class Dot11CipherSuitesReport {
 
+    @JsonProperty("group_cipher")
     public abstract String groupCipher();
+
+    @JsonProperty("pairwise_ciphers")
     public abstract List<String> pairwiseCiphers();
+
+    @JsonProperty("key_management_modes")
     public abstract List<String> keyManagementModes();
 
     @JsonCreator

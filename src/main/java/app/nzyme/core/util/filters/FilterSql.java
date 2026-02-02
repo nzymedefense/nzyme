@@ -153,6 +153,40 @@ public class FilterSql {
         }
     }
 
+    public static String jsonbNestedArrayMatchAny(String bindId, String fieldName, String nestedPath, FilterOperator operator) {
+        String condition = "elem -> '" + nestedPath + "' ?? :" + bindId;
+
+        switch (operator) {
+            case CONTAINS:
+                return "EXISTS (SELECT 1 FROM jsonb_array_elements(" + fieldName + ") AS elem WHERE " + condition + ")";
+            case NOT_CONTAINS:
+                return "NOT EXISTS (SELECT 1 FROM jsonb_array_elements(" + fieldName + ") AS elem WHERE " + condition + ")";
+            case IS_EMPTY:
+                return fieldName + " IS NULL OR " + fieldName + " = '[]'::jsonb";
+            case IS_NOT_EMPTY:
+                return fieldName + " IS NOT NULL AND " + fieldName + " <> '[]'::jsonb";
+            default:
+                throw new RuntimeException("Invalid operator [" + operator + "] for jsonb nested array field.");
+        }
+    }
+
+    public static String textArrayStringMatch(String bindId, String fieldName, FilterOperator operator) {
+        switch (operator) {
+            case CONTAINS:
+                return fieldName + " @> ARRAY[:" + bindId + "]::text[]";
+            case NOT_CONTAINS:
+                return "NOT (" + fieldName + " @> ARRAY[:" + bindId + "]::text[])";
+            case IS_EMPTY:
+                return fieldName + " IS NULL OR cardinality(" + fieldName + ") = 0";
+            case IS_NOT_EMPTY:
+                return fieldName + " IS NOT NULL AND cardinality(" + fieldName + ") > 0";
+            default:
+                throw new RuntimeException(
+                        "Invalid operator [" + operator + "] for text[] field [" + fieldName + "]."
+                );
+        }
+    }
+
     public static String numericMatch(String bindId, String fieldName, FilterOperator operator) {
         switch (operator) {
             case EQUALS_NUMERIC:

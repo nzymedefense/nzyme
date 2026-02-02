@@ -9,8 +9,13 @@ import java.util.List;
 @AutoValue
 public abstract class Dot11SecurityInformationReport {
 
+    @JsonProperty("protocols")
     public abstract List<String> protocols();
+
+    @JsonProperty("suites")
     public abstract Dot11CipherSuitesReport suites();
+
+    @JsonProperty("pmf")
     public abstract String pmf();
 
     @JsonCreator

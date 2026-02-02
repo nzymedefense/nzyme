@@ -4,7 +4,6 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.Dot11;
-import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.tracks.Track;
 import app.nzyme.core.dot11.tracks.TrackDetector;
@@ -22,8 +21,6 @@ import app.nzyme.core.util.Tools;
 import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import jakarta.annotation.Nullable;
@@ -36,8 +33,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.*;
@@ -46,8 +41,6 @@ import java.util.*;
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
 public class Dot11NetworksResource extends TapDataHandlingResource {
-
-    private static final Logger LOG = LogManager.getLogger(Dot11NetworksResource.class);
 
     private final static List<Integer> DEFAULT_X_VALUES = Lists.newArrayList();
 
@@ -405,26 +398,19 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         SSIDDetails ssidDetails = dbResult.get();
 
-        ObjectMapper om = new ObjectMapper();
         List<SecuritySuitesResponse> securitySuites = Lists.newArrayList();
-        for (String suite : ssidDetails.securitySuites()) {
+        for (Dot11SecuritySuiteJson suite : ssidDetails.securitySuites()) {
             if (suite == null) {
                 continue;
             }
 
-            try {
-                Dot11SecuritySuiteJson info = om.readValue(suite, Dot11SecuritySuiteJson.class);
-                securitySuites.add(SecuritySuitesResponse.create(
-                        info.pairwiseCiphers(),
-                        info.groupCipher(),
-                        info.keyManagementModes(),
-                        info.pmfMode(),
-                        Dot11.securitySuitesToIdentifier(info)
-                ));
-            } catch (JsonProcessingException e) {
-                LOG.error( e);
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-            }
+            securitySuites.add(SecuritySuitesResponse.create(
+                    suite.pairwiseCiphers(),
+                    suite.groupCipher(),
+                    suite.keyManagementModes(),
+                    suite.pmfMode(),
+                    Dot11.securitySuitesToIdentifier(suite)
+            ));
         }
 
         List<BSSIDClientDetails> accessPointClients = Lists.newArrayList();

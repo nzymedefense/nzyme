@@ -232,7 +232,8 @@ public class Dot11 {
                 handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
                                 "MIN(b.created_at) AS first_seen, MAX(b.created_at) AS last_seen, " +
                                 "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
-                                "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
+                                "COALESCE(ARRAY_AGG(DISTINCT protocol_elem) FILTER (WHERE protocol_elem IS NOT NULL), " +
+                                "ARRAY[]::text[]) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
                                 "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
@@ -242,9 +243,9 @@ public class Dot11 {
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_channels AS ch ON s.id = ch.ssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
-                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(s.infrastructure_types) AS infratypes_elem ON TRUE " +
-                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
-                                "AND ssp.attribute = 'security_protocol' " +
+                                "LEFT JOIN LATERAL UNNEST(s.infrastructure_types) AS infratypes_elem ON TRUE " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(security_elem->'protocols') AS protocol_elem ON TRUE " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "WHERE b.bssid = :bssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
                                 "GROUP BY b.bssid")
@@ -316,7 +317,7 @@ public class Dot11 {
                                 "SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
                                 "MIN(b.created_at) AS first_seen, MAX(b.created_at) AS last_seen, " +
                                 "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
-                                "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
+                                "ARRAY_AGG(DISTINCT security_elem) FILTER (WHERE security_elem IS NOT NULL) AS security_settings, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
                                 "COUNT(DISTINCT(c.client_mac)) AS client_count, " +
@@ -324,8 +325,7 @@ public class Dot11 {
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
-                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
-                                "AND ssp.attribute = 'security_protocol' " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "AND b.tap_uuid IN (<taps>)" + filterFragment.whereSql() +
@@ -356,7 +356,8 @@ public class Dot11 {
                 handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
                                 "MIN(b.created_at) AS first_seen, MAX(b.created_at) AS last_seen, " +
                                 "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
-                                "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
+                                "COALESCE(ARRAY_AGG(DISTINCT protocol_elem) FILTER (WHERE protocol_elem IS NOT NULL), " +
+                                "ARRAY[]::text[]) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
                                 "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
@@ -365,9 +366,9 @@ public class Dot11 {
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
-                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(s.infrastructure_types) AS infratypes_elem ON TRUE " +
-                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
-                                "AND ssp.attribute = 'security_protocol' " +
+                                "LEFT JOIN LATERAL UNNEST(s.infrastructure_types) AS infratypes_elem ON TRUE " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(security_elem->'protocols') AS protocol_elem ON TRUE " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "AND b.tap_uuid IN (<taps>)" + filterFragment.whereSql() +
@@ -442,18 +443,18 @@ public class Dot11 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.ssid, c.frequency, MAX(s.created_at) AS last_seen, " +
-                                "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
-                                "ARRAY_AGG(DISTINCT(ssw.value)) AS is_wps, " +
+                                "COALESCE(ARRAY_AGG(DISTINCT protocol_elem) FILTER (WHERE protocol_elem IS NOT NULL), " +
+                                "ARRAY[]::text[]) AS security_protocols, " +
+                                "ARRAY_AGG(DISTINCT wps_elem) AS has_wps, " +
                                 "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
                                 "AVG(s.signal_strength_average) AS signal_strength_average, " +
                                 "SUM(c.stats_bytes) AS total_bytes, SUM(c.stats_frames) AS total_frames " +
                                 "FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channels AS c on s.id = c.ssid_id " +
-                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(s.infrastructure_types) AS infratypes_elem ON TRUE " +
-                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
-                                "AND ssp.attribute = 'security_protocol' " +
-                                "LEFT JOIN dot11_ssid_settings AS ssw on s.id = ssw.ssid_id " +
-                                "AND ssw.attribute = 'has_wps' " +
+                                "LEFT JOIN LATERAL UNNEST(s.infrastructure_types) AS infratypes_elem ON TRUE " +
+                                "LEFT JOIN LATERAL UNNEST(s.has_wps) AS wps_elem ON TRUE " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(security_elem->'protocols') AS protocol_elem ON TRUE " +
                                 "WHERE s.created_at >= :tr_from AND s.created_at <= :tr_to " +
                                 "AND bssid = :bssid AND tap_uuid IN (<taps>) " +
                                 "GROUP BY s.ssid, c.frequency")
@@ -473,12 +474,14 @@ public class Dot11 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.ssid, MAX(s.created_at) AS last_seen, " +
-                                "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
-                                "ARRAY_AGG(DISTINCT(sss.value)) AS security_suites, " +
-                                "ARRAY_AGG(DISTINCT(ssw.value)) AS is_wps, " +
+                                "COALESCE(ARRAY_AGG(DISTINCT protocol_elem) FILTER (WHERE protocol_elem IS NOT NULL), " +
+                                "ARRAY[]::text[]) AS security_protocols, " +
+                                "COALESCE(ARRAY_AGG(DISTINCT security_elem) FILTER (WHERE security_elem IS NOT NULL), " +
+                                "ARRAY[]::jsonb[]) AS security_settings, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
-                                "ARRAY_AGG(DISTINCT (rate_elem::text)::double precision) AS rates, " +
+                                "ARRAY_AGG(DISTINCT rate_elem) AS rates, " +
                                 "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
+                                "ARRAY_AGG(DISTINCT wps_elem) AS has_wps, " +
                                 "AVG(s.signal_strength_average) AS signal_strength_average, " +
                                 "ARRAY_AGG(DISTINCT(cl.client_mac)) AS access_point_clients, " +
                                 "ARRAY_AGG(DISTINCT(c.frequency)) AS frequencies, " +
@@ -486,16 +489,13 @@ public class Dot11 {
                                 "FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_bssids AS b on s.bssid_id = b.id " +
                                 "LEFT JOIN dot11_channels AS c on s.id = c.ssid_id " +
-                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.rates) AS rate_elem ON TRUE " +
-                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(s.infrastructure_types) AS infratypes_elem ON TRUE " +
+                                "LEFT JOIN LATERAL UNNEST(s.rates) AS rate_elem ON TRUE " +
+                                "LEFT JOIN LATERAL UNNEST(s.infrastructure_types) AS infratypes_elem ON TRUE " +
+                                "LEFT JOIN LATERAL UNNEST(s.has_wps) AS wps_elem ON TRUE " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(security_elem->'protocols') AS protocol_elem ON TRUE " +
                                 "LEFT JOIN dot11_fingerprints AS f on s.id = f.ssid_id " +
                                 "LEFT JOIN dot11_bssid_clients cl on b.id = cl.bssid_id " +
-                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
-                                "AND ssp.attribute = 'security_protocol' " +
-                                "LEFT JOIN dot11_ssid_settings AS sss on s.id = sss.ssid_id " +
-                                "AND sss.attribute = 'security_suite' " +
-                                "LEFT JOIN dot11_ssid_settings AS ssw on s.id = ssw.ssid_id " +
-                                "AND ssw.attribute = 'has_wps' " +
                                 "WHERE s.created_at >= :tr_from AND s.created_at <= :tr_to " +
                                 "AND s.bssid = :bssid AND s.ssid = :ssid " +
                                 "AND s.tap_uuid IN (<taps>) " +
@@ -527,8 +527,7 @@ public class Dot11 {
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
-                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
-                                "AND ssp.attribute = 'security_protocol' " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "AND b.tap_uuid IN (<taps>) " + filterFragment.whereSql() +
                                 "GROUP BY bucket HAVING 1=1 " + filterFragment.havingSql() +
@@ -2250,19 +2249,20 @@ public class Dot11 {
         );
     }
 
-    public List<String> findSecuritySuitesOfSSID(String ssid, List<UUID> taps) {
+    public List<Dot11SecuritySuiteJson> findSecuritySuitesOfSSID(String ssid, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DISTINCT(sss.value) AS security_suites " +
-                                "FROM dot11_ssids AS s " +
-                                "LEFT JOIN dot11_ssid_settings AS sss on s.id = sss.ssid_id " +
-                                "AND sss.attribute = 'security_suite' " +
+                handle.createQuery("SELECT COALESCE(ARRAY_AGG(DISTINCT security_elem) FILTER (WHERE security_elem IS NOT NULL), " +
+                                "ARRAY[]::jsonb[]) AS security_settings FROM dot11_ssids AS s " +
+                                "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE  " +
                                 "WHERE s.ssid = :ssid AND s.tap_uuid IN (<taps>) " +
                                 "AND s.created_at >= (NOW() - INTERVAL '24 hours') " +
-                                "ORDER BY security_suites ASC")
+                                "ORDER BY security_settings ASC")
                         .bind("ssid", ssid)
                         .bindList("taps", taps)
-                        .mapTo(String.class)
-                        .list()
+                        .map((rs, ctx) ->
+                                SecuritySettingsParser.parseSecuritySettings(rs.getArray("security_settings")))
+                        .findOne()
+                        .orElse(Lists.newArrayList())
         );
     }
 
