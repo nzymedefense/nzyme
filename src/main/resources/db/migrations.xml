@@ -7813,4 +7813,17 @@
         </sql>
     </changeSet>
 
+    <changeSet id="refactor_dot11_fingerprints" author="lennartkoopmann">
+        <sql>DELETE FROM dot11_bssids;</sql>
+        <sql>DELETE FROM dot11_ssids;</sql>
+        <sql>DELETE FROM dot11_clients;</sql>
+
+        <dropTable tableName="dot11_fingerprints" />
+
+        <sql>
+            ALTER TABLE dot11_bssids ADD COLUMN fingerprints text[] NOT NULL;
+            ALTER TABLE dot11_ssids ADD COLUMN fingerprints text[] NOT NULL;
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

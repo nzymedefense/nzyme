@@ -234,7 +234,7 @@ public class Dot11 {
                                 "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
                                 "COALESCE(ARRAY_AGG(DISTINCT protocol_elem) FILTER (WHERE protocol_elem IS NOT NULL), " +
                                 "ARRAY[]::text[]) AS security_protocols, " +
-                                "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
+                                "ARRAY_AGG(DISTINCT fingerprints_elem) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
                                 "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
                                 "ARRAY_AGG(DISTINCT(ch.frequency)) AS frequencies, " +
@@ -242,7 +242,7 @@ public class Dot11 {
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_channels AS ch ON s.id = ch.ssid_id " +
-                                "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
+                                "LEFT JOIN LATERAL UNNEST(s.fingerprints) AS fingerprints_elem ON TRUE " +
                                 "LEFT JOIN LATERAL UNNEST(s.infrastructure_types) AS infratypes_elem ON TRUE " +
                                 "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE " +
                                 "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(security_elem->'protocols') AS protocol_elem ON TRUE " +
@@ -318,13 +318,13 @@ public class Dot11 {
                                 "MIN(b.created_at) AS first_seen, MAX(b.created_at) AS last_seen, " +
                                 "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
                                 "ARRAY_AGG(DISTINCT security_elem) FILTER (WHERE security_elem IS NOT NULL) AS security_settings, " +
-                                "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
+                                "ARRAY_AGG(DISTINCT fingerprints_elem) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
                                 "COUNT(DISTINCT(c.client_mac)) AS client_count, " +
                                 "ARRAY[]::integer[] AS frequencies " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
-                                "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
+                                "LEFT JOIN LATERAL UNNEST(s.fingerprints) AS fingerprints_elem ON TRUE " +
                                 "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "WHERE b.created_at >= :tr_from AND b.created_at <= :tr_to " +
@@ -358,14 +358,14 @@ public class Dot11 {
                                 "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
                                 "COALESCE(ARRAY_AGG(DISTINCT protocol_elem) FILTER (WHERE protocol_elem IS NOT NULL), " +
                                 "ARRAY[]::text[]) AS security_protocols, " +
-                                "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
+                                "ARRAY_AGG(DISTINCT fingerprints_elem) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
                                 "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
                                 "COUNT(DISTINCT(c.client_mac)) AS client_count, " +
                                 "ARRAY[]::integer[] AS frequencies " + // Part of BSSIDSummary but not needed.
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
-                                "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
+                                "LEFT JOIN LATERAL UNNEST(s.fingerprints) AS fingerprints_elem ON TRUE " +
                                 "LEFT JOIN LATERAL UNNEST(s.infrastructure_types) AS infratypes_elem ON TRUE " +
                                 "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE " +
                                 "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(security_elem->'protocols') AS protocol_elem ON TRUE " +
@@ -481,6 +481,7 @@ public class Dot11 {
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT rate_elem) AS rates, " +
                                 "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
+                                "ARRAY_AGG(DISTINCT fingerprints_elem) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT wps_elem) AS has_wps, " +
                                 "AVG(s.signal_strength_average) AS signal_strength_average, " +
                                 "ARRAY_AGG(DISTINCT(cl.client_mac)) AS access_point_clients, " +
@@ -494,7 +495,7 @@ public class Dot11 {
                                 "LEFT JOIN LATERAL UNNEST(s.has_wps) AS wps_elem ON TRUE " +
                                 "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE " +
                                 "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(security_elem->'protocols') AS protocol_elem ON TRUE " +
-                                "LEFT JOIN dot11_fingerprints AS f on s.id = f.ssid_id " +
+                                "LEFT JOIN LATERAL UNNEST(s.fingerprints) AS fingerprints_elem ON TRUE " +
                                 "LEFT JOIN dot11_bssid_clients cl on b.id = cl.bssid_id " +
                                 "WHERE s.created_at >= :tr_from AND s.created_at <= :tr_to " +
                                 "AND s.bssid = :bssid AND s.ssid = :ssid " +
@@ -2237,11 +2238,10 @@ public class Dot11 {
 
     public List<String> findFingerprintsOfBSSID(String bssid, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DISTINCT(fp.fingerprint) FROM dot11_bssids AS b " +
-                                "LEFT JOIN public.dot11_fingerprints fp on b.id = fp.bssid_id " +
-                                "WHERE b.bssid = :bssid AND b.tap_uuid IN (<taps>) " +
-                                "AND b.created_at >= (NOW() - INTERVAL '24 hours') " +
-                                "ORDER BY fp.fingerprint ASC")
+                handle.createQuery("SELECT DISTINCT fingerprints_elem FROM dot11_bssids " +
+                                "LEFT JOIN LATERAL UNNEST(fingerprints) AS fingerprints_elem ON TRUE " +
+                                "WHERE bssid = :bssid AND tap_uuid IN (<taps>) " +
+                                "AND created_at >= (NOW() - INTERVAL '24 hours')")
                         .bind("bssid", bssid)
                         .bindList("taps", taps)
                         .mapTo(String.class)

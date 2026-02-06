@@ -243,32 +243,27 @@ public class Dot11Table implements DataTable {
                 String bssid = entry.getKey();
                 Dot11BSSIDReport report = entry.getValue();
 
+                String[] fingerprintsArr = report.fingerprints().toArray(new String[0]);
+
                 long bssidDatabaseId = handle.createQuery(
                         "INSERT INTO dot11_bssids(tap_uuid, bssid, oui, " +
                                 "signal_strength_average, signal_strength_max, signal_strength_min, " +
-                                "hidden_ssid_frames, created_at) VALUES(:tap_uuid, :bssid, NULL, " +
+                                "hidden_ssid_frames, fingerprints, created_at) VALUES(:tap_uuid, :bssid, NULL, " +
                                 ":signal_strength_average, :signal_strength_max, :signal_strength_min, " +
-                                ":hidden_ssid_frames, :created_at) RETURNING id")
+                                ":hidden_ssid_frames, :fingerprints, :created_at) RETURNING id")
                         .bind("tap_uuid", tap.uuid())
                         .bind("bssid", bssid)
                         .bind("signal_strength_average", report.signalStrength().average())
                         .bind("signal_strength_max", report.signalStrength().max())
                         .bind("signal_strength_min", report.signalStrength().min())
                         .bind("hidden_ssid_frames", report.hiddenSSIDFrames())
+                        .bindBySqlType("fingerprints", fingerprintsArr, Types.ARRAY)
                         .bind("created_at", timestamp)
                         .mapTo(Long.class)
                         .one();
 
-                // BSSID Fingerprints.
-                PreparedBatch fingerprintBatch = handle.prepareBatch(
-                        "INSERT INTO dot11_fingerprints(fingerprint, bssid_id) " +
-                                "VALUES(:fingerprint, :bssid_id)");
+                // Check BSSID Fingerprints.
                 for (String fingerprint : report.fingerprints()) {
-                    fingerprintBatch
-                            .bind("fingerprint", fingerprint)
-                            .bind("bssid_id", bssidDatabaseId)
-                            .add();
-
                     // Is this a known bandit fingerprint?
                     for (Dot11BanditDescription bandit : bandits) {
                         if (bandit.fingerprints() != null && bandit.fingerprints().contains(fingerprint)) {
@@ -296,7 +291,6 @@ public class Dot11Table implements DataTable {
                         }
                     }
                 }
-                fingerprintBatch.execute();
 
                 // BSSID Clients.
                 PreparedBatch bssidClientsBatch = handle.prepareBatch(
@@ -374,17 +368,18 @@ public class Dot11Table implements DataTable {
             Double[] ratesArr = task.ssidReport().rates().toArray(new Double[0]);
             String[] infraArr = task.ssidReport().infrastructureTypes().toArray(new String[0]);
             Boolean[] wpsArr = task.ssidReport().wps().toArray(new Boolean[0]);
+            String[] fingerprintsArr = task.ssidReport().fingerprints().toArray(new String[0]);
             String securitySettingsJson = om.writeValueAsString(task.ssidReport().security());
 
             Long ssidDatabaseId = handle.createQuery(
                     "INSERT INTO dot11_ssids(bssid_id, tap_uuid, ssid, bssid, " +
                             "signal_strength_average, signal_strength_max, signal_strength_min, " +
                             "beacon_advertisements, proberesp_advertisements, rates, infrastructure_types, " +
-                            "has_wps, security_settings, created_at) " +
+                            "has_wps, security_settings, fingerprints, created_at) " +
                             "VALUES(:bssid_id, :tap_uuid, :ssid, :bssid, :signal_strength_average, " +
                             ":signal_strength_max, :signal_strength_min, :beacon_advertisements, " +
                             ":proberesp_advertisements, :rates::double precision[], :infrastructure_types::text[], " +
-                            ":has_wps::bool[], :security_settings::jsonb, :created_at) RETURNING *")
+                            ":has_wps::bool[], :security_settings::jsonb, :fingerprints, :created_at) RETURNING *")
                     .bind("bssid_id", task.bssidDatabaseId())
                     .bind("tap_uuid", task.tap().uuid())
                     .bind("ssid", ssid)
@@ -398,20 +393,10 @@ public class Dot11Table implements DataTable {
                     .bindBySqlType("rates", ratesArr, Types.ARRAY)
                     .bindBySqlType("infrastructure_types", infraArr, Types.ARRAY)
                     .bindBySqlType("has_wps", wpsArr, Types.ARRAY)
+                    .bindBySqlType("fingerprints", fingerprintsArr, Types.ARRAY)
                     .bind("created_at", task.timestamp())
                     .mapTo(Long.class)
                     .one();
-
-            // SSID Fingerprints.
-            PreparedBatch fingerprintsBatch = handle.prepareBatch(
-                    "INSERT INTO dot11_fingerprints(fingerprint, ssid_id) " +
-                            "VALUES(:fingerprint, :ssid_id)");
-            for (String fingerprint : task.ssidReport().fingerprints()) {
-                    fingerprintsBatch.bind("fingerprint", fingerprint)
-                            .bind("ssid_id", ssidDatabaseId)
-                            .add();
-            }
-            fingerprintsBatch.execute();
 
             // Channel Statistics.
             PreparedBatch statsBatch = handle.prepareBatch(
