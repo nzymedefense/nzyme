@@ -54,12 +54,16 @@ public class NodeManager {
     private UUID localNodeId;
     private long localCycle;
 
+    private final NodeInformation nodeInformation;
+
     private final AtomicLong tapReportSize;
 
     private final LoadingCache<UUID, String> nodeNameCache;
 
     public NodeManager(NzymeNode nzyme) {
         this.nzyme = nzyme;
+
+        this.nodeInformation = new NodeInformation();
 
         this.tapReportSize = new AtomicLong(0);
         this.nodeNameCache = CacheBuilder.newBuilder().
@@ -150,7 +154,7 @@ public class NodeManager {
 
     // The custom UUID is for testing.
     public void registerSelf(UUID uuid) {
-        NodeInformation.Info ni = new NodeInformation().collect();
+        NodeInformation.Info ni = nodeInformation.collect();
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO nodes(uuid, name, http_listen_uri, http_external_uri, version, " +

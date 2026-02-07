@@ -9,27 +9,33 @@ import oshi.hardware.GlobalMemory;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
 
-
 public class NodeInformation {
 
+    private final SystemInfo systemInfo;
+    private final OperatingSystem operatingSystem;
+    private final CentralProcessor cpu;
+    private final String osVersion;
+
+    private final long heapMax;
+    private final long heapFree;
+    private final long heapSize;
+
+    public NodeInformation() {
+        this.systemInfo = new SystemInfo();
+        this.operatingSystem = this.systemInfo.getOperatingSystem();
+        this.cpu = this.systemInfo.getHardware().getProcessor();
+
+        OperatingSystem.OSVersionInfo osV = this.operatingSystem.getVersionInfo();
+        this.osVersion =  this.operatingSystem.getFamily() + " " + osV.getVersion() + " (" + osV.getBuildNumber() + ")";
+
+        this.heapMax = Runtime.getRuntime().maxMemory();
+        this.heapFree = Runtime.getRuntime().freeMemory();
+        this.heapSize = Runtime.getRuntime().totalMemory();
+    }
+
     public Info collect() {
-        SystemInfo s = new SystemInfo();
-
-        OperatingSystem os = s.getOperatingSystem();
-        OperatingSystem.OSVersionInfo osV = os.getVersionInfo();
-        String osVersion =  os.getFamily() + " " + osV.getVersion() +
-                " (" + osV.getBuildNumber() + ")";
-
-        GlobalMemory memory = s.getHardware().getMemory();
-
-        CentralProcessor cpu = s.getHardware().getProcessor();
-        double cpuSystemLoad = cpu.getSystemCpuLoad(1000)*100;
-
-        OSProcess currentProcess = s.getOperatingSystem().getCurrentProcess();
-
-        long heapMax = Runtime.getRuntime().maxMemory();
-        long heapFree = Runtime.getRuntime().freeMemory();
-        long heapSize = Runtime.getRuntime().totalMemory();
+        GlobalMemory memory = systemInfo.getHardware().getMemory();
+        OSProcess currentProcess = systemInfo.getOperatingSystem().getCurrentProcess();
 
         return Info.create(
                 memory.getTotal(),
@@ -38,7 +44,7 @@ public class NodeInformation {
                 heapMax,
                 heapFree,
                 heapSize-heapFree,
-                cpuSystemLoad,
+                cpu.getSystemCpuLoad(250)*100,
                 cpu.getLogicalProcessorCount(),
                 new DateTime(currentProcess.getStartTime()),
                 currentProcess.getVirtualSize(),
