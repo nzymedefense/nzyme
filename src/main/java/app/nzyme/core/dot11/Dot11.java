@@ -478,7 +478,6 @@ public class Dot11 {
                                 "ARRAY[]::text[]) AS security_protocols, " +
                                 "COALESCE(ARRAY_AGG(DISTINCT security_elem) FILTER (WHERE security_elem IS NOT NULL), " +
                                 "ARRAY[]::jsonb[]) AS security_settings, " +
-                                "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT rate_elem) AS rates, " +
                                 "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
                                 "ARRAY_AGG(DISTINCT fingerprints_elem) AS fingerprints, " +
