@@ -7826,4 +7826,13 @@
         </sql>
     </changeSet>
 
+    <changeSet id="create_additional_indices_20260206" author="">
+        <dropIndex tableName="tap_metrics_gauges" indexName="gauges_stdlookup" />
+        <createIndex tableName="tap_metrics_gauges" indexName="idx_tap_metrics_gauges_lookup">
+            <column name="tap_uuid" />
+            <column name="created_at" />
+            <column name="metric_name" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

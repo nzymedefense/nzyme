@@ -143,7 +143,7 @@ public class TapManager {
             throw new RuntimeException("Could not serialize tap report JSON.", e);
         }
 
-        nzyme.getDatabase().useHandle(handle ->
+        nzyme.getDatabase().useHandle( handle -> {
                 handle.createUpdate("UPDATE taps SET version = :version, clock = :clock, " +
                                 "processed_bytes_total = :processed_bytes_total, " +
                                 "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
@@ -166,22 +166,23 @@ public class TapManager {
                         .bind("rpi_temperature", report.systemMetrics().rpiTemperature())
                         .bind("configuration", configurationJson)
                         .bind("uuid", tapUUID)
-                        .execute()
-        );
+                        .execute();
 
-        // Register captures.
-        for (CapturesReport capture : report.captures()) {
-            long captureCount = nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT COUNT(*) AS count FROM tap_captures " +
-                                    "WHERE interface = :interface AND tap_uuid = :tap_uuid")
-                            .bind("interface", capture.interfaceName())
-                            .bind("tap_uuid",  tapUUID)
-                            .mapTo(Long.class)
-                            .one()
-            );
+            PreparedBatch gaugesBatch = handle.prepareBatch("INSERT INTO tap_metrics_gauges(tap_uuid, " +
+                    "metric_name, metric_value, created_at) VALUES(:tap_uuid, :metric_name, :metric_value, :timestamp)");
+            PreparedBatch timersBatch = handle.prepareBatch("INSERT INTO tap_metrics_timers(tap_uuid, " +
+                    "metric_name, mean, p99, created_at) VALUES(:tap_uuid, :metric_name, :mean, :p99, NOW())");
 
-            if (captureCount == 0) {
-                nzyme.getDatabase().withHandle(handle ->
+            // Register captures.
+            for (CapturesReport capture : report.captures()) {
+                long captureCount = handle.createQuery("SELECT COUNT(*) AS count FROM tap_captures " +
+                                "WHERE interface = :interface AND tap_uuid = :tap_uuid")
+                        .bind("interface", capture.interfaceName())
+                        .bind("tap_uuid", tapUUID)
+                        .mapTo(Long.class)
+                        .one();
+
+                if (captureCount == 0) {
                     handle.createUpdate("INSERT INTO tap_captures(tap_uuid, uuid, interface, capture_type, " +
                                     "is_running, received, dropped_buffer, dropped_interface, updated_at, created_at) " +
                                     "VALUES(:tap_uuid, :uuid, :interface, :capture_type, :is_running, :received, " +
@@ -194,228 +195,248 @@ public class TapManager {
                             .bind("received", capture.received())
                             .bind("dropped_buffer", capture.droppedBuffer())
                             .bind("dropped_interface", capture.droppedInterface())
-                            .execute()
-                );
-            } else {
-                nzyme.getDatabase().withHandle(handle ->
-                        handle.createUpdate("UPDATE tap_captures SET capture_type = :capture_type, " +
-                                "is_running = :is_running, received = :received, dropped_buffer = :dropped_buffer, " +
-                                "dropped_interface = :dropped_interface, updated_at = NOW() " +
-                                "WHERE tap_uuid = :tap_uuid AND interface = :interface")
-                                .bind("capture_type", capture.captureType())
-                                .bind("is_running", capture.isRunning())
-                                .bind("received", capture.received())
-                                .bind("dropped_buffer", capture.droppedBuffer())
-                                .bind("dropped_interface", capture.droppedInterface())
-                                .bind("tap_uuid", tapUUID)
-                                .bind("interface", capture.interfaceName())
-                                .execute()
-                );
-            }
-
-            // Capture metrics.
-            writeGauge(
-                    tapUUID,
-                    "captures." + capture.interfaceName().toLowerCase() + ".received",
-                    capture.received(),
-                    report.timestamp()
-            );
-
-            writeGauge(
-                    tapUUID,
-                    "captures." + capture.interfaceName().toLowerCase() + ".dropped_if",
-                    capture.droppedInterface(),
-                    report.timestamp()
-            );
-
-            writeGauge(
-                    tapUUID,
-                    "captures." + capture.interfaceName().toLowerCase() + ".dropped_buffer",
-                    capture.droppedBuffer(),
-                    report.timestamp()
-            );
-        }
-
-        // Register buses.
-        for (BusReport bus : report.buses()) {
-            long busCount = nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT COUNT(*) AS count FROM tap_buses " +
-                                    "WHERE tap_uuid = :tap_uuid AND name = :name")
-                            .bind("tap_uuid", tapUUID)
-                            .bind("name", bus.name())
-                            .mapTo(Long.class)
-                            .one()
-            );
-
-            if (busCount == 0) {
-                nzyme.getDatabase().useHandle(handle ->
-                        handle.createUpdate("INSERT INTO tap_buses(tap_uuid, name, created_at, updated_at) " +
-                                        "VALUES(:tap_uuid, :name, NOW(), NOW())")
-                                .bind("tap_uuid", tapUUID)
-                                .bind("name", bus.name())
-                                .execute()
-                );
-            } else {
-                nzyme.getDatabase().useHandle(handle ->
-                        handle.createUpdate("UPDATE tap_buses SET updated_at = NOW() " +
-                                        "WHERE tap_uuid = :tap_uuid AND name = :name")
-                                .bind("tap_uuid", tapUUID)
-                                .bind("name", bus.name())
-                                .execute()
-                );
-            }
-
-            Long busId = nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT id FROM tap_buses WHERE tap_uuid = :tap_uuid AND name = :name")
-                            .bind("tap_uuid", tapUUID)
-                            .bind("name", bus.name())
-                            .mapTo(Long.class)
-                            .one()
-            );
-
-            // Register bus channels.
-            for (ChannelReport channel : bus.channels()) {
-                long channelCount = nzyme.getDatabase().withHandle(handle ->
-                        handle.createQuery("SELECT COUNT(*) AS count FROM bus_channels " +
-                                        "WHERE bus_id = :bus_id AND name = :channel_name")
-                                .bind("bus_id", busId)
-                                .bind("channel_name", channel.name())
-                                .mapTo(Long.class)
-                                .one()
-                );
-
-                if (channelCount == 0) {
-                    nzyme.getDatabase().withHandle(handle ->
-                            handle.createUpdate("INSERT INTO bus_channels(name, bus_id, capacity, watermark, errors_total, " +
-                                            "errors_average, throughput_bytes_total, throughput_bytes_average, " +
-                                            "throughput_messages_total, throughput_messages_average, created_at, updated_at) " +
-                                            "VALUES(:name, :bus_id, :capacity, :watermark, :errors_total, :errors_average, " +
-                                            ":throughput_bytes_total, :throughput_bytes_average, :throughput_messages_total, " +
-                                            ":throughput_messages_average, NOW(), NOW())")
-                                    .bind("name", channel.name())
-                                    .bind("bus_id", busId)
-                                    .bind("capacity", channel.capacity())
-                                    .bind("watermark", channel.watermark())
-                                    .bind("errors_total", channel.errors().total())
-                                    .bind("errors_average", channel.errors().average())
-                                    .bind("throughput_bytes_total", channel.throughputBytes().total())
-                                    .bind("throughput_bytes_average", channel.throughputBytes().average())
-                                    .bind("throughput_messages_total", channel.throughputMessages().total())
-                                    .bind("throughput_messages_average", channel.throughputMessages().average())
-                                    .execute()
-                    );
+                            .execute();
                 } else {
-                    nzyme.getDatabase().withHandle(handle ->
-                            handle.createUpdate("UPDATE bus_channels SET capacity = :capacity, watermark = :watermark, " +
-                                            "errors_total = :errors_total, errors_average = :errors_average, " +
-                                            "throughput_bytes_total = :throughput_bytes_total, " +
-                                            "throughput_bytes_average = :throughput_bytes_average, " +
-                                            "throughput_messages_total = :throughput_messages_total, " +
-                                            "throughput_messages_average = :throughput_messages_average, " +
-                                            "updated_at = NOW() WHERE bus_id = :bus_id AND name = :name")
-                                    .bind("name", channel.name())
-                                    .bind("bus_id", busId)
-                                    .bind("capacity", channel.capacity())
-                                    .bind("watermark", channel.watermark())
-                                    .bind("errors_total", channel.errors().total())
-                                    .bind("errors_average", channel.errors().average())
-                                    .bind("throughput_bytes_total", channel.throughputBytes().total())
-                                    .bind("throughput_bytes_average", channel.throughputBytes().average())
-                                    .bind("throughput_messages_total", channel.throughputMessages().total())
-                                    .bind("throughput_messages_average", channel.throughputMessages().average())
-                                    .execute()
-                    );
+                    handle.createUpdate("UPDATE tap_captures SET capture_type = :capture_type, " +
+                                    "is_running = :is_running, received = :received, dropped_buffer = :dropped_buffer, " +
+                                    "dropped_interface = :dropped_interface, updated_at = NOW() " +
+                                    "WHERE tap_uuid = :tap_uuid AND interface = :interface")
+                            .bind("capture_type", capture.captureType())
+                            .bind("is_running", capture.isRunning())
+                            .bind("received", capture.received())
+                            .bind("dropped_buffer", capture.droppedBuffer())
+                            .bind("dropped_interface", capture.droppedInterface())
+                            .bind("tap_uuid", tapUUID)
+                            .bind("interface", capture.interfaceName())
+                            .execute();
                 }
 
                 // Capture metrics.
-                writeGauge(
-                        tapUUID,
-                        "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".usage",
-                        channel.watermark(),
-                        report.timestamp()
-                );
+                gaugesBatch.bind("tap_uuid", tapUUID)
+                        .bind("metric_name", "captures." + capture.interfaceName().toLowerCase() + ".received")
+                        .bind("metric_value",  capture.received().doubleValue())
+                        .bind("timestamp", report.timestamp())
+                        .add();
 
-                writeGauge(
-                        tapUUID,
-                        "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".usage_percent",
-                        channel.watermark() > 0 ? channel.watermark()*100/channel.capacity() : 0,
-                        report.timestamp()
-                );
+                gaugesBatch.bind("tap_uuid", tapUUID)
+                        .bind("metric_name", "captures." + capture.interfaceName().toLowerCase() + ".dropped_if")
+                        .bind("metric_value",  capture.droppedInterface().doubleValue())
+                        .bind("timestamp", report.timestamp())
+                        .add();
 
-                writeGauge(
-                        tapUUID,
-                        "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".throughput_messages",
-                        channel.throughputMessages().average()/10,
-                        report.timestamp()
-                );
-
-                writeGauge(
-                        tapUUID,
-                        "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".throughput_bytes",
-                        channel.throughputBytes().average()/10,
-                        report.timestamp()
-                );
-
-                writeGauge(
-                        tapUUID,
-                        "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".errors",
-                        channel.errors().average()/10,
-                        report.timestamp()
-                );
+                gaugesBatch.bind("tap_uuid", tapUUID)
+                        .bind("metric_name", "captures." + capture.interfaceName().toLowerCase() + ".dropped_buffer")
+                        .bind("metric_value",  capture.droppedBuffer().doubleValue())
+                        .bind("timestamp", report.timestamp())
+                        .add();
             }
-        }
 
-        // Gauges.
-        for (Map.Entry<String, Long> metric : report.gaugesLong().entrySet()) {
-            writeGauge(tapUUID, metric.getKey(), metric.getValue(), report.timestamp());
-        }
-        for (Map.Entry<String, Double> metric : report.gaugesFloat().entrySet()) {
-            writeGauge(tapUUID, metric.getKey(), metric.getValue(), report.timestamp());
-        }
+            // Register buses.
+            for (BusReport bus : report.buses()) {
+                long busCount = handle.createQuery("SELECT COUNT(*) AS count FROM tap_buses " +
+                                "WHERE tap_uuid = :tap_uuid AND name = :name")
+                        .bind("tap_uuid", tapUUID)
+                        .bind("name", bus.name())
+                        .mapTo(Long.class)
+                        .one();
 
-        // Timers.
-        for (Map.Entry<String, TimersReport> timer : report.timers().entrySet()) {
-            writeTimer(tapUUID, timer.getKey(), timer.getValue().mean(), timer.getValue().p99(), report.timestamp());
-        }
+                if (busCount == 0) {
+                    handle.createUpdate("INSERT INTO tap_buses(tap_uuid, name, created_at, updated_at) " +
+                                    "VALUES(:tap_uuid, :name, NOW(), NOW())")
+                            .bind("tap_uuid", tapUUID)
+                            .bind("name", bus.name())
+                            .execute();
+                } else {
+                    handle.createUpdate("UPDATE tap_buses SET updated_at = NOW() " +
+                                    "WHERE tap_uuid = :tap_uuid AND name = :name")
+                            .bind("tap_uuid", tapUUID)
+                            .bind("name", bus.name())
+                            .execute();
+                }
 
-        // Additional metrics.
-        writeGauge(tapUUID, "system.captures.throughput_bit_sec", report.processedBytes().average()*8/10, report.timestamp());
-        writeGauge(tapUUID, "os.memory.bytes_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(), report.timestamp());
-        writeGauge(tapUUID, "os.cpu.load.percent", report.systemMetrics().cpuLoad(), report.timestamp());
+                Long busId = handle.createQuery("SELECT id FROM tap_buses " +
+                                "WHERE tap_uuid = :tap_uuid AND name = :name")
+                        .bind("tap_uuid", tapUUID)
+                        .bind("name", bus.name())
+                        .mapTo(Long.class)
+                        .one();
 
-        // CPU core loads.
-        for (Map.Entry<Integer, Double> core : report.systemMetrics().cpuCoresLoad().entrySet()) {
-            writeGauge(tapUUID, "os.cpu.cores." + core.getKey() + ".load.percent", core.getValue(), report.timestamp());
-        }
+                // Register bus channels.
+                for (ChannelReport channel : bus.channels()) {
+                    long channelCount = handle.createQuery("SELECT COUNT(*) AS count FROM bus_channels " +
+                                    "WHERE bus_id = :bus_id AND name = :channel_name")
+                            .bind("bus_id", busId)
+                            .bind("channel_name", channel.name())
+                            .mapTo(Long.class)
+                            .one();
 
-        if (report.systemMetrics().rpiTemperature() != null) {
-            writeGauge(tapUUID, "rpi.temperature", report.systemMetrics().rpiTemperature(), report.timestamp());
-        }
+                    if (channelCount == 0) {
+                        handle.createUpdate("INSERT INTO bus_channels(name, bus_id, capacity, watermark, errors_total, " +
+                                        "errors_average, throughput_bytes_total, throughput_bytes_average, " +
+                                        "throughput_messages_total, throughput_messages_average, created_at, updated_at) " +
+                                        "VALUES(:name, :bus_id, :capacity, :watermark, :errors_total, :errors_average, " +
+                                        ":throughput_bytes_total, :throughput_bytes_average, :throughput_messages_total, " +
+                                        ":throughput_messages_average, NOW(), NOW())")
+                                .bind("name", channel.name())
+                                .bind("bus_id", busId)
+                                .bind("capacity", channel.capacity())
+                                .bind("watermark", channel.watermark())
+                                .bind("errors_total", channel.errors().total())
+                                .bind("errors_average", channel.errors().average())
+                                .bind("throughput_bytes_total", channel.throughputBytes().total())
+                                .bind("throughput_bytes_average", channel.throughputBytes().average())
+                                .bind("throughput_messages_total", channel.throughputMessages().total())
+                                .bind("throughput_messages_average", channel.throughputMessages().average())
+                                .execute();
+                    } else {
+                        handle.createUpdate("UPDATE bus_channels SET capacity = :capacity, watermark = :watermark, " +
+                                        "errors_total = :errors_total, errors_average = :errors_average, " +
+                                        "throughput_bytes_total = :throughput_bytes_total, " +
+                                        "throughput_bytes_average = :throughput_bytes_average, " +
+                                        "throughput_messages_total = :throughput_messages_total, " +
+                                        "throughput_messages_average = :throughput_messages_average, " +
+                                        "updated_at = NOW() WHERE bus_id = :bus_id AND name = :name")
+                                .bind("name", channel.name())
+                                .bind("bus_id", busId)
+                                .bind("capacity", channel.capacity())
+                                .bind("watermark", channel.watermark())
+                                .bind("errors_total", channel.errors().total())
+                                .bind("errors_average", channel.errors().average())
+                                .bind("throughput_bytes_total", channel.throughputBytes().total())
+                                .bind("throughput_bytes_average", channel.throughputBytes().average())
+                                .bind("throughput_messages_total", channel.throughputMessages().total())
+                                .bind("throughput_messages_average", channel.throughputMessages().average())
+                                .execute();
+                    }
 
-        // Log counts.
-        for (Map.Entry<String, Long> lc : report.logCounts().entrySet()) {
-            if (lc.getKey().equals("error")
-                    || lc.getKey().equals("warn")
-                    || lc.getKey().equals("info")
-                    || lc.getKey().equals("debug")
-                    || lc.getKey().equals("trace")) {
+                    // Capture metrics.
+                    gaugesBatch.bind("tap_uuid", tapUUID)
+                            .bind("metric_name", "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".usage")
+                            .bind("metric_value", channel.watermark().doubleValue())
+                            .bind("timestamp", report.timestamp())
+                            .add();
 
-                writeGauge(tapUUID, "logs.counts." + lc.getKey(), lc.getValue(), report.timestamp());
-            } else {
-                LOG.error("Unexpected log level in tap [{}] log counts report: {}", tapUUID, lc.getKey());
+                    gaugesBatch.bind("tap_uuid", tapUUID)
+                            .bind("metric_name", "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".usage_percent")
+                            .bind("metric_value",  channel.watermark() > 0 ? channel.watermark() * 100.0 / channel.capacity() : 0.0D)
+                            .bind("timestamp", report.timestamp())
+                            .add();
+
+                    gaugesBatch.bind("tap_uuid", tapUUID)
+                            .bind("metric_name", "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".throughput_messages")
+                            .bind("metric_value",  channel.throughputMessages().average() / 10.0)
+                            .bind("timestamp", report.timestamp())
+                            .add();
+
+                    gaugesBatch.bind("tap_uuid", tapUUID)
+                            .bind("metric_name", "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".throughput_bytes")
+                            .bind("metric_value",  channel.throughputBytes().average() / 10.0)
+                            .bind("timestamp", report.timestamp())
+                            .add();
+
+                    gaugesBatch.bind("tap_uuid", tapUUID)
+                            .bind("metric_name", "channels." + bus.name().toLowerCase() + "." + channel.name().toLowerCase() + ".errors")
+                            .bind("metric_value",  channel.errors().average() / 10.0)
+                            .bind("timestamp", report.timestamp())
+                            .add();
+                }
             }
-        }
 
-        // Engagement capture logs.
-        nzyme.getDatabase().useHandle(handle -> {
+            // Gauges.
+            for (Map.Entry<String, Long> metric : report.gaugesLong().entrySet()) {
+                gaugesBatch.bind("tap_uuid", tapUUID)
+                        .bind("metric_name", metric.getKey())
+                        .bind("metric_value", metric.getValue().doubleValue())
+                        .bind("timestamp", report.timestamp())
+                        .add();
+            }
+            for (Map.Entry<String, Double> metric : report.gaugesFloat().entrySet()) {
+                gaugesBatch.bind("tap_uuid", tapUUID)
+                        .bind("metric_name", metric.getKey())
+                        .bind("metric_value", metric.getValue().doubleValue())
+                        .bind("timestamp", report.timestamp())
+                        .add();
+            }
+
+            // Timers.
+            for (Map.Entry<String, TimersReport> timer : report.timers().entrySet()) {
+                timersBatch
+                        .bind("tap_uuid", tapUUID)
+                        .bind("metric_name", timer.getKey())
+                        .bind("mean", timer.getValue().mean())
+                        .bind("p99", timer.getValue().p99())
+                        .bind("timestamp", report.timestamp())
+                        .add();
+            }
+
+            // Additional metrics.
+            gaugesBatch.bind("tap_uuid", tapUUID)
+                    .bind("metric_name", "system.captures.throughput_bit_sec")
+                    .bind("metric_value", report.processedBytes().average() * 8 / 10.0)
+                    .bind("timestamp", report.timestamp())
+                    .add();
+
+            gaugesBatch.bind("tap_uuid", tapUUID)
+                    .bind("metric_name", "os.memory.bytes_used")
+                    .bind("metric_value", report.systemMetrics().memoryTotal().doubleValue() - report.systemMetrics().memoryFree().doubleValue())
+                    .bind("timestamp", report.timestamp())
+                    .add();
+
+            gaugesBatch.bind("tap_uuid", tapUUID)
+                    .bind("metric_name", "os.cpu.load.percent")
+                    .bind("metric_value", report.systemMetrics().cpuLoad())
+                    .bind("timestamp", report.timestamp())
+                    .add();
+
+            // CPU core loads.
+            for (Map.Entry<Integer, Double> core : report.systemMetrics().cpuCoresLoad().entrySet()) {
+                gaugesBatch.bind("tap_uuid", tapUUID)
+                        .bind("metric_name", "os.cpu.cores." + core.getKey() + ".load.percent")
+                        .bind("metric_value", core.getValue())
+                        .bind("timestamp", report.timestamp())
+                        .add();
+            }
+
+            if (report.systemMetrics().rpiTemperature() != null) {
+                gaugesBatch.bind("tap_uuid", tapUUID)
+                        .bind("metric_name", "rpi.temperature")
+                        .bind("metric_value", report.systemMetrics().rpiTemperature())
+                        .bind("timestamp", report.timestamp())
+                        .add();
+            }
+
+            // Log counts.
+            for (Map.Entry<String, Long> lc : report.logCounts().entrySet()) {
+                if (lc.getKey().equals("error")
+                        || lc.getKey().equals("warn")
+                        || lc.getKey().equals("info")
+                        || lc.getKey().equals("debug")
+                        || lc.getKey().equals("trace")) {
+
+                    gaugesBatch.bind("tap_uuid", tapUUID)
+                            .bind("metric_name", "logs.counts." + lc.getKey())
+                            .bind("metric_value", lc.getValue().doubleValue())
+                            .bind("timestamp", report.timestamp())
+                            .add();
+                } else {
+                    LOG.error("Unexpected log level in tap [{}] log counts report: {}", tapUUID, lc.getKey());
+                }
+            }
+
+            // Engagement capture logs.
+            PreparedBatch engagementLogBatch = handle.prepareBatch("INSERT INTO tap_engagement_logs(message, " +
+                    "tap_uuid, timestamp) VALUES(:message, :tap_uuid, :timestamp)");
             for (EngagementLogReport log : report.engagementLogs()) {
-                handle.createUpdate("INSERT INTO tap_engagement_logs(message, tap_uuid, timestamp) " +
-                                "VALUES(:message, :tap_uuid, :timestamp)")
+                engagementLogBatch
                         .bind("message", log.message())
                         .bind("timestamp", log.timestamp())
                         .bind("tap_uuid", tapUUID)
-                        .execute();
+                        .add();
             }
+            engagementLogBatch.execute();
+
+            gaugesBatch.execute();
+            timersBatch.execute();
         });
     }
 
@@ -567,35 +588,6 @@ public class TapManager {
                 }
             });
         }
-    }
-
-    private void writeGauge(UUID tapUUID, String metricName, Long metricValue, DateTime timestamp) {
-        writeGauge(tapUUID, metricName, metricValue.doubleValue(), timestamp);
-    }
-
-    private void writeGauge(UUID tapUUID, String metricName, Double metricValue, DateTime timestamp) {
-        nzyme.getDatabase().withHandle(handle ->
-                handle.createUpdate("INSERT INTO tap_metrics_gauges(tap_uuid, metric_name, metric_value, created_at) " +
-                                "VALUES(:tap_uuid, :metric_name, :metric_value, :timestamp)")
-                        .bind("tap_uuid", tapUUID)
-                        .bind("metric_name", metricName)
-                        .bind("metric_value", metricValue)
-                        .bind("timestamp", timestamp)
-                        .execute()
-        );
-    }
-
-    private void writeTimer(UUID tapUUID, String metricName, double mean, double p99, DateTime timestamp) {
-        nzyme.getDatabase().withHandle(handle ->
-                handle.createUpdate("INSERT INTO tap_metrics_timers(tap_uuid, metric_name, mean, p99, created_at) " +
-                                "VALUES(:tap_uuid, :metric_name, :mean, :p99, NOW())")
-                        .bind("tap_uuid", tapUUID)
-                        .bind("metric_name", metricName)
-                        .bind("mean", mean)
-                        .bind("p99", p99)
-                        .bind("timestamp", timestamp)
-                        .execute()
-        );
     }
 
     private void retentionCleanMetrics() {
