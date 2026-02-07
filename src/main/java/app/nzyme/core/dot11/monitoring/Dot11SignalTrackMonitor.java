@@ -40,22 +40,20 @@ public class Dot11SignalTrackMonitor extends Periodical {
             if (!monitoredSSID.isEnabled() || !monitoredSSID.enabledUnexpectedSignalTracks()) {
                 continue;
             }
-            
-            List<UUID> tapUUIDs = nzyme.getTapManager()
-                    .allTapUUIDsAccessibleByScope(monitoredSSID.organizationId(), monitoredSSID.tenantId());
+
+            List<Tap> accessibleTaps = nzyme.getTapManager()
+                    .allTapsAccessibleByScope(monitoredSSID.organizationId(), monitoredSSID.tenantId());
 
             for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfMonitoredNetwork(monitoredSSID.id())) {
                 for (MonitoredChannel frequency : nzyme.getDot11().findMonitoredChannelsOfMonitoredNetwork(monitoredSSID.id())) {
-                    for (UUID tapId : tapUUIDs) {
-                        Optional<Tap> tap = nzyme.getTapManager().findTap(tapId);
-
+                    for (Tap tap : accessibleTaps) {
                         List<SignalTrackHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
-                                monitoredBSSID.bssid(), monitoredSSID.ssid(), (int) frequency.frequency(), TimeRangeFactory.eightHours(), tap.get().uuid());
+                                monitoredBSSID.bssid(), monitoredSSID.ssid(), (int) frequency.frequency(), TimeRangeFactory.eightHours(), tap.uuid());
 
                         TrackDetectorConfig config = nzyme.getDot11()
                                 .findCustomTrackDetectorConfiguration(
-                                        tap.get().organizationId(),
-                                        tap.get().uuid(),
+                                        tap.organizationId(),
+                                        tap.uuid(),
                                         monitoredBSSID.bssid(),
                                         monitoredSSID.ssid(),
                                         (int)frequency.frequency()
@@ -71,8 +69,8 @@ public class Dot11SignalTrackMonitor extends Periodical {
                             Map<String, String> attributes = Maps.newHashMap();
                             attributes.put("bssid", monitoredBSSID.bssid());
                             attributes.put("channel", String.valueOf(frequency.frequency()));
-                            attributes.put("tap_id", tap.get().uuid().toString());
-                            attributes.put("tap_name", tap.get().name());
+                            attributes.put("tap_id", tap.uuid().toString());
+                            attributes.put("tap_name", tap.name());
 
                             nzyme.getDetectionAlertService().raiseAlert(
                                     monitoredSSID.organizationId(),
@@ -83,7 +81,7 @@ public class Dot11SignalTrackMonitor extends Periodical {
                                     Subsystem.DOT11,
                                     "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
                                             "with multiple signal tracks on channel \"" + frequency.frequency() + "\". " +
-                                            "(Tap: \"" + tap.get().name() + "\")",
+                                            "(Tap: \"" + tap.name() + "\")",
                                     attributes,
                                     new String[]{"bssid", "channel", "tap_id"},
                                     null

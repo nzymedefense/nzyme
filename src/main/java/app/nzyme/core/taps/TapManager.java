@@ -780,6 +780,19 @@ public class TapManager {
         return tapUUIDs;
     }
 
+    public List<Tap> allTapsAccessibleByScope(@Nullable UUID organizationId, @Nullable UUID tenantId) {
+        if (organizationId == null && tenantId == null) {
+            // Super Admin.
+            return findAllTapsOfAllUsers();
+        } else if (organizationId != null && tenantId == null) {
+            // Organization Admin.
+            return findAllTapsOfOrganization(organizationId);
+        } else {
+            // Tenant User.
+            return findAllTapsOfTenant(organizationId, tenantId);
+        }
+    }
+
     public Optional<Tap> findTap(UUID uuid) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM taps WHERE deleted = false AND uuid = :uuid")

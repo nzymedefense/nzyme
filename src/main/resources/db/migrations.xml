@@ -7835,4 +7835,20 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="improve_ssid_signal_track_indices" author="lennartkoopmann">
+        <dropIndex tableName="dot11_ssids" indexName="ssids_bssid_direct_lookup" />
+        <createIndex tableName="dot11_ssids" indexName="ssids_bssid_direct_lookup">
+            <column name="tap_uuid" />
+            <column name="bssid" />
+            <column name="ssid" />
+            <column name="created_at" />
+        </createIndex>
+
+        <dropIndex tableName="dot11_channel_histograms" indexName="channelhistos_rellookup" />
+        <createIndex tableName="dot11_channel_histograms" indexName="channelhistos_rellookup">
+            <column name="ssid_id" />
+            <column name="frequency" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
