@@ -14,12 +14,16 @@ import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
@@ -36,8 +40,32 @@ public class AuthenticationService {
 
     public final NzymeNode nzyme;
 
+    private final LoadingCache<String, String> keysCache;
+
     public AuthenticationService(NzymeNode nzyme) {
         this.nzyme = nzyme;
+
+        this.keysCache = CacheBuilder.newBuilder()
+                .maximumSize(1000)
+                .expireAfterAccess(15, TimeUnit.MINUTES) // Evict old keys when a tap secret changed.
+                .build(new CacheLoader<>() {
+                    @NotNull
+                    public String load(@NotNull String secret) {
+                        if (secret.isEmpty()) {
+                            throw new IllegalArgumentException("Key is empty.");
+                        }
+
+                        try {
+                            return new String(
+                                    nzyme.getCrypto().decryptWithClusterKey(
+                                            BaseEncoding.base64().decode(secret)
+                                    )
+                            );
+                        } catch (Crypto.CryptoOperationException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
     }
 
     public void initialize() {
@@ -957,16 +985,12 @@ public class AuthenticationService {
 
         for (TapPermissionEntry tap : taps) {
             try {
-                String decryptedSecret = new String(
-                        nzyme.getCrypto().decryptWithClusterKey(
-                                BaseEncoding.base64().decode(tap.secret())
-                        )
-                );
+                String decryptedSecret = keysCache.get(tap.secret());
 
                 if (secret.equals(decryptedSecret)) {
                     return Optional.of(tap);
                 }
-            } catch (Crypto.CryptoOperationException e) {
+            } catch (Exception e) {
                 throw new RuntimeException("Could not decrypt tap key.", e);
             }
         }
