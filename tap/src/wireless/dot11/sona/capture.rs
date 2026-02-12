@@ -246,8 +246,21 @@ impl Capture {
                                         }
                                         MSG_TYPE_METRICS => {
                                             // Metrics message.
-                                            if let Some(metrics) = parse_metrics_payload(payload) {
-                                                info!("Sona [{}] metrics frame: [{}]", serial, metrics);
+                                            if let Some(sona_metrics) = parse_metrics_payload(payload) {
+                                                debug!("Sona [{}] metrics frame: [{}]", serial, sona_metrics);
+
+                                                match self.metrics.lock() {
+                                                    Ok(mut metrics) => {
+                                                        metrics.update_capture(
+                                                            interface_name, true, sona_metrics.frame_queue_drops, 0
+                                                        );
+
+                                                        metrics.set_gauge_float(&format!("sona-{}.temperature_mc", serial), sona_metrics.temperature_mc as f32 / 1000.0);
+                                                        metrics.set_gauge(&format!("sona-{}.frame_queue_drops", serial), sona_metrics.frame_queue_drops as i128);
+                                                        metrics.set_gauge(&format!("sona-{}.frame_queue_used", serial), sona_metrics.frame_queue_used as i128);
+                                                    },
+                                                    Err(e) => error!("Could not acquire metrics mutex: {}", e)
+                                                }
                                             } else {
                                                 warn!("Failed to parse metrics payload.");
                                             }

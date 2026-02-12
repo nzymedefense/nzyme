@@ -9,12 +9,11 @@ use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::GenericChannelName;
 use crate::metrics::Metrics;
 use crate::to_pipeline;
-use crate::usb::usb::{find_first_nzyme_usb_device_with_pid, find_first_nzyme_usb_device_with_pid_and_serial};
+use crate::usb::usb::{find_first_nzyme_usb_device_with_pid_and_serial};
 use crate::wireless::positioning::axia::axia::AXIA_1_PID;
 use crate::wireless::positioning::axia::sentence_type::SentenceType;
 use crate::wireless::positioning::axia::ubx::{AntennaPower, AntennaStatus, JammingState, UbxMonRfMessage, UbxMonRfBlock, UbxRxmMeasxMessage, UbxRxmMeasxSat};
 use crate::wireless::positioning::gnss_constellation::GNSSConstellation;
-use crate::wireless::positioning::gnss_constellation::GNSSConstellation::{Galileo, GPS};
 use crate::wireless::positioning::nmea::nmea_message::NMEAMessage;
 
 const FRAME_MAGIC0: u8 = b'n';
