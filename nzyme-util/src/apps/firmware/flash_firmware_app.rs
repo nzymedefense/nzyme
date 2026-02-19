@@ -1,6 +1,7 @@
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 use crate::exit_codes::{EX_PERMISSION_DENIED, EX_UNAVAILABLE};
+use crate::firmware::firmware::V1_HEADER_LEN;
 use crate::firmware::firmware_loader::load_firmware_from_relative_path;
 use crate::usb::bootloader::{flash_firmware, send_enter_bootloader};
 use crate::usb::mcuboot;
@@ -168,7 +169,9 @@ pub fn run(firmware_file: String, device_serial: String) {
     println!("{FG_YELLOW}[>] Writing firmware image...{RESET}");
 
     if is_sona {
-        if let Err(e) = mcuboot::flash_firmware(&bl_acm_port, firmware) {
+        // Cut off Nzyme file header and flash the raw image. Bootloader validates.
+        if let Err(e) = mcuboot::flash_firmware(
+                &bl_acm_port, firmware[V1_HEADER_LEN as usize..].to_vec()) {
             eprintln!("{FG_RED}[x] ERROR:{RESET} Firmware flash failed.");
             eprintln!("    Details: {}", e);
             std::process::exit(EX_UNAVAILABLE);
