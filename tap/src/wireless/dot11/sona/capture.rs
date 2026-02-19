@@ -111,14 +111,11 @@ impl Capture {
             while let Ok(cmd) = self.command_receiver.try_recv() {
                 match cmd {
                     SonaCommand::SetFrequency(freq_mhz) => {
-                        if let Err(e) = send_set_frequency(&mut *port_handle, freq_mhz as u16) { // TODO don't cast
+                        if let Err(e) = send_set_frequency(&mut *port_handle, freq_mhz) {
                             warn!("Failed to send SetFrequency({}) to Sona [{}]: {}", freq_mhz, serial, e);
                         } else {
                             debug!("Sent SetFrequency({}) to Sona [{}].", freq_mhz, serial);
                         }
-                    }
-                    _ => {
-                        // handle other commands later
                     }
                 }
             }
@@ -138,9 +135,7 @@ impl Capture {
 
                     // Process all complete frames.
                     let mut processed_up_to = 0;
-
-                    // TODO clean this up and extract into fns
-
+                    
                     while let Some(delimiter_pos) = acc[processed_up_to..]
                         .iter().position(|&b| b == 0) {
 
@@ -176,99 +171,7 @@ impl Capture {
                                     }
 
                                     let payload = &decoded[4..4 + payload_len];
-
-                                    match msg_type {
-                                        MSG_TYPE_DOT11 => {
-                                            // 802.11 frame message.
-                                            if payload.len() < SonaFrameHeader::BYTES {
-                                                error!("Dropping 802.11 frame that is too short \
-                                                    to fit Sona header: <{}> bytes.", payload.len());
-                                            } else {
-                                                // Parse frame header.
-                                                let header_bytes = &payload[..SonaFrameHeader::BYTES];
-                                                if let Some(hdr) = SonaFrameHeader::parse(header_bytes) {
-                                                    /* We should always have an RSSI, but, if not, skip
-                                                     * the frame.
-                                                     */
-                                                    if let Some(rssi) = hdr.rssi_dbm {
-                                                        let frame = &payload[SonaFrameHeader::BYTES..];
-
-                                                        let radiotap = Self::create_radiotap_header(
-                                                            hdr.rate_flags,
-                                                            hdr.rate_code,
-                                                            hdr.freq_mhz,
-                                                            rssi
-                                                        );
-
-                                                        // Construct full frame.
-                                                        let mut full_frame = Vec::with_capacity(
-                                                            frame.len() + radiotap.len()
-                                                        );
-                                                        full_frame.extend_from_slice(&radiotap);
-                                                        full_frame.extend_from_slice(frame);
-                                                        let full_frame_length = full_frame.len();
-
-                                                        let data = Dot11RawFrame {
-                                                            capture_source: Acquisition,
-                                                            interface_name: format!("sona-{}", serial),
-                                                            data: full_frame
-                                                        };
-
-                                                        match self.metrics.lock() {
-                                                            Ok(mut metrics) => {
-                                                                metrics.increment_processed_bytes_total(full_frame_length as u32);
-                                                                metrics.update_capture(
-                                                                    interface_name, true, 0, 0
-                                                                );
-                                                            },
-                                                            Err(e) => error!("Could not acquire metrics mutex: {}", e)
-                                                        }
-
-                                                        // Write to 802.11 pipeline.
-                                                        match self.bus.dot11_broker.sender.lock() {
-                                                            Ok(mut sender) => {
-                                                                sender.send_packet(
-                                                                    Arc::new(data),
-                                                                    full_frame_length as u32
-                                                                )
-                                                            },
-                                                            Err(e) => {
-                                                                error!("Could not acquire 802.11 handler  broker mutex: {}", e)
-                                                            }
-                                                        }
-                                                    } else {
-                                                        trace!("Skipping Sona frame with no RSSI.");
-                                                    }
-                                                } else {
-                                                    warn!("Could not parse frame header: [{:?}]", header_bytes);
-                                                }
-                                            }
-                                        }
-                                        MSG_TYPE_METRICS => {
-                                            // Metrics message.
-                                            if let Some(sona_metrics) = parse_metrics_payload(payload) {
-                                                debug!("Sona [{}] metrics frame: [{}]", serial, sona_metrics);
-
-                                                match self.metrics.lock() {
-                                                    Ok(mut metrics) => {
-                                                        metrics.update_capture(
-                                                            interface_name, true, sona_metrics.frame_queue_drops, 0
-                                                        );
-
-                                                        metrics.set_gauge_float(&format!("sona-{}.temperature_mc", serial), sona_metrics.temperature_mc as f32 / 1000.0);
-                                                        metrics.set_gauge(&format!("sona-{}.frame_queue_drops", serial), sona_metrics.frame_queue_drops as i128);
-                                                        metrics.set_gauge(&format!("sona-{}.frame_queue_used", serial), sona_metrics.frame_queue_used as i128);
-                                                    },
-                                                    Err(e) => error!("Could not acquire metrics mutex: {}", e)
-                                                }
-                                            } else {
-                                                warn!("Failed to parse metrics payload.");
-                                            }
-                                        }
-                                        _ => {
-                                            debug!("Unknown message type: {}", msg_type);
-                                        }
-                                    }
+                                    self.handle_payload(interface_name, msg_type, payload);
                                 }
                                 Err(e) => {
                                     debug!("COBS decode error: {}", e);
@@ -295,6 +198,110 @@ impl Capture {
                     error!("Sona [{}] ACM port [{}] read error: {}", serial, acm_port, e);
                     return;
                 }
+            }
+        }
+    }
+
+    fn handle_payload(&self, interface_name: &str, msg_type: u8, payload: &[u8]) {
+        match msg_type {
+            MSG_TYPE_DOT11 => {
+                // 802.11 frame message.
+                if payload.len() < SonaFrameHeader::BYTES {
+                    error!("Dropping 802.11 frame that is too short \
+                                                    to fit Sona header: <{}> bytes.", payload.len());
+                } else {
+                    // Parse frame header.
+                    let header_bytes = &payload[..SonaFrameHeader::BYTES];
+                    if let Some(hdr) = SonaFrameHeader::parse(header_bytes) {
+                        /* We should always have an RSSI, but, if not, skip
+                         * the frame.
+                         */
+                        if let Some(rssi) = hdr.rssi_dbm {
+                            let frame = &payload[SonaFrameHeader::BYTES..];
+
+                            let radiotap = Self::create_radiotap_header(
+                                hdr.rate_flags,
+                                hdr.rate_code,
+                                hdr.freq_mhz,
+                                rssi
+                            );
+
+                            // Construct full frame.
+                            let mut full_frame = Vec::with_capacity(
+                                frame.len() + radiotap.len()
+                            );
+                            full_frame.extend_from_slice(&radiotap);
+                            full_frame.extend_from_slice(frame);
+                            let full_frame_length = full_frame.len();
+
+                            let data = Dot11RawFrame {
+                                capture_source: Acquisition,
+                                interface_name: interface_name.to_string(),
+                                data: full_frame
+                            };
+
+                            match self.metrics.lock() {
+                                Ok(mut metrics) => {
+                                    metrics.increment_processed_bytes_total(full_frame_length as u32);
+                                    metrics.update_capture(
+                                        interface_name, true, 0, 0
+                                    );
+                                },
+                                Err(e) => error!("Could not acquire metrics mutex: {}", e)
+                            }
+
+                            // Write to 802.11 pipeline.
+                            match self.bus.dot11_broker.sender.lock() {
+                                Ok(mut sender) => {
+                                    sender.send_packet(
+                                        Arc::new(data),
+                                        full_frame_length as u32
+                                    )
+                                },
+                                Err(e) => {
+                                    error!("Could not acquire 802.11 handler  broker mutex: {}", e)
+                                }
+                            }
+                        } else {
+                            trace!("Skipping Sona frame with no RSSI.");
+                        }
+                    } else {
+                        warn!("Could not parse frame header: [{:?}]", header_bytes);
+                    }
+                }
+            }
+            MSG_TYPE_METRICS => {
+                // Metrics message.
+                if let Some(sona_metrics) = parse_metrics_payload(payload) {
+                    debug!("Sona [{}] metrics frame: [{}]", interface_name, sona_metrics);
+
+                    match self.metrics.lock() {
+                        Ok(mut metrics) => {
+                            metrics.update_capture(
+                                interface_name, true, sona_metrics.frame_queue_drops, 0
+                            );
+
+                            metrics.set_gauge_float(
+                                &format!("{}.temperature_mc", interface_name),
+                                sona_metrics.temperature_mc as f32 / 1000.0
+                            );
+                            metrics.set_gauge(
+                                &format!("{}.frame_queue_drops", interface_name),
+                                sona_metrics.frame_queue_drops as i128
+                            );
+                            metrics.set_gauge(
+                                &format!("{}.frame_queue_used", interface_name),
+                                sona_metrics.frame_queue_used as i128
+                            );
+                        },
+                        Err(e) => error!("Could not acquire metrics mutex: {}", e)
+                    }
+                } else {
+                    warn!("Failed to parse metrics payload.");
+                }
+            }
+            _ => {
+                debug!("Unknown message type: {}", msg_type);
             }
         }
     }

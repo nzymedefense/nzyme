@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub enum SonaCommand {
-    SetFrequency(u32)
+    SetFrequency(u16)
 }
 
 #[derive(Debug)]

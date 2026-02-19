@@ -235,7 +235,7 @@ impl ChannelHopper {
 
                                 match sona_command_sender.send(AddressedSonaCommand {
                                     sona_device_serial,
-                                    cmd: SonaCommand::SetFrequency(frequency),
+                                    cmd: SonaCommand::SetFrequency(frequency as u16),
                                 }) {
                                     Ok(()) => {
                                         trace!("Sent command to set frequency of Sona [{}] \
