@@ -18,10 +18,10 @@ fn main() {
 
     match arguments.command {
         Some(Command::Firmware(fw)) => match fw.command {
-            FirmwareSubcommand::Gui => {
+            /*FirmwareSubcommand::Gui => {
                 // $ nzyme-util firmware gui
                 firmware_gui_app::run();
-            }
+            }*/
 
             FirmwareSubcommand::Flash { firmware_file, serial } => {
                 // $ nzyme-util firmware flash

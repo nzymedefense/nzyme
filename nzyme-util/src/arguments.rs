@@ -29,7 +29,7 @@ pub struct FirmwareCommand {
 
 #[derive(Subcommand, Debug)]
 pub enum FirmwareSubcommand {
-    Gui,
+    //Gui, // Disabled for now.
 
     Flash {
         #[arg(long)]
