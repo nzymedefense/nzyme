@@ -16,7 +16,7 @@ pub fn run(firmware_file: String, public_key_file: String) {
 
     let fw = load_firmware_file(firmware_file.clone());
 
-    // Strong semantic checks (fatal if mismatched).
+    // Strong semantic checks.
     if fw.magic != NZ_MAGIC {
         eprintln!("{FG_RED}[x] ERROR:{RESET} Invalid magic in firmware file.");
         eprintln!("    Got:   {:02X} {:02X}", fw.magic[0], fw.magic[1]);

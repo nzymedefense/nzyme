@@ -108,7 +108,7 @@ pub fn flash_firmware(acm_port: &str, firmware: Vec<u8>) -> Result<(), Error> {
         hasher.finalize().to_vec()
     };
 
-    const CHUNK_SIZE: usize = 256;
+    const CHUNK_SIZE: usize = 128;
     let mut seq: u8 = 1;
     let mut off: u64 = 0;
 

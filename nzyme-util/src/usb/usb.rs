@@ -4,9 +4,25 @@ use crate::firmware::firmware_version::FirmwareVersion;
 use crate::usb::nzyme_usb_device::NzymeUsbDevice;
 
 pub const NZYME_VID: u16 = 0x390C;
-pub const NZYME_BOOTLOADER_PID: u16 = 0x001;
-pub const SONA_BOOTLOADER_PID: u16 =  0x002;
-pub const SONA_PID: u16 = 0x100;
+
+pub fn find_bootloader_of_pid(pid: u16) -> Result<u16> {
+    match pid {
+        // Limina.
+        0x0200 | 0x0001 => Ok(0x0001),
+
+        // Sona. (WiFi, Bluetooth, 802.15.4)
+        0x0100 | 0x0101 | 0x0102 | 0x0002 => Ok(0x0002),
+
+        // Axia.
+        0x0400 | 0x0004 => Ok(0x0004),
+
+        _ => bail!("Unknown PID <{}>.", pid)
+    }
+}
+
+pub fn is_sona(pid: u16) -> bool {
+    pid == 0x0100 || pid == 0x0101 || pid == 0x0102
+}
 
 pub fn detect_nzyme_usb_devices() -> Result<Vec<NzymeUsbDevice>>  {
     let context = UsbContextType::new()?;

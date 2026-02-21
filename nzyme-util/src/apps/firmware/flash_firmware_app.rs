@@ -1,11 +1,10 @@
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 use crate::exit_codes::{EX_PERMISSION_DENIED, EX_UNAVAILABLE};
-use crate::firmware::firmware::V1_HEADER_LEN;
-use crate::firmware::firmware_loader::load_firmware_from_relative_path;
+use crate::firmware::firmware_file::load_firmware_file;
 use crate::usb::bootloader::{flash_firmware, send_enter_bootloader};
 use crate::usb::mcuboot;
-use crate::usb::usb::{detect_nzyme_usb_devices, nzyme_device_is_connected, NZYME_BOOTLOADER_PID, NZYME_VID, SONA_BOOTLOADER_PID, SONA_PID};
+use crate::usb::usb::{detect_nzyme_usb_devices, find_bootloader_of_pid, is_sona, nzyme_device_is_connected, NZYME_VID};
 
 pub fn run(firmware_file: String, device_serial: String) {
     const RESET: &str = "\x1b[0m";
@@ -38,16 +37,26 @@ pub fn run(firmware_file: String, device_serial: String) {
         }
     };
 
+    if device.vid != NZYME_VID {
+        eprintln!("{FG_RED}[x] ERROR:{RESET} Device is not an Nzyme device.");
+        std::process::exit(EX_UNAVAILABLE);
+    }
+
     /*
      * Sona boards use MCUboot and need a different flashing and reset process. We are using MCUboot
      * instead of our own bootloader (like on STM32) because Zephyr pretty much forces you to use
      * it. The goal is to keep both bootloader types as aligned as possible, sometimes at the
      * cost of efficiency, to keep the process simpler.
      */
-    let (is_sona, bootloader_pid) = match device.pid {
-        SONA_PID | SONA_BOOTLOADER_PID => (true, SONA_BOOTLOADER_PID),
-        _ => (false, NZYME_BOOTLOADER_PID)
+    let device_bootloader_pid = match find_bootloader_of_pid(device.pid) {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("{FG_RED}[x] ERROR:{RESET} Unknown PID <0x{:04X}>.", device.pid);
+            std::process::exit(EX_UNAVAILABLE);
+        }
     };
+
+    let is_sona = is_sona(device.pid);
 
     println!("{FG_CYAN}Device Information:{RESET}");
     println!("    Product        : {}", device.product);
@@ -57,7 +66,7 @@ pub fn run(firmware_file: String, device_serial: String) {
 
     println!("    Firmware       : v{}.{}",
              device.firmware_version.major, device.firmware_version.minor);
-    println!("    USB VID:PID    : {:04X}:{:04X}", device.vid, device.pid);
+    println!("    USB VID:PID    : 0x{:04X}:0x{:04X}", device.vid, device.pid);
 
     let acm_port = match device.acm_port {
         Some(port) => port,
@@ -70,19 +79,20 @@ pub fn run(firmware_file: String, device_serial: String) {
     println!("    ACM Port       : {acm_port}\n");
 
     println!("{BOLD}==> Loading Firmware{RESET}");
-    let firmware = match load_firmware_from_relative_path(&firmware_file) {
-        Ok(f) => {
-            println!("{FG_GREEN}[*] Loaded firmware image. Size <{}> byte.{RESET}", f.len());
-            f
-        }
-        Err(e) => {
-            eprintln!("{FG_RED}[x] ERROR:{RESET} Cannot load firmware file.");
-            eprintln!("    Details: {}", e);
-            std::process::exit(EX_UNAVAILABLE);
-        }
-    };
+    let firmware = load_firmware_file(firmware_file);
 
-    if device.vid == NZYME_VID && device.pid == bootloader_pid {
+    /*
+     * Check that the firmware is intended for this device. We will check for the device PID
+     * as well as the PID of the bootloader of the device.
+     */
+    if device.pid != firmware.usb_pid && device.pid != device_bootloader_pid {
+        eprintln!("{FG_RED}[x] ERROR:{RESET} Firmware PID <0x{:04X}> is not matching device \
+            PID <0x{:04X}/0x{:04X}>. Make sure the firmware your are trying to load is intended for \
+            the target device.", firmware.usb_pid, device.pid, device_bootloader_pid);
+        std::process::exit(EX_UNAVAILABLE);
+    }
+
+    if device.pid == device_bootloader_pid {
         /*
          * We are talking to a Nzyme bootloader. It's likely in the failure loop after it couldn't
          * initialize the app or app has not successfully initialized on previous boot.
@@ -111,8 +121,8 @@ pub fn run(firmware_file: String, device_serial: String) {
             }
         }
 
-        println!("{FG_YELLOW}[>] Waiting for bootloader enumeration ({:04X}:{:04X})...{RESET}",
-                 NZYME_VID, bootloader_pid);
+        println!("{FG_YELLOW}[>] Waiting for bootloader enumeration (0x{:04X}:0x{:04X})...{RESET}",
+                 NZYME_VID, device_bootloader_pid);
 
         // Wait until device enumerates as bootloader
         let start = Instant::now();
@@ -121,15 +131,13 @@ pub fn run(firmware_file: String, device_serial: String) {
         loop {
             sleep(Duration::from_millis(500));
             
-            match nzyme_device_is_connected(&device_serial, NZYME_VID, bootloader_pid) {
+            match nzyme_device_is_connected(&device_serial, NZYME_VID, device_bootloader_pid) {
                 Ok(true) => {
                     println!("{FG_GREEN}[*] Bootloader mode detected.{RESET}");
                     break;
                 }
                 Ok(false) => {}
-                Err(e) => {
-                    eprintln!("    Detection retry: {}", e);
-                }
+                Err(e) => { /* Ignore. */ }
             }
 
             if start.elapsed() > timeout {
@@ -150,7 +158,7 @@ pub fn run(firmware_file: String, device_serial: String) {
     };
 
     let bootloader_device = match devices.into_iter()
-            .find(|d| d.serial == device_serial && d.vid == NZYME_VID && d.pid == bootloader_pid) {
+            .find(|d| d.serial == device_serial && d.vid == NZYME_VID && d.pid == device_bootloader_pid) {
         Some(d) => d,
         None => {
             eprintln!("{FG_RED}[x] ERROR:{RESET} No device with serial [{device_serial}] found.");
@@ -170,8 +178,7 @@ pub fn run(firmware_file: String, device_serial: String) {
 
     if is_sona {
         // Cut off Nzyme file header and flash the raw image. Bootloader validates.
-        if let Err(e) = mcuboot::flash_firmware(
-                &bl_acm_port, firmware[V1_HEADER_LEN as usize..].to_vec()) {
+        if let Err(e) = mcuboot::flash_firmware(&bl_acm_port, firmware.firmware_payload) {
             eprintln!("{FG_RED}[x] ERROR:{RESET} Firmware flash failed.");
             eprintln!("    Details: {}", e);
             std::process::exit(EX_UNAVAILABLE);
@@ -185,7 +192,7 @@ pub fn run(firmware_file: String, device_serial: String) {
             std::process::exit(EX_UNAVAILABLE);
         }
     } else {
-        if let Err(e) = flash_firmware(&bl_acm_port, firmware) {
+        if let Err(e) = flash_firmware(&bl_acm_port, firmware.firmware_payload) {
             eprintln!("{FG_RED}[x] ERROR:{RESET} Firmware flash failed.");
             eprintln!("    Details: {}", e);
             std::process::exit(EX_UNAVAILABLE);
@@ -196,7 +203,7 @@ pub fn run(firmware_file: String, device_serial: String) {
 
     println!("\n{BOLD}==> Waiting for Device Reboot{RESET}");
     println!(
-        "{FG_YELLOW}[>] Expecting device as {:04X}:{:04X}...{RESET}",
+        "{FG_YELLOW}[>] Expecting device as 0x{:04X}:0x{:04X}...{RESET}",
         device.vid, device.pid
     );
 
