@@ -96,7 +96,7 @@ public class KnownSSIDMonitor extends Periodical {
         );
 
         if (enabled.isEmpty() || enabled.get().equals("false")) {
-            LOG.debug("Not raising alert for unapproved SSID [{}] because eventing is enabled.", ssid.ssid());
+            LOG.debug("Not raising alert for unapproved SSID [{}] because eventing is disabled.", ssid.ssid());
             return;
         }
 
