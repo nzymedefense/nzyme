@@ -55,7 +55,8 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential \
             pkg-config \
-            libudev-dev
+            libudev-dev \
+            libdbus-1-dev
             
       - name: Build `tap`
         working-directory: ./tap
