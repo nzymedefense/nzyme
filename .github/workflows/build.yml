@@ -3,7 +3,7 @@ name: Test Build
 on: [push, pull_request]
 
 jobs:
-  build_and_test:
+  build_all:
     runs-on: ubuntu-latest
 
     services:
