@@ -42,24 +42,6 @@ jobs:
         env:
           TEST_DATABASE_URL: postgresql://localhost:5432/nzyme-java-tests?user=postgres&password=postgres
 
-      - name: Run DB migrations
-        shell: bash
-        env:
-          TEST_DATABASE_URL: postgresql://localhost:5432/nzyme-java-tests?user=postgres&password=postgres
-        run: |
-          set -euo pipefail
-
-          # Find JAR.
-          JAR="$(ls -1 target/*.jar 2>/dev/null | grep -vE 'original|sources|javadoc' | head -n1 || true)"
-          if [ -z "${JAR}" ]; then
-            echo "No runnable jar found in target/*.jar"
-            ls -la target || true
-            exit 1
-          fi
-
-          echo "Running migrations using: ${JAR}"
-          java -jar "${JAR}" --migrate-db
-
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
