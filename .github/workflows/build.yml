@@ -56,7 +56,9 @@ jobs:
             build-essential \
             pkg-config \
             libudev-dev \
-            libdbus-1-dev
+            libdbus-1-dev \
+            libpcap-dev \
+            libssl-dev
             
       - name: Build `tap`
         working-directory: ./tap
