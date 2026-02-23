@@ -2,7 +2,6 @@
 leader_secret = "your_key_copied_from_nzyme_web_interface"
 leader_uri = "https://nzyme.example.org:22900/"
 accept_insecure_certs = false
-limina = false
 
 [ethernet_interfaces.enp6s0]
 active = false
