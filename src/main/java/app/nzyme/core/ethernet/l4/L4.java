@@ -75,7 +75,7 @@ public class L4 {
                                 "WHERE most_recent_segment_time >= :tr_from AND most_recent_segment_time <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
                                 "GROUP BY session_key, l4_type, state " +
-                                "HAVING 1=1 " + filterFragment.havingSql() + ")")
+                                "HAVING 1=1 " + filterFragment.havingSql() + ") AS ignored")
                         .bindList("taps", taps)
                         .bindMap(filterFragment.bindings())
                         .bind("tr_from", timeRange.from())
@@ -99,32 +99,32 @@ public class L4 {
         FilterSqlFragment filterFragment = FilterSql.generate(filters, new L4Filters());
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT session_key, l4_type, state, ANY_VALUE(source_mac) AS source_mac, " +
-                                "ANY_VALUE(source_address) AS source_address, ANY_VALUE(source_port) AS source_port, " +
-                                "ANY_VALUE(source_address_geo_asn_number) AS source_address_geo_asn_number, " +
-                                "ANY_VALUE(source_address_geo_asn_name) AS source_address_geo_asn_name, " +
-                                "ANY_VALUE(source_address_geo_asn_domain) AS source_address_geo_asn_domain, " +
-                                "ANY_VALUE(source_address_geo_city) AS source_address_geo_city, " +
-                                "ANY_VALUE(source_address_geo_country_code) AS source_address_geo_country_code, " +
-                                "ANY_VALUE(source_address_geo_latitude) AS source_address_geo_latitude, " +
-                                "ANY_VALUE(source_address_geo_longitude) AS source_address_geo_longitude, " +
-                                "ANY_VALUE(source_address_is_site_local) AS source_address_is_site_local, " +
-                                "ANY_VALUE(source_address_is_loopback) AS source_address_is_loopback, " +
-                                "ANY_VALUE(source_address_is_multicast) AS source_address_is_multicast, " +
-                                "ANY_VALUE(destination_mac) AS destination_mac, " +
-                                "ANY_VALUE(destination_address) AS destination_address, " +
-                                "ANY_VALUE(destination_port) AS destination_port, " +
-                                "ANY_VALUE(destination_address_geo_asn_number) AS destination_address_geo_asn_number, " +
-                                "ANY_VALUE(destination_address_geo_asn_name) AS destination_address_geo_asn_name, " +
-                                "ANY_VALUE(destination_address_geo_asn_domain) AS destination_address_geo_asn_domain, " +
-                                "ANY_VALUE(destination_address_geo_city) AS destination_address_geo_city, " +
-                                "ANY_VALUE(destination_address_geo_country_code) AS destination_address_geo_country_code, " +
-                                "ANY_VALUE(destination_address_geo_latitude) AS destination_address_geo_latitude, " +
-                                "ANY_VALUE(destination_address_geo_longitude) AS destination_address_geo_longitude, " +
-                                "ANY_VALUE(destination_address_is_site_local) AS destination_address_is_site_local, " +
-                                "ANY_VALUE(destination_address_is_loopback) AS destination_address_is_loopback, " +
-                                "ANY_VALUE(destination_address_is_multicast) AS destination_address_is_multicast, " +
-                                "ANY_VALUE(fingerprint) AS fingerprint, ANY_VALUE(tags) AS tags, " +
+                handle.createQuery("SELECT session_key, l4_type, state, MIN(source_mac) AS source_mac, " +
+                                "MIN(source_address) AS source_address, MIN(source_port) AS source_port, " +
+                                "MIN(source_address_geo_asn_number) AS source_address_geo_asn_number, " +
+                                "MIN(source_address_geo_asn_name) AS source_address_geo_asn_name, " +
+                                "MIN(source_address_geo_asn_domain) AS source_address_geo_asn_domain, " +
+                                "MIN(source_address_geo_city) AS source_address_geo_city, " +
+                                "MIN(source_address_geo_country_code) AS source_address_geo_country_code, " +
+                                "MIN(source_address_geo_latitude) AS source_address_geo_latitude, " +
+                                "MIN(source_address_geo_longitude) AS source_address_geo_longitude, " +
+                                "BOOL_AND(source_address_is_site_local) AS source_address_is_site_local, " +
+                                "BOOL_AND(source_address_is_loopback) AS source_address_is_loopback, " +
+                                "BOOL_AND(source_address_is_multicast) AS source_address_is_multicast, " +
+                                "MIN(destination_mac) AS destination_mac, " +
+                                "MIN(destination_address) AS destination_address, " +
+                                "MIN(destination_port) AS destination_port, " +
+                                "MIN(destination_address_geo_asn_number) AS destination_address_geo_asn_number, " +
+                                "MIN(destination_address_geo_asn_name) AS destination_address_geo_asn_name, " +
+                                "MIN(destination_address_geo_asn_domain) AS destination_address_geo_asn_domain, " +
+                                "MIN(destination_address_geo_city) AS destination_address_geo_city, " +
+                                "MIN(destination_address_geo_country_code) AS destination_address_geo_country_code, " +
+                                "MIN(destination_address_geo_latitude) AS destination_address_geo_latitude, " +
+                                "MIN(destination_address_geo_longitude) AS destination_address_geo_longitude, " +
+                                "BOOL_AND(destination_address_is_site_local) AS destination_address_is_site_local, " +
+                                "BOOL_AND(destination_address_is_loopback) AS destination_address_is_loopback, " +
+                                "BOOL_AND(destination_address_is_multicast) AS destination_address_is_multicast, " +
+                                "MIN(fingerprint) AS fingerprint, MIN(tags::text)::jsonb AS tags, " +
                                 "MAX(bytes_rx_count) AS bytes_rx_count, MAX(bytes_tx_count) AS bytes_tx_count, " +
                                 "MAX(segments_count) AS segments_count, " +
                                 "MIN(start_time) AS start_time, MAX(end_time) AS end_time, " +
@@ -157,33 +157,33 @@ public class L4 {
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT session_key, ANY_VALUE(l4_type) AS l4_type, " +
-                                "ANY_VALUE(state) AS state, ANY_VALUE(source_mac) AS source_mac, " +
-                                "ANY_VALUE(source_address) AS source_address, ANY_VALUE(source_port) AS source_port, " +
-                                "ANY_VALUE(source_address_geo_asn_number) AS source_address_geo_asn_number, " +
-                                "ANY_VALUE(source_address_geo_asn_name) AS source_address_geo_asn_name, " +
-                                "ANY_VALUE(source_address_geo_asn_domain) AS source_address_geo_asn_domain, " +
-                                "ANY_VALUE(source_address_geo_city) AS source_address_geo_city, " +
-                                "ANY_VALUE(source_address_geo_country_code) AS source_address_geo_country_code, " +
-                                "ANY_VALUE(source_address_geo_latitude) AS source_address_geo_latitude, " +
-                                "ANY_VALUE(source_address_geo_longitude) AS source_address_geo_longitude, " +
-                                "ANY_VALUE(source_address_is_site_local) AS source_address_is_site_local, " +
-                                "ANY_VALUE(source_address_is_loopback) AS source_address_is_loopback, " +
-                                "ANY_VALUE(source_address_is_multicast) AS source_address_is_multicast, " +
-                                "ANY_VALUE(destination_mac) AS destination_mac, " +
-                                "ANY_VALUE(destination_address) AS destination_address, " +
-                                "ANY_VALUE(destination_port) AS destination_port, " +
-                                "ANY_VALUE(destination_address_geo_asn_number) AS destination_address_geo_asn_number, " +
-                                "ANY_VALUE(destination_address_geo_asn_name) AS destination_address_geo_asn_name, " +
-                                "ANY_VALUE(destination_address_geo_asn_domain) AS destination_address_geo_asn_domain, " +
-                                "ANY_VALUE(destination_address_geo_city) AS destination_address_geo_city, " +
-                                "ANY_VALUE(destination_address_geo_country_code) AS destination_address_geo_country_code, " +
-                                "ANY_VALUE(destination_address_geo_latitude) AS destination_address_geo_latitude, " +
-                                "ANY_VALUE(destination_address_geo_longitude) AS destination_address_geo_longitude, " +
-                                "ANY_VALUE(destination_address_is_site_local) AS destination_address_is_site_local, " +
-                                "ANY_VALUE(destination_address_is_loopback) AS destination_address_is_loopback, " +
-                                "ANY_VALUE(destination_address_is_multicast) AS destination_address_is_multicast, " +
-                                "ANY_VALUE(fingerprint) AS fingerprint, ANY_VALUE(tags) AS tags, " +
+                handle.createQuery("SELECT session_key, MIN(l4_type) AS l4_type, " +
+                                "MIN(state) AS state, MIN(source_mac) AS source_mac, " +
+                                "MIN(source_address) AS source_address, MIN(source_port) AS source_port, " +
+                                "MIN(source_address_geo_asn_number) AS source_address_geo_asn_number, " +
+                                "MIN(source_address_geo_asn_name) AS source_address_geo_asn_name, " +
+                                "MIN(source_address_geo_asn_domain) AS source_address_geo_asn_domain, " +
+                                "MIN(source_address_geo_city) AS source_address_geo_city, " +
+                                "MIN(source_address_geo_country_code) AS source_address_geo_country_code, " +
+                                "MIN(source_address_geo_latitude) AS source_address_geo_latitude, " +
+                                "MIN(source_address_geo_longitude) AS source_address_geo_longitude, " +
+                                "BOOL_AND(source_address_is_site_local) AS source_address_is_site_local, " +
+                                "BOOL_AND(source_address_is_loopback) AS source_address_is_loopback, " +
+                                "BOOL_AND(source_address_is_multicast) AS source_address_is_multicast, " +
+                                "MIN(destination_mac) AS destination_mac, " +
+                                "MIN(destination_address) AS destination_address, " +
+                                "MIN(destination_port) AS destination_port, " +
+                                "MIN(destination_address_geo_asn_number) AS destination_address_geo_asn_number, " +
+                                "MIN(destination_address_geo_asn_name) AS destination_address_geo_asn_name, " +
+                                "MIN(destination_address_geo_asn_domain) AS destination_address_geo_asn_domain, " +
+                                "MIN(destination_address_geo_city) AS destination_address_geo_city, " +
+                                "MIN(destination_address_geo_country_code) AS destination_address_geo_country_code, " +
+                                "MIN(destination_address_geo_latitude) AS destination_address_geo_latitude, " +
+                                "MIN(destination_address_geo_longitude) AS destination_address_geo_longitude, " +
+                                "BOOL_AND(destination_address_is_site_local) AS destination_address_is_site_local, " +
+                                "BOOL_AND(destination_address_is_loopback) AS destination_address_is_loopback, " +
+                                "BOOL_AND(destination_address_is_multicast) AS destination_address_is_multicast, " +
+                                "MIN(fingerprint) AS fingerprint, MIN(tags::text)::jsonb AS tags, " +
                                 "MAX(bytes_rx_count) AS bytes_rx_count, MAX(bytes_tx_count) AS bytes_tx_count, " +
                                 "MAX(segments_count) AS segments_count, " +
                                 "MIN(start_time) AS start_time, MAX(end_time) AS end_time, " +
@@ -269,7 +269,7 @@ public class L4 {
                                 "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to AND tap_uuid IN (<taps>) " +
                                 "AND source_mac IS NOT NULL " + filterFragment.whereSql() + " " +
-                                "GROUP BY source_mac HAVING 1=1 " + filterFragment.havingSql() + ")")
+                                "GROUP BY source_mac HAVING 1=1 " + filterFragment.havingSql() + ") AS ignored")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindMap(filterFragment.bindings())
@@ -323,7 +323,7 @@ public class L4 {
                                 "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to AND tap_uuid IN (<taps>) " +
                                 "AND destination_mac IS NOT NULL " + filterFragment.whereSql() + " " +
-                                "GROUP BY destination_mac HAVING 1=1 " + filterFragment.havingSql() + ")")
+                                "GROUP BY destination_mac HAVING 1=1 " + filterFragment.havingSql() + ") AS ignored")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindMap(filterFragment.bindings())
@@ -377,7 +377,7 @@ public class L4 {
                                 "WHERE most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
-                                "GROUP BY source_address HAVING 1=1 " + filterFragment.havingSql() + ")")
+                                "GROUP BY source_address HAVING 1=1 " + filterFragment.havingSql() + ") AS ignored")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindMap(filterFragment.bindings())
@@ -400,16 +400,16 @@ public class L4 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT source_address AS key_address, NULL as key_port, " +
-                                "ANY_VALUE(source_address_geo_asn_number) AS key_address_geo_asn_number, " +
-                                "ANY_VALUE(source_address_geo_asn_name) AS key_address_geo_asn_name, " +
-                                "ANY_VALUE(source_address_geo_asn_domain) AS key_address_geo_asn_domain, " +
-                                "ANY_VALUE(source_address_geo_city) AS key_address_geo_city, " +
-                                "ANY_VALUE(source_address_geo_country_code) AS key_address_geo_country_code, " +
-                                "ANY_VALUE(source_address_geo_latitude) AS key_address_geo_latitude, " +
-                                "ANY_VALUE(source_address_geo_longitude) AS key_address_geo_longitude, " +
-                                "ANY_VALUE(source_address_is_site_local) AS key_address_is_site_local, " +
-                                "ANY_VALUE(source_address_is_loopback) AS key_address_is_loopback, " +
-                                "ANY_VALUE(source_address_is_multicast) AS key_address_is_multicast, " +
+                                "MIN(source_address_geo_asn_number) AS key_address_geo_asn_number, " +
+                                "MIN(source_address_geo_asn_name) AS key_address_geo_asn_name, " +
+                                "MIN(source_address_geo_asn_domain) AS key_address_geo_asn_domain, " +
+                                "MIN(source_address_geo_city) AS key_address_geo_city, " +
+                                "MIN(source_address_geo_country_code) AS key_address_geo_country_code, " +
+                                "MIN(source_address_geo_latitude) AS key_address_geo_latitude, " +
+                                "MIN(source_address_geo_longitude) AS key_address_geo_longitude, " +
+                                "BOOL_AND(source_address_is_site_local) AS key_address_is_site_local, " +
+                                "BOOL_AND(source_address_is_loopback) AS key_address_is_loopback, " +
+                                "BOOL_AND(source_address_is_multicast) AS key_address_is_multicast, " +
                                 "SUM(bytes_rx_count) AS value1, SUM(bytes_tx_count) AS value2 " +
                                 "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to " +
@@ -440,7 +440,7 @@ public class L4 {
                                 "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
-                                "GROUP BY destination_address HAVING 1=1 " + filterFragment.havingSql() + ")")
+                                "GROUP BY destination_address HAVING 1=1 " + filterFragment.havingSql() + ") AS ignored")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindMap(filterFragment.bindings())
@@ -463,16 +463,16 @@ public class L4 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT destination_address AS key_address, NULL as key_port, " +
-                                "ANY_VALUE(destination_address_geo_asn_number) AS key_address_geo_asn_number, " +
-                                "ANY_VALUE(destination_address_geo_asn_name) AS key_address_geo_asn_name, " +
-                                "ANY_VALUE(destination_address_geo_asn_domain) AS key_address_geo_asn_domain, " +
-                                "ANY_VALUE(destination_address_geo_city) AS key_address_geo_city, " +
-                                "ANY_VALUE(destination_address_geo_country_code) AS key_address_geo_country_code, " +
-                                "ANY_VALUE(destination_address_geo_latitude) AS key_address_geo_latitude, " +
-                                "ANY_VALUE(destination_address_geo_longitude) AS key_address_geo_longitude, " +
-                                "ANY_VALUE(destination_address_is_site_local) AS key_address_is_site_local, " +
-                                "ANY_VALUE(destination_address_is_loopback) AS key_address_is_loopback, " +
-                                "ANY_VALUE(destination_address_is_multicast) AS key_address_is_multicast, " +
+                                "MIN(destination_address_geo_asn_number) AS key_address_geo_asn_number, " +
+                                "MIN(destination_address_geo_asn_name) AS key_address_geo_asn_name, " +
+                                "MIN(destination_address_geo_asn_domain) AS key_address_geo_asn_domain, " +
+                                "MIN(destination_address_geo_city) AS key_address_geo_city, " +
+                                "MIN(destination_address_geo_country_code) AS key_address_geo_country_code, " +
+                                "MIN(destination_address_geo_latitude) AS key_address_geo_latitude, " +
+                                "MIN(destination_address_geo_longitude) AS key_address_geo_longitude, " +
+                                "BOOL_AND(destination_address_is_site_local) AS key_address_is_site_local, " +
+                                "BOOL_AND(destination_address_is_loopback) AS key_address_is_loopback, " +
+                                "BOOL_AND(destination_address_is_multicast) AS key_address_is_multicast, " +
                                 "SUM(bytes_rx_count) AS value1, SUM(bytes_tx_count) AS value2 " +
                                 "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to " +
@@ -502,7 +502,7 @@ public class L4 {
                                 "FROM l4_sessions WHERE most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
-                                "GROUP BY destination_port HAVING 1=1 " + filterFragment.havingSql() + ")")
+                                "GROUP BY destination_port HAVING 1=1 " + filterFragment.havingSql() + ") AS ignored")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindMap(filterFragment.bindings())
@@ -556,7 +556,7 @@ public class L4 {
                                 "AND most_recent_segment_time >= :tr_from " +
                                 "AND most_recent_segment_time <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
-                                "GROUP BY destination_port HAVING 1=1 " + filterFragment.havingSql() + ")")
+                                "GROUP BY destination_port HAVING 1=1 " + filterFragment.havingSql() + ") AS ignored")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindMap(filterFragment.bindings())

@@ -20,11 +20,11 @@ public class SOCKS {
 
     public enum OrderColumn {
 
-        TUNNEL_ID("ANY_VALUE(socks.uuid)"),
-        CLIENT_ADDRESS("ANY_VALUE(tcp.source_address)"),
-        CLIENT_MAC("ANY_VALUE(tcp.source_mac)"),
-        SERVER_ADDRESS("ANY_VALUE(tcp.destination_address)"),
-        SERVER_MAC("ANY_VALUE(tcp.destination_mac)"),
+        TUNNEL_ID("MIN(socks.uuid)"),
+        CLIENT_ADDRESS("MIN(tcp.source_address)"),
+        CLIENT_MAC("MIN(tcp.source_mac)"),
+        SERVER_ADDRESS("MIN(tcp.destination_address)"),
+        SERVER_MAC("MIN(tcp.destination_mac)"),
         TYPE("socks_type"),
         CONNECTION_STATUS("connection_status"),
         TUNNELED_BYTES("tunneled_bytes"),
@@ -57,15 +57,15 @@ public class SOCKS {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM (SELECT socks.tcp_session_key, " +
-                                "ANY_VALUE(socks.socks_type) AS socks_type, " +
-                                "ANY_VALUE(socks.authentication_status) AS authentication_status, " +
-                                "ANY_VALUE(socks.handshake_status) AS handshake_status, " +
-                                "ANY_VALUE(socks.connection_status) AS connection_status, " +
-                                "ANY_VALUE(socks.username) AS username, " +
+                                "MIN(socks.socks_type) AS socks_type, " +
+                                "MIN(socks.authentication_status) AS authentication_status, " +
+                                "MIN(socks.handshake_status) AS handshake_status, " +
+                                "MIN(socks.connection_status) AS connection_status, " +
+                                "MIN(socks.username) AS username, " +
                                 "MAX(socks.tunneled_bytes) AS tunneled_bytes, " +
-                                "ANY_VALUE(socks.tunneled_destination_address) AS tunneled_destination_address, " +
-                                "ANY_VALUE(socks.tunneled_destination_host) AS tunneled_destination_host, " +
-                                "ANY_VALUE(socks.tunneled_destination_port) AS tunneled_destination_port, " +
+                                "MIN(socks.tunneled_destination_address) AS tunneled_destination_address, " +
+                                "MIN(socks.tunneled_destination_host) AS tunneled_destination_host, " +
+                                "MIN(socks.tunneled_destination_port) AS tunneled_destination_port, " +
                                 "MIN(socks.established_at) AS established_at, " +
                                 "MAX(socks.terminated_at) AS terminated_at, " +
                                 "MAX(socks.most_recent_segment_time) AS most_recent_segment_time " +
@@ -103,15 +103,15 @@ public class SOCKS {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT socks.tcp_session_key, " +
-                                "ANY_VALUE(socks.socks_type) AS socks_type, " +
-                                "ANY_VALUE(socks.authentication_status) AS authentication_status, " +
-                                "ANY_VALUE(socks.handshake_status) AS handshake_status, " +
-                                "ANY_VALUE(socks.connection_status) AS connection_status, " +
-                                "ANY_VALUE(socks.username) AS username, " +
+                                "MIN(socks.socks_type) AS socks_type, " +
+                                "MIN(socks.authentication_status) AS authentication_status, " +
+                                "MIN(socks.handshake_status) AS handshake_status, " +
+                                "MIN(socks.connection_status) AS connection_status, " +
+                                "MIN(socks.username) AS username, " +
                                 "MAX(socks.tunneled_bytes) AS tunneled_bytes, " +
-                                "ANY_VALUE(socks.tunneled_destination_address) AS tunneled_destination_address, " +
-                                "ANY_VALUE(socks.tunneled_destination_host) AS tunneled_destination_host, " +
-                                "ANY_VALUE(socks.tunneled_destination_port) AS tunneled_destination_port, " +
+                                "MIN(socks.tunneled_destination_address) AS tunneled_destination_address, " +
+                                "MIN(socks.tunneled_destination_host) AS tunneled_destination_host, " +
+                                "MIN(socks.tunneled_destination_port) AS tunneled_destination_port, " +
                                 "MIN(socks.established_at) AS established_at, " +
                                 "MAX(socks.terminated_at) AS terminated_at, " +
                                 "MAX(socks.most_recent_segment_time) AS most_recent_segment_time, " +
@@ -149,15 +149,15 @@ public class SOCKS {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT socks.tcp_session_key, " +
-                                "ANY_VALUE(socks.socks_type) AS socks_type, " +
-                                "ANY_VALUE(socks.authentication_status) AS authentication_status, " +
-                                "ANY_VALUE(socks.handshake_status) AS handshake_status, " +
-                                "ANY_VALUE(socks.connection_status) AS connection_status, " +
-                                "ANY_VALUE(socks.username) AS username, " +
+                                "MIN(socks.socks_type) AS socks_type, " +
+                                "MIN(socks.authentication_status) AS authentication_status, " +
+                                "MIN(socks.handshake_status) AS handshake_status, " +
+                                "MIN(socks.connection_status) AS connection_status, " +
+                                "MIN(socks.username) AS username, " +
                                 "MAX(socks.tunneled_bytes) AS tunneled_bytes, " +
-                                "ANY_VALUE(socks.tunneled_destination_address) AS tunneled_destination_address, " +
-                                "ANY_VALUE(socks.tunneled_destination_host) AS tunneled_destination_host, " +
-                                "ANY_VALUE(socks.tunneled_destination_port) AS tunneled_destination_port, " +
+                                "MIN(socks.tunneled_destination_address) AS tunneled_destination_address, " +
+                                "MIN(socks.tunneled_destination_host) AS tunneled_destination_host, " +
+                                "MIN(socks.tunneled_destination_port) AS tunneled_destination_port, " +
                                 "MIN(socks.established_at) AS established_at, " +
                                 "MAX(socks.terminated_at) AS terminated_at, " +
                                 "MAX(socks.most_recent_segment_time) AS most_recent_segment_time, " +

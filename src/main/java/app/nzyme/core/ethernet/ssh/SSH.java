@@ -18,13 +18,13 @@ public class SSH {
 
     public enum OrderColumn {
 
-        SESSION_ID("ANY_VALUE(ssh.uuid)"),
-        CLIENT_ADDRESS("ANY_VALUE(tcp.source_address)"),
-        CLIENT_MAC("ANY_VALUE(tcp.source_mac)"),
-        CLIENT_TYPE("ANY_VALUE(client_version_software) || ANY_VALUE(client_version_version) || ANY_VALUE(client_version_comments)"),
-        SERVER_ADDRESS("ANY_VALUE(tcp.destination_address)"),
-        SERVER_MAC("ANY_VALUE(tcp.destination_mac)"),
-        SERVER_TYPE("ANY_VALUE(server_version_software) || ANY_VALUE(server_version_version) || ANY_VALUE(server_version_comments)"),
+        SESSION_ID("MIN(ssh.uuid)"),
+        CLIENT_ADDRESS("MIN(tcp.source_address)"),
+        CLIENT_MAC("MIN(tcp.source_mac)"),
+        CLIENT_TYPE("MIN(client_version_software) || MIN(client_version_version) || MIN(client_version_comments)"),
+        SERVER_ADDRESS("MIN(tcp.destination_address)"),
+        SERVER_MAC("MIN(tcp.destination_mac)"),
+        SERVER_TYPE("MIN(server_version_software) || MIN(server_version_version) || MIN(server_version_comments)"),
         CONNECTION_STATUS("connection_status"),
         TUNNELED_BYTES("tunneled_bytes"),
         ESTABLISHED_AT("established_at"),
@@ -58,13 +58,13 @@ public class SSH {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM (SELECT ssh.tcp_session_key, " +
-                                "ANY_VALUE(ssh.client_version_version) AS client_version_version, " +
-                                "ANY_VALUE(ssh.client_version_software) AS client_version_software, " +
-                                "ANY_VALUE(ssh.client_version_comments) AS client_version_comments, " +
-                                "ANY_VALUE(ssh.server_version_version) AS server_version_version, " +
-                                "ANY_VALUE(ssh.server_version_software) AS server_version_software, " +
-                                "ANY_VALUE(ssh.server_version_comments) AS server_version_comments, " +
-                                "ANY_VALUE(ssh.connection_status) AS connection_status, " +
+                                "MIN(ssh.client_version_version) AS client_version_version, " +
+                                "MIN(ssh.client_version_software) AS client_version_software, " +
+                                "MIN(ssh.client_version_comments) AS client_version_comments, " +
+                                "MIN(ssh.server_version_version) AS server_version_version, " +
+                                "MIN(ssh.server_version_software) AS server_version_software, " +
+                                "MIN(ssh.server_version_comments) AS server_version_comments, " +
+                                "MIN(ssh.connection_status) AS connection_status, " +
                                 "MAX(ssh.tunneled_bytes) AS tunneled_bytes, " +
                                 "MIN(ssh.established_at) AS established_at, " +
                                 "MAX(ssh.terminated_at) AS terminated_at, " +
@@ -99,13 +99,13 @@ public class SSH {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT ssh.tcp_session_key, " +
-                                "ANY_VALUE(ssh.client_version_version) AS client_version_version, " +
-                                "ANY_VALUE(ssh.client_version_software) AS client_version_software, " +
-                                "ANY_VALUE(ssh.client_version_comments) AS client_version_comments, " +
-                                "ANY_VALUE(ssh.server_version_version) AS server_version_version, " +
-                                "ANY_VALUE(ssh.server_version_software) AS server_version_software, " +
-                                "ANY_VALUE(ssh.server_version_comments) AS server_version_comments, " +
-                                "ANY_VALUE(ssh.connection_status) AS connection_status, " +
+                                "MIN(ssh.client_version_version) AS client_version_version, " +
+                                "MIN(ssh.client_version_software) AS client_version_software, " +
+                                "MIN(ssh.client_version_comments) AS client_version_comments, " +
+                                "MIN(ssh.server_version_version) AS server_version_version, " +
+                                "MIN(ssh.server_version_software) AS server_version_software, " +
+                                "MIN(ssh.server_version_comments) AS server_version_comments, " +
+                                "MIN(ssh.connection_status) AS connection_status, " +
                                 "MAX(ssh.tunneled_bytes) AS tunneled_bytes, " +
                                 "MIN(ssh.established_at) AS established_at, " +
                                 "MAX(ssh.terminated_at) AS terminated_at, " +
@@ -144,13 +144,13 @@ public class SSH {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT ssh.tcp_session_key, " +
-                                "ANY_VALUE(ssh.client_version_version) AS client_version_version, " +
-                                "ANY_VALUE(ssh.client_version_software) AS client_version_software, " +
-                                "ANY_VALUE(ssh.client_version_comments) AS client_version_comments, " +
-                                "ANY_VALUE(ssh.server_version_version) AS server_version_version, " +
-                                "ANY_VALUE(ssh.server_version_software) AS server_version_software, " +
-                                "ANY_VALUE(ssh.server_version_comments) AS server_version_comments, " +
-                                "ANY_VALUE(ssh.connection_status) AS connection_status, " +
+                                "MIN(ssh.client_version_version) AS client_version_version, " +
+                                "MIN(ssh.client_version_software) AS client_version_software, " +
+                                "MIN(ssh.client_version_comments) AS client_version_comments, " +
+                                "MIN(ssh.server_version_version) AS server_version_version, " +
+                                "MIN(ssh.server_version_software) AS server_version_software, " +
+                                "MIN(ssh.server_version_comments) AS server_version_comments, " +
+                                "MIN(ssh.connection_status) AS connection_status, " +
                                 "MAX(ssh.tunneled_bytes) AS tunneled_bytes, " +
                                 "MIN(ssh.established_at) AS established_at, " +
                                 "MAX(ssh.terminated_at) AS terminated_at, " +

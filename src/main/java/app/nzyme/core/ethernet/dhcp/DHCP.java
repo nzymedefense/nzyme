@@ -80,21 +80,22 @@ public class DHCP {
         FilterSqlFragment filterFragment = FilterSql.generate(filters, new DHCPFilters());
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT transaction_id, ANY_VALUE(transaction_type) AS transaction_type, " +
+                handle.createQuery("SELECT transaction_id, MIN(transaction_type) AS transaction_type, " +
                                 "FLOOR(EXTRACT(EPOCH FROM first_packet)::numeric / 10) AS time_bucket, " +
-                                "ANY_VALUE(client_mac) AS client_mac, " +
-                                "ANY_VALUE(additional_client_macs) AS additional_client_macs, " +
-                                "ANY_VALUE(server_mac) AS server_mac, " +
-                                "ANY_VALUE(additional_server_macs) AS additional_server_macs, " +
-                                "ANY_VALUE(offered_ip_addresses) AS offered_ip_addresses, " +
-                                "ANY_VALUE(requested_ip_address) AS requested_ip_address, " +
-                                "ANY_VALUE(options) AS options, ANY_VALUE(additional_options) AS additional_options, " +
-                                "ANY_VALUE(fingerprint) AS fingerprint, " +
-                                "ANY_VALUE(additional_fingerprints) AS additional_fingerprints, " +
-                                "ANY_VALUE(vendor_class) AS vendor_class, " +
-                                "ANY_VALUE(additional_vendor_classes) AS additional_vendor_classes, " +
-                                "ANY_VALUE(timestamps) AS timestamps, MAX(first_packet) AS first_packet, " +
-                                "MAX(latest_packet) AS latest_packet, ANY_VALUE(notes) AS notes, " +
+                                "MIN(client_mac) AS client_mac, " +
+                                "MIN(additional_client_macs::text)::jsonb AS additional_client_macs, " +
+                                "MIN(server_mac) AS server_mac, " +
+                                "MIN(additional_server_macs::text)::jsonb AS additional_server_macs, " +
+                                "MIN(offered_ip_addresses::text)::jsonb AS offered_ip_addresses, " +
+                                "MIN(requested_ip_address) AS requested_ip_address, " +
+                                "MIN(options::text)::jsonb AS options, " +
+                                "MIN(additional_options::text)::jsonb AS additional_options, " +
+                                "MIN(fingerprint) AS fingerprint, " +
+                                "MIN(additional_fingerprints::text)::jsonb AS additional_fingerprints, " +
+                                "MIN(vendor_class) AS vendor_class, " +
+                                "MIN(additional_vendor_classes::text)::jsonb AS additional_vendor_classes, " +
+                                "MIN(timestamps::text)::jsonb AS timestamps, MAX(first_packet) AS first_packet, " +
+                                "MAX(latest_packet) AS latest_packet, MIN(notes::text)::jsonb AS notes, " +
                                 "BOOL_OR(is_successful) AS is_successful, BOOL_OR(is_complete) AS is_complete " +
                                 "FROM dhcp_transactions " +
                                 "WHERE latest_packet >= :tr_from AND latest_packet <= :tr_to " +
@@ -121,20 +122,21 @@ public class DHCP {
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT transaction_id, ANY_VALUE(transaction_type) AS transaction_type, " +
-                                "ANY_VALUE(client_mac) AS client_mac, " +
-                                "ANY_VALUE(additional_client_macs) AS additional_client_macs, " +
-                                "ANY_VALUE(server_mac) AS server_mac, " +
-                                "ANY_VALUE(additional_server_macs) AS additional_server_macs, " +
-                                "ANY_VALUE(offered_ip_addresses) AS offered_ip_addresses, " +
-                                "ANY_VALUE(requested_ip_address) AS requested_ip_address, " +
-                                "ANY_VALUE(options) AS options, ANY_VALUE(additional_options) AS additional_options, " +
-                                "ANY_VALUE(fingerprint) AS fingerprint, " +
-                                "ANY_VALUE(additional_fingerprints) AS additional_fingerprints, " +
-                                "ANY_VALUE(vendor_class) AS vendor_class, " +
-                                "ANY_VALUE(additional_vendor_classes) AS additional_vendor_classes, " +
-                                "ANY_VALUE(timestamps) AS timestamps, MAX(first_packet) AS first_packet, " +
-                                "MAX(latest_packet) AS latest_packet, ANY_VALUE(notes) AS notes, " +
+                handle.createQuery("SELECT transaction_id, MIN(transaction_type) AS transaction_type, " +
+                                "MIN(client_mac) AS client_mac, " +
+                                "MIN(additional_client_macs::text)::jsonb AS additional_client_macs, " +
+                                "MIN(server_mac) AS server_mac, " +
+                                "MIN(additional_server_macs::text)::jsonb AS additional_server_macs, " +
+                                "MIN(offered_ip_addresses::text)::jsonb AS offered_ip_addresses, " +
+                                "MIN(requested_ip_address) AS requested_ip_address, " +
+                                "MIN(options::text)::jsonb AS options, " +
+                                "MIN(additional_options::text)::jsonb AS additional_options, " +
+                                "MIN(fingerprint) AS fingerprint, " +
+                                "MIN(additional_fingerprints::text)::jsonb AS additional_fingerprints, " +
+                                "MIN(vendor_class) AS vendor_class, " +
+                                "MIN(additional_vendor_classes::text)::jsonb AS additional_vendor_classes, " +
+                                "MIN(timestamps::text)::jsonb AS timestamps, MAX(first_packet) AS first_packet, " +
+                                "MAX(latest_packet) AS latest_packet, MIN(notes::text)::jsonb AS notes, " +
                                 "BOOL_OR(is_successful) AS is_successful, BOOL_OR(is_complete) AS is_complete " +
                                 "FROM dhcp_transactions " +
                                 "WHERE transaction_id = :transaction_id " +

@@ -24,19 +24,19 @@ public class NTP {
 
     public enum OrderColumn {
 
-        INITIATED_AT("COALESCE(ANY_VALUE(timestamp_client_tap_receive), ANY_VALUE(timestamp_server_tap_receive))"),
-        TRANSACTION_KEY("ANY_VALUE(transaction_key)"),
-        COMPLETE("ANY_VALUE(complete)"),
-        CLIENT_ADDRESS("ANY_VALUE(client_address)"),
-        CLIENT_MAC("ANY_VALUE(client_mac)"),
-        SERVER_ADDRESS("ANY_VALUE(server_address)"),
-        SERVER_MAC("ANY_VALUE(server_mac)"),
-        STRATUM("ANY_VALUE(stratum)"),
-        REFERENCE_ID("ANY_VALUE(reference_id)"),
-        RTT_SECONDS("ANY_VALUE(rtt_seconds)"),
-        SERVER_PROCESSING_SECONDS("ANY_VALUE(server_processing_seconds)"),
-        ROOT_DELAY_SECONDS("ANY_VALUE(root_delay_seconds)"),
-        ROOT_DISPERSION_SECONDS("ANY_VALUE(root_dispersion_seconds)");
+        INITIATED_AT("COALESCE(MIN(timestamp_client_tap_receive), MIN(timestamp_server_tap_receive))"),
+        TRANSACTION_KEY("MIN(transaction_key)"),
+        COMPLETE("MIN(complete)"),
+        CLIENT_ADDRESS("MIN(client_address)"),
+        CLIENT_MAC("MIN(client_mac)"),
+        SERVER_ADDRESS("MIN(server_address)"),
+        SERVER_MAC("MIN(server_mac)"),
+        STRATUM("MIN(stratum)"),
+        REFERENCE_ID("MIN(reference_id)"),
+        RTT_SECONDS("MIN(rtt_seconds)"),
+        SERVER_PROCESSING_SECONDS("MIN(server_processing_seconds)"),
+        ROOT_DELAY_SECONDS("MIN(root_delay_seconds)"),
+        ROOT_DISPERSION_SECONDS("MIN(root_dispersion_seconds)");
 
         private final String columnName;
 
@@ -93,36 +93,36 @@ public class NTP {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT transaction_key, BOOL_OR(complete) AS complete, " +
                                 "JSONB_AGG(DISTINCT notes) notes, " +
-                                "ANY_VALUE(client_mac) AS client_mac, " +
-                                "ANY_VALUE(server_mac) AS server_mac, " +
-                                "ANY_VALUE(client_address) AS client_address, " +
-                                "ANY_VALUE(server_address) AS server_address, " +
-                                "ANY_VALUE(client_port) AS client_port, " +
-                                "ANY_VALUE(server_port) AS server_port, " +
-                                "ANY_VALUE(request_size) AS request_size, " +
-                                "ANY_VALUE(response_size) AS response_size, " +
-                                "ANY_VALUE(timestamp_client_transmit) AS timestamp_client_transmit, " +
-                                "ANY_VALUE(timestamp_server_receive) AS timestamp_server_receive, " +
-                                "ANY_VALUE(timestamp_server_transmit) AS timestamp_server_transmit, " +
+                                "MIN(client_mac) AS client_mac, " +
+                                "MIN(server_mac) AS server_mac, " +
+                                "MIN(client_address) AS client_address, " +
+                                "MIN(server_address) AS server_address, " +
+                                "MIN(client_port) AS client_port, " +
+                                "MIN(server_port) AS server_port, " +
+                                "MIN(request_size) AS request_size, " +
+                                "MIN(response_size) AS response_size, " +
+                                "MIN(timestamp_client_transmit) AS timestamp_client_transmit, " +
+                                "MIN(timestamp_server_receive) AS timestamp_server_receive, " +
+                                "MIN(timestamp_server_transmit) AS timestamp_server_transmit, " +
                                 "MIN(timestamp_client_tap_receive) AS timestamp_client_tap_receive, " +
                                 "MIN(timestamp_server_tap_receive) AS timestamp_server_tap_receive, " +
-                                "ANY_VALUE(server_version) AS server_version, " +
-                                "ANY_VALUE(client_version) AS client_version, " +
-                                "ANY_VALUE(server_mode) AS server_mode, " +
-                                "ANY_VALUE(client_mode) AS client_mode, " +
-                                "ANY_VALUE(stratum) AS stratum, " +
-                                "ANY_VALUE(leap_indicator) AS leap_indicator, " +
-                                "ANY_VALUE(precision) AS precision, " +
-                                "ANY_VALUE(poll_interval) AS poll_interval, " +
-                                "ANY_VALUE(root_delay_seconds) AS root_delay_seconds, " +
-                                "ANY_VALUE(root_dispersion_seconds) AS root_dispersion_seconds, " +
-                                "ANY_VALUE(delay_seconds) AS delay_seconds, " +
-                                "ANY_VALUE(offset_seconds) AS offset_seconds, " +
-                                "ANY_VALUE(rtt_seconds) AS rtt_seconds, " +
-                                "ANY_VALUE(server_processing_seconds) AS server_processing_seconds, " +
-                                "ANY_VALUE(created_at) AS created_at, " +
-                                "ANY_VALUE(reference_id) AS reference_id, " +
-                                "ANY_VALUE(transaction_key) AS transaction_key " +
+                                "MIN(server_version) AS server_version, " +
+                                "MIN(client_version) AS client_version, " +
+                                "MIN(server_mode) AS server_mode, " +
+                                "MIN(client_mode) AS client_mode, " +
+                                "MIN(stratum) AS stratum, " +
+                                "MIN(leap_indicator) AS leap_indicator, " +
+                                "MIN(precision) AS precision, " +
+                                "MIN(poll_interval) AS poll_interval, " +
+                                "MIN(root_delay_seconds) AS root_delay_seconds, " +
+                                "MIN(root_dispersion_seconds) AS root_dispersion_seconds, " +
+                                "MIN(delay_seconds) AS delay_seconds, " +
+                                "MIN(offset_seconds) AS offset_seconds, " +
+                                "MIN(rtt_seconds) AS rtt_seconds, " +
+                                "MIN(server_processing_seconds) AS server_processing_seconds, " +
+                                "MIN(created_at) AS created_at, " +
+                                "MIN(reference_id) AS reference_id, " +
+                                "MIN(transaction_key) AS transaction_key " +
                                 "FROM ntp_transactions WHERE (timestamp_client_tap_receive >= :tr_from OR " +
                                 "timestamp_server_tap_receive >= :tr_from) AND (timestamp_client_tap_receive <= :tr_to OR " +
                                 "timestamp_server_tap_receive <= :tr_to) " +
@@ -151,36 +151,36 @@ public class NTP {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT transaction_key, BOOL_OR(complete) AS complete, " +
                                 "JSONB_AGG(DISTINCT notes) notes, " +
-                                "ANY_VALUE(client_mac) AS client_mac, " +
-                                "ANY_VALUE(server_mac) AS server_mac, " +
-                                "ANY_VALUE(client_address) AS client_address, " +
-                                "ANY_VALUE(server_address) AS server_address, " +
-                                "ANY_VALUE(client_port) AS client_port, " +
-                                "ANY_VALUE(server_port) AS server_port, " +
-                                "ANY_VALUE(request_size) AS request_size, " +
-                                "ANY_VALUE(response_size) AS response_size, " +
-                                "ANY_VALUE(timestamp_client_transmit) AS timestamp_client_transmit, " +
-                                "ANY_VALUE(timestamp_server_receive) AS timestamp_server_receive, " +
-                                "ANY_VALUE(timestamp_server_transmit) AS timestamp_server_transmit, " +
+                                "MIN(client_mac) AS client_mac, " +
+                                "MIN(server_mac) AS server_mac, " +
+                                "MIN(client_address) AS client_address, " +
+                                "MIN(server_address) AS server_address, " +
+                                "MIN(client_port) AS client_port, " +
+                                "MIN(server_port) AS server_port, " +
+                                "MIN(request_size) AS request_size, " +
+                                "MIN(response_size) AS response_size, " +
+                                "MIN(timestamp_client_transmit) AS timestamp_client_transmit, " +
+                                "MIN(timestamp_server_receive) AS timestamp_server_receive, " +
+                                "MIN(timestamp_server_transmit) AS timestamp_server_transmit, " +
                                 "MIN(timestamp_client_tap_receive) AS timestamp_client_tap_receive, " +
                                 "MIN(timestamp_server_tap_receive) AS timestamp_server_tap_receive, " +
-                                "ANY_VALUE(server_version) AS server_version, " +
-                                "ANY_VALUE(client_version) AS client_version, " +
-                                "ANY_VALUE(server_mode) AS server_mode, " +
-                                "ANY_VALUE(client_mode) AS client_mode, " +
-                                "ANY_VALUE(stratum) AS stratum, " +
-                                "ANY_VALUE(leap_indicator) AS leap_indicator, " +
-                                "ANY_VALUE(precision) AS precision, " +
-                                "ANY_VALUE(poll_interval) AS poll_interval, " +
-                                "ANY_VALUE(root_delay_seconds) AS root_delay_seconds, " +
-                                "ANY_VALUE(root_dispersion_seconds) AS root_dispersion_seconds, " +
-                                "ANY_VALUE(delay_seconds) AS delay_seconds, " +
-                                "ANY_VALUE(offset_seconds) AS offset_seconds, " +
-                                "ANY_VALUE(rtt_seconds) AS rtt_seconds, " +
-                                "ANY_VALUE(server_processing_seconds) AS server_processing_seconds, " +
-                                "ANY_VALUE(created_at) AS created_at, " +
-                                "ANY_VALUE(reference_id) AS reference_id, " +
-                                "ANY_VALUE(transaction_key) AS transaction_key " +
+                                "MIN(server_version) AS server_version, " +
+                                "MIN(client_version) AS client_version, " +
+                                "MIN(server_mode) AS server_mode, " +
+                                "MIN(client_mode) AS client_mode, " +
+                                "MIN(stratum) AS stratum, " +
+                                "MIN(leap_indicator) AS leap_indicator, " +
+                                "MIN(precision) AS precision, " +
+                                "MIN(poll_interval) AS poll_interval, " +
+                                "MIN(root_delay_seconds) AS root_delay_seconds, " +
+                                "MIN(root_dispersion_seconds) AS root_dispersion_seconds, " +
+                                "MIN(delay_seconds) AS delay_seconds, " +
+                                "MIN(offset_seconds) AS offset_seconds, " +
+                                "MIN(rtt_seconds) AS rtt_seconds, " +
+                                "MIN(server_processing_seconds) AS server_processing_seconds, " +
+                                "MIN(created_at) AS created_at, " +
+                                "MIN(reference_id) AS reference_id, " +
+                                "MIN(transaction_key) AS transaction_key " +
                                 "FROM ntp_transactions WHERE transaction_key = :transaction_key " +
                                 "AND tap_uuid IN (<taps>) GROUP BY transaction_key LIMIT 1")
                         .bind("transaction_key", transactionKey)
@@ -221,8 +221,8 @@ public class NTP {
     }
 
     public long countClientRequestResponseRatioHistogramClients(TimeRange timeRange,
-                                                                                                     Filters filters,
-                                                                                                     List<UUID> taps) {
+                                                                Filters filters,
+                                                                List<UUID> taps) {
         if (taps.isEmpty()) {
             return 0;
         }
@@ -235,7 +235,7 @@ public class NTP {
                                 "timestamp_server_tap_receive >= :tr_from) AND " +
                                 "(timestamp_client_tap_receive <= :tr_to OR timestamp_server_tap_receive <= :tr_to) " +
                                 "AND client_address IS NOT NULL AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
-                                "GROUP BY client_mac HAVING 1=1 " + filterFragment.havingSql() + ")")
+                                "GROUP BY client_mac HAVING 1=1 " + filterFragment.havingSql() + ") AS ignored")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindMap(filterFragment.bindings())
@@ -291,7 +291,8 @@ public class NTP {
                                 ":tr_from) AND (timestamp_client_tap_receive <= :tr_to OR " +
                                 "timestamp_server_tap_receive <= :tr_to) " +
                                 "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() +
-                                "GROUP BY server_mac, server_address HAVING 1=1 " + filterFragment.havingSql() + ")")
+                                "GROUP BY server_mac, server_address HAVING 1=1 " + filterFragment.havingSql() + ") " +
+                                "AS ignored")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bindMap(filterFragment.bindings())
