@@ -71,15 +71,21 @@ impl Limina {
                 let acm_port = match device.acm_port {
                     Some(acm_port) => acm_port,
                     None => {
-                        error!("Limina at {}:{} does not expose a ACM port.", device.bus, device.address);
+                        error!("Limina at [{}:{}] does not expose a ACM port.", device.bus, device.address);
                         continue;
                     }
                 };
 
-                let mut port = serialport::new(&acm_port, 115_200)
+                let mut port = match serialport::new(&acm_port, 115_200)
                     .timeout(Duration::from_millis(1000))
-                    .open()
-                    .expect("Failed to open serial port");
+                    .open() {
+                    Ok(port) => port,
+                    Err(e) => {
+                        error!("Could not open Limina [{}:{}] serial port: {}",
+                            device.bus, device.address, e);
+                        continue;
+                    }
+                };
 
                 loop {
                     match port.read(&mut read_buf) {
