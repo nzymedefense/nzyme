@@ -10,7 +10,8 @@ mod tools;
 use clap::Parser;
 use crate::apps::firmware::{firmware_gui_app, flash_firmware_app, verify_firmware_app};
 use crate::apps::devices::list_devices_app;
-use crate::arguments::{CliArguments, Command, DevicesSubcommand, FirmwareSubcommand};
+use crate::apps::release::verify_release_app;
+use crate::arguments::{CliArguments, Command, DevicesSubcommand, FirmwareSubcommand, ReleaseSubcommand};
 use crate::exit_codes::EX_OK;
 
 fn main() {
@@ -38,6 +39,13 @@ fn main() {
             DevicesSubcommand::List => {
                 // $ nzyme-util devices list
                 list_devices_app::run();
+            }
+        },
+
+        Some(Command::Release(fw)) => match fw.command {
+            ReleaseSubcommand::Verify { release_file, signature_file, public_key_file } => {
+                // $ nzyme-util release verify
+                verify_release_app::run(release_file, signature_file, public_key_file);
             }
         },
 

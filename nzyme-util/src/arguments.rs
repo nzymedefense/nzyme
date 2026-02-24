@@ -19,6 +19,7 @@ pub struct CliArguments {
 pub enum Command {
     Firmware(FirmwareCommand),
     Devices(DevicesCommand),
+    Release(ReleaseCommand),
 }
 
 #[derive(Args, Debug)]
@@ -57,4 +58,24 @@ pub struct DevicesCommand {
 #[derive(Subcommand, Debug)]
 pub enum DevicesSubcommand {
     List,
+}
+
+#[derive(Args, Debug)]
+pub struct ReleaseCommand {
+    #[command(subcommand)]
+    pub command: ReleaseSubcommand,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum ReleaseSubcommand {
+    Verify {
+        #[arg(long)]
+        release_file: String,
+
+        #[arg(long)]
+        signature_file: String,
+
+        #[arg(long)]
+        public_key_file: String,
+    },
 }
