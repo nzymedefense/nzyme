@@ -22,6 +22,14 @@ There are many ways to contribute and all community interaction is absolutely we
 
 Please be aware of the [Code of Conduct](CODE_OF_CONDUCT.md) that will be enforced across all channels and platforms.
 
+## Public Key
+
+This is the SHA256 hash of the official Nzyme public key. Use it to [verify releases](https://go.nzyme.org/release-verification):
+
+| Key     | SHA256                                                           |
+|---------|------------------------------------------------------------------|
+| ALPHA   | 19165ba3a5c92ee306cafcca41e79044cbdafb9daae2dce38838ba0915dead4c |
+
 ## Legal notice
 
 Make sure to comply with local laws, especially with regards to wiretapping, when running Nzyme. Note that Nzyme is never decrypting any data but only reading unencrypted data.
