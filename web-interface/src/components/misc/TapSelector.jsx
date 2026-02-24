@@ -63,7 +63,7 @@ function TapSelector() {
       Store.delete("selected_taps");
     }
 
-    if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
+    if (lsTaps === undefined || lsTaps === null || (!Array.isArray(lsTaps) && lsTaps !== "*")) {
       setSelectedTapsProtected([]);
       setPreSelectedTaps([]);
 
@@ -76,7 +76,9 @@ function TapSelector() {
       setSelectedTapsProtected(lsTaps);
       setPreSelectedTaps(lsTaps);
 
-      if (lsTaps.length > 1) {
+      if (lsTaps === "*") {
+        setButtonText("All Taps Selected");
+      } else if (lsTaps.length > 1) {
         setButtonText(lsTaps.length + " Taps Selected");
       } else {
         setButtonText("1 Tap Selected");
@@ -118,16 +120,16 @@ function TapSelector() {
               setSelectedTapsProtected([]);
               setPreSelectedTaps([]);
             }
-
-            // Is any of the selected taps currently offline?
-            selectedTaps.forEach(function (selectedTap) {
-              availableTaps.forEach(function (availableTap) {
-                if (availableTap.uuid === selectedTap && !availableTap.is_online) {
-                  setHasSelectedOfflineTap(true);
-                }
-              });
-            });
           }
+
+          // Is any of the selected taps currently offline?
+          selectedTaps.forEach(function (selectedTap) {
+            availableTaps.forEach(function (availableTap) {
+              if (availableTap.uuid === selectedTap && !availableTap.is_online) {
+                setHasSelectedOfflineTap(true);
+              }
+            });
+          });
 
           if (selectedTaps !== null && selectedTaps.length > 0) {
             if (selectedTaps.length > 1) {
