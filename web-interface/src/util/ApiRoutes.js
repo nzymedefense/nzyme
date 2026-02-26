@@ -226,7 +226,13 @@ const ApiRoutes = {
       },
       SSIDS: {
         INDEX: "/dot11/monitoring/ssids"
-      }
+      },
+      CUSTOM: {
+        INDEX: "/dot11/monitoring/custom",
+        CREATE: "/dot11/monitoring/custom/create",
+        DETAILS: (uuid) => `/dot11/monitoring/custom/show/${uuid}`,
+        EDIT: (uuid) => `/dot11/monitoring/custom/show/${uuid}/edit`,
+      },
     },
     NETWORKS: {
       BSSIDS: '/dot11/bssids',
