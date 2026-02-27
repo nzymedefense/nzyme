@@ -39,7 +39,7 @@ export default function ProbeRequestsTable(props) {
                   <td>{ssid.notes ? <span title={ssid.notes} className="cursor-help">{truncate(ssid.notes, 125, true)}</span>
                       : <span className="text-muted">None</span>}</td>
                   <td>
-                    <a href={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(ssid.id, ssid.organization_id, ssid.tenant_id)}>
+                    <a href={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(ssid.id)}>
                       Edit
                     </a>
                   </td>

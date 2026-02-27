@@ -10,14 +10,15 @@ import ContextNotes from "../ContextNotes";
 import TransparentContextSource from "../../shared/context/transparent/TransparentContextSource";
 import TransparentIpAddressTable from "../../shared/context/transparent/TransparentIpAddressTable";
 import TransparentHostnamesTable from "../../shared/context/transparent/TransparentHostnamesTable";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const contextService = new ContextService();
 
 function MacAddressContextDetailsPage() {
 
   const {uuid} = useParams();
-  const {organizationId} = useParams();
-  const {tenantId} = useParams();
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [context, setContext] = useState(null);
 
@@ -79,7 +80,7 @@ function MacAddressContextDetailsPage() {
               <WithPermission permission="mac_context_manage">
                 <a className="btn btn-danger" href="#" onClick={onDelete}>Delete</a>&nbsp;
                 <a className="btn btn-secondary"
-                   href={ApiRoutes.CONTEXT.MAC_ADDRESSES.EDIT(context.uuid, context.organization_id, context.tenant_id)}>
+                   href={ApiRoutes.CONTEXT.MAC_ADDRESSES.EDIT(context.uuid)}>
                   Edit
                 </a>&nbsp;
               </WithPermission>

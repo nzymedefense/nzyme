@@ -8,8 +8,6 @@ import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant"
 
 export default function BanditsPage() {
 
-  const [organizationId, tenantId] = useSelectedTenant();
-
   return (
       <React.Fragment>
         <div className="row">
@@ -66,7 +64,7 @@ export default function BanditsPage() {
 
                 <CustomBanditsTable />
 
-                <a href={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(organizationId, tenantId)}
+                <a href={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE}
                    className="btn btn-sm btn-secondary">
                   Create Custom Bandit
                 </a>

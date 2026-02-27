@@ -5,7 +5,6 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 function DetectionSubscriptionsOfActionTable(props) {
 
   const subscriptions = props.subscriptions;
-  const organizationId = props.organizationId;
 
   if (!subscriptions || subscriptions.length === 0) {
     return <div className="alert alert-info mt-0 mb-0">Action is not subscribed to any detection events.</div>
@@ -26,7 +25,7 @@ function DetectionSubscriptionsOfActionTable(props) {
               <tr key={"eventtype-" + i}>
                 <td>
                   { type.event === "WILDCARD" ? type.event :
-                    <a href={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(organizationId, type.event)}>{type.event}</a>
+                    <a href={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(type.event)}>{type.event}</a>
                   }
                 </td>
                 <td>{type.title}</td>

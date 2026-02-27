@@ -84,7 +84,7 @@ export default function ProbeRequestsPage() {
                                     perPage={perPage} />
 
 
-                <a href={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE(organizationId, tenantId)}
+                <a href={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE}
                    className="btn btn-sm btn-secondary">
                   Create Monitored Probe Request
                 </a>

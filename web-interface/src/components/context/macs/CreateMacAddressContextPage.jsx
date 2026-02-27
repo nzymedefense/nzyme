@@ -18,7 +18,7 @@ function CreateMacAddressContextPage() {
 
   const [errorMessage, setErrorMessage] = useState(null);
 
-  const [passedUrlMacAddress, setPassedUrlMacAddress] = useState(
+  const [passedUrlMacAddress, ignored] = useState(
       urlQuery.get("address") ? urlQuery.get("address") : ""
   );
 

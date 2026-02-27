@@ -10,8 +10,7 @@ const detectionAlertService = new DetectionAlertsService();
 
 function AlertSubscriptionsTable() {
 
-  // eslint-disable-next-line no-unused-vars
-  const [organizationId, tenantId] = useSelectedTenant();
+  const [organizationId, ignored] = useSelectedTenant();
 
   const [types, setTypes] = useState(null);
 
@@ -42,7 +41,7 @@ function AlertSubscriptionsTable() {
             return (
                 <tr key={"at-" + i}>
                   <td>
-                    <a href={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(organizationId, type.name.toLowerCase())}>
+                    <a href={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(type.name.toLowerCase())}>
                       {type.title}
                     </a>
                   </td>

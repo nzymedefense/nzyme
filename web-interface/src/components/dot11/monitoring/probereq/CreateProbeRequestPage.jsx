@@ -1,16 +1,16 @@
 import React, {useState} from 'react';
-import {Navigate, useParams} from "react-router-dom";
+import {Navigate} from "react-router-dom";
 import {notify} from "react-notify-toast";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import Dot11Service from "../../../../services/Dot11Service";
 import ProbeRequestForm from "./ProbeRequestForm";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const dot11Service = new Dot11Service();
 
 export default function CreateProbeRequestPage() {
 
-  const { organizationId } = useParams();
-  const { tenantId } = useParams();
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [redirect, setRedirect] = useState(false);
 

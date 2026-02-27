@@ -1,16 +1,17 @@
 import React from 'react';
-import {Navigate, useParams} from "react-router-dom";
+import {Navigate} from "react-router-dom";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import UavService from "../../../services/UavService";
 import Routes from "../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
 import UavTypeForm from "./UavTypeForm";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const uavService = new UavService();
 
 export default function CreateCustomTypePage() {
 
-  const {organizationId, tenantId} = useParams();
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [redirect, setRedirect] = React.useState(false);
 

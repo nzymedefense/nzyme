@@ -5,14 +5,15 @@ import ContextService from "../../../services/ContextService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import MacAddressContextForm from "./MacAddressContextForm";
 import {notify} from "react-notify-toast";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const contextService = new ContextService();
 
 function MacAddressContextDetailsPage() {
 
   const {uuid} = useParams();
-  const {organizationId} = useParams();
-  const {tenantId} = useParams();
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [context, setContext] = useState(null);
   const [updated, setUpdated] = useState(false);
@@ -32,7 +33,7 @@ function MacAddressContextDetailsPage() {
   }
 
   if (updated) {
-    return <Navigate to={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(context.uuid, context.organization_id, context.tenant_id)} />
+    return <Navigate to={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(context.uuid)} />
   }
 
   if (!context) {
@@ -48,7 +49,7 @@ function MacAddressContextDetailsPage() {
                 <li className="breadcrumb-item">Context</li>
                 <li className="breadcrumb-item"><a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX}>MAC Addresses</a></li>
                 <li className="breadcrumb-item">
-                  <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(context.uuid, context.organization_id, context.tenant_id)}>
+                  <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(context.uuid)}>
                     {context.mac_address}
                   </a>
                 </li>
@@ -68,7 +69,7 @@ function MacAddressContextDetailsPage() {
           <div className="col-md-4">
             <span className="float-end">
               <a className="btn btn-primary"
-                 href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(context.uuid, context.organization_id, context.tenant_id)}>
+                 href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(context.uuid)}>
                 Back
               </a>
             </span>

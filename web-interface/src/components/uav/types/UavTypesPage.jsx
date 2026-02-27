@@ -85,7 +85,7 @@ export default function UavTypesPage() {
                                 perPage={customTypesPerPage} />
 
               <WithPermission permission="uav_monitoring_manage">
-                <a href={ApiRoutes.UAV.TYPES.CREATE(organizationId, tenantId)} className="btn btn-sm btn-secondary mt-3">
+                <a href={ApiRoutes.UAV.TYPES.CREATE} className="btn btn-sm btn-secondary mt-3">
                   Create Custom Type
                 </a>
               </WithPermission>

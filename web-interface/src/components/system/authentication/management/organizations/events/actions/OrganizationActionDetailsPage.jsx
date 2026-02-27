@@ -10,13 +10,14 @@ import ActionDetails from "../../../../../events/shared/ActionDetails";
 import SystemSubscriptionsOfActionTable from "../../../../../events/shared/subscriptions/SystemSubscriptionsOfActionTable";
 import DetectionSubscriptionsOfActionTable
   from "../../../../../events/shared/subscriptions/DetectionSubscriptionsOfActionTable";
+import useSelectedTenant from "../../../../../tenantselector/useSelectedTenant";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
 
 function OrganizationActionDetailsPage() {
 
-  const { organizationId } = useParams();
+  const [organizationId, ignored] = useSelectedTenant();
   const { actionId } = useParams();
 
   const [organization, setOrganization] = useState(null);
@@ -147,8 +148,7 @@ function OrganizationActionDetailsPage() {
                                                       organizationId={organization.id} />
 
                     <h4 className="mt-4">Detection Events</h4>
-                    <DetectionSubscriptionsOfActionTable subscriptions={action.subscribed_to_detection_events}
-                                                         organizationId={organization.id} />
+                    <DetectionSubscriptionsOfActionTable subscriptions={action.subscribed_to_detection_events} />
                   </div>
                 </div>
               </div>

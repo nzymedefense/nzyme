@@ -6,12 +6,15 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import UavTypeForm from "./UavTypeForm";
 import UavService from "../../../services/UavService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const uavService = new UavService();
 
 export default function EditCustomTypePage() {
 
-  const {uuid, organizationId, tenantId} = useParams();
+  const {uuid} = useParams();
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [type, setType] = useState(null);
 

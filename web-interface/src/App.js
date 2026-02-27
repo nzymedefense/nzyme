@@ -600,7 +600,7 @@ function App() {
                                 <Route path={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(':uuid')} element={<MonitoredNetworkConfigurationImportPage/>} />
                                 <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.INDEX} element={<BanditsPage />} />
                                 <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.BUILTIN_DETAILS(':id')} element={<BuiltinBanditDetailsPage />} />
-                                <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(':organizationId', ':tenantId')} element={<CreateCustomBanditPage />} />
+                                <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE} element={<CreateCustomBanditPage />} />
                                 <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CUSTOM_DETAILS(':id')} element={<CustomBanditDetailsPage />} />
                                 <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.EDIT(':id')} element={<EditCustomBanditPage />} />
                                 <Route path={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(':uuid')} element={<ConfigureDiscoDetectionMethodPage />} />
@@ -608,8 +608,8 @@ function App() {
                                 <Route path={ApiRoutes.DOT11.MONITORING.RESTRICTED_SUBSTRINGS_CONFIGURATION(':uuid')} element={<RestrictedSubstringsConfigurationPage />} />
                                 <Route path={ApiRoutes.DOT11.MONITORING.CLIENTS_CONFIGURATION(':uuid')} element={<MonitoredClientsConfigurationPage />} />
                                 <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.INDEX} element={<ProbeRequestsPage />}/>
-                                <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE(':organizationId', ':tenantId')} element={<CreateProbeRequestPage />}/>
-                                <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(':id', ':organizationId', ':tenantId')} element={<EditProbeRequestPage />}/>
+                                <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE} element={<CreateProbeRequestPage />}/>
+                                <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(':id')} element={<EditProbeRequestPage />}/>
                                 <Route path={ApiRoutes.DOT11.MONITORING.SSIDS.INDEX} element={<SSIDMonitoringPage />}/>
                                 <Route path={ApiRoutes.DOT11.MONITORING.CUSTOM.INDEX} element={<Dot11CustomMonitoringPage />}/>
 
@@ -644,8 +644,8 @@ function App() {
                                 <Route path={ApiRoutes.UAV.INDEX} element={<UavsPage />}/>
                                 <Route path={ApiRoutes.UAV.DETAILS(':identifierParam')} element={<UavDetailsPage />}/>
                                 <Route path={ApiRoutes.UAV.TYPES.INDEX} element={<UavTypesPage />}/>
-                                <Route path={ApiRoutes.UAV.TYPES.CREATE(':organizationId', ':tenantId')} element={<CreateCustomTypePage />}/>
-                                <Route path={ApiRoutes.UAV.TYPES.EDIT(':uuid', ':organizationId', ':tenantId')} element={<EditCustomTypePage />}/>
+                                <Route path={ApiRoutes.UAV.TYPES.CREATE} element={<CreateCustomTypePage />}/>
+                                <Route path={ApiRoutes.UAV.TYPES.EDIT(':uuid')} element={<EditCustomTypePage />}/>
 
                                 <Route path={ApiRoutes.UAV.MONITORING.INDEX} element={<UavMonitoringPage />}/>
                               </Route>
@@ -672,14 +672,14 @@ function App() {
                               { /* Context. */ }
                               <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>
                               <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE} element={<CreateMacAddressContextPage />}/>
-                              <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(':uuid', ':organizationId', ':tenantId')} element={<MacAddressContextDetailsPage />}/>
-                              <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.EDIT(':uuid', ':organizationId', ':tenantId')} element={<EditMacAddressContextPage />}/>
+                              <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(':uuid')} element={<MacAddressContextDetailsPage />}/>
+                              <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.EDIT(':uuid')} element={<EditMacAddressContextPage />}/>
 
                               { /* Alerts. */}
                               <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>
                               <Route path={ApiRoutes.ALERTS.DETAILS(':uuid')} element={<AlertDetailsPage />}/>
                               <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.INDEX} element={<AlertSubscriptionsPage />}/>
-                              <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(':organizationId', ':detectionName')} element={<AlertSubscriptionDetailsPage />}/>
+                              <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(':detectionName')} element={<AlertSubscriptionDetailsPage />}/>
 
                               { /* 404. */}
                               <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>

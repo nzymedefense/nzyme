@@ -5,14 +5,15 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import ProbeRequestForm from "./ProbeRequestForm";
 import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const dot11Service = new Dot11Service();
 
 export default function EditProbeRequestPage() {
 
   const { id } = useParams();
-  const { organizationId } = useParams();
-  const { tenantId } = useParams();
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [probeRequest, setProbeRequest] = useState(null);
 

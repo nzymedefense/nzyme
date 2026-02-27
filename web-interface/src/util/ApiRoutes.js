@@ -212,7 +212,7 @@ const ApiRoutes = {
       BANDITS: {
         INDEX: "/dot11/monitoring/bandits",
         BUILTIN_DETAILS: (id) => `/dot11/monitoring/bandits/builtin/show/${id}`,
-        CREATE: (organizationId, tenantId) => `/dot11/monitoring/bandits/custom/organizations/${organizationId}/tenants/${tenantId}/create`,
+        CREATE: "/dot11/monitoring/bandits/custom/create",
         CUSTOM_DETAILS: (id) => `/dot11/monitoring/bandits/custom/show/${id}`,
         EDIT: (id) => `/dot11/monitoring/bandits/custom/show/${id}/edit`
       },
@@ -221,8 +221,8 @@ const ApiRoutes = {
       },
       PROBE_REQUESTS: {
         INDEX: "/dot11/monitoring/proberequests",
-        CREATE: (organizationId, tenantId) => `/dot11/monitoring/proberequests/organizations/${organizationId}/tenants/${tenantId}/create`,
-        EDIT: (id, organizationId, tenantId) => `/dot11/monitoring/proberequests/organizations/${organizationId}/tenants/${tenantId}/edit/${id}`
+        CREATE: "/dot11/monitoring/proberequests/create",
+        EDIT: (id) => `/dot11/monitoring/proberequests/edit/${id}`
       },
       SSIDS: {
         INDEX: "/dot11/monitoring/ssids"
@@ -268,8 +268,8 @@ const ApiRoutes = {
     },
     TYPES: {
       INDEX: '/uavs/types',
-      CREATE: (organizationId, tenantId) => `/uavs/types/organizations/show/${organizationId}/tenants/show/${tenantId}/create`,
-      EDIT: (uuid, organizationId, tenantId) => `/uavs/types/organizations/show/${organizationId}/tenants/show/${tenantId}/show/${uuid}/edit`,
+      CREATE: "/uavs/types/create",
+      EDIT: (uuid) => `/uavs/types/show/${uuid}/edit`,
     }
   },
   GNSS: {
@@ -292,8 +292,8 @@ const ApiRoutes = {
   CONTEXT: {
     MAC_ADDRESSES: {
       INDEX: '/context/macs',
-      SHOW: (uuid, organizationId, tenantId) => `/context/macs/organizations/show/${organizationId}/tenants/show/${tenantId}/show/${uuid}`,
-      EDIT: (uuid, organizationId, tenantId) => `/context/macs/organizations/show/${organizationId}/tenants/show/${tenantId}/show/${uuid}/edit`,
+      SHOW: (uuid) => `/context/macs/show/${uuid}`,
+      EDIT: (uuid) => `/context/macs/show/${uuid}/edit`,
       CREATE: '/context/macs/create'
     }
   },
@@ -303,7 +303,7 @@ const ApiRoutes = {
     DETAILS: (uuid) => `/alerts/show/${uuid}`,
     SUBSCRIPTIONS: {
       INDEX: '/alerts/subscriptions',
-      DETAILS: (organizationId, detectionName) => `/alerts/subscriptions/organizations/show/${organizationId}/types/show/${detectionName}`
+      DETAILS: (detectionName) => `/alerts/subscriptions/types/show/${detectionName}`
     }
   }
 }

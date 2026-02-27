@@ -7,13 +7,14 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import EventSubscriptionsTable from "../../system/events/shared/subscriptions/EventSubscriptionsTable";
 import EventSubscriptionActionSelector from "../../system/events/shared/subscriptions/EventSubscriptionActionSelector";
 import {notify} from "react-notify-toast";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
 
 function AlertSubscriptionDetailsPage() {
 
-  const { organizationId } = useParams();
+  const [organizationId, ignored] = useSelectedTenant();
   const { detectionName } = useParams();
 
   const [organization, setOrganization] = useState(null);

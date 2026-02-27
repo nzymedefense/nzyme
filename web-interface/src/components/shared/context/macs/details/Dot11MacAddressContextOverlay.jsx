@@ -165,7 +165,7 @@ function Dot11MacAddressContextOverlay(props) {
         </div>
 
         <div className="context-overlay-actions">
-          <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid, ctx.context.organization_id, ctx.context.tenant_id)}
+          <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid)}
              className="btn btn-sm btn-outline-primary">
             Context Details
           </a>{' '}

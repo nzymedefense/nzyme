@@ -71,7 +71,7 @@ function MacAddressContextTable() {
             return (
                 <tr key={i}>
                   <td>
-                    <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(m.uuid, organizationId, tenantId)}>
+                    <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(m.uuid)}>
                       {m.mac_address}
                     </a>{' '}
 
