@@ -28,7 +28,7 @@ const conditionTypeSetToDescription = (type, conditionSet, onConditionRemoved) =
       return <GNSSClockDriftConditionsDescription type={type}
                                                   conditionSet={conditionSet}
                                                   onConditionRemoved={onConditionRemoved} />;
-    default: return JSON.stringify(conditions[type])
+    default: return JSON.stringify(conditionSet[type])
   }
 }
 

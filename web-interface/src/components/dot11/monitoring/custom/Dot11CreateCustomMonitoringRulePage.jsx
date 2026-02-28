@@ -6,8 +6,8 @@ import AuthenticationManagementService from "../../../../services/Authentication
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
-import GNSSMonitoringRuleForm from "../../../gnss/monitoring/GNSSMonitoringRuleForm";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
+import Dot11CustomMonitoringRulesForm from "./Dot11CustomMonitoringRulesForm";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -66,7 +66,7 @@ export default function Dot11CreateCustomMonitoringRulePage() {
             <div className="card-body">
               <CardTitleWithControls title="Create Rule" slim={true}/>
 
-              <GNSSMonitoringRuleForm onSubmit={onFormSubmitted} submitText="Create Rule" />
+              <Dot11CustomMonitoringRulesForm onSubmit={onFormSubmitted} submitText="Create Rule" />
             </div>
           </div>
         </div>
