@@ -1489,6 +1489,15 @@ public class Dot11 {
         );
     }
 
+    public void deleteAllMonitoredBSSIDs(long ssidId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_monitored_networks_bssids " +
+                                "WHERE monitored_network_id = :ssid_id")
+                        .bind("ssid_id", ssidId)
+                        .execute()
+        );
+    }
+
     public void createdMonitoredBSSIDFingerprint(long bssidId, String fingerprint) {
         if (fingerprint == null || fingerprint.length() != 64) {
             throw new RuntimeException("Invalid fingerprint: " + fingerprint);

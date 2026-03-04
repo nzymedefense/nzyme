@@ -8,6 +8,7 @@ const dot11Service = new Dot11Service();
 
 function MonitoredBSSIDs(props) {
 
+  const ssidUuid = props.ssidUuid;
   const bssids = props.bssids;
   const bssidAlertingEnabled = props.bssidAlertingEnabled;
   const fingerprintAlertingEnabled = props.fingerprintAlertingEnabled;
@@ -30,7 +31,7 @@ function MonitoredBSSIDs(props) {
       return;
     }
 
-    dot11Service.deleteMonitoredBSSID(bssid.ssid_uuid, bssid.uuid, function () {
+    dot11Service.deleteMonitoredBSSID(ssidUuid, bssid.uuid, function () {
       bumpRevision();
       notify.show("BSSID monitoring configuration deleted.", "success");
     })

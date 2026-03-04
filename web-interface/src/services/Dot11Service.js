@@ -211,6 +211,10 @@ class Dot11Service {
     RESTClient.delete("/dot11/monitoring/ssids/show/" + ssidUUID + "/bssids/show/" + bssidUUID, successCallback);
   }
 
+  deleteAllMonitoredBSSIDs(ssidUUID, successCallback) {
+    RESTClient.delete("/dot11/monitoring/ssids/show/" + ssidUUID + "/bssids", successCallback);
+  }
+
   createMonitoredBSSIDFingerprint(ssidUUID, bssidUUID, fingerprint, successCallback, errorCallback) {
     RESTClient.post("/dot11/monitoring/ssids/show/" + ssidUUID + "/bssids/show/" + bssidUUID + "/fingerprints",
         {fingerprint: fingerprint}, successCallback, errorCallback);

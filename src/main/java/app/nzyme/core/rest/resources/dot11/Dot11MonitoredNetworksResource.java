@@ -468,6 +468,28 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         return Response.ok().build();
     }
 
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{ssid_uuid}/bssids")
+    public Response deleteAllMonitoredBSSIDs(@Context SecurityContext sc, @PathParam("ssid_uuid") UUID ssidUUID) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().deleteAllMonitoredBSSIDs(ssid.get().id());
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
+
+        return Response.ok().build();
+    }
+
     @POST
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/ssids/show/{ssid_uuid}/bssids/show/{bssid_uuid}/fingerprints")

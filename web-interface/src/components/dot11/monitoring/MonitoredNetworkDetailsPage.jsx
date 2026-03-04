@@ -115,6 +115,19 @@ function MonitoredNetworkDetailsPage() {
         && !existingSecuritySuites.includes(newSecuritySuite);
   }
 
+  const deleteAllBSSIDs = function (e) {
+    e.preventDefault();
+
+    if (!confirm("Really delete all monitored BSSID configurations?")) {
+      return;
+    }
+
+    dot11Service.deleteAllMonitoredBSSIDs(ssid.uuid, function () {
+      bumpRevision();
+      notify.show("BSSID monitoring configurations deleted.", "success");
+    })
+  }
+
   // More complex loading/refreshing logic because of modals that may be open on the page.
   useEffect(() => {
     setIsLoading(true);
@@ -218,9 +231,17 @@ function MonitoredNetworkDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>Monitored BSSIDs / Access Points of Network {isLoading ? <RefreshGears/> : null}</h3>
+                <div className="row mb-2">
+                  <div className="col-md-8">
+                    <h3>Monitored BSSIDs / Access Points of Network {isLoading ? <RefreshGears/> : null}</h3>
+                  </div>
+                  <div className="col-md-4">
+                    <button type="button" onClick={deleteAllBSSIDs} className="btn btn-danger float-end button-sm">Delete all BSSIDs</button>
+                  </div>
+                </div>
 
-                <MonitoredBSSIDs bssids={ssid.bssids}
+                <MonitoredBSSIDs ssidUuid={ssid.uuid}
+                                 bssids={ssid.bssids}
                                  bssidAlertingEnabled={ssid.enabled_unexpected_bssid}
                                  fingerprintAlertingEnabled={ssid.enabled_unexpected_fingerprint}
                                  bumpRevision={bumpRevision}
