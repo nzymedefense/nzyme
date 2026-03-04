@@ -15,11 +15,11 @@ public class SOCKSFilters implements SqlFilterProvider {
             case "client_address":
                 return GeneratedSql.create("", ipAddressMatch(bindId, "MIN(tcp.source_address)", operator));
             case "client_mac":
-                return GeneratedSql.create("", stringMatch(bindId, "MIN(tcp.source_mac)", operator));
+                return GeneratedSql.create("", macAddressMatch(bindId, "MIN(tcp.source_mac)", operator));
             case "server_address":
                 return GeneratedSql.create("", ipAddressMatch(bindId, "MIN(tcp.destination_address)", operator));
             case "server_mac":
-                return GeneratedSql.create("", stringMatch(bindId, "MIN(tcp.destination_mac)", operator));
+                return GeneratedSql.create("", macAddressMatch(bindId, "MIN(tcp.destination_mac)", operator));
             case "type":
                 return GeneratedSql.create(stringMatch(bindId, "socks_type", operator), "");
             case "status":

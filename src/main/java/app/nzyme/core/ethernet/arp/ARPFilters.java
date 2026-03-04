@@ -4,8 +4,7 @@ import app.nzyme.core.util.filters.FilterOperator;
 import app.nzyme.core.util.filters.GeneratedSql;
 import app.nzyme.core.util.filters.SqlFilterProvider;
 
-import static app.nzyme.core.util.filters.FilterSql.ipAddressMatch;
-import static app.nzyme.core.util.filters.FilterSql.stringMatch;
+import static app.nzyme.core.util.filters.FilterSql.*;
 
 public class ARPFilters implements SqlFilterProvider {
 
@@ -15,9 +14,9 @@ public class ARPFilters implements SqlFilterProvider {
             case "operation":
                 return GeneratedSql.create(stringMatch(bindId, "operation", operator), "");
             case "ethernet_source_mac":
-                return GeneratedSql.create(stringMatch(bindId, "ethernet_source_mac", operator), "");
+                return GeneratedSql.create(macAddressMatch(bindId, "ethernet_source_mac", operator), "");
             case "ethernet_destination_mac":
-                return GeneratedSql.create(stringMatch(bindId, "ethernet_destination_mac", operator), "");
+                return GeneratedSql.create(macAddressMatch(bindId, "ethernet_destination_mac", operator), "");
             case "arp_sender_mac":
                 return GeneratedSql.create(stringMatch(bindId, "arp_sender_mac", operator), "");
             case "arp_sender_address":

@@ -202,6 +202,21 @@ public class FilterSql {
         }
     }
 
+    public static String macAddressMatch(String bindId, String fieldName, FilterOperator operator) {
+        switch (operator) {
+            case EQUALS:
+                return fieldName + " = UPPER(:" + bindId + ")";
+            case NOT_EQUALS:
+                return fieldName + " <> UPPER(:" + bindId + ")";
+            case REGEX_MATCH:
+                return fieldName + " ~ :" + bindId;
+            case NOT_REGEX_MATCH:
+                return fieldName + " !~ :" + bindId;
+            default:
+                throw new RuntimeException("Invalid operator [" + operator + "] for string field [" + fieldName + "].");
+        }
+    }
+
     public static String ipAddressMatch(String bindId, String fieldName, FilterOperator operator) {
         switch (operator) {
             case EQUALS:

@@ -16,7 +16,7 @@ public class SSHFilters implements SqlFilterProvider {
             case "client_address":
                 return GeneratedSql.create("", ipAddressMatch(bindId, "MIN(tcp.source_address)", operator));
             case "client_mac":
-                return GeneratedSql.create("", stringMatch(bindId, "MIN(tcp.source_mac)", operator));
+                return GeneratedSql.create("", macAddressMatch(bindId, "MIN(tcp.source_mac)", operator));
             case "client_version_software":
                 return GeneratedSql.create(stringMatch(bindId, "client_version_software", operator), "");
             case "client_version_comments":
@@ -24,7 +24,7 @@ public class SSHFilters implements SqlFilterProvider {
             case "server_address":
                 return GeneratedSql.create("", ipAddressMatch(bindId, "MIN(tcp.destination_address)", operator));
             case "server_mac":
-                return GeneratedSql.create("", stringMatch(bindId, "MIN(tcp.destination_mac)", operator));
+                return GeneratedSql.create("", macAddressMatch(bindId, "MIN(tcp.destination_mac)", operator));
             case "server_version_software":
                 return GeneratedSql.create(stringMatch(bindId, "server_version_software", operator), "");
             case "server_version_comments":

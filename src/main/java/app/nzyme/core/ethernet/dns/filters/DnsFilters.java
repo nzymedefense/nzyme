@@ -24,9 +24,9 @@ public class DnsFilters implements SqlFilterProvider {
             case "server_port":
                 return GeneratedSql.create(numericMatch(bindId, "server_port", operator), "");
             case "client_mac":
-                return GeneratedSql.create(stringMatch(bindId, "client_mac", operator), "");
+                return GeneratedSql.create(macAddressMatch(bindId, "client_mac", operator), "");
             case "server_mac":
-                return GeneratedSql.create(stringMatch(bindId, "server_mac", operator), "");
+                return GeneratedSql.create(macAddressMatch(bindId, "server_mac", operator), "");
             default:
                 throw new RuntimeException("Unknown field name [" + fieldName + "].");
         }

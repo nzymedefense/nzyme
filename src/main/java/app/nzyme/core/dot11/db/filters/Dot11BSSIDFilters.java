@@ -12,7 +12,7 @@ public class Dot11BSSIDFilters implements SqlFilterProvider {
     public GeneratedSql buildSql(String bindId, String fieldName, FilterOperator operator) {
         switch (fieldName) {
             case "bssid":
-                return GeneratedSql.create(stringMatch(bindId, "b.bssid", operator), "");
+                return GeneratedSql.create(macAddressMatch(bindId, "b.bssid", operator), "");
             case "signal_strength":
                 return GeneratedSql.create(numericMatch(bindId, "b.signal_strength_average", operator), "");
             case "mode":

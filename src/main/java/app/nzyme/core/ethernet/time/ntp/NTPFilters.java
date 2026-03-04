@@ -13,13 +13,13 @@ public class NTPFilters implements SqlFilterProvider {
             case "transaction_key":
                 return GeneratedSql.create(stringMatch(bindId, "transaction_key", operator), "");
             case "client_mac":
-                return GeneratedSql.create(stringMatch(bindId, "client_mac", operator), "");
+                return GeneratedSql.create(macAddressMatch(bindId, "client_mac", operator), "");
             case "client_address":
                 return GeneratedSql.create(ipAddressMatch(bindId, "client_address", operator), "");
             case "client_port":
                 return GeneratedSql.create(numericMatch(bindId, "client_port", operator), "");
             case "server_mac":
-                return GeneratedSql.create(stringMatch(bindId, "server_mac", operator),"");
+                return GeneratedSql.create(macAddressMatch(bindId, "server_mac", operator),"");
             case "server_address":
                 return GeneratedSql.create(ipAddressMatch(bindId, "server_address", operator), "");
             case "server_port":
