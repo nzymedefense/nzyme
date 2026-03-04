@@ -2521,6 +2521,17 @@ public class Dot11 {
         );
     }
 
+    public void changeStatusOfAllKnownNetworksOfTenant(UUID organizationId, UUID tenantId, boolean isApproved) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_known_networks SET is_approved = :is_approved " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("is_approved", isApproved)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .execute()
+        );
+    }
+
     public void createKnownNetwork(Handle handle, String ssid, UUID organizationId, UUID tenantId) {
         handle.createUpdate("INSERT INTO dot11_known_networks(uuid, ssid, is_approved, is_ignored, " +
                         "organization_id, tenant_id, first_seen, last_seen) VALUES(:uuid, :ssid, :is_approved, " +

@@ -40,6 +40,19 @@ export default function SSIDMonitoringPage() {
     });
   }
 
+  const onApproveAll = (e) => {
+    e.preventDefault();
+
+    if (!confirm("Really approve all known networks?")) {
+      return;
+    }
+
+    dot11Service.approveAllKnownNetworks(organizationId, tenantId, () => {
+      notify.show('All known networks approved.', 'success');
+      onChange();
+    });
+  }
+
   const onChange = () => {
     setRevision(new Date());
   }
@@ -101,7 +114,11 @@ export default function SSIDMonitoringPage() {
                 <div className="card-body">
                   <h3 style={{display: "inline-block"}}>Known SSIDs/Networks</h3>
 
-                  <button className="btn btn-danger btn-sm float-end" onClick={onDeleteAll}>Delete All</button>
+                  <span className="float-end">
+                  <button className="btn btn-secondary btn-sm me-1" onClick={onApproveAll}>Approve All</button>
+                  <button className="btn btn-danger btn-sm" onClick={onDeleteAll}>Delete All</button>
+                  </span>
+
                   <br style={{clear: "both"}}/>
 
                   <KnownNetworksTable networks={networks}

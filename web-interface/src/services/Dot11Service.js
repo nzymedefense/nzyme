@@ -521,6 +521,14 @@ class Dot11Service {
     )
   }
 
+  approveAllKnownNetworks(organizationUUID, tenantUUID, onSuccess) {
+    RESTClient.put(
+      `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/approve`,
+      {},
+      onSuccess
+    )
+  }
+
   approveKnownNetwork(uuid, organizationUUID, tenantUUID, onSuccess) {
     RESTClient.put(
         `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/show/${uuid}/approve`,

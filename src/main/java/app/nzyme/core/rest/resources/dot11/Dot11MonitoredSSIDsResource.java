@@ -190,6 +190,21 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/organization/{organization_id}/tenant/{tenant_id}/approve")
+    public Response approveAllOfTenant(@Context SecurityContext sc,
+                                       @PathParam("organization_id") @NotNull UUID organizationId,
+                                       @PathParam("tenant_id") @NotNull UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().changeStatusOfAllKnownNetworksOfTenant(organizationId, tenantId, true);
+
+        return Response.ok().build();
+    }
+
     @GET
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/organization/{organization_id}/tenant/{tenant_id}/configuration")
