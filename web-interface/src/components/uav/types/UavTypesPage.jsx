@@ -7,10 +7,13 @@ import CustomTypesTable from "./CustomTypesTable";
 import UavService from "../../../services/UavService";
 import {notify} from "react-notify-toast";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const uavService = new UavService();
 
 export default function UavTypesPage() {
+
+  usePageTitle("UAV Types");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

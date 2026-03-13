@@ -8,11 +8,14 @@ import AuthenticationManagementService from "../../../../../../../services/Authe
 import {notify} from "react-notify-toast";
 import CotOutputForm from "./CotOutputForm";
 import CotIntegrationService from "../../../../../../../services/integrations/CotIntegrationService";
+import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 const cotIntegrationService = new CotIntegrationService();
 
 export default function CreateCotOutputPage() {
+
+  usePageTitle("Create CoT Output");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

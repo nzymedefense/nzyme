@@ -4,10 +4,13 @@ import BluetoothService from "../../../services/BluetoothService";
 import BluetoothMonitoringRulesTable from "./BluetoothMonitoringRulesTable";
 import ApiRoutes from "../../../util/ApiRoutes";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const bluetoothService = new BluetoothService();
 
 export default function BluetoothMonitoringPage() {
+
+  usePageTitle("Bluetooth Monitoring");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

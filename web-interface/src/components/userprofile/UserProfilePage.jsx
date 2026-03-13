@@ -5,10 +5,13 @@ import UserProfileService from "../../services/UserProfileService";
 import {notify} from "react-notify-toast";
 import ApiRoutes from "../../util/ApiRoutes";
 import {UserContext} from "../../App";
+import usePageTitle from "../../util/UsePageTitle";
 
 const userProfileService = new UserProfileService();
 
 function UserProfilePage(props) {
+
+  usePageTitle("User Profile");
 
   const user = useContext(UserContext);
 

@@ -1,8 +1,12 @@
 import React from "react";
 import {useParams} from "react-router-dom";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 export default function IPDetailsPage() {
+
+  // TODO replace with actual IP after we loaded it
+  usePageTitle("IP Address Details");
 
   const { address } = useParams()
 

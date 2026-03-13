@@ -4,10 +4,13 @@ import AssetStylesheet from "../../misc/AssetStylesheet";
 import Store from "../../../util/Store";
 import LoginFailedMessage from "./LoginFailedMessage";
 import LoginImage from "./LoginImage";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const authenticationService = new AuthenticationService();
 
 function LoginPage(props) {
+
+  usePageTitle("Login");
 
   const onActionCompleted = props.onActionCompleted;
   const customImage = props.customImage;

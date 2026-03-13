@@ -13,10 +13,13 @@ import SectionMenuBar from "../shared/SectionMenuBar";
 import ApiRoutes from "../../util/ApiRoutes";
 import {GNSS_MENU_ITEMS} from "./GNSSMenuItems";
 import {Presets} from "../shared/timerange/TimeRange";
+import usePageTitle from "../../util/UsePageTitle";
 
 const gnssService = new GnssService();
 
 export default function GNSSConstellationsFixPage() {
+
+  usePageTitle("GNSS Fix");
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;

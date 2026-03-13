@@ -6,10 +6,13 @@ import Routes from "../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
 import UavTypeForm from "./UavTypeForm";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const uavService = new UavService();
 
 export default function CreateCustomTypePage() {
+
+  usePageTitle("Create custom UAV type");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

@@ -2,8 +2,11 @@ import React from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
 import MacAddressContextTable from "./MacAddressContextTable";
 import WithPermission from "../../misc/WithPermission";
+import usePageTitle from "../../../util/UsePageTitle";
 
 function MacAddressContextPage() {
+
+  usePageTitle("Context: MAC Addresses");
 
   return (
       <React.Fragment>

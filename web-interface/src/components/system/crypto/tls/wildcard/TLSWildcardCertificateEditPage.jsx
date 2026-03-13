@@ -8,6 +8,7 @@ import MatchingNodes from "./MatchingNodes";
 import {notify} from "react-notify-toast";
 import TLSCertificateHelp from "../TLSCertificateHelp";
 import TLSCertificateUploadForm from "../form/TLSCertificateUploadForm";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const cryptoService = new CryptoService();
 
@@ -16,6 +17,8 @@ const loadData = function(certificateId, setCertificate) {
 }
 
 function TLSWildcardCertificateEditPage(props) {
+
+  usePageTitle("Edit TLS Wildcard Certificate");
 
   const { certificateId } = useParams()
 

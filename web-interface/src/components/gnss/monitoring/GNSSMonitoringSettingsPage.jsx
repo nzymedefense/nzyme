@@ -5,8 +5,11 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import GNSSMonitoringSettingsTable from "./GNSSMonitoringSettingsTable";
 import GNSSMonitoringSettingsResetElevationMasks from "./GNSSMonitoringSettingsResetElevationMasks";
+import usePageTitle from "../../../util/UsePageTitle";
 
 export default function GNSSMonitoringSettingsPage() {
+
+  usePageTitle("GNSS Monitoring Settings");
 
   return (
       <React.Fragment>

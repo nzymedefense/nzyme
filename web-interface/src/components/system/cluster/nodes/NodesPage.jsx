@@ -3,6 +3,7 @@ import ClusterService from "../../../../services/ClusterService";
 import NodesTable from "./NodesTable";
 import EphemeralNodesConfiguration from "./EphemeralNodesConfiguration";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const clusterService = new ClusterService()
 
@@ -11,6 +12,8 @@ function fetchData(setNodes) {
 }
 
 function NodesPage() {
+
+  usePageTitle("Nodes");
 
   const [nodes, setNodes] = useState(null)
 

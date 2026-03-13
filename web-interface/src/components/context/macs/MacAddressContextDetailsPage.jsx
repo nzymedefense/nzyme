@@ -11,6 +11,7 @@ import TransparentContextSource from "../../shared/context/transparent/Transpare
 import TransparentIpAddressTable from "../../shared/context/transparent/TransparentIpAddressTable";
 import TransparentHostnamesTable from "../../shared/context/transparent/TransparentHostnamesTable";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const contextService = new ContextService();
 
@@ -23,6 +24,8 @@ function MacAddressContextDetailsPage() {
   const [context, setContext] = useState(null);
 
   const [deleted, setDeleted] = useState(false);
+
+  usePageTitle(context ? `MAC Address Context: ${context.mac_address}` : "MAC Address Context Details");
 
   useEffect(() => {
     contextService.findMacAddressContextByUuid(uuid, organizationId, tenantId, setContext);

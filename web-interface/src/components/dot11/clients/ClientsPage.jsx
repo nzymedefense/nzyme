@@ -13,6 +13,7 @@ import Filters from "../../shared/filtering/Filters";
 import SectionMenuBar from "../../shared/SectionMenuBar";
 import ApiRoutes from "../../../util/ApiRoutes";
 import {CLIENTS_MENU_ITEMS} from "./ClientsMenuItems";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -21,6 +22,8 @@ const useQuery = () => {
 }
 
 function ClientsPage() {
+
+  usePageTitle("WiFi Clients (Connected)");
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;

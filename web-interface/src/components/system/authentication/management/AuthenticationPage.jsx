@@ -6,8 +6,11 @@ import SuperAdminTable from "./users/superadmins/SuperAdminTable";
 import {Navigate} from "react-router-dom";
 import Routes from "../../../../util/ApiRoutes";
 import {UserContext} from "../../../../App";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 function AuthenticationPage() {
+
+  usePageTitle("Authentication & Authorization");
 
   const user = useContext(UserContext);
 

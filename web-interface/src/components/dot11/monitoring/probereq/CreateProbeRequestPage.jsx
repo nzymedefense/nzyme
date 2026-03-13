@@ -5,10 +5,13 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import Dot11Service from "../../../../services/Dot11Service";
 import ProbeRequestForm from "./ProbeRequestForm";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
 export default function CreateProbeRequestPage() {
+
+  usePageTitle("Create Monitored Probe Request");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

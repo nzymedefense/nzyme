@@ -7,10 +7,13 @@ import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant"
 import {notify} from "react-notify-toast";
 import SSIDMonitoringConfiguration from "./SSIDMonitoringConfiguration";
 import KnownNetworksTable from "./KnownNetworksTable";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
 export default function SSIDMonitoringPage() {
+
+  usePageTitle("SSID Monitoring");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

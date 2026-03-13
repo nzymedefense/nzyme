@@ -8,10 +8,13 @@ import {TENANT_MENU_ITEMS} from "../TenantMenuItems";
 import CardTitleWithControls from "../../../../../shared/CardTitleWithControls";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import CotOutputsTable from "./cot/CotOutputsTable";
+import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function TenantIntegrationsPage() {
+
+  usePageTitle("Integrations of Tenant");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();
@@ -81,12 +84,6 @@ export default function TenantIntegrationsPage() {
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Cursor on Target (CoT)" slim={true}/>
-
-              <p className="text-muted">
-                Cursor on Target (CoT) is an XML-based standard for real-time exchange of geospatial and targeting
-                information across different systems. Developed by The MITRE Corporation, it’s often integrated with
-                the Tactical Assault Kit (TAK) to share critical data.
-              </p>
 
               <p className="text-muted">
                 You can <a href="https://go.nzyme.org/cursor-on-target">learn more about CoT in the documentation</a>.

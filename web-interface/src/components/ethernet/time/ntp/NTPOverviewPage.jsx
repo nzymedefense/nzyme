@@ -15,6 +15,7 @@ import Filters from "../../../shared/filtering/Filters";
 import NTPTransactionsHistogram from "./NTPTransactionsHistogram";
 import NTPClientRequestResponseRatioHistogram from "./NTPClientRequestResponseRatioHistogram";
 import NTPTopServersHistogram from "./NTPTopServersHistogram";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const timeService = new TimeService();
 
@@ -23,6 +24,8 @@ const useQuery = () => {
 }
 
 export function NTPOverviewPage() {
+
+  usePageTitle("NTP Transactions");
 
   const urlQuery = useQuery();
   const tapContext = useContext(TapContext);

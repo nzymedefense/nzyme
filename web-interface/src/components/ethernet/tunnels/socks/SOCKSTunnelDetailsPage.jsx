@@ -2,8 +2,11 @@ import React from "react";
 import {useParams} from "react-router-dom";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import SOCKSTunnelDetails from "./SOCKSTunnelDetails";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 export default function SOCKSTunnelDetailsPage() {
+
+  usePageTitle("SOCKS Tunnel Details");
 
   const { sessionId } = useParams();
 

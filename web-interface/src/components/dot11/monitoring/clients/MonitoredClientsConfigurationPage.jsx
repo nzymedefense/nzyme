@@ -8,6 +8,7 @@ import ConfigurationModal from "../../../configuration/modal/ConfigurationModal"
 import Paginator from "../../../misc/Paginator";
 import MonitoredClientsTable from "./MonitoredClientsTable";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -24,6 +25,8 @@ export default function MonitoredClientsConfigurationPage() {
 
   const perPage = 25;
   const [page, setPage] = useState(1);
+
+  usePageTitle(ssid ? `Allowed Clients: ${ssid.ssid}` : "Allowed Clients Configuration");
 
   useEffect(() => {
     dot11Service.findMonitoredSSID(uuid, setSSID, () => {  });

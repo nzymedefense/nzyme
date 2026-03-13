@@ -9,10 +9,13 @@ import TapSecret from "./TapSecret";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 import LatitudeLongitude from "../../../../shared/LatitudeLongitude";
 import TapPositionMap from "./TapPositionMap";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function TapPermissionDetailsPage() {
+
+  usePageTitle("Tap Permissions Details");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

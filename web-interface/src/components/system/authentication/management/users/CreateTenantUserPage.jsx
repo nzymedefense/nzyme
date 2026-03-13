@@ -6,10 +6,13 @@ import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import CreateUserForm from "./shared/CreateUserForm";
 import {notify} from "react-notify-toast";
 import ApiRoutes from "../../../../../util/ApiRoutes";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
 function CreateTenantUserPage() {
+
+  usePageTitle("Create User of Tenant");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

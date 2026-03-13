@@ -1,7 +1,10 @@
 import React from "react";
 import SmtpIntegration from "./smtp/SmtpIntegration";
+import usePageTitle from "../../../util/UsePageTitle";
 
 function IntegrationsPage() {
+
+  usePageTitle("Integrations");
 
   return (
       <React.Fragment>

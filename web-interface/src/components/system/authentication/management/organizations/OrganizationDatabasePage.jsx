@@ -8,10 +8,13 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import OrganizationDatabaseTable from "./OrganizationDatabaseTable";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function OrganizationDatabasePage() {
+
+  usePageTitle("Database of Organization");
 
   const { organizationId } = useParams();
 

@@ -7,10 +7,13 @@ import {notify} from "react-notify-toast";
 import {Navigate} from "react-router-dom";
 import MatchingNodesTestResult from "./MatchingNodesTestResult";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const cryptoService = new CryptoService();
 
 function TLSWildcardCertificateUploadPage() {
+
+  usePageTitle("Upload TLS Wildcard Certificate");
 
   const [certInstallationSuccess, setCertInstallationSuccess] = useState(false)
 

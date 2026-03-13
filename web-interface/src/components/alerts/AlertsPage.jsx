@@ -5,10 +5,13 @@ import DetectionAlertsService from "../../services/DetectionAlertsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import NumberCard from "../widgets/presentation/NumberCard";
 import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../util/UsePageTitle";
 
 const alertsService = new DetectionAlertsService();
 
 function AlertsPage() {
+
+  usePageTitle("Alerts");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

@@ -5,6 +5,7 @@ import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import CustomBanditForm from "./CustomBanditForm";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -14,6 +15,8 @@ function EditCustomBanditPage() {
 
   const [bandit, setBandit] = useState();
   const [redirect, setRedirect] = useState(false);
+
+  usePageTitle(bandit ? `Edit Bandit: ${bandit.name}` : "Edit Bandit");
 
   const onEdit = (name, description) => {
     dot11Service.editCustomBandit(bandit.id, name, description, () => {

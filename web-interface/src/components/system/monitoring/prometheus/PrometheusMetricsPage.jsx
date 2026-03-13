@@ -6,10 +6,14 @@ import LoadingSpinner from '../../../misc/LoadingSpinner'
 import ConfigurationModal from '../../../configuration/modal/ConfigurationModal'
 import EncryptedConfigurationValue from '../../../configuration/EncryptedConfigurationValue'
 import IncompleteConfigurationWarning from "../../../misc/IncompleteConfigurationWarning";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const monitoringService = new MonitoringService()
 
 function PrometheusMetricsPage () {
+
+  usePageTitle("Prometheus Exporter");
+
   const [configuration, setConfiguration] = useState(null)
   const [localRevision, setLocalRevision] = useState(0)
 

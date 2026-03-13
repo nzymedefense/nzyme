@@ -6,6 +6,7 @@ import LoadingSpinner from "../../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
 import moment from "moment/moment";
 import CustomBanditFingerprints from "./CustomBanditFingerprints";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -21,6 +22,8 @@ function CustomBanditDetailsPage() {
   const [fingerprintFormSubmitting, setFingerprintFormSubmitting] = useState(false);
 
   const [redirect, setRedirect] = useState(false);
+
+  usePageTitle(bandit ? `Bandit: ${bandit.name}` : "Bandit Details");
 
   const fingerprintFormEnabled = () => {
     return newFingerprint.trim().length === 64 && !bandit.fingerprints.includes(newFingerprint)

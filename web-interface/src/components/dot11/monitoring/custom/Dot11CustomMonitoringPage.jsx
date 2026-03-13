@@ -5,8 +5,11 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 import Dot11CustomMonitoringRulesTable from "./Dot11CustomMonitoringRulesTable";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 export default function Dot11CustomMonitoringPage() {
+
+  usePageTitle("Custom WiFi Monitoring Rules");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

@@ -7,6 +7,7 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import GNSSMonitoringRuleForm from "./GNSSMonitoringRuleForm";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const gnssService = new GnssService();
 
@@ -18,6 +19,8 @@ export default function EditGNSSMonitoringRulePage() {
   const [rule, setRule] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
+
+  usePageTitle(rule ? `Edit GNSS Monitoring Rule: ${rule.name}` : "Edit GNSS Monitoring Rule");
 
   useEffect(() => {
     gnssService.findMonitoringRule(uuid, organizationId, tenantId, setRule)

@@ -12,6 +12,7 @@ import GNSSPRN from "../GNSSPRN";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import GNSSPRNDopplerHistogram from "./GNSSPRNDopplerHistogram";
 import GNSSPRNMultipathIndexHistogram from "./GNSSPRNMultipathIndexHistogram";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const gnssService = new GnssService();
 
@@ -32,6 +33,8 @@ export default function GNSSPRNDetailsPage(props) {
   const [dopplerHistogram, setDopplerHistogram] = useState(null);
   const [multipathHistogram, setMultipathHistogram] = useState(null);
   const [elevationMask, setElevationMask] = useState(null);
+
+  usePageTitle((prn && constellation) ? `GNSS ${constellation} PRN: ${prn}` : "GNSS PRN Details");
 
   useEffect(() => {
     enableTapSelector(tapContext);

@@ -5,10 +5,13 @@ import SSIDSuggestions from "./SSIDSuggestions";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {Navigate} from "react-router-dom";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
 function CreateMonitoredNetworkPage() {
+
+  usePageTitle("Create Monitored WiFi Network");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

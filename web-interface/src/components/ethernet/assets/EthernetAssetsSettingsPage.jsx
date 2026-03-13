@@ -5,8 +5,11 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import SectionMenuBar from "../../shared/SectionMenuBar";
 import ApiRoutes from "../../../util/ApiRoutes";
 import AssetsConfiguration from "./AssetsConfiguration";
+import usePageTitle from "../../../util/UsePageTitle";
 
 export default function EthernetAssetsSettingsPage() {
+
+  usePageTitle("Ethernet Assets Settings");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

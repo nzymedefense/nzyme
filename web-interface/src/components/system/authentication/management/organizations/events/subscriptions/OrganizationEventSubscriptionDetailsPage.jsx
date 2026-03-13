@@ -8,11 +8,14 @@ import EventSubscriptionsTable from "../../../../../events/shared/subscriptions/
 import EventSubscriptionActionSelector
   from "../../../../../events/shared/subscriptions/EventSubscriptionActionSelector";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
 
 function OrganizationEventSubscriptionDetailsPage() {
+
+  usePageTitle("Subscriptions of Organization Event");
 
   const { organizationId } = useParams();
   const { eventTypeName } = useParams();

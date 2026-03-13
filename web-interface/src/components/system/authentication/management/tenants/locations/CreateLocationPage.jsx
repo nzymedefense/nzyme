@@ -5,10 +5,13 @@ import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import LocationForm from "./LocationForm";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function CreateLocationPage() {
+
+  usePageTitle("Create Tenant Location");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

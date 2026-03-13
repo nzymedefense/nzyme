@@ -11,11 +11,14 @@ import numeral from "numeral";
 import moment from "moment";
 import {notify} from "react-notify-toast";
 import CotConnectionType from "./CotConnectionType";
+import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 const cotIntegrationService = new CotIntegrationService();
 
 export default function CotOutputDetailsPage() {
+
+  usePageTitle("CoT Output Details");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

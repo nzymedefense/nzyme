@@ -20,6 +20,7 @@ import LatitudeLongitude from "../../../shared/LatitudeLongitude";
 import TapPositionMap from "../../authentication/management/taps/TapPositionMap";
 import TapConfiguration from "./TapConfiguration";
 import TapEngagementLogsTable from "./TapEngagementLogsTable";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const tapsService = new TapsService()
 
@@ -29,6 +30,9 @@ function fetchData (uuid, setTap, setTapMetrics) {
 }
 
 function TapDetailsPage () {
+
+  usePageTitle("Tap Details");
+
   const { uuid } = useParams()
 
   const [tap, setTap] = useState(null)

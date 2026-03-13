@@ -5,10 +5,13 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import CustomBanditForm from "./CustomBanditForm";
 import {notify} from "react-notify-toast";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
 function CreateCustomBanditPage() {
+
+  usePageTitle("Create Custom Bandit");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

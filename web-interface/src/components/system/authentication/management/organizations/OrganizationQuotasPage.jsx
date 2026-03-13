@@ -8,10 +8,13 @@ import {ORGANIZATION_MENU_ITEMS} from "./OrganizationMenuItems";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 import OrganizationQuotasTable from "./OrganizationQuotasTable";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function OrganizationQuotasPage() {
+
+  usePageTitle("Quotas of Organization");
 
   const { organizationId } = useParams();
 

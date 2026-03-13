@@ -5,6 +5,7 @@ import {notify} from "react-notify-toast";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Dot11Service from "../../../services/Dot11Service";
 import RestricedSubstringsTable from "./RestricedSubstringsTable";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -18,6 +19,8 @@ function RestrictedSubstringsConfigurationPage() {
   const [substring, setSubstring] = useState("");
 
   const [revision, setRevision] = useState(0);
+
+  usePageTitle(ssid ? `Restricted Substring Monitor: ${ssid.ssid}` : "Restricted SSID Substring Monitor Configuration");
 
   useEffect(() => {
     dot11Service.findMonitoredSSID(uuid, setSSID, () => {});

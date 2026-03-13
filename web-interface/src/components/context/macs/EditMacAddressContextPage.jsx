@@ -6,6 +6,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import MacAddressContextForm from "./MacAddressContextForm";
 import {notify} from "react-notify-toast";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const contextService = new ContextService();
 
@@ -17,6 +18,8 @@ function MacAddressContextDetailsPage() {
 
   const [context, setContext] = useState(null);
   const [updated, setUpdated] = useState(false);
+
+  usePageTitle(context ? `Edit Context: ${context.mac_address}` : "Edit MAC Address Context");
 
   useEffect(() => {
     contextService.findMacAddressContextByUuid(uuid, organizationId, tenantId, setContext);

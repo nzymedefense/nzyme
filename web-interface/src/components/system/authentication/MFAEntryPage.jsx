@@ -3,8 +3,11 @@ import AssetStylesheet from "../../misc/AssetStylesheet";
 import MFAEntryStep from "./MFAEntryStep";
 import MFARecoveryCodeStep from "./MFARecoveryCodeStep";
 import LoginImage from "./LoginImage";
+import usePageTitle from "../../../util/UsePageTitle";
 
 function MFASetupPage(props) {
+
+  usePageTitle("Login");
 
   const onActionCompleted = props.onActionCompleted;
   const customImage = props.customImage;

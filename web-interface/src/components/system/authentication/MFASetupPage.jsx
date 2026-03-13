@@ -5,10 +5,13 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import MFASetupStep1 from "./MFASetupStep1";
 import MFASetupStep2 from "./MFASetupStep2";
 import LoginImage from "./LoginImage";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const authenticationService = new AuthenticationService();
 
 function MFASetupPage(props) {
+
+  usePageTitle("Setup");
 
   const onActionCompleted = props.onActionCompleted;
   const customImage = props.customImage;

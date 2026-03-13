@@ -8,10 +8,13 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import OrganizationAdminTable from "../users/orgadmins/OrganizationAdminTable";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function OrganizationAdministratorsPage() {
+
+  usePageTitle("Administrators of Organization");
 
   const { organizationId } = useParams();
 

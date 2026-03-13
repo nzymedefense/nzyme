@@ -3,10 +3,13 @@ import SystemService from "../../../services/SystemService";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import GlobalDatabaseUsageTable from "./GlobalDatabaseUsageTable";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const systemService = new SystemService();
 
 function DatabasePage() {
+
+  usePageTitle("Database");
 
   const [sizes, setSizes] = useState();
   const [revision, setRevision] = useState(new Date());

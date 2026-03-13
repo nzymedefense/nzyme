@@ -5,6 +5,7 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import SimilarSSIDSimulator from "./SimilarSSIDSimulator";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -18,6 +19,8 @@ function SimilarSSIDConfigurationPage() {
 
   const [revision, setRevision] = useState(0);
   const [redirect, setRedirect] = useState(false);
+
+  usePageTitle(ssid ? `Similar SSID Monitor: ${ssid.ssid}` : "Similar SSID Monitor Configuration");
 
   useEffect(() => {
     dot11Service.findMonitoredSSID(uuid, setSSID, () => {});

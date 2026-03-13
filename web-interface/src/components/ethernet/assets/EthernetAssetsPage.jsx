@@ -14,6 +14,7 @@ import Filters from "../../shared/filtering/Filters";
 import ActiveAssetsHistogram from "./ActiveAssetsHistogram";
 import LatestAssetsHistogram from "./LatestAssetsHistogram";
 import DisappearedAssetsHistogram from "./DisappearedAssetsHistogram";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const assetsService = new AssetsService();
 
@@ -22,6 +23,8 @@ const useQuery = () => {
 }
 
 export default function EthernetAssetsPage() {
+
+  usePageTitle("Ethernet Assets");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

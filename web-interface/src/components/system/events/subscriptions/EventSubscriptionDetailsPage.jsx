@@ -6,10 +6,13 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import EventSubscriptionsTable from "../shared/subscriptions/EventSubscriptionsTable";
 import EventSubscriptionActionSelector from "../shared/subscriptions/EventSubscriptionActionSelector";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const eventActionsService = new EventActionsService();
 
 function EventSubscriptionDetailsPage() {
+
+  usePageTitle("Subscriptions of Event");
 
   const { eventTypeName } = useParams();
 

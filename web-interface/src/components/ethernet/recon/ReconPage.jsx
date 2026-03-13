@@ -1,7 +1,10 @@
 import React from "react";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
+import usePageTitle from "../../../util/UsePageTitle";
 
 export default function ReconPage() {
+
+  usePageTitle("Ethernet Recon");
 
   return (
     <React.Fragment>

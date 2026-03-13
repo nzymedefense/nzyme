@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import MonitoringService from '../../../services/MonitoringService'
 import ExportersTable from './ExportersTable'
+import usePageTitle from "../../../util/UsePageTitle";
 
 const monitoringService = new MonitoringService()
 
 function MonitoringPage () {
+
+  usePageTitle("Monitoring & Metrics");
+
   const [summary, setSummary] = useState(null)
 
   useEffect(() => {

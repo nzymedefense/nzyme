@@ -5,10 +5,13 @@ import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import BluetoothService from "../../../services/BluetoothService";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import BluetoothDevicesTable from "./BluetoothDevicesTable";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const btService = new BluetoothService();
 
 export default function BluetoothDevicesPage() {
+
+  usePageTitle("Bluetooth Devices");
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;

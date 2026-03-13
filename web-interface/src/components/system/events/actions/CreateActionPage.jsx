@@ -4,8 +4,11 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import CreateActionSelect from "../shared/forms/CreateActionSelect";
 import CreateActionProxy from "../shared/forms/CreateActionProxy";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 function CreateActionPage() {
+
+  usePageTitle("Create Action");
 
   const [complete, setComplete] = useState(false);
 

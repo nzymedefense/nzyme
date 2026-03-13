@@ -7,6 +7,7 @@ import UavTypeForm from "./UavTypeForm";
 import UavService from "../../../services/UavService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const uavService = new UavService();
 
@@ -19,6 +20,8 @@ export default function EditCustomTypePage() {
   const [type, setType] = useState(null);
 
   const [redirect, setRedirect] = React.useState(false);
+
+  usePageTitle(type ? `Edit Custom UAV Type: ${type.name}` : "Edit Custom UAV Type");
 
   useEffect(() => {
     uavService.findCustomType(setType, uuid, organizationId, tenantId);

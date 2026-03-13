@@ -7,10 +7,14 @@ import moment from "moment";
 import {notify} from "react-notify-toast";
 import LastUserActivity from "../shared/LastUserActivity";
 import LoginThrottleWarning from "../shared/LoginThrottleWarning";
+import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function SuperAdminDetailsPage() {
+
+  usePageTitle("Super Administrator Details");
+
 
   const { userId } = useParams();
 

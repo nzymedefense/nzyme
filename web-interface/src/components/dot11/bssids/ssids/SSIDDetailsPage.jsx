@@ -23,6 +23,7 @@ import TapBasedSignalStrengthTable from "../../../shared/TapBasedSignalStrengthT
 import Dot11SecurityProtocolList from "../../shared/Dot11SecurityProtocolList";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 import {Presets} from "../../../shared/timerange/TimeRange";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -46,6 +47,8 @@ function SSIDDetailsPage() {
   const [signalWaterfallTimeRange, setSignalWaterfallTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   const [discoActivityTimeRange, setDiscoActivityTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+
+  usePageTitle(ssid ? `SSID: ${ssid.ssid}` : "SSID Details");
 
   useEffect(() => {
     dot11Service.findSSIDOfBSSID(bssidParam, ssidParam, ssidTimeRange, selectedTaps, setSSID);

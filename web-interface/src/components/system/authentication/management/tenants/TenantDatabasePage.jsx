@@ -8,10 +8,13 @@ import {TENANT_MENU_ITEMS} from "./TenantMenuItems";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import TenantDatabaseTable from "./TenantDatabaseTable";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function TenantDatabasePage() {
+
+  usePageTitle("Database of Tenant");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

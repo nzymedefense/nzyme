@@ -8,10 +8,13 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import TenantsTable from "../tenants/TenantsTable";
 import OrganizationHeader from "./OrganizationHeader";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function OrganizationTenantsPage() {
+
+  usePageTitle("Tenants of Organization");
 
   const { organizationId } = useParams();
 

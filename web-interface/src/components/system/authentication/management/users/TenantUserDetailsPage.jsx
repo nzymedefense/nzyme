@@ -10,10 +10,13 @@ import LastUserActivity from "./shared/LastUserActivity";
 import TenantUserPermissions from "./TenantUserPermissions";
 import TenantUserTaps from "./TenantUserTaps";
 import LoginThrottleWarning from "./shared/LoginThrottleWarning";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function TenantUserDetailsPage() {
+
+  usePageTitle("Details of Tenant User");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

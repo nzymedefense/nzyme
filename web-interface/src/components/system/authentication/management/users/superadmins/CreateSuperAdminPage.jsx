@@ -6,10 +6,13 @@ import ApiRoutes from "../../../../../../util/ApiRoutes";
 import {Navigate} from "react-router-dom";
 import CreateUserForm from "../shared/CreateUserForm";
 import EditSuperAdminPage from "./EditSuperAdminPage";
+import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
 function CreateTenantUserPage() {
+
+  usePageTitle("Create Super Administrator");
 
   const [errorMessage, setErrorMessage] = useState(null);
   const [redirect, setRedirect] = useState(false);

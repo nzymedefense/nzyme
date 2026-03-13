@@ -5,6 +5,7 @@ import TapInactiveWarning from '../TapInactiveWarning'
 import TapsService from '../../../../../services/TapsService'
 import LoadingSpinner from '../../../../misc/LoadingSpinner'
 import TapMetricsChartProxy from './TapMetricsChartProxy'
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const tapsService = new TapsService()
 
@@ -13,6 +14,9 @@ function fetchData (uuid, setTap) {
 }
 
 function TapMetricsDetailsPage () {
+
+  usePageTitle("Tap Metrics");
+
   const { uuid, metricType, metricName } = useParams()
 
   const [tap, setTap] = useState(null)

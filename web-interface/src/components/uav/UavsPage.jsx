@@ -9,10 +9,13 @@ import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 import UavTacticalMap from "./UavTacticalMap";
 import ApiRoutes from "../../util/ApiRoutes";
 import {Navigate} from "react-router-dom";
+import usePageTitle from "../../util/UsePageTitle";
 
 const uavService = new UavService();
 
 export default function UavsPage() {
+
+  usePageTitle("UAVs");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

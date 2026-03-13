@@ -6,10 +6,13 @@ import ApiRoutes from "../../../../../../util/ApiRoutes";
 import {Navigate, useParams} from "react-router-dom";
 import CreateUserForm from "../shared/CreateUserForm";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
+import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
 function CreateOrganizationAdministratorPage() {
+
+  usePageTitle("Create Organization Administrator");
 
   const { organizationId } = useParams();
 

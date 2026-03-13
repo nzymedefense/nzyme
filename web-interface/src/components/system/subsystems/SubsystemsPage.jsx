@@ -1,10 +1,13 @@
 import React from "react";
 import SubsystemsConfiguration from "../../shared/SubsystemsConfiguration";
 import SystemService from "../../../services/SystemService";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const systemService = new SystemService();
 
 export default function SubsystemsPage() {
+
+  usePageTitle("Subsystems");
 
   return (
     <div>

@@ -6,10 +6,13 @@ import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
 import EditPasswordForm from "../shared/EditPasswordForm";
 import EditUserForm from "../shared/EditUserForm";
+import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function EditSuperAdminPage() {
+
+  usePageTitle("Edit Super Administrator");
 
   const { userId } = useParams();
 

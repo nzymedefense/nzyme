@@ -9,11 +9,14 @@ import moment from "moment/moment";
 import numeral from "numeral";
 import UploadFloorPlanForm from "./UploadFloorPlanForm";
 import FloorPlanTapsTable from "./FloorPlanTapsTable";
+import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 const authenticationMgmtService = new AuthenticationManagementService();
 
 function FloorDetailsPage() {
+
+  usePageTitle("Floor Details");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

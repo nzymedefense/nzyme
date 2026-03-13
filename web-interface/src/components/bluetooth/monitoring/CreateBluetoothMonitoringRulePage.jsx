@@ -5,10 +5,13 @@ import AuthenticationManagementService from "../../../services/AuthenticationMan
 import ApiRoutes from "../../../util/ApiRoutes";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import BluetoothMonitoringRuleForm from "./BluetoothMonitoringRuleForm";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function CreateBluetoothMonitoringRulePage() {
+
+  usePageTitle("Create Bluetooth Monitoring Rule");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

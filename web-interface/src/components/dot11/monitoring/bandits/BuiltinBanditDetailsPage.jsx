@@ -4,6 +4,7 @@ import {useParams} from "react-router-dom";
 import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import BanditFingerprints from "./BanditFingerprints";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -12,6 +13,8 @@ function BuiltinBanditDetailsPage() {
   const {id} = useParams();
 
   const [bandit, setBandit] = useState();
+
+  usePageTitle(bandit ? `Bandit: ${bandit.name}` : "Bandit Details");
 
   useEffect(() => {
     dot11Service.findBuiltinBandit(id, setBandit);

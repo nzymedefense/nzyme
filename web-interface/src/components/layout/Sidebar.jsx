@@ -207,7 +207,7 @@ function Sidebar(props) {
             <NavigationLink
                 show={user.is_superadmin}
                 href={ApiRoutes.SYSTEM.CONNECT}
-                title="nzyme Connect"
+                title="Nzyme Connect"
                 icon={<i className="fa-solid fa-plug-circle-bolt"></i>}/>
             <NavigationLink
                 show={user.is_superadmin}

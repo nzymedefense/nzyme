@@ -5,8 +5,11 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import {MONITORING_MENU_ITEMS} from "../Dot11MenuItems";
 import CustomBanditsTable from "./CustomBanditsTable";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 export default function BanditsPage() {
+
+  usePageTitle("Bandits");
 
   return (
       <React.Fragment>

@@ -11,6 +11,7 @@ import AlertTimeline from "./AlertTimeline";
 import RelatedMonitoredNetwork from "./RelatedMonitoredNetwork";
 import {notify} from "react-notify-toast";
 import WithPermission from "../misc/WithPermission";
+import usePageTitle from "../../util/UsePageTitle";
 
 const alertsService = new DetectionAlertsService();
 
@@ -22,6 +23,8 @@ function AlertDetailsPage() {
   const [isDeleted, setIsDeleted] = useState(false);
 
   const [revision, setRevision] = useState(0);
+
+  usePageTitle(alert ? `Alert: ${alert.details}` : "Alert Details");
 
   useEffect(() => {
     setAlert(null);

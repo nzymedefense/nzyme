@@ -8,11 +8,13 @@ import SectionMenuBar from "../../../../../shared/SectionMenuBar";
 import {TENANT_MENU_ITEMS} from "../TenantMenuItems";
 import CardTitleWithControls from "../../../../../shared/CardTitleWithControls";
 import LocationsTable from "./LocationsTable";
+import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function TenantLocationsPage() {
 
+  usePageTitle("Locations of Tenant");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

@@ -1,8 +1,11 @@
 import React from "react";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import AuthenticationSettings from "./AuthenticationSettings";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 function AuthenticationSettingsPage() {
+
+  usePageTitle("Authentication Settings");
 
   return (
       <React.Fragment>

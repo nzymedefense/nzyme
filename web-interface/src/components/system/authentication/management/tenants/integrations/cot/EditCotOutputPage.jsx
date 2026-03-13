@@ -8,11 +8,14 @@ import Routes from "../../../../../../../util/ApiRoutes";
 import CardTitleWithControls from "../../../../../../shared/CardTitleWithControls";
 import CotOutputForm from "./CotOutputForm";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 const cotIntegrationService = new CotIntegrationService();
 
 export default function EditCotOutputPage() {
+
+  usePageTitle("Edit CoT Output");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

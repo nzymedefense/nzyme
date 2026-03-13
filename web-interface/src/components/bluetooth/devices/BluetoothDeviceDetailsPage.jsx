@@ -14,6 +14,7 @@ import {transformTag, transformTransport} from "../BluetoothTools";
 import TapBasedSignalStrengthTable from "../../shared/TapBasedSignalStrengthTable";
 import {BluetoothDeviceSignalStrengthHistogram} from "./BluetoothDeviceSignalStrengthHistogram";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const btService = new BluetoothService();
 
@@ -30,6 +31,8 @@ export default function BluetoothDeviceDetailsPage() {
 
   const [rssiHistogramTimerange, setRssiHistogramTimerange] = useState(Presets.RELATIVE_HOURS_24);
   const [tapRssiTimerange, setTapRssiTimerange] = useState(Presets.RELATIVE_MINUTES_15);
+
+  usePageTitle(device ? `Bluetooth Device: ${device.device.mac.address}` : "Bluetooth Device Details");
 
   useEffect(() => {
     enableTapSelector(tapContext);

@@ -8,10 +8,13 @@ import EventActionsService from "../../../../services/EventActionsService";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import SystemSubscriptionsOfActionTable from "../shared/subscriptions/SystemSubscriptionsOfActionTable";
 import DetectionSubscriptionsOfActionTable from "../shared/subscriptions/DetectionSubscriptionsOfActionTable";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const eventActionsService = new EventActionsService();
 
 function ActionDetailsPage() {
+
+  usePageTitle("Action Details");
 
   const { actionId } = useParams();
 

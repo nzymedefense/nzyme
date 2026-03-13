@@ -3,10 +3,13 @@ import AssetStylesheet from "../misc/AssetStylesheet";
 import CreateUserForm from "../system/authentication/management/users/shared/CreateUserForm";
 import {notify} from "react-notify-toast";
 import AuthenticationManagementService from "../../services/AuthenticationManagementService";
+  import usePageTitle from "../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
 function SetupWizardPage(props) {
+
+  usePageTitle("Setup");
 
   const onActionCompleted = props.onActionCompleted;
   const [errorMessage, setErrorMessage] = useState(null);

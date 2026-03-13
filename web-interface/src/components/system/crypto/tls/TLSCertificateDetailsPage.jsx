@@ -8,11 +8,14 @@ import {notify} from "react-notify-toast";
 import TLSCertificateDetails from "./TLSCertificateDetails";
 import TLSCertificateHelp from "./TLSCertificateHelp";
 import TLSCertificateUploadForm from "./form/TLSCertificateUploadForm";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const clusterService = new ClusterService()
 const cryptoService = new CryptoService();
 
 function TLSCertificateDetailsPage() {
+
+  usePageTitle("TLS Certificate Details");
 
   const { nodeUUID } = useParams()
 

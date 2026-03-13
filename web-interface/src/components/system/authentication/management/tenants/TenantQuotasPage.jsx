@@ -8,10 +8,13 @@ import {TENANT_MENU_ITEMS} from "./TenantMenuItems";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import TenantQuotasTable from "./TenantQuotasTable";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function TenantQuotasPage() {
+
+  usePageTitle("Quotas of Tenant");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

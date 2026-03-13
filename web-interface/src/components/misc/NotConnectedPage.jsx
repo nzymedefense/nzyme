@@ -1,7 +1,11 @@
 import React from 'react'
 import AssetStylesheet from "./AssetStylesheet";
+import usePageTitle from "../../util/UsePageTitle";
 
 function NotConnectedPage() {
+
+  usePageTitle("Not Connected");
+
   return (
       <React.Fragment>
         <AssetStylesheet filename="onebox.css" />

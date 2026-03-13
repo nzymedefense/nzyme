@@ -10,10 +10,13 @@ import OrganizationEventSubscriptions from "./events/subscriptions/OrganizationE
 import OrganizationActions from "./events/actions/OrganizationActions";
 import OrganizationEvents from "./events/OrganizationEvents";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function OrganizationEventsAndActionsPage() {
+
+  usePageTitle("Events & Actions of Organization");
 
   const { organizationId } = useParams();
 

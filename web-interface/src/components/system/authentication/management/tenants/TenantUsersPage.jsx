@@ -8,10 +8,13 @@ import SectionMenuBar from "../../../../shared/SectionMenuBar";
 import {TENANT_MENU_ITEMS} from "./TenantMenuItems";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 import TenantUsersTable from "../users/TenantUsersTable";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function TenantUsersPage() {
+
+  usePageTitle("Users of Tenant");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

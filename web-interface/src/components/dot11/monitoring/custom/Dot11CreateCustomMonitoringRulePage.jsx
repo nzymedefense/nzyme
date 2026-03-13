@@ -8,10 +8,13 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 import Dot11CustomMonitoringRulesForm from "./Dot11CustomMonitoringRulesForm";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function Dot11CreateCustomMonitoringRulePage() {
+
+  usePageTitle("Create Custom WiFi Monitoring Rule");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

@@ -11,6 +11,7 @@ import Filters from "../../shared/filtering/Filters";
 import {useLocation} from "react-router-dom";
 import {BSSID_FILTER_FIELDS} from "./BssidFilterFields";
 import {queryParametersToFilters} from "../../shared/filtering/FilterQueryParameters";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -19,6 +20,8 @@ const useQuery = () => {
 }
 
 function BSSIDsPage() {
+
+  usePageTitle("WiFi Access Points");
 
   const urlQuery = useQuery();
 

@@ -6,10 +6,13 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import ConnectService from "../../../services/ConnectService";
 import ConnectStatus from "./ConnectStatus";
 import ProvidedServices from "./ProvidedServices";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const connectService = new ConnectService();
 
 export default function ConnectPage() {
+
+  usePageTitle("Nzyme Connect");
 
   const [configuration, setConfiguration] = useState(null)
   const [localRevision, setLocalRevision] = useState(0)

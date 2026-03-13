@@ -6,10 +6,13 @@ import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
 import TapPermissionForm from "./TapPermissionForm";
 import ApiRoutes from "../../../../../util/ApiRoutes";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
 function CreateTapPermissionPage() {
+
+  usePageTitle("Create Tap");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

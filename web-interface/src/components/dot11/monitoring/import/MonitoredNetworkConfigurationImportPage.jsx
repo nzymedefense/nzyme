@@ -5,6 +5,7 @@ import LoadingSpinner from "../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import MonitoredNetworkConfigurationImportDialog from "./MonitoredNetworkConfigurationImportDialog";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 function MonitoredNetworkConfigurationImportPage() {
@@ -14,6 +15,8 @@ function MonitoredNetworkConfigurationImportPage() {
   const [ssid, setSSID] = useState(null);
 
   const [submitted, setSubmitted] = useState(false);
+
+  usePageTitle(ssid ? `Import Configuration: ${ssid.ssid}` : "Import Configuration");
 
   useEffect(() => {
     dot11Service.findMonitoredSSID(uuid, setSSID, function() {

@@ -5,11 +5,14 @@ import AuthenticationManagementService from "../../../../../../../services/Authe
 import EventActionsService from "../../../../../../../services/EventActionsService";
 import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import EditActionProxy from "../../../../../events/shared/forms/EditActionProxy";
+import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
 
 function EditOrganizationActionPage() {
+
+  usePageTitle("Edit Organization Action");
 
   const { organizationId } = useParams();
   const { actionId } = useParams();

@@ -6,10 +6,13 @@ import Routes from "../../../../../util/ApiRoutes";
 import OrganizationForm from "./OrganizationForm";
 import {notify} from "react-notify-toast";
 import SubsystemsConfiguration from "../../../../shared/SubsystemsConfiguration";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
 function EditOrganizationPage() {
+
+  usePageTitle("Edit Organization");
 
   const { organizationId } = useParams();
 

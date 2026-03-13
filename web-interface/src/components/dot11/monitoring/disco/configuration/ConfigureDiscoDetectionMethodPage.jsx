@@ -5,6 +5,7 @@ import DetectionMethodDialogProxy from "./DetectionMethodDialogProxy";
 import Dot11Service from "../../../../../services/Dot11Service";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -18,6 +19,8 @@ function ConfigureDiscoDetectionMethodPage() {
   const [selectedMethod, setSelectedMethod] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
+
+  usePageTitle(ssid ? `Configure Disco Method: ${ssid.ssid}` : "Configure Disconnection Detection Method");
 
   const onSubmit = (e, method_type, configuration) => {
     dot11Service.setDiscoDetectionConfiguration(method_type, configuration, uuid,

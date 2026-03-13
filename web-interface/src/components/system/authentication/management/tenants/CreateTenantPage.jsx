@@ -5,10 +5,13 @@ import {Navigate, useParams} from "react-router-dom";
 import {notify} from "react-notify-toast";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import TenantForm from "./TenantForm";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
 function CreateTenantPage() {
+
+  usePageTitle("Create Tenant");
 
   const { organizationId } = useParams();
 

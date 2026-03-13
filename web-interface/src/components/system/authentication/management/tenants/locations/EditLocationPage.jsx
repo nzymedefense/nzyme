@@ -5,10 +5,13 @@ import AuthenticationManagementService from "../../../../../../services/Authenti
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
 import LocationForm from "./LocationForm";
+import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function EditLocationPage() {
+
+  usePageTitle("Edit Tenant Location");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

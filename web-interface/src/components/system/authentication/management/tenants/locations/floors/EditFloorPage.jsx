@@ -6,10 +6,13 @@ import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import FloorPlan from "../../../../../../shared/floorplan/FloorPlan";
 import FloorForm from "./FloorForm";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function FloorDetailsPage() {
+
+  usePageTitle("Edit Floor");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

@@ -12,12 +12,15 @@ import {useLocation} from "react-router-dom";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {DNS_MENU_ITEMS} from "../DNSMenuItems";
 import {queryParametersToFilters} from "../../../shared/filtering/FilterQueryParameters";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
 }
 
 export default function DNSTransactionLogsPage() {
+
+  usePageTitle("DNS Transaction Logs");
 
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();

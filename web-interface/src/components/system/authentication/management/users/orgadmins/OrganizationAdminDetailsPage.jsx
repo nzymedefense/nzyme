@@ -7,10 +7,13 @@ import moment from "moment";
 import {notify} from "react-notify-toast";
 import LastUserActivity from "../shared/LastUserActivity";
 import LoginThrottleWarning from "../shared/LoginThrottleWarning";
+import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function OrganizationAdminDetailsPage() {
+
+  usePageTitle("Organization Administrator Details");
 
   const { organizationId } = useParams();
   const { userId } = useParams();

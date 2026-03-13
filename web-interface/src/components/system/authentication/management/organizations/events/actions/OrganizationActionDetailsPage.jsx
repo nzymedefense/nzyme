@@ -11,11 +11,14 @@ import SystemSubscriptionsOfActionTable from "../../../../../events/shared/subsc
 import DetectionSubscriptionsOfActionTable
   from "../../../../../events/shared/subscriptions/DetectionSubscriptionsOfActionTable";
 import useSelectedTenant from "../../../../../tenantselector/useSelectedTenant";
+import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
 
 function OrganizationActionDetailsPage() {
+
+  usePageTitle("Organization Action Details");
 
   const [organizationId, ignored] = useSelectedTenant();
   const { actionId } = useParams();

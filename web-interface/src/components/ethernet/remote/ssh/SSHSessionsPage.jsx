@@ -11,12 +11,15 @@ import {queryParametersToFilters} from "../../../shared/filtering/FilterQueryPar
 import {REMOTE_ACCESS_MENU_ITEMS} from "../RemoteAccessMenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
 }
 
 export default function SSHSessionsPage() {
+
+  usePageTitle("SSH Sessions");
 
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();

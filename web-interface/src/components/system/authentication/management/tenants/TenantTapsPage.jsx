@@ -8,10 +8,13 @@ import {TENANT_MENU_ITEMS} from "./TenantMenuItems";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import TapPermissionsTable from "../taps/TapPermissionsTable";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function TenantTapsPage() {
+
+  usePageTitle("Taps of Tenant");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

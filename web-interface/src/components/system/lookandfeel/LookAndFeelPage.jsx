@@ -1,8 +1,11 @@
 import React from "react";
 import SidebarTitleForm from "./SidebarTitleForm";
 import LoginPageVideoForm from "./LoginPageVideoForm";
+import usePageTitle from "../../../util/UsePageTitle";
 
 export default function LookAndFeelPage(props) {
+
+  usePageTitle("Look & Feel");
 
   const onSettingsUpdated = props.onSettingsUpdated;
 

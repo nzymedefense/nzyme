@@ -3,6 +3,7 @@ import HealthConsole from "./HealthConsole";
 import Consequences from "./Consequences";
 import SystemService from "../../../services/SystemService";
 import HealthConsoleConfiguration from "./HealthConsoleConfiguration";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const systemService = new SystemService();
 
@@ -11,6 +12,8 @@ function fetchData(setIndicators) {
 }
 
 function HealthPage(props) {
+
+  usePageTitle("Health Console");
 
   const [indicators, setIndicators] = useState(null)
 

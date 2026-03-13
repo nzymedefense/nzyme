@@ -10,10 +10,13 @@ import GNSSRfMonNoiseHistogram from "./GNSSRfMonNoiseHistogram";
 import SectionMenuBar from "../shared/SectionMenuBar";
 import ApiRoutes from "../../util/ApiRoutes";
 import {GNSS_MENU_ITEMS} from "./GNSSMenuItems";
+import usePageTitle from "../../util/UsePageTitle";
 
 const gnssService = new GnssService();
 
 export default function GNSSConstellationsRFPage() {
+
+  usePageTitle("GNSS RF");
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;

@@ -1,6 +1,9 @@
   import React from 'react'
+  import usePageTitle from "../../util/UsePageTitle";
 
   export default function NotFoundPage() {
+
+    usePageTitle("Page not found");
 
     return (
       <div>

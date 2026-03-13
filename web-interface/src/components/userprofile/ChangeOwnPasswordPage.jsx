@@ -6,10 +6,13 @@ import InlineFormValidationMessage from "../misc/InlineFormValidationMessage";
 import FormSubmitErrorMessage from "../misc/FormSubmitErrorMessage";
 import {notify} from "react-notify-toast";
 import {AppContext} from "../../App";
+import usePageTitle from "../../util/UsePageTitle";
 
 const userProfileService = new UserProfileService();
 
 function ChangeOwnPasswordPage() {
+
+  usePageTitle("Change Password");
 
   const app = useContext(AppContext);
 

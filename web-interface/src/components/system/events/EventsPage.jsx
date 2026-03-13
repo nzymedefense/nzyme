@@ -2,8 +2,11 @@ import React from "react";
 import Events from "./Events";
 import EventSubscriptions from "./subscriptions/EventSubscriptions";
 import Actions from "./actions/Actions";
+import usePageTitle from "../../../util/UsePageTitle";
 
 function EventsPage() {
+
+  usePageTitle("Events & Actions");
 
   return (
       <React.Fragment>

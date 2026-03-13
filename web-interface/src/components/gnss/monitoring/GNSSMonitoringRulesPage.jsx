@@ -6,10 +6,13 @@ import GnssService from "../../../services/GnssService";
 import GNSSMonitoringRulesTable from "./GNSSMonitoringRulesTable";
 import SectionMenuBar from "../../shared/SectionMenuBar";
 import {GNSS_MONITORING_MENU_ITEMS} from "./GNSSMonitoringMenuItems";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const gnssService = new GnssService();
 
 export default function GNSSMonitoringRulesPage() {
+
+  usePageTitle("GNSS Monitoring Rules");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

@@ -8,11 +8,14 @@ import EventSubscriptionsTable from "../../system/events/shared/subscriptions/Ev
 import EventSubscriptionActionSelector from "../../system/events/shared/subscriptions/EventSubscriptionActionSelector";
 import {notify} from "react-notify-toast";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
 
 function AlertSubscriptionDetailsPage() {
+
+  usePageTitle("Alert Subscription Details");
 
   const [organizationId, ignored] = useSelectedTenant();
   const { detectionName } = useParams();

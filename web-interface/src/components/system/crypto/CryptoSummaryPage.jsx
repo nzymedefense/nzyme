@@ -6,10 +6,14 @@ import TLSCertificateTable from "./tls/TLSCertificateTable";
 import TLSWildcardCertificateTable from "./tls/wildcard/TLSWildcardCertificateTable";
 import ApiRoutes from "../../../util/ApiRoutes";
 import PGPConfiguration from "./pgp/PGPConfiguration";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const cryptoService = new CryptoService()
 
 function CryptoSummaryPage () {
+
+  usePageTitle("Keys & Certificates");
+
   const [crypto, setCrypto] = useState(null)
   const [pgpMetrics, setPGPMetrics] = useState(null)
   const [localRevision, setLocalRevision] = useState(0)

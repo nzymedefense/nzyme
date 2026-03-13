@@ -16,6 +16,7 @@ import EthernetMacAddress from "../../../shared/context/macs/EthernetMacAddress"
 import DHCPOfferedIpAddresses from "./DHCPOfferedIpAddresses";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import L4Address from "../../shared/L4Address";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -38,6 +39,8 @@ export default function DHCPTransactionDetailsPage() {
   );
 
   const [tx, setTx] = useState(null);
+
+  usePageTitle(tx ? `DHCP TX: ${tx.transaction_id}` : "DHCP Transaction Details");
 
   useEffect(() => {
     enableTapSelector(tapContext);

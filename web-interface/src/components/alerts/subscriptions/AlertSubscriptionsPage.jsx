@@ -1,8 +1,11 @@
 import React from "react";
 import AlertSubscriptionsTable from "./AlertSubscriptionsTable";
 import WildcardAlertSubscriptions from "./WildcardAlertSubscriptions";
+import usePageTitle from "../../../util/UsePageTitle";
 
 function AlertSubscriptionsPage() {
+
+  usePageTitle("Alert Subscriptions");
 
   return (
       <React.Fragment>

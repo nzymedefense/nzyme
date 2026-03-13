@@ -11,12 +11,15 @@ import Filters from "../../../shared/filtering/Filters";
 import {TUNNELS_MENU_ITEMS} from "../TunnelsMenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
 }
 
 export default function SOCKSTunnelsPage() {
+
+  usePageTitle("SOCKS Tunnels");
 
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();

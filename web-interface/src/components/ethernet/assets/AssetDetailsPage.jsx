@@ -25,6 +25,7 @@ import AssetDetailsAssetName from "./AssetDetailsAssetName";
 import WithPermission from "../../misc/WithPermission";
 import EthernetMacAddress from "../../shared/context/macs/EthernetMacAddress";
 import AssetDetailsNTPTransactions from "./AssetDetailsNTPTransactions";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const assetsService = new AssetsService();
 
@@ -51,6 +52,8 @@ export default function AssetDetailsPage() {
   const [ipAddressesPage, setIpAddressesPage] = useState(1);
 
   const [revision, setRevision] = useState(new Date());
+
+  usePageTitle(asset ? `Details: ${asset.mac.address}` : "Ethernet Asset Details");
 
   useEffect(() => {
     setAsset(null);

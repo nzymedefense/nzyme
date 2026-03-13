@@ -18,6 +18,7 @@ import L4SessionsInternalBytesChart from "./l4/L4SessionsInternalBytesChart";
 import AssetsService from "../../services/ethernet/AssetsService";
 import ARPPacketsChart from "./assets/arp/ARPPacketsChart";
 import DHCPTransactionsChart from "./assets/dhcp/DHCPTransactionsChart";
+import usePageTitle from "../../util/UsePageTitle";
 
 const alertsService = new DetectionAlertsService();
 const dnsService = new DNSService()
@@ -29,6 +30,8 @@ function byteConversion (x) {
 }
 
 export default function EthernetOverviewPage() {
+
+  usePageTitle("Ethernet Overview");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

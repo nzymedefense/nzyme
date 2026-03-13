@@ -11,10 +11,13 @@ import WithExactRole from "../../../../misc/WithExactRole";
 import SectionMenuBar from "../../../../shared/SectionMenuBar";
 import {ORGANIZATION_MENU_ITEMS} from "./OrganizationMenuItems";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function OrganizationDetailsPage() {
+
+  usePageTitle("Organization Details");
 
   const user = useContext(UserContext);
 

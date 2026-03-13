@@ -10,6 +10,7 @@ import {truncate} from "../../../util/Tools";
 import conditionTypeToTitle from "./conditions/GNSSConditionTypeTitleFactory";
 import conditionTypeSetToDescription from "./conditions/descriptions/GNSSConditionsDescriptionFactory";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const gnssService = new GnssService();
 
@@ -21,6 +22,8 @@ export default function GNSSMonitoringRuleDetailsPage() {
   const [rule, setRule] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
+
+  usePageTitle(rule ? `GNSS Monitoring Rule: ${rule.name}` : "GNSS Monitoring Rule Details");
 
   useEffect(() => {
     gnssService.findMonitoringRule(uuid, organizationId, tenantId, setRule)

@@ -3,10 +3,13 @@ import TapsService from '../../../services/TapsService'
 import TapsTable from './TapsTable'
 import ApiRoutes from "../../../util/ApiRoutes";
 import useSelectedTenant from "../tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const tapsService = new TapsService()
 
 function TapsPage () {
+
+  usePageTitle("Taps");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

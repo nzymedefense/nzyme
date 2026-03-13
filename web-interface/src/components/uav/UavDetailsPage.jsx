@@ -29,6 +29,7 @@ import {userHasPermission} from "../../util/Tools";
 import UavModelType from "./util/UavModelType";
 import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
 import LongDistance from "../shared/LongDistance";
+import usePageTitle from "../../util/UsePageTitle";
 
 const uavService = new UavService();
 
@@ -54,6 +55,8 @@ export default function UavDetailsPage() {
   const [timelineTimeRange, setTimelineTimeRange] = useState(Presets.ALL_TIME);
   const [timelinePage, setTimelinePage] = useState(1);
   const perPageTimeline = 5;
+
+  usePageTitle(uav ? `UAV: ${uav.summary.designation}` : "UAV Details");
 
   useEffect(() => {
     enableTapSelector(tapContext);

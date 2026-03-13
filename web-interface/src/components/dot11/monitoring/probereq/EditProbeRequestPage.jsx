@@ -6,6 +6,7 @@ import ProbeRequestForm from "./ProbeRequestForm";
 import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -18,6 +19,8 @@ export default function EditProbeRequestPage() {
   const [probeRequest, setProbeRequest] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
+
+  usePageTitle(probeRequest ? `Edit Monitored Probe Request: ${probeRequest.ssid}` : "Edit Monitored Probe Request");
 
   const create = (ssid, notes) => {
     dot11Service.updateMonitoredProbeRequest(organizationId, tenantId, id, ssid, notes, () => {

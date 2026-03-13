@@ -4,6 +4,7 @@ import MacAddressContextForm from "./MacAddressContextForm";
 import ContextService from "../../../services/ContextService";
 import {notify} from "react-notify-toast";
 import {Navigate, useLocation} from "react-router-dom";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -12,6 +13,8 @@ const useQuery = () => {
 const contextService = new ContextService();
 
 function CreateMacAddressContextPage() {
+
+  usePageTitle("Create MAC Address Context");
 
   let urlQuery = useQuery()
   const [complete, setComplete] = useState(false);

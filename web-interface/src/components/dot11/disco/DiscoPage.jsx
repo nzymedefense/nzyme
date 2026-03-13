@@ -9,6 +9,7 @@ import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import {TapContext} from "../../../App";
 import {Presets} from "../../shared/timerange/TimeRange";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
+import usePageTitle from "../../../util/UsePageTitle";
 
 export const MonitoredNetworkContext = createContext(null);
 
@@ -17,6 +18,8 @@ const useQuery = () => {
 }
 
 function DiscoPage() {
+
+  usePageTitle("Wifi Disconnections");
 
   const tapContext = useContext(TapContext);
 

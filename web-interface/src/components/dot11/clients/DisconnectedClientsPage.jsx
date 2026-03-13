@@ -14,6 +14,7 @@ import {DISCONNECTED_CLIENT_FILTER_FIELDS} from "./DisconnectedClientFilterField
 import SectionMenuBar from "../../shared/SectionMenuBar";
 import {CLIENTS_MENU_ITEMS} from "./ClientsMenuItems";
 import ApiRoutes from "../../../util/ApiRoutes";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -22,6 +23,8 @@ const useQuery = () => {
 }
 
 function ClientsPage() {
+
+  usePageTitle("WiFi Clients (Disconnected)");
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;

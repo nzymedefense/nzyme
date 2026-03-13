@@ -7,10 +7,13 @@ import {notify} from "react-notify-toast";
 import TenantForm from "./TenantForm";
 import SubsystemsConfiguration from "../../../../shared/SubsystemsConfiguration";
 import ApiRoutes from "../../../../../util/ApiRoutes";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
 function EditTenantPage() {
+
+  usePageTitle("Edit Tenant");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

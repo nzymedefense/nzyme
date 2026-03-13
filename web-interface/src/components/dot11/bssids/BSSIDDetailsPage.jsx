@@ -21,6 +21,7 @@ import ReadOnlyTrilaterationResultFloorPlanWrapper
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets, Relative} from "../../shared/timerange/TimeRange";
 import ChannelSelector from "../util/ChannelSelector";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -49,6 +50,8 @@ function BSSIDDetailsPage() {
   const [trilaterationResult, setTrilaterationResult] = useState(null);
   const [trilaterationError, setTrilaterationError] = useState(null);
   const [trilaterationRevision, setTrilaterationRevision] = useState(0);
+
+  usePageTitle(bssid ? `BSSID: ${bssid.summary.bssid.address}` : "BSSID Details");
 
   useEffect(() => {
     setBSSID(null);

@@ -8,6 +8,7 @@ import LoadingSpinner from "../../../misc/LoadingSpinner";
 import L4Service from "../../../../services/ethernet/L4Service";
 import SessionDetailsPage from "../L4SessionDetails";
 import L4SessionDetails from "../L4SessionDetails";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const l4Service = new L4Service();
 
@@ -21,6 +22,8 @@ export default function UDPSessionDetailsPage() {
   const [organizationId, tenantId] = useSelectedTenant();
 
   const [session, setSession] = useState(null);
+
+  usePageTitle(session ? `UDP Session: ${session.session_key}` : "UDP Session Details");
 
   useEffect(() => {
     setSession(null);

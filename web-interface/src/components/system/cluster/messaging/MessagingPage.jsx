@@ -2,8 +2,11 @@ import React from "react";
 import MessageBusMessages from "./messages/MessageBusMessages";
 import Routes from "../../../../util/ApiRoutes";
 import TasksQueueTasks from "./tasks/TasksQueueTasks";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 function MessagingPage() {
+
+  usePageTitle("Cluster Messaging");
 
   return (
       <div>

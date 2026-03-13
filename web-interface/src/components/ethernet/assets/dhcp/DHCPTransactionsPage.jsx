@@ -14,6 +14,7 @@ import Filters from "../../../shared/filtering/Filters";
 import AssetsService from "../../../../services/ethernet/AssetsService";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import DHCPTransactionsChart from "./DHCPTransactionsChart";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const assetsService = new AssetsService();
 
@@ -22,6 +23,8 @@ const useQuery = () => {
 }
 
 export default function DHCPTransactionsPage() {
+
+  usePageTitle("DHCP Transactions");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

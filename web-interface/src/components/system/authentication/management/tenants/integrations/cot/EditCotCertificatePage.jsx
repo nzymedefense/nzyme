@@ -7,11 +7,14 @@ import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import Routes from "../../../../../../../util/ApiRoutes";
 import CardTitleWithControls from "../../../../../../shared/CardTitleWithControls";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 const cotIntegrationService = new CotIntegrationService();
 
 export default function EditCotCertificatePage() {
+
+  usePageTitle("Edit CoT Certificate");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

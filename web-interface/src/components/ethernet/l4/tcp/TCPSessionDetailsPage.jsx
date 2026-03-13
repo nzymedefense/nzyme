@@ -7,6 +7,7 @@ import L4Service from "../../../../services/ethernet/L4Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import {TapContext} from "../../../../App";
 import L4SessionDetails from "../L4SessionDetails";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const l4Service = new L4Service();
 
@@ -20,6 +21,8 @@ export default function TCPSessionDetailsPage() {
   const [organizationId, tenantId] = useSelectedTenant();
 
   const [session, setSession] = useState(null);
+
+  usePageTitle(session ? `TCP Session: ${session.session_key}` : "TCP Session Details");
 
   useEffect(() => {
     setSession(null);

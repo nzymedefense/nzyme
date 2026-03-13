@@ -19,6 +19,7 @@ import L4SessionsTopTrafficDestinationMacsHistogram from "./L4SessionsTopTraffic
 import L4SessionsTopDestinationPortsHistogram from "./L4SessionsTopDestinationPortsHistogram";
 import L4SessionsTopTrafficSourceAddressesHistogram from "./L4SessionsTopTrafficSourceAddressesHistogram";
 import L4SessionsTopTrafficDestinationAddressesHistogram from "./L4SessionsTopTrafficDestinationAddressesHistogram";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -27,6 +28,8 @@ const useQuery = () => {
 const l4Service = new L4Service();
 
 export default function L4OverviewPage() {
+
+  usePageTitle("TCP/UDP Overview");
 
   const urlQuery = useQuery();
 

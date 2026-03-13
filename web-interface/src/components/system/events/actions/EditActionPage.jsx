@@ -4,10 +4,13 @@ import EventActionsService from "../../../../services/EventActionsService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import EditActionProxy from "../shared/forms/EditActionProxy";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const eventActionsService = new EventActionsService();
 
 function EditActionPage() {
+
+  usePageTitle("Edit Action");
 
   const { actionId } = useParams();
 

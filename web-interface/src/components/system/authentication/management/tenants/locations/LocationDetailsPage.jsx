@@ -7,10 +7,13 @@ import moment from "moment";
 import FloorsTable from "./floors/FloorsTable";
 import {notify} from "react-notify-toast";
 import numeral from "numeral";
+import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function LocationDetailsPage() {
+
+  usePageTitle("Tenant Location Details");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

@@ -18,6 +18,7 @@ import {disableTapSelector, enableTapSelector} from "../misc/TapSelector";
 import DNSService from "../../services/ethernet/DNSService";
 import DNSStatisticsChart from "../ethernet/dns/DNSStatisticsChart";
 import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../util/UsePageTitle";
 
 const alertsService = new DetectionAlertsService();
 const systemService = new SystemService();
@@ -28,6 +29,8 @@ function byteConversion (x) {
 }
 
 export default function OverviewPage() {
+
+  usePageTitle("Dashboard");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

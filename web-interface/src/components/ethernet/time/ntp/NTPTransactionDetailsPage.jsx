@@ -2,8 +2,11 @@ import {useParams} from "react-router-dom";
 import React from "react";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import NTPTransactionDetails from "./NTPTransactionDetails";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 export default function NTPTransactionDetailsPage() {
+
+  usePageTitle("NTP Transaction Details");
 
   const { transactionId } = useParams();
 

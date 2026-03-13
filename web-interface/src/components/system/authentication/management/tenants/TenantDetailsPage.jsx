@@ -13,10 +13,13 @@ import SectionMenuBar from "../../../../shared/SectionMenuBar";
 import {ORGANIZATION_MENU_ITEMS} from "../organizations/OrganizationMenuItems";
 import {TENANT_MENU_ITEMS} from "./TenantMenuItems";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function TenantDetailsPage() {
+
+  usePageTitle("Tenant Details");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

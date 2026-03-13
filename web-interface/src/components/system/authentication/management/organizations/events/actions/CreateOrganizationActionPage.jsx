@@ -6,10 +6,13 @@ import AuthenticationManagementService from "../../../../../../../services/Authe
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import CreateActionProxy from "../../../../../events/shared/forms/CreateActionProxy";
 import CreateActionSelect from "../../../../../events/shared/forms/CreateActionSelect";
+import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
 function CreateOrganizationActionPage() {
+
+  usePageTitle("Create Organization Action");
 
   const { organizationId } = useParams();
 

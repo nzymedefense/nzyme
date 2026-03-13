@@ -11,6 +11,7 @@ import DNSEntropyLogTable from "./entropy/DNSEntropyLogTable";
 import ApiRoutes from "../../../util/ApiRoutes";
 import SectionMenuBar from "../../shared/SectionMenuBar";
 import {DNS_MENU_ITEMS} from "./DNSMenuItems";
+import usePageTitle from "../../../util/UsePageTitle";
 
 function byteConversion (x) {
   return x / 1024
@@ -19,6 +20,8 @@ function byteConversion (x) {
 const dnsService = new DNSService()
 
 function DNSOverviewPage () {
+
+  usePageTitle("DNS Overview");
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;

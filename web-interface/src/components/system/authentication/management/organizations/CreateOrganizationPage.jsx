@@ -4,10 +4,13 @@ import OrganizationForm from "./OrganizationForm";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import {Navigate} from "react-router-dom";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
 function CreateOrganizationPage() {
+
+  usePageTitle("Create Organization");
 
   const [redirect, setRedirect] = useState(false);
 

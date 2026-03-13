@@ -8,11 +8,14 @@ import GNSSMonitoringRuleForm from "./GNSSMonitoringRuleForm";
 import GnssService from "../../../services/GnssService";
 import {notify} from "react-notify-toast";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 const gnssService = new GnssService();
 
 export default function CreateGNSSMonitoringRulePage() {
+
+  usePageTitle("Create GNSS Monitoring Rule");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

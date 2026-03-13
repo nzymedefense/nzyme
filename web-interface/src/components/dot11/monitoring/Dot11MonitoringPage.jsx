@@ -3,8 +3,11 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import MonitoredNetworksTable from "./MonitoredNetworksTable";
 import SectionMenuBar from "../../shared/SectionMenuBar";
 import {MONITORING_MENU_ITEMS} from "./Dot11MenuItems";
+import usePageTitle from "../../../util/UsePageTitle";
 
 function Dot11MonitoringPage() {
+
+  usePageTitle("WiFi Monitoring");
 
   return (
     <React.Fragment>

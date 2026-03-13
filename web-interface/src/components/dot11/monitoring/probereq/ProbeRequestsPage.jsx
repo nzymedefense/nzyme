@@ -6,10 +6,13 @@ import Dot11Service from "../../../../services/Dot11Service";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import ProbeRequestsTable from "./ProbeRequestsTable";
 import {notify} from "react-notify-toast";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
 export default function ProbeRequestsPage() {
+
+  usePageTitle("Probe Request Monitoring");
 
   const [organizationId, tenantId] = useSelectedTenant();
   const [probeRequests, setProbeRequests] = useState(null);

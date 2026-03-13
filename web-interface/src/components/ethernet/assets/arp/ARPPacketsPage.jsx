@@ -18,6 +18,7 @@ import ARPRequestToReplyRatioChart from "./ARPRequestToReplyRatioChart";
 import ARPGratuitousPacketsChart from "./ARPGratuitousPacketsChart";
 import ARPRequesterPairsHistogram from "./ARPRequesterPairsHistogram";
 import ARPResponderPairsHistogram from "./ARPResponderPairsHistogram";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 const assetsService = new AssetsService();
 
@@ -26,6 +27,8 @@ const useQuery = () => {
 }
 
 export default function ARPPacketsPage() {
+
+  usePageTitle("ARP Packets");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

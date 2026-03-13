@@ -2,8 +2,11 @@ import React from "react";
 import {useParams} from "react-router-dom";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import SSHSessionDetails from "./SSHSessionDetails";
+import usePageTitle from "../../../../util/UsePageTitle";
 
 export default function SSHSessionDetailsPage() {
+
+  usePageTitle("SSH Session Details");
 
   const { sessionId } = useParams()
 

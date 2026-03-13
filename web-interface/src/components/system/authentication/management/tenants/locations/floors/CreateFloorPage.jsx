@@ -5,10 +5,13 @@ import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
 import FloorForm from "./FloorForm";
+import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function CreateFloorPage() {
+
+  usePageTitle("Create Floor");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

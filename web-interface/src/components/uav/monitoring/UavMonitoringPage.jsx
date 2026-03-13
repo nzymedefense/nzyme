@@ -2,8 +2,11 @@ import React from "react";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import UavAlertSettings from "./UavAlertSettings";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
 
 export default function UavMonitoringPage() {
+
+  usePageTitle("UAV Monitoring");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

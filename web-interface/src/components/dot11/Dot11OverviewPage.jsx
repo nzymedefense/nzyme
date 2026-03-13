@@ -15,11 +15,14 @@ import Dot11OverviewMonitoredNetworkSummary from "./Dot11OverviewMonitoredNetwor
 import CardTitleWithControls from "../shared/CardTitleWithControls";
 import {disableTapSelector, enableTapSelector} from "../misc/TapSelector";
 import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../util/UsePageTitle";
 
 const alertsService = new DetectionAlertsService();
 const dot11Service = new Dot11Service();
 
 export default function Dot11OverviewPage() {
+
+  usePageTitle("WiFi Overview");
 
   const [organizationId, tenantId] = useSelectedTenant();
 

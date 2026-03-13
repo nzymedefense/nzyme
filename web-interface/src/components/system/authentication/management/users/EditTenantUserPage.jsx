@@ -7,10 +7,13 @@ import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import EditUserForm from "./shared/EditUserForm";
 import EditPasswordForm from "./shared/EditPasswordForm";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function EditTenantUserPage() {
+
+  usePageTitle("Edit Tenant User");
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();

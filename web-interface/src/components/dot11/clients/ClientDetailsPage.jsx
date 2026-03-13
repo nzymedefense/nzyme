@@ -21,6 +21,7 @@ import ReadOnlyTrilaterationResultFloorPlanWrapper
 import TransparentIpAddressTable from "../../shared/context/transparent/TransparentIpAddressTable";
 import TransparentHostnamesTable from "../../shared/context/transparent/TransparentHostnamesTable";
 import {singleTapSelected} from "../../../util/Tools";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -50,6 +51,8 @@ function ClientDetailsPage() {
 
   const [disconnectedSignalStrengthHistogramTimeRange, setDisconnectedSignalStrengthHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [disconnectedSignalStrengthHistogram, setDisconnectedSignalStrengthHistogram] = useState(null);
+
+  usePageTitle(client ? `WiFi Client: ${client.mac.address}` : "WiFi Client Details");
 
   useEffect(() => {
     setClient(null);

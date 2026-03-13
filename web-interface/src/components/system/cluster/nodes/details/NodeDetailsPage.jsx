@@ -15,6 +15,7 @@ import {notify} from "react-notify-toast";
 import NodeDeletedWarning from "./NodeDeletedWarning";
 import NodeTimers from "./NodeTimers";
 import NodeGauges from "./NodeGauges";
+import usePageTitle from "../../../../../util/UsePageTitle";
 
 const clusterService = new ClusterService()
 
@@ -23,6 +24,8 @@ function fetchData (uuid, setNode) {
 }
 
 function NodeDetailsPage() {
+
+  usePageTitle("Node Details");
 
   const { uuid } = useParams()
 

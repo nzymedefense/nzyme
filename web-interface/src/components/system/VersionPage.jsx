@@ -1,7 +1,11 @@
 import React from 'react'
 import Versioncheck from './Versioncheck'
+import usePageTitle from "../../util/UsePageTitle";
 
 function VersionPage () {
+
+  usePageTitle("Version");
+
   return (
         <div>
             <div className="row">

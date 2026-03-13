@@ -17,6 +17,7 @@ import MonitoredNetworkDiscoChart from "./disco/MonitoredNetworkDiscoChart";
 import InlineTapSelector from "../../shared/InlineTapSelector";
 import {isValidMACAddress} from "../../../util/Tools";
 import {Presets} from "../../shared/timerange/TimeRange";
+import usePageTitle from "../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
 
@@ -43,6 +44,8 @@ function MonitoredNetworkDetailsPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [deleted, setDeleted] = useState(false);
+
+  usePageTitle(ssid ? `Monitored Network: ${ssid.ssid}` : "Monitored WiFi Network");
 
   const onDelete = function () {
     if (!confirm("Really delete monitored network and all it's configuration?")) {

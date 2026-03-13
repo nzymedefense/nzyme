@@ -9,10 +9,13 @@ import GNSSSkyPlot from "./GNSSSkyPlot";
 import SectionMenuBar from "../shared/SectionMenuBar";
 import ApiRoutes from "../../util/ApiRoutes";
 import {GNSS_MENU_ITEMS} from "./GNSSMenuItems";
+import usePageTitle from "../../util/UsePageTitle";
 
 const gnssService = new GnssService();
 
 export default function GNSSConstellationsSatellitesPage() {
+
+  usePageTitle("GNSS Satellites");
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
