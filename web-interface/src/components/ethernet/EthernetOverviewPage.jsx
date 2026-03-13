@@ -70,7 +70,7 @@ export default function EthernetOverviewPage() {
 
     l4Service.getSessionsStatistics(TimeRange.RELATIVE_HOURS_24, selectedTaps, setL4Stats);
 
-  }, [organizationId, tenantId, user]);
+  }, [organizationId, tenantId, user, selectedTaps]);
 
   return (
     <React.Fragment>
