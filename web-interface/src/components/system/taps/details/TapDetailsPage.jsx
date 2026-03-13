@@ -13,9 +13,7 @@ import TapMetricsChartProxy from './metrics/TapMetricsChartProxy'
 import TapClockWarning from "./TapClockWarning";
 import {byteAverageToMbit} from "../../../../util/Tools";
 import TapDot11CoverageMap from "./TapDot11CoverageMap";
-import WithMinimumRole from "../../../misc/WithMinimumRole";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
-import ApiRoutes from "../../../../util/ApiRoutes";
 import LatitudeLongitude from "../../../shared/LatitudeLongitude";
 import TapPositionMap from "../../authentication/management/taps/TapPositionMap";
 import TapConfiguration from "./TapConfiguration";
