@@ -22,7 +22,7 @@ use std::{process::exit, sync::{Arc, Mutex}, thread::{self, sleep}, time, time::
 use std::collections::HashMap;
 use anyhow::Error;
 use clap::Parser;
-use crossbeam_channel::{Receiver, Sender};
+use crossbeam_channel::{Receiver};
 use configuration::Configuration;
 use state::tables::tables::Tables;
 use link::leaderlink::Leaderlink;

@@ -864,6 +864,13 @@ public class TapManager {
     }
 
     public Optional<Double> findLatestActiveMetricsGaugeValue(UUID tapUuid,
+                                                              String metricName) {
+        return nzyme.getDatabase().withHandle(
+                handle -> findLatestActiveMetricsGaugeValue(tapUuid, metricName, handle)
+        );
+    }
+
+    public Optional<Double> findLatestActiveMetricsGaugeValue(UUID tapUuid,
                                                               String metricName,
                                                               Handle handle) {
         return handle.createQuery("SELECT metric_value FROM tap_metrics_gauges " +

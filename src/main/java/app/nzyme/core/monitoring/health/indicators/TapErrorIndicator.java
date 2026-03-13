@@ -7,6 +7,7 @@ import app.nzyme.core.taps.Bus;
 import app.nzyme.core.taps.Channel;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.taps.TapManager;
+import org.apache.logging.log4j.util.InternalApi;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,13 @@ public class TapErrorIndicator extends Indicator {
         List<Tap> taps = tapManager.findAllTapsOfAllUsers();
 
         for (Tap tap : taps) {
+            // Critical logs written.
+            Optional<Double> errors = tapManager.findLatestActiveMetricsGaugeValue(tap.uuid(), "logs.counts.error");
+            if (errors.isPresent() && errors.get() > 0) {
+                return IndicatorStatus.red(this);
+            }
+
+            // Channel / Processing error.s
             Optional<List<Bus>> buses = tapManager.findBusesOfTap(tap.uuid());
 
             if (buses.isPresent()) {
