@@ -74,7 +74,7 @@ class Dot11Service {
   findSSIDOfBSSID(bssid, ssid, timeRange, taps, setSSID) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid,
+    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + encodeURIComponent(ssid),
         { time_range: timeRange, taps: tapsList }, function (response) {
           setSSID(response.data);
     })
@@ -83,7 +83,7 @@ class Dot11Service {
   getSSIDOfBSSIDAdvertisementHistogram(bssid, ssid, timeRange, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid + "/advertisements/histogram",
+    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + encodeURIComponent(ssid) + "/advertisements/histogram",
         { time_range: timeRange, taps: tapsList }, function (response) {
           setHistogram(response.data);
     })
@@ -92,7 +92,7 @@ class Dot11Service {
   getSSIDOfBSSIDActiveChannelHistogram(bssid, ssid, timeRange, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid + "/frequencies/histogram",
+    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + encodeURIComponent(ssid) + "/frequencies/histogram",
         { time_range: timeRange, taps: tapsList }, function (response) {
           setHistogram(response.data);
     })
@@ -101,7 +101,7 @@ class Dot11Service {
   getSSIDOfBSSIDSignalWaterfall(bssid, ssid, frequency, timeRange, taps, setWaterfall) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
-    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid + "/frequencies/show/" + frequency + "/signal/waterfall",
+    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + encodeURIComponent(ssid) + "/frequencies/show/" + frequency + "/signal/waterfall",
         { time_range: timeRange, taps: tapsList }, function (response) {
           setWaterfall(response.data);
     })
@@ -318,7 +318,7 @@ class Dot11Service {
   }
 
   updateTrackDetectorConfig(bssid, ssid, frequency, tapUUID, frameThreshold, gapThreshold, signalCenterlineJitter, successCallback) {
-    RESTClient.put("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid + "/frequencies/show/" + frequency + "/signal/trackdetector/configuration",
+    RESTClient.put("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + encodeURIComponent(ssid) + "/frequencies/show/" + frequency + "/signal/trackdetector/configuration",
         {
           tap_id: tapUUID,
           frame_threshold: frameThreshold,
