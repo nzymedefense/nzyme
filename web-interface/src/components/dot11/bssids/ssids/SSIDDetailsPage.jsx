@@ -37,7 +37,7 @@ function SSIDDetailsPage() {
   const selectedTaps = tapContext.taps;
 
   const [selectedFrequency, setSelectedFrequency] = useState(parseInt(frequencyParam, 10));
-  const ssidTimeRange = Presets.RELATIVE_MINUTES_15;
+  const ssidTimeRange = Presets.ALL_TIME;
 
   const [ssid, setSSID] = useState(null);
 
