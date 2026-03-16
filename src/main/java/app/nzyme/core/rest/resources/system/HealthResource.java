@@ -31,20 +31,18 @@ public class HealthResource {
     @GET
     @Path("indicators")
     public Response indicators() {
-        Optional<List<IndicatorStatus>> status = nzyme.getHealthMonitor().getIndicatorStatus();
+        List<IndicatorStatus> status = nzyme.getHealthMonitor().getIndicatorStatus();
 
         Map<String, HealthIndicatorResponse> indicators = Maps.newHashMap();
-        if (status.isPresent()) {
-            for (IndicatorStatus s : status.get()) {
-                indicators.put(s.indicatorId(), HealthIndicatorResponse.create(
-                        s.indicatorId(),
-                        s.indicatorName(),
-                        s.resultLevel().toString().toUpperCase(),
-                        s.lastChecked(),
-                        s.lastChecked().isBefore(DateTime.now().minusMinutes(2)),
-                        s.active()
-                ));
-            }
+        for (IndicatorStatus s : status) {
+            indicators.put(s.indicatorId(), HealthIndicatorResponse.create(
+                    s.indicatorId(),
+                    s.indicatorName(),
+                    s.resultLevel().toString().toUpperCase(),
+                    s.lastChecked(),
+                    s.lastChecked().isBefore(DateTime.now().minusMinutes(2)),
+                    s.active()
+            ));
         }
 
         return Response.ok(HealthResponse.create(indicators)).build();

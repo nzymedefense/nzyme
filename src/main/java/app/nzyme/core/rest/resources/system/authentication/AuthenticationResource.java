@@ -22,6 +22,7 @@ import app.nzyme.core.branding.BrandingRegistryKeys;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
+import app.nzyme.core.monitoring.health.IndicatorStatusLevel;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
@@ -268,17 +269,15 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             boolean hasRed = false;
             boolean hasOrange = false;
 
-            Optional<List<IndicatorStatus>> indicators = nzyme.getHealthMonitor().getIndicatorStatus();
-            if (indicators.isPresent()) {
-                for (IndicatorStatus status : indicators.get()) {
-                    if (status.active()) {
-                        if (status.resultLevel().equals("RED")) {
-                            hasRed = true;
-                        }
+            List<IndicatorStatus> indicators = nzyme.getHealthMonitor().getIndicatorStatus();
+            for (IndicatorStatus status : indicators) {
+                if (status.active()) {
+                    if (status.resultLevel().equals(IndicatorStatusLevel.RED)) {
+                        hasRed = true;
+                    }
 
-                        if (status.resultLevel().equals("ORANGE")) {
-                            hasOrange = true;
-                        }
+                    if (status.resultLevel().equals(IndicatorStatusLevel.ORANGE)) {
+                        hasOrange = true;
                     }
                 }
             }

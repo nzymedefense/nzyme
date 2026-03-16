@@ -239,14 +239,10 @@ public class ConnectStatusReporter extends Periodical {
     }
 
     private List<ConnectHealthIndicatorReport> buildHealthIndicatorsReport() {
-        Optional<List<IndicatorStatus>> indicatorStatus = nzyme.getHealthMonitor().getIndicatorStatus();
-
-        if (indicatorStatus.isEmpty()) {
-            return Lists.newArrayList();
-        }
+        List<IndicatorStatus> indicatorStatus = nzyme.getHealthMonitor().getIndicatorStatus();
 
         List<ConnectHealthIndicatorReport> report = Lists.newArrayList();
-        for (IndicatorStatus status : indicatorStatus.get()) {
+        for (IndicatorStatus status : indicatorStatus) {
             report.add(ConnectHealthIndicatorReport.create(
                     status.indicatorName(),
                     status.indicatorId(),
