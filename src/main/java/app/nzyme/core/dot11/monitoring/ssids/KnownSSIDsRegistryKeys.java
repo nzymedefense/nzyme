@@ -26,4 +26,13 @@ public class KnownSSIDsRegistryKeys {
             false
     );
 
+    public static final RegistryKey DWELL_TIME_MINUTES = RegistryKey.create(
+            "dot11_ssid_monitoring_dwell_time_minutes",
+            Optional.of(new ArrayList<>() {{
+                add(ConfigurationEntryConstraint.createNumberRangeConstraint(0, Integer.MAX_VALUE));
+            }}),
+            Optional.of("5"),
+            false
+    );
+
 }

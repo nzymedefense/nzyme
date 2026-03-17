@@ -68,6 +68,22 @@ export default function SSIDMonitoringConfiguration(props) {
                                 dbUpdateCallback={dot11Service.updateSSIDMonitoringConfiguration}/>
           </td>
         </tr>
+
+        <tr>
+          <td>24-hour minimum dwell time (Minutes)</td>
+          <td>
+            <ConfigurationValue value={configuration.dwell_time_minutes.value}
+                                configKey={configuration.dwell_time_minutes.key} />
+          </td>
+          <td>
+            <ConfigurationModal config={configuration.dwell_time_minutes}
+                                setGlobalConfig={setConfiguration}
+                                setLocalRevision={setLocalRevision}
+                                organizationId={organizationUUID}
+                                tenantId={tenantUUID}
+                                dbUpdateCallback={dot11Service.updateSSIDMonitoringConfiguration}/>
+          </td>
+        </tr>
         </tbody>
       </table>
   )

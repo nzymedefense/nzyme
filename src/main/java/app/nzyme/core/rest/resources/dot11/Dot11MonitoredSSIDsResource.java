@@ -223,6 +223,11 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
                 KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.key(), organizationId, tenantId
         );
 
+        int dwellTimeMinutes = nzyme.getDatabaseCoreRegistry()
+                .getValue(KnownSSIDsRegistryKeys.DWELL_TIME_MINUTES.key(), organizationId, tenantId)
+                .map(Integer::valueOf)
+                .orElse(5);
+
         SSIDMonitoringConfigurationResponse configuration = SSIDMonitoringConfigurationResponse.create(
                 ConfigurationEntryResponse.create(
                         KnownSSIDsRegistryKeys.IS_ENABLED.key(),
@@ -242,6 +247,16 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
                         KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.defaultValue().orElse(null),
                         KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.requiresRestart(),
                         KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED.constraints().orElse(Collections.emptyList()),
+                        "wifi-ssid-monitoring"
+                ),
+                ConfigurationEntryResponse.create(
+                        KnownSSIDsRegistryKeys.DWELL_TIME_MINUTES.key(),
+                        "24-hour minimum dwell time (Minutes)",
+                        dwellTimeMinutes,
+                        ConfigurationEntryValueType.NUMBER,
+                        KnownSSIDsRegistryKeys.DWELL_TIME_MINUTES.defaultValue().orElse(null),
+                        KnownSSIDsRegistryKeys.DWELL_TIME_MINUTES.requiresRestart(),
+                        KnownSSIDsRegistryKeys.DWELL_TIME_MINUTES.constraints().orElse(Collections.emptyList()),
                         "wifi-ssid-monitoring"
                 )
         );
@@ -274,6 +289,11 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
                     break;
                 case "eventing_is_enabled":
                     if (!ConfigurationEntryConstraintValidator.checkConstraints(KnownSSIDsRegistryKeys.EVENTING_IS_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "dwell_time_minutes":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(KnownSSIDsRegistryKeys.DWELL_TIME_MINUTES, c)) {
                         return Response.status(422).build();
                     }
                     break;

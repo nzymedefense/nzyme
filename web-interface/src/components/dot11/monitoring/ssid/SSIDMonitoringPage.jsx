@@ -88,6 +88,12 @@ export default function SSIDMonitoringPage() {
                   knowledge.
                 </p>
 
+                <p className="text-muted">
+                  The <i>minimum dwell time</i> sets how many minutes a SSID must be observed within the past 24 hours
+                  before it is considered active. This prevents alerts for SSIDs of passing devices that were only
+                  briefly visible. Set it to <i>0</i> to alert on any SSID, no matter how long it has been seen.
+                </p>
+
                 <p className="text-muted mb-0">
                   Newly detected networks should be treated as informational, not as critical alerts, until further
                   investigated and properly classified to ensure they don&apos;t pose a security risk.

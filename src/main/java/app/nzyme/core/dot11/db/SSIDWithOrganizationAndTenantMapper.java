@@ -16,7 +16,8 @@ public class SSIDWithOrganizationAndTenantMapper implements RowMapper<SSIDWithOr
                 rs.getString("ssid"),
                 UUID.fromString(rs.getString("organization_id")),
                 UUID.fromString(rs.getString("tenant_id")),
-                new DateTime(rs.getTimestamp("last_seen"))
+                new DateTime(rs.getTimestamp("last_seen")),
+                rs.getInt("active_minutes")
         );
     }
 

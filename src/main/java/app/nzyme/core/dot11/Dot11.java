@@ -210,18 +210,15 @@ public class Dot11 {
         );
     }
 
-    public List<SSIDWithOrganizationAndTenant> findAllCurrentlyActiveSSIDsAndOwner(int dwellTimeMinutes) {
+    public List<SSIDWithOrganizationAndTenant> findAllSSIDsAndOwner(DateTime since) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.ssid, t.organization_id, t.tenant_id, " +
                                 "COUNT(DISTINCT date_trunc('minute', s.created_at)) AS active_minutes, " +
                                 "MAX(s.created_at) AS last_seen FROM dot11_ssids AS s " +
                                 "LEFT JOIN taps AS t ON s.tap_uuid = t.uuid " +
-                                "WHERE s.created_at >= :dwell " +
-                                "GROUP BY s.ssid, t.organization_id, t.tenant_id " +
-                                "HAVING COUNT(DISTINCT date_trunc('minute', s.created_at)) >= :dwell_time_minutes " +
-                                "AND MAX(s.created_at) >= :dwell")
-                        .bind("dwell", DateTime.now().minusMinutes(dwellTimeMinutes))
-                        .bind("dwell_time_minutes", dwellTimeMinutes)
+                                "WHERE s.created_at >= :since " +
+                                "GROUP BY s.ssid, t.organization_id, t.tenant_id")
+                        .bind("since", since)
                         .mapTo(SSIDWithOrganizationAndTenant.class)
                         .list()
         );

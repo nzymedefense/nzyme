@@ -13,10 +13,14 @@ public abstract class SSIDMonitoringConfigurationResponse {
     @JsonProperty("eventing_is_enabled")
     public abstract ConfigurationEntryResponse eventingIsEnabled();
 
-    public static SSIDMonitoringConfigurationResponse create(ConfigurationEntryResponse isEnabled, ConfigurationEntryResponse eventingIsEnabled) {
+    @JsonProperty("dwell_time_minutes")
+    public abstract ConfigurationEntryResponse dwellTimeMinutes();
+
+    public static SSIDMonitoringConfigurationResponse create(ConfigurationEntryResponse isEnabled, ConfigurationEntryResponse eventingIsEnabled, ConfigurationEntryResponse dwellTimeMinutes) {
         return builder()
                 .isEnabled(isEnabled)
                 .eventingIsEnabled(eventingIsEnabled)
+                .dwellTimeMinutes(dwellTimeMinutes)
                 .build();
     }
 
@@ -24,11 +28,14 @@ public abstract class SSIDMonitoringConfigurationResponse {
         return new AutoValue_SSIDMonitoringConfigurationResponse.Builder();
     }
 
+
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder isEnabled(ConfigurationEntryResponse isEnabled);
 
         public abstract Builder eventingIsEnabled(ConfigurationEntryResponse eventingIsEnabled);
+
+        public abstract Builder dwellTimeMinutes(ConfigurationEntryResponse dwellTimeMinutes);
 
         public abstract SSIDMonitoringConfigurationResponse build();
     }

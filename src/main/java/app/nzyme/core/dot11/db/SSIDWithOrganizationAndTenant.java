@@ -12,13 +12,15 @@ public abstract class SSIDWithOrganizationAndTenant {
     public abstract UUID organizationId();
     public abstract UUID tenantId();
     public abstract DateTime lastSeen();
+    public abstract int activeMinutes();
 
-    public static SSIDWithOrganizationAndTenant create(String ssid, UUID organizationId, UUID tenantId, DateTime lastSeen) {
+    public static SSIDWithOrganizationAndTenant create(String ssid, UUID organizationId, UUID tenantId, DateTime lastSeen, int activeMinutes) {
         return builder()
                 .ssid(ssid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
                 .lastSeen(lastSeen)
+                .activeMinutes(activeMinutes)
                 .build();
     }
 
@@ -36,7 +38,8 @@ public abstract class SSIDWithOrganizationAndTenant {
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
+        public abstract Builder activeMinutes(int activeMinutes);
+
         public abstract SSIDWithOrganizationAndTenant build();
     }
-
 }

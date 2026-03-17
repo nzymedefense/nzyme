@@ -29,7 +29,8 @@ public class KnownSSIDMonitor extends Periodical {
     protected void execute() {
         try {
             // Fetch all SSIDs we saw in previous minute.
-            List<SSIDWithOrganizationAndTenant> ssids = nzyme.getDot11().findAllCurrentlyActiveSSIDsAndOwner(5);
+            List<SSIDWithOrganizationAndTenant> ssids = nzyme.getDot11()
+                    .findAllSSIDsAndOwner(DateTime.now().minusDays(1));
 
             Map<String, List<Dot11KnownNetwork>> knownNetworksCache = Maps.newHashMap();
             nzyme.getDatabase().useHandle(handle -> {
@@ -45,8 +46,17 @@ public class KnownSSIDMonitor extends Periodical {
                         continue;
                     }
 
-                    LOG.debug("Processing SSID [{}] of org/tenant ({}/{}) for monitoring.",
-                            ssid, ssid.organizationId(), ssid.tenantId());
+                    int dwellTimeMinutes = nzyme.getDatabaseCoreRegistry()
+                            .getValue(KnownSSIDsRegistryKeys.DWELL_TIME_MINUTES.key(), ssid.organizationId(), ssid.tenantId())
+                            .map(Integer::valueOf)
+                            .orElse(5);
+
+                    LOG.debug("Processing SSID [{}] of org/tenant ({}/{}) for monitoring. (Dwell time: {})",
+                            ssid, ssid.organizationId(), ssid.tenantId(), dwellTimeMinutes);
+
+                    if (ssid.activeMinutes() < dwellTimeMinutes) {
+                        continue;
+                    }
 
                     String key = ssid.organizationId().toString() + ssid.tenantId().toString();
                     List<Dot11KnownNetwork> knownNetworks = knownNetworksCache.get(key);
