@@ -1,9 +1,11 @@
-import React from "react";
+import React, {useEffect} from "react";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import Paginator from "../../../misc/Paginator";
 import moment from "moment";
 import Dot11Service from "../../../../services/Dot11Service";
 import {notify} from "react-notify-toast";
+import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSpinner";
+import ColumnSorting from "../../../shared/ColumnSorting";
 
 const dot11Service = new Dot11Service();
 
@@ -14,6 +16,19 @@ export default function KnownNetworksTable(props) {
     const page = props.page;
     const setPage = props.setPage;
     const perPage = props.perPage;
+
+    const setOrderColumn = props.setOrderColumn;
+    const orderColumn = props.orderColumn;
+    const setOrderDirection = props.setOrderDirection;
+    const orderDirection = props.orderDirection;
+
+    const columnSorting = (columnName) => {
+        return <ColumnSorting thisColumn={columnName}
+                              orderColumn={orderColumn}
+                              setOrderColumn={setOrderColumn}
+                              orderDirection={orderDirection}
+                              setOrderDirection={setOrderDirection} />
+    }
 
     const status = (network) => {
         if (network.is_approved) {
@@ -41,12 +56,12 @@ export default function KnownNetworksTable(props) {
 
     const changeStatusLink = (network) => {
         if (network.is_approved) {
-            return <a href="#" onClick={() => onRevoke(network)}>Revoke Approval</a>
+            return <a href="#" onClick={(e) => onRevoke(e, network)}>Revoke Approval</a>
         } else {
             if (network.is_ignored) {
                 return <span className="text-muted" title="Ignored networks cannot be approved.">Approve</span>
             } else {
-                return <a href="#" onClick={() => onApprove(network)}>Approve</a>
+                return <a href="#" onClick={(e) => onApprove(e, network)}>Approve</a>
             }
         }
     }
@@ -56,14 +71,16 @@ export default function KnownNetworksTable(props) {
             return <span className="text-muted" title="Approved networks cannot be ignored.">Ignore</span>
         } else {
             if (network.is_ignored) {
-                return <a href="#" onClick={() => onUnignore(network)}>Unignore</a>
+                return <a href="#" onClick={(e) => onUnignore(e, network)}>Unignore</a>
             } else {
-                return <a href="#" onClick={() => onIgnore(network)}>Ignore</a>
+                return <a href="#" onClick={(e) => onIgnore(e, network)}>Ignore</a>
             }
         }
     }
 
-    const onApprove = (network) => {
+    const onApprove = (e, network) => {
+        e.preventDefault();
+
         if (!confirm("Really approve network? You can revoke the approval at any time.")) {
             return;
         }
@@ -74,7 +91,9 @@ export default function KnownNetworksTable(props) {
         });
     }
 
-    const onRevoke = (network) => {
+    const onRevoke = (e, network) => {
+        e.preventDefault();
+
         if (!confirm("Really revoke approval? You can re-approve it at any time.")) {
             return;
         }
@@ -86,7 +105,9 @@ export default function KnownNetworksTable(props) {
     }
 
 
-    const onIgnore = (network) => {
+    const onIgnore = (e, network) => {
+        e.preventDefault();
+
         if (!confirm("Really ignore network? You can un-ignore it at any time.")) {
             return;
         }
@@ -97,7 +118,9 @@ export default function KnownNetworksTable(props) {
         });
     }
 
-    const onUnignore = (network) => {
+    const onUnignore = (e, network) => {
+        e.preventDefault();
+
         if (!confirm("Really unignore network? You can ignore it again at any time.")) {
             return;
         }
@@ -123,7 +146,7 @@ export default function KnownNetworksTable(props) {
     }
 
     if (!networks) {
-        return <LoadingSpinner />
+        return <GenericWidgetLoadingSpinner height={700} />
     }
 
     if (networks.networks.length === 0) {
@@ -139,9 +162,9 @@ export default function KnownNetworksTable(props) {
             <table className="table table-sm table-hover table-striped">
                 <thead>
                 <tr>
-                    <th>SSID</th>
-                    <th>Status</th>
-                    <th>Last Seen</th>
+                    <th>SSID {columnSorting("ssid")}</th>
+                    <th>Status {columnSorting("status")}</th>
+                    <th>Last Seen {columnSorting("last_seen")}</th>
                     <th>&nbsp;</th>
                     <th>&nbsp;</th>
                     <th>&nbsp;</th>

@@ -92,6 +92,24 @@ public class Dot11 {
 
     }
 
+    public enum KnownSSIDOrderColumn {
+
+        SSID("ssid"),
+        STATUS("(is_approved, is_ignored)"),
+        LAST_SEEN("last_seen");
+
+        private final String columnName;
+
+        KnownSSIDOrderColumn(String columnName) {
+            this.columnName = columnName;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+    }
+
     public enum MonitorActiveStatusTypeColumn {
 
         UNEXPECTED_BSSID("enabled_unexpected_bssid"),
@@ -2451,20 +2469,33 @@ public class Dot11 {
         );
     }
 
-    public List<Dot11KnownNetwork> findAllKnownNetworks(UUID organizationId, UUID tenantId, int limit, int offset) {
+    public List<Dot11KnownNetwork> findAllKnownNetworks(UUID organizationId,
+                                                        UUID tenantId,
+                                                        KnownSSIDOrderColumn orderColumn,
+                                                        OrderDirection orderDirection,
+                                                        int limit,
+                                                        int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-                findAllKnownNetworks(handle, organizationId, tenantId, limit, offset)
+                findAllKnownNetworks(handle, organizationId, tenantId, orderColumn, orderDirection, limit, offset)
         );
     }
 
-    public List<Dot11KnownNetwork> findAllKnownNetworks(Handle handle, UUID organizationId, UUID tenantId, int limit, int offset) {
+    public List<Dot11KnownNetwork> findAllKnownNetworks(Handle handle,
+                                                        UUID organizationId,
+                                                        UUID tenantId,
+                                                        KnownSSIDOrderColumn orderColumn,
+                                                        OrderDirection orderDirection,
+                                                        int limit,
+                                                        int offset) {
         return handle.createQuery("SELECT * FROM dot11_known_networks " +
                         "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
-                        "ORDER BY ssid ASC LIMIT :limit OFFSET :offset")
+                        "ORDER BY <order_column> <order_direction> LIMIT :limit OFFSET :offset")
                 .bind("organization_id", organizationId)
                 .bind("tenant_id", tenantId)
                 .bind("limit", limit)
                 .bind("offset", offset)
+                .define("order_column", orderColumn.getColumnName())
+                .define("order_direction", orderDirection)
                 .mapTo(Dot11KnownNetwork.class)
                 .list();
     }

@@ -499,10 +499,10 @@ class Dot11Service {
         { change: newConfig }, successCallback, errorCallback)
   }
 
-  findAllKnownNetworks(organizationUUID, tenantUUID, limit, offset, setKnownNetworks) {
+  findAllKnownNetworks(organizationUUID, tenantUUID, orderColumn, orderDirection, limit, offset, setKnownNetworks) {
     RESTClient.get(
         `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}`,
-        {limit: limit, offset: offset},
+        {limit: limit, offset: offset, order_column: orderColumn, order_direction: orderDirection},
         (response) => setKnownNetworks(response.data)
     )
   }

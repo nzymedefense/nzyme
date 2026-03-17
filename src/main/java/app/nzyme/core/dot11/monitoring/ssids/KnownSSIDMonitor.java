@@ -1,7 +1,9 @@
 package app.nzyme.core.dot11.monitoring.ssids;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.detection.alerts.DetectionType;
+import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.db.Dot11KnownNetwork;
 import app.nzyme.core.dot11.db.SSIDWithOrganizationAndTenant;
 import app.nzyme.core.periodicals.Periodical;
@@ -61,8 +63,16 @@ public class KnownSSIDMonitor extends Periodical {
                     String key = ssid.organizationId().toString() + ssid.tenantId().toString();
                     List<Dot11KnownNetwork> knownNetworks = knownNetworksCache.get(key);
                     if (knownNetworks == null) {
-                        knownNetworks = nzyme.getDot11()
-                                .findAllKnownNetworks(handle, ssid.organizationId(), ssid.tenantId(), Integer.MAX_VALUE, 0);
+                        knownNetworks = nzyme.getDot11().findAllKnownNetworks(
+                                handle,
+                                ssid.organizationId(),
+                                ssid.tenantId(),
+                                Dot11.KnownSSIDOrderColumn.LAST_SEEN,
+                                OrderDirection.ASC,
+                                Integer.MAX_VALUE,
+                                0
+                        );
+
                         knownNetworksCache.put(key, knownNetworks);
                     }
 

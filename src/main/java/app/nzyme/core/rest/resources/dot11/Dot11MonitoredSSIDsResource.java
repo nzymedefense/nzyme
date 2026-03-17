@@ -1,6 +1,8 @@
 package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.OrderDirection;
+import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.db.Dot11KnownNetwork;
 import app.nzyme.core.dot11.monitoring.ssids.KnownSSIDsRegistryKeys;
 import app.nzyme.core.rest.UserAuthenticatedResource;
@@ -14,6 +16,7 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
@@ -41,6 +44,8 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
     public Response findAll(@Context SecurityContext sc,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset,
+                            @QueryParam("order_column") @Nullable String orderColumnParam,
+                            @QueryParam("order_direction") @Nullable String orderDirectionParam,
                             @PathParam("organization_id") @NotNull UUID organizationId,
                             @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (limit > 250) {
@@ -52,9 +57,21 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        Dot11.KnownSSIDOrderColumn orderColumn = Dot11.KnownSSIDOrderColumn.SSID;
+        OrderDirection orderDirection = OrderDirection.ASC;
+        if (orderColumnParam != null && orderDirectionParam != null) {
+            try {
+                orderColumn = Dot11.KnownSSIDOrderColumn.valueOf(orderColumnParam.toUpperCase());
+                orderDirection = OrderDirection.valueOf(orderDirectionParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
+
         long total = nzyme.getDot11().countAllKnownNetworks(organizationId, tenantId);
         List<KnownNetworkDetailsResponse> networks = Lists.newArrayList();
-        for (Dot11KnownNetwork kn : nzyme.getDot11().findAllKnownNetworks(organizationId, tenantId, limit, offset)) {
+        for (Dot11KnownNetwork kn : nzyme.getDot11()
+                .findAllKnownNetworks(organizationId, tenantId, orderColumn, orderDirection, limit, offset)) {
             networks.add(KnownNetworkDetailsResponse.create(
                     kn.uuid(),
                     kn.organizationId(),

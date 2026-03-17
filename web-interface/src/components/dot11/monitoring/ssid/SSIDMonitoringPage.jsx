@@ -21,13 +21,18 @@ export default function SSIDMonitoringPage() {
 
   const [revision, setRevision] = useState(new Date());
 
-  const perPage = 25;
+  const [perPage, setPerPage] = useState(25);
   const [page, setPage] = useState(1);
+
+  const [orderColumn, setOrderColumn] = useState("ssid");
+  const [orderDirection, setOrderDirection] = useState("ASC");
 
   useEffect(() => {
     setNetworks(null);
-    dot11Service.findAllKnownNetworks(organizationId, tenantId, perPage, (page-1)*perPage, setNetworks)
-  }, [page, organizationId, tenantId, revision])
+    dot11Service.findAllKnownNetworks(
+      organizationId, tenantId, orderColumn, orderDirection, perPage, (page-1)*perPage, setNetworks
+    )
+  }, [page, perPage, orderColumn, orderDirection, organizationId, tenantId, revision])
 
   const onDeleteAll = (e) => {
     e.preventDefault();
@@ -130,11 +135,30 @@ export default function SSIDMonitoringPage() {
 
                   <br style={{clear: "both"}}/>
 
+                  <div className="row">
+                    <div className="col-auto">
+                      <label className="col-form-label">Per Page:</label>
+                    </div>
+                    <div className="col-auto">
+                      <select className="form-select"
+                              onChange={(e) => {e.preventDefault(); setPage(1); setPerPage(Number(e.target.value))}}>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                        <option value={250}>250</option>
+                      </select>
+                    </div>
+                  </div>
+
                   <KnownNetworksTable networks={networks}
                                       onChange={onChange}
                                       page={page}
                                       setPage={setPage}
-                                      perPage={perPage}/>
+                                      perPage={perPage}
+                                      orderColumn={orderColumn}
+                                      setOrderColumn={setOrderColumn}
+                                      orderDirection={orderDirection}
+                                      setOrderDirection={setOrderDirection} />
                 </div>
               </div>
             </div>
