@@ -54,6 +54,10 @@ function BSSIDsPage() {
     }
   }, [tapContext]);
 
+  const onSaveFilterAsMonitor = (filters) => {
+    console.log(filters);
+  }
+
   const table = () => {
     if (!bssids) {
       return <LoadingSpinner />
@@ -85,7 +89,10 @@ function BSSIDsPage() {
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange} />
 
-                <Filters filters={filters} setFilters={setFilters} fields={BSSID_FILTER_FIELDS} />
+                <Filters filters={filters}
+                         setFilters={setFilters}
+                         fields={BSSID_FILTER_FIELDS}
+                         onSaveAsMonitor={onSaveFilterAsMonitor} />
               </div>
             </div>
           </div>

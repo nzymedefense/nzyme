@@ -225,6 +225,8 @@ export default function Filters(props) {
   const preSelectedField = props.preSelectedField;
   const preSelectedValue = props.preSelectedValue;
 
+  const onSaveAsMonitor = props.onSaveAsMonitor;
+
   const defaultOperator = OPERATORS.EQUALS;
   const defaultFilter = { name: "", field: "0", type: FILTER_TYPE.STRING, value_transform: null };
 
@@ -484,6 +486,13 @@ export default function Filters(props) {
                   onClick={onFilterAdded}>
             Add Filter
           </button>
+
+          { onSaveAsMonitor ?
+            <button className="btn btn-secondary" type="button"
+                    disabled={Object.keys(filters).length === 0}
+                    onClick={(e) => { e.preventDefault(); onSaveAsMonitor(filters); }}>
+              Save as Monitor
+            </button> : null }
         </div>
 
         {!hideAppliedFilters && <AppliedFilterList filters={filters} onFilterRemoved={onFilterRemoved} />}
