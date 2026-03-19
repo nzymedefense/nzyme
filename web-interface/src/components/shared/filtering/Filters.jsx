@@ -11,6 +11,7 @@ import validateMACAddressValid from "./validators/MACAddressValidator";
 import validateNumber from "./validators/NumberValidator";
 import {filtersToQueryParameters} from "./FilterQueryParameters";
 import validateEnum from "./validators/EnumValidator";
+import SaveFilterAsMonitorDialog from "./monitors/SaveFilterAsMonitorDialog";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -226,6 +227,7 @@ export default function Filters(props) {
   const preSelectedValue = props.preSelectedValue;
 
   const onSaveAsMonitor = props.onSaveAsMonitor;
+  const [showSaveAsMonitorDialog, setShowSaveAsMonitorDialog] = useState(false);
 
   const defaultOperator = OPERATORS.EQUALS;
   const defaultFilter = { name: "", field: "0", type: FILTER_TYPE.STRING, value_transform: null };
@@ -456,6 +458,20 @@ export default function Filters(props) {
     setFilters(newFilters);
   }
 
+  const toggleSaveAsMonitor = () => {
+    setShowSaveAsMonitorDialog(!showSaveAsMonitorDialog);
+  }
+
+  const saveAsMonitorDialog = () => {
+    if (!showSaveAsMonitorDialog) {
+      return null;
+    }
+
+    return <SaveFilterAsMonitorDialog filters={filters}
+                                      onClose={toggleSaveAsMonitor}
+                                      onSave={(e) => { e.preventDefault(); }}  />
+  }
+
   return (
       <div className="filters">
         <div className="input-group">
@@ -488,11 +504,14 @@ export default function Filters(props) {
           </button>
 
           { onSaveAsMonitor ?
-            <button className="btn btn-secondary" type="button"
-                    disabled={Object.keys(filters).length === 0}
-                    onClick={(e) => { e.preventDefault(); onSaveAsMonitor(filters); }}>
-              Save as Monitor
-            </button> : null }
+            <>
+              <button className="btn btn-secondary" type="button"
+                      disabled={Object.keys(filters).length === 0}
+                      onClick={toggleSaveAsMonitor}>
+                Save as Monitor
+              </button>
+              {saveAsMonitorDialog()}
+            </> : null }
         </div>
 
         {!hideAppliedFilters && <AppliedFilterList filters={filters} onFilterRemoved={onFilterRemoved} />}

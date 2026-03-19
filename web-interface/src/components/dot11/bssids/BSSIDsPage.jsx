@@ -54,7 +54,7 @@ function BSSIDsPage() {
     }
   }, [tapContext]);
 
-  const onSaveFilterAsMonitor = (filters) => {
+  const onSaveFilterAsMonitor = (filters, taps) => {
     console.log(filters);
   }
 

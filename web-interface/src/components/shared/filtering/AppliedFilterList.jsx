@@ -4,6 +4,7 @@ export default function AppliedFilterList(props) {
 
   const filters = props.filters;
   const onFilterRemoved = props.onFilterRemoved;
+  const hideHeadline = props.hideHeadline;
 
   if (!filters || Object.keys(filters).length === 0) {
     return <ul className="applied-filters mt-3"><li>No filters defined.</li></ul>
@@ -11,7 +12,7 @@ export default function AppliedFilterList(props) {
 
   return (
       <React.Fragment>
-        <h5 className="mt-3">Active Filters</h5>
+        { hideHeadline ? null : <h5 className="mt-3">Active Filters</h5> }
 
         <ul className="applied-filters mt-1">
           {Object.keys(filters).map((filterGroup, i) => {
@@ -24,9 +25,10 @@ export default function AppliedFilterList(props) {
                             <span className="applied-filter-name">{filter.name}</span>{' '}
                             <span title={filter.operator} className="applied-filter-operator">{filter.sign}</span>{' '}
                             <span className="applied-filter-value">{filter.value}</span>{' '}
+                            { onFilterRemoved ?
                             <a className="applied-filter-remove" onClick={(e) => onFilterRemoved(e, filter)}>
                               <i className="fa-solid fa-xmark" />
-                            </a>{' '}
+                            </a> : null }{' '}
                             {filters[filterGroup].length === x + 1 ? null :
                                 <span className="applied-filter-connector">OR</span>}
                             {' '}
