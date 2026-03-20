@@ -1,11 +1,74 @@
-import React, {useContext} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import AppliedFilterList from "../AppliedFilterList";
 import {TapContext} from "../../../../App";
+import TapsService from "../../../../services/TapsService";
+import LoadingSpinner from "../../../misc/LoadingSpinner";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+
+const tapsService = new TapsService();
 
 export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
+
+  const [taps, setTaps] = useState(null)
+
+  useEffect(() => {
+    tapsService.findAllTapsHighLevel(organizationId, tenantId, (r) => setTaps(r.data.taps));
+  }, [selectedTaps]);
+
+  if (taps === null) {
+    return (
+      <React.Fragment>
+        <div className="modal-backdrop fade show"></div>
+        <div className="modal fade show" style={{display: "block"}}>
+          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h1 className="modal-title fs-5">Save Filter as Monitor</h1>
+                <button type="button" className="btn-close" onClick={onClose}></button>
+              </div>
+              <div className="modal-body">
+                <LoadingSpinner />
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
+                <button type="button" className="btn btn-primary" disabled={true}>Create Monitor</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </React.Fragment>
+    )
+  }
+
+  if (selectedTaps.length === 0) {
+    return (
+      <React.Fragment>
+        <div className="modal-backdrop fade show"></div>
+        <div className="modal fade show" style={{display: "block"}}>
+          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h1 className="modal-title fs-5">Save Filter as Monitor</h1>
+                <button type="button" className="btn-close" onClick={onClose}></button>
+              </div>
+              <div className="modal-body">
+                <div className="alert alert-warning mb-0">You must select at least one tap to create a monitor.</div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
+                <button type="button" className="btn btn-primary" disabled={true}>Create Monitor</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </React.Fragment>
+    )
+  }
 
   return (
     <React.Fragment>
@@ -41,8 +104,28 @@ export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
               </div>
 
               <h4>Taps</h4>
-              
-              {JSON.stringify(selectedTaps)}
+
+              <table className="table table-sm table-hover table-striped">
+                <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Online</th>
+                </tr>
+                </thead>
+                <tbody>
+                {taps.filter(tap => selectedTaps.includes(tap.uuid)).map((tap, i) => {
+                  return (
+                    <tr key={i}>
+                      <td>{tap.name}</td>
+                      <td>{tap.is_online ?
+                        <span className="text-success">Online</span>
+                        : <span className="text-warning">Offline</span>}
+                      </td>
+                    </tr>
+                  )
+                })}
+                </tbody>
+              </table>
 
               <h4>Filters</h4>
 
