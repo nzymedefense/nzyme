@@ -1,0 +1,47 @@
+package app.nzyme.core.monitors.db;
+
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
+import org.joda.time.DateTime;
+
+import java.sql.Array;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+public class MonitorEntryMapper implements RowMapper<MonitorEntry> {
+
+    @Override
+    public MonitorEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
+        List<UUID> taps;
+        Array tapsArray = rs.getArray("taps");
+        if (tapsArray != null) {
+            taps = Arrays.stream((String[]) tapsArray.getArray())
+                    .map(UUID::fromString)
+                    .collect(Collectors.toList());
+        } else {
+            taps = null;
+        }
+
+        return MonitorEntry.create(
+                rs.getLong("id"),
+                UUID.fromString(rs.getString("uuid")),
+                UUID.fromString(rs.getString("organization_id")),
+                UUID.fromString(rs.getString("tenant_id")),
+                rs.getBoolean("enabled"),
+                rs.getString("type"),
+                rs.getString("name"),
+                rs.getString("description"),
+                taps,
+                rs.getInt("trigger_condition"),
+                rs.getInt("interval"),
+                rs.getString("filters"),
+                new DateTime(rs.getTimestamp("created_at")),
+                new DateTime(rs.getTimestamp("updated_at"))
+        );
+    }
+
+}

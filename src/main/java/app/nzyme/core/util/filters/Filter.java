@@ -1,13 +1,21 @@
 package app.nzyme.core.util.filters;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
 @AutoValue
 public abstract class Filter {
 
+    @JsonProperty("field")
     public abstract String field();
+
+    @JsonProperty("operator")
     public abstract FilterOperator operator();
+
+    @JsonProperty("value")
     public abstract Object value();
+
+    @JsonProperty("untransformed_value")
     public abstract Object untransformedValue();
 
     public static Filter create(String field, FilterOperator operator, Object value, Object untransformedValue) {

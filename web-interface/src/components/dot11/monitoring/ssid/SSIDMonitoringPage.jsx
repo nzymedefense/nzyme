@@ -165,6 +165,6 @@ export default function SSIDMonitoringPage() {
           </div>
         </React.Fragment>
       </React.Fragment>
-)
+  )
 
 }

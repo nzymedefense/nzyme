@@ -189,9 +189,7 @@ import GNSSConstellationsRFPage from "./components/gnss/GNSSConstellationsRFPage
 import GNSSConstellationsSatellitesPage from "./components/gnss/GNSSConstellationsSatellitesPage";
 import {NTPOverviewPage} from "./components/ethernet/time/ntp/NTPOverviewPage";
 import NTPTransactionDetailsPage from "./components/ethernet/time/ntp/NTPTransactionDetailsPage";
-import Dot11CustomMonitoringPage from "./components/dot11/monitoring/custom/Dot11CustomMonitoringPage";
-import Dot11CreateCustomMonitoringRulePage
-  from "./components/dot11/monitoring/custom/Dot11CreateCustomMonitoringRulePage";
+import Dot11MonitorsPage from "./components/dot11/monitoring/Dot11MonitorsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -613,8 +611,7 @@ function App() {
                                 <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.CREATE} element={<CreateProbeRequestPage />}/>
                                 <Route path={ApiRoutes.DOT11.MONITORING.PROBE_REQUESTS.EDIT(':id')} element={<EditProbeRequestPage />}/>
                                 <Route path={ApiRoutes.DOT11.MONITORING.SSIDS.INDEX} element={<SSIDMonitoringPage />}/>
-                                <Route path={ApiRoutes.DOT11.MONITORING.CUSTOM.INDEX} element={<Dot11CustomMonitoringPage />}/>
-                                <Route path={ApiRoutes.DOT11.MONITORING.CUSTOM.CREATE} element={<Dot11CreateCustomMonitoringRulePage />}/>
+                                <Route path={ApiRoutes.DOT11.MONITORING.MONITORS.INDEX} element={<Dot11MonitorsPage />}/>
 
                                 { /* 802.11/Networks. */}
                                 <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>

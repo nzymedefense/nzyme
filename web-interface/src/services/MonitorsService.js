@@ -2,6 +2,15 @@ import RESTClient from "../util/RESTClient";
 
 class MonitorsService {
 
+  findAllOfType(monitorType, organizationId, tenantId, limit, offset, setMonitors) {
+    RESTClient.get(`/monitors/type/${monitorType}`,
+      { limit: limit, offset: offset, organization_id: organizationId, tenant_id: tenantId, },
+      function (response) {
+        setMonitors(response.data);
+      })
+  }
+
+
   createMonitor(monitorType, name, description, taps, trigger_condition, interval, filters, organizationId, tenantId, successCallback, errorCallback) {
     RESTClient.post(`/monitors/type/${monitorType}`,{
       name: name,

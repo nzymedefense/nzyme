@@ -51,6 +51,7 @@ import app.nzyme.core.monitoring.GaugeEntryAverageMapper;
 import app.nzyme.core.monitoring.TimerEntryAverageMapper;
 import app.nzyme.core.monitoring.TimerEntryMapper;
 import app.nzyme.core.monitoring.health.db.IndicatorStatusMapper;
+import app.nzyme.core.monitors.db.MonitorEntryMapper;
 import app.nzyme.core.registry.RegistryEntryMapper;
 import app.nzyme.core.security.authentication.db.*;
 import app.nzyme.core.security.sessions.db.SessionEntryMapper;
@@ -224,7 +225,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new NTPTransactionEntryMapper())
                 .registerRowMapper(new StringDoubleDoubleNumberAggregationResultMapper())
                 .registerRowMapper(new StringStringNumberAggregationResultMapper())
-                .registerRowMapper(new L4AddressDataMapper());
+                .registerRowMapper(new L4AddressDataMapper())
+                .registerRowMapper(new MonitorEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

@@ -7851,4 +7851,64 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="create_monitors" author="lennartkoopmann">
+        <createTable tableName="monitors">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="enabled" type="boolean">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="type" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="taps" type="text[]">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="trigger_condition" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="interval" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="filters" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
