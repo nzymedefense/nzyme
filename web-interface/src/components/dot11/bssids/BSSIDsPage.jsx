@@ -12,6 +12,8 @@ import {useLocation} from "react-router-dom";
 import {BSSID_FILTER_FIELDS} from "./BssidFilterFields";
 import {queryParametersToFilters} from "../../shared/filtering/FilterQueryParameters";
 import usePageTitle from "../../../util/UsePageTitle";
+import MonitorsService from "../../../services/MonitorsService";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const dot11Service = new Dot11Service();
 
@@ -19,9 +21,13 @@ const useQuery = () => {
   return new URLSearchParams(useLocation().search);
 }
 
+const monitorsService = new MonitorsService();
+
 function BSSIDsPage() {
 
   usePageTitle("WiFi Access Points");
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const urlQuery = useQuery();
 
@@ -54,8 +60,20 @@ function BSSIDsPage() {
     }
   }, [tapContext]);
 
-  const onSaveFilterAsMonitor = (filters, taps) => {
-    console.log(filters);
+  const onSaveFiltersAsMonitor = (name, description, taps, triggerCondition, interval, filters, onSuccess, onFailure) => {
+    monitorsService.createMonitor(
+      "DOT11_BSSID",
+      name,
+      description,
+      taps,
+      triggerCondition,
+      interval,
+      filters,
+      organizationId,
+      tenantId,
+      onSuccess,
+      onFailure
+    );
   }
 
   const table = () => {
@@ -92,7 +110,7 @@ function BSSIDsPage() {
                 <Filters filters={filters}
                          setFilters={setFilters}
                          fields={BSSID_FILTER_FIELDS}
-                         onSaveAsMonitor={onSaveFilterAsMonitor} />
+                         onSaveAsMonitor={onSaveFiltersAsMonitor} />
               </div>
             </div>
           </div>

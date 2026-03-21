@@ -469,7 +469,7 @@ export default function Filters(props) {
 
     return <SaveFilterAsMonitorDialog filters={filters}
                                       onClose={toggleSaveAsMonitor}
-                                      onSave={(e) => { e.preventDefault(); }}  />
+                                      onSave={onSaveAsMonitor}  />
   }
 
   return (

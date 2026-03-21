@@ -1,10 +1,11 @@
 package app.nzyme.core.monitors;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.rest.constraints.UUID;
 import app.nzyme.core.util.filters.Filters;
+import jakarta.annotation.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 
 public class Monitors {
 
@@ -17,7 +18,7 @@ public class Monitors {
     public void createMonitor(MonitorType type,
                               String name,
                               String description,
-                              List<String> taps,
+                              @Nullable List<UUID> taps,
                               int triggerCondition,
                               int interval,
                               Filters filters,

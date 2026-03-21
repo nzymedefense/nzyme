@@ -4,10 +4,12 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.monitors.MonitorType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.requests.CreateMonitorRequest;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -28,14 +30,30 @@ public class MonitorsResource extends UserAuthenticatedResource {
     @POST
     @Path("/type/{monitor_type}")
     public Response create(@Context SecurityContext sc,
-                           @QueryParam("organization_id") @NotNull UUID organizationId,
-                           @QueryParam("tenant_id") @NotNull UUID tenantId,
+                           @Valid CreateMonitorRequest req,
                            @PathParam("monitor_type") MonitorType monitorType) {
         AuthenticatedUser user = getAuthenticatedUser(sc);
 
+        List<UUID> tapUuids;
+        if (req.taps().size() == 1 && req.taps().get(0).equals("*")) {
+            // All taps selected.
+            tapUuids = null;
+        } else {
+            tapUuids = Lists.newArrayList();
+            List<UUID> userAccessibleTaps = nzyme.getTapManager().allTapUUIDsAccessibleByUser(user);
+            for (String tapId : req.taps()) {
+                UUID tapUuid = UUID.fromString(tapId);
+                if (!userAccessibleTaps.contains(tapUuid)) {
+                    return Response.status(Response.Status.FORBIDDEN).build();
+                } else {
+                    tapUuids.add(tapUuid);
+                }
+            }
+        }
+
         // Check permissions.
         if (!user.isSuperAdministrator()
-                && !(user.isOrganizationAdministrator() && organizationId.equals(user.getOrganizationId()))) {
+                && !(user.isOrganizationAdministrator() && req.organizationId().equals(user.getOrganizationId()))) {
             // User is not a super admin or admin of the passed org. Check user permissions.
             List<String> userPermissions = nzyme.getAuthenticationService().findPermissionsOfUser(user.getUserId());
             String requiredPermission;
@@ -53,13 +71,23 @@ public class MonitorsResource extends UserAuthenticatedResource {
             }
         }
 
-        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+        if (!passedTenantDataAccessible(sc, req.organizationId(), req.tenantId())) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        //nzyme.getMonitors().createMonitor(monitorType, );
+        nzyme.getMonitors().createMonitor(
+                monitorType,
+                req.name(),
+                req.description(),
+                tapUuids,
+                req.triggerCondition(),
+                req.interval(),
+                parseFiltersQueryParameter(req.filters()),
+                req.organizationId(),
+                req.tenantId()
+        );
 
-        return Response.ok().build();
+        return Response.status(Response.Status.CREATED).build();
     }
 
 }

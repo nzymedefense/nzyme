@@ -22,6 +22,50 @@ export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
   const [triggerCondition, setTriggerCondition] = useState(0);
   const [interval, setInterval] = useState(1);
 
+  const [showError, setShowError] = useState(false);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [complete, setComplete] = useState(false);
+
+  const formReady = () => {
+    return name && name.trim().length > 0 && triggerCondition >= 0 && interval > 0
+  }
+
+  const onSuccess = () => {
+    setShowError(false);
+    setIsSubmitting(false);
+    setComplete(true);
+  }
+
+  const onFailure = () => {
+    setIsSubmitting(false);
+    setShowError(true);
+  }
+
+  const submitButton = () => {
+    if (complete) {
+      return (
+        <button type="button" className="btn btn-success w-100" onClick={onClose}>
+          Done! Close dialog.
+        </button>
+      )
+    } else {
+      return (
+        <button type="button"
+                disabled={!formReady() || isSubmitting}
+                className="btn btn-primary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowError(false);
+                  setIsSubmitting(true);
+                  onSave(name, description, selectedTaps, triggerCondition, interval, filters, onSuccess, onFailure)
+                }}>
+          { isSubmitting ? <span><i className="fa-solid fa-circle-notch fa-spin"></i> &nbsp;Saving ...</span> : "Create Monitor" }
+        </button>
+      )
+    }
+  }
+
   const tapTable = () => {
     if (selectedTaps.length === 1 && selectedTaps[0] === "*") {
       return <div className="alert alert-info mb-0">This monitor will always use data from all your taps.</div>
@@ -105,7 +149,7 @@ export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
       </React.Fragment>
     )
   }
-console.log(selectedTaps)
+
   return (
     <React.Fragment>
       <div className="modal-backdrop fade show"></div>
@@ -114,7 +158,7 @@ console.log(selectedTaps)
           <div className="modal-content">
             <div className="modal-header">
               <h1 className="modal-title fs-5">Save Filter as Monitor</h1>
-              <button type="button" className="btn-close" onClick={onClose}></button>
+              <button type="button" className="btn-close" onClick={onClose} disabled={isSubmitting}></button>
             </div>
             <div className="modal-body">
               <p>
@@ -190,11 +234,17 @@ console.log(selectedTaps)
                   <div className="form-text">How often to execute the monitor. Default: Run every minute.</div>
                 </div>
 
+              {showError ?
+                <div className="alert alert-danger mb-0" role="alert">Something went wrong. Please try again or contact
+                  your administrator.</div> : null}
+
               </div>
               <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
-              <button type="button" className="btn btn-primary">Create Monitor</button>
-            </div>
+                { complete ? null :
+                  <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSubmitting}>
+                    Close</button> }
+                {submitButton()}
+              </div>
           </div>
         </div>
       </div>
