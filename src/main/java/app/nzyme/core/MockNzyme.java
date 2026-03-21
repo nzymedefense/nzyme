@@ -35,6 +35,7 @@ import app.nzyme.core.gnss.GNSS;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.integrations.tenant.cot.CotService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
+import app.nzyme.core.monitors.Monitors;
 import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.quota.QuotaService;
 import app.nzyme.core.registry.RegistryChangeMonitorImpl;
@@ -399,6 +400,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public EventEngine getEventEngine() {
         return eventEngine;
+    }
+
+    @Override
+    public Monitors getMonitors() {
+        return null;
     }
 
     @Override

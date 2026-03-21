@@ -4,6 +4,7 @@ import {TapContext} from "../../../../App";
 import TapsService from "../../../../services/TapsService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
+import {onNumberInputKeyDown} from "../../../../util/Tools";
 
 const tapsService = new TapsService();
 
@@ -16,6 +17,41 @@ export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
 
   const [taps, setTaps] = useState(null)
 
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [triggerCondition, setTriggerCondition] = useState(0);
+  const [interval, setInterval] = useState(1);
+
+  const tapTable = () => {
+    if (selectedTaps.length === 1 && selectedTaps[0] === "*") {
+      return <div className="alert alert-info mb-0">This monitor will always use data from all your taps.</div>
+    }
+
+    return (
+      <table className="table table-sm table-hover table-striped mt-0">
+        <thead>
+        <tr>
+          <th>Name</th>
+          <th>Online</th>
+        </tr>
+        </thead>
+        <tbody>
+        {taps.filter(tap => selectedTaps.includes(tap.uuid)).map((tap, i) => {
+          return (
+            <tr key={i}>
+              <td>{tap.name}</td>
+              <td>{tap.is_online ?
+                <span className="text-success">Online</span>
+                : <span className="text-warning">Offline</span>}
+              </td>
+            </tr>
+          )
+        })}
+        </tbody>
+      </table>
+    )
+  }
+
   useEffect(() => {
     tapsService.findAllTapsHighLevel(organizationId, tenantId, (r) => setTaps(r.data.taps));
   }, [selectedTaps]);
@@ -25,7 +61,7 @@ export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
       <React.Fragment>
         <div className="modal-backdrop fade show"></div>
         <div className="modal fade show" style={{display: "block"}}>
-          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content">
               <div className="modal-header">
                 <h1 className="modal-title fs-5">Save Filter as Monitor</h1>
@@ -50,7 +86,7 @@ export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
       <React.Fragment>
         <div className="modal-backdrop fade show"></div>
         <div className="modal fade show" style={{display: "block"}}>
-          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content">
               <div className="modal-header">
                 <h1 className="modal-title fs-5">Save Filter as Monitor</h1>
@@ -69,12 +105,12 @@ export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
       </React.Fragment>
     )
   }
-
+console.log(selectedTaps)
   return (
     <React.Fragment>
       <div className="modal-backdrop fade show"></div>
       <div className="modal fade show" style={{display: "block"}}>
-        <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
           <div className="modal-content">
             <div className="modal-header">
               <h1 className="modal-title fs-5">Save Filter as Monitor</h1>
@@ -86,11 +122,15 @@ export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
                 the number of results exceeds the configured threshold, it triggers a detection event.
               </p>
 
-              <h4>Monitor Details</h4>
+              <h3 className="mt-4 mb-2">Monitor Details</h3>
 
               <div className="mb-3">
                 <label htmlFor="monitor-name" className="form-label">Name</label>
-                <input type="text" className="form-control" id="monitor-rule-name" />
+                <input type="text"
+                       className="form-control"
+                       id="monitor-rule-name"
+                       value={name}
+                       onChange={e => setName(e.target.value)} />
                 <div className="form-text">
                   The name of this monitor. Give it a name that helps to quickly identify what it is supposed to
                   alert on.
@@ -99,56 +139,59 @@ export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
 
               <div className="mb-3">
                 <label htmlFor="monitor-description" className="form-label">Description <small>Optional</small></label>
-                <textarea className="form-control" id="description" />
+                <textarea className="form-control"
+                          id="description"
+                          value={description}
+                          onChange={e => setDescription(e.target.value)} />
                 <div className="form-text">An optional description that provides more detail.</div>
               </div>
 
-              <h4>Taps</h4>
+              <h3 className="mt-4 mb-2">Taps</h3>
 
-              <table className="table table-sm table-hover table-striped">
-                <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Online</th>
-                </tr>
-                </thead>
-                <tbody>
-                {taps.filter(tap => selectedTaps.includes(tap.uuid)).map((tap, i) => {
-                  return (
-                    <tr key={i}>
-                      <td>{tap.name}</td>
-                      <td>{tap.is_online ?
-                        <span className="text-success">Online</span>
-                        : <span className="text-warning">Offline</span>}
-                      </td>
-                    </tr>
-                  )
-                })}
-                </tbody>
-              </table>
+              <p className="help-text mb-2">Data from the following taps will be considered for the monitor.</p>
 
-              <h4>Filters</h4>
+              {tapTable()}
+
+              <h3 className="mt-4 mb-2">Filters</h3>
 
               <AppliedFilterList filters={filters} hideHeadline={true}/>
 
-              <h4>Trigger</h4>
+              <h3 className="mt-4 mb-2">Trigger</h3>
 
               <div className="mb-3">
                 <label htmlFor="monitor-condition" className="form-label">Trigger Condition: Result Count</label>
-                <input type="number" min={0} className="form-control" id="monitor-condition" />
+                <div className="input-group">
+                  <input type="number"
+                         min={0}
+                         onKeyDown={onNumberInputKeyDown}
+                         className="form-control"
+                         id="monitor-condition"
+                         value={triggerCondition}
+                         onChange={e => setTriggerCondition(e.target.value)}/>
+                  <span className="input-group-text">Results</span>
+                </div>
                 <div className="form-text">
                   If the number of results exceeds the configured threshold, it triggers a detection event.
                 </div>
-              </div>
+                </div>
 
-              <div className="mb-3">
-                <label htmlFor="monitor-interval" className="form-label">Interval</label>
-                <input type="number" min={1} className="form-control" id="monitor-interval" />
-                <div className="form-text">How often to execute the monitor. Default: Run every minute.</div>
-              </div>
+                <div className="mb-3">
+                  <label htmlFor="monitor-interval" className="form-label">Interval</label>
+                  <div className="input-group">
+                  <input type="number"
+                         min={1}
+                         onKeyDown={onNumberInputKeyDown}
+                         className="form-control"
+                         id="monitor-interval"
+                         value={interval}
+                         onChange={e => setInterval(e.target.value)}/>
+                    <span className="input-group-text">Minutes</span>
+                  </div>
+                  <div className="form-text">How often to execute the monitor. Default: Run every minute.</div>
+                </div>
 
-            </div>
-            <div className="modal-footer">
+              </div>
+              <div className="modal-footer">
               <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
               <button type="button" className="btn btn-primary">Create Monitor</button>
             </div>

@@ -22,6 +22,7 @@ import app.nzyme.core.rest.resources.dot11.Dot11MonitoredNetworksResource;
 import app.nzyme.core.rest.resources.dot11.Dot11NetworksResource;
 import app.nzyme.core.rest.resources.ethernet.*;
 import app.nzyme.core.rest.resources.gnss.GNSSResource;
+import app.nzyme.core.rest.resources.monitors.MonitorsResource;
 import app.nzyme.core.rest.resources.system.authentication.AuthenticationResource;
 import app.nzyme.core.rest.resources.system.authentication.mgmt.InitialUserResource;
 import app.nzyme.core.rest.resources.system.authentication.mgmt.OrganizationsResource;
@@ -169,6 +170,7 @@ public class NzymeHttpServer {
         resourceConfig.register(ArpResource.class);
         resourceConfig.register(GNSSResource.class);
         resourceConfig.register(TimeResource.class);
+        resourceConfig.register(MonitorsResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

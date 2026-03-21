@@ -261,3 +261,9 @@ export function formatSubMicro(seconds) {
   const nano = seconds * 1e9;
   return `${numeral(nano).format("0,0")} ns`;
 }
+
+export function onNumberInputKeyDown(e) {
+  if (e.key.length === 1 && !(e.key >= "0" && e.key <= "9")) {
+    e.preventDefault();
+  }
+}

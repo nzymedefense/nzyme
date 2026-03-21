@@ -1151,34 +1151,134 @@ i.filter-value {
     color: #6c757d;
 }
 
-ul.applied-filters, ul.applied-filters ul {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
+.applied-filters-headline {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
 }
 
-ul.applied-filters {
-    border-left: 1px solid #969fa6;
-    padding-left: 8px;
+.applied-filters-empty {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #f9fafb;
+    border: 1px dashed #d1d5db;
 }
 
-ul.applied-filters span.applied-filter-value {
-    font-style: italic;
+.applied-filters-empty-text {
+    font-size: 13px;
+    color: #9ca3af;
 }
 
-ul.applied-filters span.applied-filter-connector {
-    font-size: 14px;
+.applied-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.applied-filters-filtergroup {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.applied-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.applied-filter-chip:hover {
+    background: #eef0f3;
+    border-color: #d1d5db;
+}
+
+.applied-filter-name {
+    font-weight: 600;
+    color: #374151;
+}
+
+.applied-filter-operator {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.applied-filter-value {
+    color: #6b7280;
+}
+
+/* ── Remove button ── */
+.applied-filter-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: 2px;
+    border-radius: 4px;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.applied-filter-remove:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* ── Connectors ── */
+.applied-filter-connector {
+    font-size: 11px;
     font-family: "Geist Mono", monospace;
     font-weight: 600;
-    padding-left: 3px;
-    padding-right: 3px;
+    letter-spacing: 0.03em;
+    border-radius: 4px;
+    padding: 2px 7px;
+    line-height: 1.4;
+    user-select: none;
 }
 
-ul.applied-filters a.applied-filter-remove {
-    cursor: pointer;
-    position: relative;
-    top: 1px;
+.applied-filter-connector--or {
+    color: #7c3aed;
+    background: #f5f3ff;
 }
+
+.applied-filter-connector--and {
+    color: #2563eb;
+    background: #eff6ff;
+    align-self: flex-start;
+    margin-left: 8px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 div.filters-modal div.modal-dialog {
     max-width: 800px !important;

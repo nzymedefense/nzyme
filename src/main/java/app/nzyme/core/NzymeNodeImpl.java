@@ -47,6 +47,7 @@ import app.nzyme.core.integrations.ScheduledIntegrationsManager;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.integrations.tenant.cot.CotService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
+import app.nzyme.core.monitors.Monitors;
 import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.periodicals.connect.ConnectStatusReporter;
 import app.nzyme.core.context.ContextCleaner;
@@ -143,6 +144,7 @@ public class NzymeNodeImpl implements NzymeNode {
 
     private final DetectionAlertService detectionAlertService;
     private final EventEngine eventEngine;
+    private final Monitors monitors;
 
     private final ConnectService connect;
     private final HealthMonitor healthMonitor;
@@ -225,6 +227,7 @@ public class NzymeNodeImpl implements NzymeNode {
 
         this.detectionAlertService = new DetectionAlertService(this);
         this.eventEngine = new EventEngineImpl(this);
+        this.monitors = new Monitors(this);
 
         this.tablesService = new TablesService(this);
 
@@ -452,6 +455,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public EventEngine getEventEngine() {
         return eventEngine;
+    }
+
+    @Override
+    public Monitors getMonitors() {
+        return monitors;
     }
 
     @Override
