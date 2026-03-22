@@ -43,8 +43,6 @@ public class MonitorsResource extends UserAuthenticatedResource {
                             @QueryParam("tenant_id") @NotNull UUID tenantId,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset) {
-        AuthenticatedUser user = getAuthenticatedUser(sc);
-
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -53,9 +51,10 @@ public class MonitorsResource extends UserAuthenticatedResource {
 
         List<MonitorDetailsResponse> monitors = Lists.newArrayList();
         for (MonitorEntry m : nzyme.getMonitors().findAllOfType(monitorType, organizationId, tenantId, offset, limit)) {
-            List<TapHighLevelInformationDetailsResponse> taps = Lists.newArrayList();
+            List<TapHighLevelInformationDetailsResponse> taps;
 
             if (m.taps() != null) {
+                taps = Lists.newArrayList();
                 for (UUID tapUuid : m.taps()) {
                     Optional<Tap> tap = nzyme.getTapManager().findTap(tapUuid);
                     if (tap.isPresent()) {
@@ -66,6 +65,8 @@ public class MonitorsResource extends UserAuthenticatedResource {
                         ));
                     }
                 }
+            } else {
+                taps = null;
             }
 
             monitors.add(MonitorDetailsResponse.create(
@@ -96,7 +97,7 @@ public class MonitorsResource extends UserAuthenticatedResource {
         AuthenticatedUser user = getAuthenticatedUser(sc);
 
         List<UUID> tapUuids;
-        if (req.taps().size() == 1 && req.taps().get(0).equals("*")) {
+        if (req.taps() == null) {
             // All taps selected.
             tapUuids = null;
         } else {

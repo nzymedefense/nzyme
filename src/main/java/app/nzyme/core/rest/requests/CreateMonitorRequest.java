@@ -23,7 +23,7 @@ public abstract class CreateMonitorRequest {
     public abstract String description();
 
     @JsonProperty
-    @NotEmpty
+    @Nullable
     public abstract List<String> taps();
 
     @JsonProperty

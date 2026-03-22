@@ -12,10 +12,12 @@ class MonitorsService {
 
 
   createMonitor(monitorType, name, description, taps, trigger_condition, interval, filters, organizationId, tenantId, successCallback, errorCallback) {
+    const tapsParam = (taps && taps === "*") ? null : taps;
+
     RESTClient.post(`/monitors/type/${monitorType}`,{
       name: name,
       description: description,
-      taps: taps,
+      taps: tapsParam,
       trigger_condition: trigger_condition,
       interval: interval,
       filters: JSON.stringify(filters),
