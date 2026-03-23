@@ -47,13 +47,20 @@ public abstract class MonitorDetailsResponse {
     @JsonProperty("filters")
     public abstract String filters();
 
+    @JsonProperty("alerted")
+    public abstract boolean alerted();
+
+    @Nullable
+    @JsonProperty("last_event")
+    public abstract DateTime lastEvent();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static MonitorDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<TapHighLevelInformationDetailsResponse> taps, int triggerCondition, int interval, String filters, DateTime createdAt, DateTime updatedAt) {
+    public static MonitorDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<TapHighLevelInformationDetailsResponse> taps, int triggerCondition, int interval, String filters, boolean alerted, DateTime lastEvent, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -66,6 +73,8 @@ public abstract class MonitorDetailsResponse {
                 .triggerCondition(triggerCondition)
                 .interval(interval)
                 .filters(filters)
+                .alerted(alerted)
+                .lastEvent(lastEvent)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -98,6 +107,10 @@ public abstract class MonitorDetailsResponse {
         public abstract Builder interval(int interval);
 
         public abstract Builder filters(String filters);
+
+        public abstract Builder alerted(boolean alerted);
+
+        public abstract Builder lastEvent(DateTime lastEvent);
 
         public abstract Builder createdAt(DateTime createdAt);
 

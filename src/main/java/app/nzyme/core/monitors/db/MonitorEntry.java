@@ -24,10 +24,13 @@ public abstract class MonitorEntry {
     public abstract int triggerCondition();
     public abstract int interval();
     public abstract String filters();
+    public abstract boolean alerted();
+    @Nullable
+    public abstract DateTime lastEvent();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitorEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, String filters, DateTime createdAt, DateTime updatedAt) {
+    public static MonitorEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, String filters, boolean alerted, DateTime lastEvent, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -41,6 +44,8 @@ public abstract class MonitorEntry {
                 .triggerCondition(triggerCondition)
                 .interval(interval)
                 .filters(filters)
+                .alerted(alerted)
+                .lastEvent(lastEvent)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -75,6 +80,10 @@ public abstract class MonitorEntry {
         public abstract Builder interval(int interval);
 
         public abstract Builder filters(String filters);
+
+        public abstract Builder alerted(boolean alerted);
+
+        public abstract Builder lastEvent(DateTime lastEvent);
 
         public abstract Builder createdAt(DateTime createdAt);
 

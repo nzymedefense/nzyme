@@ -22,6 +22,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,41 @@ public class MonitorsResource extends UserAuthenticatedResource {
 
     @Inject
     private NzymeNode nzyme;
+
+    @GET
+    @Path("/show/{id}")
+    public Response findAll(@Context SecurityContext sc,
+                            @PathParam("id") UUID uuid,
+                            @QueryParam("organization_id") @NotNull UUID organizationId,
+                            @QueryParam("tenant_id") @NotNull UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        Optional<MonitorEntry> monitor = nzyme.getMonitors().find(uuid, organizationId, tenantId);
+
+        if (monitor.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(MonitorDetailsResponse.create(
+                monitor.get().uuid(),
+                monitor.get().organizationId(),
+                monitor.get().tenantId(),
+                monitor.get().enabled(),
+                monitor.get().type(),
+                monitor.get().name(),
+                monitor.get().description(),
+                buildTapsList(monitor.get()),
+                monitor.get().triggerCondition(),
+                monitor.get().interval(),
+                monitor.get().filters(),
+                monitor.get().alerted(),
+                monitor.get().lastEvent(),
+                monitor.get().createdAt(),
+                monitor.get().updatedAt()
+        )).build();
+    }
 
     @GET
     @Path("/type/{monitor_type}")
@@ -51,24 +87,6 @@ public class MonitorsResource extends UserAuthenticatedResource {
 
         List<MonitorDetailsResponse> monitors = Lists.newArrayList();
         for (MonitorEntry m : nzyme.getMonitors().findAllOfType(monitorType, organizationId, tenantId, offset, limit)) {
-            List<TapHighLevelInformationDetailsResponse> taps;
-
-            if (m.taps() != null) {
-                taps = Lists.newArrayList();
-                for (UUID tapUuid : m.taps()) {
-                    Optional<Tap> tap = nzyme.getTapManager().findTap(tapUuid);
-                    if (tap.isPresent()) {
-                        taps.add(TapHighLevelInformationDetailsResponse.create(
-                                tap.get().uuid(),
-                                tap.get().name(),
-                                Tools.isTapActive(tap.get().lastReport())
-                        ));
-                    }
-                }
-            } else {
-                taps = null;
-            }
-
             monitors.add(MonitorDetailsResponse.create(
                     m.uuid(),
                     m.organizationId(),
@@ -77,10 +95,12 @@ public class MonitorsResource extends UserAuthenticatedResource {
                     m.type(),
                     m.name(),
                     m.description(),
-                    taps,
+                    buildTapsList(m),
                     m.triggerCondition(),
                     m.interval(),
                     m.filters(),
+                    m.alerted(),
+                    m.lastEvent(),
                     m.createdAt(),
                     m.updatedAt()
             ));
@@ -150,6 +170,28 @@ public class MonitorsResource extends UserAuthenticatedResource {
         );
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    @Nullable
+    private List<TapHighLevelInformationDetailsResponse> buildTapsList(MonitorEntry m) {
+        List<TapHighLevelInformationDetailsResponse> taps;
+
+        if (m.taps() != null) {
+            taps = Lists.newArrayList();
+            for (UUID tapUuid : m.taps()) {
+                Optional<Tap> tap = nzyme.getTapManager().findTap(tapUuid);
+                if (tap.isPresent()) {
+                    taps.add(TapHighLevelInformationDetailsResponse.create(
+                            tap.get().uuid(),
+                            tap.get().name(),
+                            Tools.isTapActive(tap.get().lastReport())
+                    ));
+                }
+            }
+        } else {
+            taps = null;
+        }
+        return taps;
     }
 
 }

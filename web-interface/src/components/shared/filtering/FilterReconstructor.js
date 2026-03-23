@@ -1,0 +1,39 @@
+import {OPERATORS} from "./Filters";
+
+export default function reconstructFromNodeData(data, filterFields) {
+  console.log(filterFields);
+
+  let result = {};
+
+  for (let fieldName in data) {
+    let fieldFilters = [];
+    for (let fieldFilter of data[fieldName]) {
+      let operator = OPERATORS[fieldFilter.operator];
+      let filterDefinition = filterFields[fieldFilter.field];
+
+      fieldFilters.push({
+        name: filterDefinition.title,
+        field: fieldFilter.field,
+        operator: operator.name,
+        sign: operator.sign,
+        value: fieldFilter.untransformed_value,
+        transformed_value: fieldFilter.value
+      });
+    }
+
+    result[fieldName] = fieldFilters;
+  }
+
+  return result
+}
+
+/*
+--field: "client_count"
+--operator: "equals_numeric"
+--value: 1
+
+name: "Client Count"
+--sign: "=="
+transformed_value: null
+
+ */

@@ -7911,4 +7911,12 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="add_last_event_to_monitors" author="lennartkoopmann">
+        <addColumn tableName="monitors">
+            <column name="last_event" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

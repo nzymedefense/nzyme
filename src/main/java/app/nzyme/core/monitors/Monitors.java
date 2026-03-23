@@ -9,6 +9,7 @@ import jakarta.annotation.Nullable;
 
 import java.sql.Types;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class Monitors {
@@ -17,6 +18,20 @@ public class Monitors {
 
     public Monitors(NzymeNode nzyme) {
         this.nzyme = nzyme;
+    }
+
+    public Optional<MonitorEntry> find(UUID id, UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT *, " +
+                                "COALESCE(last_event > NOW() - (interval * INTERVAL '1 minute'), false) AS alerted " +
+                                "FROM monitors WHERE uuid = :uuid AND organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id")
+                        .bind("uuid", id)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(MonitorEntry.class)
+                        .findOne()
+        );
     }
 
     public long countAllOfType(MonitorType type,
@@ -39,9 +54,10 @@ public class Monitors {
                                             int offset,
                                             int limit) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM monitors WHERE type = :type AND " +
-                                "organization_id = :organization_id AND tenant_id = :tenant_id " +
-                                "ORDER BY name ASC LIMIT :limit OFFSET :offset")
+                handle.createQuery("SELECT *, " +
+                                "COALESCE(last_event > NOW() - (interval * INTERVAL '1 minute'), false) AS alerted " +
+                                "FROM monitors WHERE type = :type AND organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id ORDER BY name ASC LIMIT :limit OFFSET :offset")
                         .bind("type", type)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)

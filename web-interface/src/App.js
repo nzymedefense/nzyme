@@ -190,6 +190,7 @@ import GNSSConstellationsSatellitesPage from "./components/gnss/GNSSConstellatio
 import {NTPOverviewPage} from "./components/ethernet/time/ntp/NTPOverviewPage";
 import NTPTransactionDetailsPage from "./components/ethernet/time/ntp/NTPTransactionDetailsPage";
 import Dot11MonitorsPage from "./components/dot11/monitoring/Dot11MonitorsPage";
+import MonitorDetailsPage from "./components/monitors/MonitorDetailsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -680,6 +681,9 @@ function App() {
                               <Route path={ApiRoutes.ALERTS.DETAILS(':uuid')} element={<AlertDetailsPage />}/>
                               <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.INDEX} element={<AlertSubscriptionsPage />}/>
                               <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(':detectionName')} element={<AlertSubscriptionDetailsPage />}/>
+
+                              { /* Monitors. */}
+                              <Route path={ApiRoutes.ALERTS.MONITORS.DETAILS(':id')} element={<MonitorDetailsPage />}/>
 
                               { /* 404. */}
                               <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>

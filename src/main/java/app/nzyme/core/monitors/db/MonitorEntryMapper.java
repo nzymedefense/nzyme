@@ -26,6 +26,9 @@ public class MonitorEntryMapper implements RowMapper<MonitorEntry> {
             taps = null;
         }
 
+        DateTime lastEvent = rs.getTimestamp("last_event") == null ?
+                null : new DateTime(rs.getTimestamp("last_event"));
+
         return MonitorEntry.create(
                 rs.getLong("id"),
                 UUID.fromString(rs.getString("uuid")),
@@ -39,6 +42,8 @@ public class MonitorEntryMapper implements RowMapper<MonitorEntry> {
                 rs.getInt("trigger_condition"),
                 rs.getInt("interval"),
                 rs.getString("filters"),
+                rs.getBoolean("alerted"),
+                lastEvent,
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("updated_at"))
         );

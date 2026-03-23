@@ -301,6 +301,9 @@ const ApiRoutes = {
     SUBSCRIPTIONS: {
       INDEX: '/alerts/subscriptions',
       DETAILS: (detectionName) => `/alerts/subscriptions/types/show/${detectionName}`
+    },
+    MONITORS: {
+      DETAILS: (id) => `/alerts/monitors/show/${id}`,
     }
   }
 }

@@ -3,20 +3,10 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import Paginator from "../../misc/Paginator";
 import numeral from "numeral";
 import moment from "moment";
+import ApiRoutes from "../../../util/ApiRoutes";
+import MonitorStatusIndicator from "./MonitorStatusIndicator";
 
 export default function MonitorsTable({monitors, page, setPage, perPage}) {
-
-  const alertStatusIndicator = (monitor) => {
-    if (!monitor.enabled) {
-      return <i className="fa-solid fa-circle text-muted" title="Monitor is disabled."></i>
-    } else {
-      if (true) { // TODO
-        return <i className="fa-solid fa-circle text-danger blink" title="Monitor is currently alerted."></i>
-      } else {
-        return <i className="fa-solid fa-circle text-success" title="Monitor is not currently alerted."></i>
-      }
-    }
-  }
 
   if (!monitors) {
     return <LoadingSpinner />
@@ -42,8 +32,8 @@ export default function MonitorsTable({monitors, page, setPage, perPage}) {
         {monitors.monitors.map(function(m, i) {
           return (
             <tr key={i}>
-              <td>{alertStatusIndicator(m)}</td>
-              <td>{m.name}</td>
+              <td><MonitorStatusIndicator monitor={m} /></td>
+              <td><a href={ApiRoutes.ALERTS.MONITORS.DETAILS(m.uuid)}>{m.name}</a></td>
               <td>{m.taps === null ? "All" : m.taps.length}</td>
               <td>{numeral(m.interval).format("0,0")} {m.interval === 1 ? "Minute" : "Minutes"}</td>
               <td title={moment(m.created_at).format()}>{moment(m.created_at).fromNow()}</td>

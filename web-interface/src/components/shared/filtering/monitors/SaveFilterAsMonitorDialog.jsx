@@ -5,6 +5,7 @@ import TapsService from "../../../../services/TapsService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import {onNumberInputKeyDown} from "../../../../util/Tools";
+import MonitorTapsTable from "../../../monitors/shared/MonitorTapsTable";
 
 const tapsService = new TapsService();
 
@@ -64,36 +65,6 @@ export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
         </button>
       )
     }
-  }
-
-  const tapTable = () => {
-    if (selectedTaps.length === 1 && selectedTaps[0] === "*") {
-      return <div className="alert alert-info mb-0">This monitor will always use data from all your taps.</div>
-    }
-
-    return (
-      <table className="table table-sm table-hover table-striped mt-0">
-        <thead>
-        <tr>
-          <th>Name</th>
-          <th>Online</th>
-        </tr>
-        </thead>
-        <tbody>
-        {taps.filter(tap => selectedTaps.includes(tap.uuid)).map((tap, i) => {
-          return (
-            <tr key={i}>
-              <td>{tap.name}</td>
-              <td>{tap.is_online ?
-                <span className="text-success">Online</span>
-                : <span className="text-warning">Offline</span>}
-              </td>
-            </tr>
-          )
-        })}
-        </tbody>
-      </table>
-    )
   }
 
   useEffect(() => {
@@ -194,11 +165,11 @@ export default function SaveFilterAsMonitorDialog({filters, onSave, onClose}) {
 
               <p className="help-text mb-2">Data from the following taps will be considered for the monitor.</p>
 
-              {tapTable()}
+              <MonitorTapsTable allTaps={taps} selectedTaps={selectedTaps} />
 
               <h3 className="mt-4 mb-2">Filters</h3>
 
-              <AppliedFilterList filters={filters} hideHeadline={true}/>
+              <AppliedFilterList filters={filters} hideHeadline={true} />
 
               <h3 className="mt-4 mb-2">Trigger</h3>
 
