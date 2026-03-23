@@ -96,9 +96,7 @@ function BSSIDsPage() {
                         setPage={setPage}
                         perPage={PER_PAGE} />
   }
-
-  console.log(filters)
-
+  
   return (
       <React.Fragment>
         <div className="row">

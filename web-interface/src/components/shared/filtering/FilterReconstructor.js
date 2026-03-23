@@ -1,8 +1,6 @@
 import {OPERATORS} from "./Filters";
 
 export default function reconstructFromNodeData(data, filterFields) {
-  console.log(filterFields);
-
   let result = {};
 
   for (let fieldName in data) {
@@ -26,14 +24,3 @@ export default function reconstructFromNodeData(data, filterFields) {
 
   return result
 }
-
-/*
---field: "client_count"
---operator: "equals_numeric"
---value: 1
-
-name: "Client Count"
---sign: "=="
-transformed_value: null
-
- */
