@@ -3,6 +3,7 @@ package app.nzyme.core.rest;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.security.authentication.TenantScopedEntity;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import jakarta.inject.Inject;
@@ -59,16 +60,16 @@ public class UserAuthenticatedResource extends RestResource {
         return user.getOrganizationId().equals(organizationId) && user.getTenantId().equals(tenantId);
     }
 
-    protected boolean passedMonitoredNetworkAccessible(AuthenticatedUser user, MonitoredSSID ssid) {
+    protected boolean entityAccessible(AuthenticatedUser user, TenantScopedEntity entity) {
         if (user.isSuperAdministrator()) {
             return true;
         }
 
-        if (user.isOrganizationAdministrator() && ssid.organizationId().equals(user.getOrganizationId())) {
+        if (user.isOrganizationAdministrator() && entity.organizationId().equals(user.getOrganizationId())) {
             return true;
         }
 
-        if (ssid.organizationId().equals(user.getOrganizationId()) && ssid.tenantId().equals(user.getTenantId())) {
+        if (entity.organizationId().equals(user.getOrganizationId()) && entity.tenantId().equals(user.getTenantId())) {
             return true;
         }
 

@@ -36,7 +36,7 @@ public abstract class MonitorDetailsResponse {
 
     @Nullable
     @JsonProperty("taps")
-    public abstract List<TapHighLevelInformationDetailsResponse> taps();
+    public abstract List<UUID> taps();
 
     @JsonProperty("trigger_condition")
     public abstract int triggerCondition();
@@ -60,7 +60,7 @@ public abstract class MonitorDetailsResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static MonitorDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<TapHighLevelInformationDetailsResponse> taps, int triggerCondition, int interval, String filters, boolean alerted, DateTime lastEvent, DateTime createdAt, DateTime updatedAt) {
+    public static MonitorDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, String filters, boolean alerted, DateTime lastEvent, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -100,7 +100,7 @@ public abstract class MonitorDetailsResponse {
 
         public abstract Builder description(String description);
 
-        public abstract Builder taps(List<TapHighLevelInformationDetailsResponse> taps);
+        public abstract Builder taps(List<UUID> taps);
 
         public abstract Builder triggerCondition(int triggerCondition);
 

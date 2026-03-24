@@ -1,6 +1,6 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import usePageTitle from "../../util/UsePageTitle";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import ApiRoutes from "../../util/ApiRoutes";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import MonitorsService from "../../services/MonitorsService";
@@ -12,11 +12,10 @@ import numeral from "numeral";
 import moment from "moment";
 import MonitorTapsTable from "./shared/MonitorTapsTable";
 import TapsService from "../../services/TapsService";
-import {TapContext} from "../../App";
 import AppliedFilterList from "../shared/filtering/AppliedFilterList";
 import reconstructFromNodeData from "../shared/filtering/FilterReconstructor";
-import {BSSID_FILTER_FIELDS} from "../dot11/bssids/BssidFilterFields";
 import monitorTypeToFilterFields from "./shared/MonitorTools";
+import {notify} from "react-notify-toast";
 
 const monitorsService = new MonitorsService();
 const tapsService = new TapsService();
@@ -27,11 +26,10 @@ export default function MonitorDetailsPage() {
 
   const [organizationId, tenantId] = useSelectedTenant();
 
-  const tapContext = useContext(TapContext);
-  const selectedTaps = tapContext.taps;
-
   const [monitor, setMonitor] = useState(null);
-  const [taps, setTaps] = useState(null)
+  const [taps, setTaps] = useState(null);
+
+  const [redirect, setRedirect] = useState(false);
 
   usePageTitle(monitor ? `Monitor: ${monitor.name}` : "Monitor Details");
 
@@ -40,8 +38,10 @@ export default function MonitorDetailsPage() {
   }, [id])
 
   useEffect(() => {
-    tapsService.findAllTapsHighLevel(organizationId, tenantId, (r) => setTaps(r.data.taps));
-  }, [selectedTaps]);
+    if (monitor) {
+      tapsService.findAllTapsHighLevel(organizationId, tenantId, (r) => setTaps(r.data.taps));
+    }
+  }, [monitor]);
 
   const breadcrumbs = () => {
     switch (monitor.type) {
@@ -65,6 +65,19 @@ export default function MonitorDetailsPage() {
 
   const onDelete = (e) => {
     e.preventDefault();
+
+    if (!confirm("Really delete this monitor?")) {
+      return;
+    }
+
+    monitorsService.deleteMonitor(monitor.uuid, () => {
+      notify.show('Monitor deleted.', 'success');
+      setRedirect(true);
+    });
+  }
+
+  if (redirect) {
+    return <Navigate to={backLink()} />
   }
 
   if (!monitor || taps === null) {
@@ -139,7 +152,7 @@ export default function MonitorDetailsPage() {
             <div className="card-body">
               <CardTitleWithControls title="Taps" />
 
-              <MonitorTapsTable allTaps={taps} selectedTaps={selectedTaps} />
+              <MonitorTapsTable allTaps={taps} selectedTaps={monitor.taps} />
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 package app.nzyme.core.dot11.db.monitoring;
 
+import app.nzyme.core.security.authentication.TenantScopedEntity;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
@@ -7,7 +8,7 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 @AutoValue
-public abstract class MonitoredSSID {
+public abstract class MonitoredSSID implements TenantScopedEntity {
 
     public abstract long id();
     public abstract UUID uuid();

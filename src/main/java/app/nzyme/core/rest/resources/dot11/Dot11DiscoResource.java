@@ -99,7 +99,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
 
-            if (!passedMonitoredNetworkAccessible(authenticatedUser, monitoredNetwork.get())) {
+            if (!entityAccessible(authenticatedUser, monitoredNetwork.get())) {
                 return Response.status(Response.Status.UNAUTHORIZED).build();
             }
 
@@ -163,7 +163,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
 
-            if (!passedMonitoredNetworkAccessible(authenticatedUser, monitoredNetwork.get())) {
+            if (!entityAccessible(authenticatedUser, monitoredNetwork.get())) {
                 return Response.status(Response.Status.UNAUTHORIZED).build();
             }
 
@@ -327,7 +327,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!passedMonitoredNetworkAccessible(authenticatedUser, monitoredNetwork.get())){
+        if (!entityAccessible(authenticatedUser, monitoredNetwork.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -351,7 +351,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!passedMonitoredNetworkAccessible(authenticatedUser, monitoredNetwork.get())){
+        if (!entityAccessible(authenticatedUser, monitoredNetwork.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -383,7 +383,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!passedMonitoredNetworkAccessible(authenticatedUser, monitoredNetwork.get())) {
+        if (!entityAccessible(authenticatedUser, monitoredNetwork.get())) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 

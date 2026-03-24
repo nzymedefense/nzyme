@@ -10,7 +10,6 @@ class MonitorsService {
       })
   }
 
-
   findAllOfType(monitorType, organizationId, tenantId, limit, offset, setMonitors) {
     RESTClient.get(`/monitors/type/${monitorType}`,
       { limit: limit, offset: offset, organization_id: organizationId, tenant_id: tenantId },
@@ -32,6 +31,10 @@ class MonitorsService {
       organization_id: organizationId,
       tenant_id: tenantId,
     }, successCallback, errorCallback);
+  }
+
+  deleteMonitor(id, onSuccess) {
+    RESTClient.delete(`/monitors/show/${id}`, onSuccess)
   }
 
 }

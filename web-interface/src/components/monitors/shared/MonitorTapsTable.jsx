@@ -2,7 +2,7 @@ import React from "react";
 
 export default function MonitorTapsTable({allTaps, selectedTaps}) {
 
-  if (selectedTaps.length === 1 && selectedTaps[0] === "*") {
+  if (selectedTaps === null || (selectedTaps.length === 1 && selectedTaps[0] === "*")) {
     return <div className="alert alert-info mb-0">This monitor will always use data from all your taps.</div>
   }
 

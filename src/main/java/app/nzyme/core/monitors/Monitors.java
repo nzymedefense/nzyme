@@ -20,15 +20,12 @@ public class Monitors {
         this.nzyme = nzyme;
     }
 
-    public Optional<MonitorEntry> find(UUID id, UUID organizationId, UUID tenantId) {
+    public Optional<MonitorEntry> find(UUID id) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT *, " +
                                 "COALESCE(last_event > NOW() - (interval * INTERVAL '1 minute'), false) AS alerted " +
-                                "FROM monitors WHERE uuid = :uuid AND organization_id = :organization_id " +
-                                "AND tenant_id = :tenant_id")
+                                "FROM monitors WHERE uuid = :uuid")
                         .bind("uuid", id)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
                         .mapTo(MonitorEntry.class)
                         .findOne()
         );
@@ -112,6 +109,14 @@ public class Monitors {
                         .execute()
         );
 
+    }
+
+    public void delete(UUID id) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM monitors WHERE uuid = :uuid")
+                        .bind("uuid", id)
+                        .execute()
+        );
     }
 
 }

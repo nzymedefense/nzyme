@@ -39,16 +39,11 @@ public class MonitorsResource extends UserAuthenticatedResource {
     @GET
     @Path("/show/{id}")
     public Response findAll(@Context SecurityContext sc,
-                            @PathParam("id") UUID uuid,
-                            @QueryParam("organization_id") @NotNull UUID organizationId,
-                            @QueryParam("tenant_id") @NotNull UUID tenantId) {
-        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
-            return Response.status(Response.Status.FORBIDDEN).build();
-        }
+                            @PathParam("id") UUID uuid) {
+        AuthenticatedUser user = getAuthenticatedUser(sc);
+        Optional<MonitorEntry> monitor = nzyme.getMonitors().find(uuid);
 
-        Optional<MonitorEntry> monitor = nzyme.getMonitors().find(uuid, organizationId, tenantId);
-
-        if (monitor.isEmpty()) {
+        if (monitor.isEmpty() || !entityAccessible(user, monitor.get())) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -60,7 +55,7 @@ public class MonitorsResource extends UserAuthenticatedResource {
                 monitor.get().type(),
                 monitor.get().name(),
                 monitor.get().description(),
-                buildTapsList(monitor.get()),
+                monitor.get().taps(),
                 monitor.get().triggerCondition(),
                 monitor.get().interval(),
                 monitor.get().filters(),
@@ -79,6 +74,10 @@ public class MonitorsResource extends UserAuthenticatedResource {
                             @QueryParam("tenant_id") @NotNull UUID tenantId,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset) {
+        if (limit > 200 || offset < 0) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -95,7 +94,7 @@ public class MonitorsResource extends UserAuthenticatedResource {
                     m.type(),
                     m.name(),
                     m.description(),
-                    buildTapsList(m),
+                    m.taps(),
                     m.triggerCondition(),
                     m.interval(),
                     m.filters(),
@@ -134,23 +133,8 @@ public class MonitorsResource extends UserAuthenticatedResource {
         }
 
         // Check permissions.
-        if (!user.isSuperAdministrator()
-                && !(user.isOrganizationAdministrator() && req.organizationId().equals(user.getOrganizationId()))) {
-            // User is not a super admin or admin of the passed org. Check user permissions.
-            List<String> userPermissions = nzyme.getAuthenticationService().findPermissionsOfUser(user.getUserId());
-            String requiredPermission;
-            switch (monitorType) {
-                case DOT11_BSSID:
-                case DOT11_CLIENT:
-                    requiredPermission = "dot11_monitoring_manage";
-                    break;
-                default:
-                    return Response.status(Response.Status.BAD_REQUEST).build();
-            }
-
-            if (!userPermissions.contains(requiredPermission)) {
-                return Response.status(Response.Status.FORBIDDEN).build();
-            }
+        if (!writePermissionsForMonitorType(user, req.organizationId(), monitorType)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         if (!passedTenantDataAccessible(sc, req.organizationId(), req.tenantId())) {
@@ -172,26 +156,48 @@ public class MonitorsResource extends UserAuthenticatedResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
-    @Nullable
-    private List<TapHighLevelInformationDetailsResponse> buildTapsList(MonitorEntry m) {
-        List<TapHighLevelInformationDetailsResponse> taps;
+    @DELETE
+    @Path("/show/{id}")
+    public Response delete(@Context SecurityContext sc, @PathParam("id") UUID uuid) {
+        AuthenticatedUser user = getAuthenticatedUser(sc);
+        Optional<MonitorEntry> monitor = nzyme.getMonitors().find(uuid);
 
-        if (m.taps() != null) {
-            taps = Lists.newArrayList();
-            for (UUID tapUuid : m.taps()) {
-                Optional<Tap> tap = nzyme.getTapManager().findTap(tapUuid);
-                if (tap.isPresent()) {
-                    taps.add(TapHighLevelInformationDetailsResponse.create(
-                            tap.get().uuid(),
-                            tap.get().name(),
-                            Tools.isTapActive(tap.get().lastReport())
-                    ));
-                }
-            }
-        } else {
-            taps = null;
+        if (monitor.isEmpty() || !entityAccessible(user, monitor.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return taps;
+
+        // Check permissions.
+        if (!writePermissionsForMonitorType(
+                user, monitor.get().organizationId(), MonitorType.valueOf(monitor.get().type()))) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        nzyme.getMonitors().delete(uuid);
+
+        return Response.ok().build();
+    }
+
+    private boolean writePermissionsForMonitorType(AuthenticatedUser user, UUID organizationId, MonitorType monitorType) {
+        if (!user.isSuperAdministrator()
+                && !(user.isOrganizationAdministrator() && organizationId.equals(user.getOrganizationId()))) {
+            // User is not a super admin or admin of the passed org. Check user permissions.
+            List<String> userPermissions = nzyme.getAuthenticationService().findPermissionsOfUser(user.getUserId());
+            String requiredPermission;
+            switch (monitorType) {
+                case DOT11_BSSID:
+                case DOT11_CLIENT:
+                    requiredPermission = "dot11_monitoring_manage";
+                    break;
+                default:
+                    return false;
+            }
+
+            if (!userPermissions.contains(requiredPermission)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }
