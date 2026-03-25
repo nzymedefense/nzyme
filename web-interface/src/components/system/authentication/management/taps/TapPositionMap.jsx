@@ -18,7 +18,7 @@ export default function TapPositionMap(props) {
   const defaultZoomLevel = props.defaultZoomLevel;
 
   const [map, setMap] = useState(null);
-  const [zoomLevel, setZoomLevel] = useState(defaultZoomLevel ? defaultZoomLevel : 9);
+  const [zoomLevel, setZoomLevel] = useState(defaultZoomLevel ? defaultZoomLevel : 2);
   const tapIcon = L.icon({
     iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap.png',
     iconSize: [24, 16],
@@ -66,7 +66,7 @@ export default function TapPositionMap(props) {
         map.setView(latLng(latitude, longitude), zoomLevel)
         placeMarker(latLng(latitude, longitude));
       } else {
-        map.setView([29.73422, -95.38231], zoomLevel)
+        map.setView([0, 0], zoomLevel)
       }
 
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {

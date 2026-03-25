@@ -110,7 +110,7 @@ function EditTapPermissionsPage() {
                                    description={tap.description}
                                    latitude={tap.latitude}
                                    longitude={tap.longitude}
-                                   defaultMapZoomLevel={18}
+                                   defaultMapZoomLevel={(tap.latitude && tap.longitude) ? 18 : 1}
                                    submitText="Edit Tap"  />
               </div>
             </div>
