@@ -1,6 +1,6 @@
 use anyhow::bail;
 use chrono::Utc;
-use log::{error, info};
+use log::{debug, error, info};
 use reqwest::{blocking::Client, blocking::Response, header::{HeaderMap, AUTHORIZATION}, Error, Url};
 use std::{thread::self, time::Duration, sync::{Mutex, Arc}, collections::HashMap};
 use systemstat::{System, Platform};
@@ -149,12 +149,20 @@ impl Leaderlink {
             .send() {
             Ok(r) => {
                 if !r.status().is_success() {
-                    bail!("Could not send report. Received response code [HTTP {}].", r.status())
+                    if r.status() == 403 {
+                        debug!("Could not send report to [{}]. Received HTTP 403. Subsystem is \
+                            disabled.", path);
+                        Ok(r)
+                    } else {
+                        bail!("Could not send report. Received response code [HTTP {}].", r.status())
+                    }
                 } else {
                     Ok(r)
                 }
             },
-            Err(e) => bail!("Could not send report. {}", e)
+            Err(e) => {
+                bail!("Could not send report. {}", e)
+            }
         }
     }
 

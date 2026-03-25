@@ -50,7 +50,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.DOT11, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting 802.11 summary report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received 802.11 summary report from tap [{}]: {}", tap.getUuid(), report);
@@ -66,7 +66,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting Bluetooth devices report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received Bluetooth devices report from tap [{}]: {}", tap.getUuid(), report);
@@ -82,7 +82,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting TCP sessions report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received TCP session table report from tap [{}]: {}", tap.getUuid(), report);
@@ -98,7 +98,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting UDP conversations report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received UDP conversations table report from tap [{}]: {}", tap.getUuid(), report);
@@ -116,7 +116,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting DNS summary report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received DNS summary report from tap [{}]: {}", tap.getUuid(), report);
@@ -132,7 +132,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting SSH sessions report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received SSH sessions report from tap [{}]: {}", tap.getUuid(), report);
@@ -148,7 +148,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting SOCKS tunnels report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received SOCKS tunnels report from tap [{}]: {}", tap.getUuid(), report);
@@ -164,7 +164,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.UAV, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting UAVs report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received UAVs report from tap [{}]: {}", tap.getUuid(), report);
@@ -180,7 +180,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting DHCP transactions report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received DHCP transactions report from tap [{}]: {}", tap.getUuid(), report);
@@ -196,7 +196,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting ARP packets report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received ARP packets report from tap [{}]: {}", tap.getUuid(), report);
@@ -212,7 +212,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting NTP transactions report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received NTP transactions report from tap [{}]: {}", tap.getUuid(), report);
@@ -228,7 +228,7 @@ public class TablesResource {
 
         if (!nzyme.getSubsystems().isEnabled(Subsystem.GNSS, tap.getOrganizationId(), tap.getTenantId())) {
             LOG.debug("Rejecting GNSS constellations report from tap [{}]: Subsystem is disabled.", tap.getUuid());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         LOG.debug("Received GNSS constellations report from tap [{}]: {}", tap.getUuid(), report);
