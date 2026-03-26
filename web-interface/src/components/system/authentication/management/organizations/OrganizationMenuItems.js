@@ -7,4 +7,5 @@ export const ORGANIZATION_MENU_ITEMS = (organizationId) => [
   {name: "Events & Actions", href: ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS_PAGE(organizationId) },
   {name: "Database", href: ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DATABASE_PAGE(organizationId) },
   {name: "Quotas", href: ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.QUOTAS_PAGE(organizationId) },
+  {name: "Subsystems", href: ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.SUBSYSTEMS_PAGE(organizationId) }
 ]

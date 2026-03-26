@@ -17,6 +17,7 @@ const ApiRoutes = {
           EVENTS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/events`,
           DATABASE_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/database`,
           QUOTAS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/quotas`,
+          SUBSYSTEMS_PAGE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/subsystems`,
           CREATE: '/system/authentication/organizations/create',
           EDIT: (organizationId) => `/system/authentication/organizations/show/${organizationId}/edit`,
           ADMINS: {
@@ -43,6 +44,7 @@ const ApiRoutes = {
           INTEGRATIONS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/integrations`,
           DATABASE_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/database`,
           QUOTAS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/quotas`,
+          SUBSYSTEMS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/subsystems`,
           CREATE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/tenants/create`,
           EDIT: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/edit`,
           LOCATIONS: {
