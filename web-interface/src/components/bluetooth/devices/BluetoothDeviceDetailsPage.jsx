@@ -15,6 +15,7 @@ import TapBasedSignalStrengthTable from "../../shared/TapBasedSignalStrengthTabl
 import {BluetoothDeviceSignalStrengthHistogram} from "./BluetoothDeviceSignalStrengthHistogram";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import usePageTitle from "../../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
 
 const btService = new BluetoothService();
 
@@ -29,8 +30,8 @@ export default function BluetoothDeviceDetailsPage() {
   const [rssiHistogram, setRssiHistogram] = useState(null);
   const [tapRssis, setTapRssis] = useState(null);
 
-  const [rssiHistogramTimerange, setRssiHistogramTimerange] = useState(Presets.RELATIVE_HOURS_24);
-  const [tapRssiTimerange, setTapRssiTimerange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [rssiHistogramTimerange, setRssiHistogramTimerange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24, "rssi"));
+  const [tapRssiTimerange, setTapRssiTimerange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_MINUTES_15, "tap_rssi"));
 
   usePageTitle(device ? `Bluetooth Device: ${device.device.mac.address}` : "Bluetooth Device Details");
 
@@ -133,7 +134,9 @@ export default function BluetoothDeviceDetailsPage() {
               <div className="col-12">
                 <div className="card">
                   <div className="card-body">
-                    <CardTitleWithControls title="Signal Strength by Tap" timeRange={tapRssiTimerange}
+                    <CardTitleWithControls title="Signal Strength by Tap"
+                                           urlKey="tap_rssi"
+                                           timeRange={tapRssiTimerange}
                                            setTimeRange={setTapRssiTimerange} />
 
                     <TapBasedSignalStrengthTable strengths={tapRssis} />
@@ -186,6 +189,7 @@ export default function BluetoothDeviceDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="Signal Strength"
+                                       urlKey="rssi"
                                        timeRange={rssiHistogramTimerange}
                                        setTimeRange={setRssiHistogramTimerange} />
 

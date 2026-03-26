@@ -7,23 +7,16 @@ function CardTitleWithControls(props) {
   const title = props.title;
   const disabled = props.disabled;
 
-  // Optional styling.
   const slim = props.slim;
 
-  // Required if using time range selector.
   const setTimeRange = props.setTimeRange;
   const timeRange = props.timeRange;
+  const urlKey = props.urlKey;
 
-  // Required if using help link.
   const helpLink = props.helpLink;
-
-  // Required if using internal link.
   const internalLink = props.internalLink;
-
-  // Required if using a refresh button.
   const refreshAction = props.refreshAction;
 
-  // Optional.
   const smallTextParam = props.smallText;
   const hideTimeRange = props.hideTimeRange;
   const fixedAppliedTimeRange = props.fixedAppliedTimeRange;
@@ -34,22 +27,21 @@ function CardTitleWithControls(props) {
     if (!smallTextParam) {
       return null;
     }
-
     return <small>{smallTextParam}</small>
   }
 
   const timeRangeButton = () => {
     if (setTimeRange && timeRange) {
       return (
-          <button className="btn card-title-option"
-                  title="Toggle Time Range Selector"
-                  disabled={disabled}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setTimeRangeDialogOpened(!timeRangeDialogOpened);
-                  }}>
-            <i className="fa-regular fa-clock"></i>
-          </button>
+        <button className="btn card-title-option"
+                title="Toggle Time Range Selector"
+                disabled={disabled}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTimeRangeDialogOpened(!timeRangeDialogOpened);
+                }}>
+          <i className="fa-regular fa-clock"></i>
+        </button>
       )
     }
   }
@@ -61,21 +53,21 @@ function CardTitleWithControls(props) {
 
     if (disabled) {
       return (
-          <button className="btn card-title-option"
-                  title="Help"
-                  disabled={true}
-                  onClick={(e) => {
-                    e.preventDefault();
-                  }}>
-            <i className="fa-solid fa-question"></i>
-          </button>
+        <button className="btn card-title-option"
+                title="Help"
+                disabled={true}
+                onClick={(e) => {
+                  e.preventDefault();
+                }}>
+          <i className="fa-solid fa-question"></i>
+        </button>
       )
     }
 
     return (
-        <a href={helpLink} className="card-title-option" title="Help" target="_blank">
-          <i className="fa-solid fa-question"></i>
-        </a>
+      <a href={helpLink} className="card-title-option" title="Help" target="_blank">
+        <i className="fa-solid fa-question"></i>
+      </a>
     )
   }
 
@@ -107,15 +99,15 @@ function CardTitleWithControls(props) {
   const refreshButton = () => {
     if (refreshAction) {
       return (
-          <button className="btn card-title-option"
-                  title="Refresh"
-                  disabled={disabled}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    refreshAction();
-                  }}>
-            <i className="fa-solid fa-rotate"></i>
-          </button>
+        <button className="btn card-title-option"
+                title="Refresh"
+                disabled={disabled}
+                onClick={(e) => {
+                  e.preventDefault();
+                  refreshAction();
+                }}>
+          <i className="fa-solid fa-rotate"></i>
+        </button>
       )
     }
   }
@@ -126,9 +118,9 @@ function CardTitleWithControls(props) {
     }
 
     return (
-        <div className="mb-3">
-          <TimeRangeSelector timeRange={timeRange} setTimeRange={setTimeRange}/>
-        </div>
+      <div className="mb-3">
+        <TimeRangeSelector timeRange={timeRange} setTimeRange={setTimeRange} urlKey={urlKey} />
+      </div>
     );
   }
 
@@ -138,37 +130,36 @@ function CardTitleWithControls(props) {
     }
 
     return (
-        <div className="row">
-          <div className="col-12">
-            <AppliedTimeRange timeRange={timeRange ? timeRange : fixedAppliedTimeRange}/>
-          </div>
+      <div className="row">
+        <div className="col-12">
+          <AppliedTimeRange timeRange={timeRange ? timeRange : fixedAppliedTimeRange}/>
         </div>
+      </div>
     )
   }
 
   return (
-      <div className="card-title" style={slim ? {marginBottom: 0} : {}}>
-        <div className="row">
-          <div className="col-10">
-            <h3>{title} {smallText()}</h3>
-          </div>
-
-          <div className="col-2 text-end">
-            {timeRangeButton()}
-            {internalLinkButton()}
-            {helpLinkButton()}
-            {refreshButton()}
-          </div>
-
-          {timeRangeDialog()}
+    <div className="card-title" style={slim ? {marginBottom: 0} : {}}>
+      <div className="row">
+        <div className="col-10">
+          <h3>{title} {smallText()}</h3>
         </div>
 
-        {appliedTimeRange()}
+        <div className="col-2 text-end">
+          {timeRangeButton()}
+          {internalLinkButton()}
+          {helpLinkButton()}
+          {refreshButton()}
+        </div>
 
-        {slim ? null : <hr />}
+        {timeRangeDialog()}
       </div>
-)
 
+      {appliedTimeRange()}
+
+      {slim ? null : <hr />}
+    </div>
+  )
 }
 
 export default CardTitleWithControls;

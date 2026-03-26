@@ -19,6 +19,7 @@ import ARPGratuitousPacketsChart from "./ARPGratuitousPacketsChart";
 import ARPRequesterPairsHistogram from "./ARPRequesterPairsHistogram";
 import ARPResponderPairsHistogram from "./ARPResponderPairsHistogram";
 import usePageTitle from "../../../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../../../shared/timerange/TimeRangeSelector";
 
 const assetsService = new AssetsService();
 
@@ -36,7 +37,7 @@ export default function ARPPacketsPage() {
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24));
 
   const [packets, setPackets] = useState(null);
   const [statistics, setStatistics] = useState(null);
