@@ -12,6 +12,7 @@ import {REMOTE_ACCESS_MENU_ITEMS} from "../RemoteAccessMenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import usePageTitle from "../../../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../../../shared/timerange/TimeRangeSelector";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -24,7 +25,7 @@ export default function SSHSessionsPage() {
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
 
-  const [sshSessionsTimeRange, setSshSessionsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [sshSessionsTimeRange, setSshSessionsTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24))
   const [sshSessionsFilters, setSshSessionsFilters] = useState(
     queryParametersToFilters(urlQuery.get("filters"), SSH_FILTER_FIELDS)
   );

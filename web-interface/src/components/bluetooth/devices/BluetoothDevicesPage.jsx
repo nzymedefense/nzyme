@@ -6,6 +6,7 @@ import BluetoothService from "../../../services/BluetoothService";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import BluetoothDevicesTable from "./BluetoothDevicesTable";
 import usePageTitle from "../../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
 
 const btService = new BluetoothService();
 
@@ -18,7 +19,7 @@ export default function BluetoothDevicesPage() {
 
   const [devices, setDevices] = useState(null);
 
-  const [devicesTimeRange, setDevicesTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [devicesTimeRange, setDevicesTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24));
   const [devicesPage, setDevicesPage] = useState(1);
 
   const perPage = 50;

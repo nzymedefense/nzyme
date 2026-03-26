@@ -13,6 +13,7 @@ import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {DNS_MENU_ITEMS} from "../DNSMenuItems";
 import {queryParametersToFilters} from "../../../shared/filtering/FilterQueryParameters";
 import usePageTitle from "../../../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../../../shared/timerange/TimeRangeSelector";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -25,7 +26,7 @@ export default function DNSTransactionLogsPage() {
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
 
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24))
   const [filters, setFilters] = useState(queryParametersToFilters(urlQuery.get("filters"), DNS_FILTER_FIELDS));
   const [revision, setRevision] = useState(new Date());
 

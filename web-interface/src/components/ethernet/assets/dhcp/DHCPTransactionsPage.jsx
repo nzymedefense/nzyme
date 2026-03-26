@@ -15,6 +15,7 @@ import AssetsService from "../../../../services/ethernet/AssetsService";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import DHCPTransactionsChart from "./DHCPTransactionsChart";
 import usePageTitle from "../../../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../../../shared/timerange/TimeRangeSelector";
 
 const assetsService = new AssetsService();
 
@@ -32,7 +33,7 @@ export default function DHCPTransactionsPage() {
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24))
 
   const [data, setData] = useState(null);
 

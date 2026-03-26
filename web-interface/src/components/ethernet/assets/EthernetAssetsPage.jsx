@@ -15,6 +15,7 @@ import ActiveAssetsHistogram from "./ActiveAssetsHistogram";
 import LatestAssetsHistogram from "./LatestAssetsHistogram";
 import DisappearedAssetsHistogram from "./DisappearedAssetsHistogram";
 import usePageTitle from "../../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
 
 const assetsService = new AssetsService();
 
@@ -30,7 +31,7 @@ export default function EthernetAssetsPage() {
 
   const urlQuery = useQuery();
 
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24));
 
   const [assets, setAssets] = useState(null);
   const [page, setPage] = useState(1);

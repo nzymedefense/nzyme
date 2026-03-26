@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {TapContext} from "../../../../App";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
-import {Absolute, Presets} from "../../../shared/timerange/TimeRange";
+import {Presets} from "../../../shared/timerange/TimeRange";
 import AssetsService from "../../../../services/ethernet/AssetsService";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import {ASSETS_MENU_ITEMS} from "../AssetsMenuItems";

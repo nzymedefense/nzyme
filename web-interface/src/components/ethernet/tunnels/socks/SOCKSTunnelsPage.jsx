@@ -12,6 +12,7 @@ import {TUNNELS_MENU_ITEMS} from "../TunnelsMenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
 import usePageTitle from "../../../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../../../shared/timerange/TimeRangeSelector";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -24,7 +25,7 @@ export default function SOCKSTunnelsPage() {
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
 
-  const [socksTunnelsTimeRange, setSocksTunnelsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [socksTunnelsTimeRange, setSocksTunnelsTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24));
   const [socksTunnelsFilters, setSocksTunnelsFilters] = useState(
     queryParametersToFilters(urlQuery.get("filters"), SOCKS_FILTER_FIELDS)
   );

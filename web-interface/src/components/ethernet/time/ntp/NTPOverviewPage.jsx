@@ -16,6 +16,7 @@ import NTPTransactionsHistogram from "./NTPTransactionsHistogram";
 import NTPClientRequestResponseRatioHistogram from "./NTPClientRequestResponseRatioHistogram";
 import NTPTopServersHistogram from "./NTPTopServersHistogram";
 import usePageTitle from "../../../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../../../shared/timerange/TimeRangeSelector";
 
 const timeService = new TimeService();
 
@@ -31,7 +32,7 @@ export function NTPOverviewPage() {
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24))
 
   const [transactionsHistogram, setTransactionsHistogram] = useState(null);
 

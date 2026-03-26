@@ -20,6 +20,7 @@ import L4SessionsTopDestinationPortsHistogram from "./L4SessionsTopDestinationPo
 import L4SessionsTopTrafficSourceAddressesHistogram from "./L4SessionsTopTrafficSourceAddressesHistogram";
 import L4SessionsTopTrafficDestinationAddressesHistogram from "./L4SessionsTopTrafficDestinationAddressesHistogram";
 import usePageTitle from "../../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -38,7 +39,7 @@ export default function L4OverviewPage() {
 
   const [statistics, setStatistics] = useState(null);
 
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24));
   const [revision, setRevision] = useState(new Date());
 
   const [filters, setFilters] = useState(
