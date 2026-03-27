@@ -28,6 +28,7 @@ export default function AssetDetailsSOCKSTunnels({title, filters}) {
   return (
       <>
         <CardTitleWithControls title={title}
+                               doNotPersistTimeRange={true}
                                timeRange={timerange}
                                setTimeRange={setTimerange}
                                internalLink={ApiRoutes.ETHERNET.TUNNELS.SOCKS.INDEX + "?filters=" + JSON.stringify(filters)}

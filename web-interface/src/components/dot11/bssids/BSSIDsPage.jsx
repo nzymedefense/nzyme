@@ -14,6 +14,7 @@ import {queryParametersToFilters} from "../../shared/filtering/FilterQueryParame
 import usePageTitle from "../../../util/UsePageTitle";
 import MonitorsService from "../../../services/MonitorsService";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
 
 const dot11Service = new Dot11Service();
 
@@ -36,7 +37,7 @@ function BSSIDsPage() {
 
   const [bssids, setBSSIDs] = useState(null);
 
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24))
   const [revision, setRevision] = useState(new Date());
 
   const [filters, setFilters] = useState(queryParametersToFilters(urlQuery.get("filters"), BSSID_FILTER_FIELDS));

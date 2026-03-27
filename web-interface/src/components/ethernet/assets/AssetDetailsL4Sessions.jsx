@@ -28,6 +28,7 @@ export default function AssetDetailsL4Sessions({title, filters}) {
   return (
     <>
       <CardTitleWithControls title={title}
+                             doNotPersistTimeRange={true}
                              timeRange={timerange}
                              setTimeRange={setTimerange}
                              internalLink={ApiRoutes.ETHERNET.L4.OVERVIEW + "?filters=" + JSON.stringify(filters)}

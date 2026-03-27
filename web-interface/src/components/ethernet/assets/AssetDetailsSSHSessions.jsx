@@ -28,6 +28,7 @@ export default function AssetDetailsSSHSessions({title, filters}) {
   return (
       <>
         <CardTitleWithControls title={title}
+                               doNotPersistTimeRange={true}
                                timeRange={timerange}
                                setTimeRange={setTimerange}
                                internalLink={ApiRoutes.ETHERNET.REMOTE.SSH.INDEX + "?filters=" + JSON.stringify(filters)}

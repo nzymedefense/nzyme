@@ -64,6 +64,8 @@ function TimeRangeSelector(props) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const doNotPersistTimeRange = props.doNotPersistTimeRange || false;
+
   const [relativeUnit, setRelativeUnit] = useState("Minutes");
   const [relativeValue, setRelativeValue] = useState(5);
 
@@ -111,7 +113,9 @@ function TimeRangeSelector(props) {
 
   const applyTimeRange = (range) => {
     setTimeRange(range);
-    syncTimeRangeToURL(range);
+    if (!doNotPersistTimeRange) {
+      syncTimeRangeToURL(range);
+    }
   };
 
   const presetOption = (range, name) => {

@@ -22,7 +22,7 @@ export default function AssetDetailsDNSTransactions(props) {
     }]
   };
 
-  const [timerange, setTimerange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24, "dns_transactions"));
+  const [timerange, setTimerange] = useState(Presets.RELATIVE_HOURS_24);
   const [revision, setRevision] = useState(new Date());
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function AssetDetailsDNSTransactions(props) {
             <div className="card">
               <div className="card-body">
                 <CardTitleWithControls title="DNS Transactions"
-                                       urlKey="dns_transactions"
+                                       doNotPersistTimeRange={true}
                                        timeRange={timerange}
                                        setTimeRange={setTimerange}
                                        internalLink={ApiRoutes.ETHERNET.DNS.TRANSACTION_LOGS + "?filters=" + JSON.stringify(FILTERS)}

@@ -21,6 +21,8 @@ function CardTitleWithControls(props) {
   const hideTimeRange = props.hideTimeRange;
   const fixedAppliedTimeRange = props.fixedAppliedTimeRange;
 
+  const doNotPersistTimeRange = props.doNotPersistTimeRange || false;
+
   const [timeRangeDialogOpened, setTimeRangeDialogOpened] = useState(false);
 
   const smallText = () => {
@@ -119,7 +121,10 @@ function CardTitleWithControls(props) {
 
     return (
       <div className="mb-3">
-        <TimeRangeSelector timeRange={timeRange} setTimeRange={setTimeRange} urlKey={urlKey} />
+        <TimeRangeSelector timeRange={timeRange}
+                           setTimeRange={setTimeRange}
+                           urlKey={urlKey}
+                           doNotPersistTimeRange={doNotPersistTimeRange} />
       </div>
     );
   }

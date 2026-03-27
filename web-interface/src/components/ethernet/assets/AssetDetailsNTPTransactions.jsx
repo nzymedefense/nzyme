@@ -28,6 +28,7 @@ export default function AssetDetailsNTPTransactions({ title, filters }) {
   return (
     <>
       <CardTitleWithControls title={title}
+                             doNotPersistTimeRange={true}
                              timeRange={timerange}
                              setTimeRange={setTimerange}
                              internalLink={ApiRoutes.ETHERNET.TIME.NTP.INDEX + "?filters=" + JSON.stringify(filters)}

@@ -15,6 +15,7 @@ import SectionMenuBar from "../../shared/SectionMenuBar";
 import {CLIENTS_MENU_ITEMS} from "./ClientsMenuItems";
 import ApiRoutes from "../../../util/ApiRoutes";
 import usePageTitle from "../../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
 
 const dot11Service = new Dot11Service();
 
@@ -34,7 +35,7 @@ function ClientsPage() {
   const [histogram, setHistogram] = useState(null);
 
   const [clients, setClients] = useState(null);
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24))
   const [page, setPage] = useState(1);
 
   const [orderColumn, setOrderColumn] = useState("last_seen");

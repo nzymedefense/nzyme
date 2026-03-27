@@ -25,7 +25,6 @@ import AssetDetailsAssetName from "./AssetDetailsAssetName";
 import EthernetMacAddress from "../../shared/context/macs/EthernetMacAddress";
 import AssetDetailsNTPTransactions from "./AssetDetailsNTPTransactions";
 import usePageTitle from "../../../util/UsePageTitle";
-import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
 
 const assetsService = new AssetsService();
 
@@ -38,14 +37,14 @@ export default function AssetDetailsPage() {
   const [asset, setAsset] = useState(null);
 
   const [hostnames, setHostnames] = useState(null);
-  const [hostnamesTimeRange, setHostnamesTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.ALL_TIME, "hostnames"));
+  const [hostnamesTimeRange, setHostnamesTimeRange] = useState(Presets.ALL_TIME);
   const [hostnamesOrderColumn, setHostnamesOrderColumn] = useState("last_seen");
   const [hostnamesOrderDirection, setHostnamesOrderDirection] = useState("DESC");
   const hostnamesPerPage = 10;
   const [hostnamesPage, setHostnamesPage] = useState(1);
 
   const [ipAddresses, setIpAddresses] = useState(null);
-  const [ipAddressesTimeRange, setIpAddressesTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.ALL_TIME, "ips"));;
+  const [ipAddressesTimeRange, setIpAddressesTimeRange] = useState(Presets.ALL_TIME);
   const [ipAddressesOrderColumn, setIpAddressesOrderColumn] = useState("last_seen");
   const [ipAddressesOrderDirection, setIpAddressesOrderDirection] = useState("DESC");
   const ipAddressesPerPage = 10;
@@ -193,7 +192,6 @@ export default function AssetDetailsPage() {
               <div className="card">
                 <div className="card-body">
                   <CardTitleWithControls title="Hostnames"
-                                         urlKey="hostnames"
                                          timeRange={hostnamesTimeRange}
                                          setTimeRange={setHostnamesTimeRange} />
 
@@ -214,7 +212,6 @@ export default function AssetDetailsPage() {
               <div className="card">
                 <div className="card-body">
                   <CardTitleWithControls title="IP Addresses"
-                                         urlKey="ips"
                                          timeRange={ipAddressesTimeRange}
                                          setTimeRange={setIpAddressesTimeRange} />
 

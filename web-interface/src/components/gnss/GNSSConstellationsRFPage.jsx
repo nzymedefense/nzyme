@@ -11,6 +11,7 @@ import SectionMenuBar from "../shared/SectionMenuBar";
 import ApiRoutes from "../../util/ApiRoutes";
 import {GNSS_MENU_ITEMS} from "./GNSSMenuItems";
 import usePageTitle from "../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../shared/timerange/TimeRangeSelector";
 
 const gnssService = new GnssService();
 
@@ -21,7 +22,7 @@ export default function GNSSConstellationsRFPage() {
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24));
 
   const [rfMonJammingIndicatorHistogram, setRfMonJammingIndicatorHistogram] = useState(null);
   const [rfMonAgcCountHistogram, setRfMonAgcCountHistogram] = useState(null);

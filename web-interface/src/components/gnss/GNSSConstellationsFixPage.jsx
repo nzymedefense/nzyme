@@ -14,6 +14,7 @@ import ApiRoutes from "../../util/ApiRoutes";
 import {GNSS_MENU_ITEMS} from "./GNSSMenuItems";
 import {Presets} from "../shared/timerange/TimeRange";
 import usePageTitle from "../../util/UsePageTitle";
+import {timeRangeFromURLOrDefault} from "../shared/timerange/TimeRangeSelector";
 
 const gnssService = new GnssService();
 
@@ -24,7 +25,7 @@ export default function GNSSConstellationsFixPage() {
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
-  const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24, "primary"));
 
   const [pdopHistogram, setPdopHistogram] = useState(null);
   const [fixSatellitesHistogram, setFixSatellitesHistogram] = useState(null);
@@ -33,7 +34,8 @@ export default function GNSSConstellationsFixPage() {
   const [distances, setDistances] = useState(null);
 
   const [constellationCoordinatesConstellation, setConstellationCoordinatesConstellation] = useState("GPS");
-  const [constellationCoordinatesTimeRange, setConstellationCoordinatesTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [constellationCoordinatesTimeRange, setConstellationCoordinatesTimeRange] =
+    useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_MINUTES_15, "locations"));
   const [constellationCoordinates, setConstellationCoordinates] = useState(null);
 
   const [revision, setRevision] = useState(new Date());
@@ -89,6 +91,7 @@ export default function GNSSConstellationsFixPage() {
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Reported Locations"
+                                     urlKey="locations"
                                      timeRange={constellationCoordinatesTimeRange}
                                      setTimeRange={setConstellationCoordinatesTimeRange}
                                      refreshAction={() => setRevision(new Date())} />
@@ -112,6 +115,7 @@ export default function GNSSConstellationsFixPage() {
               <div className="card">
                 <div className="card-body">
                   <CardTitleWithControls title="Maximum Distances From Tap"
+                                         urlKey="locations"
                                          timeRange={constellationCoordinatesTimeRange}
                                          setTimeRange={setConstellationCoordinatesTimeRange}
                                          refreshAction={() => setRevision(new Date())} />
@@ -126,6 +130,7 @@ export default function GNSSConstellationsFixPage() {
               <div className="card">
                 <div className="card-body">
                   <CardTitleWithControls title="Fix Status"
+                                         urlKey="primary"
                                          timeRange={timeRange}
                                          setTimeRange={setTimeRange}
                                          refreshAction={() => setRevision(new Date())} />
@@ -144,6 +149,7 @@ export default function GNSSConstellationsFixPage() {
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Satellites Used For Fix"
+                                     urlKey="primary"
                                      timeRange={timeRange}
                                      setTimeRange={setTimeRange}
                                      refreshAction={() => setRevision(new Date())} />
@@ -159,6 +165,7 @@ export default function GNSSConstellationsFixPage() {
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Dilution of Precision"
+                                     urlKey="primary"
                                      timeRange={timeRange}
                                      setTimeRange={setTimeRange}
                                      refreshAction={() => setRevision(new Date())} />
@@ -174,6 +181,7 @@ export default function GNSSConstellationsFixPage() {
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Altitude"
+                                     urlKey="primary"
                                      timeRange={timeRange}
                                      setTimeRange={setTimeRange}
                                      refreshAction={() => setRevision(new Date())} />
