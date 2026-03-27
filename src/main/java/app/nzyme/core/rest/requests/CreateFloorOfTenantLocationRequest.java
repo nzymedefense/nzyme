@@ -10,7 +10,6 @@ import jakarta.validation.constraints.NotEmpty;
 @AutoValue
 public abstract class CreateFloorOfTenantLocationRequest {
 
-    @Min(0)
     public abstract long number();
 
     @Nullable

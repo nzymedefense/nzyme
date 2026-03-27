@@ -16,7 +16,7 @@ function FloorForm(props) {
   }
 
   const formIsReady = function() {
-    return number && parseInt(number, 10) >= 0 && pathLossExponent && parseFloat(pathLossExponent) > 0
+    return number && pathLossExponent && parseFloat(pathLossExponent) > 0
   }
 
   const submit = function(e) {
