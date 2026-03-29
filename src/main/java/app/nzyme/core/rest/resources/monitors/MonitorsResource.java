@@ -6,6 +6,7 @@ import app.nzyme.core.monitors.db.MonitorEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.CreateMonitorRequest;
+import app.nzyme.core.rest.requests.UpdateMonitorRequest;
 import app.nzyme.core.rest.responses.monitors.MonitorDetailsResponse;
 import app.nzyme.core.rest.responses.monitors.MonitorListResponse;
 import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
@@ -82,10 +83,10 @@ public class MonitorsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        long total = nzyme.getMonitors().countAllOfType(monitorType, organizationId, tenantId);
+        long total = nzyme.getMonitors().countAllMonitorsOfType(monitorType, organizationId, tenantId);
 
         List<MonitorDetailsResponse> monitors = Lists.newArrayList();
-        for (MonitorEntry m : nzyme.getMonitors().findAllOfType(monitorType, organizationId, tenantId, offset, limit)) {
+        for (MonitorEntry m : nzyme.getMonitors().findAllMonitorsOfType(monitorType, organizationId, tenantId, offset, limit)) {
             monitors.add(MonitorDetailsResponse.create(
                     m.uuid(),
                     m.organizationId(),
@@ -133,7 +134,7 @@ public class MonitorsResource extends UserAuthenticatedResource {
         }
 
         // Check permissions.
-        if (!writePermissionsForMonitorType(user, req.organizationId(), monitorType)) {
+        if (!userHasWritePermissionsForMonitorType(user, req.organizationId(), monitorType)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
@@ -156,6 +157,31 @@ public class MonitorsResource extends UserAuthenticatedResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @PUT
+    @Path("/show/{id}")
+    public Response update(@Context SecurityContext sc,
+                           @PathParam("id") UUID uuid,
+                           @Valid UpdateMonitorRequest req) {
+        AuthenticatedUser user = getAuthenticatedUser(sc);
+        Optional<MonitorEntry> monitor = nzyme.getMonitors().find(uuid);
+
+        if (monitor.isEmpty() || !entityAccessible(user, monitor.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check permissions.
+        if (!userHasWritePermissionsForMonitorType(
+                user, monitor.get().organizationId(), MonitorType.valueOf(monitor.get().type()))) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        nzyme.getMonitors().updateMonitor(
+                monitor.get().uuid(), req.name(), req.description(), req.triggerCondition(), req.interval()
+        );
+
+        return Response.ok().build();
+    }
+
     @DELETE
     @Path("/show/{id}")
     public Response delete(@Context SecurityContext sc, @PathParam("id") UUID uuid) {
@@ -167,17 +193,17 @@ public class MonitorsResource extends UserAuthenticatedResource {
         }
 
         // Check permissions.
-        if (!writePermissionsForMonitorType(
+        if (!userHasWritePermissionsForMonitorType(
                 user, monitor.get().organizationId(), MonitorType.valueOf(monitor.get().type()))) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        nzyme.getMonitors().delete(uuid);
+        nzyme.getMonitors().deleteMonitor(uuid);
 
         return Response.ok().build();
     }
 
-    private boolean writePermissionsForMonitorType(AuthenticatedUser user, UUID organizationId, MonitorType monitorType) {
+    private boolean userHasWritePermissionsForMonitorType(AuthenticatedUser user, UUID organizationId, MonitorType monitorType) {
         if (!user.isSuperAdministrator()
                 && !(user.isOrganizationAdministrator() && organizationId.equals(user.getOrganizationId()))) {
             // User is not a super admin or admin of the passed org. Check user permissions.

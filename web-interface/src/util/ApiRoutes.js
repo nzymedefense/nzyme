@@ -306,6 +306,7 @@ const ApiRoutes = {
     },
     MONITORS: {
       DETAILS: (id) => `/alerts/monitors/show/${id}`,
+      EDIT: (id) => `/alerts/monitors/edit/${id}`,
     }
   }
 }

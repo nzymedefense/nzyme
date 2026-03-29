@@ -51,7 +51,7 @@ export default function MonitorDetailsPage() {
             <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
             <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.MONITORING.INDEX}>Monitoring</a></li>
             <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.MONITORING.MONITORS.INDEX}>Monitors</a></li>
-            <li className="breadcrumb-item active" aria-current="page">{monitor.name}</li>
+            <li className="breadcrumb-item active">{monitor.name}</li>
           </ol>
         )
     }
@@ -96,8 +96,8 @@ export default function MonitorDetailsPage() {
         <div className="col-md-5">
             <span className="float-end">
               <a className="btn btn-secondary" href={backLink()}>Back</a>{' '}
-              <a className="btn btn-danger" href="" onClick={onDelete}>Delete</a>{' '}
-              <a className="btn btn-primary" href="">Edit</a>
+              <a className="btn btn-danger" href="#" onClick={onDelete}>Delete</a>{' '}
+              <a className="btn btn-primary" href={ApiRoutes.ALERTS.MONITORS.EDIT(monitor.uuid)}>Edit</a>
             </span>
         </div>
       </div>

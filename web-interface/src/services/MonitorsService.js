@@ -33,6 +33,15 @@ class MonitorsService {
     }, successCallback, errorCallback);
   }
 
+  updateMonitor(id, name, description, trigger_condition, interval, successCallback, errorCallback) {
+    RESTClient.put(`/monitors/show/${id}`,{
+      name: name,
+      description: description,
+      trigger_condition: trigger_condition,
+      interval: interval
+    }, successCallback, errorCallback);
+  }
+
   deleteMonitor(id, onSuccess) {
     RESTClient.delete(`/monitors/show/${id}`, onSuccess)
   }

@@ -6,13 +6,10 @@ import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
-import java.util.List;
-import java.util.UUID;
 
 @AutoValue
-public abstract class CreateMonitorRequest {
+public abstract class UpdateMonitorRequest {
 
     @JsonProperty
     @NotEmpty
@@ -23,10 +20,6 @@ public abstract class CreateMonitorRequest {
     public abstract String description();
 
     @JsonProperty
-    @Nullable
-    public abstract List<String> taps();
-
-    @JsonProperty
     @Min(0)
     public abstract Integer triggerCondition();
 
@@ -34,40 +27,22 @@ public abstract class CreateMonitorRequest {
     @Min(1)
     public abstract Integer interval();
 
-    @NotEmpty
-    public abstract String filters();
-
-    @NotNull
-    public abstract UUID organizationId();
-
-    @NotNull
-    public abstract UUID tenantId();
-
     @JsonCreator
-    public static CreateMonitorRequest create(@JsonProperty("name") String name,
+    public static UpdateMonitorRequest create(@JsonProperty("name") String name,
                                               @JsonProperty("description") String description,
-                                              @JsonProperty("taps") List<String> taps,
                                               @JsonProperty("trigger_condition") Integer triggerCondition,
-                                              @JsonProperty("interval") Integer interval,
-                                              @JsonProperty("filters") String filters,
-                                              @JsonProperty("organization_id") UUID organizationId,
-                                              @JsonProperty("tenant_id") UUID tenantId) {
+                                              @JsonProperty("interval") Integer interval) {
         return builder()
                 .name(name)
                 .description(description)
-                .taps(taps)
                 .triggerCondition(triggerCondition)
                 .interval(interval)
-                .filters(filters)
-                .organizationId(organizationId)
-                .tenantId(tenantId)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_CreateMonitorRequest.Builder();
+        return new AutoValue_UpdateMonitorRequest.Builder();
     }
-
 
     @AutoValue.Builder
     public abstract static class Builder {
@@ -75,18 +50,10 @@ public abstract class CreateMonitorRequest {
 
         public abstract Builder description(String description);
 
-        public abstract Builder taps(@NotEmpty List<String> taps);
-
         public abstract Builder triggerCondition(@Min(0) Integer triggerCondition);
 
         public abstract Builder interval(@Min(1) Integer interval);
 
-        public abstract Builder filters(@NotEmpty String filters);
-
-        public abstract Builder organizationId(@NotNull UUID organizationId);
-
-        public abstract Builder tenantId(@NotNull UUID tenantId);
-
-        public abstract CreateMonitorRequest build();
+        public abstract UpdateMonitorRequest build();
     }
 }

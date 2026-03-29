@@ -31,9 +31,7 @@ public class Monitors {
         );
     }
 
-    public long countAllOfType(MonitorType type,
-                               UUID organizationId,
-                               UUID tenantId) {
+    public long countAllMonitorsOfType(MonitorType type, UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM monitors WHERE type = :type AND " +
                                 "organization_id = :organization_id AND tenant_id = :tenant_id")
@@ -45,11 +43,11 @@ public class Monitors {
         );
     }
 
-    public List<MonitorEntry> findAllOfType(MonitorType type,
-                                            UUID organizationId,
-                                            UUID tenantId,
-                                            int offset,
-                                            int limit) {
+    public List<MonitorEntry> findAllMonitorsOfType(MonitorType type,
+                                                    UUID organizationId,
+                                                    UUID tenantId,
+                                                    int offset,
+                                                    int limit) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT *, " +
                                 "COALESCE(last_event > NOW() - (interval * INTERVAL '1 minute'), false) AS alerted " +
@@ -111,7 +109,25 @@ public class Monitors {
 
     }
 
-    public void delete(UUID id) {
+    public void updateMonitor(UUID id,
+                              String name,
+                              String description,
+                              int triggerCondition,
+                              int interval) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE MONITORS set name = :name, description = :description, " +
+                                "trigger_condition = :trigger_condition, interval = :interval WHERE uuid = :uuid")
+                        .bind("uuid", id)
+                        .bind("name", name)
+                        .bind("description", description)
+                        .bind("trigger_condition", triggerCondition)
+                        .bind("interval", interval)
+                        .execute()
+        );
+
+    }
+
+    public void deleteMonitor(UUID id) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM monitors WHERE uuid = :uuid")
                         .bind("uuid", id)

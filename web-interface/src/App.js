@@ -194,6 +194,7 @@ import MonitorDetailsPage from "./components/monitors/MonitorDetailsPage";
 import OrganizationSubsystemsPage
   from "./components/system/authentication/management/organizations/OrganizationSubsystemsPage";
 import TenantSubsystemsPage from "./components/system/authentication/management/tenants/TenantSubsystemsPage";
+import EditMonitorPage from "./components/monitors/EditMonitorPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -689,6 +690,7 @@ function App() {
 
                               { /* Monitors. */}
                               <Route path={ApiRoutes.ALERTS.MONITORS.DETAILS(':id')} element={<MonitorDetailsPage />}/>
+                              <Route path={ApiRoutes.ALERTS.MONITORS.EDIT(':id')} element={<EditMonitorPage />}/>
 
                               { /* 404. */}
                               <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>
