@@ -37,7 +37,7 @@ function TapSelector() {
   const [buttonText, setButtonText] = useState(null);
 
   const setSelectedTapsProtected = (taps) => {
-    if (taps === "*") {
+    if (taps === "*" || taps === null) {
       if (selectedTaps !== "*") {
         setSelectedTaps("*");
       }
@@ -156,6 +156,12 @@ function TapSelector() {
       setAvailableTapsUUIDs(uuids);
     }
   }, [availableTaps]);
+
+  useEffect(() => {
+    if (selectedTaps !== null) {
+      setPreSelectedTaps(selectedTaps);
+    }
+  }, [selectedTaps]);
 
   const toggleMenu = function() {
     setShow(!show);

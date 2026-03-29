@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import AppliedFilterList from "./AppliedFilterList";
 import FilterValueInput from "./FilterValueInput";
 import validateStringNotEmpty from "./validators/StringNotEmptyValidator";
@@ -12,6 +12,10 @@ import validateNumber from "./validators/NumberValidator";
 import {filtersToQueryParameters} from "./FilterQueryParameters";
 import validateEnum from "./validators/EnumValidator";
 import SaveFilterAsMonitorDialog from "./monitors/SaveFilterAsMonitorDialog";
+import ApplyExistingMonitorDialog from "./monitors/ApplyExistingMonitorDialog";
+import reconstructFromNodeData from "./FilterReconstructor";
+import {TapContext} from "../../../App";
+import Store from "../../../util/Store";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -215,6 +219,7 @@ export const OPERATORS = {
 export default function Filters(props) {
 
   const navigate = useNavigate();
+  const tapContext = useContext(TapContext);
 
   const fields = props.fields;
   const filters = props.filters ? props.filters : {};
@@ -227,7 +232,9 @@ export default function Filters(props) {
   const preSelectedValue = props.preSelectedValue;
 
   const onSaveAsMonitor = props.onSaveAsMonitor;
+  const monitorType = props.monitorType;
   const [showSaveAsMonitorDialog, setShowSaveAsMonitorDialog] = useState(false);
+  const [showApplyExistingMonitorDialog, setShowApplyExistingMonitorDialog] = useState(false);
 
   const defaultOperator = OPERATORS.EQUALS;
   const defaultFilter = { name: "", field: "0", type: FILTER_TYPE.STRING, value_transform: null };
@@ -462,6 +469,32 @@ export default function Filters(props) {
     setShowSaveAsMonitorDialog(!showSaveAsMonitorDialog);
   }
 
+  const toggleApplyExistingMonitor = () => {
+    setShowApplyExistingMonitorDialog(!showApplyExistingMonitorDialog);
+  }
+
+  const applyExistingMonitorDialog = () => {
+    if (!showApplyExistingMonitorDialog) {
+      return null;
+    }
+
+    return <ApplyExistingMonitorDialog monitorType={monitorType}
+                                       onApply={(monitor) => {
+                                         setFilters(reconstructFromNodeData(JSON.parse(monitor.filters).filters, fields));
+
+                                         let newTaps = monitor.taps;
+                                         if (monitor.taps === null) {
+                                           newTaps = "*";
+                                         }
+
+                                         Store.set("selected_taps", newTaps);
+                                         tapContext.set(newTaps);
+
+                                         toggleApplyExistingMonitor();
+                                       }}
+                                       onClose={toggleApplyExistingMonitor} />
+  }
+
   const saveAsMonitorDialog = () => {
     if (!showSaveAsMonitorDialog) {
       return null;
@@ -503,13 +536,18 @@ export default function Filters(props) {
             Add Filter
           </button>
 
-          { onSaveAsMonitor ?
+          { onSaveAsMonitor && monitorType ?
             <>
-              <button className="btn btn-secondary" type="button"
+              <button className="btn btn-outline-secondary" type="button"
                       disabled={Object.keys(filters).length === 0}
                       onClick={toggleSaveAsMonitor}>
                 Save as Monitor
               </button>
+              <button className="btn btn-outline-secondary" type="button" onClick={toggleApplyExistingMonitor}>
+                Apply Existing Monitor
+              </button>
+
+              {applyExistingMonitorDialog()}
               {saveAsMonitorDialog()}
             </> : null }
         </div>

@@ -111,6 +111,7 @@ function BSSIDsPage() {
                 <Filters filters={filters}
                          setFilters={setFilters}
                          fields={BSSID_FILTER_FIELDS}
+                         monitorType="DOT11_BSSID"
                          onSaveAsMonitor={onSaveFiltersAsMonitor} />
               </div>
             </div>

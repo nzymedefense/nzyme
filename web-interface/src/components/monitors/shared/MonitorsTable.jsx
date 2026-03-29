@@ -6,7 +6,7 @@ import moment from "moment";
 import ApiRoutes from "../../../util/ApiRoutes";
 import MonitorStatusIndicator from "./MonitorStatusIndicator";
 
-export default function MonitorsTable({monitors, page, setPage, perPage}) {
+export default function MonitorsTable({monitors, page, setPage, perPage, onApplyMonitor = undefined}) {
 
   if (!monitors) {
     return <LoadingSpinner />
@@ -26,6 +26,7 @@ export default function MonitorsTable({monitors, page, setPage, perPage}) {
           <th>Taps</th>
           <th>Interval</th>
           <th>Created At</th>
+          {onApplyMonitor ? <th style={{width: 250}}></th> : null }
         </tr>
         </thead>
         <tbody>
@@ -33,10 +34,15 @@ export default function MonitorsTable({monitors, page, setPage, perPage}) {
           return (
             <tr key={i}>
               <td><MonitorStatusIndicator monitor={m} /></td>
-              <td><a href={ApiRoutes.ALERTS.MONITORS.DETAILS(m.uuid)}>{m.name}</a></td>
+              <td>
+                {onApplyMonitor ?
+                  <span>{m.name}</span> : <a href={ApiRoutes.ALERTS.MONITORS.DETAILS(m.uuid)}>{m.name}</a>}
+              </td>
               <td>{m.taps === null ? "All" : m.taps.length}</td>
               <td>{numeral(m.interval).format("0,0")} {m.interval === 1 ? "Minute" : "Minutes"}</td>
               <td title={moment(m.created_at).format()}>{moment(m.created_at).fromNow()}</td>
+              {onApplyMonitor ?
+                <td><a href="#" onClick={(e) => {e.preventDefault(); onApplyMonitor(m); }}>Apply</a></td> : null }
             </tr>
           )
         })}
