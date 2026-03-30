@@ -16,6 +16,10 @@ import ApplyExistingMonitorDialog from "./monitors/ApplyExistingMonitorDialog";
 import reconstructFromNodeData from "./FilterReconstructor";
 import {TapContext} from "../../../App";
 import Store from "../../../util/Store";
+import useQuery from "../../../util/UseQuery";
+import LoadingSpinner from "../../misc/LoadingSpinner";
+import MonitorsService from "../../../services/MonitorsService";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -216,10 +220,14 @@ export const OPERATORS = {
   },
 }
 
+const monitorsService = new MonitorsService();
+
 export default function Filters(props) {
 
+  const [organizationId, tenantId] = useSelectedTenant();
   const navigate = useNavigate();
   const tapContext = useContext(TapContext);
+  const urlQuery = useQuery();
 
   const fields = props.fields;
   const filters = props.filters ? props.filters : {};
@@ -233,8 +241,13 @@ export default function Filters(props) {
 
   const onSaveAsMonitor = props.onSaveAsMonitor;
   const monitorType = props.monitorType;
+  const onMonitorsReady = props.onMonitorsReady;
   const [showSaveAsMonitorDialog, setShowSaveAsMonitorDialog] = useState(false);
   const [showApplyExistingMonitorDialog, setShowApplyExistingMonitorDialog] = useState(false);
+
+  const [urlRequestedMonitor, setUrlRequestedMonitor] = useState(urlQuery.get("monitor"));
+  const [appliedMonitor, setAppliedMonitor] = useState(null);
+  const [showMonitorClearedHint, setShowMonitorClearedHint] = useState(false);
 
   const defaultOperator = OPERATORS.EQUALS;
   const defaultFilter = { name: "", field: "0", type: FILTER_TYPE.STRING, value_transform: null };
@@ -363,6 +376,7 @@ export default function Filters(props) {
     }
   }, [preSelectedField, preSelectedValue]);
 
+  // Store filters in URL query param.
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     const currentFilters = queryParams.get("filters");
@@ -370,7 +384,7 @@ export default function Filters(props) {
     // Stringify the filters object for comparison
     const filtersString = JSON.stringify(filters);
 
-    if (previousFiltersRef.current !== filtersString) {
+    if (previousFiltersRef.current !== filtersString && !appliedMonitor) {
       previousFiltersRef.current = filtersString;
       if (currentFilters !== filtersString) {
         queryParams.set("filters", JSON.stringify(filtersToQueryParameters(filters)));
@@ -378,6 +392,27 @@ export default function Filters(props) {
       }
     }
   }, [filters, navigate]);
+
+  // Store monitor that was loaded by user in URL query param.
+  useEffect(() => {
+    if (appliedMonitor) {
+      const queryParams = new URLSearchParams(window.location.search);
+      queryParams.set("monitor", appliedMonitor.uuid);
+      queryParams.delete("filters");
+      navigate({ search: queryParams.toString() });
+    }
+  }, [appliedMonitor])
+
+  // Load monitor that was requested via URL query param.
+  useEffect(() => {
+    if (!preSelectedField && urlRequestedMonitor && (!appliedMonitor || urlRequestedMonitor !== appliedMonitor.uuid)) {
+      monitorsService.findOne(urlRequestedMonitor, organizationId, tenantId, applyMonitor)
+    } else {
+      if (onMonitorsReady) {
+        onMonitorsReady();
+      }
+    }
+  }, [urlRequestedMonitor])
 
   const validate = () => {
     // Potential operator validators have priority over filter validators.
@@ -479,19 +514,7 @@ export default function Filters(props) {
     }
 
     return <ApplyExistingMonitorDialog monitorType={monitorType}
-                                       onApply={(monitor) => {
-                                         setFilters(reconstructFromNodeData(JSON.parse(monitor.filters).filters, fields));
-
-                                         let newTaps = monitor.taps;
-                                         if (monitor.taps === null) {
-                                           newTaps = "*";
-                                         }
-
-                                         Store.set("selected_taps", newTaps);
-                                         tapContext.set(newTaps);
-
-                                         toggleApplyExistingMonitor();
-                                       }}
+                                       onApply={(monitor) => { applyMonitor(monitor); toggleApplyExistingMonitor(); }}
                                        onClose={toggleApplyExistingMonitor} />
   }
 
@@ -501,8 +524,46 @@ export default function Filters(props) {
     }
 
     return <SaveFilterAsMonitorDialog filters={filters}
+                                      appliedMonitor={appliedMonitor}
                                       onClose={toggleSaveAsMonitor}
                                       onSave={onSaveAsMonitor}  />
+  }
+
+  const applyMonitor = (monitor) => {
+    setFilters(reconstructFromNodeData(JSON.parse(monitor.filters).filters, fields));
+
+    let newTaps = monitor.taps;
+    if (monitor.taps === null) {
+      newTaps = "*";
+    }
+
+    Store.set("selected_taps", newTaps);
+    tapContext.set(newTaps);
+
+    setAppliedMonitor(monitor);
+    if (onMonitorsReady) {
+      onMonitorsReady();
+    }
+  }
+
+  const clearMonitor = (e) => {
+    e.preventDefault();
+
+    setAppliedMonitor(null);
+    setUrlRequestedMonitor(null);
+    setFilters(null);
+
+    const queryParams = new URLSearchParams(window.location.search);
+    queryParams.delete("monitor");
+    navigate({ search: queryParams.toString() });
+
+    setShowMonitorClearedHint(true);
+  }
+
+  if (!preSelectedField && (urlRequestedMonitor && !appliedMonitor)) {
+    return (
+      <LoadingSpinner/>
+    )
   }
 
   return (
@@ -541,10 +602,10 @@ export default function Filters(props) {
               <button className="btn btn-outline-secondary" type="button"
                       disabled={Object.keys(filters).length === 0}
                       onClick={toggleSaveAsMonitor}>
-                Save as Monitor
+                { appliedMonitor ? "Save Monitor" : "Save as new Monitor" }
               </button>
               <button className="btn btn-outline-secondary" type="button" onClick={toggleApplyExistingMonitor}>
-                Apply Existing Monitor
+                Load Existing Monitor
               </button>
 
               {applyExistingMonitorDialog()}
@@ -552,7 +613,22 @@ export default function Filters(props) {
             </> : null }
         </div>
 
-        {!hideAppliedFilters && <AppliedFilterList filters={filters} onFilterRemoved={onFilterRemoved} />}
+        {!hideAppliedFilters && <AppliedFilterList filters={filters}
+                                                   appliedMonitor={appliedMonitor}
+                                                   onFilterRemoved={onFilterRemoved} />}
+
+
+        { appliedMonitor ?
+          <a href="#" className="btn btn-outline-secondary btn-sm mt-2" onClick={clearMonitor}>Clear Monitor</a> : null }
+        { showMonitorClearedHint ?
+          <div className="alert alert-info alert-dismissible mt-2 mb-0">
+            Monitor cleared. Tap selection may have changed. Please verify.
+
+            <button type="button" className="btn-close" onClick={(e) => {
+              e.preventDefault();
+              setShowMonitorClearedHint(false)
+            }}></button>
+          </div> : null}
       </div>
   )
 

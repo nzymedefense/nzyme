@@ -40,6 +40,7 @@ export default function FilterValueIcon(props) {
                   <Filters fields={fields}
                            setFilters={setFilters}
                            hideAppliedFilters={true}
+                           onMonitorsReady={() => {}}
                            preSelectedField={field}
                            preSelectedValue={value} />
                 </div>

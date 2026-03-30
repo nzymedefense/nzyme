@@ -15,12 +15,10 @@ import usePageTitle from "../../../util/UsePageTitle";
 import MonitorsService from "../../../services/MonitorsService";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
+import useQuery from "../../../util/UseQuery";
+import RenderConditionally from "../../misc/RenderConditionally";
 
 const dot11Service = new Dot11Service();
-
-const useQuery = () => {
-  return new URLSearchParams(useLocation().search);
-}
 
 const monitorsService = new MonitorsService();
 
@@ -41,6 +39,7 @@ function BSSIDsPage() {
   const [revision, setRevision] = useState(new Date());
 
   const [filters, setFilters] = useState(queryParametersToFilters(urlQuery.get("filters"), BSSID_FILTER_FIELDS));
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   const [orderColumn, setOrderColumn] = useState("signal_strength_average");
   const [orderDirection, setOrderDirection] = useState("DESC");
@@ -50,8 +49,11 @@ function BSSIDsPage() {
 
   useEffect(() => {
     setBSSIDs(null);
-    dot11Service.findAllBSSIDs(timeRange, filters, orderColumn, orderDirection, PER_PAGE, (page-1)*PER_PAGE, selectedTaps, setBSSIDs);
-  }, [selectedTaps, filters, page, timeRange, revision, orderColumn, orderDirection]);
+
+    if (monitorsReady) {
+      dot11Service.findAllBSSIDs(timeRange, filters, orderColumn, orderDirection, PER_PAGE, (page - 1) * PER_PAGE, selectedTaps, setBSSIDs);
+    }
+  }, [selectedTaps, filters, page, timeRange, revision, orderColumn, orderDirection, monitorsReady]);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -78,7 +80,7 @@ function BSSIDsPage() {
   }
 
   const table = () => {
-    if (!bssids) {
+    if (!bssids || !monitorsReady) {
       return <LoadingSpinner />
     }
 
@@ -112,63 +114,66 @@ function BSSIDsPage() {
                          setFilters={setFilters}
                          fields={BSSID_FILTER_FIELDS}
                          monitorType="DOT11_BSSID"
+                         onMonitorsReady={() => setMonitorsReady(true)}
                          onSaveAsMonitor={onSaveFiltersAsMonitor} />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="row mt-3">
-          <div className="col-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Active BSSIDs" slim={true}
-                                       refreshAction={() => setRevision(new Date())}
-                                       timeRange={timeRange}/>
+        <RenderConditionally render={monitorsReady}>
+          <div className="row mt-3">
+            <div className="col-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Active BSSIDs" slim={true}
+                                         refreshAction={() => setRevision(new Date())}
+                                         timeRange={timeRange}/>
 
-                <BSSIDAndSSIDChart parameter="bssid_count"
-                                   timeRange={timeRange}
-                                   filters={filters}
-                                   setTimeRange={setTimeRange}
-                                   revision={revision} />
+                  <BSSIDAndSSIDChart parameter="bssid_count"
+                                     timeRange={timeRange}
+                                     filters={filters}
+                                     setTimeRange={setTimeRange}
+                                     revision={revision} />
+                </div>
+              </div>
+            </div>
+            <div className="col-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Active SSIDs" slim={true}
+                                         refreshAction={() => setRevision(new Date())}
+                                         timeRange={timeRange} />
+
+                  <BSSIDAndSSIDChart parameter="ssid_count"
+                                     timeRange={timeRange}
+                                     filters={filters}
+                                     setTimeRange={setTimeRange}
+                                     revision={revision}/>
+                </div>
               </div>
             </div>
           </div>
-          <div className="col-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Active SSIDs" slim={true}
-                                       refreshAction={() => setRevision(new Date())}
-                                       timeRange={timeRange} />
 
-                <BSSIDAndSSIDChart parameter="ssid_count"
-                                   timeRange={timeRange}
-                                   filters={filters}
-                                   setTimeRange={setTimeRange}
-                                   revision={revision}/>
+          <div className="row mt-3">
+            <div className="col-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Access Points / BSSIDs"
+                                         refreshAction={() => setRevision(new Date())}
+                                         fixedAppliedTimeRange={timeRange} />
+
+                  <p className="text-muted">
+                    List of all access points advertised by recorded beacon or probe response frames. Click on a BSSID
+                    to open a list of all advertised SSIDs and their respective channels.
+                  </p>
+
+                  {table()}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Access Points / BSSIDs"
-                                       refreshAction={() => setRevision(new Date())}
-                                       fixedAppliedTimeRange={timeRange} />
-
-                <p className="text-muted">
-                  List of all access points advertised by recorded beacon or probe response frames. Click on a BSSID
-                  to open a list of all advertised SSIDs and their respective channels.
-                </p>
-
-                {table()}
-              </div>
-            </div>
-          </div>
-        </div>
+        </RenderConditionally>
       </React.Fragment>
   )
 

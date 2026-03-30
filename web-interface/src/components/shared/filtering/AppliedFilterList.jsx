@@ -1,9 +1,11 @@
 import React from "react";
 
 export default function AppliedFilterList(props) {
+
   const filters = props.filters;
   const onFilterRemoved = props.onFilterRemoved;
   const hideHeadline = props.hideHeadline;
+  const appliedMonitor = props.appliedMonitor;
 
   if (!filters || Object.keys(filters).length === 0) {
     return (
@@ -17,7 +19,8 @@ export default function AppliedFilterList(props) {
 
   return (
     <>
-      {hideHeadline ? null : <h5 className="applied-filters-headline mt-3">Active Filters</h5>}
+      {hideHeadline ? null : <h5 className="applied-filters-headline mt-3">Active Filters
+        { appliedMonitor ? <small> &#40;Monitor: {appliedMonitor.name}	&#41;</small> : null}</h5> }
 
       <div className="applied-filters mt-1">
         {filterGroups.map((filterGroup, i) => {
