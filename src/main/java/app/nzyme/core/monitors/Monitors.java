@@ -109,11 +109,11 @@ public class Monitors {
 
     }
 
-    public void updateMonitor(UUID id,
-                              String name,
-                              String description,
-                              int triggerCondition,
-                              int interval) {
+    public void updateMonitorMetaInformation(UUID id,
+                                             String name,
+                                             String description,
+                                             int triggerCondition,
+                                             int interval) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE MONITORS set name = :name, description = :description, " +
                                 "trigger_condition = :trigger_condition, interval = :interval WHERE uuid = :uuid")
@@ -122,6 +122,35 @@ public class Monitors {
                         .bind("description", description)
                         .bind("trigger_condition", triggerCondition)
                         .bind("interval", interval)
+                        .execute()
+        );
+
+    }
+
+    public void updateMonitorFilterInformation(UUID id, @Nullable List<UUID> taps, Filters filters) {
+        String[] tapsArray;
+        if (taps != null) {
+            tapsArray = taps.stream()
+                    .map(UUID::toString)
+                    .toArray(String[]::new);
+        } else {
+            tapsArray = null;
+        }
+
+        ObjectMapper om = new ObjectMapper();
+        String filtersString;
+        try {
+            filtersString = om.writeValueAsString(filters);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE MONITORS SET taps = :taps, filters = :filters::jsonb " +
+                                "WHERE uuid = :uuid")
+                        .bind("uuid", id)
+                        .bindBySqlType("taps", tapsArray, Types.ARRAY)
+                        .bind("filters", filtersString)
                         .execute()
         );
 

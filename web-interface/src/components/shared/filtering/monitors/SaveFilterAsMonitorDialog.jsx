@@ -6,8 +6,10 @@ import LoadingSpinner from "../../../misc/LoadingSpinner";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import {onNumberInputKeyDown} from "../../../../util/Tools";
 import MonitorTapsTable from "../../../monitors/shared/MonitorTapsTable";
+import MonitorsService from "../../../../services/MonitorsService";
 
 const tapsService = new TapsService();
+const monitorsService = new MonitorsService();
 
 export default function SaveFilterAsMonitorDialog({filters, appliedMonitor, onSave, onClose}) {
 
@@ -31,6 +33,10 @@ export default function SaveFilterAsMonitorDialog({filters, appliedMonitor, onSa
   const [complete, setComplete] = useState(false);
 
   const formReady = () => {
+    if (appliedMonitor && mode === "OVERWRITE") {
+      return true;
+    }
+
     return name && name.trim().length > 0 && triggerCondition >= 0 && interval > 0
   }
 
@@ -57,15 +63,24 @@ export default function SaveFilterAsMonitorDialog({filters, appliedMonitor, onSa
         <button type="button"
                 disabled={!formReady() || isSubmitting}
                 className="btn btn-primary"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowError(false);
-                  setIsSubmitting(true);
-                  onSave(name, description, selectedTaps, triggerCondition, interval, filters, onSuccess, onFailure)
-                }}>
-          { isSubmitting ? <span><i className="fa-solid fa-circle-notch fa-spin"></i> &nbsp;Saving ...</span> : "Create Monitor" }
+                onClick={onSubmit}>
+          { isSubmitting ? <span><i className="fa-solid fa-circle-notch fa-spin"></i> &nbsp;Saving ...</span> : "Save Monitor" }
         </button>
       )
+    }
+  }
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    setShowError(false);
+    setIsSubmitting(true);
+
+    if (appliedMonitor && mode === "OVERWRITE") {
+      // We are overwriting an existing monitor. We can handle here directly because we have the ID.
+      monitorsService.updateMonitorFilterInformation(appliedMonitor.uuid, selectedTaps, filters, onSuccess, onFailure)
+    } else {
+      // We are saving a new monitor. Handled in parent. (mostly to supply the correct monitor type)
+      onSave(name, description, selectedTaps, triggerCondition, interval, filters, onSuccess, onFailure)
     }
   }
 
@@ -135,8 +150,6 @@ export default function SaveFilterAsMonitorDialog({filters, appliedMonitor, onSa
                 <button type="button" className="btn-close" onClick={onClose}></button>
               </div>
               <div className="modal-body">
-                <h4>Monitor {appliedMonitor.name}</h4>
-
                 <button className="btn btn-primary"
                         onClick={(e) => { e.preventDefault(); setMode("OVERWRITE")}}>
                   Overwrite Monitor
@@ -148,7 +161,6 @@ export default function SaveFilterAsMonitorDialog({filters, appliedMonitor, onSa
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
-                <button type="button" className="btn btn-primary" disabled={true}>Save Monitor</button>
               </div>
             </div>
           </div>
@@ -270,15 +282,35 @@ export default function SaveFilterAsMonitorDialog({filters, appliedMonitor, onSa
           <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content">
               <div className="modal-header">
-                <h1 className="modal-title fs-5">Save Filter as Monitor</h1>
+                <h1 className="modal-title fs-5">Overwrite Existing Monitor</h1>
                 <button type="button" className="btn-close" onClick={onClose}></button>
               </div>
               <div className="modal-body">
-                OVERWRITE
+                <div className="alert alert-info">
+                  You are overwriting the filter and taps configuration of the monitor <em>{appliedMonitor.name}</em>
+                </div>
+
+                <h3 className="mt-4 mb-2">Taps</h3>
+
+                <p className="help-text mb-2">Data from the following taps will be considered for the monitor.</p>
+
+                <MonitorTapsTable allTaps={taps} selectedTaps={selectedTaps}/>
+
+                <h3 className="mt-4 mb-2">Filters</h3>
+
+                <AppliedFilterList filters={filters} hideHeadline={true}/>
+
+                {showError ?
+                  <div className="alert alert-danger mb-0 mt-3" role="alert">Something went wrong. Please try again or
+                    contact
+                    your administrator.</div> : null}
+
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
-                <button type="button" className="btn btn-primary" disabled={true}>Save Monitor</button>
+                {complete ? null :
+                  <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isSubmitting}>
+                    Close</button>}
+                {submitButton()}
               </div>
             </div>
           </div>

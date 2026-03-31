@@ -33,12 +33,21 @@ class MonitorsService {
     }, successCallback, errorCallback);
   }
 
-  updateMonitor(id, name, description, trigger_condition, interval, successCallback, errorCallback) {
+  updateMonitorMetadata(id, name, description, trigger_condition, interval, successCallback, errorCallback) {
     RESTClient.put(`/monitors/show/${id}`,{
       name: name,
       description: description,
       trigger_condition: trigger_condition,
       interval: interval
+    }, successCallback, errorCallback);
+  }
+
+  updateMonitorFilterInformation(id, taps, filters, successCallback, errorCallback) {
+    const tapsParam = (taps && taps === "*") ? null : taps;
+
+    RESTClient.put(`/monitors/show/${id}`,{
+      taps: tapsParam,
+      filters: JSON.stringify(filters)
     }, successCallback, errorCallback);
   }
 

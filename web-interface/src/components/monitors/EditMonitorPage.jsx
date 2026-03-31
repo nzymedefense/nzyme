@@ -30,7 +30,6 @@ export default function EditMonitorPage(props) {
   const [description, setDescription] = useState("");
   const [triggerCondition, setTriggerCondition] = useState(0);
   const [interval, setInterval] = useState(1);
-  const [filters, setFilters] = useState(null);
   const [taps, setTaps] = useState(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,7 +77,7 @@ export default function EditMonitorPage(props) {
     e.preventDefault();
     setIsSubmitting(true);
 
-    monitorsService.updateMonitor(monitor.uuid, name, description, triggerCondition, interval, () => {
+    monitorsService.updateMonitorMetadata(monitor.uuid, name, description, triggerCondition, interval, () => {
       setRedirect(true);
     }, () => {
       setIsSubmitting(false);

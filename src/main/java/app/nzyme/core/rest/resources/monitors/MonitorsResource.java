@@ -161,7 +161,7 @@ public class MonitorsResource extends UserAuthenticatedResource {
     @Path("/show/{id}")
     public Response update(@Context SecurityContext sc,
                            @PathParam("id") UUID uuid,
-                           @Valid UpdateMonitorRequest req) {
+                           UpdateMonitorRequest req) {
         AuthenticatedUser user = getAuthenticatedUser(sc);
         Optional<MonitorEntry> monitor = nzyme.getMonitors().find(uuid);
 
@@ -175,9 +175,34 @@ public class MonitorsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        nzyme.getMonitors().updateMonitor(
-                monitor.get().uuid(), req.name(), req.description(), req.triggerCondition(), req.interval()
+        if (req.name() != null && !req.name().isBlank() && req.description() != null && !req.description().isBlank()
+                && req.triggerCondition() != null && req.interval() != null)
+            nzyme.getMonitors().updateMonitorMetaInformation(
+                    monitor.get().uuid(), req.name(), req.description(), req.triggerCondition(), req.interval()
         );
+
+        if (req.filters() != null && !req.filters().isBlank()) {
+            List<UUID> tapUuids;
+            if (req.taps() == null) {
+                // All taps selected.
+                tapUuids = null;
+            } else {
+                tapUuids = Lists.newArrayList();
+                List<UUID> userAccessibleTaps = nzyme.getTapManager().allTapUUIDsAccessibleByUser(user);
+                for (String tapId : req.taps()) {
+                    UUID tapUuid = UUID.fromString(tapId);
+                    if (!userAccessibleTaps.contains(tapUuid)) {
+                        return Response.status(Response.Status.FORBIDDEN).build();
+                    } else {
+                        tapUuids.add(tapUuid);
+                    }
+                }
+            }
+
+            nzyme.getMonitors().updateMonitorFilterInformation(
+                    monitor.get().uuid(), tapUuids, parseFiltersQueryParameter(req.filters())
+            );
+        }
 
         return Response.ok().build();
     }

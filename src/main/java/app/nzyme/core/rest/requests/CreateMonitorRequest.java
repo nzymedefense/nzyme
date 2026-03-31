@@ -14,23 +14,18 @@ import java.util.UUID;
 @AutoValue
 public abstract class CreateMonitorRequest {
 
-    @JsonProperty
     @NotEmpty
     public abstract String name();
 
-    @JsonProperty
     @Nullable
     public abstract String description();
 
-    @JsonProperty
     @Nullable
     public abstract List<String> taps();
 
-    @JsonProperty
     @Min(0)
     public abstract Integer triggerCondition();
 
-    @JsonProperty
     @Min(1)
     public abstract Integer interval();
 

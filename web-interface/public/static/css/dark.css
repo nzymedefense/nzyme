@@ -356,3 +356,8 @@ th:hover i.order-icon,
 th i.order-icon-selected {
     color: #fff;
 }
+
+.applied-filters, .applied-filters-empty {
+    background-color: #505050;
+    border-color: #aaa;
+}
