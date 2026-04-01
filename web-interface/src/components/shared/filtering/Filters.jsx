@@ -20,6 +20,8 @@ import useQuery from "../../../util/UseQuery";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import MonitorsService from "../../../services/MonitorsService";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import WithPermission from "../../misc/WithPermission";
+import requiredUserPermissionForMonitorWriteAccess from "../../monitors/shared/MonitorUserPermission";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -244,6 +246,7 @@ export default function Filters(props) {
   const onMonitorsReady = props.onMonitorsReady;
   const [showSaveAsMonitorDialog, setShowSaveAsMonitorDialog] = useState(false);
   const [showApplyExistingMonitorDialog, setShowApplyExistingMonitorDialog] = useState(false);
+  const [showUrlAppliedFilterHint, setShowUrlAppliedFilterHint] = useState(false);
 
   const [urlRequestedMonitor, setUrlRequestedMonitor] = useState(urlQuery.get("monitor"));
   const [appliedMonitor, setAppliedMonitor] = useState(null);
@@ -407,6 +410,7 @@ export default function Filters(props) {
   useEffect(() => {
     if (!preSelectedField && urlRequestedMonitor && (!appliedMonitor || urlRequestedMonitor !== appliedMonitor.uuid)) {
       monitorsService.findOne(urlRequestedMonitor, organizationId, tenantId, applyMonitor)
+      setShowUrlAppliedFilterHint(true);
     } else {
       if (onMonitorsReady) {
         onMonitorsReady();
@@ -599,11 +603,13 @@ export default function Filters(props) {
 
           { onSaveAsMonitor && monitorType ?
             <>
-              <button className="btn btn-outline-secondary" type="button"
-                      disabled={Object.keys(filters).length === 0}
-                      onClick={toggleSaveAsMonitor}>
-                { appliedMonitor ? "Save Monitor" : "Save as new Monitor" }
-              </button>
+              <WithPermission permission={requiredUserPermissionForMonitorWriteAccess(monitorType)}>
+                <button className="btn btn-outline-secondary" type="button"
+                        disabled={Object.keys(filters).length === 0}
+                        onClick={toggleSaveAsMonitor}>
+                  { appliedMonitor ? "Save Monitor" : "Save as new Monitor" }
+                </button>
+              </WithPermission>
               <button className="btn btn-outline-secondary" type="button" onClick={toggleApplyExistingMonitor}>
                 Load Existing Monitor
               </button>
@@ -627,6 +633,21 @@ export default function Filters(props) {
             <button type="button" className="btn-close" onClick={(e) => {
               e.preventDefault();
               setShowMonitorClearedHint(false)
+            }}></button>
+          </div> : null}
+        { (appliedMonitor && appliedMonitor.partial_data) ?
+          <div className="alert alert-warning mt-2 mb-0">
+            At least one tap of the loaded monitor has been deleted or is not accessible by you. You may see partial
+            data. Please check the monitor configuration.
+          </div> : null }
+
+        { showUrlAppliedFilterHint ?
+          <div className="alert alert-info alert-dismissible mt-2 mb-0">
+            Monitor loaded. Tap selection may have changed. Please verify.
+
+            <button type="button" className="btn-close" onClick={(e) => {
+              e.preventDefault();
+              setShowUrlAppliedFilterHint(false)
             }}></button>
           </div> : null}
       </div>

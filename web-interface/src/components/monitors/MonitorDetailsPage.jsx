@@ -14,8 +14,9 @@ import MonitorTapsTable from "./shared/MonitorTapsTable";
 import TapsService from "../../services/TapsService";
 import AppliedFilterList from "../shared/filtering/AppliedFilterList";
 import reconstructFromNodeData from "../shared/filtering/FilterReconstructor";
-import monitorTypeToFilterFields from "./shared/MonitorTools";
 import {notify} from "react-notify-toast";
+import monitorTypeToFilterFields from "./shared/MonitorFilterFields";
+import monitorTypeToSearchLink from "./shared/MonitorReplay";
 
 const monitorsService = new MonitorsService();
 const tapsService = new TapsService();
@@ -96,6 +97,7 @@ export default function MonitorDetailsPage() {
         <div className="col-md-5">
             <span className="float-end">
               <a className="btn btn-secondary" href={backLink()}>Back</a>{' '}
+              <a className="btn btn-secondary" href={monitorTypeToSearchLink(monitor)}>Replay</a>{' '}
               <a className="btn btn-danger" href="#" onClick={onDelete}>Delete</a>{' '}
               <a className="btn btn-primary" href={ApiRoutes.ALERTS.MONITORS.EDIT(monitor.uuid)}>Edit</a>
             </span>

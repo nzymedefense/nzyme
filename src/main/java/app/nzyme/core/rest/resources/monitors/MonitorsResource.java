@@ -3,6 +3,7 @@ package app.nzyme.core.rest.resources.monitors;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.monitors.MonitorType;
 import app.nzyme.core.monitors.db.MonitorEntry;
+import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.CreateMonitorRequest;
@@ -28,24 +29,39 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Path("/api/monitors")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
-public class MonitorsResource extends UserAuthenticatedResource {
+public class MonitorsResource extends TapDataHandlingResource {
 
     @Inject
     private NzymeNode nzyme;
 
     @GET
     @Path("/show/{id}")
-    public Response findAll(@Context SecurityContext sc,
+    public Response findOne(@Context SecurityContext sc,
                             @PathParam("id") UUID uuid) {
         AuthenticatedUser user = getAuthenticatedUser(sc);
         Optional<MonitorEntry> monitor = nzyme.getMonitors().find(uuid);
 
         if (monitor.isEmpty() || !entityAccessible(user, monitor.get())) {
             return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<UUID> filteredTapUUIDs;
+        boolean partialData;
+        if (monitor.get().taps() == null) {
+            filteredTapUUIDs = null;
+            partialData = !user.accessAllTenantTaps;
+        } else {
+            filteredTapUUIDs = parseAndValidateTapIdsDirect(
+                    user,
+                    nzyme,
+                    monitor.get().taps()
+            );
+            partialData = filteredTapUUIDs.size() != monitor.get().taps().size();
         }
 
         return Response.ok(MonitorDetailsResponse.create(
@@ -56,14 +72,15 @@ public class MonitorsResource extends UserAuthenticatedResource {
                 monitor.get().type(),
                 monitor.get().name(),
                 monitor.get().description(),
-                monitor.get().taps(),
+                filteredTapUUIDs,
                 monitor.get().triggerCondition(),
                 monitor.get().interval(),
                 monitor.get().filters(),
                 monitor.get().alerted(),
                 monitor.get().lastEvent(),
                 monitor.get().createdAt(),
-                monitor.get().updatedAt()
+                monitor.get().updatedAt(),
+                partialData
         )).build();
     }
 
@@ -75,6 +92,8 @@ public class MonitorsResource extends UserAuthenticatedResource {
                             @QueryParam("tenant_id") @NotNull UUID tenantId,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset) {
+        AuthenticatedUser user = getAuthenticatedUser(sc);
+
         if (limit > 200 || offset < 0) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
@@ -87,6 +106,20 @@ public class MonitorsResource extends UserAuthenticatedResource {
 
         List<MonitorDetailsResponse> monitors = Lists.newArrayList();
         for (MonitorEntry m : nzyme.getMonitors().findAllMonitorsOfType(monitorType, organizationId, tenantId, offset, limit)) {
+            List<UUID> filteredTapUUIDs;
+            boolean partialData;
+            if (m.taps() == null) {
+                filteredTapUUIDs = null;
+                partialData = !user.accessAllTenantTaps;
+            } else {
+                filteredTapUUIDs = parseAndValidateTapIdsDirect(
+                        user,
+                        nzyme,
+                        m.taps()
+                );
+                partialData = filteredTapUUIDs.size() != m.taps().size();
+            }
+
             monitors.add(MonitorDetailsResponse.create(
                     m.uuid(),
                     m.organizationId(),
@@ -95,14 +128,15 @@ public class MonitorsResource extends UserAuthenticatedResource {
                     m.type(),
                     m.name(),
                     m.description(),
-                    m.taps(),
+                    filteredTapUUIDs,
                     m.triggerCondition(),
                     m.interval(),
                     m.filters(),
                     m.alerted(),
                     m.lastEvent(),
                     m.createdAt(),
-                    m.updatedAt()
+                    m.updatedAt(),
+                    partialData
             ));
         }
 

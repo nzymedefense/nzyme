@@ -10,8 +10,8 @@ import TapsService from "../../services/TapsService";
 import MonitorTapsTable from "./shared/MonitorTapsTable";
 import AppliedFilterList from "../shared/filtering/AppliedFilterList";
 import reconstructFromNodeData from "../shared/filtering/FilterReconstructor";
-import monitorTypeToFilterFields from "./shared/MonitorTools";
 import {onNumberInputKeyDown} from "../../util/Tools";
+import monitorTypeToFilterFields from "./shared/MonitorFilterFields";
 
 const monitorsService = new MonitorsService();
 const tapsService = new TapsService();

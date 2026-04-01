@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class TapDataHandlingResource extends UserAuthenticatedResource {
 
@@ -34,10 +35,20 @@ public class TapDataHandlingResource extends UserAuthenticatedResource {
     }
 
     protected List<UUID> parseAndValidateTapIds(AuthenticatedUser requestingUser,
-                                              NzymeNode nzyme,
-                                              List<String> tapIds) {
+                                                NzymeNode nzyme,
+                                                List<String> tapIds) {
         return parseAndValidateTapIds(
                 requestingUser, tapIds, nzyme.getTapManager().allTapUUIDsAccessibleByUser(requestingUser)
+        );
+    }
+
+    protected List<UUID> parseAndValidateTapIdsDirect(AuthenticatedUser requestingUser,
+                                                      NzymeNode nzyme,
+                                                      List<UUID> tapIds) {
+        return parseAndValidateTapIds(
+                requestingUser,
+                tapIds.stream().map(UUID::toString).collect(Collectors.toList()),
+                nzyme.getTapManager().allTapUUIDsAccessibleByUser(requestingUser)
         );
     }
 
@@ -51,7 +62,7 @@ public class TapDataHandlingResource extends UserAuthenticatedResource {
             if (userAccessibleTaps.contains(tapUuid)) {
                 uuids.add(tapUuid);
             } else {
-                LOG.warn("User [{}] requested data from tap <{}> but they are not allowed to access it. Skipping.",
+                LOG.debug("User [{}] requested data from tap <{}> but they are not allowed to access it. Skipping.",
                         requestingUser.getEmail(), tapUuid);
             }
         }

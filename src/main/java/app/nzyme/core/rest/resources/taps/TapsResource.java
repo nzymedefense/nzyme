@@ -3,6 +3,7 @@ package app.nzyme.core.rest.resources.taps;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
+import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.taps.metrics.*;
@@ -31,10 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Path("/api/taps")
 @Produces(MediaType.APPLICATION_JSON)
-public class TapsResource extends UserAuthenticatedResource {
+public class TapsResource extends TapDataHandlingResource {
 
     @Inject
     private NzymeNode nzyme;
@@ -45,12 +47,18 @@ public class TapsResource extends UserAuthenticatedResource {
     public Response findAllWithHighLevelInformation(@Context SecurityContext sc,
                                                     @QueryParam("organization_id") @NotNull UUID organizationId,
                                                     @QueryParam("tenant_id") @NotNull UUID tenantId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         // Get all UUIDs of taps the user can access.
-        List<UUID> uuids = nzyme.getTapManager().allTapUUIDsAccessibleByScope(organizationId, tenantId);
+        List<UUID> uuids = parseAndValidateTapIdsDirect(
+                authenticatedUser,
+                nzyme,
+                nzyme.getTapManager().allTapUUIDsAccessibleByScope(organizationId, tenantId)
+        );
 
         List<TapHighLevelInformationDetailsResponse> tapsResponse = Lists.newArrayList();
         for (Tap tap : nzyme.getTapManager().findAllTapsByUUIDs(uuids)) {
@@ -67,12 +75,18 @@ public class TapsResource extends UserAuthenticatedResource {
     public Response findAll(@Context SecurityContext sc,
                             @QueryParam("organization_id") @NotNull UUID organizationId,
                             @QueryParam("tenant_id") @NotNull UUID tenantId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         // Get all UUIDs of taps the user can access.
-        List<UUID> uuids = nzyme.getTapManager().allTapUUIDsAccessibleByScope(organizationId, tenantId);
+        List<UUID> uuids = parseAndValidateTapIdsDirect(
+                authenticatedUser,
+                nzyme,
+                nzyme.getTapManager().allTapUUIDsAccessibleByScope(organizationId, tenantId)
+        );
 
         List<TapDetailsResponse> tapsResponse = Lists.newArrayList();
         for (Tap tap : nzyme.getTapManager().findAllTapsByUUIDs(uuids)) {

@@ -760,7 +760,7 @@ public class TapManager {
     }
 
     public List<UUID> allTapUUIDsAccessibleByScope(@Nullable UUID organizationId, @Nullable UUID tenantId) {
-        List<Tap> taps = Lists.newArrayList();
+        List<Tap> taps;
         if (organizationId == null && tenantId == null) {
             // Super Admin.
             taps = findAllTapsOfAllUsers();

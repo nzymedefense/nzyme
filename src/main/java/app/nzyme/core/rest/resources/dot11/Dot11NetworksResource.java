@@ -36,6 +36,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.joda.time.DateTime;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Path("/api/dot11/networks")
 @Produces(MediaType.APPLICATION_JSON)
@@ -628,11 +629,18 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     public Response allSSIDNames(@Context SecurityContext sc,
                                  @QueryParam("organization_id") @NotNull UUID organizationId,
                                  @QueryParam("tenant_id") @NotNull UUID tenantId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!passedTenantDataAccessible(sc,  organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        List<UUID> tapUuids = nzyme.getTapManager().allTapUUIDsAccessibleByScope(organizationId, tenantId);
+
+        List<UUID> tapUuids = parseAndValidateTapIdsDirect(
+                authenticatedUser,
+                nzyme,
+                nzyme.getTapManager().allTapUUIDsAccessibleByScope(organizationId, tenantId)
+        );
 
         return Response.ok(nzyme.getDot11().findAllSSIDNames(tapUuids)).build();
     }

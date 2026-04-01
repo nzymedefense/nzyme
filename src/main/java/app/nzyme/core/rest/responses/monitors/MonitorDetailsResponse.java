@@ -60,7 +60,10 @@ public abstract class MonitorDetailsResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static MonitorDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, String filters, boolean alerted, DateTime lastEvent, DateTime createdAt, DateTime updatedAt) {
+    @JsonProperty("partial_data")
+    public abstract boolean partialData();
+
+    public static MonitorDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, String filters, boolean alerted, DateTime lastEvent, DateTime createdAt, DateTime updatedAt, boolean partialData) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -77,6 +80,7 @@ public abstract class MonitorDetailsResponse {
                 .lastEvent(lastEvent)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
+                .partialData(partialData)
                 .build();
     }
 
@@ -115,6 +119,8 @@ public abstract class MonitorDetailsResponse {
         public abstract Builder createdAt(DateTime createdAt);
 
         public abstract Builder updatedAt(DateTime updatedAt);
+
+        public abstract Builder partialData(boolean partialData);
 
         public abstract MonitorDetailsResponse build();
     }

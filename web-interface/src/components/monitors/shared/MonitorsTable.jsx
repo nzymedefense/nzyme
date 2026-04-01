@@ -5,6 +5,7 @@ import numeral from "numeral";
 import moment from "moment";
 import ApiRoutes from "../../../util/ApiRoutes";
 import MonitorStatusIndicator from "./MonitorStatusIndicator";
+import monitorTypeToSearchLink from "./MonitorReplay";
 
 export default function MonitorsTable({monitors, page, setPage, perPage, onApplyMonitor = undefined}) {
 
@@ -26,7 +27,7 @@ export default function MonitorsTable({monitors, page, setPage, perPage, onApply
           <th>Taps</th>
           <th>Interval</th>
           <th>Created At</th>
-          {onApplyMonitor ? <th style={{width: 250}}></th> : null }
+          {onApplyMonitor ? <th style={{width: 250}}></th> : <th></th> }
         </tr>
         </thead>
         <tbody>
@@ -42,7 +43,8 @@ export default function MonitorsTable({monitors, page, setPage, perPage, onApply
               <td>{numeral(m.interval).format("0,0")} {m.interval === 1 ? "Minute" : "Minutes"}</td>
               <td title={moment(m.created_at).format()}>{moment(m.created_at).fromNow()}</td>
               {onApplyMonitor ?
-                <td><a href="#" onClick={(e) => {e.preventDefault(); onApplyMonitor(m); }}>Apply</a></td> : null }
+                <td><a href="#" onClick={(e) => {e.preventDefault(); onApplyMonitor(m); }}>Apply</a></td> :
+                <td><a href={monitorTypeToSearchLink(m)}>Replay</a></td> }
             </tr>
           )
         })}
