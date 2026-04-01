@@ -637,7 +637,7 @@ export default function Filters(props) {
           </div> : null}
         { (appliedMonitor && appliedMonitor.partial_data) ?
           <div className="alert alert-warning mt-2 mb-0">
-            At least one tap of the loaded monitor has been deleted or is not accessible by you. You may see partial
+            At least one tap of the loaded monitor is not accessible by you. You may see partial
             data. Please check the monitor configuration.
           </div> : null }
 

@@ -164,4 +164,11 @@ public class Monitors {
         );
     }
 
+    public void onTapDeleted(UUID tapId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE monitors SET taps = ARRAY_REMOVE(taps, :tap_id)")
+                        .bind("tap_id", tapId.toString())
+                        .execute()
+        );
+    }
 }

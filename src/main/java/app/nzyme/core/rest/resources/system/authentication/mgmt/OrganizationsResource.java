@@ -1714,7 +1714,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        // Remove tap.
         nzyme.getAuthenticationService().deleteTap(organizationId, tenantId, tapId);
+
+        // Remove tap from all monitors.
+        nzyme.getMonitors().onTapDeleted(tapId);
 
         return Response.ok().build();
     }
