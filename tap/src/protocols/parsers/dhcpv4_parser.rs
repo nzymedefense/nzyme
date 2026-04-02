@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use byteorder::{BigEndian, ByteOrder};
-use serde::__private::from_utf8_lossy;
+use serde::__private228::from_utf8_lossy;
 use crate::wired::packets::{Dhcpv4Packet, Datagram};
 use crate::wired::types::{Dhcpv4MessageType, Dhcpv4OpCode, HardwareType};
 use crate::helpers::network::{to_ipv4_address, to_mac_address_string};

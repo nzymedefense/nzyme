@@ -4,7 +4,7 @@ import app.nzyme.core.crypto.Crypto;
 import app.nzyme.plugin.distributed.messaging.MessageHandler;
 import app.nzyme.plugin.distributed.messaging.MessageProcessingResult;
 import app.nzyme.plugin.distributed.messaging.ReceivedMessage;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.Files;
 import org.apache.logging.log4j.LogManager;

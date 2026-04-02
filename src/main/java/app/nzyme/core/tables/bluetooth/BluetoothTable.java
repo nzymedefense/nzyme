@@ -7,8 +7,8 @@ import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -77,7 +77,7 @@ public class BluetoothTable implements DataTable {
                     uuids = om.writeValueAsString(serviceUuids);
                 }
                 serviceData = om.writeValueAsString(device.serviceData());
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 LOG.warn("Could not serialize Bluetooth device data. Skipping attributes.", e);
             }
 
@@ -92,7 +92,7 @@ public class BluetoothTable implements DataTable {
             if (device.tags() != null) {
                 try {
                     tags = om.writeValueAsString(device.tags());
-                } catch (JsonProcessingException e) {
+                } catch (JacksonException e) {
                     LOG.error("Could not write reported tags of Bluetooth device [{}] to JSON. Skipping tags.",
                             device.mac(), e);
                     tags = null;

@@ -16,8 +16,8 @@ import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.Subsystem;
 import com.codahale.metrics.Timer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -135,7 +135,7 @@ public class TCPTable implements DataTable {
             if (session.tags() != null && !session.tags().isEmpty()) {
                 try {
                     tags = om.writeValueAsString(session.tags());
-                } catch (JsonProcessingException e) {
+                } catch (JacksonException e) {
                      LOG.error("Could not serialize session tags.", e);
                      tags = null;
                 }
@@ -185,7 +185,7 @@ public class TCPTable implements DataTable {
                         String synOptions;
                         try {
                             synOptions = om.writeValueAsString(session.synOptions());
-                        } catch (JsonProcessingException e) {
+                        } catch (JacksonException e) {
                             throw new RuntimeException("Could not serialize SYN options: " + session.synOptions(), e);
                         }
 

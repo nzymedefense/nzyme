@@ -18,7 +18,7 @@
 package app.nzyme.core.rest;
 
 import app.nzyme.core.NzymeNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import app.nzyme.core.rest.web.AssetManifest;
 import app.nzyme.core.rest.web.IndexHtmlGenerator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;

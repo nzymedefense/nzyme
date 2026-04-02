@@ -18,8 +18,8 @@ import app.nzyme.core.rest.responses.events.EventActionDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventActionsListResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import jakarta.validation.Valid;
@@ -145,7 +145,7 @@ public class EventActionsResource extends UserAuthenticatedResource {
         String config;
         try {
             config = om.writeValueAsString(EmailActionConfiguration.create(req.subjectPrefix(), req.receivers()));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOG.error("Could not create action configuration.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
@@ -186,7 +186,7 @@ public class EventActionsResource extends UserAuthenticatedResource {
         String config;
         try {
             config = om.writeValueAsString(EmailActionConfiguration.create(req.subjectPrefix(), req.receivers()));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOG.error("Could not create action configuration.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
@@ -231,7 +231,7 @@ public class EventActionsResource extends UserAuthenticatedResource {
                     req.url(), req.allowInsecure(), encryptedBearerToken
 
             ));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOG.error("Could not create action configuration.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
@@ -286,7 +286,7 @@ public class EventActionsResource extends UserAuthenticatedResource {
             config = om.writeValueAsString(WebhookActionConfiguration.create(
                     req.url(), req.allowInsecure(), encryptedBearerToken
             ));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOG.error("Could not create action configuration.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
@@ -319,7 +319,7 @@ public class EventActionsResource extends UserAuthenticatedResource {
             config = om.writeValueAsString(SyslogActionConfiguration.create(
                     req.protocol(), req.syslogHostname(), req.host(), req.port()
             ));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOG.error("Could not create action configuration.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
@@ -362,7 +362,7 @@ public class EventActionsResource extends UserAuthenticatedResource {
             config = om.writeValueAsString(SyslogActionConfiguration.create(
                     req.protocol(), req.syslogHostname(), req.host(), req.port()
             ));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOG.error("Could not create action configuration.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }

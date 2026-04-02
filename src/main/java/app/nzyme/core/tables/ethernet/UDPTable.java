@@ -15,8 +15,8 @@ import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.Subsystem;
 import com.codahale.metrics.Timer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -135,7 +135,7 @@ public class UDPTable implements DataTable {
             if (conversation.tags() != null && !conversation.tags().isEmpty()) {
                 try {
                     tags = om.writeValueAsString(conversation.tags());
-                } catch (JsonProcessingException e) {
+                } catch (JacksonException e) {
                     LOG.error("Could not serialize session tags.", e);
                     tags = null;
                 }

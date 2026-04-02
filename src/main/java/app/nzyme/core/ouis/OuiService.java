@@ -5,8 +5,6 @@ import app.nzyme.core.connect.ConnectRegistryKeys;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import okhttp3.HttpUrl;
@@ -15,6 +13,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Map;
 import java.util.Optional;
@@ -163,9 +164,10 @@ public class OuiService {
 
                 LOG.info("OUI data download from Connect complete.");
 
-                ObjectMapper om = new ObjectMapper();
-                om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                om.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+                ObjectMapper om = JsonMapper.builder()
+                        .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                        .build();
 
                 ConnectOuiResponse data = om.readValue(response.body().bytes(), ConnectOuiResponse.class);
                 return Optional.of(data.ouis());

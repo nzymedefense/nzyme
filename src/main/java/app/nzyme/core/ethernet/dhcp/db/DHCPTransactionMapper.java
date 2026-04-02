@@ -1,10 +1,11 @@
 package app.nzyme.core.ethernet.dhcp.db;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.joda.JodaModule;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -16,9 +17,10 @@ import java.util.Map;
 
 public class DHCPTransactionMapper implements RowMapper<DHCPTransactionEntry> {
 
-    private final ObjectMapper om = new ObjectMapper()
-            .registerModule(new JodaModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    private final ObjectMapper om = JsonMapper.builder()
+            .addModule(new JodaModule())
+            .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .build();
 
     @Override
     public DHCPTransactionEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
@@ -45,7 +47,7 @@ public class DHCPTransactionMapper implements RowMapper<DHCPTransactionEntry> {
             additionalVendorClasses = om.readValue(rs.getString("additional_vendor_classes"), new TypeReference<>() {});
             notes = om.readValue(rs.getString("notes"), new TypeReference<>() {});
             timestamps = om.readValue(rs.getString("timestamps"), new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Failed to parse JSON from DHCP transaction database object.", e);
         }
 

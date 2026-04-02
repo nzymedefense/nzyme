@@ -17,10 +17,12 @@
 
 package app.nzyme.core.rest.web;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,15 +44,15 @@ public class AssetManifest {
         this.jsFiles = Lists.newArrayList();
         this.cssFiles = Lists.newArrayList();
 
-        ObjectMapper om = new ObjectMapper();
-        om.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
-
+        ObjectMapper om = JsonMapper.builder()
+                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                .build();
         InputStream vendorManifestStream = this.getClass().getResourceAsStream("/web-interface/assets/asset-manifest.json");
         if (vendorManifestStream != null) {
             Map<String, String> manifest;
             try {
                 manifest = om.readValue(vendorManifestStream, new TypeReference<HashMap<String, String>>() {});
-            } catch (IOException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Unable to read asset manifest.", e);
             }
 

@@ -44,7 +44,7 @@ import app.nzyme.plugin.distributed.messaging.MessageBus;
 import app.nzyme.plugin.distributed.tasksqueue.TasksQueue;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.ethernet.Ethernet;

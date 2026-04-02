@@ -1,8 +1,8 @@
 package app.nzyme.core.gnss.db.monitoring;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -34,7 +34,7 @@ public class GNSSMonitoringRuleEntryMapper implements RowMapper<GNSSMonitoringRu
             } else {
                 taps = Optional.of(om.readValue(rs.getString("taps"), new TypeReference<>() {}));
             }
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
 

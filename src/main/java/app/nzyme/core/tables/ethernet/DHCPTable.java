@@ -11,10 +11,11 @@ import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.MetricNames;
 import app.nzyme.plugin.Subsystem;
 import com.codahale.metrics.Timer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.joda.JodaModule;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,9 +51,10 @@ public class DHCPTable implements DataTable {
         this.assetRegistrationTimer = tablesService.getNzyme().getMetrics()
                 .timer(MetricNames.DHCP_ASSET_REGISTRATION_PROCESSING_TIMER);
 
-        this.om = new ObjectMapper()
-                .registerModule(new JodaModule())
-                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        this.om = JsonMapper.builder()
+                .addModule(new JodaModule())
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
     }
 
     public void handleReport(UUID tapUuid, DateTime timestamp, DhcpTransactionsReport report) {
@@ -96,7 +98,7 @@ public class DHCPTable implements DataTable {
                 additionalFingerprints = "[]";
                 additionalVendorClasses = om.writeValueAsString(tx.additionalVendorClasses());
                 notes = om.writeValueAsString(tx.notes());
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 LOG.error("Could not serialize DHCP transaction data. Skipping transaction.", e);
                 continue;
             }

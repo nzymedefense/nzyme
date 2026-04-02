@@ -1,8 +1,8 @@
 package app.nzyme.core.integrations.tenant.cot.protocol;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.validation.constraints.Null;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 @AutoValue
 public abstract class CotTrack {

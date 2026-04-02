@@ -19,10 +19,11 @@ import app.nzyme.core.taps.db.metrics.BucketSize;
 import app.nzyme.core.taps.db.metrics.TapMetricsGaugeAggregation;
 import app.nzyme.core.taps.db.metrics.TapMetricsTimerAggregation;
 import app.nzyme.core.taps.db.metrics.TapMetricsTimerHistogramAggregation;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.joda.JodaModule;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.net.HttpHeaders;
@@ -55,11 +56,13 @@ public class ConnectStatusReporter extends Periodical {
                 .writeTimeout(15, TimeUnit.SECONDS)
                 .build();
 
-        this.om = new ObjectMapper()
-                .registerModule(new JodaModule())
-                .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        this.om = JsonMapper.builder()
+                .addModule(new JodaModule())
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
     }
 
     @Override
@@ -129,9 +132,10 @@ public class ConnectStatusReporter extends Periodical {
 
                     // The response contains all enabled services. Store it.
                     if (response.body() != null) {
-                        ObjectMapper om = new ObjectMapper();
-                        om.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
-                        om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                        ObjectMapper om = JsonMapper.builder()
+                                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                                .build();
                         ConnectApiStatusResponse responseData = om.readValue(
                                 response.body().bytes(), ConnectApiStatusResponse.class
                         );

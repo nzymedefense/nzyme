@@ -2,9 +2,9 @@ package app.nzyme.core.ethernet.l4.db;
 
 import app.nzyme.core.ethernet.L4MapperTools;
 import app.nzyme.core.ethernet.L4Type;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.mapper.RowMapper;
@@ -28,7 +28,7 @@ public class L4SessionMapper implements RowMapper<L4Session> {
         if (tagsS != null) {
             try {
                 tags = objectMapper.readValue(tagsS, new TypeReference<>() {});
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 LOG.error("Could not parse L4 session tags.", e);
                 tags = null;
             }

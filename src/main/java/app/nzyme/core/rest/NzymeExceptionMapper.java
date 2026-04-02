@@ -17,7 +17,6 @@
 
 package app.nzyme.core.rest;
 
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
@@ -26,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ParamException;
 
 import jakarta.ws.rs.core.Response;
-import java.security.InvalidParameterException;
+import tools.jackson.databind.exc.ValueInstantiationException;
 
 @Provider
 public class NzymeExceptionMapper implements ExceptionMapper<Throwable> {

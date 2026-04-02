@@ -10,15 +10,15 @@ import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.plugin.Subsystem;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.joda.JodaModule;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class Dot11DiscoMonitor extends Periodical {
 
@@ -29,8 +29,9 @@ public class Dot11DiscoMonitor extends Periodical {
 
     public Dot11DiscoMonitor(NzymeNode nzyme) {
         this.nzyme = nzyme;
-        this.om = new ObjectMapper()
-                .registerModule(new JodaModule());
+        this.om = JsonMapper.builder()
+                .addModule(new JodaModule())
+                .build();
     }
 
     @Override

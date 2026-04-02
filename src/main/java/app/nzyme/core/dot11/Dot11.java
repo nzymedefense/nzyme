@@ -24,9 +24,9 @@ import app.nzyme.core.util.Tools;
 import app.nzyme.core.util.filters.FilterSql;
 import app.nzyme.core.util.filters.FilterSqlFragment;
 import app.nzyme.core.util.filters.Filters;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
@@ -2225,7 +2225,7 @@ public class Dot11 {
 
         try {
             configuration = om.readValue(monitoredNetwork.get().discoMonitorConfiguration(), new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Could not parse 802.11 disconnection monitor configuration of " +
                     "monitored network [" + monitoredNetwork.get().uuid() + "].", e);
         }

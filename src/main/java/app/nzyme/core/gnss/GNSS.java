@@ -9,8 +9,8 @@ import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
@@ -588,7 +588,7 @@ public class GNSS {
             } else {
                 tapsJson  = om.writeValueAsString(taps);
             }
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
 
@@ -666,7 +666,7 @@ public class GNSS {
             } else {
                 tapsJson = om.writeValueAsString(taps);
             }
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
 

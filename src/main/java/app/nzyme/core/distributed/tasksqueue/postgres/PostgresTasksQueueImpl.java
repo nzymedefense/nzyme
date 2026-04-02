@@ -2,10 +2,10 @@ package app.nzyme.core.distributed.tasksqueue.postgres;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.distributed.tasksqueue.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -14,6 +14,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,9 +39,10 @@ public class PostgresTasksQueueImpl implements TasksQueue {
 
         this.taskHandlers = Maps.newConcurrentMap();
 
-        this.om = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.om = JsonMapper.builder()
+                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
     }
 
     @Override
@@ -86,7 +88,7 @@ public class PostgresTasksQueueImpl implements TasksQueue {
         String parameters;
         try {
             parameters = om.writeValueAsString(task.parameters());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Could not serialize task parameters.", e);
         }
 
@@ -323,7 +325,7 @@ public class PostgresTasksQueueImpl implements TasksQueue {
                 serializedParameters = this.om.readValue(
                         entry.parameters(), new TypeReference<HashMap<String, Object>>() {}
                 );
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Could not serialize parameters of task <" + entry.id() + ">.", e);
             }
 

@@ -19,12 +19,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.javadoc.skip>true</maven.javadoc.skip>
 
-        <log4j.version>2.24.1</log4j.version>
+        <log4j.version>2.25.4</log4j.version>
         <guava.version>32.0.0-jre</guava.version>
         <jcommander.version>1.81</jcommander.version>
         <testng.version>7.4.0</testng.version>
         <okhttp.version>4.10.0</okhttp.version>
-        <jackson.version>2.15.2</jackson.version>
+        <jackson.version>3.1.1</jackson.version>
+        <jackson-jsr310.version>3.0.0-rc2</jackson-jsr310.version>
         <jodatime.version>2.10.10</jodatime.version>
         <semver.version>0.9.0</semver.version>
         <autovalue.version>1.8.1</autovalue.version>
@@ -36,21 +37,21 @@
         <liquibase-slf4j.version>5.0.0</liquibase-slf4j.version>
         <sqlitejdbc.version>3.28.0</sqlitejdbc.version>
         <jmte.version>6.0.0</jmte.version>
-        <postgresql.version>42.6.0</postgresql.version>
+        <postgresql.version>42.7.10</postgresql.version>
         <reflections.version>0.9.12</reflections.version>
         <jssc.version>2.8.0</jssc.version>
-        <protobuf.version>3.19.6</protobuf.version>
+        <protobuf.version>4.34.1</protobuf.version>
         <jaxb.version>2.3.1</jaxb.version>
         <tink.version>1.8.0</tink.version>
         <lanterna.version>3.1.1</lanterna.version>
         <simplejavamail.version>6.7.5</simplejavamail.version>
         <freemarker.version>2.3.31</freemarker.version>
         <opencsv.version>5.7.1</opencsv.version>
-        <quartz.version>2.3.2</quartz.version>
+        <quartz.version>2.5.2</quartz.version>
         <cronutils.version>9.2.1</cronutils.version>
         <httpcomponents.version>4.5.13</httpcomponents.version>
-        <nzymeplugin.version>2.0.28</nzymeplugin.version>
-        <bouncycastle.version>1.75</bouncycastle.version>
+        <nzymeplugin.version>2.0.29</nzymeplugin.version>
+        <bouncycastle.version>1.83</bouncycastle.version>
         <oshi.version>6.4.0</oshi.version>
         <commonsnet.version>3.9.0</commonsnet.version>
         <commonsvalidator.version>1.7</commonsvalidator.version>
@@ -108,32 +109,32 @@
             <version>${okhttp.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <groupId>tools.jackson.datatype</groupId>
             <artifactId>jackson-datatype-joda</artifactId>
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <groupId>tools.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
+            <version>${jackson-jsr310.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+            <groupId>tools.jackson.jakarta.rs</groupId>
             <artifactId>jackson-jakarta-rs-json-provider</artifactId>
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <groupId>tools.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>${jackson.version}</version>
         </dependency>

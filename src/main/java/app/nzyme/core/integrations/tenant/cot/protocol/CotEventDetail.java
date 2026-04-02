@@ -1,8 +1,8 @@
 package app.nzyme.core.integrations.tenant.cot.protocol;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 @AutoValue
 public abstract class CotEventDetail {

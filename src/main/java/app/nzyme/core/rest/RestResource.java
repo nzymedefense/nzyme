@@ -7,11 +7,12 @@ import app.nzyme.core.util.filters.FilterFactory;
 import app.nzyme.core.util.filters.Filters;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.TimeRangeFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.joda.JodaModule;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
@@ -27,17 +28,18 @@ public class RestResource {
     private final ObjectMapper om;
 
     public RestResource() {
-        this.om = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .registerModule(new JodaModule());
+        this.om = JsonMapper.builder()
+                .addModule(new JodaModule())
+                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
     }
 
     public TimeRange parseTimeRangeQueryParameter(String query) {
         TimeRangeParameter param;
         try {
             param = this.om.readValue(query, TimeRangeParameter.class);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Invalid time range parameter provided.", e);
         }
 
@@ -52,7 +54,7 @@ public class RestResource {
         Map<String, List<FiltersParameter>> param;
         try {
             param = this.om.readValue(query, new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOG.error(e);
             throw new IllegalArgumentException("Invalid filters parameter provided.", e);
         }

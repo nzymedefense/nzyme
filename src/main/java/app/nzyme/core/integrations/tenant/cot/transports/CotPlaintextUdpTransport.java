@@ -1,8 +1,8 @@
 package app.nzyme.core.integrations.tenant.cot.transports;
 
 import app.nzyme.core.integrations.tenant.cot.protocol.CotEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.dataformat.xml.XmlMapper;
 
 import java.io.IOException;
 import java.net.*;
@@ -24,7 +24,7 @@ public class CotPlaintextUdpTransport implements CotTransport {
         String payload;
         try {
             payload = xmlMapper.writeValueAsString(event);
-        } catch(JsonProcessingException e) {
+        } catch(JacksonException e) {
             throw new CotTransportException("Could not serialize CoT event.", e);
         }
 

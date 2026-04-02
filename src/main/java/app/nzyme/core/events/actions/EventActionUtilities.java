@@ -7,9 +7,9 @@ import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.rest.responses.events.DetectionEventTypeDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventActionDetailsResponse;
 import app.nzyme.core.rest.responses.events.SystemEventTypeDetailsResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
 import java.util.Collections;
@@ -28,7 +28,7 @@ public class EventActionUtilities {
 
         try {
             configuration = om.readValue(ea.configuration(), new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Could not read event action configuration.", e);
         }
 

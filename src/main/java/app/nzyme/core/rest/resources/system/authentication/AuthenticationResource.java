@@ -44,9 +44,9 @@ import app.nzyme.plugin.Subsystem;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.requests.CreateSessionRequest;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -360,7 +360,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             String recoveryCodesJson;
             try {
                 recoveryCodesJson = new ObjectMapper().writeValueAsString(recoveryCodes);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 LOG.error("Could not serialize MFA recovery codes.", e);
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
@@ -406,7 +406,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                 }
 
                 recoveryCodes = new ObjectMapper().readValue(recoveryCodesDecryptedJson, new TypeReference<>() {});
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 LOG.error("Could not deserialize MFA recovery codes.", e);
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
@@ -614,7 +614,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         String recoveryCodesJson;
         try {
             recoveryCodesJson = new ObjectMapper().writeValueAsString(newCodes);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOG.error("Could not serialize MFA recovery codes.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }

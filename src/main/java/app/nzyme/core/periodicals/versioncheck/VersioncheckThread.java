@@ -19,9 +19,10 @@ package app.nzyme.core.periodicals.versioncheck;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.distributed.NodeRegistryKeys;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.joda.JodaModule;
 import com.google.common.net.HttpHeaders;
 import app.nzyme.core.Version;
 import app.nzyme.core.periodicals.Periodical;
@@ -59,10 +60,12 @@ public class VersioncheckThread extends Periodical {
 
         this.version = version;
         this.nzyme = nzyme;
-        this.om = new ObjectMapper()
-                .registerModule(new JodaModule())
-                .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        this.om = JsonMapper.builder()
+                .addModule(new JodaModule())
+                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
     }
 
     @Override

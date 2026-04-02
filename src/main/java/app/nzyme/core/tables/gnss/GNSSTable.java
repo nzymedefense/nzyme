@@ -7,8 +7,8 @@ import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.Timer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.google.api.client.util.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -81,7 +81,7 @@ public class GNSSTable implements DataTable {
                                 .bind("maximum_noise", data.maximumNoise())
                                 .bind("timestamp", data.timestamp())
                                 .add();
-                    } catch (JsonProcessingException e) {
+                    } catch (JacksonException e) {
                         LOG.error("Could not serialize GNSS constellation report data. Skipping.", e);
                         continue;
                     }

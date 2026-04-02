@@ -6,7 +6,7 @@ import app.nzyme.core.events.actions.Action;
 import app.nzyme.core.events.actions.ActionExecutionResult;
 import app.nzyme.core.events.types.DetectionEvent;
 import app.nzyme.core.events.types.SystemEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.common.net.HttpHeaders;
 import okhttp3.*;

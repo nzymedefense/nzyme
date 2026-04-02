@@ -202,7 +202,8 @@ fn privacy_hash(value: &str) -> String {
     sha2::Digest::update(&mut hasher, value);
     let  result = hasher.finalize();
 
-    format!("PRIVACY_HASHED___SHA56_{:x}", result)
+    let hex: String = result.iter().map(|b| format!("{:02x}", b)).collect();
+    format!("PRIVACY_HASHED___SHA56_{}", hex)
 }
 
 #[derive(Serialize)]

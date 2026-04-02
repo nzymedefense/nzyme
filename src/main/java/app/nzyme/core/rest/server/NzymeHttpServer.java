@@ -6,7 +6,6 @@ import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
 import app.nzyme.core.rest.CORSFilter;
 import app.nzyme.core.rest.NzymeExceptionMapper;
 import app.nzyme.core.rest.NzymeLeaderInjectionBinder;
-import app.nzyme.core.rest.ObjectMapperProvider;
 import app.nzyme.core.rest.authentication.*;
 import app.nzyme.core.rest.interceptors.TapTableSizeInterceptor;
 import app.nzyme.core.rest.resources.*;
@@ -41,7 +40,6 @@ import app.nzyme.core.rest.resources.taps.TapsResource;
 import app.nzyme.core.rest.resources.uav.UavResource;
 import app.nzyme.core.rest.resources.user.UserProfileResource;
 import app.nzyme.plugin.distributed.messaging.*;
-import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.CompressionConfig;
@@ -54,6 +52,12 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.joda.JodaModule;
+import tools.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.jakarta.rs.json.JacksonJsonProvider;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -110,6 +114,13 @@ public class NzymeHttpServer {
     }
 
     public void initialize() {
+        JsonMapper om = JsonMapper.builder()
+                .addModule(new JodaModule())
+                .addModule(new JavaTimeModule())
+                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
+
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(new PreMFAAuthenticationFilter(nzyme));
         resourceConfig.register(new RESTAuthenticationFilter(nzyme));
@@ -117,8 +128,7 @@ public class NzymeHttpServer {
         resourceConfig.register(new PrometheusBasicAuthFilter(nzyme));
         resourceConfig.register(new CORSFilter());
         resourceConfig.register(new NzymeLeaderInjectionBinder(nzyme));
-        resourceConfig.register(new ObjectMapperProvider());
-        resourceConfig.register(new JacksonJsonProvider());
+        resourceConfig.register(new JacksonJsonProvider(om));
         resourceConfig.register(new NzymeExceptionMapper());
         resourceConfig.register(new TapTableSizeInterceptor(nzyme));
         resourceConfig.register(MultiPartFeature.class);

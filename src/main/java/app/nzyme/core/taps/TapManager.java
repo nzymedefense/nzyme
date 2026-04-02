@@ -13,8 +13,8 @@ import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.resources.taps.reports.*;
 import app.nzyme.core.taps.db.EngagementLogEntry;
 import app.nzyme.core.taps.db.metrics.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -93,7 +93,7 @@ public class TapManager {
                     String widthJson;
                     try {
                         widthJson = om.writeValueAsString(frequency.channelWidths());
-                    } catch (JsonProcessingException e) {
+                    } catch (JacksonException e) {
                         throw new RuntimeException(e);
                     }
 
@@ -139,7 +139,7 @@ public class TapManager {
         try {
             cpuCoresLoadJson = this.om.writeValueAsString(report.systemMetrics().cpuCoresLoad());
             configurationJson = this.om.writeValueAsString(report.configuration());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Could not serialize tap report JSON.", e);
         }
 

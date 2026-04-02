@@ -505,7 +505,7 @@ pub fn calculate_fingerprint(bssid: &str,
 
     trace!("Fingerprint debug: [{}] Caps: [{:?}] TagParams: [{:?}] WPS: [{}]", bssid, caps, tagged_params, has_wps);
 
-    format!("{:2x}", hash)
+    hash.iter().map(|b| format!("{:02x}", b)).collect()
 }
 
 pub fn decide_wpa_identifier(suites: &CipherSuites, pmf: &PmfMode) -> Result<EncryptionProtocol, Error> {

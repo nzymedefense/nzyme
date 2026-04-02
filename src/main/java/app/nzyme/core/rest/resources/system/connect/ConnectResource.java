@@ -12,9 +12,9 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.configuration.EncryptedConfigurationEntryResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PUT;
@@ -52,7 +52,7 @@ public class ConnectResource {
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 providedServices = objectMapper.readValue(providedServicesInfo.get(), new TypeReference<>() {});
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 LOG.error("Could not parse Connect provided services info.", e);
                 providedServices = Collections.emptyList();
             }

@@ -4,16 +4,17 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.plugin.distributed.messaging.*;
 import com.beust.jcommander.internal.Lists;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,9 +39,10 @@ public class PostgresMessageBusImpl implements MessageBus {
 
         this.messageHandlers = Maps.newConcurrentMap();
 
-        this.om = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.om = JsonMapper.builder()
+                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
     }
 
     public void initialize(int pollInterval, TimeUnit pollIntervalUnit) {
@@ -156,7 +158,7 @@ public class PostgresMessageBusImpl implements MessageBus {
         String parameters;
         try {
             parameters = om.writeValueAsString(message.parameters());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Could not serialize message parameters.", e);
         }
 
@@ -325,7 +327,7 @@ public class PostgresMessageBusImpl implements MessageBus {
                         failure.parameters(),
                         new TypeReference<HashMap<String,Object>>() {}
                 );
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Could not serialize parameters of message <" + failure.id() + ">.", e);
             }
 

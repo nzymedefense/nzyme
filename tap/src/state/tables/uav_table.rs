@@ -242,7 +242,7 @@ impl UavTable {
 
         let mut hasher = Sha256::new();
         hasher.update(identifier.as_bytes());
-        format!("{:x}", hasher.finalize())
+        hasher.finalize().iter().map(|b| format!("{:02x}", b)).collect()
     }
 
     pub fn calculate_metrics(&self) {

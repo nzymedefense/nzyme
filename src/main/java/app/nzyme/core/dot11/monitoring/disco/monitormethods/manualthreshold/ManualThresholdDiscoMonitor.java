@@ -5,8 +5,8 @@ import app.nzyme.core.dot11.db.DiscoHistogramEntry;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.dot11.monitoring.disco.DiscoMonitorAnomaly;
 import app.nzyme.core.dot11.monitoring.disco.monitormethods.Dot11DiscoMonitorMethod;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
 import javax.annotation.Nullable;
@@ -35,7 +35,7 @@ public class ManualThresholdDiscoMonitor extends Dot11DiscoMonitorMethod {
             }
 
             this.threshold = config.threshold();
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Could not parse configuration for monitored network " +
                     "[" + monitoredNetwork.uuid() + "].");
         }

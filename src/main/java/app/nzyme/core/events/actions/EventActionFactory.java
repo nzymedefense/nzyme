@@ -8,13 +8,13 @@ import app.nzyme.core.events.actions.syslog.SyslogActionConfiguration;
 import app.nzyme.core.events.actions.webhook.WebhookAction;
 import app.nzyme.core.events.actions.webhook.WebhookActionConfiguration;
 import app.nzyme.core.events.db.EventActionEntry;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 public class EventActionFactory {
 
     @SuppressWarnings("SwitchStatementWithTooFewBranches")
-    public static Action build(NzymeNode nzyme, EventActionEntry ea) throws NoSuchActionTypeException, JsonProcessingException{
+    public static Action build(NzymeNode nzyme, EventActionEntry ea) throws NoSuchActionTypeException, JacksonException {
         ObjectMapper om = new ObjectMapper();
 
         switch (ea.actionType()) {

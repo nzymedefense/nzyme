@@ -7,10 +7,11 @@ import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.Tools;
 import com.codahale.metrics.Timer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.joda.JodaModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.PreparedBatch;
@@ -33,9 +34,10 @@ public class NTPTable implements DataTable {
         this.totalReportTimer = tablesService.getNzyme().getMetrics()
                 .timer(MetricNames.NTP_TOTAL_REPORT_PROCESSING_TIMER);
 
-        this.om = new ObjectMapper()
-                .registerModule(new JodaModule())
-                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        this.om = JsonMapper.builder()
+                .addModule(new JodaModule())
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
     }
 
     public void handleReport(UUID tapUuid, DateTime timestamp, NTPTransactionsReport report) {
@@ -63,7 +65,7 @@ public class NTPTable implements DataTable {
                     if (tx.notes() != null && !tx.notes().isEmpty()) {
                         try {
                             notes = om.writeValueAsString(tx.notes());
-                        } catch (JsonProcessingException e) {
+                        } catch (JacksonException e) {
                             LOG.error("Failed to serialize NTP transaction notes. Setting to NULL.", e);
                             notes = null;
                         }
