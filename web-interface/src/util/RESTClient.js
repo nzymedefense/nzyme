@@ -3,6 +3,20 @@ import {toast} from "react-toastify";
 
 const axios = require('axios')
 
+const axiosInstance = axios.create({
+  paramsSerializer: {
+    serialize: (params) => {
+      return Object.entries(params)
+        .filter(([, value]) => value !== undefined && value !== null)
+        .map(([key, value]) => {
+          const v = typeof value === 'object' ? JSON.stringify(value) : value;
+          return `${encodeURIComponent(key)}=${encodeURIComponent(v)}`;
+        })
+        .join('&');
+    }
+  }
+});
+
 const RESTClient = {
 
   getAuthHeaders () {
@@ -31,7 +45,7 @@ const RESTClient = {
   },
 
   get (uri, params, successCallback, errorCallback = undefined) {
-    axios.get(this.buildUri(uri), { params: params, headers: this.getAuthHeaders() })
+    axiosInstance.get(this.buildUri(uri), { params: params, headers: this.getAuthHeaders() })
       .then(function (response) {
         successCallback(response)
       })
@@ -50,7 +64,7 @@ const RESTClient = {
   },
 
   post (uri, data, successCallback, errorCallback = undefined) {
-    axios.post(this.buildUri(uri), data, { headers: this.getAuthHeaders() })
+    axiosInstance.post(this.buildUri(uri), data, { headers: this.getAuthHeaders() })
       .then(function (response) {
         successCallback(response)
       })
@@ -76,7 +90,7 @@ const RESTClient = {
     const headers = this.getAuthHeaders();
     headers["Content-Type"] = "multipart/form-data";
 
-    axios.post(this.buildUri(uri), formData, { headers: headers })
+    axiosInstance.post(this.buildUri(uri), formData, { headers: headers })
       .then(function (response) {
         successCallback(response)
       })
@@ -96,7 +110,7 @@ const RESTClient = {
   },
 
   put (uri, data, successCallback, errorCallback = undefined) {
-    axios.put(this.buildUri(uri), data, { headers: this.getAuthHeaders() })
+    axiosInstance.put(this.buildUri(uri), data, { headers: this.getAuthHeaders() })
       .then(function (response) {
         successCallback(response)
       })
@@ -114,7 +128,7 @@ const RESTClient = {
   },
 
   delete(uri, successCallback, errorCallback = undefined) {
-    axios.delete(this.buildUri(uri), { headers: this.getAuthHeaders() })
+    axiosInstance.delete(this.buildUri(uri), { headers: this.getAuthHeaders() })
       .then(function (response) {
         successCallback(response)
       })
