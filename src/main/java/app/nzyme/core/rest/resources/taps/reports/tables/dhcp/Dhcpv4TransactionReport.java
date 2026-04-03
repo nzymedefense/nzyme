@@ -35,8 +35,8 @@ public abstract class Dhcpv4TransactionReport {
     public abstract DateTime firstPacket();
     public abstract DateTime latestPacket();
     public abstract Set<String> notes();
-    public abstract boolean successful();
-    public abstract boolean complete();
+    public abstract Boolean successful();
+    public abstract Boolean complete();
 
     @JsonCreator
     public static Dhcpv4TransactionReport create(@JsonProperty("transaction_type") String transactionType,
