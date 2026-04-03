@@ -9,9 +9,9 @@ import AlertActiveIndicator from "./AlertActiveIndicator";
 import AlertDetails from "./alertdetails/AlertDetails";
 import AlertTimeline from "./AlertTimeline";
 import RelatedMonitoredNetwork from "./RelatedMonitoredNetwork";
-import {notify} from "react-notify-toast";
 import WithPermission from "../misc/WithPermission";
 import usePageTitle from "../../util/UsePageTitle";
+import {toast} from "react-toastify";
 
 const alertsService = new DetectionAlertsService();
 
@@ -39,7 +39,7 @@ function AlertDetailsPage() {
     }
 
     alertsService.markAlertAsResolved(uuid, () => {
-      notify.show('Alert marked as resolved.', 'success');
+      toast.success("Alert marked as resolved.")
       setRevision(oldRev => oldRev+1);
     })
   }
@@ -52,7 +52,7 @@ function AlertDetailsPage() {
     }
 
     alertsService.deleteAlert(uuid, () => {
-      notify.show('Alert deleted.', 'success');
+      toast.success("Alert deleted.")
       setIsDeleted(true);
     });
   }

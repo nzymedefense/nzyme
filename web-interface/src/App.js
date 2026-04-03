@@ -6,8 +6,6 @@ import {
   Route
 } from 'react-router-dom'
 
-import Notifications from 'react-notify-toast'
-
 import NavigationBar from './components/layout/NavigationBar'
 import OverviewPage from './components/overview/OverviewPage'
 import NotConnectedPage from './components/misc/NotConnectedPage'
@@ -195,6 +193,7 @@ import OrganizationSubsystemsPage
   from "./components/system/authentication/management/organizations/OrganizationSubsystemsPage";
 import TenantSubsystemsPage from "./components/system/authentication/management/tenants/TenantSubsystemsPage";
 import EditMonitorPage from "./components/monitors/EditMonitorPage";
+import Toast from "./components/misc/Toast";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -324,7 +323,7 @@ function App() {
         <div className="nzyme">
           <DarkMode enabled={false} />
 
-          <Notifications/>
+          <Toast />
           <NotConnectedPage />
         </div>
     )
@@ -340,7 +339,7 @@ function App() {
         <div className="nzyme">
           <DarkMode enabled={false} />
 
-          <Notifications/>
+          <Toast />
 
           <SetupWizardPage onActionCompleted={() => setRevision(new Date())} />
         </div>
@@ -358,7 +357,7 @@ function App() {
         <div className="nzyme">
           <DarkMode enabled={false} />
 
-          <Notifications/>
+          <Toast />
           <LoginPage customImage={nzymeInformation.login_image} onActionCompleted={() => setRevision(new Date())} />
         </div>
     )
@@ -369,7 +368,7 @@ function App() {
         // MFA is set up for this user. Show MFA challenge.
         return (
             <div className="nzyme">
-              <Notifications/>
+              <Toast />
 
               <MFAEntryPage mfaEntryExpiresAt={mfaEntryExpiresAt}
                             customImage={nzymeInformation.login_image}
@@ -380,7 +379,7 @@ function App() {
         // MFA is not set up for this user yet. Show setup page.
         return (
           <div className="nzyme">
-            <Notifications/>
+            <Toast />
 
             <MFASetupPage customImage={nzymeInformation.login_image}
                           onActionCompleted={() => setRevision(new Date())} />
@@ -447,7 +446,7 @@ function App() {
                       <Sidebar branding={branding} />
 
                       <div id="main" className="flex-fill">
-                        <Notifications/>
+                        <Toast />
                         <NavigationBar darkModeEnabled={darkModeEnabled}
                                        setDarkModeEnabled={setDarkModeEnabled}
                                        onLogout={onLogout} />

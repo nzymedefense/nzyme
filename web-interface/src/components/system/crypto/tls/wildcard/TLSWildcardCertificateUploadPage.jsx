@@ -3,7 +3,7 @@ import Routes from "../../../../../util/ApiRoutes";
 import TLSCertificateHelp from "../TLSCertificateHelp";
 import TLSCertificateUploadForm from "../form/TLSCertificateUploadForm";
 import CryptoService from "../../../../../services/CryptoService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import {Navigate} from "react-router-dom";
 import MatchingNodesTestResult from "./MatchingNodesTestResult";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
@@ -53,7 +53,7 @@ function TLSWildcardCertificateUploadPage() {
     formData.append("node_matcher", regexValue);
 
     cryptoService.installWildcardTLSCertificate(formData, function() {
-      notify.show('TLS certificate installed.', 'success');
+      toast.success('TLS certificate installed.');
       setCertInstallationSuccess(true);
     })
   }

@@ -7,7 +7,7 @@ import EventActionsService from "../../../../../../../services/EventActionsServi
 import EventSubscriptionsTable from "../../../../../events/shared/subscriptions/EventSubscriptionsTable";
 import EventSubscriptionActionSelector
   from "../../../../../events/shared/subscriptions/EventSubscriptionActionSelector";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationMgmtService = new AuthenticationManagementService();
@@ -38,7 +38,7 @@ function OrganizationEventSubscriptionDetailsPage() {
 
   const onActionSelect = function(actionId) {
     eventActionsService.subscribeActionToEvent(eventType.id, actionId, organizationId,function() {
-      notify.show("Subscribed action to event.", "success");
+      toast.success("Subscribed action to event.");
       setRevision(revision+1);
     }, function(error) {
       setSubscriptionError(error.response.data.message);
@@ -51,7 +51,7 @@ function OrganizationEventSubscriptionDetailsPage() {
     }
 
     eventActionsService.unsubscribeActionFromEvent(eventType.id, subscriptionId, function() {
-      notify.show("Unsubscribed action from event.", "success");
+      toast.success("Unsubscribed action from event.");
       setRevision(revision+1);
     })
   }

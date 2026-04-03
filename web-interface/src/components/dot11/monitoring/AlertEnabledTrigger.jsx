@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import Dot11Service from "../../../services/Dot11Service";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 const dot11Service = new Dot11Service();
 
@@ -24,7 +24,7 @@ function AlertEnabledTrigger(props) {
     }
 
     dot11Service.setMonitoredNetworkAlertEnabledStatus(ssid.uuid, parameter, true, () => {
-      notify.show("Alert enabled.", "success");
+      toast.success("Alert enabled.");
       setStatus(true);
       bumpRevision();
     })
@@ -38,7 +38,7 @@ function AlertEnabledTrigger(props) {
     }
 
     dot11Service.setMonitoredNetworkAlertEnabledStatus(ssid.uuid, parameter, false, () => {
-      notify.show("Alert disabled.", "success");
+      toast.success("Alert disabled.");
       setStatus(false);
       bumpRevision();
     })

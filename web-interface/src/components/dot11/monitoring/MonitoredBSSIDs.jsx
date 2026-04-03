@@ -1,7 +1,7 @@
 import React from "react";
 import MonitoredBSSIDFingerprintsModal from "./MonitoredBSSIDFingerprintsModal";
 import Dot11Service from "../../../services/Dot11Service";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 
 const dot11Service = new Dot11Service();
@@ -33,7 +33,7 @@ function MonitoredBSSIDs(props) {
 
     dot11Service.deleteMonitoredBSSID(ssidUuid, bssid.uuid, function () {
       bumpRevision();
-      notify.show("BSSID monitoring configuration deleted.", "success");
+      toast.success("BSSID monitoring configuration deleted.");
     })
   }
 

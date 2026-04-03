@@ -4,7 +4,7 @@ import {Navigate, useParams} from "react-router-dom";
 import DetectionMethodDialogProxy from "./DetectionMethodDialogProxy";
 import Dot11Service from "../../../../../services/Dot11Service";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
@@ -25,7 +25,7 @@ function ConfigureDiscoDetectionMethodPage() {
   const onSubmit = (e, method_type, configuration) => {
     dot11Service.setDiscoDetectionConfiguration(method_type, configuration, uuid,
         () => {
-          notify.show("Deauthentication anomaly detection method updated.", "success");
+          toast.success("Deauthentication anomaly detection method updated.");
           setRedirect(true);
         })
   }

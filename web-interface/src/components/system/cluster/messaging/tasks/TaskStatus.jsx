@@ -1,7 +1,7 @@
 import React from "react";
 import numeral from "numeral";
 import ClusterService from "../../../../../services/ClusterService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 const clusterService = new ClusterService();
 
@@ -18,7 +18,7 @@ function TaskStatus(props) {
     }
 
     clusterService.acknowledgeFailedTask(task.id, function() {
-      notify.show("Task acknowledged.", "success");
+      toast.success("Task acknowledged.");
       setLocalRevision(prevRev => prevRev + 1)
     });
   }

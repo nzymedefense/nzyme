@@ -1,6 +1,6 @@
 import React, {useContext, useState} from "react";
 import Dot11Service from "../../../../services/Dot11Service";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import TrackDetectorConfigModalButton from "./TrackDetectorConfigModalButton";
 import {UserContext} from "../../../../App";
 
@@ -33,7 +33,7 @@ function TrackDetectorConfigModal(props) {
 
     dot11Service.updateTrackDetectorConfig(
         bssid, ssid, frequency, tapUUID, frameThreshold, gapThreshold, centerlineJitter, () => {
-          notify.show("Track detector configuration updated.", "success");
+          toast.success("Track detector configuration updated.");
           setFormSubmitted(true);
         }
     );

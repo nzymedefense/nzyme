@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import EventSubscriptionsTable from "../../system/events/shared/subscriptions/EventSubscriptionsTable";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import EventSubscriptionActionSelector from "../../system/events/shared/subscriptions/EventSubscriptionActionSelector";
 import EventActionsService from "../../../services/EventActionsService";
 import WithExactRole from "../../misc/WithExactRole";
@@ -26,14 +26,14 @@ function WildcardAlertSubscriptions() {
     }
 
     eventActionsService.unsubscribeWildcardAction(subscriptionId, function() {
-      notify.show("Unsubscribed wildcard action.", "success");
+      toast.success("Unsubscribed wildcard action.");
       setRevision(revision+1);
     })
   }
 
   const onActionSelect = function(actionId) {
     eventActionsService.subscribeWildcardAction(actionId, organizationId,function() {
-      notify.show("Subscribed wildcard action.", "success");
+      toast.success("Subscribed wildcard action.");
       setRevision(revision+1);
     }, function(error) {
       setSubscriptionError(error.response.data.message);

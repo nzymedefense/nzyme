@@ -4,7 +4,7 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import ContextService from "../../../services/ContextService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import MacAddressContextForm from "./MacAddressContextForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import usePageTitle from "../../../util/UsePageTitle";
 
@@ -27,7 +27,7 @@ function MacAddressContextDetailsPage() {
 
   const onSubmit = (macAddress, name, description, notes, organizationId, tenantId, onComplete) => {
     contextService.editMacAddressContext(uuid, name, description, notes, organizationId, tenantId, () => {
-      notify.show('Context updated.', 'success');
+      toast.success('Context updated.');
       onComplete();
       setUpdated(true);
     }, () => {

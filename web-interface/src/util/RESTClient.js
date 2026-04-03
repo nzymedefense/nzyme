@@ -1,5 +1,5 @@
-import { notify } from 'react-notify-toast'
 import Store from './Store'
+import {toast} from "react-toastify";
 
 const axios = require('axios')
 
@@ -40,11 +40,11 @@ const RESTClient = {
           if (errorCallback) {
             errorCallback(error)
           } else {
-            notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
+            toast.error('REST call failed. (HTTP ' + error.response.status + ')')
           }
         } else {
           console.log("REST call error: " + error);
-          notify.show('REST call failed. No response. Is nzyme running?', 'error')
+          toast.error('REST call failed. No response. Is nzyme running?')
         }
       })
   },
@@ -62,12 +62,12 @@ const RESTClient = {
 
         if (error.response) {
           if (error.response.status === 422) {
-            notify.show('Could not create entity. Quota exceeded. Please contact your administrator.', 'error')
+            toast.error('Could not create entity. Quota exceeded. Please contact your administrator.')
           } else {
-            notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
+            toast.error('REST call failed. (HTTP ' + error.response.status + ')')
           }
         } else {
-          notify.show('REST call failed. No response. Is nzyme running?', 'error')
+          toast.error('REST call failed. No response. Is nzyme running?')
         }
       })
   },
@@ -87,9 +87,9 @@ const RESTClient = {
 
         if (standardErrorHandling) {
           if (error.response) {
-            notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
+            toast.error('REST call failed. (HTTP ' + error.response.status + ')')
           } else {
-            notify.show('REST call failed. No response. Is nzyme running?', 'error')
+            toast.error('REST call failed. No response. Is nzyme running?')
           }
         }
       })
@@ -105,9 +105,9 @@ const RESTClient = {
           errorCallback(error)
         } else {
           if (error.response) {
-            notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
+            toast.error('REST call failed. (HTTP ' + error.response.status + ')')
           } else {
-            notify.show('REST call failed. No response. Is nzyme running?', 'error')
+            toast.error('REST call failed. No response. Is nzyme running?')
           }
         }
       })
@@ -123,9 +123,9 @@ const RESTClient = {
           errorCallback(error)
         } else {
           if (error.response) {
-            notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
+            toast.error('REST call failed. (HTTP ' + error.response.status + ')')
           } else {
-            notify.show('REST call failed. No response. Is nzyme running?', 'error')
+            toast.error('REST call failed. No response. Is nzyme running?')
           }
         }
       })

@@ -6,7 +6,7 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import GNSSMonitoringRuleForm from "./GNSSMonitoringRuleForm";
 import GnssService from "../../../services/GnssService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import usePageTitle from "../../../util/UsePageTitle";
 
@@ -32,7 +32,7 @@ export default function CreateGNSSMonitoringRulePage() {
   const onFormSubmitted = (name, description, conditions, taps, onFailure) => {
     gnssService.createMonitoringRule(name, description, conditions, taps, organizationId, tenantId, () => {
       // Success.
-      notify.show("Monitoring rule created.", "success");
+      toast.success("Monitoring rule created.");
       setRedirect(true);
     }, onFailure)
   }

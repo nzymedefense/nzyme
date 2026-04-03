@@ -5,7 +5,7 @@ import ConnectTypesTable from "./ConnectTypesTable";
 import ApiRoutes from "../../../util/ApiRoutes";
 import CustomTypesTable from "./CustomTypesTable";
 import UavService from "../../../services/UavService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import usePageTitle from "../../../util/UsePageTitle";
 
@@ -51,7 +51,7 @@ export default function UavTypesPage() {
     }
 
     uavService.deleteCustomType(uuid, organizationId, tenantId, () => {
-      notify.show("Custom UAV type deleted.", "success");
+      toast.success("Custom UAV type deleted.");
       setRevision(new Date());
     })
   }

@@ -9,7 +9,7 @@ import CardTitleWithControls from "../../../../../../shared/CardTitleWithControl
 import CotOutputStatus from "./CotOutputStatus";
 import numeral from "numeral";
 import moment from "moment";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import CotConnectionType from "./CotConnectionType";
 import usePageTitle from "../../../../../../../util/UsePageTitle";
 
@@ -45,7 +45,7 @@ export default function CotOutputDetailsPage() {
     }
 
     cotIntegrationService.deleteOutput(organizationId, tenantId, outputId, () => {
-      notify.show("Cursor on Target output deleted.", "success");
+      toast.success("Cursor on Target output deleted.");
       setDeleted(true);
     });
   }
@@ -56,7 +56,7 @@ export default function CotOutputDetailsPage() {
     }
 
     cotIntegrationService.pauseOutput(organizationId, tenantId, outputId, () => {
-      notify.show("Cursor on Target output paused.", "success");
+      toast.success("Cursor on Target output paused.");
       setRevision(new Date());
     });
   }
@@ -67,7 +67,7 @@ export default function CotOutputDetailsPage() {
     }
 
     cotIntegrationService.startOutput(organizationId, tenantId, outputId, () => {
-      notify.show("Cursor on Target output started.", "success");
+      toast.success("Cursor on Target output started.");
       setRevision(new Date());
     });
   }

@@ -4,7 +4,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import GNSSConstellationConditionForm from "./conditions/forms/GNSSConstellationConditionForm";
 import GNSSFixQualityConditionForm from "./conditions/forms/GNSSFixQualityConditionForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import GNSSFixDistanceConditionForm from "./conditions/forms/GNSSFixDistanceConditionForm";
 import GNSSPDOPConditionForm from "./conditions/forms/GNSSPDOPConditionForm";
 import GNSSClockDriftConditionForm from "./conditions/forms/GNSSClockDriftConditionForm";
@@ -58,7 +58,7 @@ export default function GNSSMonitoringRuleForm(props) {
     const key = makeConditionKey(cond);
 
     if (list.some((x) => makeConditionKey(x) === key)) {
-      notify.show("This condition already exists.", "error");
+      toast.error("This condition already exists.");
       return prev;
     }
 
@@ -171,7 +171,7 @@ export default function GNSSMonitoringRuleForm(props) {
     setSubmitText("Please wait...");
     onSubmit(name, description, conditions, selectedTaps, () => {
       // Failure.
-      notify.show("Could not update monitoring rule.", "error");
+      toast.error("Could not update monitoring rule.");
       setSubmitText(submitTextProp)
       setIsSubmitting(false);
     });

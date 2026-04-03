@@ -9,7 +9,7 @@ import moment from "moment";
 import {truncate} from "../../../util/Tools";
 import conditionTypeToTitle from "./conditions/GNSSConditionTypeTitleFactory";
 import conditionTypeSetToDescription from "./conditions/descriptions/GNSSConditionsDescriptionFactory";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../util/UsePageTitle";
 
 const gnssService = new GnssService();
@@ -37,7 +37,7 @@ export default function GNSSMonitoringRuleDetailsPage() {
     }
 
     gnssService.deleteMonitoringRule(uuid, organizationId, tenantId, () => {
-      notify.show("Monitoring rule deleted.", "success");
+      toast.success("Monitoring rule deleted.");
       setRedirect(true);
     })
   }

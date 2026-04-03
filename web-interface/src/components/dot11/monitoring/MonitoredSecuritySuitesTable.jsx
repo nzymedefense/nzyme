@@ -1,5 +1,5 @@
 import React from "react";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import Dot11Service from "../../../services/Dot11Service";
 
 const dot11Service = new Dot11Service();
@@ -19,7 +19,7 @@ function MonitoredSecuritySuitesTable(props) {
 
     dot11Service.deleteMonitoredSecuritySuite(ssid.uuid, uuid, function () {
       bumpRevision();
-      notify.show("Security suite monitoring configuration deleted.", "success");
+      toast.success("Security suite monitoring configuration deleted.");
     })
   }
 

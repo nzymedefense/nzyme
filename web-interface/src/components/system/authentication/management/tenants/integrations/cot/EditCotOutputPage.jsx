@@ -7,7 +7,7 @@ import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import Routes from "../../../../../../../util/ApiRoutes";
 import CardTitleWithControls from "../../../../../../shared/CardTitleWithControls";
 import CotOutputForm from "./CotOutputForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
@@ -49,7 +49,7 @@ export default function EditCotOutputPage() {
     }
 
     cotIntegrationService.editOutput(organizationId, tenantId, outputId, formData, () => {
-      notify.show("Cursor on Target output updated.", "success");
+      toast.success("Cursor on Target output updated.");
       setRedirect(true);
     }, onFailure)
   }

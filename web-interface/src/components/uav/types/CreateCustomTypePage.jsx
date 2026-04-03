@@ -3,7 +3,7 @@ import {Navigate} from "react-router-dom";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import UavService from "../../../services/UavService";
 import Routes from "../../../util/ApiRoutes";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import UavTypeForm from "./UavTypeForm";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import usePageTitle from "../../../util/UsePageTitle";
@@ -21,7 +21,7 @@ export default function CreateCustomTypePage() {
   const onFormSubmitted = (matchType, matchValue, defaultClassification, type, model, name, onFailure) => {
     uavService.createCustomType(organizationId, tenantId, matchType, matchValue, defaultClassification, type, model, name,
         () => {
-          notify.show("Custom UAV type created.", "success");
+          toast.success("Custom UAV type created.");
           setRedirect(true);
         }, onFailure)
   }

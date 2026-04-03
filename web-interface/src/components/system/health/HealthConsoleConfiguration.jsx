@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import SystemService from "../../../services/SystemService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 const systemService = new SystemService();
 
@@ -30,7 +30,7 @@ function HealthConsoleConfiguration(props) {
 
   const saveConfiguration = function() {
     systemService.updateHealthIndicatorsConfiguration(configuration, function() {
-      notify.show('Configuration updated.', 'success')
+      toast.success('Configuration updated.')
     });
   }
 

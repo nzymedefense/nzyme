@@ -3,7 +3,7 @@ import {Navigate, useParams} from "react-router-dom";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import Routes from "../../../../../util/ApiRoutes";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import TenantForm from "./TenantForm";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import usePageTitle from "../../../../../util/UsePageTitle";
@@ -36,7 +36,7 @@ function EditTenantPage() {
         mfaTimeoutMinutes,
         function() {
       setRedirect(true);
-      notify.show('Tenant details updated.', 'success');
+      toast.success('Tenant details updated.');
     })
   }
 

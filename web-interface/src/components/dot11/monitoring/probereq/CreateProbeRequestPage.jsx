@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Navigate} from "react-router-dom";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import Dot11Service from "../../../../services/Dot11Service";
 import ProbeRequestForm from "./ProbeRequestForm";
@@ -19,7 +19,7 @@ export default function CreateProbeRequestPage() {
 
   const create = (ssid, notes) => {
     dot11Service.createMonitoredProbeRequest(organizationId, tenantId, ssid, notes, () => {
-      notify.show('Monitored probe request created.', 'success');
+      toast.success('Monitored probe request created.');
       setRedirect(true);
     });
   }

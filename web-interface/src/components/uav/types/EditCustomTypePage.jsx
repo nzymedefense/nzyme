@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Navigate, useParams} from "react-router-dom";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import Routes from "../../../util/ApiRoutes";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import UavTypeForm from "./UavTypeForm";
@@ -30,7 +30,7 @@ export default function EditCustomTypePage() {
   const onFormSubmitted = (matchType, matchValue, defaultClassification, type, model, name, onFailure) => {
     uavService.editCustomType(uuid, organizationId, tenantId, matchType, matchValue, defaultClassification, type, model, name,
         () => {
-          notify.show("Custom UAV type updated.", "success");
+          toast.success("Custom UAV type updated.");
           setRedirect(true);
         }, onFailure)
   }

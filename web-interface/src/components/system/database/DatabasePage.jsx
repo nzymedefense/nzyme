@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import SystemService from "../../../services/SystemService";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import GlobalDatabaseUsageTable from "./GlobalDatabaseUsageTable";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../util/UsePageTitle";
 
 const systemService = new SystemService();
@@ -21,7 +21,7 @@ function DatabasePage() {
 
   const onPurge = () => {
     setRevision(new Date());
-    notify.show('Data purge request submitted. It can take a while to complete.', 'success');
+    toast.success('Data purge request submitted. It can take a while to complete.');
   }
 
   return (

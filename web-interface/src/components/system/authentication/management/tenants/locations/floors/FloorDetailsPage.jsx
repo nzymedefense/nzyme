@@ -4,7 +4,7 @@ import AuthenticationManagementService from "../../../../../../../services/Authe
 import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import FloorPlan from "../../../../../../shared/floorplan/FloorPlan";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import moment from "moment/moment";
 import numeral from "numeral";
 import UploadFloorPlanForm from "./UploadFloorPlanForm";
@@ -60,7 +60,7 @@ function FloorDetailsPage() {
     }
 
     authenticationManagementService.deleteFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, () => {
-      notify.show('Floor deleted.', 'success');
+      toast.success('Floor deleted.');
       setRedirect(true);
     })
   }
@@ -93,7 +93,7 @@ function FloorDetailsPage() {
 
       authenticationManagementService
           .placeTapOnFloorPlan(organizationId, tenantId, locationId, floorId, tapId, position.x, position.y, () => {
-            notify.show('Tap positions saved.', 'success');
+            toast.success('Tap positions saved.');
             setRevision(prevRev => prevRev + 1);
           })
     });
@@ -105,7 +105,7 @@ function FloorDetailsPage() {
     }
 
     authenticationMgmtService.deleteFloorPlan(organizationId, tenantId, locationId, floorId, () => {
-      notify.show('Plan deleted.', 'success');
+      toast.success('Plan deleted.');
       setRevision(prevRev => prevRev + 1);
     })
   }

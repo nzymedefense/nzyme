@@ -4,7 +4,7 @@ import AuthenticationManagementService from "../../../../../services/Authenticat
 import Routes from "../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import CreateUserForm from "./shared/CreateUserForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import usePageTitle from "../../../../../util/UsePageTitle";
 
@@ -30,7 +30,7 @@ function CreateTenantUserPage() {
   const onFormSubmitted = function (email, password, name, disableMfa, callback) {
     authenticationMgmtService.createUserOfTenant(organizationId, tenantId, email, password, name, disableMfa, function() {
       // Success.
-      notify.show('User created.', 'success');
+      toast.success('User created.');
       setRedirect(true);
       callback();
     }, function (error) {

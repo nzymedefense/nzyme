@@ -3,7 +3,7 @@ import {Navigate, useParams} from "react-router-dom";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import LocationForm from "./LocationForm";
 import usePageTitle from "../../../../../../util/UsePageTitle";
 
@@ -32,7 +32,7 @@ function EditLocationPage() {
 
   const update = (name, description) => {
     authenticationManagementService.updateTenantLocation(organization.id, tenant.id, location.id, name, description, () => {
-      notify.show('Location updated.', 'success');
+      toast.success('Location updated.');
       setRedirect(true);
     })
   }

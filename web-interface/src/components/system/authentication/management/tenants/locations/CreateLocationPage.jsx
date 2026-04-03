@@ -4,7 +4,7 @@ import {Navigate, useParams} from "react-router-dom";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import LocationForm from "./LocationForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
@@ -28,7 +28,7 @@ function CreateLocationPage() {
 
   const create = (name, description) => {
     authenticationManagementService.createTenantLocation(organization.id, tenant.id, name, description, () => {
-      notify.show('Location created.', 'success');
+      toast.success('Location created.');
       setRedirect(true);
     })
   }

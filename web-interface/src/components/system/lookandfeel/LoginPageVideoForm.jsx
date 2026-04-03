@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import FormSubmitErrorMessage from "../../misc/FormSubmitErrorMessage";
 import SystemService from "../../../services/SystemService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 const systemService = new SystemService();
 
@@ -22,7 +22,7 @@ export default function LoginPageVideoForm() {
 
     systemService.uploadLoginImage(formData, () => {
       setIsUploading(false);
-      notify.show('Login page image uploaded..', 'success');
+      toast.success('Login page image uploaded..');
     },
     (error) => {
       setIsUploading(false);
@@ -41,7 +41,7 @@ export default function LoginPageVideoForm() {
       return
     }
 
-    systemService.resetLoginImage(() => notify.show('Login page image reset to default.', 'success'));
+    systemService.resetLoginImage(() => toast.success('Login page image reset to default.'));
   }
 
   return (

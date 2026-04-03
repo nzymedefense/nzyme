@@ -3,7 +3,7 @@ import AuthenticationManagementService from "../../../../../services/Authenticat
 import {Navigate, useParams} from "react-router-dom";
 import Routes from "../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import TapPermissionForm from "./TapPermissionForm";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import usePageTitle from "../../../../../util/UsePageTitle";
@@ -29,7 +29,7 @@ function CreateTapPermissionPage() {
   const onFormSubmitted = function (name, description, latitude, longitude) {
     authenticationMgmtService.createTapPermission(organizationId, tenantId, name, description, latitude, longitude,
         () => {
-      notify.show('Tap created.', 'success');
+      toast.success('Tap created.');
       setRedirect(true);
     })
   }

@@ -14,7 +14,7 @@ import MonitorTapsTable from "./shared/MonitorTapsTable";
 import TapsService from "../../services/TapsService";
 import AppliedFilterList from "../shared/filtering/AppliedFilterList";
 import reconstructFromNodeData from "../shared/filtering/FilterReconstructor";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import monitorTypeToFilterFields from "./shared/MonitorFilterFields";
 import monitorTypeToSearchLink from "./shared/MonitorReplay";
 
@@ -72,7 +72,7 @@ export default function MonitorDetailsPage() {
     }
 
     monitorsService.deleteMonitor(monitor.uuid, () => {
-      notify.show('Monitor deleted.', 'success');
+      toast.success('Monitor deleted.');
       setRedirect(true);
     });
   }

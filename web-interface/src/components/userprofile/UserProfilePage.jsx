@@ -2,7 +2,7 @@ import React, {useContext, useState} from "react";
 import UserProfile from "./UserProfile";
 import MfaRecoveryCodes from "./MfaRecoveryCodes";
 import UserProfileService from "../../services/UserProfileService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import ApiRoutes from "../../util/ApiRoutes";
 import {UserContext} from "../../App";
 import usePageTitle from "../../util/UsePageTitle";
@@ -25,7 +25,7 @@ function UserProfilePage(props) {
     }
 
     userProfileService.resetOwnMfa(function () {
-      notify.show('MFA successfully reset.', 'success');
+      toast.success('MFA successfully reset.');
       onMfaReset();
     })
   }

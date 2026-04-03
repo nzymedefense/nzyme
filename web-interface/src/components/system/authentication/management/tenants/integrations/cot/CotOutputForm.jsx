@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 export default function CotOutputForm(props) {
 
@@ -52,9 +52,9 @@ export default function CotOutputForm(props) {
     onSubmit(name, description, connectionType, tapLeafType, address, port, certificateFile, certificatePassphrase, (error) => {
       if (error.response) {
         if (error.response.status === 422) {
-          notify.show("Could not create output. Quota exceeded. Please contact your administrator.", "error")
+          toast.error("Could not create output. Quota exceeded. Please contact your administrator.")
         } else {
-          notify.show("Could not create output.", "error")
+          toast.error("Could not create output.")
         }
       }
 

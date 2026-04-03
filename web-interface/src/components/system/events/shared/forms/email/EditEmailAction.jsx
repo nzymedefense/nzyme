@@ -1,7 +1,7 @@
 import React from "react";
 import EmailActionForm from "./EmailActionForm";
 import EventActionsService from "../../../../../../services/EventActionsService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 const eventActionsService = new EventActionsService();
 
@@ -12,7 +12,7 @@ export default function EditEmailAction(props) {
 
   const onSubmit = function(name, description, subjectPrefix, receivers) {
     eventActionsService.updateEmailAction(action.id, name, description, subjectPrefix, receivers, function() {
-      notify.show('Action updated.', 'success');
+      toast.success('Action updated.');
       setComplete(true);
     })
   }

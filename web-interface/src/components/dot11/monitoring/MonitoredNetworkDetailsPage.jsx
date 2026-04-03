@@ -5,7 +5,7 @@ import Dot11Service from "../../../services/Dot11Service";
 import ApiRoutes from "../../../util/ApiRoutes";
 import moment from "moment";
 import MonitoredBSSIDs from "./MonitoredBSSIDs";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import RefreshGears from "../../misc/RefreshGears";
 import MonitoredChannelsTable from "./MonitoredChannelsTable";
 import MonitoredSecuritySuitesTable from "./MonitoredSecuritySuitesTable";
@@ -53,7 +53,7 @@ function MonitoredNetworkDetailsPage() {
     }
 
     dot11Service.deleteMonitoredSSID(ssid.uuid, function () {
-      notify.show("Monitored network deleted.", "success");
+      toast.success("Monitored network deleted.");
       setDeleted(true);
     });
   }
@@ -62,11 +62,11 @@ function MonitoredNetworkDetailsPage() {
     setBSSIDFormSubmitting(true);
     dot11Service.createMonitoredBSSID(ssid.uuid, bssid, function () {
       bumpRevision();
-      notify.show("Monitored BSSID added.", "success");
+      toast.success("Monitored BSSID added.");
       setNewBSSID("");
       setBSSIDFormSubmitting(false);
     }, function () {
-      notify.show("Could not add monitored BSSID. Please check nzyme log file.", "error");
+      toast.error("Could not add monitored BSSID. Please check nzyme log file.");
       setBSSIDFormSubmitting(false);
     })
   }
@@ -75,11 +75,11 @@ function MonitoredNetworkDetailsPage() {
     setChannelFormSubmitting(true);
     dot11Service.createMonitoredChannel(ssid.uuid, channel, function () {
       bumpRevision();
-      notify.show("Monitored channel added.", "success");
+      toast.success("Monitored channel added.");
       setNewChannel("");
       setChannelFormSubmitting(false);
     }, function () {
-      notify.show("Could not add monitored channel. Please check nzyme log file.", "error");
+      toast.error("Could not add monitored channel. Please check nzyme log file.");
       setChannelFormSubmitting(false);
     })
   }
@@ -88,11 +88,11 @@ function MonitoredNetworkDetailsPage() {
     setSecuritySuiteFormSubmitting(true);
     dot11Service.createMonitoredSecuritySuite(ssid.uuid, suite, function () {
       bumpRevision();
-      notify.show("Monitored security suite added.", "success");
+      toast.success("Monitored security suite added.");
       setNewSecuritySuite("");
       setSecuritySuiteFormSubmitting(false);
     }, function () {
-      notify.show("Could not add monitored security suite. Please check nzyme log file.", "error");
+      toast.error("Could not add monitored security suite. Please check nzyme log file.");
       setSecuritySuiteFormSubmitting(false);
     })
   }
@@ -127,7 +127,7 @@ function MonitoredNetworkDetailsPage() {
 
     dot11Service.deleteAllMonitoredBSSIDs(ssid.uuid, function () {
       bumpRevision();
-      notify.show("BSSID monitoring configurations deleted.", "success");
+      toast.success("BSSID monitoring configurations deleted.");
     })
   }
 

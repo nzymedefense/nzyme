@@ -5,7 +5,7 @@ import Paginator from "../../../../misc/Paginator";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import ClusterService from "../../../../../services/ClusterService";
 import TaskStatus from "./TaskStatus";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 const clusterService = new ClusterService();
 
@@ -27,7 +27,7 @@ function TasksQueueTasksTable() {
     }
 
     clusterService.acknowledgeAllFailedTasks(() => {
-      notify.show("Failures acknowledged.", "success");
+      toast.success("Failures acknowledged.");
       setLocalRevision(prevRev => prevRev + 1);
     })
   }

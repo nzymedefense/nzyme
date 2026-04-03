@@ -4,7 +4,7 @@ import AuthenticationManagementService from "../../../../../services/Authenticat
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import Routes from "../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../util/ApiRoutes";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import TapSecret from "./TapSecret";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 import LatitudeLongitude from "../../../../shared/LatitudeLongitude";
@@ -35,7 +35,7 @@ function TapPermissionDetailsPage() {
 
     authenticationManagementService.deleteTapPermission(organizationId, tenantId, tapUuid, function() {
       setRedirect(true);
-      notify.show('Tap deleted.', 'success');
+      toast.success('Tap deleted.');
     });
   }
 
@@ -47,7 +47,7 @@ function TapPermissionDetailsPage() {
     authenticationManagementService.cycleTapSecret(organizationId, tenantId, tapUuid, function() {
       setTap(null);
       setRevision(revision + 1);
-      notify.show('Tap secret cycled.', 'success');
+      toast.success('Tap secret cycled.');
     });
   }
 

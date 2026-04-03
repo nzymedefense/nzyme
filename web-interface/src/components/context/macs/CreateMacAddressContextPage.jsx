@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
 import MacAddressContextForm from "./MacAddressContextForm";
 import ContextService from "../../../services/ContextService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import {Navigate, useLocation} from "react-router-dom";
 import usePageTitle from "../../../util/UsePageTitle";
 
@@ -34,12 +34,12 @@ function CreateMacAddressContextPage() {
         organizationId,
         tenantId,
         () => {
-          notify.show('Context created.', 'success');
+          toast.success('Context created.');
           onComplete();
           setComplete(true);
         },
         (error) => {
-          notify.show('Could not create context.', 'error');
+          toast.error('Could not create context.');
           setErrorMessage(error.response.data.message);
           onComplete();
         }

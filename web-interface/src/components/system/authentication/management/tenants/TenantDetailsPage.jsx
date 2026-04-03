@@ -4,7 +4,7 @@ import Routes from "../../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../util/ApiRoutes";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import TenantUsersTable from "../users/TenantUsersTable";
 import TapPermissionsTable from "../taps/TapPermissionsTable";
 import TenantSessions from "../sessions/TenantSessions";
@@ -35,7 +35,7 @@ function TenantDetailsPage() {
 
     authenticationManagementService.deleteTenantOfOrganization(organizationId, tenantId, function() {
       setRedirect(true);
-      notify.show('Tenant deleted.', 'success');
+      toast.success('Tenant deleted.');
     });
   }
 

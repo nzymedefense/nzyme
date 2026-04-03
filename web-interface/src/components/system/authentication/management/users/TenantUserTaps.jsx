@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import TenantUserTapRow from "./TenantUserTapRow";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -40,11 +40,11 @@ function TenantUserTaps(props) {
     authenticationManagementService.editUserOfTenantTapPermissions(user.organization_id,
         user.tenant_id, user.id, allowAccessAllTaps, tapPermissions, function() {
           setFormSubmitting(false);
-          notify.show('Tap permissions of user updated.', 'success');
+          toast.success('Tap permissions of user updated.');
           onTapsPermissionsUpdated();
         }, function() {
           setFormSubmitting(false);
-          notify.show('Could not update tap permissions of user.', 'error');
+          toast.error('Could not update tap permissions of user.');
         });
   }
 

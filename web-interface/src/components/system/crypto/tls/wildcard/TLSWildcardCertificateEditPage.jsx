@@ -5,7 +5,7 @@ import CryptoService from "../../../../../services/CryptoService";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import TLSCertificateDetails from "../TLSCertificateDetails";
 import MatchingNodes from "./MatchingNodes";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import TLSCertificateHelp from "../TLSCertificateHelp";
 import TLSCertificateUploadForm from "../form/TLSCertificateUploadForm";
 import usePageTitle from "../../../../../util/UsePageTitle";
@@ -64,7 +64,7 @@ function TLSWildcardCertificateEditPage(props) {
     setNodeMatcherUpdateRunning(true);
 
     cryptoService.updateTLSWildcardCertificateNodeMatcher(certificate.id, nodeMatcher, function() {
-      notify.show('Node matcher updated.', 'success');
+      toast.success('Node matcher updated.');
       setMatchingNodesPreview(false);
       loadData(certificateId, setCertificate);
       setNodeMatcherUpdateRunning(false);
@@ -79,7 +79,7 @@ function TLSWildcardCertificateEditPage(props) {
     }
 
     cryptoService.replaceWildcardTLSCertificate(certificate.id, formData, function() {
-      notify.show('TLS certificate replaced.', 'success');
+      toast.success('TLS certificate replaced.');
       setReplaceFinished(true);
       loadData(certificateId, setCertificate);
     })
@@ -91,7 +91,7 @@ function TLSWildcardCertificateEditPage(props) {
     }
 
     cryptoService.deleteTLSWildcardCertificate(certificate.id, function() {
-      notify.show('TLS wildcard certificate deleted.', 'success');
+      toast.success('TLS wildcard certificate deleted.');
       setRedirect(true);
     });
   }

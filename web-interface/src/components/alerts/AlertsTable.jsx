@@ -5,12 +5,12 @@ import LoadingSpinner from "../misc/LoadingSpinner";
 import AlertsTableRow from "./AlertsTableRow";
 import AutoRefreshSelector from "../misc/AutoRefreshSelector";
 import Paginator from "../misc/Paginator";
-import {notify} from "react-notify-toast";
 import AlertActionMultiSelector from "./AlertActionMultiSelector";
 import {userHasPermission} from "../../util/Tools";
 import {UserContext} from "../../App";
 import RenderConditionally from "../misc/RenderConditionally";
 import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
+import {toast} from "react-toastify";
 
 const detectionAlertsService = new DetectionAlertsService();
 
@@ -66,7 +66,7 @@ function AlertsTable(props) {
     detectionAlertsService.deleteAlerts(selectedRows, () => {
       setRevision(prevRev => prevRev + 1);
       setSelectedRows([]);
-      notify.show("Selected alerts deleted.", "success");
+      toast.success("Selected alerts deleted.")
       setAllRowsSelected(false);
     })
   }
@@ -76,7 +76,7 @@ function AlertsTable(props) {
     detectionAlertsService.markAlertsAsResolved(selectedRows, () => {
       setRevision(prevRev => prevRev + 1);
       setSelectedRows([]);
-      notify.show("Selected alerts marked as resolved.", "success");
+      toast.success("Selected alerts marked as resolved.")
       setAllRowsSelected(false);
     })
   }

@@ -3,7 +3,7 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import {Navigate, useParams} from "react-router-dom";
 import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import moment from "moment/moment";
 import CustomBanditFingerprints from "./CustomBanditFingerprints";
 import usePageTitle from "../../../../util/UsePageTitle";
@@ -32,7 +32,7 @@ function CustomBanditDetailsPage() {
   const addFingerprint = (fingerprint) => {
     setFingerprintFormSubmitting(true);
     dot11Service.addFingerprintToCustomBandit(bandit.id, fingerprint, () => {
-      notify.show('Fingerprint added to bandit.', 'success');
+      toast.success('Fingerprint added to bandit.');
       setFingerprintFormSubmitting(false);
       setNewFingerprint("");
       setRevision(revision+1);
@@ -47,7 +47,7 @@ function CustomBanditDetailsPage() {
     }
 
     dot11Service.deleteFingerprintOfCustomBandit(bandit.id, fingerprint, () => {
-      notify.show('Fingerprint deleted.', 'success');
+      toast.success('Fingerprint deleted.');
       setRevision(revision+1);
     })
   }
@@ -60,7 +60,7 @@ function CustomBanditDetailsPage() {
     }
 
     dot11Service.deleteCustomBandit(bandit.id, () => {
-      notify.show('Custom bandit deleted.', 'success');
+      toast.success('Custom bandit deleted.');
       setRedirect(true);
     });
   }

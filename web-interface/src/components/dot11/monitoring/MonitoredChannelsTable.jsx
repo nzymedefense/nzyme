@@ -1,6 +1,6 @@
 import React from "react";
 import numeral from "numeral";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import Dot11Service from "../../../services/Dot11Service";
 
 const dot11Service = new Dot11Service();
@@ -20,7 +20,7 @@ function MonitoredChannelsTable(props) {
 
     dot11Service.deleteMonitoredChannel(ssid.uuid, uuid, function () {
       bumpRevision();
-      notify.show("Channel monitoring configuration deleted.", "success");
+      toast.success("Channel monitoring configuration deleted.");
     })
   }
 

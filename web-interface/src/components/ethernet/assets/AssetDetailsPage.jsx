@@ -11,7 +11,7 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import AssetHostnamesTable from "./AssetHostnamesTable";
 import {Presets} from "../../shared/timerange/TimeRange";
 import AssetIpAddressesTable from "./AssetIpAddressesTable";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import AssetSourceProtocols from "./AssetSourceProtocols";
 import AssetDetailsDNSTransactions from "./AssetDetailsDNSTransactions";
 import AssetActiveIndicator from "./AssetActiveIndicator";
@@ -98,7 +98,7 @@ export default function AssetDetailsPage() {
 
     assetsService.deleteAssetHostname(id, uuid, organizationId, tenantId, () => {
       setRevision(new Date());
-      notify.show("Hostname deleted.", "success");
+      toast.success("Hostname deleted.");
     })
   }
 
@@ -111,7 +111,7 @@ export default function AssetDetailsPage() {
 
     assetsService.deleteAssetIpAddress(id, uuid, organizationId, tenantId, () => {
       setRevision(new Date());
-      notify.show("IP address deleted.", "success");
+      toast.success("IP address deleted.");
     })
   }
 

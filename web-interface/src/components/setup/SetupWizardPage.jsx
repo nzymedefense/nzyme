@@ -1,7 +1,7 @@
   import React, {useState} from "react";
 import AssetStylesheet from "../misc/AssetStylesheet";
 import CreateUserForm from "../system/authentication/management/users/shared/CreateUserForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import AuthenticationManagementService from "../../services/AuthenticationManagementService";
   import usePageTitle from "../../util/UsePageTitle";
 
@@ -17,7 +17,7 @@ function SetupWizardPage(props) {
   const onCreateUserClick = function (email, password, name, disableMfa, callback) {
     authenticationMgmtService.createInitialUser(email, password, name, disableMfa, function() {
       // Success.
-      notify.show('First Super Administrator created. Please log in.', 'success');
+      toast.success('First Super Administrator created. Please log in.');
       callback();
       onActionCompleted();
     }, function (error) {

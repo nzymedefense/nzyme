@@ -3,7 +3,7 @@ import LoadingSpinner from "../../../misc/LoadingSpinner";
 import Paginator from "../../../misc/Paginator";
 import moment from "moment";
 import Dot11Service from "../../../../services/Dot11Service";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSpinner";
 import ColumnSorting from "../../../shared/ColumnSorting";
 
@@ -86,7 +86,7 @@ export default function KnownNetworksTable(props) {
         }
 
         dot11Service.approveKnownNetwork(network.uuid, network.organization_id, network.tenant_id, () => {
-            notify.show('Known network approved.', 'success');
+            toast.success('Known network approved.');
             onChange();
         });
     }
@@ -99,7 +99,7 @@ export default function KnownNetworksTable(props) {
         }
 
         dot11Service.revokeKnownNetwork(network.uuid, network.organization_id, network.tenant_id, () => {
-            notify.show('Known network approval revoked.', 'success');
+            toast.success('Known network approval revoked.');
             onChange();
         });
     }
@@ -113,7 +113,7 @@ export default function KnownNetworksTable(props) {
         }
 
         dot11Service.ignoreKnownNetwork(network.uuid, network.organization_id, network.tenant_id, () => {
-            notify.show('Known network ignored.', 'success');
+            toast.success('Known network ignored.');
             onChange();
         });
     }
@@ -126,7 +126,7 @@ export default function KnownNetworksTable(props) {
         }
 
         dot11Service.unignoreKnownNetwork(network.uuid, network.organization_id, network.tenant_id, () => {
-            notify.show('Known network unignored.', 'success');
+            toast.success('Known network unignored.');
             onChange();
         });
     }
@@ -140,7 +140,7 @@ export default function KnownNetworksTable(props) {
         }
 
         dot11Service.deleteKnownNetwork(network.uuid, network.organization_id, network.tenant_id, () => {
-            notify.show('Known network deleted.', 'success');
+            toast.success('Known network deleted.');
             onChange();
         });
     }

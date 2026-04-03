@@ -3,7 +3,7 @@ import {Navigate} from "react-router-dom";
 import Dot11Service from "../../../../services/Dot11Service";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import CustomBanditForm from "./CustomBanditForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import usePageTitle from "../../../../util/UsePageTitle";
 
@@ -19,7 +19,7 @@ function CreateCustomBanditPage() {
 
   const create = (name, description) => {
     dot11Service.createCustomBandit(organizationId, tenantId, name, description, () => {
-      notify.show('Custom bandit created.', 'success');
+      toast.success('Custom bandit created.');
       setRedirect(true);
     });
   }

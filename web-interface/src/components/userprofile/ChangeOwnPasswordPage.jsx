@@ -4,7 +4,7 @@ import Routes from "../../util/ApiRoutes";
 
 import InlineFormValidationMessage from "../misc/InlineFormValidationMessage";
 import FormSubmitErrorMessage from "../misc/FormSubmitErrorMessage";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import {AppContext} from "../../App";
 import usePageTitle from "../../util/UsePageTitle";
 
@@ -68,7 +68,7 @@ function ChangeOwnPasswordPage() {
     setFormSubmitting(true);
 
     userProfileService.changeOwnPassword(currentPassword, newPassword, function() {
-      notify.show('Password updated.', 'success');
+      toast.success('Password updated.');
       app.logout();
     }, function(error) {
       setFormSubmitting(false);

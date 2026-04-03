@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import {Navigate, useParams} from "react-router-dom";
@@ -24,7 +24,7 @@ function CreateOrganizationAdministratorPage() {
   const onFormSubmitted = function (email, password, name, disableMfa, callback) {
     authenticationMgmtService.createOrganizationAdministrator(organizationId, email, password, name, disableMfa, () => {
       // Success.
-      notify.show('Organization administrator created.', 'success');
+      toast.success('Organization administrator created.');
       setRedirect(true);
       callback();
     }, function (error) {

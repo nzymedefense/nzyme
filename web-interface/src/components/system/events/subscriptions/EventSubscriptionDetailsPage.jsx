@@ -5,7 +5,7 @@ import EventActionsService from "../../../../services/EventActionsService";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import EventSubscriptionsTable from "../shared/subscriptions/EventSubscriptionsTable";
 import EventSubscriptionActionSelector from "../shared/subscriptions/EventSubscriptionActionSelector";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../../util/UsePageTitle";
 
 const eventActionsService = new EventActionsService();
@@ -31,7 +31,7 @@ function EventSubscriptionDetailsPage() {
 
   const onActionSelect = function(actionId) {
     eventActionsService.subscribeActionToEvent(eventType.id, actionId, null,function() {
-      notify.show("Subscribed action to event.", "success");
+      toast.success("Subscribed action to event.");
       setRevision(revision+1);
     }, function(error) {
       setSubscriptionError(error.response.data.message);
@@ -44,7 +44,7 @@ function EventSubscriptionDetailsPage() {
     }
 
     eventActionsService.unsubscribeActionFromEvent(eventType.id, subscriptionId, function() {
-      notify.show("Unsubscribed action from event.", "success");
+      toast.success("Unsubscribed action from event.");
       setRevision(revision+1);
     })
   }

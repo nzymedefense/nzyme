@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import MonitoredFingerprintsTable from "./MonitoredFingerprintsTable";
 import Dot11Service from "../../../services/Dot11Service";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import RefreshGears from "../../misc/RefreshGears";
 
 const dot11Service = new Dot11Service();
@@ -27,11 +27,11 @@ function MonitoredBSSIDFingerprintsModal(props) {
 
     dot11Service.createMonitoredBSSIDFingerprint(bssid.ssid_uuid, bssid.uuid, fingerprint.trim(), function () {
       bumpRevision();
-      notify.show("Fingerprint added.", "success");
+      toast.success("Fingerprint added.");
       setFormSubmitting(false);
       setNewFingerprint("");
     }, function () {
-      notify.show("Could not add fingerprint. Please check nzyme log file.", "error");
+      toast.error("Could not add fingerprint. Please check nzyme log file.");
       setFormSubmitting(false);
     })
   }
@@ -43,7 +43,7 @@ function MonitoredBSSIDFingerprintsModal(props) {
 
     dot11Service.deleteMonitoredBSSIDFingerprint(bssid.ssid_uuid, bssid.uuid, fingerprintUUID, function() {
       bumpRevision();
-      notify.show("Fingerprint deleted.", "success");
+      toast.success("Fingerprint deleted.");
     })
   }
 

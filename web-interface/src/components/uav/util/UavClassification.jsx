@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {capitalizeFirstLetter} from "../../../util/Tools";
 import UavService from "../../../services/UavService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 const uavService = new UavService();
 
@@ -38,11 +38,11 @@ export default function UavClassification(props) {
       // Success.
       setIsSaving(false);
       setSaveButtonText(SAVE_BUTTON_TEXT)
-      notify.show("Classification saved", "success");
+      toast.success("Classification saved");
       onChange();
     }, () => {
       // Error.
-      notify.show("Could not save classification.", "error");
+      toast.error("Could not save classification.");
       setIsSaving(false);
       setSaveButtonText(SAVE_BUTTON_TEXT)
     })

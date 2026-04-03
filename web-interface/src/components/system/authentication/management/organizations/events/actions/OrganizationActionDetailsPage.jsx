@@ -4,7 +4,7 @@ import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
 import EventActionsService from "../../../../../../../services/EventActionsService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import ActionDetailsProxy from "../../../../../events/shared/details/ActionDetailsProxy";
 import ActionDetails from "../../../../../events/shared/ActionDetails";
 import SystemSubscriptionsOfActionTable from "../../../../../events/shared/subscriptions/SystemSubscriptionsOfActionTable";
@@ -40,7 +40,7 @@ function OrganizationActionDetailsPage() {
 
     eventActionsService.deleteAction(action.id, function() {
       setDeleted(true);
-      notify.show('Action deleted.', 'success');
+      toast.success('Action deleted.');
     })
   }
 

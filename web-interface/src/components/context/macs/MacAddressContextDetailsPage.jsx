@@ -4,7 +4,7 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import {Navigate, useParams} from "react-router-dom";
 import ContextService from "../../../services/ContextService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import moment from "moment";
 import ContextNotes from "../ContextNotes";
 import TransparentContextSource from "../../shared/context/transparent/TransparentContextSource";
@@ -39,7 +39,7 @@ function MacAddressContextDetailsPage() {
     }
 
     contextService.deleteMacAddressContext(uuid, organizationId, tenantId, () => {
-      notify.show('MAC address context deleted.', 'success');
+      toast.success('MAC address context deleted.');
       setDeleted(true);
     });
   }

@@ -4,7 +4,7 @@ import Dot11Service from "../../../services/Dot11Service";
 import ApiRoutes from "../../../util/ApiRoutes";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import SimilarSSIDSimulator from "./SimilarSSIDSimulator";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
@@ -34,7 +34,7 @@ function SimilarSSIDConfigurationPage() {
 
   const onSubmit = () => {
     dot11Service.setSimilarSSIDMonitorConfiguration(uuid, threshold, () => {
-      notify.show("Configuration updated.", "success");
+      toast.success("Configuration updated.");
       setRedirect(true);
     })
   }

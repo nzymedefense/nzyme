@@ -1,7 +1,7 @@
 import React, {useContext, useState} from "react";
 import ContextService from "../../../services/ContextService";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import {formatAssetName, userHasPermission} from "../../../util/Tools";
 import {UserContext} from "../../../App";
 
@@ -33,10 +33,10 @@ export default function AssetDetailsAssetName({asset, setRevision}) {
     setSaveButtonText("Please wait...");
 
     contextService.setMacAddressName(asset.mac.address, newName, organizationId, tenantId, () => {
-      notify.show("Asset name updated.", "success");
+      toast.success("Asset name updated.");
       setRevision(new Date());
     }, () => {
-      notify.show("Could not update asset name.", "error");
+      toast.error("Could not update asset name.");
       setIsSaving(false);
       setSaveButtonText(SAVE_BUTTON_TEXT);
     })

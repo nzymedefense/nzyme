@@ -6,7 +6,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import ApiRoutes from "../../../util/ApiRoutes";
 import EventSubscriptionsTable from "../../system/events/shared/subscriptions/EventSubscriptionsTable";
 import EventSubscriptionActionSelector from "../../system/events/shared/subscriptions/EventSubscriptionActionSelector";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import usePageTitle from "../../../util/UsePageTitle";
 
@@ -30,7 +30,7 @@ function AlertSubscriptionDetailsPage() {
 
   const onActionSelect = function(actionId) {
     eventActionsService.subscribeActionToDetectionEvent(detectionType.name, actionId, organizationId,function() {
-      notify.show("Subscribed action to detection event.", "success");
+      toast.success("Subscribed action to detection event.");
       setRevision(revision+1);
     }, function(error) {
       setSubscriptionError(error.response.data.message);
@@ -43,7 +43,7 @@ function AlertSubscriptionDetailsPage() {
     }
 
     eventActionsService.unsubscribeActionFromDetectionEvent(detectionType.name, subscriptionId, function() {
-      notify.show("Unsubscribed action from event.", "success");
+      toast.success("Unsubscribed action from event.");
       setRevision(revision+1);
     })
   }

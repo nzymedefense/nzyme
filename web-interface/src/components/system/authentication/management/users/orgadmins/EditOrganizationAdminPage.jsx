@@ -4,7 +4,7 @@ import ApiRoutes from "../../../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import EditUserForm from "../shared/EditUserForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import EditPasswordForm from "../shared/EditPasswordForm";
 import usePageTitle from "../../../../../../util/UsePageTitle";
 
@@ -27,7 +27,7 @@ function EditOrganizationAdminPage() {
     authenticationManagementService.editOrganizationAdministrator(organization.id, user.id, name, email, disableMfa,
         () => {
           // Success.
-          notify.show('Organization Administrator updated.', 'success');
+          toast.success('Organization Administrator updated.');
           setRedirect(true);
           callback();
         }, function (error) {
@@ -41,7 +41,7 @@ function EditOrganizationAdminPage() {
   const onEditPasswordFormSubmitted = function(password, callback) {
     authenticationManagementService.editOrganizationAdministratorPassword(organization.id, user.id, password, function() {
       // Success.
-      notify.show('Password updated.', 'success');
+      toast.success('Password updated.');
       setRedirect(true);
       callback();
     })

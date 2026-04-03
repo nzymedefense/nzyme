@@ -4,7 +4,7 @@ import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import moment from "moment";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import LastUserActivity from "../shared/LastUserActivity";
 import LoginThrottleWarning from "../shared/LoginThrottleWarning";
 import usePageTitle from "../../../../../../util/UsePageTitle";
@@ -31,7 +31,7 @@ function OrganizationAdminDetailsPage() {
 
     authenticationManagementService.deleteOrganizationAdmin(organizationId, userId, function() {
       setRedirect(true);
-      notify.show('Organization administrator deleted.', 'success');
+      toast.success('Organization administrator deleted.');
     });
   }
 
@@ -41,7 +41,7 @@ function OrganizationAdminDetailsPage() {
     }
 
     authenticationManagementService.resetMFAOfOrganizationAdmin(organizationId, userId, function() {
-      notify.show('MFA successfully reset.', 'success');
+      toast.success('MFA successfully reset.');
     });
   }
 

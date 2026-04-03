@@ -4,7 +4,7 @@ import {MONITORING_MENU_ITEMS} from "../Dot11MenuItems";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import Dot11Service from "../../../../services/Dot11Service";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import SSIDMonitoringConfiguration from "./SSIDMonitoringConfiguration";
 import KnownNetworksTable from "./KnownNetworksTable";
 import usePageTitle from "../../../../util/UsePageTitle";
@@ -43,7 +43,7 @@ export default function SSIDMonitoringPage() {
     }
 
     dot11Service.deleteAllKnownNetworks(organizationId, tenantId, () => {
-      notify.show('All known networks deleted.', 'success');
+      toast.success('All known networks deleted.');
       onChange();
     });
   }
@@ -56,7 +56,7 @@ export default function SSIDMonitoringPage() {
     }
 
     dot11Service.approveAllKnownNetworks(organizationId, tenantId, () => {
-      notify.show('All known networks approved.', 'success');
+      toast.success('All known networks approved.');
       onChange();
     });
   }

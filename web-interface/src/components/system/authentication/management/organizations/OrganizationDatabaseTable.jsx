@@ -3,7 +3,7 @@ import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import SystemService from "../../../../../services/SystemService";
 import {humanReadableDatabaseCategoryName} from "../../../../../util/Tools";
 import numeral from "numeral";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import TenantDatabaseUsageTableRows from "../../../database/TenantDatabaseUsageTableRows";
 
 const systemService = new SystemService();
@@ -18,7 +18,7 @@ export default function OrganizationDatabaseTable(props) {
 
   const onPurge = () => {
     setRevision(new Date());
-    notify.show('Data purge request submitted. It can take a while to complete.', 'success');
+    toast.success('Data purge request submitted. It can take a while to complete.');
   }
 
   const purge = (e, category) => {

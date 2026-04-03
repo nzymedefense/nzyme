@@ -5,7 +5,7 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import Routes from "../../../../../util/ApiRoutes";
 import TapPermissionForm from "./TapPermissionForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
@@ -27,7 +27,7 @@ function EditTapPermissionsPage() {
   const onFormSubmitted = function (name, description, latitude, longitude) {
     authenticationManagementService.editTapPermission(organization.id, tenant.id, tap.uuid, name, description, latitude, longitude, () => {
       setRedirect(true);
-      notify.show('Tap details updated.', 'success');
+      toast.success('Tap details updated.');
     })
   }
 

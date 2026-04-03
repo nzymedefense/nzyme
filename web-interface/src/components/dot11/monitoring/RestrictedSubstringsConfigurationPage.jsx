@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
 import {useParams} from "react-router-dom";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Dot11Service from "../../../services/Dot11Service";
 import RestricedSubstringsTable from "./RestricedSubstringsTable";
@@ -38,7 +38,7 @@ function RestrictedSubstringsConfigurationPage() {
 
     dot11Service.addRestrictedSSIDSubstring(uuid, substring, () => {
       setRevision(revision => revision+1)
-      notify.show("Restricted substring added.", "success");
+      toast.success("Restricted substring added.");
     })
   }
 
@@ -53,7 +53,7 @@ function RestrictedSubstringsConfigurationPage() {
 
     dot11Service.deleteRestrictedSSIDSubstring(uuid, substringUUID, () => {
       setRevision(revision => revision+1)
-      notify.show("Restricted substring deleted.", "success");
+      toast.success("Restricted substring deleted.");
     })
   }
 

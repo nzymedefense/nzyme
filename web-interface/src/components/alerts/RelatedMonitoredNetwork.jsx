@@ -4,7 +4,7 @@ import Dot11Service from "../../services/Dot11Service";
 import MonitoredNetworkAlertStatusTable from "../dot11/monitoring/MonitoredNetworkAlertStatusTable";
 import {UserContext} from "../../App";
 import {userHasPermission} from "../../util/Tools";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 const dot11Service = new Dot11Service();
 
@@ -26,7 +26,7 @@ function RelatedMonitoredNetwork(props) {
         if (error.response.status === 404) {
           setSSIDDeleted(true);
         } else {
-          notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
+          toast.error('REST call failed. (HTTP ' + error.response.status + ')')
         }
       });
     }

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import UavService from "../../../services/UavService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 const uavService = new UavService();
 
@@ -45,7 +45,7 @@ export default function UavAlertSettings(props) {
         alertOnHostile,
         organizationId,
         tenantId, () => {
-          notify.show("UAV alert settings have been updated.", "success");
+          toast.success("UAV alert settings have been updated.");
           setRevision(new Date());
         });
   }

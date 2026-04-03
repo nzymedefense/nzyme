@@ -4,7 +4,7 @@ import {Navigate, useParams} from "react-router-dom";
 import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import CustomBanditForm from "./CustomBanditForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
@@ -20,7 +20,7 @@ function EditCustomBanditPage() {
 
   const onEdit = (name, description) => {
     dot11Service.editCustomBandit(bandit.id, name, description, () => {
-      notify.show('Custom bandit updated.', 'success');
+      toast.success('Custom bandit updated.');
       setRedirect(true);
     });
   }

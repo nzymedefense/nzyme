@@ -5,7 +5,7 @@ import Routes from "../../../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import CardTitleWithControls from "../../../../../../shared/CardTitleWithControls";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import CotOutputForm from "./CotOutputForm";
 import CotIntegrationService from "../../../../../../../services/integrations/CotIntegrationService";
 import usePageTitle from "../../../../../../../util/UsePageTitle";
@@ -47,7 +47,7 @@ export default function CreateCotOutputPage() {
     }
 
     cotIntegrationService.createOutput(organizationId, tenantId, formData, () => {
-          notify.show("Cursor on Target output created.", "success");
+          toast.success("Cursor on Target output created.");
           setRedirect(true);
         }, onFailure)
   }

@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import QuotaConfigurationModalSubmitButton from "./QuotaConfigurationModalSubmitButton";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import FormSubmitErrorMessage from "../../../../misc/FormSubmitErrorMessage";
 
 export default function QuotaConfigurationModal(props) {
@@ -28,7 +28,7 @@ export default function QuotaConfigurationModal(props) {
       if (e.response && e.response.data && e.response.data.message) {
         setErrorMessage(e.response.data.message);
       } else {
-        notify.show("Could not save quota.", 'error');
+        toast.error("Could not save quota.");
       }
 
       setIsSubmitting(false);

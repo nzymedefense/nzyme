@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import SystemService from "../../../services/SystemService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import FormSubmitErrorMessage from "../../misc/FormSubmitErrorMessage";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 const systemService = new SystemService();
 
@@ -29,7 +29,7 @@ export default function SidebarTitleForm(props) {
     e.preventDefault();
     systemService.setSidebarTitle(sidebarTitle, sidebarSubtitle,
         () => {
-          notify.show('Sidebar title updated.', 'success');
+          toast.success('Sidebar title updated.');
           onSettingsUpdated();
         },
         (error) => {

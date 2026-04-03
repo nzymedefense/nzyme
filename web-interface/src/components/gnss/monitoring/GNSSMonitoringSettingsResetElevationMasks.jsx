@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import TapsService from "../../../services/TapsService";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import GnssService from "../../../services/GnssService";
 
 const tapsService = new TapsService();
@@ -27,7 +27,7 @@ export default function GNSSMonitoringSettingsResetElevationMasks() {
     }
 
     gnssService.cleanElevationMask(tapUuid, () => {
-      notify.show("Elevation mask of tap has been reset.", "success");
+      toast.success("Elevation mask of tap has been reset.");
     });
   }
 

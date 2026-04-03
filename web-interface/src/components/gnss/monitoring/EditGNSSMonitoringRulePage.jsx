@@ -6,7 +6,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import ApiRoutes from "../../../util/ApiRoutes";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import GNSSMonitoringRuleForm from "./GNSSMonitoringRuleForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../util/UsePageTitle";
 
 const gnssService = new GnssService();
@@ -29,7 +29,7 @@ export default function EditGNSSMonitoringRulePage() {
   const onFormSubmitted = (name, description, conditions, taps, onFailure) => {
     gnssService.editMonitoringRule(uuid, name, description, conditions, taps, organizationId, tenantId, () => {
       // Success.
-      notify.show("Monitoring rule updated.", "success");
+      toast.success("Monitoring rule updated.");
       setRedirect(true);
     }, onFailure)
   }

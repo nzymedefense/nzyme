@@ -3,7 +3,7 @@ import {Navigate, useParams} from "react-router-dom";
 import Routes from "../../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import OrganizationSessions from "../sessions/OrganizationSessions";
 import {UserContext} from "../../../../../App";
@@ -33,7 +33,7 @@ function OrganizationDetailsPage() {
 
     authenticationManagementService.deleteOrganization(organizationId, function() {
       setRedirect(true);
-      notify.show('Organization deleted.', 'success');
+      toast.success('Organization deleted.');
     });
   }
 

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import ProbeRequestForm from "./ProbeRequestForm";
 import Dot11Service from "../../../../services/Dot11Service";
@@ -24,7 +24,7 @@ export default function EditProbeRequestPage() {
 
   const create = (ssid, notes) => {
     dot11Service.updateMonitoredProbeRequest(organizationId, tenantId, id, ssid, notes, () => {
-      notify.show('Monitored probe request updated.', 'success');
+      toast.success('Monitored probe request updated.');
       setRedirect(true);
     });
   }

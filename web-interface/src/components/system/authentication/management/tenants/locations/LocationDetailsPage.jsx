@@ -5,7 +5,7 @@ import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import moment from "moment";
 import FloorsTable from "./floors/FloorsTable";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import numeral from "numeral";
 import usePageTitle from "../../../../../../util/UsePageTitle";
 
@@ -38,7 +38,7 @@ function LocationDetailsPage() {
     }
 
     authenticationManagementService.deleteTenantLocation(locationId, organizationId, tenantId, () => {
-      notify.show('Location deleted.', 'success');
+      toast.success('Location deleted.');
       setRedirect(true);
     })
   }

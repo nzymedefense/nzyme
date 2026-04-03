@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import {Navigate} from "react-router-dom";
@@ -20,7 +20,7 @@ function CreateTenantUserPage() {
   const onFormSubmitted = function (email, password, name, disableMfa, callback) {
     authenticationMgmtService.createSuperAdministrator(email, password, name, disableMfa, function() {
       // Success.
-      notify.show('Super administrator created.', 'success');
+      toast.success('Super administrator created.');
       setRedirect(true);
       callback();
     }, function (error) {

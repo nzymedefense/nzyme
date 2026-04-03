@@ -5,7 +5,7 @@ import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import FloorPlan from "../../../../../../shared/floorplan/FloorPlan";
 import FloorForm from "./FloorForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
@@ -37,7 +37,7 @@ function FloorDetailsPage() {
 
   const update = (name, description, pathLossExponent) => {
     authenticationManagementService.editFloorOfTenantLocation(organization.id, tenant.id, location.id, floor.id, name, description, pathLossExponent, () => {
-      notify.show('Floor updated.', 'success');
+      toast.success('Floor updated.');
       setRedirect(true);
     }, (error) => {
       setErrorMessage(error.response.data.message)

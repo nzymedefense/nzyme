@@ -4,7 +4,7 @@ import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import moment from "moment";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import LastUserActivity from "../shared/LastUserActivity";
 import LoginThrottleWarning from "../shared/LoginThrottleWarning";
 import usePageTitle from "../../../../../../util/UsePageTitle";
@@ -30,7 +30,7 @@ function SuperAdminDetailsPage() {
 
     authenticationManagementService.deleteSuperAdmin(userId, function() {
       setRedirect(true);
-      notify.show('Super administrator deleted.', 'success');
+      toast.success('Super administrator deleted.');
     });
   }
 
@@ -40,7 +40,7 @@ function SuperAdminDetailsPage() {
     }
 
     authenticationManagementService.resetMFAOfSuperAdmin(userId, function() {
-      notify.show('MFA successfully reset.', 'success');
+      toast.success('MFA successfully reset.');
     });
   }
 

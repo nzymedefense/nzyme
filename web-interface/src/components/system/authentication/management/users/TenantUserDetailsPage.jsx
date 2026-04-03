@@ -5,7 +5,7 @@ import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import Routes from "../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import moment from "moment";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import LastUserActivity from "./shared/LastUserActivity";
 import TenantUserPermissions from "./TenantUserPermissions";
 import TenantUserTaps from "./TenantUserTaps";
@@ -41,7 +41,7 @@ function TenantUserDetailsPage() {
 
     authenticationManagementService.deleteUserOfTenant(organizationId, tenantId, userId, function() {
       setRedirect(true);
-      notify.show('User deleted.', 'success');
+      toast.success('User deleted.');
     });
   }
 
@@ -51,7 +51,7 @@ function TenantUserDetailsPage() {
     }
 
     authenticationManagementService.resetMFAOfUserOfTenant(organizationId, tenantId, userId, function() {
-      notify.show('MFA successfully reset.', 'success');
+      toast.success('MFA successfully reset.');
     });
   }
 

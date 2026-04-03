@@ -1,6 +1,6 @@
 import React from "react";
 import EmailActionForm from "./EmailActionForm";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import EventActionsService from "../../../../../../services/EventActionsService";
 
 const eventActionsService = new EventActionsService();
@@ -12,7 +12,7 @@ function CreateEmailAction(props) {
 
   const onSubmit = function(name, description, subjectPrefix, receivers) {
     eventActionsService.createEmailAction(organizationId, name, description, subjectPrefix, receivers, function () {
-      notify.show('Email action created.', 'success');
+      toast.success('Email action created.');
       setComplete(true);
     })
   }

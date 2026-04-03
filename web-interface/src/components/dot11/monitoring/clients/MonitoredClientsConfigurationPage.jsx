@@ -7,7 +7,7 @@ import ConfigurationValue from "../../../configuration/ConfigurationValue";
 import ConfigurationModal from "../../../configuration/modal/ConfigurationModal";
 import Paginator from "../../../misc/Paginator";
 import MonitoredClientsTable from "./MonitoredClientsTable";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
@@ -55,7 +55,7 @@ export default function MonitoredClientsConfigurationPage() {
     }
 
     dot11Service.deleteAllMonitoredClients(uuid, () => {
-      notify.show('All known clients deleted.', 'success');
+      toast.success('All known clients deleted.');
       onChange();
     });
   }

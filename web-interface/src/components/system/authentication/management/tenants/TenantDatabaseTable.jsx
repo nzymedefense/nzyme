@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import SystemService from "../../../../../services/SystemService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import numeral from "numeral";
 import {humanReadableDatabaseCategoryName} from "../../../../../util/Tools";
@@ -31,7 +31,7 @@ export default function TenantDatabaseTable(props) {
 
     systemService.purgeDatabaseTenantCategory(category, tenant.organization_id, tenant.id, () => {
       setRevision(new Date());
-      notify.show('Data purge request submitted. It can take a while to complete.', 'success');
+      toast.success('Data purge request submitted. It can take a while to complete.');
     });
   }
 

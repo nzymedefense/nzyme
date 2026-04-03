@@ -5,7 +5,7 @@ import {MONITORING_MENU_ITEMS} from "../Dot11MenuItems";
 import Dot11Service from "../../../../services/Dot11Service";
 import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 import ProbeRequestsTable from "./ProbeRequestsTable";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
@@ -37,7 +37,7 @@ export default function ProbeRequestsPage() {
     }
 
     dot11Service.deleteMonitoredProbeRequest(id, () => {
-      notify.show('Monitored probe request deleted.', 'success');
+      toast.success('Monitored probe request deleted.');
       setRevision(new Date());
     });
   }

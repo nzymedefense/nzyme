@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 
 export default function UavTypeForm(props) {
 
@@ -35,7 +35,7 @@ export default function UavTypeForm(props) {
 
     onSubmit(matchType, matchValue, defaultClassification, type, model, name, () => {
       // On failure.
-      notify.show("Could not create or update custom UAV type.", "error");
+      toast.error("Could not create or update custom UAV type.");
 
       setIsSubmitting(false);
       setSubmitText(submitTextProp);

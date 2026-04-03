@@ -3,7 +3,7 @@ import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../../../util/ApiRoutes";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import FloorForm from "./FloorForm";
 import usePageTitle from "../../../../../../../util/UsePageTitle";
 
@@ -32,7 +32,7 @@ function CreateFloorPage() {
 
   const create = (number, name, pathLossExponent) => {
     authenticationManagementService.createFloorOfTenantLocation(organization.id, tenant.id, location.id, number, name, pathLossExponent, () => {
-      notify.show('Floor created.', 'success');
+      toast.success('Floor created.');
       setRedirect(true);
     }, (error) => {
       setErrorMessage(error.response.data.message)

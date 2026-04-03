@@ -4,7 +4,7 @@ import ClusterService from "../../../../services/ClusterService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import Routes from "../../../../util/ApiRoutes";
 import CryptoService from "../../../../services/CryptoService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import TLSCertificateDetails from "./TLSCertificateDetails";
 import TLSCertificateHelp from "./TLSCertificateHelp";
 import TLSCertificateUploadForm from "./form/TLSCertificateUploadForm";
@@ -35,7 +35,7 @@ function TLSCertificateDetailsPage() {
     }
 
     cryptoService.regenerateSelfSignedTLSCertificate(nodeUUID, function() {
-      notify.show('TLS certificate re-generated.', 'success');
+      toast.success('TLS certificate re-generated.');
       setCertificate(null);
     });
   }
@@ -48,7 +48,7 @@ function TLSCertificateDetailsPage() {
     }
 
     cryptoService.installIndividualTLSCertificate(nodeUUID, formData, function() {
-      notify.show('TLS certificate installed.', 'success');
+      toast.success('TLS certificate installed.');
       setCertificate(null);
     })
   }

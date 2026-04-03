@@ -2,7 +2,7 @@ import React from "react";
 import Dot11MacAddress from "../../../shared/context/macs/Dot11MacAddress";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import moment from "moment/moment";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import Dot11Service from "../../../../services/Dot11Service";
 
 const dot11Service = new Dot11Service();
@@ -61,7 +61,7 @@ export default function MonitoredClientsTable(props) {
     }
 
     dot11Service.approveMonitoredClient(monitoredNetwork.uuid, client.uuid, () => {
-      notify.show('Known client approved.', 'success');
+      toast.success('Known client approved.');
       onChange();
     });
   }
@@ -72,7 +72,7 @@ export default function MonitoredClientsTable(props) {
     }
 
     dot11Service.revokedMonitoredClient(monitoredNetwork.uuid, client.uuid, () => {
-      notify.show('Known client approval revoked.', 'success');
+      toast.success('Known client approval revoked.');
       onChange();
     });
   }
@@ -95,7 +95,7 @@ export default function MonitoredClientsTable(props) {
     }
 
     dot11Service.ignoreMonitoredClient(monitoredNetwork.uuid, client.uuid, () => {
-      notify.show('Known client ignored.', 'success');
+      toast.success('Known client ignored.');
       onChange();
     });
   }
@@ -106,7 +106,7 @@ export default function MonitoredClientsTable(props) {
     }
 
     dot11Service.unignoreMonitoredClient(monitoredNetwork.uuid, client.uuid, () => {
-      notify.show('Known client un-ignored.', 'success');
+      toast.success('Known client un-ignored.');
       onChange();
     });
   }
@@ -120,7 +120,7 @@ export default function MonitoredClientsTable(props) {
     }
 
     dot11Service.deleteMonitoredClient(monitoredNetwork.uuid, client.uuid, () => {
-      notify.show('Known client deleted.', 'success');
+      toast.success('Known client deleted.');
       onChange();
     });
   }

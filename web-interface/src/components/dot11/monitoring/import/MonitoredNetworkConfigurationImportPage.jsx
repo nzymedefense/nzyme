@@ -4,7 +4,7 @@ import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import MonitoredNetworkConfigurationImportDialog from "./MonitoredNetworkConfigurationImportDialog";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import usePageTitle from "../../../../util/UsePageTitle";
 
 const dot11Service = new Dot11Service();
@@ -25,7 +25,7 @@ function MonitoredNetworkConfigurationImportPage() {
   }, [uuid]);
 
   const onSubmit = () => {
-    notify.show("Import completed.", "success");
+    toast.success("Import completed.");
     setSubmitted(true);
   }
 

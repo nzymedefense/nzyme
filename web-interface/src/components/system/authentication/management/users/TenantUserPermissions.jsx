@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import TenantUserPermissionRow from "./TenantUserPermissionRow";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 
 const authenticationManagementService = new AuthenticationManagementService();
@@ -34,10 +34,10 @@ function TenantUserPermissions(props) {
     authenticationManagementService.editUserOfTenantPermissions(user.organization_id,
         user.tenant_id, user.id, userPermissions, function() {
           setFormSubmitting(false);
-          notify.show('Permissions of user updated.', 'success');
+          toast.success('Permissions of user updated.');
         }, function() {
           setFormSubmitting(false);
-          notify.show('Could not update permissions of user.', 'error');
+          toast.error('Could not update permissions of user.');
         });
   }
 

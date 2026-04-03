@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import Routes from "../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
@@ -29,7 +29,7 @@ function EditTenantUserPage() {
   const onEditDetailsFormSubmitted = function (email, name, disableMfa, callback) {
     authenticationManagementService.editUserOfTenant(organization.id, tenant.id, user.id, name, email, disableMfa, function() {
       // Success.
-      notify.show('User updated.', 'success');
+      toast.success('User updated.');
       setRedirect(true);
       callback();
     }, function (error) {
@@ -42,7 +42,7 @@ function EditTenantUserPage() {
   const onEditPasswordFormSubmitted = function (password, callback) {
     authenticationManagementService.editUserOfTenantPassword(organization.id, tenant.id, user.id, password, function() {
       // Success.
-      notify.show('Password updated.', 'success');
+      toast.success('Password updated.');
       setRedirect(true);
       callback();
     })

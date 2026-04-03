@@ -1,6 +1,6 @@
 import React from "react";
 import EventActionsService from "../../../../../../services/EventActionsService";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import SyslogActionForm from "./SyslogActionForm";
 
 const eventActionsService = new EventActionsService();
@@ -12,7 +12,7 @@ export default function EditSyslogAction(props) {
 
   const onSubmit = function(name, description, protocol, syslogHostname, host, port) {
     eventActionsService.updateSyslogAction(action.id, name, description, protocol, syslogHostname, host, port, function() {
-      notify.show('Action updated.', 'success');
+      toast.success('Action updated.');
       setComplete(true);
     })
   }

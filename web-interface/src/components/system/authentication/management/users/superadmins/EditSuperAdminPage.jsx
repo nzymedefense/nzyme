@@ -3,7 +3,7 @@ import {Navigate, useParams} from "react-router-dom";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import EditPasswordForm from "../shared/EditPasswordForm";
 import EditUserForm from "../shared/EditUserForm";
 import usePageTitle from "../../../../../../util/UsePageTitle";
@@ -24,7 +24,7 @@ function EditSuperAdminPage() {
   const onEditDetailsFormSubmitted = function (email, name, disableMfa, callback) {
     authenticationManagementService.editSuperAdministrator(user.id, name, email, disableMfa, function() {
       // Success.
-      notify.show('Super Administrator updated.', 'success');
+      toast.success('Super Administrator updated.');
       setRedirect(true);
       callback();
     }, function (error) {
@@ -38,7 +38,7 @@ function EditSuperAdminPage() {
   const onEditPasswordFormSubmitted = function(password, callback) {
     authenticationManagementService.editSuperAdministratorPassword(user.id, password, function() {
       // Success.
-      notify.show('Password updated.', 'success');
+      toast.success('Password updated.');
       setRedirect(true);
       callback();
     })

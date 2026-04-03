@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import Routes from "../../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import {Navigate, useParams} from "react-router-dom";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import TenantForm from "./TenantForm";
 import usePageTitle from "../../../../../util/UsePageTitle";
@@ -29,7 +29,7 @@ function CreateTenantPage() {
                                     mfaTimeoutMinutes) {
     authenticationMgmtService.createTenantOfOrganization(organizationId, name, description,
         sessionTimeoutMinutes, sessionInactivityTimeoutMinutes, mfaTimeoutMinutes, function() {
-      notify.show('Tenant created.', 'success');
+      toast.success('Tenant created.');
       setRedirect(true);
     })
   }

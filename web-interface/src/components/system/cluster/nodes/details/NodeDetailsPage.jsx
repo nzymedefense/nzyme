@@ -11,7 +11,7 @@ import CpuLoadIndicator from "./CpuLoadIndicator";
 import MemoryUseIndicator from "./MemoryUseIndicator";
 import TapReportStatisticsChart from "./TapReportStatisticsChart";
 import NodeClockWarning from "./NodeClockWarning";
-import {notify} from "react-notify-toast";
+import {toast} from "react-toastify";
 import NodeDeletedWarning from "./NodeDeletedWarning";
 import NodeTimers from "./NodeTimers";
 import NodeGauges from "./NodeGauges";
@@ -42,7 +42,7 @@ function NodeDetailsPage() {
     if (confirm("Really delete node?")) {
       clusterService.deleteNode(uuid, function () {
         setJustDeleted(true)
-        notify.show('Node deleted.', 'success')
+        toast.success('Node deleted.')
       })
     }
   }
