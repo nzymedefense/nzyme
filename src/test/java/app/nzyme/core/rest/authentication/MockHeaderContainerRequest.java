@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.*;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
+import java.util.function.Predicate;
 
 public class MockHeaderContainerRequest implements ContainerRequestContext {
 
@@ -74,6 +75,11 @@ public class MockHeaderContainerRequest implements ContainerRequestContext {
     @Override
     public String getHeaderString(String name) {
         return value;
+    }
+
+    @Override
+    public boolean containsHeaderString(String s, String s1, Predicate<String> predicate) {
+        return false;
     }
 
     @Override

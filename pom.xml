@@ -20,17 +20,17 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
 
         <log4j.version>2.25.4</log4j.version>
-        <guava.version>32.0.0-jre</guava.version>
+        <guava.version>33.5.0-jre</guava.version>
         <jcommander.version>1.81</jcommander.version>
-        <testng.version>7.4.0</testng.version>
-        <okhttp.version>4.10.0</okhttp.version>
+        <testng.version>7.12.0</testng.version>
+        <okhttp.version>5.3.2</okhttp.version>
         <jackson.version>3.1.1</jackson.version>
         <jackson-jsr310.version>3.0.0-rc2</jackson-jsr310.version>
         <jodatime.version>2.10.10</jodatime.version>
         <semver.version>0.9.0</semver.version>
         <autovalue.version>1.8.1</autovalue.version>
         <metrics.version>4.2.7</metrics.version>
-        <jersey.version>3.1.2</jersey.version>
+        <jersey.version>4.0.2</jersey.version>
         <typesafeconfig.version>1.4.3</typesafeconfig.version>
         <jdbi.version>3.39.1</jdbi.version>
         <liquibase.version>4.29.2</liquibase.version>
@@ -46,7 +46,7 @@
         <lanterna.version>3.1.1</lanterna.version>
         <simplejavamail.version>6.7.5</simplejavamail.version>
         <freemarker.version>2.3.31</freemarker.version>
-        <opencsv.version>5.7.1</opencsv.version>
+        <opencsv.version>5.12.0</opencsv.version>
         <quartz.version>2.5.2</quartz.version>
         <cronutils.version>9.2.1</cronutils.version>
         <httpcomponents.version>4.5.13</httpcomponents.version>
@@ -54,7 +54,7 @@
         <bouncycastle.version>1.83</bouncycastle.version>
         <oshi.version>6.4.0</oshi.version>
         <commonsnet.version>3.9.0</commonsnet.version>
-        <commonsvalidator.version>1.7</commonsvalidator.version>
+        <commonsvalidator.version>1.10.1</commonsvalidator.version>
         <totp.version>1.7.1</totp.version>
         <maxmindmmdb.version>3.0.0</maxmindmmdb.version>
         <stringsimilarity.version>2.0.0</stringsimilarity.version>
@@ -106,6 +106,11 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
+            <version>${okhttp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-jvm</artifactId>
             <version>${okhttp.version}</version>
         </dependency>
         <dependency>
