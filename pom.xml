@@ -583,10 +583,24 @@
                             <verbose>true</verbose>
 
                             <dataSet>
-                                <!-- Bundled JVM -->
+                                <!-- JVM binaries with +x -->
+                                <data>
+                                    <src>${project.build.directory}/jvm/runtime/bin</src>
+                                    <type>directory</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/usr/share/nzyme/jvm/bin</prefix>
+                                        <filemode>755</filemode>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+
+                                <!-- JVM everything else -->
                                 <data>
                                     <src>${project.build.directory}/jvm/runtime</src>
                                     <type>directory</type>
+                                    <excludes>bin/**</excludes>
                                     <mapper>
                                         <type>perm</type>
                                         <prefix>/usr/share/nzyme/jvm</prefix>
