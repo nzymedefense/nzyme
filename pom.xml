@@ -19,6 +19,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.javadoc.skip>true</maven.javadoc.skip>
 
+        <!-- default to x64 -->
+        <jre.arch>x64</jre.arch>
+
         <log4j.version>2.25.4</log4j.version>
         <guava.version>33.5.0-jre</guava.version>
         <jcommander.version>1.81</jcommander.version>
@@ -549,7 +552,7 @@
                         <phase>prepare-package</phase>
                         <goals><goal>wget</goal></goals>
                         <configuration>
-                            <url>https://api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jre/hotspot/normal/eclipse</url>
+                            <url>https://api.adoptium.net/v3/binary/latest/25/ga/linux/${jre.arch}/jre/hotspot/normal/eclipse</url>
                             <outputFileName>jre.tar.gz</outputFileName>
                             <unpack>true</unpack>
                             <outputDirectory>${project.build.directory}/jvm/runtime</outputDirectory>
@@ -809,6 +812,18 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>amd64</id>
+            <properties>
+                <jre.arch>x64</jre.arch>
+            </properties>
+        </profile>
+        <profile>
+            <id>aarch64</id>
+            <properties>
+                <jre.arch>aarch64</jre.arch>
+            </properties>
         </profile>
     </profiles>
 
