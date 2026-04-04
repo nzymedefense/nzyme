@@ -19,6 +19,10 @@ code {
     color: #e3e3e3;
 }
 
+dl {
+    color: #cccccc;
+}
+
 section.login div.left-half {
     background-color: #1d1e2c;
 }
@@ -53,8 +57,13 @@ div.card div.card-number div.value a {
     color: #fff;
 }
 
+.text-muted {
+    color: #868686 !important;
+}
+
 .table {
     color: #cccccc !important;
+    background-color: #262626;
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) > * {
@@ -64,6 +73,16 @@ div.card div.card-number div.value a {
 .table-hover > tbody > tr:hover > * {
     color: #cccccc !important;
     background-color: #373737;
+}
+
+.table th {
+    background-color: #262626;
+    color: #cccccc;
+}
+
+.table td {
+    background-color: #262626;
+    color: #cccccc;
 }
 
 .btn-outline-primary {
