@@ -4,5 +4,4 @@ Section: misc
 Priority: low
 Architecture: all
 Description: [[description]]
-Maintainer: nzyme LLC <hello@nzyme.org>
-Depends: openjdk-17-jre-headless | java17-runtime
+Maintainer: Nzyme Precision Industries, Inc <hello@nzyme.org>

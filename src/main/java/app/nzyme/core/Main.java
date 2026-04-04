@@ -64,6 +64,17 @@ public class Main {
             Logging.setRootLoggerLevel(Level.TRACE);
         }
 
+        LOG.info("Running on JVM {} {} ({})",
+                System.getProperty("java.version"),
+                System.getProperty("java.vm.name"),
+                System.getProperty("java.vm.vendor"));
+
+        int major = Runtime.version().feature();
+        if (major != 17 && major != 25) {
+            LOG.error("Unsupported JVM version {}. Requires Java 17 or 25.", major);
+            System.exit(FAILURE);
+        }
+
         // Bootstrap test mode logging config if requested.
         if (cliArguments.isBootstrapTestMode()) {
             Logging.removeAllAppenders();
