@@ -415,7 +415,7 @@ function App() {
                             <GlobalTenantSelectorForm onSelectionMade={onTenantSelectionMade} />
 
                             {selectedOrganization && selectedTenant ?
-                                <button type="button" className="btn btn-primary" data-bs-dismiss="modal" onClick={saveTenantSelection}>Select Tenant</button>
+                                <button type="button" className="btn btn-primary" onClick={saveTenantSelection}>Select Tenant</button>
                                 : <button type="button" className="btn btn-primary" disabled={true}>Select Tenant</button> }
                           </div>
                         </div>
