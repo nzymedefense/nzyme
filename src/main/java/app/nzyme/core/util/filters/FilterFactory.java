@@ -14,7 +14,7 @@ public class FilterFactory {
      */
 
     public static Filter fromRestQuery(FiltersParameter parameter) {
-        switch (parameter.operator()) {
+        switch (parameter.operator().toLowerCase()) {
             case "equals":
                 return Filter.create(
                         parameter.field(), FilterOperator.EQUALS, optionallyTransformedValue(parameter), parameter.value()

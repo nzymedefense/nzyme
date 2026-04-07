@@ -95,7 +95,7 @@ public class Monitors {
         ObjectMapper om = new ObjectMapper();
         String filtersString;
         try {
-            filtersString = om.writeValueAsString(filters);
+            filtersString = om.writeValueAsString(filters.filters());
         } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
@@ -156,7 +156,7 @@ public class Monitors {
         ObjectMapper om = new ObjectMapper();
         String filtersString;
         try {
-            filtersString = om.writeValueAsString(filters);
+            filtersString = om.writeValueAsString(filters.filters());
         } catch (JacksonException e) {
             throw new RuntimeException(e);
         }

@@ -534,7 +534,7 @@ export default function Filters(props) {
   }
 
   const applyMonitor = (monitor) => {
-    setFilters(reconstructFromNodeData(JSON.parse(monitor.filters).filters, fields));
+    setFilters(reconstructFromNodeData(JSON.parse(monitor.filters), fields));
 
     let newTaps = monitor.taps;
     if (monitor.taps === null) {

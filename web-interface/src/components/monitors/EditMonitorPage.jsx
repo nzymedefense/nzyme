@@ -158,7 +158,7 @@ export default function EditMonitorPage() {
               <h3 className="mt-4 mb-2">Filters</h3>
 
               <AppliedFilterList
-                filters={reconstructFromNodeData(JSON.parse(monitor.filters).filters, monitorTypeToFilterFields(monitor.type))}
+                filters={reconstructFromNodeData(JSON.parse(monitor.filters), monitorTypeToFilterFields(monitor.type))}
                 hideHeadline={true} />
 
               <div className="alert alert-info mt-3">

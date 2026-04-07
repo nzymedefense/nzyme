@@ -39,7 +39,7 @@ public class MonitorsThread extends Periodical {
                     LOG.error("Unknown monitor type [{}]. Skipping.", monitor.type());
                     continue;
                 }
-
+                
                 Filters filters = FilterParser.parseFiltersQueryParameter(monitor.filters());
                 List<UUID> taps;
                 if (monitor.taps() != null) {

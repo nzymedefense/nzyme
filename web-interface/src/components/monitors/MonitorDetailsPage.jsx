@@ -169,7 +169,7 @@ export default function MonitorDetailsPage() {
               <CardTitleWithControls title="Filters" />
 
               <AppliedFilterList
-                filters={reconstructFromNodeData(JSON.parse(monitor.filters).filters, monitorTypeToFilterFields(monitor.type))}
+                filters={reconstructFromNodeData(JSON.parse(monitor.filters), monitorTypeToFilterFields(monitor.type))}
                 hideHeadline={true} />
             </div>
           </div>
