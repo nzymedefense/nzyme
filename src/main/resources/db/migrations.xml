@@ -7919,4 +7919,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_lookback_to_monitors" author="lennartkoopmann">
+        <addColumn tableName="monitors">
+            <column name="lookback" type="integer" defaultValue="1">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

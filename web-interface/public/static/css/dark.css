@@ -130,6 +130,7 @@ i.inline-help {
 
 div.modal-dialog div.modal-content {
     background-color: #2B2D42;
+    color: #8D99AE;
 }
 
 div.modal-dialog div.modal-content button.modal-close {
@@ -247,6 +248,12 @@ input.form-control {
     border-color: #eaeaea;
     box-shadow: none !important;
 }
+
+.form-label, .form-text {
+    color: #e3e3e3;
+}
+
+
 
 button.btn-outline-primary, a.btn-outline-primary {
     background-color: inherit;

@@ -12,11 +12,12 @@ import AppliedFilterList from "../shared/filtering/AppliedFilterList";
 import reconstructFromNodeData from "../shared/filtering/FilterReconstructor";
 import {onNumberInputKeyDown} from "../../util/Tools";
 import monitorTypeToFilterFields from "./shared/MonitorFilterFields";
+import {toast} from "react-toastify";
 
 const monitorsService = new MonitorsService();
 const tapsService = new TapsService();
 
-export default function EditMonitorPage(props) {
+export default function EditMonitorPage() {
 
   const {id} = useParams();
 
@@ -30,6 +31,7 @@ export default function EditMonitorPage(props) {
   const [description, setDescription] = useState("");
   const [triggerCondition, setTriggerCondition] = useState(0);
   const [interval, setInterval] = useState(1);
+  const [lookback, setLookback] = useState(1);
   const [taps, setTaps] = useState(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,6 +52,7 @@ export default function EditMonitorPage(props) {
       setDescription(monitor.description);
       setTriggerCondition(monitor.trigger_condition);
       setInterval(monitor.interval);
+      setLookback(monitor.lookback);
       setTaps(monitor.taps);
     }
   }, [monitor]);
@@ -77,9 +80,11 @@ export default function EditMonitorPage(props) {
     e.preventDefault();
     setIsSubmitting(true);
 
-    monitorsService.updateMonitorMetadata(monitor.uuid, name, description, triggerCondition, interval, () => {
+    monitorsService.updateMonitorMetadata(monitor.uuid, name, description, triggerCondition, interval, lookback, () => {
+      toast.success("Monitor updated.")
       setRedirect(true);
     }, () => {
+      toast.error("Could not update monitor.")
       setIsSubmitting(false);
     })
   }
@@ -193,6 +198,23 @@ export default function EditMonitorPage(props) {
                   <span className="input-group-text">Minutes</span>
                 </div>
                 <div className="form-text">How often to execute the monitor. Default: Run every minute.</div>
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="monitor-lookback" className="form-label">Lookback</label>
+                <div className="input-group">
+                  <input type="number"
+                         min={1}
+                         onKeyDown={onNumberInputKeyDown}
+                         className="form-control"
+                         id="monitor-lookback"
+                         value={lookback}
+                         onChange={e => setLookback(e.target.value)}/>
+                  <span className="input-group-text">Minutes</span>
+                </div>
+                <div className="form-text">
+                  Time window for each check, measured back from the current time. Default: 1 Minute.
+                </div>
               </div>
 
               <button className="btn btn-primary"

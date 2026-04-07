@@ -8,7 +8,6 @@ import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets} from "../../shared/timerange/TimeRange";
 import Filters from "../../shared/filtering/Filters";
-import {useLocation} from "react-router-dom";
 import {BSSID_FILTER_FIELDS} from "./BssidFilterFields";
 import {queryParametersToFilters} from "../../shared/filtering/FilterQueryParameters";
 import usePageTitle from "../../../util/UsePageTitle";
@@ -63,7 +62,7 @@ function BSSIDsPage() {
     }
   }, [tapContext]);
 
-  const onSaveFiltersAsMonitor = (name, description, taps, triggerCondition, interval, filters, onSuccess, onFailure) => {
+  const onSaveFiltersAsMonitor = (name, description, taps, triggerCondition, interval, lookback, filters, onSuccess, onFailure) => {
     monitorsService.createMonitor(
       "DOT11_BSSID",
       name,
@@ -71,6 +70,7 @@ function BSSIDsPage() {
       taps,
       triggerCondition,
       interval,
+      lookback,
       filters,
       organizationId,
       tenantId,

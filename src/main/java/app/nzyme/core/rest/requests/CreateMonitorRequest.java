@@ -29,6 +29,9 @@ public abstract class CreateMonitorRequest {
     @Min(1)
     public abstract Integer interval();
 
+    @Min(1)
+    public abstract Integer lookback();
+
     @NotEmpty
     public abstract String filters();
 
@@ -44,6 +47,7 @@ public abstract class CreateMonitorRequest {
                                               @JsonProperty("taps") List<String> taps,
                                               @JsonProperty("trigger_condition") Integer triggerCondition,
                                               @JsonProperty("interval") Integer interval,
+                                              @JsonProperty("lookback") Integer lookback,
                                               @JsonProperty("filters") String filters,
                                               @JsonProperty("organization_id") UUID organizationId,
                                               @JsonProperty("tenant_id") UUID tenantId) {
@@ -53,6 +57,7 @@ public abstract class CreateMonitorRequest {
                 .taps(taps)
                 .triggerCondition(triggerCondition)
                 .interval(interval)
+                .lookback(lookback)
                 .filters(filters)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
@@ -75,6 +80,8 @@ public abstract class CreateMonitorRequest {
         public abstract Builder triggerCondition(@Min(0) Integer triggerCondition);
 
         public abstract Builder interval(@Min(1) Integer interval);
+
+        public abstract Builder lookback(@Min(1) Integer lookback);
 
         public abstract Builder filters(@NotEmpty String filters);
 

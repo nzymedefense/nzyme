@@ -127,6 +127,8 @@ export default function MonitorDetailsPage() {
                 <dd>{numeral(monitor.interval).format("0,0")} {monitor.interval === 1 ? "Minute" : "Minutes"}</dd>
                 <dt>Trigger Condition</dt>
                 <dd>More than {numeral(monitor.trigger_condition).format("0,0")} {monitor.trigger_condition === 1 ? "result" : "results"}</dd>
+                <dt>Lookback</dt>
+                <dd>{numeral(monitor.lookback).format("0,0")} {monitor.lookback === 1 ? "Minute" : "Minutes"}</dd>
               </dl>
             </div>
           </div>

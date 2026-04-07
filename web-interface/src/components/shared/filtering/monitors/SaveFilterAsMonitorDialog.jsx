@@ -26,6 +26,7 @@ export default function SaveFilterAsMonitorDialog({filters, appliedMonitor, onSa
   const [description, setDescription] = useState("");
   const [triggerCondition, setTriggerCondition] = useState(0);
   const [interval, setInterval] = useState(1);
+  const [lookback, setLookback] = useState(1);
 
   const [showError, setShowError] = useState(false);
 
@@ -80,7 +81,7 @@ export default function SaveFilterAsMonitorDialog({filters, appliedMonitor, onSa
       monitorsService.updateMonitorFilterInformation(appliedMonitor.uuid, selectedTaps, filters, onSuccess, onFailure)
     } else {
       // We are saving a new monitor. Handled in parent. (mostly to supply the correct monitor type)
-      onSave(name, description, selectedTaps, triggerCondition, interval, filters, onSuccess, onFailure)
+      onSave(name, description, selectedTaps, triggerCondition, interval, lookback, filters, onSuccess, onFailure)
     }
   }
 
@@ -253,6 +254,23 @@ export default function SaveFilterAsMonitorDialog({filters, appliedMonitor, onSa
                     <span className="input-group-text">Minutes</span>
                   </div>
                   <div className="form-text">How often to execute the monitor. Default: Run every minute.</div>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="monitor-lookback" className="form-label">Lookback</label>
+                  <div className="input-group">
+                    <input type="number"
+                           min={1}
+                           onKeyDown={onNumberInputKeyDown}
+                           className="form-control"
+                           id="monitor-lookback"
+                           value={lookback}
+                           onChange={e => setLookback(e.target.value)}/>
+                    <span className="input-group-text">Minutes</span>
+                  </div>
+                  <div className="form-text">
+                    Time window for each check, measured back from the current time. Default: 1 Minute.
+                  </div>
                 </div>
 
                 {showError ?

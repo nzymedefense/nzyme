@@ -79,6 +79,7 @@ public class Monitors {
                               @Nullable List<UUID> taps,
                               int triggerCondition,
                               int interval,
+                              int lookback,
                               Filters filters,
                               UUID organizationId,
                               UUID tenantId) {
@@ -101,9 +102,10 @@ public class Monitors {
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO monitors(uuid, organization_id, tenant_id, enabled, type, " +
-                                "name, description, taps, trigger_condition, interval, filters, created_at, " +
-                                "updated_at) VALUES(:uuid, :organization_id, :tenant_id, true, :type, :name, " +
-                                ":description, :taps, :trigger_condition, :interval, :filters::jsonb, NOW(), NOW())")
+                                "name, description, taps, trigger_condition, interval, lookback, filters, " +
+                                "created_at, updated_at) VALUES(:uuid, :organization_id, :tenant_id, true, :type, " +
+                                ":name, :description, :taps, :trigger_condition, :interval, :lookback, " +
+                                ":filters::jsonb, NOW(), NOW())")
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -113,6 +115,7 @@ public class Monitors {
                         .bindBySqlType("taps", tapsArray, Types.ARRAY)
                         .bind("trigger_condition", triggerCondition)
                         .bind("interval", interval)
+                        .bind("lookback", lookback)
                         .bind("filters", filtersString)
                         .execute()
         );
@@ -123,15 +126,18 @@ public class Monitors {
                                              String name,
                                              String description,
                                              int triggerCondition,
-                                             int interval) {
+                                             int interval,
+                                             int lookback) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE MONITORS set name = :name, description = :description, " +
-                                "trigger_condition = :trigger_condition, interval = :interval WHERE uuid = :uuid")
+                                "trigger_condition = :trigger_condition, interval = :interval, " +
+                                "lookback = :lookback WHERE uuid = :uuid")
                         .bind("uuid", id)
                         .bind("name", name)
                         .bind("description", description)
                         .bind("trigger_condition", triggerCondition)
                         .bind("interval", interval)
+                        .bind("lookback", lookback)
                         .execute()
         );
 

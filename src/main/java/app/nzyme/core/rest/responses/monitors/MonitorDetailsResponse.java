@@ -44,6 +44,9 @@ public abstract class MonitorDetailsResponse {
     @JsonProperty("interval")
     public abstract int interval();
 
+    @JsonProperty("lookback")
+    public abstract int lookback();
+
     @JsonProperty("filters")
     public abstract String filters();
 
@@ -63,7 +66,7 @@ public abstract class MonitorDetailsResponse {
     @JsonProperty("partial_data")
     public abstract boolean partialData();
 
-    public static MonitorDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, String filters, boolean alerted, DateTime lastEvent, DateTime createdAt, DateTime updatedAt, boolean partialData) {
+    public static MonitorDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, int lookback, String filters, boolean alerted, DateTime lastEvent, DateTime createdAt, DateTime updatedAt, boolean partialData) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -75,6 +78,7 @@ public abstract class MonitorDetailsResponse {
                 .taps(taps)
                 .triggerCondition(triggerCondition)
                 .interval(interval)
+                .lookback(lookback)
                 .filters(filters)
                 .alerted(alerted)
                 .lastEvent(lastEvent)
@@ -109,6 +113,8 @@ public abstract class MonitorDetailsResponse {
         public abstract Builder triggerCondition(int triggerCondition);
 
         public abstract Builder interval(int interval);
+
+        public abstract Builder lookback(int lookback);
 
         public abstract Builder filters(String filters);
 

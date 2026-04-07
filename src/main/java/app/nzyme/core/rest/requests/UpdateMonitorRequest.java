@@ -26,6 +26,9 @@ public abstract class UpdateMonitorRequest {
     public abstract Integer interval();
 
     @Nullable
+    public abstract Integer lookback();
+
+    @Nullable
     public abstract String filters();
 
     @Nullable
@@ -36,6 +39,7 @@ public abstract class UpdateMonitorRequest {
                                               @JsonProperty("description") String description,
                                               @JsonProperty("trigger_condition") Integer triggerCondition,
                                               @JsonProperty("interval") Integer interval,
+                                              @JsonProperty("lookback") Integer lookback,
                                               @JsonProperty("filters") String filters,
                                               @JsonProperty("taps") List<String> taps) {
         return builder()
@@ -43,6 +47,7 @@ public abstract class UpdateMonitorRequest {
                 .description(description)
                 .triggerCondition(triggerCondition)
                 .interval(interval)
+                .lookback(lookback)
                 .filters(filters)
                 .taps(taps)
                 .build();
@@ -61,6 +66,8 @@ public abstract class UpdateMonitorRequest {
         public abstract Builder triggerCondition(@Min(0) Integer triggerCondition);
 
         public abstract Builder interval(@Min(1) Integer interval);
+
+        public abstract Builder lookback(@Min(1) Integer lookback);
 
         public abstract Builder filters(String filters);
 

@@ -77,6 +77,7 @@ public class MonitorsResource extends TapDataHandlingResource {
                 filteredTapUUIDs,
                 monitor.get().triggerCondition(),
                 monitor.get().interval(),
+                monitor.get().lookback(),
                 monitor.get().filters(),
                 monitor.get().alerted(),
                 monitor.get().lastEvent(),
@@ -133,6 +134,7 @@ public class MonitorsResource extends TapDataHandlingResource {
                     filteredTapUUIDs,
                     m.triggerCondition(),
                     m.interval(),
+                    m.lookback(),
                     m.filters(),
                     m.alerted(),
                     m.lastEvent(),
@@ -185,6 +187,7 @@ public class MonitorsResource extends TapDataHandlingResource {
                 tapUuids,
                 req.triggerCondition(),
                 req.interval(),
+                req.lookback(),
                 parseFiltersQueryParameter(req.filters()),
                 req.organizationId(),
                 req.tenantId()
@@ -211,11 +214,22 @@ public class MonitorsResource extends TapDataHandlingResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        if (req.name() != null && !req.name().isBlank() && req.description() != null && !req.description().isBlank()
-                && req.triggerCondition() != null && req.interval() != null)
+        if (req.name() != null && !req.name().isBlank() && req.description() != null
+                && req.triggerCondition() != null && req.interval() != null && req.lookback() != null) {
+
+            if (req.triggerCondition() < 0 || req.interval() <= 0 || req.lookback() <= 0) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+
             nzyme.getMonitors().updateMonitorMetaInformation(
-                    monitor.get().uuid(), req.name(), req.description(), req.triggerCondition(), req.interval()
-        );
+                    monitor.get().uuid(),
+                    req.name(),
+                    req.description(),
+                    req.triggerCondition(),
+                    req.interval(),
+                    req.lookback()
+            );
+        }
 
         if (req.filters() != null && !req.filters().isBlank()) {
             List<UUID> tapUuids;
