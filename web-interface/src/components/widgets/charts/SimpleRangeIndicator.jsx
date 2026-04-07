@@ -10,9 +10,9 @@ function SimpleRangeIndicator(props) {
 
   const colors = {}
   if (Store.get('dark_mode')) {
-    colors.background = '#262626'
-    colors.text = '#f9f9f9'
-    colors.bar = '#373737';
+    colors.background = '#1c1c22'
+    colors.text = '#c4c4d4'
+    colors.bar = '#33333d';
   } else {
     colors.background = '#f9f9f9'
     colors.text = '#111111'

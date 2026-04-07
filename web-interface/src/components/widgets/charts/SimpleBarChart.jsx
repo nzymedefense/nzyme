@@ -46,10 +46,10 @@ class SimpleBarChart extends React.Component {
 
     const colors = {}
     if (Store.get('dark_mode')) {
-      colors.background = '#262626'
-      colors.text = '#f9f9f9'
-      colors.lines = '#373737'
-      colors.grid = '#373737'
+      colors.background = '#1c1c22'
+      colors.text = '#c4c4d4'
+      colors.lines = '#33333d'
+      colors.grid = '#2a2a33'
     } else {
       colors.background = '#f9f9f9'
       colors.text = '#111111'
