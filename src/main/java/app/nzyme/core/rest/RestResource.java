@@ -46,34 +46,4 @@ public class RestResource {
         return TimeRangeFactory.fromRestQuery(param);
     }
 
-    public Filters parseFiltersQueryParameter(String query) {
-        if (query == null || query.isEmpty()) {
-            return Filters.create(Maps.newHashMap());
-        }
-
-        Map<String, List<FiltersParameter>> param;
-        try {
-            param = this.om.readValue(query, new TypeReference<>() {});
-        } catch (JacksonException e) {
-            LOG.error(e);
-            throw new IllegalArgumentException("Invalid filters parameter provided.", e);
-        }
-
-        Map<String, List<Filter>> filters = Maps.newHashMap();
-        for (Map.Entry<String, List<FiltersParameter>> filterParam : param.entrySet()) {
-            try {
-                List<Filter> fieldFilters = Lists.newArrayList();
-                for (FiltersParameter filter : filterParam.getValue()) {
-                    fieldFilters.add(FilterFactory.fromRestQuery(filter));
-                }
-                filters.put(filterParam.getKey(), fieldFilters);
-            } catch (Exception e) {
-                LOG.error(e);
-                throw new IllegalArgumentException("Invalid filters parameter provided.", e);
-            }
-        }
-
-        return Filters.create(filters);
-    }
-
 }

@@ -38,6 +38,8 @@ import org.joda.time.DateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static app.nzyme.core.util.filters.FilterParser.parseFiltersQueryParameter;
+
 @Path("/api/dot11/networks")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)

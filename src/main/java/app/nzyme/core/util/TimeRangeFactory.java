@@ -61,6 +61,15 @@ public class TimeRangeFactory {
         }
     }
 
+    public static TimeRange relative(int minutes) {
+        if (minutes <= 0) {
+            throw new IllegalArgumentException("Invalid relative time range parameter provided.");
+        }
+
+        DateTime now = DateTime.now();
+        return TimeRange.create(now.minusMinutes(minutes), now, false);
+    }
+
     public static TimeRange allTime() {
         return TimeRange.create(new DateTime(0), new DateTime().plusYears(1000), true);
     }

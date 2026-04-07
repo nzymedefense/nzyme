@@ -31,6 +31,16 @@ public class Monitors {
         );
     }
 
+    public List<MonitorEntry> findAllMonitorsOfAllTenants() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT *, " +
+                                "COALESCE(last_event > NOW() - (interval * INTERVAL '1 minute'), false) AS alerted " +
+                                "FROM monitors")
+                        .mapTo(MonitorEntry.class)
+                        .list()
+        );
+    }
+
     public long countAllMonitorsOfType(MonitorType type, UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM monitors WHERE type = :type AND " +

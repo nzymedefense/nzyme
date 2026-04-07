@@ -41,6 +41,7 @@ public class MonitorEntryMapper implements RowMapper<MonitorEntry> {
                 taps,
                 rs.getInt("trigger_condition"),
                 rs.getInt("interval"),
+                rs.getInt("lookback"),
                 rs.getString("filters"),
                 rs.getBoolean("alerted"),
                 lastEvent,

@@ -43,6 +43,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static app.nzyme.core.util.filters.FilterParser.parseFiltersQueryParameter;
+
 @Path("/api/ethernet/l4")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)

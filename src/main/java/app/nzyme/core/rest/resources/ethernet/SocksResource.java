@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static app.nzyme.core.util.filters.FilterParser.parseFiltersQueryParameter;
+
 @Path("/api/ethernet/socks")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)

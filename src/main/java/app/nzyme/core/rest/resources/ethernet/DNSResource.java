@@ -30,6 +30,8 @@ import jakarta.ws.rs.core.SecurityContext;
 
 import java.util.*;
 
+import static app.nzyme.core.util.filters.FilterParser.parseFiltersQueryParameter;
+
 @Path("/api/ethernet/dns")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)

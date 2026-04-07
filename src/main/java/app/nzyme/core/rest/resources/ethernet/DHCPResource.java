@@ -37,6 +37,8 @@ import org.joda.time.Duration;
 
 import java.util.*;
 
+import static app.nzyme.core.util.filters.FilterParser.parseFiltersQueryParameter;
+
 @Path("/api/ethernet/dhcp")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)

@@ -41,6 +41,8 @@ import org.joda.time.DateTime;
 
 import java.util.*;
 
+import static app.nzyme.core.util.filters.FilterParser.parseFiltersQueryParameter;
+
 @Path("/api/ethernet/assets")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)

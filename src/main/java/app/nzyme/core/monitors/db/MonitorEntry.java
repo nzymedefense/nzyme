@@ -24,6 +24,7 @@ public abstract class MonitorEntry implements TenantScopedEntity {
     public abstract List<UUID> taps();
     public abstract int triggerCondition();
     public abstract int interval();
+    public abstract int lookback();
     public abstract String filters();
     public abstract boolean alerted();
     @Nullable
@@ -31,7 +32,7 @@ public abstract class MonitorEntry implements TenantScopedEntity {
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitorEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, String filters, boolean alerted, DateTime lastEvent, DateTime createdAt, DateTime updatedAt) {
+    public static MonitorEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, int lookback, String filters, boolean alerted, DateTime lastEvent, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -44,6 +45,7 @@ public abstract class MonitorEntry implements TenantScopedEntity {
                 .taps(taps)
                 .triggerCondition(triggerCondition)
                 .interval(interval)
+                .lookback(lookback)
                 .filters(filters)
                 .alerted(alerted)
                 .lastEvent(lastEvent)
@@ -79,6 +81,8 @@ public abstract class MonitorEntry implements TenantScopedEntity {
         public abstract Builder triggerCondition(int triggerCondition);
 
         public abstract Builder interval(int interval);
+
+        public abstract Builder lookback(int lookback);
 
         public abstract Builder filters(String filters);
 
