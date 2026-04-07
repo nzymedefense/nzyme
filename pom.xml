@@ -53,9 +53,9 @@
         <quartz.version>2.5.2</quartz.version>
         <cronutils.version>9.2.1</cronutils.version>
         <httpcomponents.version>4.5.13</httpcomponents.version>
-        <nzymeplugin.version>2.0.29</nzymeplugin.version>
+        <nzymeplugin.version>2.0.30</nzymeplugin.version>
         <bouncycastle.version>1.83</bouncycastle.version>
-        <oshi.version>6.4.0</oshi.version>
+        <oshi.version>6.11.0</oshi.version>
         <commonsnet.version>3.9.0</commonsnet.version>
         <commonsvalidator.version>1.10.1</commonsvalidator.version>
         <totp.version>1.7.1</totp.version>
@@ -341,7 +341,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.oshi</groupId>
-            <artifactId>oshi-core</artifactId>
+            <artifactId>oshi-core-java25</artifactId>
             <version>${oshi.version}</version>
         </dependency>
         <dependency>
@@ -471,6 +471,9 @@
                         <manifest>
                             <mainClass>app.nzyme.core.Main</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <Enable-Native-Access>ALL-UNNAMED</Enable-Native-Access>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

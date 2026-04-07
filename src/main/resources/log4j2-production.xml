@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN" shutdownHook="disable">
+<Configuration status="ERROR" shutdownHook="disable">
     <Appenders>
         <RollingFile name="Logfile" fileName="/var/log/nzyme/nzyme.log" filePattern="logs/$${date:yyyy-MM}/nzyme-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout pattern="%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} [%t] %-5level %logger{36} - %msg%n" />
@@ -35,7 +35,7 @@
             <AppenderRef ref="Logfile" />
         </Logger>
 
-        <Logger name="org.glassfish.jersey.server.wadl" level="error">
+        <Logger name="org.hibernate.validator.internal" level="warn">
             <AppenderRef ref="Logfile" />
         </Logger>
     </Loggers>

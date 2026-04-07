@@ -122,6 +122,7 @@ public class NzymeHttpServer {
                 .build();
 
         ResourceConfig resourceConfig = new ResourceConfig();
+        resourceConfig.property("jersey.config.server.wadl.disableWadl", "true");
         resourceConfig.register(new PreMFAAuthenticationFilter(nzyme));
         resourceConfig.register(new RESTAuthenticationFilter(nzyme));
         resourceConfig.register(new TapAuthenticationFilter(nzyme));

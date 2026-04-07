@@ -39,10 +39,5 @@
             <AppenderRef ref="Console" />
             <AppenderRef ref="Logfile" />
         </Logger>
-
-        <Logger name="org.glassfish.jersey.server.wadl" level="error">
-            <AppenderRef ref="Console" />
-            <AppenderRef ref="Logfile" />
-        </Logger>
     </Loggers>
 </Configuration>
