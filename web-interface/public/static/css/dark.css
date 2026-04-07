@@ -53,6 +53,7 @@ div.card {
     border-color: #373737;
 }
 
+div.card div.card-number div.value,
 div.card div.card-number div.value a {
     color: #fff;
 }
