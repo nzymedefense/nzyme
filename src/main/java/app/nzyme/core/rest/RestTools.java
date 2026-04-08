@@ -17,6 +17,10 @@
 
 package app.nzyme.core.rest;
 
+import app.nzyme.core.detection.alerts.DetectionAlertService;
+import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntry;
+import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
+import app.nzyme.core.rest.responses.alerts.DetectionAlertDetailsResponse;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -81,6 +85,32 @@ public class RestTools {
 
 
         return response;
+    }
+
+    public static DetectionAlertDetailsResponse buildAlertDetailsResponse(DetectionAlertEntry alert,
+                                                                    List<DetectionAlertAttributeEntry> attributes) {
+        Map<String, String> responseAttributes = Maps.newTreeMap();
+        for (DetectionAlertAttributeEntry attribute : attributes) {
+            responseAttributes.put(attribute.key(), attribute.value());
+        }
+
+        boolean isActive = !alert.isResolved() &&
+                alert.lastSeen().isAfter(DateTime.now().minusMinutes(DetectionAlertService.ACTIVE_THRESHOLD_MINUTES));
+
+        return DetectionAlertDetailsResponse.create(
+                alert.uuid(),
+                alert.dot11MonitoredNetworkId(),
+                alert.tapId(),
+                alert.detectionType(),
+                alert.subsystem(),
+                alert.details(),
+                responseAttributes,
+                alert.createdAt(),
+                alert.lastSeen(),
+                isActive,
+                alert.organizationId(),
+                alert.tenantId()
+        );
     }
 
 }

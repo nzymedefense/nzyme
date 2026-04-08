@@ -3,6 +3,7 @@ package app.nzyme.core.monitors;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.monitors.db.MonitorEntry;
 import app.nzyme.core.util.filters.Filters;
+import org.joda.time.DateTime;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nullable;
@@ -180,6 +181,15 @@ public class Monitors {
         );
     }
 
+    public void setLastEventOfMonitor(UUID id, DateTime lastEvent) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE monitors SET last_event = :last_event WHERE uuid = :uuid")
+                        .bind("uuid", id)
+                        .bind("last_event", lastEvent)
+                        .execute()
+        );
+    }
+
     public void onTapDeleted(UUID tapId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE monitors SET taps = ARRAY_REMOVE(taps, :tap_id)")
@@ -187,4 +197,5 @@ public class Monitors {
                         .execute()
         );
     }
+
 }

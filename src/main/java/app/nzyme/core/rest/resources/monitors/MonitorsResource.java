@@ -1,17 +1,19 @@
 package app.nzyme.core.rest.resources.monitors;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.detection.alerts.DetectionType;
+import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
+import app.nzyme.core.detection.alerts.db.DetectionAlertTimelineEntry;
 import app.nzyme.core.monitors.MonitorType;
 import app.nzyme.core.monitors.db.MonitorEntry;
 import app.nzyme.core.rest.TapDataHandlingResource;
-import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.CreateMonitorRequest;
 import app.nzyme.core.rest.requests.UpdateMonitorRequest;
+import app.nzyme.core.rest.responses.alerts.DetectionAlertTimelineDetailsResponse;
+import app.nzyme.core.rest.responses.alerts.DetectionAlertTimelineListResponse;
 import app.nzyme.core.rest.responses.monitors.MonitorDetailsResponse;
 import app.nzyme.core.rest.responses.monitors.MonitorListResponse;
-import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
-import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -24,12 +26,14 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import org.jetbrains.annotations.Nullable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.joda.time.Duration;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static app.nzyme.core.util.filters.FilterParser.parseFiltersQueryParameter;
 
@@ -37,6 +41,9 @@ import static app.nzyme.core.util.filters.FilterParser.parseFiltersQueryParamete
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
 public class MonitorsResource extends TapDataHandlingResource {
+
+    private static final Logger LOG = LogManager.getLogger(MonitorsResource.class);
+
 
     @Inject
     private NzymeNode nzyme;
@@ -85,6 +92,61 @@ public class MonitorsResource extends TapDataHandlingResource {
                 monitor.get().updatedAt(),
                 partialData
         )).build();
+    }
+
+    @GET
+    @Path("/show/{id}/detections/timeline")
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_view" })
+    public Response findDetectionsTimelineOfMonitor(@Context SecurityContext sc,
+                                            @PathParam("id") UUID uuid,
+                                            @QueryParam("limit") int limit,
+                                            @QueryParam("offset") int offset) {
+        AuthenticatedUser user = getAuthenticatedUser(sc);
+        Optional<MonitorEntry> monitor = nzyme.getMonitors().find(uuid);
+
+        if (monitor.isEmpty() || !entityAccessible(user, monitor.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<DetectionAlertEntry> alerts = nzyme.getDetectionAlertService().findAllAlertsByTypeAndAttribute(
+                monitor.get().organizationId(),
+                monitor.get().tenantId(),
+                DetectionType.MONITOR_TRIGGERED.name(),
+                "monitor_uuid",
+                monitor.get().uuid().toString(),
+                Integer.MAX_VALUE,
+                0
+        );
+
+        // Due to deduplication, we should always see 0 or 1 alerts.
+        if (alerts.isEmpty()) {
+            return Response.ok(Collections.emptyList()).build();
+        }
+
+        if (alerts.size() != 1) {
+            LOG.error("Monitor [{}] has triggered multiple ({}) alerts.",
+                    monitor.get().uuid(), alerts.size());
+            return Response.serverError().build();
+        }
+
+        DetectionAlertEntry alert = alerts.getFirst();
+
+        List<DetectionAlertTimelineDetailsResponse> entries = Lists.newArrayList();
+        for (DetectionAlertTimelineEntry timelineEntry : nzyme.getDetectionAlertService()
+                .findAlertTimeline(alert.id(), limit, offset)) {
+            Duration duration = new Duration(timelineEntry.seenFrom(), timelineEntry.seenTo());
+
+            entries.add(DetectionAlertTimelineDetailsResponse.create(
+                    timelineEntry.seenFrom(),
+                    timelineEntry.seenTo(),
+                    duration.getStandardSeconds(),
+                    Tools.durationToHumanReadable(duration)
+            ));
+        }
+
+        long total = nzyme.getDetectionAlertService().countAlertTimelineEntries(alert.id());
+
+        return Response.ok(DetectionAlertTimelineListResponse.create(total, entries)).build();
     }
 
     @GET

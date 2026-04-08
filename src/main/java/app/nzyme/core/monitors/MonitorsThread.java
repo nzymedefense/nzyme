@@ -13,6 +13,7 @@ import app.nzyme.plugin.Subsystem;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Map;
@@ -96,6 +97,9 @@ public class MonitorsThread extends Periodical {
                             new String[]{"monitor_uuid"},
                             null
                     );
+
+                    // Update `last_event` state of monitor.
+                    nzyme.getMonitors().setLastEventOfMonitor(monitor.uuid(), DateTime.now());
                 } else {
                     LOG.debug("Monitor [{}] result count <{}> is below trigger condition <{}>. No alert.",
                             monitor.uuid(), count, monitor.triggerCondition());

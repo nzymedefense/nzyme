@@ -316,6 +316,7 @@ public class DetectionAlertService {
     }
 
 
+    // TODO the org/tenant handling here can probably go away as we are now enforcing org and tenant selection in UI
     public Optional<DetectionAlertEntry> findAlert(UUID uuid,
                                                    @Nullable UUID organizationId,
                                                    @Nullable UUID tenantId) {
@@ -351,6 +352,32 @@ public class DetectionAlertService {
                                 "WHERE detection_alert_id = :detection_alert_id")
                         .bind("detection_alert_id", alertId)
                         .mapTo(DetectionAlertAttributeEntry.class)
+                        .list()
+        );
+    }
+
+    public List<DetectionAlertEntry> findAllAlertsByTypeAndAttribute(UUID organizationId,
+                                                                     UUID tenantId,
+                                                                     String detectionType,
+                                                                     String attributeKey,
+                                                                     String attributeValue,
+                                                                     int limit,
+                                                                     int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT da.* FROM detection_alerts AS da " +
+                                "LEFT JOIN detection_alert_attributes aa on da.id = aa.detection_alert_id " +
+                                "WHERE da.detection_type = :detection_type " +
+                                "AND da.organization_id = :organization_id AND da.tenant_id = :tenant_id " +
+                                "AND aa.attribute_key = :attribute_key AND aa.attribute_value = :attribute_value " +
+                                "ORDER BY da.last_seen DESC LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("detection_type", detectionType)
+                        .bind("attribute_key", attributeKey)
+                        .bind("attribute_value", attributeValue)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(DetectionAlertEntry.class)
                         .list()
         );
     }

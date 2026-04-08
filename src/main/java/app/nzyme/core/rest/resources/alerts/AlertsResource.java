@@ -1,7 +1,6 @@
 package app.nzyme.core.rest.resources.alerts;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntry;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
@@ -24,7 +23,6 @@ import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -36,14 +34,14 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import static app.nzyme.core.rest.RestTools.buildAlertDetailsResponse;
 
 @Path("/api/alerts")
 @Produces(MediaType.APPLICATION_JSON)
@@ -106,7 +104,7 @@ public class AlertsResource extends UserAuthenticatedResource {
             List<DetectionAlertAttributeEntry> attributes = nzyme.getDetectionAlertService()
                     .findAlertAttributes(alert.id());
 
-            responsesList.add(buildDetailsResponse(alert, attributes));
+            responsesList.add(buildAlertDetailsResponse(alert, attributes));
         }
 
         return Response.ok(DetectionAlertListResponse.create(total, totalActive, responsesList)).build();
@@ -128,7 +126,7 @@ public class AlertsResource extends UserAuthenticatedResource {
         List<DetectionAlertAttributeEntry> attributes = nzyme.getDetectionAlertService()
                 .findAlertAttributes(alert.get().id());
 
-        return Response.ok(buildDetailsResponse(alert.get(), attributes)).build();
+        return Response.ok(buildAlertDetailsResponse(alert.get(), attributes)).build();
     }
 
 
@@ -540,31 +538,6 @@ public class AlertsResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
-    private DetectionAlertDetailsResponse buildDetailsResponse(DetectionAlertEntry alert,
-                                                               List<DetectionAlertAttributeEntry> attributes) {
-        Map<String, String> responseAttributes = Maps.newTreeMap();
-        for (DetectionAlertAttributeEntry attribute : attributes) {
-            responseAttributes.put(attribute.key(), attribute.value());
-        }
-
-        boolean isActive = !alert.isResolved() &&
-                alert.lastSeen().isAfter(DateTime.now().minusMinutes(DetectionAlertService.ACTIVE_THRESHOLD_MINUTES));
-
-        return DetectionAlertDetailsResponse.create(
-                alert.uuid(),
-                alert.dot11MonitoredNetworkId(),
-                alert.tapId(),
-                alert.detectionType(),
-                alert.subsystem(),
-                alert.details(),
-                responseAttributes,
-                alert.createdAt(),
-                alert.lastSeen(),
-                isActive,
-                alert.organizationId(),
-                alert.tenantId()
-        );
-    }
 
     private static SubscriptionDetailsResponse buildSubscriptionDetailsResponse(SubscriptionEntry subscriptionEntry,
                                                                                 EventActionEntry eventActionEntry) {

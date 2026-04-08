@@ -17,6 +17,8 @@ import reconstructFromNodeData from "../shared/filtering/FilterReconstructor";
 import {toast} from "react-toastify";
 import monitorTypeToFilterFields from "./shared/MonitorFilterFields";
 import monitorTypeToSearchLink from "./shared/MonitorReplay";
+import WithPermission from "../misc/WithPermission";
+import MonitorDetectionsTimelineTable from "./MonitorDetectionsTimelineTable";
 
 const monitorsService = new MonitorsService();
 const tapsService = new TapsService();
@@ -175,6 +177,20 @@ export default function MonitorDetailsPage() {
           </div>
         </div>
       </div>
+
+      <WithPermission permission="alerts_view">
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Detections Timeline" />
+
+                <MonitorDetectionsTimelineTable monitor={monitor} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </WithPermission>
 
     </React.Fragment>
   )

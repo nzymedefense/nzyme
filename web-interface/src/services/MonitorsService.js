@@ -10,6 +10,14 @@ class MonitorsService {
       })
   }
 
+  findDetectionsTimelineOfMonitor(id, limit, offset, setDetections) {
+    RESTClient.get(`/monitors/show/${id}/detections/timeline`,
+      { limit: limit, offset: offset },
+      function (response) {
+        setDetections(response.data);
+      })
+  }
+
   findAllOfType(monitorType, organizationId, tenantId, limit, offset, setMonitors) {
     RESTClient.get(`/monitors/type/${monitorType}`,
       { limit: limit, offset: offset, organization_id: organizationId, tenant_id: tenantId },
