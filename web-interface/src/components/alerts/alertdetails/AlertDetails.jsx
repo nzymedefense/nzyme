@@ -14,12 +14,15 @@ import MonitoredProbeRequestAlertDetails from "./dot11/MonitoredProbeRequestAler
 import UnapprovedSSIDAlertDetails from "./dot11/UnapprovedSSIDAlertDetails";
 import UnapprovedClientAlertDetails from "./dot11/UnapprovedClientAlertDetails";
 import UavDetectedAlertDetails from "./uav/UavDetectedAlertDetails";
+import MonitorTriggeredAlertDetails from "./generic/MonitorTriggeredAlertDetails";
 
 function AlertDetails(props) {
 
   const alert = props.alert;
 
   switch (alert.detection_type) {
+    case "MONITOR_TRIGGERED":
+      return <MonitorTriggeredAlertDetails alert={alert} />
     case "DOT11_MONITOR_BSSID":
       return <MonitorBSSIDAlertDetails alert={alert} />
     case "DOT11_MONITOR_CHANNEL":

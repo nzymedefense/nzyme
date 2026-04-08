@@ -1,6 +1,7 @@
 package app.nzyme.core.monitors;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.monitors.db.MonitorEntry;
 import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.taps.Tap;
@@ -8,6 +9,7 @@ import app.nzyme.core.util.TenantCacheKey;
 import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.filters.FilterParser;
 import app.nzyme.core.util.filters.Filters;
+import app.nzyme.plugin.Subsystem;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,7 +41,7 @@ public class MonitorsThread extends Periodical {
                     LOG.error("Unknown monitor type [{}]. Skipping.", monitor.type());
                     continue;
                 }
-                
+
                 Filters filters = FilterParser.parseFiltersQueryParameter(monitor.filters());
                 List<UUID> taps;
                 if (monitor.taps() != null) {
@@ -74,7 +76,26 @@ public class MonitorsThread extends Periodical {
                 }
 
                 if (count > monitor.triggerCondition()) {
-                    // TODO trigger alert.
+                    // Raise alert.
+                    Map<String, String> attributes = Maps.newHashMap();
+                    attributes.put("monitor_uuid", monitor.uuid().toString());
+                    attributes.put("monitor_name", monitor.name());
+                    attributes.put("monitor_type", monitor.type());
+                    attributes.put("trigger_condition", String.valueOf(monitor.triggerCondition()));
+                    attributes.put("result_count", String.valueOf(count));
+
+                    nzyme.getDetectionAlertService().raiseAlert(
+                            monitor.organizationId(),
+                            monitor.tenantId(),
+                            null,
+                            null,
+                            DetectionType.MONITOR_TRIGGERED,
+                            Subsystem.GENERIC,
+                            "Monitor \"" + monitor.name() + "\" triggered.",
+                            attributes,
+                            new String[]{"monitor_uuid"},
+                            null
+                    );
                 } else {
                     LOG.debug("Monitor [{}] result count <{}> is below trigger condition <{}>. No alert.",
                             monitor.uuid(), count, monitor.triggerCondition());
