@@ -24,7 +24,7 @@ export default function Dot11MonitorsPage() {
     monitorsService.findAllOfType(
       "DOT11_BSSID", organizationId, tenantId, perPage, (page-1)*perPage, setMonitors
     )
-  }, [page, perPage])
+  }, [page, perPage, organizationId, tenantId])
 
   return (
     <React.Fragment>
