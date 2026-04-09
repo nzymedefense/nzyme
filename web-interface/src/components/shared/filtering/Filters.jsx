@@ -272,7 +272,7 @@ export default function Filters(props) {
       changeFilter(filterOption.title, selectedOption.value, filterOption.type, filterOption.value_transform);
     } else {
       // The option dialog placeholder was selected again.
-      changeFilter(defaultFilter.name, defaultFilter.field, defaultFilter.type, filterOption.value_transform);
+      changeFilter(defaultFilter.name, defaultFilter.field, defaultFilter.type, null);
     }
   }
 
