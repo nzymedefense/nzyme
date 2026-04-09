@@ -506,6 +506,12 @@ input.form-control:disabled {
     color: #4b5060 !important;
 }
 
+.input-group-text {
+    background-color: #19191f;
+    border-color: #33333d;
+    color: #9a9ab0;
+}
+
 select.monitored-network-selector {
     background-color: #25252d;
     border-color: #33333d;
