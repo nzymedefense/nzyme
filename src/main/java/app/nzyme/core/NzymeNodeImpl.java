@@ -47,6 +47,7 @@ import app.nzyme.core.integrations.ScheduledIntegrationsManager;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.integrations.tenant.cot.CotService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
+import app.nzyme.core.monitors.MonitorExecutionTaskHandler;
 import app.nzyme.core.monitors.Monitors;
 import app.nzyme.core.monitors.MonitorsThread;
 import app.nzyme.core.ouis.OuiService;
@@ -265,6 +266,10 @@ public class NzymeNodeImpl implements NzymeNode {
         this.tasksQueue.onMessageReceived(
                 TaskType.PURGE_DATA_CATEGORY_TENANT,
                 new TenantPurgeCategoryTaskHandler(this)
+        );
+        this.tasksQueue.onMessageReceived(
+                TaskType.MONITOR_EXECUTION,
+                new MonitorExecutionTaskHandler(this)
         );
 
         try {

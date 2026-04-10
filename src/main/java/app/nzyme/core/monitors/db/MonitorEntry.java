@@ -1,6 +1,8 @@
 package app.nzyme.core.monitors.db;
 
 import app.nzyme.core.security.authentication.TenantScopedEntity;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
@@ -11,31 +13,71 @@ import java.util.UUID;
 @AutoValue
 public abstract class MonitorEntry implements TenantScopedEntity {
 
-    public abstract long id();
+    // This is (de-)serialized and passed along tasks.
+
+    @JsonProperty("id")
+    public abstract Long id();
+    @JsonProperty("uuid")
     public abstract UUID uuid();
+    @JsonProperty("organization_id")
     public abstract UUID organizationId();
+    @JsonProperty("tenant_id")
     public abstract UUID tenantId();
-    public abstract boolean enabled();
+    @JsonProperty("enabled")
+    public abstract Boolean enabled();
+    @JsonProperty("type")
     public abstract String type();
+    @JsonProperty("name")
     public abstract String name();
+    @JsonProperty("description")
     @Nullable
     public abstract String description();
+    @JsonProperty("taps")
     @Nullable
     public abstract List<UUID> taps();
-    public abstract int triggerCondition();
-    public abstract int interval();
-    public abstract int lookback();
+    @JsonProperty("trigger_condition")
+    public abstract Integer triggerCondition();
+    @JsonProperty("interval")
+    public abstract Integer interval();
+    @JsonProperty("lookback")
+    public abstract Integer lookback();
+    @JsonProperty("filters")
     public abstract String filters();
-    public abstract boolean alerted();
+    @JsonProperty("alerted")
+    public abstract Boolean alerted();
+    @JsonProperty("status")
     public abstract String status();
+    @JsonProperty("last_run")
     @Nullable
     public abstract DateTime lastRun();
+    @JsonProperty("last_event")
     @Nullable
     public abstract DateTime lastEvent();
+    @JsonProperty("created_at")
     public abstract DateTime createdAt();
+    @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static MonitorEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, int lookback, String filters, boolean alerted, String status, DateTime lastRun, DateTime lastEvent, DateTime createdAt, DateTime updatedAt) {
+    @JsonCreator
+    public static MonitorEntry create(@JsonProperty("id") Long id,
+                                      @JsonProperty("uuid") UUID uuid,
+                                      @JsonProperty("organization_id") UUID organizationId,
+                                      @JsonProperty("tenant_id") UUID tenantId,
+                                      @JsonProperty("enabled") Boolean enabled,
+                                      @JsonProperty("type") String type,
+                                      @JsonProperty("name") String name,
+                                      @JsonProperty("description") String description,
+                                      @JsonProperty("taps") List<UUID> taps,
+                                      @JsonProperty("trigger_condition") Integer triggerCondition,
+                                      @JsonProperty("interval") Integer interval,
+                                      @JsonProperty("lookback") Integer lookback,
+                                      @JsonProperty("filters") String filters,
+                                      @JsonProperty("alerted") Boolean alerted,
+                                      @JsonProperty("status") String status,
+                                      @JsonProperty("last_run") DateTime lastRun,
+                                      @JsonProperty("last_event") DateTime lastEvent,
+                                      @JsonProperty("created_at") DateTime createdAt,
+                                      @JsonProperty("updated_at") DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -65,7 +107,7 @@ public abstract class MonitorEntry implements TenantScopedEntity {
     
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(long id);
+        public abstract Builder id(Long id);
 
         public abstract Builder uuid(UUID uuid);
 
@@ -73,7 +115,7 @@ public abstract class MonitorEntry implements TenantScopedEntity {
 
         public abstract Builder tenantId(UUID tenantId);
 
-        public abstract Builder enabled(boolean enabled);
+        public abstract Builder enabled(Boolean enabled);
 
         public abstract Builder type(String type);
 
@@ -83,15 +125,15 @@ public abstract class MonitorEntry implements TenantScopedEntity {
 
         public abstract Builder taps(List<UUID> taps);
 
-        public abstract Builder triggerCondition(int triggerCondition);
+        public abstract Builder triggerCondition(Integer triggerCondition);
 
-        public abstract Builder interval(int interval);
+        public abstract Builder interval(Integer interval);
 
-        public abstract Builder lookback(int lookback);
+        public abstract Builder lookback(Integer lookback);
 
         public abstract Builder filters(String filters);
 
-        public abstract Builder alerted(boolean alerted);
+        public abstract Builder alerted(Boolean alerted);
 
         public abstract Builder status(String status);
 

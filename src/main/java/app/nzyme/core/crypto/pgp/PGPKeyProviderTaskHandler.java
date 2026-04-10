@@ -22,7 +22,7 @@ import java.util.Map;
 
 public class PGPKeyProviderTaskHandler implements TaskHandler {
 
-    private static final Logger LOG = LogManager.getLogger(PGPKeyMessageBusReceiver.class);
+    private static final Logger LOG = LogManager.getLogger(PGPKeyProviderTaskHandler.class);
 
     private final File cryptoDirectoryConfig;
     private final MessageBus messageBus;
