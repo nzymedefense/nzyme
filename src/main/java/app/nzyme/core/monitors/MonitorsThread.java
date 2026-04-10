@@ -35,6 +35,7 @@ public class MonitorsThread extends Periodical {
 
         for (MonitorEntry monitor : nzyme.getMonitors().findAllMonitorsOfAllTenants()) {
             try {
+                DateTime now = DateTime.now();
                 nzyme.getMonitors().setMonitorStatus(monitor.uuid(), MonitorStatus.EXECUTING);
 
                 MonitorType type;
@@ -101,11 +102,13 @@ public class MonitorsThread extends Periodical {
                     );
 
                     // Update `last_event` state of monitor.
-                    nzyme.getMonitors().setLastEventOfMonitor(monitor.uuid(), DateTime.now());
+                    nzyme.getMonitors().setLastEventOfMonitor(monitor.uuid(), now);
                 } else {
                     LOG.debug("Monitor [{}] result count <{}> is below trigger condition <{}>. No alert.",
                             monitor.uuid(), count, monitor.triggerCondition());
                 }
+
+                nzyme.getMonitors().setLastExecutionTimeOfMonitor(monitor.uuid(), now);
             } catch (Exception e) {
                 LOG.error("Could not execute monitor [{}]. Skipping.", monitor.uuid(), e);
             } finally {

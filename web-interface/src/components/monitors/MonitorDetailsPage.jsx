@@ -147,7 +147,9 @@ export default function MonitorDetailsPage() {
                 <dd title={moment(monitor.created_at).format()}>{moment(monitor.created_at).fromNow()}</dd>
                 <dt>Updated at</dt>
                 <dd title={moment(monitor.updated_at).format()}>{moment(monitor.updated_at).fromNow()}</dd>
-                <dt>Execution Status</dt>
+                <dt>Last Run</dt>
+                <dd>{monitor.last_run ? moment(monitor.last_run).format() : <span>Monitor did not run yet</span>}</dd>
+                <dt>Status</dt>
                 <dd>{capitalizeFirstLetterAndLowercase(monitor.status)}</dd>
               </dl>
             </div>

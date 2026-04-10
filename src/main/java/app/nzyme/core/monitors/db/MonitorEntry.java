@@ -29,11 +29,13 @@ public abstract class MonitorEntry implements TenantScopedEntity {
     public abstract boolean alerted();
     public abstract String status();
     @Nullable
+    public abstract DateTime lastRun();
+    @Nullable
     public abstract DateTime lastEvent();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitorEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, int lookback, String filters, boolean alerted, String status, DateTime lastEvent, DateTime createdAt, DateTime updatedAt) {
+    public static MonitorEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, boolean enabled, String type, String name, String description, List<UUID> taps, int triggerCondition, int interval, int lookback, String filters, boolean alerted, String status, DateTime lastRun, DateTime lastEvent, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -50,6 +52,7 @@ public abstract class MonitorEntry implements TenantScopedEntity {
                 .filters(filters)
                 .alerted(alerted)
                 .status(status)
+                .lastRun(lastRun)
                 .lastEvent(lastEvent)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
@@ -59,7 +62,7 @@ public abstract class MonitorEntry implements TenantScopedEntity {
     public static Builder builder() {
         return new AutoValue_MonitorEntry.Builder();
     }
-
+    
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder id(long id);
@@ -91,6 +94,8 @@ public abstract class MonitorEntry implements TenantScopedEntity {
         public abstract Builder alerted(boolean alerted);
 
         public abstract Builder status(String status);
+
+        public abstract Builder lastRun(DateTime lastRun);
 
         public abstract Builder lastEvent(DateTime lastEvent);
 

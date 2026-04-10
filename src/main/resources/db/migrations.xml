@@ -7935,4 +7935,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_last_run_to_monitors" author="lennartkoopmann">
+        <addColumn tableName="monitors">
+            <column name="last_run" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

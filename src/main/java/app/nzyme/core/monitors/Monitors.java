@@ -190,6 +190,15 @@ public class Monitors {
         );
     }
 
+    public void setLastExecutionTimeOfMonitor(UUID id, DateTime lastRun) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE monitors SET last_run = :last_run WHERE uuid = :uuid")
+                        .bind("uuid", id)
+                        .bind("last_run", lastRun)
+                        .execute()
+        );
+    }
+
     public void setMonitorStatus(UUID id, MonitorStatus status) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE monitors SET status = :status WHERE uuid = :uuid")
