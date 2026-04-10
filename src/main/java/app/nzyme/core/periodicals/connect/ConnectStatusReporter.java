@@ -101,7 +101,7 @@ public class ConnectStatusReporter extends Periodical {
                     (ni.heapUsed()*100.0)/ni.heapTotal()
             );
 
-            byte[] body = om.writeValueAsBytes(report);
+            byte[] requestBody = om.writeValueAsBytes(report);
 
             HttpUrl url = HttpUrl.get(nzyme.getConnect().getApiUri())
                     .newBuilder()
@@ -110,7 +110,7 @@ public class ConnectStatusReporter extends Periodical {
                     .build();
 
             Request request = new Request.Builder()
-                    .post(RequestBody.create(body))
+                    .post(RequestBody.create(requestBody))
                     .url(url)
                     .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + nzyme.getConnect().getApiKey())
                     .addHeader("Content-Type", "application/json")
@@ -118,7 +118,8 @@ public class ConnectStatusReporter extends Periodical {
                     .build();
 
 
-            try(Response response = httpClient.newCall(request).execute()) {
+            try (Response response = httpClient.newCall(request).execute();
+                 ResponseBody responseBody = response.body()) {
                 if (response.code() != 201) {
                     LOG.error("Could not report node status to Connect. Expected HTTP <201> but " +
                             "received HTTP <{}>.", response.code());
@@ -131,22 +132,18 @@ public class ConnectStatusReporter extends Periodical {
                     );
 
                     // The response contains all enabled services. Store it.
-                    if (response.body() != null) {
-                        ObjectMapper om = JsonMapper.builder()
-                                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
-                                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                                .build();
-                        ConnectApiStatusResponse responseData = om.readValue(
-                                response.body().bytes(), ConnectApiStatusResponse.class
-                        );
+                    ObjectMapper om = JsonMapper.builder()
+                            .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                            .build();
+                    ConnectApiStatusResponse responseData = om.readValue(
+                            responseBody.bytes(), ConnectApiStatusResponse.class
+                    );
 
-                        nzyme.getDatabaseCoreRegistry().setValue(
-                                ConnectRegistryKeys.PROVIDED_SERVICES.key(),
-                                om.writeValueAsString(responseData.providedData())
-                        );
-                    } else {
-                        LOG.error("Connect API status report response had an empty body.");
-                    }
+                    nzyme.getDatabaseCoreRegistry().setValue(
+                            ConnectRegistryKeys.PROVIDED_SERVICES.key(),
+                            om.writeValueAsString(responseData.providedData())
+                    );
                 }
             }
         } catch (Exception e) {
@@ -199,7 +196,7 @@ public class ConnectStatusReporter extends Periodical {
                 taps.put(tap.uuid(), ConnectTapMetricsReport.create(gauges, timers));
             }
 
-            byte[] body = om.writeValueAsBytes(ConnectMetricsReport.create(nodes, taps));
+            byte[] requestBody = om.writeValueAsBytes(ConnectMetricsReport.create(nodes, taps));
 
             HttpUrl url = HttpUrl.get(nzyme.getConnect().getApiUri())
                     .newBuilder()
@@ -208,14 +205,14 @@ public class ConnectStatusReporter extends Periodical {
                     .build();
 
             Request request = new Request.Builder()
-                    .post(RequestBody.create(body))
+                    .post(RequestBody.create(requestBody))
                     .url(url)
                     .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + nzyme.getConnect().getApiKey())
                     .addHeader("Content-Type", "application/json")
                     .addHeader(HttpHeaders.USER_AGENT, "nzyme-node")
                     .build();
 
-            try(Response response = httpClient.newCall(request).execute()) {
+            try (Response response = httpClient.newCall(request).execute()) {
                 if (response.code() == 201) {
                     LOG.debug("Successfully submitted Connect metrics report.");
                 } else {
