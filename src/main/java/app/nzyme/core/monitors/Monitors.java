@@ -190,6 +190,15 @@ public class Monitors {
         );
     }
 
+    public void setMonitorStatus(UUID id, MonitorStatus status) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE monitors SET status = :status WHERE uuid = :uuid")
+                        .bind("uuid", id)
+                        .bind("status", status)
+                        .execute()
+        );
+    }
+
     public void onTapDeleted(UUID tapId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE monitors SET taps = ARRAY_REMOVE(taps, :tap_id)")

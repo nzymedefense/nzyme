@@ -19,6 +19,7 @@ import monitorTypeToFilterFields from "./shared/MonitorFilterFields";
 import monitorTypeToSearchLink from "./shared/MonitorReplay";
 import WithPermission from "../misc/WithPermission";
 import MonitorDetectionsTimelineTable from "./MonitorDetectionsTimelineTable";
+import {capitalizeFirstLetter, capitalizeFirstLetterAndLowercase} from "../../util/Tools";
 
 const monitorsService = new MonitorsService();
 const tapsService = new TapsService();
@@ -146,6 +147,8 @@ export default function MonitorDetailsPage() {
                 <dd title={moment(monitor.created_at).format()}>{moment(monitor.created_at).fromNow()}</dd>
                 <dt>Updated at</dt>
                 <dd title={moment(monitor.updated_at).format()}>{moment(monitor.updated_at).fromNow()}</dd>
+                <dt>Execution Status</dt>
+                <dd>{capitalizeFirstLetterAndLowercase(monitor.status)}</dd>
               </dl>
             </div>
           </div>

@@ -35,6 +35,8 @@ public class MonitorsThread extends Periodical {
 
         for (MonitorEntry monitor : nzyme.getMonitors().findAllMonitorsOfAllTenants()) {
             try {
+                nzyme.getMonitors().setMonitorStatus(monitor.uuid(), MonitorStatus.EXECUTING);
+
                 MonitorType type;
                 try {
                     type = MonitorType.valueOf(monitor.type());
@@ -106,6 +108,12 @@ public class MonitorsThread extends Periodical {
                 }
             } catch (Exception e) {
                 LOG.error("Could not execute monitor [{}]. Skipping.", monitor.uuid(), e);
+            } finally {
+                try {
+                    nzyme.getMonitors().setMonitorStatus(monitor.uuid(), MonitorStatus.IDLE);
+                } catch (Exception e) {
+                    LOG.error("Could not set monitor [{}] status to IDLE. Skipping.", monitor.uuid(), e);
+                }
             }
         }
     }

@@ -44,6 +44,7 @@ public class MonitorEntryMapper implements RowMapper<MonitorEntry> {
                 rs.getInt("lookback"),
                 rs.getString("filters"),
                 rs.getBoolean("alerted"),
+                rs.getString("status"),
                 lastEvent,
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("updated_at"))

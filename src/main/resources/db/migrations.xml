@@ -7927,4 +7927,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_status_to_monitors" author="lennartkoopmann">
+        <addColumn tableName="monitors">
+            <column name="status" type="text" defaultValue="IDLE">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
