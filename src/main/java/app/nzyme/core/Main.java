@@ -82,18 +82,6 @@ public class Main {
             LOG.warn("In bootstrap test mode.");
         }
 
-        // Check if nzyme is already running.
-        if (!cliArguments.isNoPidCheckMode()) {
-            try {
-                if (PidFile.isAlreadyRunning()) {
-                    LOG.error("Nzyme is already running. Exiting.");
-                    System.exit(FAILURE);
-                }
-            } catch (IOException e) {
-                LOG.error("Could not check if nzyme is already running.", e);
-            }
-        }
-
         // Parse configuration.
         BaseConfiguration baseConfiguration = null;
         try {
@@ -107,6 +95,18 @@ public class Main {
         } catch (FileNotFoundException e) {
             LOG.error("Could not read configuration file.", e);
             System.exit(FAILURE);
+        }
+
+        // Check if nzyme is already running.
+        if (!cliArguments.isNoPidCheckMode()) {
+            try {
+                if (PidFile.isAlreadyRunning(baseConfiguration.name())) {
+                    LOG.error("Nzyme is already running. Exiting.");
+                    System.exit(FAILURE);
+                }
+            } catch (IOException e) {
+                LOG.error("Could not check if nzyme is already running.", e);
+            }
         }
 
         NodeConfiguration nodeConfiguration = null;

@@ -55,7 +55,13 @@ public class BaseConfigurationLoader {
     }
 
     public String parseNodeName() {
-        return general.getString(ConfigurationKeys.NAME);
+        String nodeName = general.getString(ConfigurationKeys.NAME);
+
+        if (!nodeName.matches("^[a-zA-Z0-9_-]{1,64}$")) {
+            throw new IllegalArgumentException("Invalid node name: " + nodeName);
+        }
+
+        return nodeName;
     }
 
     private String parseDataDirectory() {
