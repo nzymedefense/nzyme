@@ -56,7 +56,7 @@ public class MonitorExecutionTaskHandler implements TaskHandler {
             return TaskProcessingResult.FAILURE;
         }
 
-        LOG.info("Received task to execute monitor [{}].", monitor.uuid());
+        LOG.debug("Received task to execute monitor [{}].", monitor.uuid());
 
         MonitorType type;
         try {
