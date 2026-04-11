@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.monitors;
 
+import app.nzyme.core.rest.responses.metrics.TimerResponse;
 import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;

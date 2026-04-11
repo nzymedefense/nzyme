@@ -4,7 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.monitors.db.MonitorEntry;
 import app.nzyme.core.taps.Tap;
-import app.nzyme.core.util.TenantCacheKey;
+import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.filters.FilterParser;
 import app.nzyme.core.util.filters.Filters;
@@ -12,6 +12,7 @@ import app.nzyme.plugin.Subsystem;
 import app.nzyme.plugin.distributed.tasksqueue.ReceivedTask;
 import app.nzyme.plugin.distributed.tasksqueue.TaskHandler;
 import app.nzyme.plugin.distributed.tasksqueue.TaskProcessingResult;
+import com.codahale.metrics.Timer;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,7 +67,8 @@ public class MonitorExecutionTaskHandler implements TaskHandler {
             return TaskProcessingResult.FAILURE;
         }
 
-        try {
+        Timer timer = nzyme.getMetrics().timer(MetricNames.MONITOR_EXECUTION_TIMER_BASE + monitor.uuid());
+        try (Timer.Context ignored = timer.time()) {
             nzyme.getMonitors().setMonitorStatus(monitor.uuid(), MonitorStatus.EXECUTING);
 
             Filters filters = FilterParser.parseFiltersQueryParameter(monitor.filters());
@@ -74,7 +76,6 @@ public class MonitorExecutionTaskHandler implements TaskHandler {
             if (monitor.taps() != null) {
                 taps = monitor.taps();
             } else {
-                TenantCacheKey tenantCacheKey = TenantCacheKey.create(monitor.organizationId(), monitor.tenantId());
                 taps = nzyme.getTapManager().findAllTapsOfTenant(monitor.organizationId(), monitor.tenantId())
                         .stream()
                         .map(Tap::uuid)

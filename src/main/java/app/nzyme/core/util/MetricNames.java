@@ -24,6 +24,7 @@ import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.gnss.GNSSElevationMaskThread;
 import app.nzyme.core.integrations.geoip.GeoIpService;
+import app.nzyme.core.monitors.MonitorExecutionTaskHandler;
 import app.nzyme.core.ouis.OuiService;
 import app.nzyme.core.rest.interceptors.TapTableSizeInterceptor;
 import app.nzyme.core.security.authentication.PasswordHasher;
@@ -91,5 +92,7 @@ public class MetricNames {
     public static final String GNSS_TOTAL_REPORT_PROCESSING_TIMER = name(GNSSTable.class, "total-report-processing-timing");
     public static final String GNSS_ELEVATION_MASK_ANALYIS_TIMER = name(GNSSElevationMaskThread.class, "analysis-timing");
     public static final String GNSS_ELEVATION_MASK_WRITE_TIMER = name(GNSSElevationMaskThread.class, "write-timing");
+
+    public static final String MONITOR_EXECUTION_TIMER_BASE = name(MonitorExecutionTaskHandler.class, "execution-timer-");
 
 }

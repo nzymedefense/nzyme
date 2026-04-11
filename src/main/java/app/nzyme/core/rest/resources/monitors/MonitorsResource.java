@@ -172,43 +172,46 @@ public class MonitorsResource extends TapDataHandlingResource {
         long total = nzyme.getMonitors().countAllMonitorsOfType(monitorType, organizationId, tenantId);
 
         List<MonitorDetailsResponse> monitors = Lists.newArrayList();
-        for (MonitorEntry m : nzyme.getMonitors().findAllMonitorsOfType(monitorType, organizationId, tenantId, offset, limit)) {
-            List<UUID> filteredTapUUIDs;
-            boolean partialData;
-            if (m.taps() == null) {
-                filteredTapUUIDs = null;
-                partialData = !user.accessAllTenantTaps;
-            } else {
-                filteredTapUUIDs = parseAndValidateTapIdsDirect(
-                        user,
-                        nzyme,
-                        m.taps()
-                );
-                partialData = filteredTapUUIDs.size() != m.taps().size();
-            }
+        nzyme.getDatabase().useHandle(handle -> {
+            for (MonitorEntry m : nzyme.getMonitors()
+                    .findAllMonitorsOfType(monitorType, organizationId, tenantId, offset, limit)) {
+                List<UUID> filteredTapUUIDs;
+                boolean partialData;
+                if (m.taps() == null) {
+                    filteredTapUUIDs = null;
+                    partialData = !user.accessAllTenantTaps;
+                } else {
+                    filteredTapUUIDs = parseAndValidateTapIdsDirect(
+                            user,
+                            nzyme,
+                            m.taps()
+                    );
+                    partialData = filteredTapUUIDs.size() != m.taps().size();
+                }
 
-            monitors.add(MonitorDetailsResponse.create(
-                    m.uuid(),
-                    m.organizationId(),
-                    m.tenantId(),
-                    m.enabled(),
-                    m.type(),
-                    m.name(),
-                    m.description(),
-                    filteredTapUUIDs,
-                    m.triggerCondition(),
-                    m.interval(),
-                    m.lookback(),
-                    m.filters(),
-                    m.alerted(),
-                    m.status(),
-                    m.lastRun(),
-                    m.lastEvent(),
-                    m.createdAt(),
-                    m.updatedAt(),
-                    partialData
-            ));
-        }
+                monitors.add(MonitorDetailsResponse.create(
+                        m.uuid(),
+                        m.organizationId(),
+                        m.tenantId(),
+                        m.enabled(),
+                        m.type(),
+                        m.name(),
+                        m.description(),
+                        filteredTapUUIDs,
+                        m.triggerCondition(),
+                        m.interval(),
+                        m.lookback(),
+                        m.filters(),
+                        m.alerted(),
+                        m.status(),
+                        m.lastRun(),
+                        m.lastEvent(),
+                        m.createdAt(),
+                        m.updatedAt(),
+                        partialData
+                ));
+            }
+        });
 
         return Response.ok(MonitorListResponse.create(total, monitors)).build();
     }
