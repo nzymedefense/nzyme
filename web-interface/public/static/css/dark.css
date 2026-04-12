@@ -559,6 +559,22 @@ div.modal-dialog div.modal-content button.modal-close {
     color: #e8e8ed;
 }
 
+.modal-header,
+.modal-footer {
+    border-color: #33333d;
+}
+
+.btn-close,
+button.btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
+    opacity: 0.8;
+}
+
+.btn-close:hover,
+button.btn-close:hover {
+    opacity: 1;
+}
+
 div.filters-modal div.modal-dialog {
     color: #c4c4d4;
 }
