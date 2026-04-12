@@ -50,6 +50,10 @@ export default function Dot11MonitorsPage() {
           <SectionMenuBar items={MONITORING_MENU_ITEMS}
                           activeRoute={ApiRoutes.DOT11.MONITORING.MONITORS.INDEX}/>
         </div>
+
+        <div className="col-md-2">
+          <a href="https://go.nzyme.org/wifi-monitors" className="btn btn-secondary float-end">Help</a>
+        </div>
       </div>
 
       <div className="row mt-3">
