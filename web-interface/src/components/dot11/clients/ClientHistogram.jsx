@@ -6,6 +6,7 @@ function ClientHistogram(props) {
 
   const histogram = props.histogram;
   const setTimeRange = props.setTimeRange;
+  const monitorsReady = props.monitorsReady;
 
   const formatData = function(data) {
     const result = {}
@@ -17,7 +18,7 @@ function ClientHistogram(props) {
     return result
   }
 
-  if (!histogram) {
+  if (!histogram || !monitorsReady) {
     return <LoadingSpinner />
   }
 

@@ -16,10 +16,9 @@ import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
 import useQuery from "../../../util/UseQuery";
 import RenderConditionally from "../../misc/RenderConditionally";
+import onSaveFiltersAsMonitor from "../../shared/filtering/monitors/SaveMonitorCallback";
 
 const dot11Service = new Dot11Service();
-
-const monitorsService = new MonitorsService();
 
 function BSSIDsPage() {
 
@@ -62,23 +61,6 @@ function BSSIDsPage() {
     }
   }, [tapContext]);
 
-  const onSaveFiltersAsMonitor = (name, description, taps, triggerCondition, interval, lookback, filters, onSuccess, onFailure) => {
-    monitorsService.createMonitor(
-      "DOT11_BSSID",
-      name,
-      description,
-      taps,
-      triggerCondition,
-      interval,
-      lookback,
-      filters,
-      organizationId,
-      tenantId,
-      onSuccess,
-      onFailure
-    );
-  }
-
   const table = () => {
     if (!bssids || !monitorsReady) {
       return <LoadingSpinner />
@@ -115,7 +97,7 @@ function BSSIDsPage() {
                          fields={BSSID_FILTER_FIELDS}
                          monitorType="DOT11_BSSID"
                          onMonitorsReady={() => setMonitorsReady(true)}
-                         onSaveAsMonitor={onSaveFiltersAsMonitor} />
+                         onSaveAsMonitor={onSaveFiltersAsMonitor("DOT11_BSSID", organizationId, tenantId)} />
               </div>
             </div>
           </div>
@@ -134,6 +116,7 @@ function BSSIDsPage() {
                                      timeRange={timeRange}
                                      filters={filters}
                                      setTimeRange={setTimeRange}
+                                     monitorsReady={monitorsReady}
                                      revision={revision} />
                 </div>
               </div>
@@ -149,6 +132,7 @@ function BSSIDsPage() {
                                      timeRange={timeRange}
                                      filters={filters}
                                      setTimeRange={setTimeRange}
+                                     monitorsReady={monitorsReady}
                                      revision={revision}/>
                 </div>
               </div>

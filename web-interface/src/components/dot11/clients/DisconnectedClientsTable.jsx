@@ -27,6 +27,8 @@ function DisconnectedClientsTable(props) {
   const setOrderDirection = props.setOrderDirection;
   const orderDirection = props.orderDirection;
 
+  const monitorsReady = props.monitorsReady;
+
   const setFilters = props.setFilters;
 
   const selectedTaps = tapContext.taps;
@@ -39,7 +41,7 @@ function DisconnectedClientsTable(props) {
                           setOrderDirection={setOrderDirection} />
   }
 
-  if (!clients) {
+  if (!clients || !monitorsReady) {
     return <LoadingSpinner />
   }
 

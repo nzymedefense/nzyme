@@ -13,6 +13,7 @@ function BSSIDAndSSIDChart(props) {
   const filters = props.filters;
   const revision = props.revision;
   const setTimeRange = props.setTimeRange;
+  const monitorsReady = props.monitorsReady;
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -34,7 +35,7 @@ function BSSIDAndSSIDChart(props) {
     return result
   }
 
-  if (!histogram) {
+  if (!histogram || !monitorsReady) {
     return <LoadingSpinner />
   }
 

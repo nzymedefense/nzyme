@@ -60,6 +60,8 @@ export default function EditMonitorPage() {
   const breadcrumbs = () => {
     switch (monitor.type) {
       case "DOT11_BSSID":
+      case "DOT11_CLIENT_CONNECTED":
+      case "DOT11_CLIENT_DISCONNECTED":
         return (
           <ol className="breadcrumb">
             <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>

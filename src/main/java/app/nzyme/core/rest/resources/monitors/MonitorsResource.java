@@ -355,7 +355,8 @@ public class MonitorsResource extends TapDataHandlingResource {
             String requiredPermission;
             switch (monitorType) {
                 case DOT11_BSSID:
-                case DOT11_CLIENT:
+                case DOT11_CLIENT_CONNECTED:
+                case DOT11_CLIENT_DISCONNECTED:
                     requiredPermission = "dot11_monitoring_manage";
                     break;
                 default:

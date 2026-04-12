@@ -16,6 +16,8 @@ import {CLIENTS_MENU_ITEMS} from "./ClientsMenuItems";
 import ApiRoutes from "../../../util/ApiRoutes";
 import usePageTitle from "../../../util/UsePageTitle";
 import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import onSaveFiltersAsMonitor from "../../shared/filtering/monitors/SaveMonitorCallback";
 
 const dot11Service = new Dot11Service();
 
@@ -27,6 +29,8 @@ function ClientsPage() {
 
   usePageTitle("WiFi Clients (Disconnected)");
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
@@ -37,6 +41,8 @@ function ClientsPage() {
   const [clients, setClients] = useState(null);
   const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24))
   const [page, setPage] = useState(1);
+
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   const [orderColumn, setOrderColumn] = useState("last_seen");
   const [orderDirection, setOrderDirection] = useState("DESC");
@@ -52,15 +58,18 @@ function ClientsPage() {
   useEffect(() => {
     setHistogram(null);
 
-    dot11Service.getDisconnectedClientsHistogram(
+    if (monitorsReady) {
+      dot11Service.getDisconnectedClientsHistogram(
         timeRange, filters, skipRandomized, selectedTaps, setHistogram
-    );
-  }, [timeRange, skipRandomized, selectedTaps, filters])
+      );
+    }
+  }, [timeRange, skipRandomized, selectedTaps, filters, monitorsReady])
 
   useEffect(() => {
     setClients(null);
 
-    dot11Service.findDisconnectedClients(
+    if (monitorsReady) {
+      dot11Service.findDisconnectedClients(
         timeRange,
         filters,
         orderColumn,
@@ -69,9 +78,10 @@ function ClientsPage() {
         selectedTaps,
         setClients,
         perPage,
-        (page-1)*perPage
-    );
-  }, [page, timeRange, skipRandomized, selectedTaps, orderColumn, orderDirection, filters])
+        (page - 1) * perPage
+      );
+    }
+  }, [page, timeRange, skipRandomized, selectedTaps, orderColumn, orderDirection, filters, monitorsReady])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -112,7 +122,10 @@ function ClientsPage() {
 
                 <Filters filters={filters}
                          setFilters={setFilters}
-                         fields={DISCONNECTED_CLIENT_FILTER_FIELDS} />
+                         fields={DISCONNECTED_CLIENT_FILTER_FIELDS}
+                         monitorType="DOT11_CLIENT_DISCONNECTED"
+                         onMonitorsReady={() => setMonitorsReady(true)}
+                         onSaveAsMonitor={onSaveFiltersAsMonitor("DOT11_CLIENT_DISCONNECTED", organizationId, tenantId)} />
               </div>
             </div>
           </div>
@@ -124,7 +137,7 @@ function ClientsPage() {
               <div className="card-body">
                 <CardTitleWithControls title={disconnectedTitle()} slim={true} timeRange={timeRange} />
 
-                <ClientHistogram histogram={histogram} setTimeRange={setTimeRange} />
+                <ClientHistogram histogram={histogram} setTimeRange={setTimeRange} monitorsReady={monitorsReady} />
               </div>
             </div>
           </div>
@@ -164,6 +177,7 @@ function ClientsPage() {
                 </div>
 
                 <DisconnectedClientsTable clients={clients}
+                                          monitorsReady={monitorsReady}
                                           perPage={perPage}
                                           page={page}
                                           setPage={setPage}

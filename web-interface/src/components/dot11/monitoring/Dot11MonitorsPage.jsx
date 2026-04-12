@@ -15,16 +15,33 @@ export default function Dot11MonitorsPage() {
 
   const [organizationId, tenantId] = useSelectedTenant();
 
-  const [monitors, setMonitors] = useState(null);
+  const [bssidMonitors, setBssidMonitors] = useState(null);
+  const [connectedClientMonitors, setConnectedClientMonitors] = useState(null);
+  const [disconnectedClientMonitors, setDisconnectedClientMonitors] = useState(null);
 
-  const [page, setPage] = useState(1);
-  const perPage = 25;
+  const [bssidPage, setBssidPage] = useState(1);
+  const [connectedClientPage, setConnectedClientPage] = useState(1);
+  const [disconnectedClientPage, setDisconnectedClientPage] = useState(1);
+
+  const perPage = 10
 
   useEffect(() => {
     monitorsService.findAllOfType(
-      "DOT11_BSSID", organizationId, tenantId, perPage, (page-1)*perPage, setMonitors
+      "DOT11_BSSID", organizationId, tenantId, perPage, (bssidPage-1)*perPage, setBssidMonitors
     )
-  }, [page, perPage, organizationId, tenantId])
+  }, [bssidPage, organizationId, tenantId])
+
+  useEffect(() => {
+    monitorsService.findAllOfType(
+      "DOT11_CLIENT_CONNECTED", organizationId, tenantId, perPage, (connectedClientPage-1)*perPage, setConnectedClientMonitors
+    )
+  }, [connectedClientPage, organizationId, tenantId])
+
+  useEffect(() => {
+    monitorsService.findAllOfType(
+      "DOT11_CLIENT_DISCONNECTED", organizationId, tenantId, perPage, (disconnectedClientPage-1)*perPage, setDisconnectedClientMonitors
+    )
+  }, [disconnectedClientPage, organizationId, tenantId])
 
   return (
     <React.Fragment>
@@ -39,9 +56,33 @@ export default function Dot11MonitorsPage() {
         <div className="col-xl-12 col-xxl-6">
           <div className="card">
             <div className="card-body">
-              <h3 style={{display: "inline-block"}}>Configured Monitors</h3>
+              <h3 style={{display: "inline-block"}}>Access Point Monitors</h3>
 
-              <MonitorsTable monitors={monitors} page={page} setPage={setPage} perPage={perPage} />
+              <MonitorsTable monitors={bssidMonitors} page={bssidPage} setPage={setBssidPage} perPage={perPage} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-xl-12 col-xxl-6">
+          <div className="card">
+            <div className="card-body">
+              <h3 style={{display: "inline-block"}}>Connected Client Monitors</h3>
+
+              <MonitorsTable monitors={connectedClientMonitors} page={connectedClientPage} setPage={setConnectedClientPage} perPage={perPage} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-xl-12 col-xxl-6">
+          <div className="card">
+            <div className="card-body">
+              <h3 style={{display: "inline-block"}}>Disconnected Client Monitors</h3>
+
+              <MonitorsTable monitors={disconnectedClientMonitors} page={disconnectedClientPage} setPage={setDisconnectedClientPage} perPage={perPage} />
             </div>
           </div>
         </div>

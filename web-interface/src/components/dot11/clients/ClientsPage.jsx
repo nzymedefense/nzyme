@@ -15,6 +15,8 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import {CLIENTS_MENU_ITEMS} from "./ClientsMenuItems";
 import usePageTitle from "../../../util/UsePageTitle";
 import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
+import onSaveFiltersAsMonitor from "../../shared/filtering/monitors/SaveMonitorCallback";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const dot11Service = new Dot11Service();
 
@@ -26,6 +28,8 @@ function ClientsPage() {
 
   usePageTitle("WiFi Clients (Connected)");
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
 
@@ -35,6 +39,7 @@ function ClientsPage() {
   const [clients, setClients] = useState(null);
   const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24))
   const [page, setPage] = useState(1);
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   const [orderColumn, setOrderColumn] = useState("last_seen");
   const [orderDirection, setOrderDirection] = useState("DESC");
@@ -48,18 +53,21 @@ function ClientsPage() {
   useEffect(() => {
     setHistogram(null);
 
-    dot11Service.getConnectedClientsHistogram(
+    if (monitorsReady) {
+      dot11Service.getConnectedClientsHistogram(
         timeRange,
         filters,
         selectedTaps,
         setHistogram
-    );
-  }, [timeRange, selectedTaps, filters])
+      );
+    }
+  }, [timeRange, selectedTaps, filters, monitorsReady])
 
   useEffect(() => {
     setClients(null);
 
-    dot11Service.findConnectedClients(
+    if (monitorsReady) {
+      dot11Service.findConnectedClients(
         timeRange,
         filters,
         orderColumn,
@@ -67,9 +75,10 @@ function ClientsPage() {
         selectedTaps,
         setClients,
         perPage,
-        (page-1)*perPage
-    );
-  }, [page, timeRange, selectedTaps, filters, orderColumn, orderDirection])
+        (page - 1) * perPage
+      );
+    }
+  }, [page, timeRange, selectedTaps, filters, orderColumn, orderDirection, monitorsReady])
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -98,7 +107,10 @@ function ClientsPage() {
 
                 <Filters filters={filters}
                          setFilters={setFilters}
-                         fields={CONNECTED_CLIENT_FILTER_FIELDS} />
+                         fields={CONNECTED_CLIENT_FILTER_FIELDS}
+                         monitorType="DOT11_CLIENT_CONNECTED"
+                         onMonitorsReady={() => setMonitorsReady(true)}
+                         onSaveAsMonitor={onSaveFiltersAsMonitor("DOT11_CLIENT_CONNECTED", organizationId, tenantId)} />
               </div>
             </div>
           </div>
@@ -110,7 +122,7 @@ function ClientsPage() {
               <div className="card-body">
                 <CardTitleWithControls title="Connected Clients" slim={true} timeRange={timeRange} />
 
-                <ClientHistogram histogram={histogram} setTimeRange={setTimeRange} />
+                <ClientHistogram histogram={histogram} setTimeRange={setTimeRange} monitorsReady={monitorsReady} />
               </div>
             </div>
           </div>
@@ -128,6 +140,7 @@ function ClientsPage() {
                 </p>
 
                 <ConnectedClientsTable clients={clients}
+                                       monitorsReady={monitorsReady}
                                        perPage={perPage}
                                        page={page}
                                        setPage={setPage}

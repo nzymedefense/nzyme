@@ -88,9 +88,13 @@ public class MonitorExecutionTaskHandler implements TaskHandler {
                     count = nzyme.getDot11()
                             .countBSSIDs(TimeRangeFactory.relative(monitor.lookback()), filters, taps);
                 }
-                case DOT11_CLIENT -> {
-                    // TODO
-                    count = 0;
+                case DOT11_CLIENT_CONNECTED -> {
+                    count = nzyme.getDot11()
+                            .countBSSIDClients(TimeRangeFactory.relative(monitor.lookback()), filters, taps);
+                }
+                case DOT11_CLIENT_DISCONNECTED -> {
+                    count = nzyme.getDot11()
+                            .countClients(TimeRangeFactory.relative(monitor.lookback()), filters, false, taps);
                 }
                 default -> {
                     LOG.error("Monitor type [{}] is not implemented. Skipping.", monitor.type());

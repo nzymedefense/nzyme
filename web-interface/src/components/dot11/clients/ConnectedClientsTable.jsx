@@ -18,6 +18,7 @@ function ConnectedClientsTable(props) {
   const tapContext = useContext(TapContext);
 
   const clients = props.clients;
+  const monitorsReady = props.monitorsReady;
 
   const perPage = props.perPage;
   const page = props.page;
@@ -40,7 +41,7 @@ function ConnectedClientsTable(props) {
                           setOrderDirection={setOrderDirection} />
   }
 
-  if (!clients) {
+  if (!clients || !monitorsReady) {
     return <LoadingSpinner />
   }
 
