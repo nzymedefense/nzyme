@@ -618,6 +618,14 @@ ul.pagination li.page-item a.page-link:hover {
     color: #e8e8ed;
 }
 
+ul.pagination li.page-item.active a.page-link,
+ul.pagination li.page-item.active span.page-link,
+.page-item.active .page-link {
+    background-color: #5a6fa0 !important;
+    border-color: #5a6fa0 !important;
+    color: #fff !important;
+}
+
 ul.pagination li.disabled a.page-link {
     color: #4b5060;
     background-color: #141418;
