@@ -41,6 +41,7 @@ import org.joda.time.DateTime;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 public class Dot11 {
 
@@ -2460,10 +2461,23 @@ public class Dot11 {
 
     public long countAllKnownNetworks(UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM dot11_known_networks " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public long countAllKnownNetworksByPattern(UUID organizationId, UUID tenantId, Pattern regex) {
+        return nzyme.getDatabase().withHandle(handle ->
             handle.createQuery("SELECT COUNT(*) FROM dot11_known_networks " +
-                            "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                            "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                            "AND ssid ~ :regex")
                     .bind("organization_id", organizationId)
                     .bind("tenant_id", tenantId)
+                    .bind("regex", regex.pattern())
                     .mapTo(Long.class)
                     .one()
         );
@@ -2498,6 +2512,30 @@ public class Dot11 {
                 .define("order_direction", orderDirection)
                 .mapTo(Dot11KnownNetwork.class)
                 .list();
+    }
+
+    public List<Dot11KnownNetwork> findAllKnownNetworksByPattern(UUID organizationId,
+                                                                 UUID tenantId,
+                                                                 Pattern regex,
+                                                                 KnownSSIDOrderColumn orderColumn,
+                                                                 OrderDirection orderDirection,
+                                                                 int limit,
+                                                                 int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_known_networks " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND ssid ~ :regex " +
+                                "ORDER BY <order_column> <order_direction> LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("regex", regex.pattern())
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .define("order_column", orderColumn.getColumnName())
+                        .define("order_direction", orderDirection)
+                        .mapTo(Dot11KnownNetwork.class)
+                        .list()
+        );
     }
 
     public Optional<Dot11KnownNetwork> findKnownNetwork(UUID uuid, UUID organizationId, UUID tenantId) {
@@ -2553,6 +2591,19 @@ public class Dot11 {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE dot11_known_networks SET is_approved = :is_approved " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("is_approved", isApproved)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .execute()
+        );
+    }
+
+    public void changeStatusOfAllKnownNetworksOfTenantByRegex(UUID organizationId, UUID tenantId, Pattern regex, boolean isApproved) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_known_networks SET is_approved = :is_approved " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND ssid ~ :regex")
+                        .bind("regex", regex.pattern())
                         .bind("is_approved", isApproved)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)

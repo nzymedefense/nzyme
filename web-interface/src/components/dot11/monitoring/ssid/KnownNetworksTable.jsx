@@ -1,11 +1,11 @@
-import React, {useEffect} from "react";
-import LoadingSpinner from "../../../misc/LoadingSpinner";
+import React  from "react";
 import Paginator from "../../../misc/Paginator";
 import moment from "moment";
 import Dot11Service from "../../../../services/Dot11Service";
 import {toast} from "react-toastify";
 import GenericWidgetLoadingSpinner from "../../../widgets/GenericWidgetLoadingSpinner";
 import ColumnSorting from "../../../shared/ColumnSorting";
+import numeral from "numeral";
 
 const dot11Service = new Dot11Service();
 
@@ -159,15 +159,21 @@ export default function KnownNetworksTable(props) {
 
     return (
         <React.Fragment>
+            <p className="mt-1">
+                <strong>Total:</strong> {numeral(networks.total).format("0,0")}
+            </p>
+
             <table className="table table-sm table-hover table-striped">
                 <thead>
                 <tr>
                     <th>SSID {columnSorting("ssid")}</th>
                     <th>Status {columnSorting("status")}</th>
                     <th>Last Seen {columnSorting("last_seen")}</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
+                    { onChange ? <>
+                        <th>&nbsp;</th>
+                        <th>&nbsp;</th>
+                        <th>&nbsp;</th>
+                    </> : null }
                 </tr>
                 </thead>
                 <tbody>
@@ -177,13 +183,14 @@ export default function KnownNetworksTable(props) {
                             <td>{net.ssid}</td>
                             <td>{status(net)}</td>
                             <td title={moment(net.last_seen).format()}>{moment(net.last_seen).fromNow()}</td>
+                            { onChange ? <>
                             <td>{changeStatusLink(net)}</td>
                             <td>{ignoreLink(net)}</td>
                             <td>
                                 <a href="#" onClick={(e) => onDelete(e, net)}>
                                     Delete
                                 </a>
-                            </td>
+                            </td></> : null }
                         </tr>
                     )
                 })}

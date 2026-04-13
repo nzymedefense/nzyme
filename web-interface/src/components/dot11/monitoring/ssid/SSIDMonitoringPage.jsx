@@ -8,6 +8,7 @@ import {toast} from "react-toastify";
 import SSIDMonitoringConfiguration from "./SSIDMonitoringConfiguration";
 import KnownNetworksTable from "./KnownNetworksTable";
 import usePageTitle from "../../../../util/UsePageTitle";
+import ApproveKnownNetworksDialog from "./ApproveKnownNetworksDialog";
 
 const dot11Service = new Dot11Service();
 
@@ -26,6 +27,8 @@ export default function SSIDMonitoringPage() {
 
   const [orderColumn, setOrderColumn] = useState("ssid");
   const [orderDirection, setOrderDirection] = useState("ASC");
+
+  const [approvalDialogShown, setApprovalDialogShown] = useState(false);
 
   useEffect(() => {
     setNetworks(null);
@@ -129,8 +132,12 @@ export default function SSIDMonitoringPage() {
                   <h3 style={{display: "inline-block"}}>Known SSIDs/Networks</h3>
 
                   <span className="float-end">
-                  <button className="btn btn-secondary btn-sm me-1" onClick={onApproveAll}>Approve All</button>
-                  <button className="btn btn-danger btn-sm" onClick={onDeleteAll}>Delete All</button>
+                    <button className="btn btn-secondary btn-sm me-1"
+                            onClick={() => setApprovalDialogShown(true)}>
+                      Approve by Pattern
+                    </button>
+                    <button className="btn btn-secondary btn-sm me-1" onClick={onApproveAll}>Approve All</button>
+                    <button className="btn btn-danger btn-sm" onClick={onDeleteAll}>Delete All</button>
                   </span>
 
                   <br style={{clear: "both"}}/>
@@ -159,6 +166,11 @@ export default function SSIDMonitoringPage() {
                                       setOrderColumn={setOrderColumn}
                                       orderDirection={orderDirection}
                                       setOrderDirection={setOrderDirection} />
+
+                  {approvalDialogShown ?
+                    <ApproveKnownNetworksDialog onClose={() => setApprovalDialogShown(false)}
+                                                onComplete={() => setRevision(new Date())} />
+                    : null }
                 </div>
               </div>
             </div>

@@ -507,6 +507,14 @@ class Dot11Service {
     )
   }
 
+  findAllKnownNetworksByPattern(organizationUUID, tenantUUID, regex, orderColumn, orderDirection, limit, offset, setKnownNetworks, onError) {
+    RESTClient.get(
+      `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}`,
+      {regex: regex, limit: limit, offset: offset, order_column: orderColumn, order_direction: orderDirection},
+      (response) => setKnownNetworks(response.data), onError
+    )
+  }
+
   deleteKnownNetwork(uuid, organizationUUID, tenantUUID, onSuccess) {
     RESTClient.delete(
         `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/show/${uuid}`,
@@ -526,6 +534,14 @@ class Dot11Service {
       `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/approve`,
       {},
       onSuccess
+    )
+  }
+
+  approveAllKnownNetworksByPattern(organizationUUID, tenantUUID, regex, onSuccess, onError) {
+    RESTClient.put(
+      `/dot11/monitoring/networks/organization/${organizationUUID}/tenant/${tenantUUID}/approve`,
+      {regex: regex},
+      onSuccess, onError
     )
   }
 

@@ -6,6 +6,7 @@ import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.db.Dot11KnownNetwork;
 import app.nzyme.core.dot11.monitoring.ssids.KnownSSIDsRegistryKeys;
 import app.nzyme.core.rest.UserAuthenticatedResource;
+import app.nzyme.core.rest.requests.ApproveByRegexRequest;
 import app.nzyme.core.rest.requests.UpdateConfigurationRequest;
 import app.nzyme.core.rest.responses.dot11.monitoring.ssids.KnownNetworkDetailsResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.ssids.KnownNetworksListResponse;
@@ -28,6 +29,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 @Path("/api/dot11/monitoring/networks")
 @Produces(MediaType.APPLICATION_JSON)
@@ -44,6 +47,7 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
     public Response findAll(@Context SecurityContext sc,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset,
+                            @QueryParam("regex") @Nullable String regex,
                             @QueryParam("order_column") @Nullable String orderColumnParam,
                             @QueryParam("order_direction") @Nullable String orderDirectionParam,
                             @PathParam("organization_id") @NotNull UUID organizationId,
@@ -68,11 +72,28 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
             }
         }
 
-        long total = nzyme.getDot11().countAllKnownNetworks(organizationId, tenantId);
-        List<KnownNetworkDetailsResponse> networks = Lists.newArrayList();
-        for (Dot11KnownNetwork kn : nzyme.getDot11()
-                .findAllKnownNetworks(organizationId, tenantId, orderColumn, orderDirection, limit, offset)) {
-            networks.add(KnownNetworkDetailsResponse.create(
+        List<Dot11KnownNetwork> networks;
+        long total;
+        if (regex != null && !regex.isBlank()) {
+            // Regex was supplied. Only search for matching.
+            Pattern pattern = Pattern.compile(regex);
+            try {
+                Pattern.compile(regex);
+            } catch (PatternSyntaxException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+
+            networks = nzyme.getDot11().findAllKnownNetworksByPattern(organizationId, tenantId, pattern, orderColumn, orderDirection, limit, offset);
+            total = nzyme.getDot11().countAllKnownNetworksByPattern(organizationId, tenantId, pattern);
+        } else {
+            // No regex supplied. Search for all.
+            total = nzyme.getDot11().countAllKnownNetworks(organizationId, tenantId);
+            networks = nzyme.getDot11().findAllKnownNetworks(organizationId, tenantId, orderColumn, orderDirection, limit, offset);
+        }
+
+        List<KnownNetworkDetailsResponse> result = Lists.newArrayList();
+        for (Dot11KnownNetwork kn : networks) {
+            result.add(KnownNetworkDetailsResponse.create(
                     kn.uuid(),
                     kn.organizationId(),
                     kn.tenantId(),
@@ -84,7 +105,7 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
             ));
         }
 
-        return Response.ok(KnownNetworksListResponse.create(total, networks)).build();
+        return Response.ok(KnownNetworksListResponse.create(total, result)).build();
     }
 
     @PUT
@@ -211,13 +232,27 @@ public class Dot11MonitoredSSIDsResource extends UserAuthenticatedResource {
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/organization/{organization_id}/tenant/{tenant_id}/approve")
     public Response approveAllOfTenant(@Context SecurityContext sc,
+                                       @Nullable ApproveByRegexRequest req,
                                        @PathParam("organization_id") @NotNull UUID organizationId,
                                        @PathParam("tenant_id") @NotNull UUID tenantId) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getDot11().changeStatusOfAllKnownNetworksOfTenant(organizationId, tenantId, true);
+        if (req != null && req.regex() != null && !req.regex().isEmpty()) {
+            // Regex was supplied. Approve only matching.
+            Pattern pattern;
+            try {
+                pattern = Pattern.compile(req.regex());
+            } catch (PatternSyntaxException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+
+            nzyme.getDot11().changeStatusOfAllKnownNetworksOfTenantByRegex(organizationId, tenantId, pattern, true);
+        } else {
+            // No regex supplied. Approve all.
+            nzyme.getDot11().changeStatusOfAllKnownNetworksOfTenant(organizationId, tenantId, true);
+        }
 
         return Response.ok().build();
     }
