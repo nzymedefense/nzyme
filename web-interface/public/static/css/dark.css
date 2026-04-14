@@ -427,6 +427,11 @@ th i.order-icon-selected {
 }
 
 ol.breadcrumb {
+    --bs-breadcrumb-divider-color: #6b7280;
+    color: #6b7280;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
     color: #6b7280;
 }
 
