@@ -7943,4 +7943,48 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="create_dot11_timeline_events" author="lennartkoopmann">
+        <createTable tableName="dot11_timeline_events">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="address" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="address_type" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="event_type" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="event_details" type="jsonb">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="timestamp" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
