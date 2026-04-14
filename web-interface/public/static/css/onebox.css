@@ -11,8 +11,9 @@ img.brand {
 }
 
 section.start div.right-half {
-    background-color: #5c5d6f;
-    border-radius: 0 0.5rem 0.5rem 0;
+    background-color: #111111;
+    border-radius: 0;
+    border-color: #040303;
 }
 
 section.start div.right-half video, section.start div.right-half img {
@@ -24,7 +25,7 @@ section.start div.right-half video, section.start div.right-half img {
 section.start div.main-card {
     color: #fff !important;
     height: 600px;
-    border-radius: 0.5rem;
+    border-radius: 0;
     border-color: #040303;
 }
 
