@@ -91,7 +91,7 @@ function ConnectedClientsTable(props) {
                   </td>
                   <td>
                     <Dot11MacAddress addressWithContext={client.connected_bssid}
-                                     href={ApiRoutes.DOT11.NETWORKS.BSSID(client.connected_bssid.address)}
+                                     href={ApiRoutes.DOT11.NETWORKS.BSSIDS.DETAILS(client.connected_bssid.address)}
                                      filterElement={<FilterValueIcon setFilters={setFilters}
                                                                      fields={CONNECTED_CLIENT_FILTER_FIELDS}
                                                                      field="connected_bssid"

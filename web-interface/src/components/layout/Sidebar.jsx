@@ -86,7 +86,7 @@ function Sidebar(props) {
                 icon={<i className="sidebar-icon fa-solid fa-ranking-star"/>}/>
 
             <NavigationLink
-                href={ApiRoutes.DOT11.NETWORKS.BSSIDS}
+                href={ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX}
                 title="Access Points"
                 icon={<i className="sidebar-icon fa-solid fa-tower-cell"/>}/>
 

@@ -24,7 +24,7 @@ function BSSIDDetailsRows(props) {
       return (
           <tr>
             <td colSpan={COLSPAN} style={{textAlign: "center"}}>
-              <a href={ApiRoutes.DOT11.NETWORKS.BSSID(bssid.address)}>Show BSSID Details</a>
+              <a href={ApiRoutes.DOT11.NETWORKS.BSSIDS.DETAILS(bssid.address)}>Show BSSID Details</a>
             </td>
           </tr>
       )
@@ -50,7 +50,7 @@ function BSSIDDetailsRows(props) {
         <tr>
           <td colSpan={COLSPAN}>
             Only hidden SSIDs.{' '}
-            {hideBSSIDLink ? null : <a href={ApiRoutes.DOT11.NETWORKS.BSSID(bssid.address)}>Open BSSID Details</a>}
+            {hideBSSIDLink ? null : <a href={ApiRoutes.DOT11.NETWORKS.BSSIDS.DETAILS(bssid.address)}>Open BSSID Details</a>}
           </td>
         </tr>
     )

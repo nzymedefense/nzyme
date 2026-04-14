@@ -68,7 +68,7 @@ function Dot11MacAddressContextOverlay(props) {
         href = ApiRoutes.DOT11.CLIENTS.DETAILS(mac);
         break;
       case "DOT11_AP":
-        href = ApiRoutes.DOT11.NETWORKS.BSSID(mac);
+        href = ApiRoutes.DOT11.NETWORKS.BSSIDS.DETAILS(mac);
         break;
       default:
         return null;

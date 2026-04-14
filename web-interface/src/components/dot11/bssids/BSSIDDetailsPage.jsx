@@ -22,6 +22,8 @@ import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Presets, Relative} from "../../shared/timerange/TimeRange";
 import ChannelSelector from "../util/ChannelSelector";
 import usePageTitle from "../../../util/UsePageTitle";
+import {BSSID_MENU_ITEMS} from "./BSSIDMenuItems";
+import SectionMenuBar from "../../shared/SectionMenuBar";
 
 const dot11Service = new Dot11Service();
 
@@ -123,13 +125,22 @@ function BSSIDDetailsPage() {
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
-                <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.NETWORKS.BSSIDS}>Access Points</a></li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX}>Access Points</a></li>
                 <li className="breadcrumb-item">{bssid.summary.bssid.address}</li>
                 <li className="breadcrumb-item active" aria-current="page">Details</li>
               </ol>
             </nav>
           </div>
+        </div>
 
+        <div className="row">
+          <div className="col-md-12">
+            <SectionMenuBar items={BSSID_MENU_ITEMS(bssid.summary.bssid.address)}
+                            activeRoute={ApiRoutes.DOT11.NETWORKS.BSSIDS.DETAILS(bssid.summary.bssid.address) }/>
+          </div>
+        </div>
+
+        <div className="row mt-3">
           <div className="col-md-12">
             <h1>
               BSSID &quot;{bssid.summary.bssid.address} ({bssid.summary.bssid.oui ? bssid.summary.bssid.oui : "Unknown Vendor"})&quot;

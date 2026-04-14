@@ -156,7 +156,7 @@ function ClientDetailsPage() {
                   <dt>Last Connected to BSSID</dt>
                   <dd>
                     {client.connected_bssid ? <Dot11MacAddress addressWithContext={client.connected_bssid.mac}
-                                                               href={ApiRoutes.DOT11.NETWORKS.BSSID(client.connected_bssid.mac.address)}
+                                                               href={ApiRoutes.DOT11.NETWORKS.BSSIDS.DETAILS(client.connected_bssid.mac.address)}
                                                                showOui={true}/> : "None"}{' '}
                   </dd>
                   <dt>Name &amp; Description (from Context)</dt>

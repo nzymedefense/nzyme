@@ -194,6 +194,7 @@ import OrganizationSubsystemsPage
 import TenantSubsystemsPage from "./components/system/authentication/management/tenants/TenantSubsystemsPage";
 import EditMonitorPage from "./components/monitors/EditMonitorPage";
 import Toast from "./components/misc/Toast";
+import BSSIDTimelinePage from "./components/dot11/bssids/BSSIDTimelinePage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -621,8 +622,9 @@ function App() {
 
                                 { /* 802.11/Networks. */}
                                 <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>
-                                <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
-                                <Route path={ApiRoutes.DOT11.NETWORKS.BSSID(':bssidParam')} element={<BSSIDDetailsPage />}/>
+                                <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX} element={<BSSIDsPage />}/>
+                                <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS.DETAILS(':bssidParam')} element={<BSSIDDetailsPage />}/>
+                                <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS.TIMELIME(':bssidParam')} element={<BSSIDTimelinePage />}/>
                                 <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />
 
                                 { /* 802.11/Clients. */}

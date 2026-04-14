@@ -3,7 +3,7 @@ import ApiRoutes from "../../../util/ApiRoutes";
 export default function monitorTypeToSearchLink(monitor) {
   switch (monitor.type) {
     case "DOT11_BSSID":
-      return ApiRoutes.DOT11.NETWORKS.BSSIDS + "?monitor=" + monitor.uuid;
+      return ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX + "?monitor=" + monitor.uuid;
     case "DOT11_CLIENT_CONNECTED":
       return ApiRoutes.DOT11.CLIENTS.CONNECTED + "?monitor=" + monitor.uuid;
     case "DOT11_CLIENT_DISCONNECTED":

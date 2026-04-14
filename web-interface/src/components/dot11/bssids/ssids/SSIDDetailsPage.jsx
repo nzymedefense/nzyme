@@ -82,7 +82,7 @@ function SSIDDetailsPage() {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
-              <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.NETWORKS.BSSIDS}>Access Points</a></li>
+              <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX}>Access Points</a></li>
               <li className="breadcrumb-item">{ssid.bssid.address}</li>
               <li className="breadcrumb-item">SSIDs</li>
               <li className="breadcrumb-item active" aria-current="page">{ssid.ssid}</li>
@@ -91,7 +91,7 @@ function SSIDDetailsPage() {
         </div>
 
         <div className="col-md-2">
-          <a className="btn btn-primary float-end" href={ApiRoutes.DOT11.NETWORKS.BSSIDS}>Back</a>
+          <a className="btn btn-primary float-end" href={ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX}>Back</a>
         </div>
 
         <div className="col-md-12">
@@ -112,7 +112,7 @@ function SSIDDetailsPage() {
                 <dt>BSSID</dt>
                 <dd>
                   <Dot11MacAddress addressWithContext={ssid.bssid}
-                                   href={ApiRoutes.DOT11.NETWORKS.BSSID(ssid.bssid.address)}
+                                   href={ApiRoutes.DOT11.NETWORKS.BSSIDS.DETAILS(ssid.bssid.address)}
                                    withAssetName
                                    showOui={true} />
                 </dd>

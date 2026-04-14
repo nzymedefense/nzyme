@@ -33,7 +33,7 @@ function ClientBSSIDHistory(props) {
                 <tr key={i}>
                   <td>
                     <Dot11MacAddress addressWithContext={bssid.mac}
-                                     href={ApiRoutes.DOT11.NETWORKS.BSSID(bssid.mac.address)}
+                                     href={ApiRoutes.DOT11.NETWORKS.BSSIDS.DETAILS(bssid.mac.address)}
                                      highlighted={connectedBSSID.mac.address && connectedBSSID.mac.address === bssid.mac.address}/>
                   </td>
                   <td>{bssid.mac.oui ? bssid.mac.oui : "Unknown"}</td>

@@ -13,7 +13,7 @@ function AutomaticDot11MacAddressLink(props) {
   const link = (bssid, type) => {
     switch (type) {
       case ACCESS_POINT:
-        return ApiRoutes.DOT11.NETWORKS.BSSID(address);
+        return ApiRoutes.DOT11.NETWORKS.BSSIDS.DETAILS(address);
       case CLIENT:
         return ApiRoutes.DOT11.CLIENTS.DETAILS(address);
     }

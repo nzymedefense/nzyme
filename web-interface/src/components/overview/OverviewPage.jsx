@@ -150,7 +150,7 @@ export default function OverviewPage() {
                 <div className="card-body">
                   <CardTitleWithControls title="Access Points"
                                          slim={true}
-                                         internalLink={ApiRoutes.DOT11.NETWORKS.BSSIDS}/>
+                                         internalLink={ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX}/>
 
                   <BSSIDAndSSIDChart parameter="bssid_count" timeRange={Presets.RELATIVE_HOURS_24}/>
                 </div>
@@ -162,7 +162,7 @@ export default function OverviewPage() {
                 <div className="card-body">
                   <CardTitleWithControls title="Networks"
                                          slim={true}
-                                         internalLink={ApiRoutes.DOT11.NETWORKS.BSSIDS}/>
+                                         internalLink={ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX}/>
 
                   <BSSIDAndSSIDChart parameter="ssid_count" timeRange={Presets.RELATIVE_HOURS_24}/>
                 </div>
