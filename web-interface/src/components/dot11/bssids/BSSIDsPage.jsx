@@ -11,7 +11,6 @@ import Filters from "../../shared/filtering/Filters";
 import {BSSID_FILTER_FIELDS} from "./BssidFilterFields";
 import {queryParametersToFilters} from "../../shared/filtering/FilterQueryParameters";
 import usePageTitle from "../../../util/UsePageTitle";
-import MonitorsService from "../../../services/MonitorsService";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
 import useQuery from "../../../util/UseQuery";

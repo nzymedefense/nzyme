@@ -65,13 +65,13 @@ public class RegistryChangeMonitorImpl implements RegistryChangeMonitor {
 
                 if (!previous.containsKey(entry.getKey())) {
                     // New entry.
-                    LOG.info("Registry key [{}] now has a value. Notifying subscribers.", entry.getKey());
+                    LOG.debug("Registry key [{}] now has a value. Notifying subscribers.", entry.getKey());
                     notifyChange(entry.getKey());
                 } else {
                     // Existing entry. Compare.
                     if (!entry.getValue().equals(previous.get(entry.getKey()))) {
                         // Value changed.
-                        LOG.info("Registry key [{}] has a new value. Notifying subscribers.", entry.getKey());
+                        LOG.debug("Registry key [{}] has a new value. Notifying subscribers.", entry.getKey());
                         notifyChange(entry.getKey());
                     }
                 }
@@ -83,7 +83,7 @@ public class RegistryChangeMonitorImpl implements RegistryChangeMonitor {
                 }
                 // Did a value disappear?
                 if (!current.containsKey(entry.getKey())) {
-                    LOG.info("Registry key [{}] has disappeared. Notifying subscribers.", entry.getKey());
+                    LOG.debug("Registry key [{}] has disappeared. Notifying subscribers.", entry.getKey());
                     notifyChange(entry.getKey());
                 }
             }

@@ -250,7 +250,8 @@ public class Dot11 {
                                 "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
                                 "COALESCE(ARRAY_AGG(DISTINCT protocol_elem) FILTER (WHERE protocol_elem IS NOT NULL), " +
                                 "ARRAY[]::text[]) AS security_protocols, " +
-                                "ARRAY_AGG(DISTINCT fingerprints_elem) AS fingerprints, " +
+                                "COALESCE(ARRAY_AGG(DISTINCT fingerprints_elem) FILTER (WHERE fingerprints_elem IS NOT NULL), " +
+                                "ARRAY[]::text[]) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
                                 "ARRAY_AGG(DISTINCT infratypes_elem) AS infrastructure_types, " +
                                 "ARRAY_AGG(DISTINCT(ch.frequency)) AS frequencies, " +

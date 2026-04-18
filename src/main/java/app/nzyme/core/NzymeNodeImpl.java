@@ -60,6 +60,8 @@ import app.nzyme.core.registry.RegistryChangeMonitorImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.subsystems.Subsystems;
+import app.nzyme.core.timelines.TimelinesThread;
+import app.nzyme.core.timelines.tasks.Dot11BSSIDTimelineCalculationTaskHandler;
 import app.nzyme.core.uav.Uav;
 import app.nzyme.plugin.*;
 import app.nzyme.plugin.distributed.messaging.MessageBus;
@@ -271,6 +273,10 @@ public class NzymeNodeImpl implements NzymeNode {
                 TaskType.MONITOR_EXECUTION,
                 new MonitorExecutionTaskHandler(this)
         );
+        this.tasksQueue.onMessageReceived(
+                TaskType.TIMELINES_CALCULATION_DOT11_BSSID,
+                new Dot11BSSIDTimelineCalculationTaskHandler(this)
+        );
 
         try {
             this.crypto.initialize();
@@ -325,6 +331,7 @@ public class NzymeNodeImpl implements NzymeNode {
         periodicalManager.scheduleAtFixedRate(new AssetStatisticsCleaner(this), 1, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new GNSSElevationMaskThread(this), 0, 30, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new MonitorsThread(this), 1, 1, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new TimelinesThread(this), 5, 5, TimeUnit.MINUTES);
         if (configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {

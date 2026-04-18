@@ -19,7 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.javadoc.skip>true</maven.javadoc.skip>
 
-        <!-- default to x64 -->
+        <!-- Default to x64. -->
         <jre.arch>x64</jre.arch>
 
         <log4j.version>2.25.4</log4j.version>
@@ -53,7 +53,7 @@
         <quartz.version>2.5.2</quartz.version>
         <cronutils.version>9.2.1</cronutils.version>
         <httpcomponents.version>4.5.13</httpcomponents.version>
-        <nzymeplugin.version>2.0.31</nzymeplugin.version>
+        <nzymeplugin.version>2.0.32</nzymeplugin.version>
         <bouncycastle.version>1.83</bouncycastle.version>
         <oshi.version>6.11.0</oshi.version>
         <commonsnet.version>3.9.0</commonsnet.version>
