@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -66,8 +67,12 @@ public class Dot11BSSIDTimelineCalculationTaskHandler implements TaskHandler {
                     0,
                     taps)) {
                 try {
+                    int eventsWritten = 0;
+
                     // SSIDs.
-                    Dot11BSSIDTimelineSSIDAnnouncementResolver ssids = new Dot11BSSIDTimelineSSIDAnnouncementResolver(nzyme);
+                    Dot11BSSIDTimelineSSIDAnnouncementResolver ssids = new Dot11BSSIDTimelineSSIDAnnouncementResolver(
+                            nzyme, tenant.organizationUuid(), tenant.uuid()
+                    );
                     Optional<ResolverResult> ssidsResult = ssids.resolve(bssid.bssid(), taps);
 
                     if (ssidsResult.isPresent()) {
@@ -80,10 +85,13 @@ public class Dot11BSSIDTimelineCalculationTaskHandler implements TaskHandler {
                                 ssidsResult.get().payload(),
                                 now
                         );
+                        eventsWritten++;
                     }
 
-                    // SSIDs.
-                    Dot11BSSIDStrongestTapResolver strongestTap = new Dot11BSSIDStrongestTapResolver(nzyme);
+                    // Strongest Tap.
+                    Dot11BSSIDStrongestTapResolver strongestTap = new Dot11BSSIDStrongestTapResolver(
+                            nzyme, tenant.organizationUuid(), tenant.uuid()
+                    );
                     Optional<ResolverResult> strongestTapResult = strongestTap.resolve(bssid.bssid(), taps);
 
                     if (strongestTapResult.isPresent()) {
@@ -94,6 +102,20 @@ public class Dot11BSSIDTimelineCalculationTaskHandler implements TaskHandler {
                                 bssid.bssid(),
                                 TimelineEventType.DOT11_BSSID_STRONGEST_TAP,
                                 strongestTapResult.get().payload(),
+                                now
+                        );
+                        eventsWritten++;
+                    }
+
+                    // No events, but mark that the BSSID was seen.
+                    if (eventsWritten == 0) {
+                        timelines.writeDot11TimelineEvent(
+                                tenant.organizationUuid(),
+                                tenant.uuid(),
+                                TimelineAddressType.DOT11_BSSID,
+                                bssid.bssid(),
+                                TimelineEventType.MARK,
+                                Collections.emptyMap(),
                                 now
                         );
                     }

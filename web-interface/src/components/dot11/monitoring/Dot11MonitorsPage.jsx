@@ -23,7 +23,7 @@ export default function Dot11MonitorsPage() {
   const [connectedClientPage, setConnectedClientPage] = useState(1);
   const [disconnectedClientPage, setDisconnectedClientPage] = useState(1);
 
-  const perPage = 10
+  const perPage = 10;
 
   useEffect(() => {
     monitorsService.findAllOfType(

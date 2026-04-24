@@ -37,6 +37,7 @@ import app.nzyme.core.rest.resources.system.integrations.tenant.CotIntegrationRe
 import app.nzyme.core.rest.resources.taps.StatusResource;
 import app.nzyme.core.rest.resources.taps.TablesResource;
 import app.nzyme.core.rest.resources.taps.TapsResource;
+import app.nzyme.core.rest.resources.timelines.TimelinesResource;
 import app.nzyme.core.rest.resources.uav.UavResource;
 import app.nzyme.core.rest.resources.user.UserProfileResource;
 import app.nzyme.plugin.distributed.messaging.*;
@@ -182,6 +183,7 @@ public class NzymeHttpServer {
         resourceConfig.register(GNSSResource.class);
         resourceConfig.register(TimeResource.class);
         resourceConfig.register(MonitorsResource.class);
+        resourceConfig.register(TimelinesResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

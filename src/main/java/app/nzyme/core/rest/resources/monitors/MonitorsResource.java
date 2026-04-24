@@ -44,7 +44,6 @@ public class MonitorsResource extends TapDataHandlingResource {
 
     private static final Logger LOG = LogManager.getLogger(MonitorsResource.class);
 
-
     @Inject
     private NzymeNode nzyme;
 
@@ -100,9 +99,9 @@ public class MonitorsResource extends TapDataHandlingResource {
     @Path("/show/{id}/detections/timeline")
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_view" })
     public Response findDetectionsTimelineOfMonitor(@Context SecurityContext sc,
-                                            @PathParam("id") UUID uuid,
-                                            @QueryParam("limit") int limit,
-                                            @QueryParam("offset") int offset) {
+                                                    @PathParam("id") UUID uuid,
+                                                    @QueryParam("limit") int limit,
+                                                    @QueryParam("offset") int offset) {
         AuthenticatedUser user = getAuthenticatedUser(sc);
         Optional<MonitorEntry> monitor = nzyme.getMonitors().find(uuid);
 

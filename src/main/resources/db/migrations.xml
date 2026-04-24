@@ -7987,4 +7987,18 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="remove_tap_from_dot11_timeline_events" author="lennartkoopmann">
+        <dropColumn tableName="dot11_timeline_events" columnName="tap_uuid" />
+    </changeSet>
+    
+    <changeSet id="add_timeline_events_index_20260420" author="lennartkoopmann">
+        <createIndex tableName="dot11_timeline_events" indexName="d11tle_backcompare">
+            <column name="organization_id" />
+            <column name="tenant_id" />
+            <column name="address_type" />
+            <column name="address" />
+            <column name="timestamp" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

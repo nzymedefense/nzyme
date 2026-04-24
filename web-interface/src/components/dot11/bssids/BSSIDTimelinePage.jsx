@@ -1,41 +1,60 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
-import {TapContext} from "../../../App";
-import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import SectionMenuBar from "../../shared/SectionMenuBar";
 import ApiRoutes from "../../../util/ApiRoutes";
 import {BSSID_MENU_ITEMS} from "./BSSIDMenuItems";
 import Dot11Service from "../../../services/Dot11Service";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
-import {Presets as TimeRange} from "../../shared/timerange/TimeRange";
+import {Presets} from "../../shared/timerange/TimeRange";
+import TimelinesService from "../../../services/TimelinesService";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import usePageTitle from "../../../util/UsePageTitle";
+import Timeline from "../../shared/timelines/Timeline";
+import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
 
 const dot11Service = new Dot11Service();
+const timelinesService = new TimelinesService();
 
 export default function BSSIDTimelinePage() {
 
   const {bssidParam} = useParams();
-
-  const tapContext = useContext(TapContext);
-  const selectedTaps = tapContext.taps;
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const [bssid, setBSSID] = useState(null);
-  const [timeRange, setTimeRange] = useState(TimeRange.RELATIVE_HOURS_12);
+  const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_DAYS_7))
 
-  useEffect(() => {
-    enableTapSelector(tapContext);
+  const [events, setEvents] = useState(null);
 
-    return () => {
-      disableTapSelector(tapContext);
-    }
-  }, [tapContext]);
+  const [page, setPage] = useState(1);
+  const perPage = 50;
+
+  const [revision, setRevision] = useState(new Date());
+
+  usePageTitle(bssid ? `BSSID: ${bssid.summary.bssid.address} Timeline` : "BSSID Timeline");
 
   useEffect(() => {
     setBSSID(null);
-    dot11Service.findBSSID(bssidParam, selectedTaps, setBSSID);
-  }, [bssidParam, selectedTaps]);
+    dot11Service.findBSSID(bssidParam, "*", setBSSID);
+  }, [bssidParam]);
 
-  if (!bssid) {
+  useEffect(() => {
+    if (bssid) {
+      setEvents(null);
+      timelinesService.findAllOfAddress(
+        "DOT11_BSSID",
+        bssid.summary.bssid.address,
+        organizationId,
+        tenantId,
+        timeRange,
+        perPage,
+        (page-1)*perPage,
+        setEvents
+      );
+    }
+  }, [bssid, organizationId, tenantId, timeRange, perPage, page, revision])
+
+  if (!bssid || !events) {
     return <LoadingSpinner />
   }
 
@@ -76,8 +95,15 @@ export default function BSSIDTimelinePage() {
             <div className="card-body">
               <CardTitleWithControls title="Timeline"
                                      slim={true}
+                                     refreshAction={() => setRevision(new Date())}
                                      timeRange={timeRange}
                                      setTimeRange={setTimeRange} />
+
+              <Timeline events={events}
+                        addressLastSeen={bssid.summary.last_seen}
+                        page={page}
+                        setPage={setPage}
+                        perPage={perPage }/>
             </div>
           </div>
         </div>

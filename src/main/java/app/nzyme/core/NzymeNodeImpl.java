@@ -97,6 +97,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import static app.nzyme.core.timelines.Timelines.EVENT_HORIZON_MINUTES;
+
 public class NzymeNodeImpl implements NzymeNode {
 
     private static final Logger LOG = LogManager.getLogger(NzymeNodeImpl.class);
@@ -331,7 +333,7 @@ public class NzymeNodeImpl implements NzymeNode {
         periodicalManager.scheduleAtFixedRate(new AssetStatisticsCleaner(this), 1, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new GNSSElevationMaskThread(this), 0, 30, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new MonitorsThread(this), 1, 1, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new TimelinesThread(this), 5, 5, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new TimelinesThread(this), 0, EVENT_HORIZON_MINUTES, TimeUnit.MINUTES);
         if (configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {

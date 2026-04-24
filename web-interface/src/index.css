@@ -1265,21 +1265,6 @@ i.filter-value {
     margin-left: 8px;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 div.filters-modal div.modal-dialog {
     max-width: 800px !important;
     font-family: "Geist", sans-serif;
@@ -1390,4 +1375,266 @@ div.condition-form {
 
 div.arp-description p {
     display: inline;
+}
+
+.timeline-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.timeline-total {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: #444;
+    background: #ffffff;
+    border: 1px solid #d8dde3;
+    border-radius: 2px;
+}
+
+.timeline-total strong {
+    font-weight: 600;
+    color: #111;
+}
+
+.timeline-event-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: relative;
+}
+
+.timeline-event-list::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: #2c3e50;
+    z-index: 1;
+}
+
+.timeline-event {
+    list-style: none;
+    position: relative;
+    padding: 12px 14px 12px 40px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    background: #ffffff;
+    border: 1px solid #d8dde3;
+    border-radius: 2px;
+}
+
+.timeline-event:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-event-marker {
+    position: absolute;
+    left: 12px;
+    top: 14px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #2c3e50;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+.timeline-event-marker[data-kind="tap"] {
+    border-color: #0d5aa7;
+    background: #0d5aa7;
+}
+
+.timeline-event-marker[data-kind="ssid"] {
+    border-color: #1f6b34;
+    background: #1f6b34;
+}
+
+.timeline-event-marker[data-kind="unknown"] {
+    border-color: #555;
+    background: #555;
+}
+
+.timeline-event-body {
+    min-width: 0;
+}
+
+.timeline-event-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.timeline-event-type {
+    font-weight: 700;
+    color: #111;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 11px;
+}
+
+.timeline-event-sep {
+    color: #666;
+    font-size: 11px;
+}
+
+.timeline-event-time {
+    font-size: 11px;
+    color: #444;
+    white-space: nowrap;
+}
+
+.timeline-event-detail {
+    color: #222;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: baseline;
+}
+
+.timeline-event-tap-name {
+    font-weight: 600;
+    color: #111;
+}
+
+.timeline-event-tap-uuid {
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    color: #555;
+    background: none;
+    padding: 0;
+}
+
+.timeline-event-ssid-list {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.timeline-event-ssid-prefix {
+    font-family: "Geist Mono", monospace;
+    font-weight: 700;
+    color: #111;
+    width: 12px;
+    display: inline-block;
+    text-align: center;
+}
+
+.timeline-event-ssid {
+    font-family: "Geist Mono", monospace;
+    font-size: 12px;
+    color: #111;
+    background: #e4e6ea;
+    padding: 1px 6px;
+    border-radius: 2px;
+}
+
+.timeline-event-ssid-sep {
+    color: #888;
+}
+
+.timeline-event-gone {
+    background: transparent;
+    border: none;
+    padding: 16px 0 16px 40px;
+    margin-bottom: 10px;
+}
+
+.timeline-event-gone .timeline-event-gone-rule {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.timeline-event-gone .timeline-event-gone-rule::before,
+.timeline-event-gone .timeline-event-gone-rule::after {
+    content: '';
+    flex: 1;
+    height: 0;
+    border-top: 1px dashed #888;
+}
+
+.timeline-event-gone .timeline-event-gone-label {
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 10px;
+    background: #ffffff;
+    border: 1px solid #d8dde3;
+    border-radius: 2px;
+    color: #222;
+}
+
+.timeline-event-gone .timeline-event-gone-rule[data-ongoing="true"] .timeline-event-gone-label {
+    color: #7a3e00;
+    background: #fbe8c8;
+    border-color: #c48a3a;
+}
+
+.timeline-event-gone-range {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #333;
+}
+
+.timeline-event-gone-arrow {
+    color: #666;
+    padding: 0 4px;
+    font-weight: 600;
+}
+
+.timeline-event-gone-ongoing {
+    color: #7a3e00;
+    font-weight: 700;
+}
+
+.timeline-event-marker[data-kind="active"] {
+    border-color: #1f6b34;
+    background: #1f6b34;
+    box-shadow: 0 0 0 0 rgba(31, 107, 52, 0.5);
+    animation: timeline-pulse 2s ease-out infinite;
+}
+
+.timeline-event--active-now {
+    border-color: #9dc8ad;
+    background: #f4faf6;
+}
+
+.timeline-event--active-now .timeline-event-type {
+    color: #1f6b34;
+}
+
+.timeline-event-active-detail {
+    color: #1f6b34;
+    font-weight: 500;
+}
+
+.timeline-event-list-single::before {
+    display: none;
+}
+
+.timeline-event-list-single .timeline-event-marker {
+    display: none;
+}
+
+.timeline-event-list-single .timeline-event {
+    padding-left: 14px;
 }

@@ -15,5 +15,6 @@ export const Presets = {
   RELATIVE_MINUTES_15: Relative(15, "Last 15 Minutes"),
   RELATIVE_HOURS_12:   Relative(720, "Last 12 Hours"),
   RELATIVE_HOURS_24:   Relative(1440, "Last 24 Hours"),
+  RELATIVE_DAYS_7:     Relative( 10080 , "Last 7 Days"),
   ALL_TIME:            Named("all_time")
 }

@@ -55,8 +55,8 @@ public abstract class Dhcpv4TransactionReport {
                                                  @JsonProperty("first_packet") DateTime firstPacket,
                                                  @JsonProperty("latest_packet") DateTime latestPacket,
                                                  @JsonProperty("notes") Set<String> notes,
-                                                 @JsonProperty("successful") boolean successful,
-                                                 @JsonProperty("complete") boolean complete) {
+                                                 @JsonProperty("successful") Boolean successful,
+                                                 @JsonProperty("complete") Boolean complete) {
         return builder()
                 .transactionType(transactionType)
                 .transactionId(transactionId)
@@ -117,9 +117,9 @@ public abstract class Dhcpv4TransactionReport {
 
         public abstract Builder notes(Set<String> notes);
 
-        public abstract Builder successful(boolean successful);
+        public abstract Builder successful(Boolean successful);
 
-        public abstract Builder complete(boolean complete);
+        public abstract Builder complete(Boolean complete);
 
         public abstract Dhcpv4TransactionReport build();
     }

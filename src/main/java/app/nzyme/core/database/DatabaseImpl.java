@@ -59,6 +59,7 @@ import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetailsMapper;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntryMapper;
 import app.nzyme.core.shared.db.TapBasedSignalStrengthResultMapper;
 import app.nzyme.core.taps.db.metrics.*;
+import app.nzyme.core.timelines.db.TimelineEventEntryMapper;
 import app.nzyme.core.uav.db.UavEntryMapper;
 import app.nzyme.core.uav.db.UavTimelineEntryMapper;
 import app.nzyme.core.uav.db.UavTypeEntryMapper;
@@ -226,7 +227,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new StringDoubleDoubleNumberAggregationResultMapper())
                 .registerRowMapper(new StringStringNumberAggregationResultMapper())
                 .registerRowMapper(new L4AddressDataMapper())
-                .registerRowMapper(new MonitorEntryMapper());
+                .registerRowMapper(new MonitorEntryMapper())
+                .registerRowMapper(new TimelineEventEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

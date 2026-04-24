@@ -1003,3 +1003,139 @@ div.arp-description strong {
 span.serial-number-match {
     color: #c4c4d4;
 }
+
+/* Timeline */
+
+.timeline-total {
+    background-color: #1c1c22;
+    border-color: #33333d;
+    color: #9a9ab0;
+}
+
+.timeline-total strong {
+    color: #e8e8ed;
+}
+
+.timeline-event-list::before {
+    background: #4b5060;
+}
+
+.timeline-event {
+    background-color: #1c1c22;
+    border-color: #33333d;
+}
+
+.timeline-event-marker {
+    background: #1c1c22;
+    border-color: #4b5060;
+}
+
+.timeline-event-marker[data-kind="tap"] {
+    border-color: #7b93db;
+    background: #7b93db;
+}
+
+.timeline-event-marker[data-kind="ssid"] {
+    border-color: #34d399;
+    background: #34d399;
+}
+
+.timeline-event-marker[data-kind="active"] {
+    border-color: #34d399;
+    background: #34d399;
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5);
+    animation: timeline-pulse-dark 2s ease-out infinite;
+}
+
+.timeline-event-marker[data-kind="unknown"] {
+    border-color: #6b7280;
+    background: #6b7280;
+}
+
+@keyframes timeline-pulse-dark {
+    0%   { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
+    70%  { box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+.timeline-event-type {
+    color: #e8e8ed;
+}
+
+.timeline-event-sep {
+    color: #4b5060;
+}
+
+.timeline-event-time {
+    color: #9a9ab0;
+}
+
+.timeline-event-detail {
+    color: #c4c4d4;
+}
+
+.timeline-event-tap-name {
+    color: #e8e8ed;
+}
+
+.timeline-event-tap-uuid {
+    color: #6b7280;
+}
+
+.timeline-event-ssid-prefix {
+    color: #e8e8ed;
+}
+
+.timeline-event-ssid {
+    background: #25252d;
+    color: #e8e8ed;
+}
+
+.timeline-event-ssid-sep {
+    color: #4b5060;
+}
+
+.timeline-event-active-now {
+    background-color: #0d3b2a;
+    border-color: #155e42;
+}
+
+.timeline-event-active-now .timeline-event-type {
+    color: #34d399;
+}
+
+.timeline-event-active-detail {
+    color: #34d399;
+}
+
+.timeline-event-gone .timeline-event-gone-label {
+    background-color: #25252d !important;
+    border: none;
+    padding: 2px 10px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.timeline-event-gone .timeline-event-gone-label {
+    background: #1c1c22;
+    border-color: #33333d;
+    color: #c4c4d4;
+}
+
+.timeline-event-gone .timeline-event-gone-rule[data-ongoing="true"] .timeline-event-gone-label {
+    color: #fbbf24;
+    background: #3d3209;
+    border-color: #554610;
+}
+
+.timeline-event-gone-range {
+    color: #9a9ab0;
+}
+
+.timeline-event-gone-arrow {
+    color: #6b7280;
+}
+
+.timeline-event-gone-ongoing {
+    color: #fbbf24;
+}

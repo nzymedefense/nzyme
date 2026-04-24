@@ -19,7 +19,7 @@ import monitorTypeToFilterFields from "./shared/MonitorFilterFields";
 import monitorTypeToSearchLink from "./shared/MonitorReplay";
 import WithPermission from "../misc/WithPermission";
 import MonitorDetectionsTimelineTable from "./MonitorDetectionsTimelineTable";
-import {capitalizeFirstLetter, capitalizeFirstLetterAndLowercase} from "../../util/Tools";
+import {capitalizeFirstLetterAndLowercase} from "../../util/Tools";
 
 const monitorsService = new MonitorsService();
 const tapsService = new TapsService();
