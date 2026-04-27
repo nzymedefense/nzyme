@@ -35,7 +35,7 @@ function BSSIDAndSSIDChart(props) {
     return result
   }
 
-  if (!histogram || !monitorsReady) {
+  if (!histogram || monitorsReady === false) {
     return <LoadingSpinner />
   }
 
