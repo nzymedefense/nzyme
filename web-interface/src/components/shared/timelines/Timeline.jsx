@@ -47,6 +47,10 @@ export default function Timeline({events, addressLastSeen, page, setPage, perPag
         <span className="timeline-total">
           <strong>Total Events:</strong> {numeral(events.total).format('0,0')}
         </span>
+
+        <span className="pull-right text-muted">
+          Events are calculated every 5 minutes.
+        </span>
       </div>
 
       <ul className="timeline-event-list mb-4">
