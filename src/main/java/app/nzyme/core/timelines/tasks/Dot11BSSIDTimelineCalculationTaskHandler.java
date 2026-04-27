@@ -11,8 +11,9 @@ import app.nzyme.core.timelines.TimelineEventType;
 import app.nzyme.core.timelines.Timelines;
 import app.nzyme.core.timelines.TimelinesRegistryKeys;
 import app.nzyme.core.timelines.resolvers.ResolverResult;
+import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDFingerprintResolver;
 import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDStrongestTapResolver;
-import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDTimelineSSIDAnnouncementResolver;
+import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDSSIDAnnouncementResolver;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.distributed.tasksqueue.ReceivedTask;
@@ -70,7 +71,7 @@ public class Dot11BSSIDTimelineCalculationTaskHandler implements TaskHandler {
                     int eventsWritten = 0;
 
                     // SSIDs.
-                    Dot11BSSIDTimelineSSIDAnnouncementResolver ssids = new Dot11BSSIDTimelineSSIDAnnouncementResolver(
+                    Dot11BSSIDSSIDAnnouncementResolver ssids = new Dot11BSSIDSSIDAnnouncementResolver(
                             nzyme, tenant.organizationUuid(), tenant.uuid()
                     );
                     Optional<ResolverResult> ssidsResult = ssids.resolve(bssid.bssid(), taps);
@@ -83,6 +84,25 @@ public class Dot11BSSIDTimelineCalculationTaskHandler implements TaskHandler {
                                 bssid.bssid(),
                                 TimelineEventType.DOT11_BSSID_SSID_DIFF,
                                 ssidsResult.get().payload(),
+                                now
+                        );
+                        eventsWritten++;
+                    }
+
+                    // Fingerprints.
+                    Dot11BSSIDFingerprintResolver fingerprints = new Dot11BSSIDFingerprintResolver(
+                            nzyme, tenant.organizationUuid(), tenant.uuid()
+                    );
+                    Optional<ResolverResult> fingerprintsResult = fingerprints.resolve(bssid.bssid(), taps);
+
+                    if (fingerprintsResult.isPresent()) {
+                        timelines.writeDot11TimelineEvent(
+                                tenant.organizationUuid(),
+                                tenant.uuid(),
+                                TimelineAddressType.DOT11_BSSID,
+                                bssid.bssid(),
+                                TimelineEventType.DOT11_BSSID_FINGERPRINT_DIFF,
+                                fingerprintsResult.get().payload(),
                                 now
                         );
                         eventsWritten++;

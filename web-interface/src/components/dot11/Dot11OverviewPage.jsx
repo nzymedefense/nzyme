@@ -85,7 +85,7 @@ export default function Dot11OverviewPage() {
                                      slim={true}
                                      internalLink={ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX} />
 
-              <BSSIDAndSSIDChart parameter="bssid_count" timeRange={Presets.RELATIVE_HOURS_24}/>
+              <BSSIDAndSSIDChart parameter="bssid_count" timeRange={Presets.RELATIVE_HOURS_24} />
             </div>
           </div>
         </div>
@@ -97,7 +97,7 @@ export default function Dot11OverviewPage() {
                                      slim={true}
                                      internalLink={ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX} />
 
-              <BSSIDAndSSIDChart parameter="ssid_count" timeRange={Presets.RELATIVE_HOURS_24}/>
+              <BSSIDAndSSIDChart parameter="ssid_count" timeRange={Presets.RELATIVE_HOURS_24} />
             </div>
           </div>
         </div>
@@ -109,7 +109,7 @@ export default function Dot11OverviewPage() {
                                      slim={true}
                                      internalLink={ApiRoutes.DOT11.DISCO.INDEX} />
 
-              <DiscoHistogram discoType="disconnection" timeRange={Presets.RELATIVE_HOURS_24}/>
+              <DiscoHistogram discoType="disconnection" timeRange={Presets.RELATIVE_HOURS_24} />
             </div>
           </div>
         </div>

@@ -805,7 +805,8 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             }
 
             List<FingerprintImportDataResponse> fingerprints = Lists.newArrayList();
-            for (String fingerprint : nzyme.getDot11().findFingerprintsOfBSSID(bssid, allAccessibleTapUUIDs)) {
+            for (String fingerprint : nzyme.getDot11()
+                    .findFingerprintsOfBSSID(bssid, TimeRangeFactory.oneDay(), allAccessibleTapUUIDs)) {
                 if (fingerprint != null) {
                     fingerprints.add(FingerprintImportDataResponse.create(
                             fingerprint,

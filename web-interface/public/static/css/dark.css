@@ -1040,6 +1040,11 @@ span.serial-number-match {
     background: #34d399;
 }
 
+.timeline-event-marker[data-kind="fingerprint"] {
+    border-color: #c084fc;
+    background: #c084fc;
+}
+
 .timeline-event-marker[data-kind="active"] {
     border-color: #34d399;
     background: #34d399;
@@ -1138,4 +1143,16 @@ span.serial-number-match {
 
 .timeline-event-gone-ongoing {
     color: #fbbf24;
+}
+
+.timeline-event-tap-row-prefix {
+    color: #6b7280;
+}
+
+.timeline-event-tap-row-empty {
+    color: #6b7280;
+}
+
+.timeline-event-ssid-row-prefix {
+    color: #6b7280;
 }

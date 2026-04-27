@@ -2261,13 +2261,15 @@ public class Dot11 {
         );
     }
 
-    public List<String> findFingerprintsOfBSSID(String bssid, List<UUID> taps) {
+    public List<String> findFingerprintsOfBSSID(String bssid, TimeRange timeRange, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT fingerprints_elem FROM dot11_bssids " +
                                 "LEFT JOIN LATERAL UNNEST(fingerprints) AS fingerprints_elem ON TRUE " +
                                 "WHERE bssid = :bssid AND tap_uuid IN (<taps>) " +
-                                "AND created_at >= (NOW() - INTERVAL '24 hours')")
+                                "AND created_at >= :tr_from AND created_at <= :tr_to")
                         .bind("bssid", bssid)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(String.class)
                         .list()

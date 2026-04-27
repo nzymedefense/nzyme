@@ -1461,6 +1461,11 @@ div.arp-description p {
     background: #1f6b34;
 }
 
+.timeline-event-marker[data-kind="fingerprint"] {
+    border-color: #7a3e9b;
+    background: #7a3e9b;
+}
+
 .timeline-event-marker[data-kind="unknown"] {
     border-color: #555;
     background: #555;
@@ -1613,12 +1618,12 @@ div.arp-description p {
     animation: timeline-pulse 2s ease-out infinite;
 }
 
-.timeline-event--active-now {
+.timeline-event-active-now {
     border-color: #9dc8ad;
     background: #f4faf6;
 }
 
-.timeline-event--active-now .timeline-event-type {
+.timeline-event-active-now .timeline-event-type {
     color: #1f6b34;
 }
 
@@ -1637,4 +1642,50 @@ div.arp-description p {
 
 .timeline-event-list-single .timeline-event {
     padding-left: 14px;
+}
+
+.timeline-event-tap-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.timeline-event-tap-row-prefix {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: #888;
+    min-width: 28px;
+}
+
+.timeline-event-tap-row-prev {
+    opacity: 0.65;
+}
+
+.timeline-event-tap-row-empty {
+    font-style: italic;
+    color: #888;
+}
+
+.timeline-event-ssid-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 2px;
+    flex-wrap: wrap;
+}
+
+.timeline-event-ssid-row-prefix {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: #888;
+    min-width: 52px;
+}
+
+.timeline-event-ssid-row-known {
+    opacity: 0.65;
 }
