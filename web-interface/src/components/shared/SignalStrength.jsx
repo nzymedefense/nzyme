@@ -14,7 +14,7 @@ function SignalStrength(props) {
     strengthClassName = "signal-strength-bad";
   }
 
-  if (selectedTapCount > 1) {
+  if (selectedTapCount === null || selectedTapCount > 1) {
     return (
         <span title="Not available when multiple taps are selected." style={{cursor: "help"}}>
           <i className="fa-solid fa-signal text-muted"></i> N/A
