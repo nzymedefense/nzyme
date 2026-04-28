@@ -20,6 +20,7 @@ package app.nzyme.core;
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.logging.Logging;
 import com.beust.jcommander.JCommander;
+import com.github.tjake.jlama.model.functions.Generator;
 import com.typesafe.config.ConfigException;
 import app.nzyme.core.configuration.CLIArguments;
 import app.nzyme.core.configuration.IncompleteConfigurationException;
@@ -138,19 +139,20 @@ public class Main {
         }
 
         LOG.info("Performance Configuration: {}", nodeConfiguration.performance());
-        NzymeNode nzyme = new NzymeNodeImpl(baseConfiguration, nodeConfiguration, database);
 
+        final NzymeNode nzyme;
         try {
+            nzyme = new NzymeNodeImpl(baseConfiguration, nodeConfiguration, database);
             nzyme.initialize();
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                Thread.currentThread().setName("shutdown-hook");
+                nzyme.shutdown();
+            }));
         } catch(Exception e) {
             LOG.fatal("Could not initialize nzyme.", e);
             System.exit(FAILURE);
         }
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            Thread.currentThread().setName("shutdown-hook");
-            nzyme.shutdown();
-        }));
 
         if (cliArguments.isBootstrapTestMode()) {
             LOG.warn("Finished bootstrap and in bootstrap test mode. Exiting.");
