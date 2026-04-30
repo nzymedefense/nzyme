@@ -10,12 +10,10 @@ class TimelinesService {
       })
   }
 
-  summarizeTimelineOfAddress(addressType, address, organizationId, tenantId, timeRange, limit, offset, setSummary) {
+  summarizeTimelineOfAddress(addressType, address, organizationId, tenantId, timeRange, limit, offset, successCallback, errorCallback) {
     RESTClient.get(`/timelines/show/type/${addressType}/address/${address}/summarize`,
       { time_range: timeRange, limit: limit, offset: offset, organization_id: organizationId, tenant_id: tenantId },
-      function (response) {
-        setSummary(response.data);
-      })
+      successCallback, errorCallback)
   }
 
 }

@@ -1,6 +1,10 @@
 import React, {useState} from "react";
 import TimeRangeSelector from "./timerange/TimeRangeSelector";
 import AppliedTimeRange from "./timerange/AppliedTimeRange";
+import LoadingSpinner from "../misc/LoadingSpinner";
+
+import numeral from "numeral";
+import LLMResponse from "./llm/LLMResponse";
 
 function CardTitleWithControls(props) {
 
@@ -20,10 +24,13 @@ function CardTitleWithControls(props) {
   const smallTextParam = props.smallText;
   const hideTimeRange = props.hideTimeRange;
   const fixedAppliedTimeRange = props.fixedAppliedTimeRange;
-
   const doNotPersistTimeRange = props.doNotPersistTimeRange || false;
-
   const [timeRangeDialogOpened, setTimeRangeDialogOpened] = useState(false);
+
+  const llmAction = props.llmAction;
+  const llmIsProcessing = props.llmIsProcessing;
+  const [showLlmDialog, setShowLlmDialog] = useState(false);
+  const [selectedLlmModel, setSelectedLlmModel] = useState("granite-4-micro");
 
   const smallText = () => {
     if (!smallTextParam) {
@@ -114,6 +121,93 @@ function CardTitleWithControls(props) {
     }
   }
 
+  const llmActionButton = () => {
+    if (llmAction) {
+      return (
+        <button className="btn card-title-option"
+                title={llmAction.title}
+                disabled={disabled}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowLlmDialog(!showLlmDialog);
+                }}>
+          <i className="fa-solid fa-brain"></i>
+        </button>
+      )
+    }
+  }
+
+  const llmDialog = () => {
+    if (!showLlmDialog || !llmAction) {
+      return null;
+    }
+
+    if (llmAction.result === null) {
+      if (!llmIsProcessing) {
+        return (
+          <div className="llm-block mb-4">
+            <div className="llm-block-meta">
+              <span className="llm-block-label">// Generate Analysis</span>
+            </div>
+
+            <div className="llm-generate-row">
+              <div className="input-group input-group-sm" style={{ maxWidth: "480px" }}>
+                <select className="form-select"
+                        value={selectedLlmModel}
+                        onChange={(e) => setSelectedLlmModel(e.target.value)}>
+                  <option value="granite-4-micro">IBM Granite 4.0 Micro (Ollama)</option>
+                  <option value="claude-opus-4-7">Claude Opus 4.7</option>
+                  <option value="mistral-large-3">Mistral Large 3</option>
+                </select>
+                <button className="btn btn-primary" onClick={llmAction.onClick}>
+                  Generate
+                </button>
+              </div>
+            </div>
+
+            <div className="llm-block-footer">
+              Select model and generate analysis.
+            </div>
+          </div>
+        )
+      } else {
+        return (
+          <div className="llm-block mb-4">
+            <div className="llm-block-meta">
+              <span className="llm-block-label">// Generate Analysis</span>
+            </div>
+
+            <div className="llm-block-body">
+              <span className="llm-block-label blink">Please wait ...</span>
+            </div>
+          </div>
+        )
+      }
+
+    } else {
+      return (
+        <div className="llm-block mb-4">
+          <div className="llm-block-meta">
+            <span className="llm-block-label">// Generated Analysis</span>
+          </div>
+
+          <div className="llm-block-body">
+            <LLMResponse data={llmAction.result.response} type="DOT11_BSSID_TIMELINE_SUMMARY" />
+          </div>
+
+          <div className="llm-block-footer">
+            <span>Generated output, Verify before acting.</span>
+            <span className="llm-block-stats">
+              <span>in: {numeral(llmAction.result.input_tokens).format("0,0")}</span>
+              <span className="llm-block-stats-sep">·</span>
+              <span>out: {numeral(llmAction.result.output_tokens).format("0,0")}</span>
+            </span>
+          </div>
+        </div>
+      )
+    }
+  }
+
   const timeRangeDialog = () => {
     if (!timeRangeDialogOpened) {
       return null;
@@ -154,10 +248,16 @@ function CardTitleWithControls(props) {
           {timeRangeButton()}
           {internalLinkButton()}
           {helpLinkButton()}
+          {llmActionButton()}
           {refreshButton()}
         </div>
+      </div>
 
-        {timeRangeDialog()}
+      <div className="row">
+        <div className="col-12">
+          {timeRangeDialog()}
+          {llmDialog()}
+        </div>
       </div>
 
       {appliedTimeRange()}

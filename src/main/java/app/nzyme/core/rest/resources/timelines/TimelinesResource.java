@@ -3,17 +3,19 @@ package app.nzyme.core.rest.resources.timelines;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.rest.UserAuthenticatedResource;
+import app.nzyme.core.rest.responses.llm.LLMResponse;
 import app.nzyme.core.rest.responses.timelines.TimelineEventDetailsResponse;
 import app.nzyme.core.rest.responses.timelines.TimelineResponse;
 import app.nzyme.core.timelines.TimelineAddressType;
-import app.nzyme.core.timelines.TimelineEventTextConverter;
+import app.nzyme.core.timelines.llm.TimelineEventTextConverter;
 import app.nzyme.core.timelines.Timelines;
 import app.nzyme.core.timelines.db.TimelineEventEntry;
+import app.nzyme.core.timelines.llm.TimelineLLMSummaryOutputConverter;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import com.github.tjake.jlama.model.functions.Generator;
 import com.google.common.collect.Lists;
+import dev.langchain4j.model.chat.response.ChatResponse;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
@@ -32,6 +34,8 @@ import tools.jackson.datatype.joda.JodaModule;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static app.nzyme.core.timelines.llm.TimelineEventTextConverter.computeLifecycleSummary;
 
 
 @Path("/api/timelines")
@@ -105,7 +109,7 @@ public class TimelinesResource extends UserAuthenticatedResource {
         List<TimelineEventEntry> timeline = timelines.findAllEventsOfAddress(
                 organizationId,
                 tenantId,
-                TimelineAddressType.DOT11_BSSID,
+                addressType,
                 address,
                 timeRange,
                 OrderDirection.ASC,
@@ -114,35 +118,44 @@ public class TimelinesResource extends UserAuthenticatedResource {
                 0
         );
 
+        // Requesting a summary of a timeline is a bad request and the UI should not let you do that.
+        if (timeline.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
         String sensorEnvironment = "- Second floor office in a busy downtown area with a single sensor/tap.\n" +
-                "- Our production SSIDs are \"ACMECorp\" and \"ACMECorp_Guest\". These are provided as\n" +
+                "- Our production SSIDs are \"Chipotle\", \"Chipotle_PSK\" and \"Chipotle_Guest\". These are provided as\n" +
                 "  reference only — do not include them in any output field unless they appear in the\n" +
                 "  timeline data below.\n" +
                 "- Any other SSIDs observed are from neighboring businesses, passing devices, or unknown\n" +
                 "  sources — not our infrastructure. Use this context when inferring device type and\n" +
                 "  assessing threat level.";
 
+        String scheduleSummary = TimelineEventTextConverter.computeScheduleSummary(timeline, timeRange.to());
+
         Map<String, String> params = Map.of(
                 "START_TIME", timeRange.from().toString(),
                 "END_TIME", timeRange.to().toString(),
-                "TAP_COUNT","1",
+                "TAP_COUNT",String.valueOf(nzyme.getTapManager().findAllTapsOfTenant(organizationId, tenantId).size()),
                 "TIMELINE_EVENTS", TimelineEventTextConverter.eventToText(timeline),
-                "SENSOR_ENVIRONMENT", sensorEnvironment
+                "SENSOR_ENVIRONMENT", sensorEnvironment,
+                "ACTIVE_PERIODS", scheduleSummary,
+                "LIFECYCLE_SUMMARY", computeLifecycleSummary(timeline, timeRange.from(), timeRange.to()),
+                "FIRST_SEEN", timeline.getFirst().timestamp().toString("yyyy-MM-dd'T'HH:mmZ")
         );
 
-        try {
-            Generator.Response response = nzyme.getLLM().query(
-                    nzyme.getLLM().getPrompt("dot11_bssid_timeline_summary.md", params).get(),
-                    nzyme.getLLM().getSystemPrompt(),
-                    1024
-            );
+        ChatResponse response = nzyme.getLLM().query(
+                nzyme.getLLM().getPrompt("dot11_bssid_timeline_summary.md", params).get(),
+                nzyme.getLLM().getSystemPrompt()
+        );
 
-            LOG.info("[{} - {}] {}", response.promptTokens, response.generatedTokens, response.responseText);
-        } catch(Exception e) {
-            LOG.error(e);
-        }
+        ObjectMapper om = new ObjectMapper();
 
-        return Response.ok().build();
+        return Response.ok(LLMResponse.create(
+                response.metadata().tokenUsage().inputTokenCount(),
+                response.metadata().tokenUsage().outputTokenCount(),
+                om.convertValue(TimelineLLMSummaryOutputConverter.parse(response.aiMessage().text()), new TypeReference<>() {})
+        )).build();
     }
 
 }

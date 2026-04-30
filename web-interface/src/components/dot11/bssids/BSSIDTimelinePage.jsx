@@ -12,6 +12,7 @@ import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import usePageTitle from "../../../util/UsePageTitle";
 import Timeline from "../../shared/timelines/Timeline";
 import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
+import {toast} from "react-toastify";
 
 const dot11Service = new Dot11Service();
 const timelinesService = new TimelinesService();
@@ -28,6 +29,9 @@ export default function BSSIDTimelinePage() {
 
   const [page, setPage] = useState(1);
   const perPage = 50;
+
+  const [summary, setSummary] = useState(null);
+  const [summaryIsProcessing, setSummaryIsProcessing] = useState(false);
 
   const [revision, setRevision] = useState(new Date());
 
@@ -55,6 +59,7 @@ export default function BSSIDTimelinePage() {
   }, [bssid, organizationId, tenantId, timeRange, perPage, page, revision])
 
   const summarize = () => {
+    setSummaryIsProcessing(true);
     timelinesService.summarizeTimelineOfAddress(
       "DOT11_BSSID",
       bssid.summary.bssid.address,
@@ -63,7 +68,14 @@ export default function BSSIDTimelinePage() {
       timeRange,
       perPage,
       (page-1)*perPage,
-      ()=>{}
+      (response) => {
+        setSummary(response.data);
+        setSummaryIsProcessing(false)
+      }, () => {
+        // Error.
+        toast.error("Could not generate summary.")
+        setSummaryIsProcessing(false)
+      }
     );
   }
 
@@ -108,11 +120,11 @@ export default function BSSIDTimelinePage() {
             <div className="card-body">
               <CardTitleWithControls title="Timeline"
                                      slim={true}
+                                     llmAction={{title: "Summarize Timeline", onClick: summarize, result: summary}}
+                                     llmIsProcessing={summaryIsProcessing}
                                      refreshAction={() => setRevision(new Date())}
                                      timeRange={timeRange}
                                      setTimeRange={setTimeRange} />
-
-              <button className="btn btn-secondary" onClick={summarize}>Summarize</button>
 
               <Timeline events={events}
                         addressLastSeen={bssid.summary.last_seen}

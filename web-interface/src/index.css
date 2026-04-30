@@ -1689,3 +1689,198 @@ div.arp-description p {
 .timeline-event-ssid-row-known {
     opacity: 0.65;
 }
+
+.llm-block {
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 14px 0 12px;
+    margin: 16px 0;
+}
+
+.llm-block-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.llm-block-label {
+    font-family: "Geist Mono", monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+}
+
+.llm-block-action {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.75rem;
+    color: #64748b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.15s;
+}
+
+.llm-block-action:hover {
+    color: #0f172a;
+    text-decoration: underline;
+}
+
+.llm-block-action i {
+    font-size: 0.7rem;
+}
+
+.llm-block-body {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: #334155;
+    white-space: pre-wrap;
+}
+
+.llm-block-footer {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-family: "Geist Mono", monospace;
+    font-size: 0.6875rem;
+    color: #94a3b8;
+    letter-spacing: 0.02em;
+}
+
+.llm-generate-row {
+    display: flex;
+    align-items: stretch;
+    max-width: 480px;
+}
+
+.llm-block-stats {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #cbd5e1;
+}
+
+.llm-block-stats-sep {
+    opacity: 0.6;
+}
+
+.llm-summary {
+    font-family: 'B612 Mono', monospace;
+    font-size: 0.8125rem;
+    color: #334155;
+    line-height: 1.6;
+    max-width: 1100px;
+}
+
+.llm-summary-verdict {
+    display: flex;
+    gap: 32px;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    margin-bottom: 18px;
+}
+
+.llm-summary-verdict-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.llm-summary-verdict-label {
+    font-family: 'B612 Mono', monospace;
+    font-size: 0.625rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+}
+
+.llm-summary-verdict-value {
+    font-family: 'B612 Mono', monospace;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.llm-verdict-benign { color: #15803d; }
+.llm-verdict-suspicious { color: #b45309; }
+.llm-verdict-malicious { color: #b91c1c; }
+.llm-verdict-unknown { color: #64748b; }
+
+.llm-fields {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 10px 20px;
+    margin: 0;
+}
+
+.llm-fields dt {
+    font-family: 'B612 Mono', monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    padding-top: 2px;
+}
+
+.llm-fields dd {
+    margin: 0;
+    font-family: "Geist", sans-serif;
+    font-size: 0.8125rem;
+    color: #334155;
+    line-height: 1.6;
+}
+
+.llm-fields-mono {
+    font-family: 'B612 Mono', monospace !important;
+    font-size: 0.75rem !important;
+}
+
+.llm-indicators {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.llm-indicators li {
+    font-family: "Geist", sans-serif;
+    position: relative;
+    padding-left: 14px;
+    margin-bottom: 4px;
+}
+
+.llm-indicators li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: #94a3b8;
+}
+
+.llm-indicators li:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+    .llm-fields {
+        grid-template-columns: 1fr;
+        gap: 4px 0;
+    }
+    .llm-fields dd {
+        margin-bottom: 12px;
+    }
+    .llm-summary-verdict {
+        flex-wrap: wrap;
+        gap: 16px 24px;
+    }
+}

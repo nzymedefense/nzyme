@@ -9,6 +9,8 @@ import CardTitleWithControls from "../../../../../shared/CardTitleWithControls";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import CotOutputsTable from "./cot/CotOutputsTable";
 import usePageTitle from "../../../../../../util/UsePageTitle";
+import LLMsTable from "./llm/LLMsTable";
+import WithExactRole from "../../../../../misc/WithExactRole";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -76,6 +78,39 @@ export default function TenantIntegrationsPage() {
       <div className="row mt-3">
         <div className="col-md-12">
           <h1>Integrations of Tenant &quot;{tenant.name}&quot;</h1>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-xl-12 col-xxl-6">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Large Language Models" slim={true}/>
+
+              <p className="text-muted">
+                You can <a href="https://go.nzyme.org/llm">learn more about LLMs for Nzyme in the documentation</a>.
+              </p>
+
+
+              <div className="alert alert-warning">
+                LLM integration is not enabled in your Nzyme Connect settings and will not be available. Learn more
+                about why Nzyme Connect is required <a href="https://go.nzyme.org/llm-connect">here</a>.
+
+                <WithExactRole role="SUPERADMIN">
+                  <p className="mb-0 mt-2">Configure <a href={ApiRoutes.SYSTEM.CONNECT}>Nzyme Connect</a> first.</p>
+                </WithExactRole>
+              </div>
+
+              <LLMsTable organizationId={organizationId} tenantId={tenantId} />
+
+              <div className="mt-2">
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.CREATE(organization.id, tenant.id)}
+                   className="btn btn-sm btn-secondary">
+                  Create LLM Connection
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -330,7 +330,6 @@ public class NzymeNodeImpl implements NzymeNode {
         try {
             LOG.info("Initializing and warming up AI.");
             this.llm.initialize();
-            this.llm.warmup();
             LOG.info("Done.");
         } catch (Exception e) {
             throw new RuntimeException("Could not initialize AI.", e);

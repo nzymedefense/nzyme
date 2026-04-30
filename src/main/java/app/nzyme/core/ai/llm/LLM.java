@@ -1,11 +1,11 @@
 package app.nzyme.core.ai.llm;
 
 import app.nzyme.core.NzymeNode;
-import com.github.tjake.jlama.model.AbstractModel;
-import com.github.tjake.jlama.model.ModelSupport;
-import com.github.tjake.jlama.model.functions.Generator;
-import com.github.tjake.jlama.safetensors.DType;
-import com.github.tjake.jlama.safetensors.prompt.PromptContext;
+import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.model.anthropic.AnthropicChatModel;
+import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.response.ChatResponse;
 import jakarta.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,8 +13,8 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Map;
@@ -27,66 +27,21 @@ public class LLM {
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{([A-Z0-9_]+)}");
 
     private final NzymeNode nzyme;
-    private final File modelDirectory;
-
-    private AbstractModel model;
+    private ChatModel model;
 
     public LLM(NzymeNode nzyme) {
         this.nzyme = nzyme;
-
-        this.modelDirectory = new File(nzyme.getBaseConfiguration().dataDirectory(), "llm");
-
-        if (!modelDirectory.isDirectory()) {
-            throw new RuntimeException("Model directory is not a " +
-                    "directory: [" + this.modelDirectory.getAbsolutePath() + "].");
-        }
-
-
-        for (String f : new String[] { "config.json", "tokenizer.json" }) {
-            if (!new File(this.modelDirectory, f).isFile()) {
-                throw new RuntimeException("Model directory corrupted. Missing: [" + f + "].");
-            }
-        }
-
-        try {
-            try (var stream = Files.list(this.modelDirectory.toPath())) {
-                if (stream.noneMatch(p -> p.getFileName().toString().endsWith(".safetensors"))) {
-                    throw new RuntimeException("Model directory corrupted. Missing weights.");
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Could not list files in model " +
-                    "directory: [" + this.modelDirectory.getAbsolutePath() + "].");
-        }
     }
 
     public void initialize() {
-        this.model = ModelSupport.loadModel(this.modelDirectory, DType.F32, DType.I8);
+        this.model = AnthropicChatModel.builder()
+                .apiKey(System.getenv("ANTHROPIC_API_KEY"))
+                .modelName("claude-opus-4-7")
+                .build();
     }
 
-    public void warmup() {
-        PromptContext warmup = model.promptSupport().get().builder()
-                .addUserMessage("Hello.")
-                .build();
-        model.generate(UUID.randomUUID(), warmup, 0.0f, 32, (s, f) -> {});
-    }
-
-    public Generator.Response query(@NotNull String prompt, @NotNull String systemMessage, int maxTokens) {
-        if (model.promptSupport().isEmpty()) {
-            throw new RuntimeException("Model has no prompt support.");
-        }
-
-        PromptContext context = model.promptSupport()
-                .get()
-                .builder()
-                .addSystemMessage(systemMessage)
-                .addUserMessage(prompt)
-                .build();
-
-        LOG.info("PROMPT: {}", context.getPrompt());
-
-        int totalTokenEstimate = (prompt.length() + systemMessage.length()) / 3;
-        return model.generate(UUID.randomUUID(), context, 0.3f, totalTokenEstimate + maxTokens, (s, f) -> {});
+    public ChatResponse query(@NotNull String prompt, @NotNull String systemMessage) {
+        return model.chat(List.of(SystemMessage.from(systemMessage), UserMessage.from(prompt)));
     }
 
     public String getSystemPrompt() {

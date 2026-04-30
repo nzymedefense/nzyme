@@ -20,7 +20,6 @@ package app.nzyme.core;
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.logging.Logging;
 import com.beust.jcommander.JCommander;
-import com.github.tjake.jlama.model.functions.Generator;
 import com.typesafe.config.ConfigException;
 import app.nzyme.core.configuration.CLIArguments;
 import app.nzyme.core.configuration.IncompleteConfigurationException;
