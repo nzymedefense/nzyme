@@ -17,7 +17,6 @@
 
 package app.nzyme.core;
 
-import app.nzyme.core.ai.llm.LLM;
 import app.nzyme.core.assets.AssetManager;
 import app.nzyme.core.bluetooth.Bluetooth;
 import app.nzyme.core.bluetooth.sig.BluetoothSigService;
@@ -118,8 +117,6 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
     DetectionAlertService getDetectionAlertService();
 
     ConnectService getConnect();
-
-    LLM getLLM();
 
     Version getVersion();
 

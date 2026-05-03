@@ -1,6 +1,5 @@
 package app.nzyme.core.timelines.db;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 import org.jspecify.annotations.Nullable;
@@ -10,24 +9,15 @@ import java.util.UUID;
 @AutoValue
 public abstract class TimelineEventEntry {
 
-    @JsonProperty("id")
     @Nullable // For synthetic events.
     public abstract Long id();
-    @JsonProperty("uuid")
     public abstract UUID uuid();
-    @JsonProperty("organization_id")
     public abstract UUID organizationId();
-    @JsonProperty("tenant_id")
     public abstract UUID tenantId();
-    @JsonProperty("address")
     public abstract String address();
-    @JsonProperty("address_Type")
     public abstract String addressType();
-    @JsonProperty("event_type")
     public abstract String eventType();
-    @JsonProperty("event_details")
     public abstract String eventDetails();
-    @JsonProperty("timestamp")
     public abstract DateTime timestamp();
 
     public static TimelineEventEntry create(@Nullable Long id, UUID uuid, UUID organizationId, UUID tenantId, String address, String addressType, String eventType, String eventDetails, DateTime timestamp) {

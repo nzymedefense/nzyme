@@ -54,19 +54,6 @@ export default function BSSIDTimelinePage() {
     }
   }, [bssid, organizationId, tenantId, timeRange, perPage, page, revision])
 
-  const summarize = () => {
-    timelinesService.summarizeTimelineOfAddress(
-      "DOT11_BSSID",
-      bssid.summary.bssid.address,
-      organizationId,
-      tenantId,
-      timeRange,
-      perPage,
-      (page-1)*perPage,
-      ()=>{}
-    );
-  }
-
   if (!bssid || !events) {
     return <LoadingSpinner />
   }
@@ -111,8 +98,6 @@ export default function BSSIDTimelinePage() {
                                      refreshAction={() => setRevision(new Date())}
                                      timeRange={timeRange}
                                      setTimeRange={setTimeRange} />
-
-              <button className="btn btn-secondary" onClick={summarize}>Summarize</button>
 
               <Timeline events={events}
                         addressLastSeen={bssid.summary.last_seen}

@@ -17,7 +17,6 @@
 
 package app.nzyme.core;
 
-import app.nzyme.core.ai.llm.LLM;
 import app.nzyme.core.assets.AssetManager;
 import app.nzyme.core.assets.AssetMonitor;
 import app.nzyme.core.assets.AssetStatisticsCleaner;
@@ -156,8 +155,6 @@ public class NzymeNodeImpl implements NzymeNode {
     private final ConnectService connect;
     private final HealthMonitor healthMonitor;
 
-    private final LLM llm;
-
     private final ScheduledIntegrationsManager scheduledIntegrationsManager;
 
     private List<String> plugins;
@@ -225,12 +222,6 @@ public class NzymeNodeImpl implements NzymeNode {
 
         this.connect = new ConnectService(this);
         this.healthMonitor = new HealthMonitor(this);
-
-        try {
-            this.llm = new LLM(this);
-        } catch (Exception e) {
-            throw new RuntimeException("Could not prepare AI.", e);
-        }
 
         // Register JVM metrics.
         this.metrics.register("gc", new GarbageCollectorMetricSet());
@@ -326,15 +317,6 @@ public class NzymeNodeImpl implements NzymeNode {
 
         // Database metrics.
         metrics.register(MetricNames.DATABASE_SIZE, (Gauge<Long>) database::getTotalSize);
-
-        try {
-            LOG.info("Initializing and warming up AI.");
-            this.llm.initialize();
-            this.llm.warmup();
-            LOG.info("Done.");
-        } catch (Exception e) {
-            throw new RuntimeException("Could not initialize AI.", e);
-        }
 
         // Periodicals. (TODO: Replace with scheduler service)
         PeriodicalManager periodicalManager = new PeriodicalManager();
@@ -609,11 +591,6 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public ConnectService getConnect() {
         return connect;
-    }
-
-    @Override
-    public LLM getLLM() {
-        return this.llm;
     }
 
     @Override

@@ -19,6 +19,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.javadoc.skip>true</maven.javadoc.skip>
 
+        <!-- Default to x64. -->
+        <jre.arch>x64</jre.arch>
+
         <log4j.version>2.25.4</log4j.version>
         <guava.version>33.5.0-jre</guava.version>
         <jcommander.version>1.81</jcommander.version>
@@ -59,8 +62,6 @@
         <maxmindmmdb.version>3.0.0</maxmindmmdb.version>
         <stringsimilarity.version>2.0.0</stringsimilarity.version>
         <trilateration.version>1.0.2</trilateration.version>
-        <jlama.version>0.8.4</jlama.version>
-        <langchain4j.version>1.13.1</langchain4j.version>
 
         <nodejs.version>v25.8.1</nodejs.version>
         <npm.version>11.11.1</npm.version>
@@ -378,16 +379,6 @@
             <artifactId>annotations</artifactId>
             <version>13.0</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j</artifactId>
-            <version>${langchain4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.tjake</groupId>
-            <artifactId>jlama-core</artifactId>
-            <version>${jlama.version}</version>
         </dependency>
     </dependencies>
 

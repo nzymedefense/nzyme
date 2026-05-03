@@ -17,7 +17,6 @@
 
 package app.nzyme.core;
 
-import app.nzyme.core.ai.llm.LLM;
 import app.nzyme.core.assets.AssetManager;
 import app.nzyme.core.bluetooth.Bluetooth;
 import app.nzyme.core.bluetooth.sig.BluetoothSigService;
@@ -366,11 +365,6 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public ConnectService getConnect() {
-        return null;
-    }
-
-    @Override
-    public LLM getLLM() {
         return null;
     }
 

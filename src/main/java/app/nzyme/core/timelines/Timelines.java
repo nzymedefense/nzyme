@@ -1,7 +1,6 @@
 package app.nzyme.core.timelines;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.timelines.db.TimelineEventEntry;
 import app.nzyme.core.util.TimeRange;
 import org.joda.time.DateTime;
@@ -99,7 +98,6 @@ public class Timelines {
                                                            TimelineAddressType addressType,
                                                            String address,
                                                            TimeRange timeRange,
-                                                           OrderDirection orderDirection,
                                                            int gapThresholdMinutes,
                                                            int limit,
                                                            int offset) {
@@ -165,7 +163,7 @@ public class Timelines {
                                         "SELECT * FROM gone_events " +
                                         "UNION ALL " +
                                         "SELECT * FROM trailing_gap " +
-                                        "ORDER BY timestamp <order_direction> " +
+                                        "ORDER BY timestamp DESC " +
                                         "LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -174,7 +172,6 @@ public class Timelines {
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bind("gap_threshold_minutes", gapThresholdMinutes)
-                        .define("order_direction", orderDirection)
                         .bind("limit", limit)
                         .bind("offset", offset)
                         .mapTo(TimelineEventEntry.class)
