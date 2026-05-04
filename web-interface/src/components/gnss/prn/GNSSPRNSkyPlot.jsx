@@ -153,40 +153,40 @@ export default function GNSSPRNSkyPlot({ elevationHistogram, azimuthHistogram, s
       const svg = d3.select(container).append("svg").attr("width", w).attr("height", h);
       const g = svg.append("g").attr("transform", `translate(${w / 2},${h / 2})`);
 
-      // Colors.
+      // Colors (aligned with SimpleLineChart palette).
       const colors = {};
       if (Store.get('dark_mode')) {
-        colors.background = '#262626';
-        colors.grid = 'rgba(255,255,255,0.10)';
-        colors.ring = 'rgba(255,255,255,0.08)';
-        colors.stroke = 'rgba(255,255,255,0.12)';
-        colors.label = 'rgba(255,255,255,0.55)';
-        colors.labelStrong = 'rgba(255,255,255,0.70)';
-        colors.skyGradStart = '#262626';
-        colors.skyGradMid = '#2d2d2d';
-        colors.skyGradEnd = '#333333';
-        colors.obstructionFill = 'rgba(0,0,0,0.3)';
-        colors.obstructionStroke = 'rgba(255,255,255,0.15)';
-        colors.skylineBoundary = 'rgba(255,255,255,0.3)';
+        colors.background = '#1c1c22';
+        colors.grid = '#2a2a33';
+        colors.ring = '#2a2a33';
+        colors.stroke = '#33333d';
+        colors.label = 'rgba(196,196,212,0.55)';
+        colors.labelStrong = 'rgba(196,196,212,0.80)';
+        colors.skyGradStart = '#1c1c22';
+        colors.skyGradMid = '#22222a';
+        colors.skyGradEnd = '#2a2a33';
+        colors.obstructionFill = 'rgba(0,0,0,0.35)';
+        colors.obstructionStroke = '#33333d';
+        colors.skylineBoundary = 'rgba(196,196,212,0.30)';
         colors.fallbackStroke = 'rgba(248,113,113,0.75)';
-        colors.pointStroke = '#262626';
-        colors.latestPointRing = 'rgba(255,255,255,0.3)';
+        colors.pointStroke = '#1c1c22';
+        colors.latestPointRing = 'rgba(196,196,212,0.30)';
       } else {
         colors.background = '#f9f9f9';
-        colors.grid = 'rgba(0,0,0,0.10)';
-        colors.ring = 'rgba(0,0,0,0.08)';
-        colors.stroke = 'rgba(0,0,0,0.12)';
-        colors.label = 'rgba(0,0,0,0.55)';
-        colors.labelStrong = 'rgba(0,0,0,0.70)';
+        colors.grid = '#e6e6e6';
+        colors.ring = '#e6e6e6';
+        colors.stroke = 'rgba(55,55,55,0.25)';
+        colors.label = 'rgba(17,17,17,0.55)';
+        colors.labelStrong = 'rgba(17,17,17,0.80)';
         colors.skyGradStart = '#ffffff';
         colors.skyGradMid = '#f3f4f6';
         colors.skyGradEnd = '#eef2f7';
         colors.obstructionFill = 'rgba(0,0,0,0.07)';
-        colors.obstructionStroke = 'rgba(0,0,0,0.10)';
-        colors.skylineBoundary = 'rgba(0,0,0,0.22)';
+        colors.obstructionStroke = 'rgba(55,55,55,0.18)';
+        colors.skylineBoundary = 'rgba(17,17,17,0.30)';
         colors.fallbackStroke = 'rgba(220,38,38,0.65)';
-        colors.pointStroke = '#fff';
-        colors.latestPointRing = 'rgba(0,0,0,0.18)';
+        colors.pointStroke = '#f9f9f9';
+        colors.latestPointRing = 'rgba(17,17,17,0.20)';
       }
 
       // 0 degrees at North, clockwise.
@@ -494,7 +494,7 @@ export default function GNSSPRNSkyPlot({ elevationHistogram, azimuthHistogram, s
     return <div className="text-muted p-3">No matching timestamps to plot.</div>;
   }
 
-  const containerBg = Store.get('dark_mode') ? '#262626' : '#f9f9f9';
+  const containerBg = Store.get('dark_mode') ? '#1c1c22' : '#f9f9f9';
 
   return (
     <div

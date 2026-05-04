@@ -101,9 +101,9 @@ export default function GNSSPRNMultipathIndexHistogram({ histogram, setTimeRange
   const colors = useMemo(() => {
     if (darkMode) {
       return {
-        background: '#262626',
-        text: '#f9f9f9',
-        lines: '#373737'
+        background: '#1c1c22',
+        text: '#c4c4d4',
+        lines: '#33333d'
       };
     } else {
       return {
