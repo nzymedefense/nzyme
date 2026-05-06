@@ -4,6 +4,7 @@ use std::thread::sleep;
 use std::time::Duration;
 use log::{debug, error, info, warn};
 use crate::metrics::Metrics;
+use crate::peripherals::crc::crc16_ccitt;
 use crate::peripherals::limina::sensors::frames::{
     SensorFrameV1,
     MpuMetricsFrameV1,
@@ -234,7 +235,7 @@ impl Limina {
                     let crc_region_end = crc_region_start + 2 + SENSOR_V1_PAYLOAD_SIZE;
                     let crc_region = &frame[crc_region_start..crc_region_end];
 
-                    let crc_expected = Self::crc16_ccitt(crc_region);
+                    let crc_expected = crc16_ccitt(crc_region);
                     let crc_bytes = &frame[crc_region_end..crc_region_end + 2];
                     let crc_received = u16::from_le_bytes([crc_bytes[0], crc_bytes[1]]);
 
@@ -269,7 +270,7 @@ impl Limina {
                     let crc_region_end = crc_region_start + 2 + MPU_METRICS_V1_PAYLOAD_SIZE;
                     let crc_region = &frame[crc_region_start..crc_region_end];
 
-                    let crc_expected = Self::crc16_ccitt(crc_region);
+                    let crc_expected = crc16_ccitt(crc_region);
                     let crc_bytes = &frame[crc_region_end..crc_region_end + 2];
                     let crc_received = u16::from_le_bytes([crc_bytes[0], crc_bytes[1]]);
 
@@ -300,23 +301,6 @@ impl Limina {
                 _ => unreachable!(),
             }
         }
-    }
-    
-    fn crc16_ccitt(data: &[u8]) -> u16 {
-        let mut crc: u16 = 0xFFFF;
-
-        for &byte in data {
-            crc ^= (byte as u16) << 8;
-            for _ in 0..8 {
-                if (crc & 0x8000) != 0 {
-                    crc = (crc << 1) ^ 0x1021;
-                } else {
-                    crc <<= 1;
-                }
-            }
-        }
-
-        crc
     }
 
 }
