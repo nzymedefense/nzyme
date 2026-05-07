@@ -75,7 +75,7 @@ impl Leaderlink {
                 }
             },
             Err(e) => {
-                error!("Could not send status. {}", e);
+                error!("Could not send status. {}", Self::explain_http_error(&e))
             }
         };
     }
@@ -134,7 +134,7 @@ impl Leaderlink {
             .json(&report)
             .send() {
                 Ok(_) => Ok(()),
-                Err(e) => bail!("HTTP POST failed: {}", e)
+                Err(e) => bail!("HTTP POST failed: {}", Self::explain_http_error(&e))
         }
     }
 
@@ -161,7 +161,7 @@ impl Leaderlink {
                 }
             },
             Err(e) => {
-                bail!("Could not send report. {}", e)
+                bail!("Could not send report. {}", Self::explain_http_error(&e))
             }
         }
     }
@@ -330,7 +330,7 @@ impl Leaderlink {
                     Ok(r)
                 }
             },
-            Err(e) => bail!("Could not send context. {}", e)
+            Err(e) => bail!("Could not send context. {}", Self::explain_http_error(&e))
         }
     }
 
@@ -415,6 +415,34 @@ impl Leaderlink {
             errors: TotalWithAverage::from_metric(&metrics.errors),
             throughput_bytes: TotalWithAverage::from_metric(&metrics.throughput_bytes),
             throughput_messages: TotalWithAverage::from_metric(&metrics.throughput_messages)
+        }
+    }
+
+    fn explain_http_error(e: &Error) -> String {
+        let mut kind = Vec::new();
+        if e.is_timeout() { kind.push("timeout"); }
+        if e.is_connect() { kind.push("connection failed"); }
+        if e.is_redirect() { kind.push("too many redirects"); }
+        if e.is_decode() { kind.push("decode error"); }
+        if e.is_body() { kind.push("body error"); }
+        if e.is_status(){ kind.push("bad status"); }
+
+        /*
+         * Walk the source chain. This is where ConnectionReset, ECONNREFUSED,
+         * TLS handshake errors, DNS failures, etc. live.
+         */
+        let mut causes = Vec::new();
+        let mut src: Option<&dyn std::error::Error> = std::error::Error::source(e);
+        while let Some(s) = src {
+            causes.push(s.to_string());
+            src = s.source();
+        }
+
+        let kind_str = if kind.is_empty() { "request error".to_string() } else { kind.join(", ") };
+        if causes.is_empty() {
+            format!("{kind_str}: {e}")
+        } else {
+            format!("{kind_str}: {e} (caused by: {})", causes.join(" -> "))
         }
     }
 
