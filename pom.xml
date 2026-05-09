@@ -769,14 +769,6 @@
             <properties>
                 <jre.arch>x64</jre.arch>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>com.github.tjake</groupId>
-                    <artifactId>jlama-native</artifactId>
-                    <classifier>linux-x86_64</classifier>
-                    <version>${jlama.version}</version>
-                </dependency>
-            </dependencies>
         </profile>
         <profile>
             <id>aarch64</id>
