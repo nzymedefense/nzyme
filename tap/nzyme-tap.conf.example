@@ -9,6 +9,11 @@ networks = [
   { cidr = "192.168.0.0/24", dns_servers = [ "192.168.0.1:53" ], injection_interface = "enp6s0" }
 ]
 
+[wifi_interfaces.sona-7C9085C8E6BDAAD1]
+active = false
+channels_2g = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+channels_5g = []
+
 [wifi_interfaces.wlx00c0ca000000]
 active = false
 channel_width_hopping_mode = "full" # Learn more: https://go.nzyme.org/wifi-hopping-channel-width-mode
