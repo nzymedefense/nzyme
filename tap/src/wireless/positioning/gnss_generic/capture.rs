@@ -68,7 +68,7 @@ impl Capture {
                     match self.metrics.lock() {
                         Ok(mut metrics) => {
                             metrics.increment_processed_bytes_total(message_len);
-                            metrics.update_capture(device_name, true, 0, 0);
+                            metrics.update_capture(device_name, true, 0, 0, true);
                         },
                         Err(e) => error!("Could not acquire metrics mutex: {}", e)
                     }

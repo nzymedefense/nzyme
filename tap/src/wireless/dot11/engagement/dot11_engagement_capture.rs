@@ -219,7 +219,8 @@ impl EngagementCapture for Dot11EngagementCapture {
                                             &self.parent_interface.name,
                                             true,
                                             stats.dropped,
-                                            stats.if_dropped
+                                            stats.if_dropped,
+                                            true
                                         );
                                     },
                                     Err(ref e) => { // TOOD add error

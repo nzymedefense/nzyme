@@ -74,7 +74,7 @@ impl Capture {
                         Ok(stats) => {
                             metrics.increment_processed_bytes_total(length as u32);
                             metrics.update_capture(
-                                device_name, true, stats.dropped, stats.if_dropped
+                                device_name, true, stats.dropped, stats.if_dropped, true
                             );
                         },
                         Err(ref e) => {

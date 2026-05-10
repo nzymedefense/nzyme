@@ -154,7 +154,7 @@ fn handle_payload(interface_name: &str,
             match metrics.lock() {
                 Ok(mut metrics) => {
                     metrics.increment_processed_bytes_total(full_frame_length as u32);
-                    metrics.update_capture(interface_name, true, 0, 0);
+                    metrics.update_capture(interface_name, true, 0, 0, true);
                 }
                 Err(e) => error!("Could not acquire metrics mutex: {}", e),
             }
@@ -172,7 +172,7 @@ fn handle_payload(interface_name: &str,
                 match metrics.lock() {
                     Ok(mut metrics) => {
                         metrics.update_capture(
-                            interface_name, true, sona_metrics.frame_queue_drops, 0,
+                            interface_name, true, sona_metrics.frame_queue_drops, 0, false
                         );
                         metrics.set_gauge_float(
                             &format!("{}.temperature_mc", interface_name),

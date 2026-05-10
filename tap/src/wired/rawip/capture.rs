@@ -59,7 +59,7 @@ impl Capture {
                     match stats {
                         Ok(stats) => {
                             metrics.increment_processed_bytes_total(len as u32);
-                            metrics.update_capture(device_name, true, stats.dropped, stats.if_dropped);
+                            metrics.update_capture(device_name, true, stats.dropped, stats.if_dropped, true);
                         },
                         Err(ref e) => {
                             error!("Could not fetch handle stats for capture [{}] metrics update: {}", device_name, e);

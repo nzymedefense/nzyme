@@ -174,16 +174,26 @@ impl Metrics {
         }
     }
 
-    pub fn update_capture(&mut self, name: &str, is_running: bool, dropped_buffer: u32, dropped_interface: u32) {
+    pub fn update_capture(&mut self,
+                          name: &str,
+                          is_running: bool,
+                          dropped_buffer: u32,
+                          dropped_interface: u32,
+                          increased_received: bool) {
         if self.captures.contains_key(name) {
            let previous = self.captures.get(name).unwrap();
+
+            let received = match increased_received {
+                true => previous.received + 1,
+                false => previous.received
+            };
 
            // Update capture.
            self.captures.insert(name.to_string(), Capture {
                 capture_type: previous.capture_type.clone(),
                 interface_name: previous.interface_name.clone(),
                 is_running,
-                received: previous.received + 1,
+                received,
                 dropped_buffer,
                 dropped_interface
             });
