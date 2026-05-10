@@ -1,1 +1,0 @@
-pub mod connect_firmware_directory;

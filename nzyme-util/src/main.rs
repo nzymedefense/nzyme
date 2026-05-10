@@ -1,14 +1,12 @@
 mod exit_codes;
-mod connect;
 mod firmware;
 mod usb;
-mod ui;
 mod arguments;
 mod apps;
 mod tools;
 
 use clap::Parser;
-use crate::apps::firmware::{firmware_gui_app, flash_firmware_app, verify_firmware_app};
+use crate::apps::firmware::{flash_firmware_app, verify_firmware_app};
 use crate::apps::devices::list_devices_app;
 use crate::apps::release::verify_release_app;
 use crate::arguments::{CliArguments, Command, DevicesSubcommand, FirmwareSubcommand, ReleaseSubcommand};
@@ -19,11 +17,6 @@ fn main() {
 
     match arguments.command {
         Some(Command::Firmware(fw)) => match fw.command {
-            /*FirmwareSubcommand::Gui => {
-                // $ nzyme-util firmware gui
-                firmware_gui_app::run();
-            }*/
-
             FirmwareSubcommand::Flash { firmware_file, serial } => {
                 // $ nzyme-util firmware flash
                 flash_firmware_app::run(firmware_file, serial);
