@@ -6,15 +6,18 @@ use anyhow::{bail, Error};
 use chrono::{DateTime, Utc};
 use crossbeam_channel::{bounded, tick, Receiver, Sender};
 use log::{debug, error, info};
-use pcap::{ Capture, Error as PcapErr, Linktype};
+use pcap::{Capture, Error as PcapErr, Linktype};
 use crate::helpers::network::{dot11_channel_to_frequency, Nl80211Band};
 use crate::messagebus::bus::Bus;
 use crate::metrics::Metrics;
 use crate::protocols::parsers::dot11::dot11_header_parser;
 use crate::wireless::dot11::capture_helpers::prepare_device;
-use crate::wireless::dot11::engagement::dot11_engagement_interface::Dot11EngagementInterface;
+use crate::wireless::dot11::engagement::cmd::Cmd;
+use crate::wireless::dot11::engagement::engagement_capture::EngagementCapture;
 use crate::wireless::dot11::engagement::engagement_control::{EngagementControl, EngagementInterfaceStatus};
 use crate::wireless::dot11::engagement::engagement_control::EngagementInterfaceStatus::{Engaging, Seeking, Idle};
+use crate::wireless::dot11::engagement::engagement_interface::EngagementInterface;
+use crate::wireless::dot11::engagement::frequencies::extract_frequencies_from_interface;
 use crate::wireless::dot11::engagement::uav_engagement_request::UavEngagementRequest;
 use crate::wireless::dot11::frames::Dot11CaptureSource::Engagement;
 use crate::wireless::dot11::frames::Dot11RawFrame;
@@ -22,24 +25,19 @@ use crate::wireless::dot11::nl::Nl;
 use crate::wireless::dot11::supported_frequency::SupportedChannelWidth;
 
 pub struct Dot11EngagementCapture {
-    pub parent_interface: Arc<Dot11EngagementInterface>,
-    pub current_target: Mutex<Option<UavEngagementRequest>>,
-    pub status: Arc<Mutex<EngagementInterfaceStatus>>,
-    pub last_tracked_frame_timestamp: Mutex<Option<DateTime<Utc>>>,
-    pub last_contact_frequency: Mutex<Option<u16>>,
-    pub metrics: Arc<Mutex<Metrics>>,
-    pub bus: Arc<Bus>,
+    parent_interface: Arc<EngagementInterface>,
+    current_target: Mutex<Option<UavEngagementRequest>>,
+    status: Arc<Mutex<EngagementInterfaceStatus>>,
+    last_tracked_frame_timestamp: Mutex<Option<DateTime<Utc>>>,
+    last_contact_frequency: Mutex<Option<u16>>,
+    metrics: Arc<Mutex<Metrics>>,
+    bus: Arc<Bus>,
     cmd_tx: Sender<Cmd>,
     cmd_rx: Receiver<Cmd>,
 }
 
-enum Cmd {
-    SetFilter(String),
-    Stop,
-}
-
 impl Dot11EngagementCapture {
-    pub fn new(parent_interface: Arc<Dot11EngagementInterface>,
+    pub fn new(parent_interface: Arc<EngagementInterface>,
                metrics: Arc<Mutex<Metrics>>,
                bus: Arc<Bus>) -> Self {
         let (cmd_tx, cmd_rx) = bounded(8192);
@@ -56,8 +54,11 @@ impl Dot11EngagementCapture {
             cmd_rx
         }
     }
+}
 
-    pub fn run(&self) {
+impl EngagementCapture for Dot11EngagementCapture {
+
+    fn run(&self) {
         info!("Starting WiFi engagement capture on [{}]", self.parent_interface.name);
 
         if let Err(e) = prepare_device(&self.parent_interface.name) {
@@ -84,74 +85,21 @@ impl Dot11EngagementCapture {
                 }
             };
 
-            let mut frequencies: Vec<u32> = Vec::new();
-            for channel in &parent_interface.supported_channels_2g {
-                let frequency: u16 = match dot11_channel_to_frequency(*channel, Nl80211Band::Band2GHz) {
-                    Ok(frequency) => frequency,
-                    Err(e) => {
-                        error!("Could not get frequency for 2G channel <{}> of device [{}]: {}",
-                            channel, parent_interface.name, e);
-                        return;
-                    }
-                };
-
-                frequencies.push(frequency as u32);
-            }
-
-            for channel in &parent_interface.supported_channels_5g {
-                let frequency: u16 = match dot11_channel_to_frequency(*channel, Nl80211Band::Band5GHz) {
-                    Ok(frequency) => frequency,
-                    Err(e) => {
-                        error!("Could not get frequency for 5G channel <{}> of device [{}]: {}",
-                            channel, parent_interface.name, e);
-                        return;
-                    }
-                };
-
-                frequencies.push(frequency as u32);
-            }
-
-            for channel in &parent_interface.supported_channels_6g {
-                let frequency: u16 = match dot11_channel_to_frequency(*channel, Nl80211Band::Band6GHz) {
-                    Ok(frequency) => frequency,
-                    Err(e) => {
-                        error!("Could not get frequency for 6G channel <{}> of device [{}]: {}",
-                            channel, parent_interface.name, e);
-                        return;
-                    }
-                };
-
-                frequencies.push(frequency as u32);
-            }
+            let frequencies = extract_frequencies_from_interface(&parent_interface)
+                .expect(&format!("Failed to gather frequencies of device [{}]",
+                                 parent_interface.name));
 
             loop {
-                let current_status = match status.lock() {
-                    Ok(g) => *g,
-                    Err(e) => {
-                        error!("Could not acquire status lock: {}", e);
-                        sleep(Duration::from_secs(1));
-                        continue;
-                    }
-                };
-
                 // Do nothing if not seeking.
-                if current_status != Seeking {
+                if *status.lock().expect("Lock poisoned") != Seeking {
                     sleep(Duration::from_secs(1));
                     continue;
                 }
 
-                for frequency in &*frequencies {
-                    // We need a truly current status for each iteration.
-                    let current_status = match status.lock() {
-                        Ok(g) => *g,
-                        Err(e) => {
-                            error!("Could not acquire status lock: {}", e);
-                            sleep(Duration::from_secs(1));
-                            continue;
-                        }
-                    };
+                // We are seeking.
 
-                    if current_status != Seeking {
+                for frequency in &*frequencies {
+                    if *status.lock().expect("Lock poisoned") != Seeking {
                         /*
                          * Abort immediately if we are no longer seeking. This avoids setting a
                          * wrong frequency that we'll never successfully engage on.
@@ -222,7 +170,7 @@ impl Dot11EngagementCapture {
                         }
                     }
 
-                    Ok(Cmd::Stop) | Err(_) => {
+                    Err(_) => {
                         EngagementControl::engagement_log(
                             self.metrics.clone(),
                             format!("Stopping capture on [{}]", self.parent_interface.name)
@@ -325,9 +273,11 @@ impl Dot11EngagementCapture {
                         }
 
                         // Write to Dot11 broker pipeline.
-                        match self.bus.dot11_broker.sender.lock() {
-                            Ok(mut sender) => { sender.send_packet(Arc::new(data), length as u32) },
-                            Err(e) => error!("Could not acquire 802.11 handler broker mutex: {}", e)
+                        if self.current_status() == Engaging {
+                            match self.bus.dot11_broker.sender.lock() {
+                                Ok(mut sender) => { sender.send_packet(Arc::new(data), length as u32) },
+                                Err(e) => error!("Could not acquire 802.11 handler broker mutex: {}", e)
+                            }
                         }
                     }
                 }
@@ -335,16 +285,11 @@ impl Dot11EngagementCapture {
         }
     }
 
-    pub fn engage_uav_target(&self, target: &UavEngagementRequest) -> Result<(), Error> {
-        match self.status.lock() {
-            Ok(status) => {
-                if *status != Idle {
-                    bail!("Cannot engage new UAV target on [{}]. Interface is not Idle but [{}].",
-                        self.parent_interface.name, status)
-                }
-            },
-            Err(e) => bail!("Could not acquire status mutex on capture device [{}]: {}",
-                self.parent_interface.name, e),
+    fn engage_uav_target(&self, target: &UavEngagementRequest) -> Result<(), Error> {
+        let status = self.current_status();
+        if status != Idle {
+            bail!("Cannot engage new UAV target on [{}]. Interface is not Idle but [{}].",
+                self.parent_interface.name, status)
         }
 
         // Set to initial frequency.
@@ -381,14 +326,9 @@ impl Dot11EngagementCapture {
             .map_err(|e| anyhow::anyhow!("failed to send SetFilter command: {e}"))?;
 
         // Update status and current target.
-        match self.current_target.lock() {
-            Ok(mut current_target) => *current_target = Some(target.clone()),
-            Err(e) => bail!("Could not acquire current target lock: {}", e)
-        }
-        match self.status.lock() {
-            Ok(mut current_status) => *current_status = Engaging,
-            Err(e) => bail!("Could not acquire status lock: {}", e)
-        }
+        self.set_current_target(Some(target.clone()))?;
+
+        self.set_status(Engaging)?;
 
         EngagementControl::engagement_log(
             self.metrics.clone(),
@@ -399,10 +339,18 @@ impl Dot11EngagementCapture {
                     target.initial_channel_width)
         );
 
+        match self.last_tracked_frame_timestamp.lock() {
+            Ok(mut timestamp) => {
+                // Set first timestamp.
+                *timestamp = Some(Utc::now());
+            },
+            Err(e) => error!("Could not acquire engagement capture timestamp: {}", e)
+        }
+
         Ok(())
     }
 
-    pub fn seek_current_target(&self) -> Result<(), Error> {
+    fn seek_current_target(&self) -> Result<(), Error> {
         let target = match self.current_target.lock() {
             Ok(current_target) => {
                 match current_target.as_ref() {
@@ -415,10 +363,7 @@ impl Dot11EngagementCapture {
         };
 
         // Update status to start seeking.
-        match self.status.lock() {
-            Ok(mut current_status) => *current_status = Seeking,
-            Err(e) => bail!("Could not acquire status lock: {}", e)
-        }
+        self.set_status(Seeking)?;
 
         EngagementControl::engagement_log(
             self.metrics.clone(),
@@ -428,7 +373,7 @@ impl Dot11EngagementCapture {
         Ok(())
     }
 
-    pub fn reengage_current_target(&self) -> Result<(), Error> {
+    fn reengage_current_target(&self) -> Result<(), Error> {
         let mut nl = match Nl::new() {
             Ok(nl) => nl,
             Err(e) => {
@@ -459,10 +404,7 @@ impl Dot11EngagementCapture {
         };
 
         // Update status to start seeking.
-        match self.status.lock() {
-            Ok(mut current_status) => *current_status = Engaging,
-            Err(e) => bail!("Could not acquire status lock: {}", e)
-        };
+        self.set_status(Engaging)?;
 
         if let Err(e) = nl.set_device_frequency(&self.parent_interface.name,
                                                 last_contact_frequency as u32,
@@ -489,7 +431,7 @@ impl Dot11EngagementCapture {
         Ok(())
     }
 
-    pub fn disengage_current_target(&self) -> Result<(), Error> {
+    fn disengage_current_target(&self) -> Result<(), Error> {
         let target_id = match self.current_target.lock() {
             Ok(current_target) => {
                 match current_target.as_ref() {
@@ -506,22 +448,42 @@ impl Dot11EngagementCapture {
             .map_err(|e| anyhow::anyhow!("failed to send SetFilter command: {e}"))?;
 
         // Update status.
-        match self.status.lock() {
-            Ok(mut current_status) => *current_status = Idle,
-            Err(e) => bail!("Could not acquire status lock: {}", e)
-        }
+        self.set_status(Idle)?;
 
         // Reset current target.
-        match self.current_target.lock() {
-            Ok(mut current_target) => *current_target = None,
-            Err(e) => bail!("Could not acquire current target lock: {}", e)
-        }
+        self.set_current_target(None)?;
 
         EngagementControl::engagement_log(
             self.metrics.clone(), format!("Disengaged [{target_id}].")
         );
 
         Ok(())
+    }
+
+    fn current_status(&self) -> EngagementInterfaceStatus {
+        *self.status.lock().expect("Lock poisoned")
+    }
+
+    fn set_status(&self, new: EngagementInterfaceStatus) -> Result<(), Error> {
+        let mut g = self.status.lock()
+            .map_err(|e| anyhow::anyhow!("Lock poisoned: {e}"))?;
+        *g = new;
+        Ok(())
+    }
+
+    fn current_target(&self) -> Option<UavEngagementRequest> {
+        self.current_target.lock().expect("Lock poisoned").clone()
+    }
+
+    fn set_current_target(&self, new: Option<UavEngagementRequest>) -> Result<(), Error> {
+        let mut g = self.current_target.lock()
+            .map_err(|e| anyhow::anyhow!("Lock poisoned: {e}"))?;
+        *g = new;
+        Ok(())
+    }
+
+    fn last_tracked_frame_timestamp(&self) -> Option<DateTime<Utc>> {
+        *self.last_tracked_frame_timestamp.lock().expect("Lock poisoned")
     }
 
 }

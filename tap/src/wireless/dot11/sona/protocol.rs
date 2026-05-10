@@ -13,13 +13,46 @@ use crate::wireless::dot11::sona::uptime_offset::UptimeOffset;
 
 const WIRE_PROTOCOL_VERSION: u8 = 2;
 
-const MSG_TYPE_DOT11: u8 = 1;
+pub const MSG_TYPE_DOT11: u8 = 1;
 const MSG_TYPE_CMD: u8 = 2;
 const MSG_TYPE_METRICS: u8 = 3;
 
 const CMD_SET_FREQUENCY: u8 = 1;
+const CMD_ENTER_BOOTLOADER: u8 = 2; // just for symmetry. we are not sending that from tap.
+const CMD_SET_FILTER: u8 = 3;
 
 const HEADER_BYTES: usize = 6;
+
+pub const MGMT_SUBTYPE_PROBE_RESP: u16 = 5;
+pub const MGMT_SUBTYPE_BEACON: u16 = 8;
+
+#[repr(u8)]
+#[derive(Debug, Clone, Copy)]
+enum SonaFilterMode {
+    AdmitAll = 0,
+    DropAll = 1,
+    MacMatch = 2,
+}
+
+#[derive(Debug, Clone)]
+pub enum SonaFilter {
+    AdmitAll,
+    DropAll,
+    MacMatch { mac: [u8; 6] },
+}
+
+pub fn parse_mac(s: &str) -> anyhow::Result<[u8; 6]> {
+    let parts: Vec<&str> = s.split(':').collect();
+    if parts.len() != 6 {
+        anyhow::bail!("MAC must have 6 octets, got {}: {}", parts.len(), s);
+    }
+    let mut mac = [0u8; 6];
+    for (i, p) in parts.iter().enumerate() {
+        mac[i] = u8::from_str_radix(p, 16)
+            .map_err(|e| anyhow::anyhow!("invalid hex octet '{}': {}", p, e))?;
+    }
+    Ok(mac)
+}
 
 pub fn process_decoded(interface_name: &str,
                        decoded: &[u8],
@@ -88,23 +121,12 @@ fn handle_payload(interface_name: &str,
                 }
             };
 
-            /*
-             * Anchor or apply firmware-uptime to host-wallclock offset.
-             * The first frame of a session establishes it; thereafter we
-             * use it to stamp every frame.
-             */
             let offset = uptime_offset
                 .get_or_insert_with(|| UptimeOffset::new(hdr.capture_uptime_ms));
             let wall_micros = offset.wall_micros(hdr.capture_uptime_ms);
 
             let frame_bytes = &payload[SonaFrameHeader::BYTES..];
 
-            /*
-             * Radiotap TSFT is microseconds in the device's local time
-             * domain. Use firmware uptime directly so anyone parsing the
-             * radiotap sees a monotonic per-device timeline. wall_micros
-             * above is the corrected host-side value.
-             */
             let tsft_us = (hdr.capture_uptime_ms as u64) * 1000;
 
             let radiotap = create_radiotap_header(
@@ -182,15 +204,8 @@ fn handle_payload(interface_name: &str,
     }
 }
 
-pub fn send_set_frequency(port: &mut dyn serialport::SerialPort, freq_mhz: u16) -> std::io::Result<()> {
-    // Payload: cmd_id + freq_mhz (LE).
-    let payload = [
-        CMD_SET_FREQUENCY,
-        (freq_mhz & 0xFF) as u8,
-        (freq_mhz >> 8) as u8,
-    ];
-
-    let crc = crc16_ccitt(&payload);
+fn send_command(port: &mut dyn serialport::SerialPort, payload: &[u8]) -> std::io::Result<()> {
+    let crc = crc16_ccitt(payload);
 
     // Header: type(1), version(1), len(2 LE), crc(2 LE).
     let mut msg = Vec::with_capacity(HEADER_BYTES + payload.len());
@@ -198,10 +213,35 @@ pub fn send_set_frequency(port: &mut dyn serialport::SerialPort, freq_mhz: u16) 
     msg.push(WIRE_PROTOCOL_VERSION);
     msg.extend_from_slice(&(payload.len() as u16).to_le_bytes());
     msg.extend_from_slice(&crc.to_le_bytes());
-    msg.extend_from_slice(&payload);
+    msg.extend_from_slice(payload);
 
     let mut enc = cobs_encode(&msg);
     enc.push(0u8);
-    port.write_all(&enc)?;
-    Ok(())
+
+    port.write_all(&enc)
+}
+
+pub fn send_set_frequency(port: &mut dyn serialport::SerialPort, freq_mhz: u16) -> std::io::Result<()> {
+    let payload = [
+        CMD_SET_FREQUENCY,
+        (freq_mhz & 0xFF) as u8,
+        (freq_mhz >> 8) as u8,
+    ];
+
+    send_command(port, &payload)
+}
+
+pub fn send_set_filter(port: &mut dyn serialport::SerialPort, filter: &SonaFilter) -> std::io::Result<()> {
+    let (mode, mac) = match filter {
+        SonaFilter::AdmitAll => (SonaFilterMode::AdmitAll, [0u8; 6]),
+        SonaFilter::DropAll => (SonaFilterMode::DropAll,  [0u8; 6]),
+        SonaFilter::MacMatch { mac } => (SonaFilterMode::MacMatch, *mac),
+    };
+
+    let mut payload = Vec::with_capacity(1 + 7);
+    payload.push(CMD_SET_FILTER);
+    payload.push(mode as u8);
+    payload.extend_from_slice(&mac);
+
+    send_command(port, &payload)
 }

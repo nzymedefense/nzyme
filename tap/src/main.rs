@@ -167,7 +167,7 @@ fn main() {
 
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new(log_monitor)));
 
-    // TODO: Unify into single Bug struct? We may be over-allocating channels here.
+    // TODO: Unify into single Bus struct? We may be over-allocating channels here.
     let ethernet_bus = Arc::new(Bus::new(metrics.clone(), "ethernet_data".to_string(), configuration.clone()));
     let dot11_bus = Arc::new(Bus::new(metrics.clone(), "dot11_frames".to_string(), configuration.clone()));
     let bluetooth_bus = Arc::new(Bus::new(metrics.clone(), "bluetooth_data".to_string(), configuration.clone()));

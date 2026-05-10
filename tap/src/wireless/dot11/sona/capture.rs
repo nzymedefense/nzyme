@@ -5,11 +5,11 @@ use log::{debug, error, info, trace, warn};
 use serialport::ClearBuffer;
 use crate::messagebus::bus::Bus;
 use crate::metrics::Metrics;
-use crate::peripherals::cobs::{cobs_decode};
 use crate::usb::usb::find_first_nzyme_usb_device_with_pid_and_serial;
 use crate::wireless::dot11::sona::commands::SonaCommand;
 use crate::wireless::dot11::sona::protocol::{process_decoded, send_set_frequency};
 use crate::wireless::dot11::sona::sona::SONA_1_PID;
+use crate::wireless::dot11::sona::sona_framer::{SonaFramer, SonaFramerError};
 use crate::wireless::dot11::sona::uptime_offset::UptimeOffset;
 
 const MAX_ACCUMULATED_BYTES_WITHOUT_DELIMITER: usize = 8192;
@@ -85,7 +85,7 @@ impl Capture {
         info!("Connected to Sona [{}] ACM port. Starting data capture.", serial);
 
         let mut chunk = [0u8; 512];
-        let mut acc: Vec<u8> = Vec::with_capacity(MAX_ACCUMULATED_BYTES_WITHOUT_DELIMITER);
+        let mut framer = SonaFramer::new(MAX_ACCUMULATED_BYTES_WITHOUT_DELIMITER);
         let mut uptime_offset: Option<UptimeOffset> = None;
 
         loop {
@@ -99,56 +99,29 @@ impl Capture {
                         } else {
                             debug!("Sent SetFrequency({}) to Sona [{}].", freq_mhz, serial);
                         }
-                    }
+                    },
+                    SonaCommand::SetFilter(_) => { /* no-op */ }
                 }
             }
 
             match port_handle.read(&mut chunk) {
                 Ok(n) if n > 0 => {
-                    if acc.len() + n > MAX_ACCUMULATED_BYTES_WITHOUT_DELIMITER {
-                        warn!("Accumulator exceeded maximum bytes without delimiter: <{}> bytes, \
-                            clearing buffer.", MAX_ACCUMULATED_BYTES_WITHOUT_DELIMITER);
-                        acc.clear();
+                    if let Err(SonaFramerError::Overflow) = framer.push(&chunk[..n]) {
+                        warn!("Accumulator exceeded {} bytes without delimiter, cleared.",
+                            MAX_ACCUMULATED_BYTES_WITHOUT_DELIMITER);
                         continue;
                     }
 
-                    acc.extend_from_slice(&chunk[..n]);
-
-                    let mut processed_up_to = 0;
-                    while let Some(delimiter_pos) = acc[processed_up_to..].iter().position(|&b| b == 0) {
-                        let frame_end = processed_up_to + delimiter_pos;
-
-                        if frame_end > processed_up_to {
-                            let encoded = &acc[processed_up_to..frame_end];
-
-                            match cobs_decode(encoded) {
-                                Ok(decoded) => {
-                                    process_decoded(
-                                        interface_name,
-                                        &decoded,
-                                        &mut uptime_offset,
-                                        self.metrics.clone(),
-                                        self.bus.clone()
-                                    );
-                                }
-                                Err(e) => {
-                                    /*
-                                     * Expected once per session at startup
-                                     * (we land mid-frame after the flush),
-                                     * and on any rare wire corruption. Trace,
-                                     * not warn.
-                                     */
-                                    trace!("COBS decode error: {}", e);
-                                }
-                            }
-                        }
-
-                        processed_up_to = frame_end + 1;
-                    }
-
-                    if processed_up_to > 0 {
-                        acc.drain(0..processed_up_to);
-                    }
+                    framer.drain(|frame| match frame {
+                        Ok(decoded) => process_decoded(
+                            interface_name,
+                            &decoded,
+                            &mut uptime_offset,
+                            self.metrics.clone(),
+                            self.bus.clone(),
+                        ),
+                        Err(e) => trace!("COBS decode error: {}", e),
+                    });
                 }
                 Ok(_) => { /* Zero bytes. Loop. */ }
                 Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => { /* normal */ }

@@ -12,12 +12,14 @@ use crate::messagebus::bus::Bus;
 use crate::metrics;
 use crate::metrics::Metrics;
 use crate::wireless::dot11::engagement::dot11_engagement_capture::Dot11EngagementCapture;
-use crate::wireless::dot11::engagement::dot11_engagement_interface::Dot11EngagementInterface;
+use crate::wireless::dot11::engagement::engagement_capture::EngagementCapture;
 use crate::wireless::dot11::engagement::engagement_control::EngagementInterfaceStatus::{Idle, Seeking, Engaging};
+use crate::wireless::dot11::engagement::engagement_interface::EngagementInterface;
+use crate::wireless::dot11::engagement::sona_engagement_capture::SonaEngagementCapture;
 use crate::wireless::dot11::engagement::uav_engagement_request::UavEngagementRequest;
 
 pub struct EngagementControl {
-    dot11_interfaces: HashMap<String, Arc<Dot11EngagementInterface>>,
+    dot11_interfaces: HashMap<String, Arc<EngagementInterface>>,
     metrics: Arc<Mutex<Metrics>>,
     bus: Arc<Bus>
 }
@@ -48,7 +50,7 @@ impl EngagementControl {
 
             dot11_interfaces.insert(
                 interface_name.clone(),
-                Arc::new(Dot11EngagementInterface::from_config(interface_name, c))
+                Arc::new(EngagementInterface::from_config(interface_name, c))
             );
         };
 
@@ -80,9 +82,15 @@ impl EngagementControl {
             let capturemetrics = self.metrics.clone();
             let capturebus = self.bus.clone();
             thread::spawn(move || {
-                let capture = Arc::new(Dot11EngagementCapture::new(
-                    captureinterface.clone(), capturemetrics.clone(), capturebus
-                ));
+                let capture: Arc<dyn EngagementCapture> = if captureinterface.name.starts_with("sona-") {
+                    Arc::new(SonaEngagementCapture::new(
+                        captureinterface.clone(), capturemetrics.clone(), capturebus
+                    ))
+                } else {
+                    Arc::new(Dot11EngagementCapture::new(
+                        captureinterface.clone(), capturemetrics.clone(), capturebus
+                    ))
+                };
 
                 match capturemetrics.lock() {
                     Ok(mut metrics) => metrics.register_new_capture(
@@ -110,19 +118,13 @@ impl EngagementControl {
             match interface.capture.lock() {
                 Ok(c) => {
                     if let Some(capture) = c.as_ref() {
-                        match capture.current_target.lock() {
-                            Ok(target) => {
-                                if let Some(target) = target.as_ref() {
-                                    if target.uav_id == request.uav_id {
-                                        debug!("Ignoring request to engage UAV [{}] because \
-                                        interface [{}] is already engaging it.",
-                                            request.uav_id, interface.name);
-                                        return Ok(());
-                                    }
-                                }
+                        if let Some(target) = capture.current_target() {
+                            if target.uav_id == request.uav_id {
+                                debug!("Ignoring request to engage UAV [{}] because \
+                                interface [{}] is already engaging it.",
+                                    request.uav_id, interface.name);
+                                return Ok(());
                             }
-                            Err(e) => bail!("Could not acquire capture target lock on [{}]: {}",
-                                interface.name, e)
                         }
                     }
                 },
@@ -179,90 +181,72 @@ impl EngagementControl {
         Ok(())
     }
 
-    fn interface_control(metrics: Arc<Mutex<Metrics>>, interface: &Arc<Dot11EngagementInterface>) {
+    fn interface_control(metrics: Arc<Mutex<Metrics>>, interface: &Arc<EngagementInterface>) {
         match interface.capture.lock() {
             Ok(capture) => {
                 // Check if this interface has a capture (yet).
                 if let Some(capture) = capture.as_ref() {
-                    // Get capture status.
-                    let capture_status = match capture.status.lock() {
-                        Ok(status) => status.clone(),
-                        Err(e) => {
-                            error!("Could not acquire capture status lock on \
-                                interface [{}]: {}", interface.name, e);
-                            return;
-                        }
-                    };
-
                     /*
                      * Check when this capture saw the target the last time and if we need to
                      * configure it to SEEKING mode because it lost track or disengage the target
                      * entirely.
                      */
-                    match capture.last_tracked_frame_timestamp.lock() {
-                        Ok(ts) => {
-                            if let Some(timestamp) = ts.as_ref() {
-                                let secs_ago = Utc::now() - timestamp;
+                    if let Some(timestamp) = capture.last_tracked_frame_timestamp() {
+                        let secs_ago = Utc::now() - timestamp;
 
-                                match capture_status {
-                                    Idle => {
-                                        // Capture is idle. Nothing to do.
-                                    },
-                                    Engaging => {
-                                        // Check if we lost track of the target.
-                                        if secs_ago > Duration::try_seconds(ENGAGEMENT_TIMEOUT_SECS)
-                                                .unwrap() {
-                                            Self::engagement_log(
-                                                metrics,
-                                                 format!("Interface [{}] lost engaged \
+                        match capture.current_status() {
+                            Idle => {
+                                // Capture is idle. Nothing to do.
+                            },
+                            Engaging => {
+                                // Check if we lost track of the target.
+                                if secs_ago > Duration::try_seconds(ENGAGEMENT_TIMEOUT_SECS)
+                                    .unwrap() {
+                                    Self::engagement_log(
+                                        metrics,
+                                        format!("Interface [{}] lost engaged \
                                                     target. Tasking to start seeking.",
-                                                         interface.name)
-                                            );
+                                                interface.name)
+                                    );
 
-                                            if capture.seek_current_target().is_err() {
-                                                error!("Could not start seeking current target on \
+                                    if capture.seek_current_target().is_err() {
+                                        error!("Could not start seeking current target on \
                                                     [{}].", interface.name);
-                                            }
-                                        }
-                                    },
-                                    Seeking => {
-                                        // Check if seeking did not detect the target.
-                                        if secs_ago > Duration::try_seconds(SEEKER_TIMEOUT_SECS)
-                                                .unwrap() {
-                                            Self::engagement_log(
-                                                metrics,
-                                                format!("Interface [{}] timed out seeking and \
+                                    }
+                                }
+                            },
+                            Seeking => {
+                                // Check if seeking did not detect the target.
+                                if secs_ago > Duration::try_seconds(SEEKER_TIMEOUT_SECS)
+                                    .unwrap() {
+                                    Self::engagement_log(
+                                        metrics,
+                                        format!("Interface [{}] timed out seeking and \
                                                     lost target. Requesting to \
                                                     disengage.", interface.name)
-                                            );
+                                    );
 
-                                            if capture.disengage_current_target().is_err() {
-                                                error!("Could not disengage current target on \
+                                    if capture.disengage_current_target().is_err() {
+                                        error!("Could not disengage current target on \
                                                     [{}].", interface.name);
-                                            }
-                                        } else if secs_ago <= Duration
-                                            ::try_seconds(CONTROL_LOOP_INTERVAL_SECS+2)
-                                            .unwrap() {
+                                    }
+                                } else if secs_ago <= Duration
+                                ::try_seconds(CONTROL_LOOP_INTERVAL_SECS + 2)
+                                    .unwrap() {
 
-                                            // Target re-acquired. Engage.
-                                            Self::engagement_log(
-                                                metrics,
-                                                format!("Target re-acquired in seeking mode. \
+                                    // Target re-acquired. Engage.
+                                    Self::engagement_log(
+                                        metrics,
+                                        format!("Target re-acquired in seeking mode. \
                                                 Tasking  [{}] to engage.", interface.name)
-                                            );
+                                    );
 
-                                            if capture.reengage_current_target().is_err() {
-                                                error!("Could not re-engage current target on \
+                                    if capture.reengage_current_target().is_err() {
+                                        error!("Could not re-engage current target on \
                                                 [{}].", interface.name);
-                                            }
-                                        }
-                                    },
+                                    }
                                 }
-                            }
-                        },
-                        Err(e) => {
-                            error!("Could not acquire capture frame timestamp lock on \
-                                interface [{}]: {}", interface.name, e);
+                            },
                         }
                     }
                 }
@@ -272,11 +256,11 @@ impl EngagementControl {
         }
     }
 
-    pub fn engagement_log(metrics: Arc<Mutex<Metrics>>, log: String) {
-        info!("{}", log);
+pub fn engagement_log(metrics: Arc<Mutex<Metrics>>, log: String) {
+    info!("{}", log);
 
-        match metrics.lock() {
-            Ok(mut metrics) => metrics.record_engagement_log(log),
+    match metrics.lock() {
+        Ok(mut metrics) => metrics.record_engagement_log(log),
             Err(e) => error!("Could not acquire mutex of metrics`: {}", e)
         }
     }

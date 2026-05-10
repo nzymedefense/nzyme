@@ -197,9 +197,7 @@ impl ChannelHopper {
         let device_assigments = self.device_assignments.clone();
 
         info!("Channel map: {:?}", device_assigments);
-
-
-
+        
         // Spawn a hopper thread for each device.
         for (device, channels) in device_assigments {
             if channels.is_empty() {
