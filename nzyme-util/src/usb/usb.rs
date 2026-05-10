@@ -86,7 +86,7 @@ fn build_nzyme_device_info(device: &Device<UsbContextType>, desc: &DeviceDescrip
     let dv = desc.device_version();
     let firmware_version = FirmwareVersion {
         major: dv.major() as u32,
-        minor: dv.minor() as u32
+        minor: (dv.minor() as u32) * 10 + (dv.sub_minor() as u32),
     };
 
     // Try to open the device to read string descriptors. (may fail if permissions are missing)
