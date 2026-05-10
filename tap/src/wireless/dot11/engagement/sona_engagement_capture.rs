@@ -179,18 +179,18 @@ impl SonaEngagementCapture {
 
                                 framer.drain(|frame| match frame {
                                     Ok(decoded) => {
-                                        if self.current_status() == Engaging
-                                            && decoded.first() == Some(&MSG_TYPE_DOT11)
-                                        {
+                                        // Note frame arrival of 802.11 frames.
+                                        if decoded.first() == Some(&MSG_TYPE_DOT11) {
                                             self.note_frame_arrival();
-                                            process_decoded(
-                                                &self.parent_interface.name,
-                                                &decoded,
-                                                &mut uptime_offset,
-                                                self.metrics.clone(),
-                                                self.bus.clone(),
-                                            );
                                         }
+
+                                        process_decoded(
+                                            &self.parent_interface.name,
+                                            &decoded,
+                                            &mut uptime_offset,
+                                            self.metrics.clone(),
+                                            self.bus.clone(),
+                                        );
                                     }
                                     Err(e) => trace!("COBS decode error: {}", e),
                                 });

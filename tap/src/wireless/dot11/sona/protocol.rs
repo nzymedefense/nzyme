@@ -190,6 +190,10 @@ fn handle_payload(interface_name: &str,
                             &format!("{}.frame_queue_used", interface_name),
                             sona_metrics.frame_queue_used as i128,
                         );
+                        metrics.set_gauge(
+                            &format!("{}.firmware_version_bcd", interface_name),
+                            sona_metrics.version_bcd as i128,
+                        );
                     }
                     Err(e) => error!("Could not acquire metrics mutex: {}", e),
                 }

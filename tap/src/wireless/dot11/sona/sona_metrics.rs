@@ -1,6 +1,6 @@
 use std::fmt;
 
-pub const METRICS_PAYLOAD_BYTES: usize = 24;
+pub const METRICS_PAYLOAD_BYTES: usize = 26;
 
 #[derive(Debug, Clone)]
 pub struct SonaMetrics {
@@ -10,6 +10,7 @@ pub struct SonaMetrics {
     pub frame_queue_used: u32,
     pub frame_queue_drops: u32,
     pub frame_queue_stale_drops: u32,
+    pub version_bcd: u16,
 }
 
 impl fmt::Display for SonaMetrics {
@@ -19,9 +20,9 @@ impl fmt::Display for SonaMetrics {
         let reset_reason_str = reset_reason_to_string(self.last_reset_reason);
         write!(
             f,
-            "SonaMetrics {{ uptime: {:.2}s, temp: {:.1}°C, queue: {}, drops: {}, stale: {}, reset: {} }}",
+            "SonaMetrics {{ uptime: {:.2}s, temp: {:.1}°C, queue: {}, drops: {}, stale: {}, reset: {}, fw: {} }}",
             uptime_sec, temp_celsius, self.frame_queue_used,
-            self.frame_queue_drops, self.frame_queue_stale_drops, reset_reason_str
+            self.frame_queue_drops, self.frame_queue_stale_drops, reset_reason_str, self.version_bcd
         )
     }
 }
@@ -60,6 +61,7 @@ pub fn parse_metrics_payload(data: &[u8]) -> Option<SonaMetrics> {
     let frame_queue_used = u32::from_le_bytes([data[12], data[13], data[14], data[15]]);
     let frame_queue_drops = u32::from_le_bytes([data[16], data[17], data[18], data[19]]);
     let frame_queue_stale_drops = u32::from_le_bytes([data[20], data[21], data[22], data[23]]);
+    let version_bcd = u16::from_le_bytes([data[24], data[25]]);
 
     Some(SonaMetrics {
         uptime_ms,
@@ -68,5 +70,6 @@ pub fn parse_metrics_payload(data: &[u8]) -> Option<SonaMetrics> {
         frame_queue_used,
         frame_queue_drops,
         frame_queue_stale_drops,
+        version_bcd,
     })
 }
