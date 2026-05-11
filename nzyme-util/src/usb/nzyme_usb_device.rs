@@ -1,5 +1,4 @@
 use std::fmt;
-use crate::firmware::firmware_release::FirmwareRelease;
 use crate::firmware::firmware_version::FirmwareVersion;
 
 #[derive(Debug, Clone)]

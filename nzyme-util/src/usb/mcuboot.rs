@@ -66,7 +66,7 @@ pub fn send_enter_bootloader<P: AsRef<std::path::Path>>(dev_path: P) -> Result<(
     let mut port = serialport::new(&dev_str, 115_200)
         .timeout(Duration::from_secs(1))
         .open()
-        .with_context(|| format!("Could not open [{}].", dev_str))?;
+        .with_context(|| format!("Could not open [{}]. IMPORTANT: Make sure that `nzyme-tap` is stopped.", dev_str))?;
 
     // Payload is only the command id.
     let payload = [CMD_ENTER_BOOTLOADER];
