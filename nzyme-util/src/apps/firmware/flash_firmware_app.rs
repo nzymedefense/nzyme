@@ -50,7 +50,7 @@ pub fn run(firmware_file: String, device_serial: String) {
      */
     let device_bootloader_pid = match find_bootloader_of_pid(device.pid) {
         Ok(p) => p,
-        Err(e) => {
+        Err(_) => {
             eprintln!("{FG_RED}[x] ERROR:{RESET} Unknown PID <0x{:04X}>.", device.pid);
             std::process::exit(EX_UNAVAILABLE);
         }
@@ -137,7 +137,7 @@ pub fn run(firmware_file: String, device_serial: String) {
                     break;
                 }
                 Ok(false) => {}
-                Err(e) => { /* Ignore. */ }
+                Err(_) => { /* Ignore. */ }
             }
 
             if start.elapsed() > timeout {

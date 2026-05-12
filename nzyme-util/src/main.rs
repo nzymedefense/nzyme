@@ -9,7 +9,9 @@ use clap::Parser;
 use crate::apps::firmware::{flash_firmware_app, verify_firmware_app};
 use crate::apps::devices::list_devices_app;
 use crate::apps::release::verify_release_app;
-use crate::arguments::{CliArguments, Command, DevicesSubcommand, FirmwareSubcommand, ReleaseSubcommand};
+use crate::apps::sona::generate_sona_configuration_app;
+
+use crate::arguments::{CliArguments, Command, DevicesSubcommand, FirmwareSubcommand, ReleaseSubcommand, SonaSubcommand};
 use crate::exit_codes::EX_OK;
 
 fn main() {
@@ -39,6 +41,13 @@ fn main() {
             ReleaseSubcommand::Verify { release_file, signature_file, public_key_file } => {
                 // $ nzyme-util release verify
                 verify_release_app::run(release_file, signature_file, public_key_file);
+            }
+        },
+
+        Some(Command::Sona(fw)) => match fw.command {
+            SonaSubcommand::GenerateConfig => {
+                // $ nzyme-util sona generate-config
+                generate_sona_configuration_app::run();
             }
         },
 

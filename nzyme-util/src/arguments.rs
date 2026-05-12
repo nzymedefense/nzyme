@@ -20,6 +20,7 @@ pub enum Command {
     Firmware(FirmwareCommand),
     Devices(DevicesCommand),
     Release(ReleaseCommand),
+    Sona(SonaCommand),
 }
 
 #[derive(Args, Debug)]
@@ -76,4 +77,15 @@ pub enum ReleaseSubcommand {
         #[arg(long)]
         public_key_file: String,
     },
+}
+
+#[derive(Args, Debug)]
+pub struct SonaCommand {
+    #[command(subcommand)]
+    pub command: SonaSubcommand,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum SonaSubcommand {
+    GenerateConfig
 }
