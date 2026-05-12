@@ -113,7 +113,7 @@ pub fn run(firmware_file: String, public_key_file: String) {
         Err(e) => {
             eprintln!(
                 "{FG_RED}{BOLD}[x] Signature INVALID{RESET} — firmware authenticity cannot be \
-                    confirmed."
+                    confirmed. CONTACT NZYME."
             );
             eprintln!("    Details: {}", e);
 
