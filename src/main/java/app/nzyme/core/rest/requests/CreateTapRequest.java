@@ -6,6 +6,8 @@ import com.google.auto.value.AutoValue;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.util.UUID;
+
 @AutoValue
 public abstract class CreateTapRequest {
 
@@ -16,6 +18,9 @@ public abstract class CreateTapRequest {
     public abstract String description();
 
     @Nullable
+    public abstract UUID location();
+
+    @Nullable
     public abstract Double latitude();
 
     @Nullable
@@ -24,11 +29,13 @@ public abstract class CreateTapRequest {
     @JsonCreator
     public static CreateTapRequest create(@JsonProperty("name") String name,
                                           @JsonProperty("description") String description,
+                                          @JsonProperty("location") UUID location,
                                           @JsonProperty("latitude") Double latitude,
                                           @JsonProperty("longitude") Double longitude) {
         return builder()
                 .name(name)
                 .description(description)
+                .location(location)
                 .latitude(latitude)
                 .longitude(longitude)
                 .build();
@@ -43,6 +50,8 @@ public abstract class CreateTapRequest {
         public abstract Builder name(String name);
 
         public abstract Builder description(String description);
+
+        public abstract Builder location(UUID location);
 
         public abstract Builder latitude(Double latitude);
 

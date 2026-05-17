@@ -24,8 +24,8 @@ function EditTapPermissionsPage() {
 
   const [redirect, setRedirect] = useState(false);
 
-  const onFormSubmitted = function (name, description, latitude, longitude) {
-    authenticationManagementService.editTapPermission(organization.id, tenant.id, tap.uuid, name, description, latitude, longitude, () => {
+  const onFormSubmitted = function (name, description, location, latitude, longitude) {
+    authenticationManagementService.editTapPermission(organization.id, tenant.id, tap.uuid, name, description, location, latitude, longitude, () => {
       setRedirect(true);
       toast.success('Tap details updated.');
     })
@@ -108,10 +108,11 @@ function EditTapPermissionsPage() {
                 <TapPermissionForm onClick={onFormSubmitted}
                                    name={tap.name}
                                    description={tap.description}
+                                   location={tap.location_id}
                                    latitude={tap.latitude}
                                    longitude={tap.longitude}
                                    defaultMapZoomLevel={(tap.latitude && tap.longitude) ? 18 : 1}
-                                   submitText="Edit Tap"  />
+                                   submitText="Update Tap Settings" />
               </div>
             </div>
           </div>

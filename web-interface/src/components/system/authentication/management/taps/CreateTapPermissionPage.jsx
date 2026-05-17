@@ -26,8 +26,8 @@ function CreateTapPermissionPage() {
     authenticationMgmtService.findTenantOfOrganization(organizationId, tenantId, setTenant);
   }, [organizationId, tenantId])
 
-  const onFormSubmitted = function (name, description, latitude, longitude) {
-    authenticationMgmtService.createTapPermission(organizationId, tenantId, name, description, latitude, longitude,
+  const onFormSubmitted = function (name, description, location, latitude, longitude) {
+    authenticationMgmtService.createTapPermission(organizationId, tenantId, name, description, location, latitude, longitude,
         () => {
       toast.success('Tap created.');
       setRedirect(true);

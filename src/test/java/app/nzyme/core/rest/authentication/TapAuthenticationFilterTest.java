@@ -11,6 +11,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import static org.testng.Assert.*;
 
@@ -43,7 +44,7 @@ public class TapAuthenticationFilterTest {
         String secret = RandomStringUtils.random(64, true, true);
 
        nzyme.getAuthenticationService()
-                .createTap(org.uuid(), tenant.uuid(), secret, "test tap", "test tap", null, null);
+                .createTap(org.uuid(), tenant.uuid(), secret, "test tap", "test tap", UUID.randomUUID(),null, null);
 
        return secret;
     }

@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import TapPositionMap from "./TapPositionMap";
 import LatitudeLongitude from "../../../../shared/LatitudeLongitude";
+import LocationSelector from "../../../../shared/locations/LocationSelector";
 
 function TapPermissionForm(props) {
 
@@ -11,10 +12,10 @@ function TapPermissionForm(props) {
   const [name, setName] = useState(props.name ? props.name : "");
   const [description, setDescription] = useState(props.description ? props.description : "");
 
+  const [location, setLocation] = useState(props.location ? props.location : "");
+
   const [longitude, setLongitude] = useState(props.longitude ? props.longitude : null);
   const [latitude, setLatitude] = useState(props.latitude ? props.latitude : null);
-
-  const [additionalToggled, setAdditionalToggled] = useState(props.longitude && props.latitude);
 
   const updateValue = function(e, setter) {
     setter(e.target.value);
@@ -24,14 +25,17 @@ function TapPermissionForm(props) {
     return name && name.trim().length > 0 && description && description.trim().length > 0
   }
 
-  const toggleAdditionalOptions = (e) => {
-    e.preventDefault();
-    setAdditionalToggled(!additionalToggled)
-  }
-
   const submit = function(e) {
     e.preventDefault();
-    onClick(name, description, latitude, longitude);
+    onClick(name, description, location, latitude, longitude);
+  }
+
+  const onLocationSelected = (location) => {
+    if (!location) {
+      setLocation(null);
+    } else {
+      setLocation(location);
+    }
   }
 
   return (
@@ -51,19 +55,22 @@ function TapPermissionForm(props) {
         </div>
 
         <div className="mb-3">
-          <i className="fa-solid fa-caret-right"></i>&nbsp;{' '}
-          <a href="#" onClick={toggleAdditionalOptions}>
-            Additional options
-          </a>
+          <div className="mb-3 mt-4">
+            <div className="mb-3">
+              <h3>Tap Location <small>Optional</small></h3>
 
-          { additionalToggled ?
-            <div className="mb-3 mt-4" id="additionalTapOptions">
-              <div className="mb-3">
-                <h3>Tap Location <small>Optional</small></h3>
+              <div className="mt-3">
+                <h4>Location</h4>
+
+                <LocationSelector location={location} onLocationSelected={onLocationSelected} />
+              </div>
+
+              <div className="mt-3">
+                <h4>Coordinates</h4>
 
                 <p className="text-muted">
-                  You can define a latitude/longitude position for this tap. Note that this configuration is independent
-                  of a floor plan placement that you can make in the tenant tap location settings.
+                  Optionally, you can define a latitude/longitude position for this tap. Note that this configuration
+                  is independent of a floor plan placement that you can make in the tenant tap location settings.
                 </p>
 
                 <TapPositionMap latitude={latitude}
@@ -72,16 +79,15 @@ function TapPermissionForm(props) {
                                 editMode={true}
                                 setLatitude={setLatitude}
                                 setLongitude={setLongitude}
-                                defaultZoomLevel={defaultMapZoomLevel}
-                                toggled={additionalToggled} /* Required to redraw on visibility toggle. */ />
+                                defaultZoomLevel={defaultMapZoomLevel} />
 
                 <div className="mt-2">
                   <strong>Selected Location:</strong> <LatitudeLongitude latitude={latitude} longitude={longitude} skipAccuracy={true} />{' '}
                   (Please click on the map to place the tap)
                 </div>
               </div>
-            </div> : null
-          }
+            </div>
+          </div>
         </div>
 
         <button className="btn btn-primary" onClick={submit} disabled={!formIsReady()}>

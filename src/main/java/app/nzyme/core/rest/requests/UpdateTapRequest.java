@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.util.UUID;
+
 @AutoValue
 public abstract class UpdateTapRequest {
 
@@ -16,6 +18,9 @@ public abstract class UpdateTapRequest {
 
     @NotEmpty
     public abstract String description();
+
+    @Nullable
+    public abstract UUID location();
 
     @Nullable
     @Min(-90) @Max(90)
@@ -28,11 +33,13 @@ public abstract class UpdateTapRequest {
     @JsonCreator
     public static UpdateTapRequest create(@JsonProperty("name") String name,
                                           @JsonProperty("description") String description,
+                                          @JsonProperty("location") UUID location,
                                           @JsonProperty("latitude") Double latitude,
                                           @JsonProperty("longitude") Double longitude) {
         return builder()
                 .name(name)
                 .description(description)
+                .location(location)
                 .latitude(latitude)
                 .longitude(longitude)
                 .build();
@@ -47,6 +54,8 @@ public abstract class UpdateTapRequest {
         public abstract Builder name(String name);
 
         public abstract Builder description(String description);
+
+        public abstract Builder location(UUID location);
 
         public abstract Builder latitude(Double latitude);
 

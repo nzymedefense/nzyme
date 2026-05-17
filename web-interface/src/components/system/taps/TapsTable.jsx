@@ -28,8 +28,8 @@ function TapsTable(props) {
           <thead>
             <tr>
               <th>Name</th>
+              <th>Location</th>
               <th>Throughput</th>
-              <th>Total data processed</th>
               <th>CPU Load</th>
               <th>Memory Used</th>
               <th>Clock</th>
