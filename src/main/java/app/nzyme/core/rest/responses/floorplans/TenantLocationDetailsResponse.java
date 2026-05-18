@@ -20,6 +20,14 @@ public abstract class TenantLocationDetailsResponse {
     @Nullable
     public abstract String description();
 
+    @JsonProperty("longitude")
+    @Nullable
+    public abstract Double longitude();
+
+    @JsonProperty("latitude")
+    @Nullable
+    public abstract Double latitude();
+
     @JsonProperty("floor_count")
     public abstract long floorCount();
 
@@ -32,11 +40,13 @@ public abstract class TenantLocationDetailsResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static TenantLocationDetailsResponse create(UUID id, String name, String description, long floorCount, long tapCount, DateTime createdAt, DateTime updatedAt) {
+    public static TenantLocationDetailsResponse create(UUID id, String name, String description, Double longitude, Double latitude, long floorCount, long tapCount, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .name(name)
                 .description(description)
+                .longitude(longitude)
+                .latitude(latitude)
                 .floorCount(floorCount)
                 .tapCount(tapCount)
                 .createdAt(createdAt)
@@ -55,6 +65,10 @@ public abstract class TenantLocationDetailsResponse {
         public abstract Builder name(String name);
 
         public abstract Builder description(String description);
+
+        public abstract Builder longitude(Double longitude);
+
+        public abstract Builder latitude(Double latitude);
 
         public abstract Builder floorCount(long floorCount);
 

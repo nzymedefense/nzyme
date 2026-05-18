@@ -1,4 +1,6 @@
 import React, {useState} from "react";
+import LatLonMap from "../../../../../shared/LatLonMap";
+import LatitudeLongitude from "../../../../../shared/LatitudeLongitude";
 
 function LocationForm(props) {
 
@@ -6,6 +8,9 @@ function LocationForm(props) {
   const submitText = props.submitText;
   const [name, setName] = useState(props.name ? props.name : "");
   const [description, setDescription] = useState(props.description ? props.description : "");
+  const defaultMapZoomLevel = props.defaultMapZoomLevel;
+  const [longitude, setLongitude] = useState(props.longitude ? props.longitude : null);
+  const [latitude, setLatitude] = useState(props.latitude ? props.latitude : null);
 
   const updateValue = function(e, setter) {
     setter(e.target.value);
@@ -17,7 +22,7 @@ function LocationForm(props) {
 
   const submit = function(e) {
     e.preventDefault();
-    onSubmit(name, description);
+    onSubmit(name, description, latitude, longitude);
   }
 
   return (
@@ -34,6 +39,33 @@ function LocationForm(props) {
           <textarea className="form-control" id="description" rows="3"
                     value={description} onChange={(e) => { updateValue(e, setDescription) }} />
           <div className="form-text">A short description of the location.</div>
+        </div>
+
+        <div className="mb-3">
+          <div className="mb-3 mt-4">
+            <div className="mb-3">
+              <div className="mt-3">
+                <h3>Coordinates <small>(Optional)</small></h3>
+
+                <p className="text-muted">
+                  Optionally, you can define a latitude/longitude position for this location.
+                </p>
+
+                <LatLonMap latitude={latitude}
+                           longitude={longitude}
+                           containerHeight={300}
+                           editMode={true}
+                           setLatitude={setLatitude}
+                           setLongitude={setLongitude}
+                           defaultZoomLevel={defaultMapZoomLevel} />
+
+                <div className="mt-2">
+                  <strong>Selected Location:</strong> <LatitudeLongitude latitude={latitude} longitude={longitude} skipAccuracy={true} />{' '}
+                  (Please click on the map to place the location.)
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <button className="btn btn-sm btn-primary" onClick={submit} disabled={!formIsReady()}>

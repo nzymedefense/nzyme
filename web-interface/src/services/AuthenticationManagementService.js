@@ -281,14 +281,14 @@ class AuthenticationManagementService {
         })
   }
 
-  createTenantLocation(organizationId, tenantId, name, description, successCallback) {
+  createTenantLocation(organizationId, tenantId, name, description, latitude, longitude, successCallback) {
     RESTClient.post("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations",
-        {name: name, description: description}, successCallback)
+        {name: name, description: description, latitude: latitude, longitude: longitude}, successCallback)
   }
 
-  updateTenantLocation(organizationId, tenantId, locationId, name, description, successCallback) {
+  updateTenantLocation(organizationId, tenantId, locationId, name, description, latitude, longitude, successCallback) {
     RESTClient.put("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId,
-        {name: name, description: description}, successCallback)
+        {name: name, description: description, latitude: latitude, longitude: longitude}, successCallback)
   }
 
   deleteTenantLocation(locationId, organizationId, tenantId, successCallback) {

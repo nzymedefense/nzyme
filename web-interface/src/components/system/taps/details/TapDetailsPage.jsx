@@ -15,7 +15,7 @@ import {byteAverageToMbit} from "../../../../util/Tools";
 import TapDot11CoverageMap from "./TapDot11CoverageMap";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 import LatitudeLongitude from "../../../shared/LatitudeLongitude";
-import TapPositionMap from "../../authentication/management/taps/TapPositionMap";
+import LatLonMap from "../../../shared/LatLonMap";
 import TapConfiguration from "./TapConfiguration";
 import TapEngagementLogsTable from "./TapEngagementLogsTable";
 import usePageTitle from "../../../../util/UsePageTitle";
@@ -209,11 +209,11 @@ function TapDetailsPage () {
                 <dd><LatitudeLongitude latitude={tap.latitude} longitude={tap.longitude} skipAccuracy={true} /></dd>
               </dl>
 
-              { tap.latitude && tap.longitude ? <TapPositionMap editMode={false}
-                                                                containerHeight={300}
-                                                                defaultZoomLevel={18}
-                                                                latitude={tap.latitude}
-                                                                longitude={tap.longitude} />
+              { tap.latitude && tap.longitude ? <LatLonMap editMode={false}
+                                                           containerHeight={300}
+                                                           defaultZoomLevel={18}
+                                                           latitude={tap.latitude}
+                                                           longitude={tap.longitude} />
                 : null }
             </div>
           </div>

@@ -1121,28 +1121,41 @@ public class AuthenticationService {
         );
     }
 
-    public void createTenantLocation(UUID organizationId, UUID tenantId, String name, @Nullable String description) {
+    public void createTenantLocation(UUID organizationId,
+                                     UUID tenantId,
+                                     String name,
+                                     @Nullable String description,
+                                     @Nullable Double latitude,
+                                     @Nullable Double longitude) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO auth_tenants_locations(uuid, organization_id, tenant_id, name, " +
-                                "description, created_at, updated_at) VALUES(:uuid, :organization_id, :tenant_id, " +
-                                ":name, :description, NOW(), NOW())")
+                                "description, latitude, longitude, created_at, updated_at) VALUES(:uuid, " +
+                                ":organization_id, :tenant_id, :name, :description, :latitude, :longitude, NOW(), NOW())")
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("name", name)
                         .bind("description", description)
+                        .bind("latitude", latitude)
+                        .bind("longitude", longitude)
                         .execute()
         );
     }
 
-    public void updateTenantLocation(long locationId, String name, @Nullable String description) {
+    public void updateTenantLocation(long locationId,
+                                     String name,
+                                     @Nullable String description,
+                                     @Nullable Double latitude,
+                                     @Nullable Double longitude) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_tenants_locations SET name = :name, description = :description, " +
-                                "updated_at = NOW() WHERE id = :id")
+                                "latitude = :latitude, longitude = :longitude, updated_at = NOW() WHERE id = :id")
                         .bind("uuid", UUID.randomUUID())
                         .bind("id", locationId)
                         .bind("name", name)
                         .bind("description", description)
+                        .bind("latitude", latitude)
+                        .bind("longitude", longitude)
                         .execute()
         );
     }

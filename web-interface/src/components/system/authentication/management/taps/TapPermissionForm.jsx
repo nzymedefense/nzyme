@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import TapPositionMap from "./TapPositionMap";
+import LatLonMap from "../../../../shared/LatLonMap";
 import LatitudeLongitude from "../../../../shared/LatitudeLongitude";
 import LocationSelector from "../../../../shared/locations/LocationSelector";
 
@@ -73,13 +73,13 @@ function TapPermissionForm(props) {
                   is independent of a floor plan placement that you can make in the tenant tap location settings.
                 </p>
 
-                <TapPositionMap latitude={latitude}
-                                longitude={longitude}
-                                containerHeight={300}
-                                editMode={true}
-                                setLatitude={setLatitude}
-                                setLongitude={setLongitude}
-                                defaultZoomLevel={defaultMapZoomLevel} />
+                <LatLonMap latitude={latitude}
+                           longitude={longitude}
+                           containerHeight={300}
+                           editMode={true}
+                           setLatitude={setLatitude}
+                           setLongitude={setLongitude}
+                           defaultZoomLevel={defaultMapZoomLevel} />
 
                 <div className="mt-2">
                   <strong>Selected Location:</strong> <LatitudeLongitude latitude={latitude} longitude={longitude} skipAccuracy={true} />{' '}

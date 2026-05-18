@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 import {latLng} from "leaflet/src/geo";
 
-export default function TapPositionMap(props) {
+export default function LatLonMap(props) {
 
   const containerHeight = props.containerHeight;
   const toggled = props.toggled; // Required to redraw on visibility toggle.
@@ -61,6 +61,10 @@ export default function TapPositionMap(props) {
   useEffect(() => {
     if (map) {
       map.attributionControl.setPrefix("");
+
+      // Makes the bounds a hard edge.
+      map.setMaxBounds([[-90, -180], [90, 180]]);
+      map.options.maxBoundsViscosity = 1.0;
 
       if (latitude && longitude) {
         map.setView(latLng(latitude, longitude), zoomLevel)

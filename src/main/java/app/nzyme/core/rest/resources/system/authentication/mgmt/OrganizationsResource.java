@@ -1776,7 +1776,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         long floorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(tl.uuid());
         long tapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(tl.uuid());
         return Response.ok(TenantLocationDetailsResponse.create(
-                tl.uuid(), tl.name(), tl.description(), floorCount, tapCount, tl.createdAt(), tl.updatedAt()
+                tl.uuid(), tl.name(), tl.description(), tl.longitude(), tl.latitude(), floorCount, tapCount, tl.createdAt(), tl.updatedAt()
         )).build();
     }
 
@@ -1808,7 +1808,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             long tapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(tl.uuid());
 
             locations.add(TenantLocationDetailsResponse.create(
-                    tl.uuid(), tl.name(), tl.description(), floorCount, tapCount, tl.createdAt(), tl.updatedAt()
+                    tl.uuid(), tl.name(), tl.description(), tl.longitude(), tl.latitude(), floorCount, tapCount, tl.createdAt(), tl.updatedAt()
             ));
         }
 
@@ -1835,7 +1835,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         String description = Strings.isNullOrEmpty(req.description()) ? null : req.description();
 
-        nzyme.getAuthenticationService().createTenantLocation(organizationId, tenantId, req.name(), description);
+        nzyme.getAuthenticationService().createTenantLocation(
+                organizationId, tenantId, req.name(), description, req.latitude(), req.longitude()
+        );
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -1869,7 +1871,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         String description = Strings.isNullOrEmpty(req.description()) ? null : req.description();
 
-        nzyme.getAuthenticationService().updateTenantLocation(location.get().id(), req.name(), description);
+        nzyme.getAuthenticationService().updateTenantLocation(
+                location.get().id(), req.name(), description, req.latitude(), req.longitude()
+        );
 
         return Response.status(Response.Status.CREATED).build();
     }

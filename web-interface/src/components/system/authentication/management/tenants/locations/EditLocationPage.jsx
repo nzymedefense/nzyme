@@ -30,8 +30,8 @@ function EditLocationPage() {
     authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation)
   }, [organizationId, tenantId, locationId])
 
-  const update = (name, description) => {
-    authenticationManagementService.updateTenantLocation(organization.id, tenant.id, location.id, name, description, () => {
+  const update = (name, description, latitude, longitude) => {
+    authenticationManagementService.updateTenantLocation(organization.id, tenant.id, location.id, name, description, latitude, longitude, () => {
       toast.success('Location updated.');
       setRedirect(true);
     })
@@ -104,8 +104,13 @@ function EditLocationPage() {
               <div className="card-body">
                 <h3>Edit Location</h3>
 
-                <LocationForm name={location.name} description={location.description}
-                              submitText="Update Location" onSubmit={update} />
+                <LocationForm name={location.name}
+                              description={location.description}
+                              latitude={location.latitude}
+                              longitude={location.longitude}
+                              defaultMapZoomLevel={(location.latitude && location.longitude) ? 18 : 1}
+                              submitText="Update Location"
+                              onSubmit={update} />
               </div>
             </div>
           </div>

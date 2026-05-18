@@ -16,10 +16,14 @@ public abstract class TenantLocationEntry {
     public abstract String name();
     @Nullable
     public abstract String description();
+    @Nullable
+    public abstract Double latitude();
+    @Nullable
+    public abstract Double longitude();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static TenantLocationEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String name, String description, DateTime createdAt, DateTime updatedAt) {
+    public static TenantLocationEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String name, String description, Double latitude, Double longitude, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -27,6 +31,8 @@ public abstract class TenantLocationEntry {
                 .tenantId(tenantId)
                 .name(name)
                 .description(description)
+                .latitude(latitude)
+                .longitude(longitude)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -49,6 +55,10 @@ public abstract class TenantLocationEntry {
         public abstract Builder name(String name);
 
         public abstract Builder description(String description);
+
+        public abstract Builder latitude(Double latitude);
+
+        public abstract Builder longitude(Double longitude);
 
         public abstract Builder createdAt(DateTime createdAt);
 

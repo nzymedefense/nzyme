@@ -8001,4 +8001,16 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_lat_lon_to_locations" author="lennartkoopmann">
+        <addColumn tableName="auth_tenants_locations">
+            <column name="latitude" type="double">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="longitude" type="double">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

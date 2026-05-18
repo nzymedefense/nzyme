@@ -26,8 +26,8 @@ function CreateLocationPage() {
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
   }, [organizationId, tenantId])
 
-  const create = (name, description) => {
-    authenticationManagementService.createTenantLocation(organization.id, tenant.id, name, description, () => {
+  const create = (name, description, latitude, longitude) => {
+    authenticationManagementService.createTenantLocation(organization.id, tenant.id, name, description, latitude, longitude, () => {
       toast.success('Location created.');
       setRedirect(true);
     })

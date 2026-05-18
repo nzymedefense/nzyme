@@ -8,6 +8,8 @@ import FloorsTable from "./floors/FloorsTable";
 import {toast} from "react-toastify";
 import numeral from "numeral";
 import usePageTitle from "../../../../../../util/UsePageTitle";
+import LatLonMap from "../../../../../shared/LatLonMap";
+import LatitudeLongitude from "../../../../../shared/LatitudeLongitude";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -122,6 +124,31 @@ function LocationDetailsPage() {
                 </div>
               </div>
             </div>
+
+            { location.latitude && location.longitude ? <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Position</h3>
+
+                     <LatLonMap editMode={false}
+                                containerHeight={300}
+                                defaultZoomLevel={18}
+                                latitude={location.latitude}
+                                longitude={location.longitude} />
+
+                    <dl className="mt-3 mb-0">
+                      <dt>Latitude, Longitude</dt>
+                      <dd>
+                        <LatitudeLongitude latitude={location.latitude}
+                                           longitude={location.longitude}
+                                           skipAccuracy={true} />
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div> : null }
 
             <div className="row mt-3">
               <div className="col-md-12">

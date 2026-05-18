@@ -19,6 +19,8 @@ public class TenantLocationEntryMapper implements RowMapper<TenantLocationEntry>
                 UUID.fromString(rs.getString("tenant_id")),
                 rs.getString("name"),
                 rs.getString("description"),
+                rs.getDouble("latitude"),
+                rs.getDouble("longitude"),
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("updated_at"))
         );

@@ -8,7 +8,7 @@ import {toast} from "react-toastify";
 import TapSecret from "./TapSecret";
 import CardTitleWithControls from "../../../../shared/CardTitleWithControls";
 import LatitudeLongitude from "../../../../shared/LatitudeLongitude";
-import TapPositionMap from "./TapPositionMap";
+import LatLonMap from "../../../../shared/LatLonMap";
 import usePageTitle from "../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
@@ -198,11 +198,11 @@ function TapPermissionDetailsPage() {
                     <dd><LatitudeLongitude latitude={tap.latitude} longitude={tap.longitude} skipAccuracy={true} /></dd>
                   </dl>
 
-                  { tap.latitude && tap.longitude ? <TapPositionMap editMode={false}
-                                                                    containerHeight={300}
-                                                                    defaultZoomLevel={18}
-                                                                    latitude={tap.latitude}
-                                                                    longitude={tap.longitude} />
+                  { tap.latitude && tap.longitude ? <LatLonMap editMode={false}
+                                                               containerHeight={300}
+                                                               defaultZoomLevel={18}
+                                                               latitude={tap.latitude}
+                                                               longitude={tap.longitude} />
                     : null }
                 </div>
               </div>
