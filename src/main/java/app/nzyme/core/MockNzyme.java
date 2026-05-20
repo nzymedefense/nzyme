@@ -29,6 +29,7 @@ import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.dot11.Dot11;
+import app.nzyme.core.environment.EnvironmentService;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.gnss.GNSS;
@@ -325,6 +326,11 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public BluetoothSigService getBluetoothSigService() {
+        return null;
+    }
+
+    @Override
+    public EnvironmentService getEnvironmentService() {
         return null;
     }
 

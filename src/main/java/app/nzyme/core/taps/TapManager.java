@@ -697,6 +697,15 @@ public class TapManager {
         );
     }
 
+    public List<Tap> findAllTapsAtLocation(UUID locationUUID) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM taps WHERE deleted = false AND location_uuid = :location_uuid")
+                        .bind("location_uuid", locationUUID)
+                        .mapTo(Tap.class)
+                        .list()
+        );
+    }
+
     public List<UUID> allTapUUIDsAccessibleByUser(AuthenticatedUser user) {
         List<UUID> allTaps = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT uuid FROM taps WHERE deleted = false")

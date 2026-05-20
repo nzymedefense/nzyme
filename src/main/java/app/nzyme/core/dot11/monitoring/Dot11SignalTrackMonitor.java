@@ -76,7 +76,7 @@ public class Dot11SignalTrackMonitor extends Periodical {
                                     monitoredSSID.organizationId(),
                                     monitoredSSID.tenantId(),
                                     monitoredSSID.uuid(),
-                                    null,
+                                    tap.uuid(),
                                     DetectionType.DOT11_MONITOR_SIGNAL_TRACK,
                                     Subsystem.DOT11,
                                     "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +

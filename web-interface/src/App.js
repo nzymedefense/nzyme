@@ -195,6 +195,7 @@ import TenantSubsystemsPage from "./components/system/authentication/management/
 import EditMonitorPage from "./components/monitors/EditMonitorPage";
 import Toast from "./components/misc/Toast";
 import BSSIDTimelinePage from "./components/dot11/bssids/BSSIDTimelinePage";
+import LocationsOverviewPage from "./components/locations/LocationsOverviewPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -554,6 +555,9 @@ function App() {
                               <Route path={ApiRoutes.SYSTEM.LOOKANDFEEL} element={<LookAndFeelPage onSettingsUpdated={() => setRevision(new Date())} />} />
                               <Route path={ApiRoutes.SYSTEM.CONNECT} element={<ConnectPage />}/>
                               <Route path={ApiRoutes.SYSTEM.SUBSYSTEMS} element={<SubsystemsPage />}/>
+
+                              { /* Locations. */ }
+                              <Route path={ApiRoutes.LOCATIONS.INDEX} element={<LocationsOverviewPage />} />
 
                               { /* Ethernet. */ }
                               <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "ethernet")} />}>

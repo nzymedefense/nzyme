@@ -38,6 +38,7 @@ import app.nzyme.core.dot11.monitoring.Dot11SignalTrackMonitor;
 import app.nzyme.core.dot11.monitoring.clients.KnownClientMonitor;
 import app.nzyme.core.dot11.monitoring.disco.Dot11DiscoMonitor;
 import app.nzyme.core.dot11.monitoring.ssids.KnownSSIDMonitor;
+import app.nzyme.core.environment.EnvironmentService;
 import app.nzyme.core.ethernet.L4ConnectionCleaner;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
@@ -133,6 +134,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final GeoIpService geoIpService;
     private final OuiService ouiService;
     private final BluetoothSigService bluetoothSigService;
+    private final EnvironmentService environmentService;
 
     private final ContextService contextService;
 
@@ -199,6 +201,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.geoIpService = new GeoIpService(this);
         this.ouiService = new OuiService(this);
         this.bluetoothSigService = new BluetoothSigService(this);
+        this.environmentService = new EnvironmentService(this);
 
         this.contextService = new ContextService(this);
 
@@ -305,6 +308,10 @@ public class NzymeNodeImpl implements NzymeNode {
 
         LOG.info("Initializing UAV service...");
         this.uav.initializeConnectModels();
+        LOG.info("Done.");
+
+        LOG.info("Initializing environment service...");
+        this.environmentService.initialize();
         LOG.info("Done.");
 
         LOG.info("Initializing authentication service...");
@@ -461,6 +468,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public BluetoothSigService getBluetoothSigService() {
         return bluetoothSigService;
+    }
+
+    @Override
+    public EnvironmentService getEnvironmentService() {
+        return environmentService;
     }
 
     @Override

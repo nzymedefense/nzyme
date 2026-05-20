@@ -27,6 +27,7 @@ import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.dot11.Dot11;
+import app.nzyme.core.environment.EnvironmentService;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.gnss.GNSS;
 import app.nzyme.core.integrations.geoip.GeoIpService;
@@ -102,6 +103,7 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
     GeoIpService getGeoIpService();
     OuiService getOuiService();
     BluetoothSigService getBluetoothSigService();
+    EnvironmentService getEnvironmentService();
 
     List<String> getInitializedPlugins();
 

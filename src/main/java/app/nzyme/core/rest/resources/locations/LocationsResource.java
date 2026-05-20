@@ -7,10 +7,15 @@ package app.nzyme.core.rest.resources.locations;
  */
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.environment.EnvironmentData;
+import app.nzyme.core.environment.LocationEnvironmentAlertDetails;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.responses.floorplans.TenantLocationDetailsResponse;
+import app.nzyme.core.rest.responses.locations.LocationEnvironmentAlertDetailsResponse;
+import app.nzyme.core.rest.responses.locations.LocationEnvironmentDataResponse;
 import app.nzyme.core.rest.responses.locations.LocationSummaryResponse;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -23,6 +28,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/locations/organizations/{organization_id}/tenants/{tenant_id}")
@@ -45,9 +51,53 @@ public class LocationsResource extends UserAuthenticatedResource {
         List<LocationSummaryResponse> locations = Lists.newArrayList();
         for (TenantLocationEntry location : nzyme.getAuthenticationService()
                 .findAllTenantLocations(organizationId, tenantId, Integer.MAX_VALUE, 0)) {
+            List<Tap> taps = nzyme.getTapManager().findAllTapsAtLocation(location.uuid());
+
+            int alerts = 0;
+            for (Tap tap : taps) {
+                alerts += (int) nzyme.getDetectionAlertService()
+                        .countActiveAlertsOfTap(organizationId, tenantId, tap.uuid());
+            }
+
+            Optional<EnvironmentData> ed = nzyme.getEnvironmentService().getEnvironmentData(location.uuid());
+            LocationEnvironmentDataResponse environmentDataResponse;
+            if  (ed.isPresent()) {
+                EnvironmentData x = ed.get();
+                List<LocationEnvironmentAlertDetailsResponse> eAlerts = Lists.newArrayList();
+                for (LocationEnvironmentAlertDetails a : x.alerts()) {
+                    eAlerts.add(LocationEnvironmentAlertDetailsResponse.create(
+                       a.event(),
+                       a.severity(),
+                       a.certainty(),
+                       a.urgency(),
+                       a.headline(),
+                       a.description(),
+                       a.senderName(),
+                       a.effective(),
+                       a.expires(),
+                       a.ends()
+                    ));
+                }
+
+                environmentDataResponse = LocationEnvironmentDataResponse.create(
+                        x.stationId(),
+                        x.temperature(),
+                        x.windDirection(),
+                        x.windSpeed(),
+                        x.windGust(),
+                        x.visibility(),
+                        eAlerts
+                );
+            } else {
+                environmentDataResponse = null;
+            }
+
             locations.add(LocationSummaryResponse.create(
                     location.uuid(),
-                    location.name()
+                    location.name(),
+                    taps.size(),
+                    alerts,
+                    environmentDataResponse
             ));
         }
 

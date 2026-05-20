@@ -143,6 +143,9 @@ const ApiRoutes = {
   SEARCH: {
     RESULTS: '/search/results'
   },
+  LOCATIONS: {
+    INDEX: '/locations',
+  },
   ETHERNET: {
     OVERVIEW: '/ethernet/overview',
     IP: {

@@ -33,6 +33,11 @@ function Sidebar(props) {
               title="Dashboard"
               icon={<i className="sidebar-icon fa-regular fa-map"/>}/>
 
+          <NavigationLink
+            href={ApiRoutes.LOCATIONS.INDEX}
+            title="Locations"
+            icon={<i className="sidebar-icon fa-solid fa-globe"/>}/>
+
           <SidebarSubmenu title="Ethernet"
                           subhref="/ethernet"
                           icon={<i className="sidebar-icon fa-solid fa-network-wired"/>}

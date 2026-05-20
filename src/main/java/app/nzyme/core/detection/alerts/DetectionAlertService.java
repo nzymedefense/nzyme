@@ -315,6 +315,19 @@ public class DetectionAlertService {
         });
     }
 
+    public long countActiveAlertsOfTap(UUID organizationId, UUID tenantId, UUID tapId) {
+        return nzyme.getDatabase().withHandle(handle ->
+            handle.createQuery("SELECT COUNT(*) FROM detection_alerts WHERE organization_id = :organization_id " +
+                            "AND tenant_id = :tenant_id AND is_resolved = false AND last_seen > :cutoff " +
+                            "AND tap_id = :tap_id")
+                    .bind("organization_id", organizationId)
+                    .bind("tenant_id", tenantId)
+                    .bind("tap_id", tapId)
+                    .bind("cutoff", DateTime.now().minusMinutes(ACTIVE_THRESHOLD_MINUTES))
+                    .mapTo(Long.class)
+                    .one()
+        );
+    }
 
     // TODO the org/tenant handling here can probably go away as we are now enforcing org and tenant selection in UI
     public Optional<DetectionAlertEntry> findAlert(UUID uuid,
