@@ -4,6 +4,9 @@ import LoadingSpinner from "../misc/LoadingSpinner";
 import LocationsService from "../../services/LocationsService";
 
 import numeral from "numeral";
+import LocationTemperature from "./shared/LocationTemperature";
+import LocationWind from "./shared/LocationWind";
+import LocationVisibility from "./shared/LocationVisibility";
 
 const locationsService = new LocationsService();
 
@@ -36,9 +39,9 @@ export default function LocationsTable() {
       <tr>
         <th>Name</th>
         <th>Taps</th>
-        <th>Alerts</th>
+        <th>Detection Alerts</th>
         <th>Weather</th>
-        <th>Environmental Warnings</th>
+        <th>Environmental Alerts</th>
       </tr>
       </thead>
       <tbody>
@@ -47,6 +50,11 @@ export default function LocationsTable() {
           <td><a href="#" onClick={(e) => expand(e, l.id)}>{l.name}</a></td>
           <td>{numeral(l.tap_count).format("0,0")}</td>
           <td>{numeral(l.alert_count).format("0,0")}</td>
+          <td>
+            <LocationTemperature environment={l.environment} />,{' '}
+            <LocationWind environment={l.environment} />,{' '}
+            <LocationVisibility environment={l.environment} />
+          </td>
         </tr>
       })}
       </tbody>

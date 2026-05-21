@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.joda.JodaModule;
 
 import java.util.Map;
 import java.util.Optional;
@@ -157,6 +158,7 @@ public class EnvironmentService {
                         ObjectMapper om = JsonMapper.builder()
                                 .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
                                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                                .addModule(new JodaModule())
                                 .build();
 
                         data.put(location.uuid(), om.readValue(response.body().bytes(), EnvironmentData.class));
