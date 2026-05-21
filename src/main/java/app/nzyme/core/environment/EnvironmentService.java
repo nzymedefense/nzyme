@@ -7,12 +7,14 @@ import app.nzyme.core.security.authentication.db.TenantEntry;
 import com.google.common.collect.Maps;
 import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import jakarta.validation.constraints.NotNull;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
@@ -29,6 +31,18 @@ import java.util.concurrent.locks.ReentrantLock;
 public class EnvironmentService {
 
     private static final Logger LOG = LogManager.getLogger(EnvironmentService.class);
+
+    public static int severityOrdinal(@NotNull String severity) {
+        return switch (severity) {
+            case "Extreme"-> 4;
+            case "Severe" -> 3;
+            case "Moderate" -> 2;
+            case "Minor" -> 1;
+            default -> 0;  // Unknown
+        };
+    }
+
+    private static final int ALERT_FUTURE_WINDOW_HOURS = 12;
 
     private final NzymeNode nzyme;
 
@@ -69,7 +83,7 @@ public class EnvironmentService {
     }
 
     public void initialize() {
-        // IMPORTANT: This method will also be called on configuration changes.
+        // IMPORTANT: This method will also be called on configuration changes and cache invalidations.
 
         this.isEnabled = nzyme.getConnect().isEnabled();
         if (!this.isEnabled) {
@@ -185,6 +199,27 @@ public class EnvironmentService {
         } else {
             return Optional.of(data);
         }
+    }
+
+    public static boolean alertIsCurrentlyRelevant(LocationEnvironmentAlertDetails a) {
+        DateTime now = DateTime.now();
+
+        // Message already expired.
+        if (a.expires() != null && a.expires().isBefore(now)) {
+            return false;
+        }
+
+        // Event itself already ended (when known).
+        if (a.ends() != null && a.ends().isBefore(now)) {
+            return false;
+        }
+
+        // Event starts further out than our display window.
+        if (a.effective() != null && a.effective().isAfter(now.plusHours(ALERT_FUTURE_WINDOW_HOURS))) {
+            return false;
+        }
+
+        return true;
     }
 
 }

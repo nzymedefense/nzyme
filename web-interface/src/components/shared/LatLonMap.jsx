@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from 'react';
 
 import 'leaflet/dist/leaflet.css';
+import '../../../lib/Control.FullScreen';
+import '../../../lib/Control.FullScreen.css';
 import * as L from 'leaflet';
 import {latLng} from "leaflet/src/geo";
 
@@ -53,7 +55,8 @@ export default function LatLonMap(props) {
   useEffect(() => {
     if (!map) {
       setMap(L.map("tap-location-map", {
-        scrollWheelZoom: false
+        scrollWheelZoom: true,
+        fullscreenControl: true
       }));
     }
   }, []);

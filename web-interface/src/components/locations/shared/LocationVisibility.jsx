@@ -16,7 +16,7 @@ export default function LocationVisibility({ environment }) {
       ? `${meters} m`
       : `${(meters / 1000).toFixed(1)} km`;
 
-    return `${label} (${value})`;
+    return `${label} (${value} visibility)`;
   }
 
   if (!environment || environment.visibility == null) {

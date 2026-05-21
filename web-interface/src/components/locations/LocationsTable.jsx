@@ -20,9 +20,15 @@ export default function LocationsTable() {
     locationsService.findAll(organizationId, tenantId, setLocations)
   }, []);
 
-  const expand = (e, id) => {
-    e.preventDefault();
-  }
+  const renderAlertCount = (count) => {
+    if (count === null) {
+      return <span className="text-muted">n/a</span>
+    }
+    if (count === 0) {
+      return <span className="text-muted">None</span>;
+    }
+    return <span className="badge text-bg-danger">{numeral(count).format("0,0")}</span>;
+  };
 
   if (locations === null) {
     return <LoadingSpinner />
@@ -41,20 +47,21 @@ export default function LocationsTable() {
         <th>Taps</th>
         <th>Detection Alerts</th>
         <th>Weather</th>
-        <th>Environmental Alerts</th>
+        <th>Severe Environmental Alerts</th>
       </tr>
       </thead>
       <tbody>
       {locations.map((l, i) => {
         return <tr key={i}>
-          <td><a href="#" onClick={(e) => expand(e, l.id)}>{l.name}</a></td>
+          <td><a href="#">{l.name}</a></td>
           <td>{numeral(l.tap_count).format("0,0")}</td>
-          <td>{numeral(l.alert_count).format("0,0")}</td>
+          <td>{renderAlertCount(l.alert_count)}</td>
           <td>
             <LocationTemperature environment={l.environment} />,{' '}
             <LocationWind environment={l.environment} />,{' '}
             <LocationVisibility environment={l.environment} />
           </td>
+          <td>{renderAlertCount(l.environment ? l.environment.alerts.length : null)}</td>
         </tr>
       })}
       </tbody>

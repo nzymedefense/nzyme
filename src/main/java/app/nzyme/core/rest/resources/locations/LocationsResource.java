@@ -24,16 +24,21 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static app.nzyme.core.environment.EnvironmentService.alertIsCurrentlyRelevant;
+import static app.nzyme.core.environment.EnvironmentService.severityOrdinal;
 
 @Path("/api/locations/organizations/{organization_id}/tenants/{tenant_id}")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
 public class LocationsResource extends UserAuthenticatedResource {
 
+    private static final int MIN_ALERT_SEVERITY = 3;
 
     @Inject
     private NzymeNode nzyme;
@@ -59,10 +64,18 @@ public class LocationsResource extends UserAuthenticatedResource {
 
             Optional<EnvironmentData> ed = nzyme.getEnvironmentService().getEnvironmentData(location.uuid());
             LocationEnvironmentDataResponse environmentDataResponse;
-            if  (ed.isPresent()) {
+            if (ed.isPresent()) {
                 EnvironmentData x = ed.get();
                 List<LocationEnvironmentAlertDetailsResponse> eAlerts = Lists.newArrayList();
                 for (LocationEnvironmentAlertDetails a : x.alerts()) {
+                    if (a.severity() != null && severityOrdinal(a.severity()) < MIN_ALERT_SEVERITY) {
+                        continue;
+                    }
+
+                    if (!alertIsCurrentlyRelevant(a)) {
+                        continue;
+                    }
+
                     eAlerts.add(LocationEnvironmentAlertDetailsResponse.create(
                        a.event(),
                        a.severity(),
@@ -101,6 +114,5 @@ public class LocationsResource extends UserAuthenticatedResource {
 
         return Response.ok(locations).build();
     }
-
 
 }

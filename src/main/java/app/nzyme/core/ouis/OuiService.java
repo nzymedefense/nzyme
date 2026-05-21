@@ -157,11 +157,6 @@ public class OuiService {
                     throw new RuntimeException("Expected HTTP 200 or 403 but got HTTP " + response.code());
                 }
 
-
-                if (response.body() == null) {
-                    throw new RuntimeException("Empty response.");
-                }
-
                 LOG.info("OUI data download from Connect complete.");
 
                 ObjectMapper om = JsonMapper.builder()

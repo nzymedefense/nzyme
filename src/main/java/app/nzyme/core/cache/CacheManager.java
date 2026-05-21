@@ -36,6 +36,11 @@ public class CacheManager {
                                     message.sender());
                             nzyme.getContextService().invalidateMacAddressCache();
                             break;
+                        case "environment_data":
+                            LOG.info("Invalidating environment data cache on request of node [{}].",
+                                    message.sender());
+                            nzyme.getEnvironmentService().initialize();
+                            break;
                         default:
                             LOG.error("Could not handle [{}] message: Unknown cache type.",
                                     MessageType.INVALIDATE_CACHE);

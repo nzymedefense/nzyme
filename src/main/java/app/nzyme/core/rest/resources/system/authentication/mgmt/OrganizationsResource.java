@@ -36,6 +36,9 @@ import app.nzyme.core.subsystems.SubsystemRegistryKeys;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.Subsystem;
+import app.nzyme.plugin.distributed.messaging.ClusterMessage;
+import app.nzyme.plugin.distributed.messaging.Message;
+import app.nzyme.plugin.distributed.messaging.MessageType;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
@@ -1839,6 +1842,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 organizationId, tenantId, req.name(), description, req.latitude(), req.longitude()
         );
 
+        // Re-fetch environment data.
+        nzyme.getMessageBus().sendToAllOnlineNodes(ClusterMessage.create(
+                MessageType.INVALIDATE_CACHE,
+                Map.of("cache_type", "environment_data"),
+                true
+        ));
+
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -1874,6 +1884,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         nzyme.getAuthenticationService().updateTenantLocation(
                 location.get().id(), req.name(), description, req.latitude(), req.longitude()
         );
+
+        // Re-fetch environment data.
+        nzyme.getMessageBus().sendToAllOnlineNodes(ClusterMessage.create(
+                MessageType.INVALIDATE_CACHE,
+                Map.of("cache_type", "environment_data"),
+                true
+        ));
 
         return Response.status(Response.Status.CREATED).build();
     }
