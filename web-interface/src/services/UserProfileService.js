@@ -23,6 +23,10 @@ class UserProfileService {
     RESTClient.put('/user/mfa/reset', {}, successCallback)
   }
 
+  setOwnUnitSystem(unitSystem, successCallback) {
+    RESTClient.put(`/user/unitsystem/${unitSystem}`, {}, successCallback)
+  }
+
 }
 
 export default UserProfileService

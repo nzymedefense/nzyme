@@ -1,6 +1,10 @@
-import React from "react";
-
+import React, {useContext} from "react";
+import {UserContext} from "../../../App";
+import {distanceInUserUnitSystem, distanceUserSymbol} from "../../../util/UserUnitSystem";
+import numeral from "numeral";
 export default function LocationVisibility({ environment }) {
+
+  const user = useContext(UserContext);
 
   const describeVisibility = (meters) => {
     if (meters >= 16000) return "full visibility";
@@ -12,11 +16,7 @@ export default function LocationVisibility({ environment }) {
     else if (meters < 10000) label = "hazy";
     else label = "mostly clear";
 
-    const value = meters < 1000
-      ? `${meters} m`
-      : `${(meters / 1000).toFixed(1)} km`;
-
-    return `${label} (${value} visibility)`;
+    return `${label} (${numeral(distanceInUserUnitSystem(meters/1000, user)).format("0,0.0")} ${distanceUserSymbol(user)})`;
   }
 
   if (!environment || environment.visibility == null) {

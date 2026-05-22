@@ -50,7 +50,9 @@ public class UserProfileResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(UserProfileDetailsResponse.create(user.get().email(), user.get().name())).build();
+        return Response.ok(UserProfileDetailsResponse.create(
+                user.get().email(), user.get().name(), user.get().unitSystem())
+        ).build();
     }
 
     @PUT
@@ -131,6 +133,20 @@ public class UserProfileResource extends UserAuthenticatedResource {
                 DateTime.now(),
                 "MFA method of user [" + authenticatedUser.getEmail() + "] was reset by same user."
         ), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/unitsystem/{unit_system}")
+    public Response setOwnUnitSystem(@Context SecurityContext sc, @PathParam("unit_system") String unitSystem) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!unitSystem.equals("metric") && !unitSystem.equals("imperial")) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        nzyme.getAuthenticationService().setUnitSystemOfUser(authenticatedUser.getUserId(), unitSystem);
 
         return Response.ok().build();
     }

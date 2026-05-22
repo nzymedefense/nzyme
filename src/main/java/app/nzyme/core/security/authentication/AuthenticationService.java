@@ -635,6 +635,15 @@ public class AuthenticationService {
         deleteAllSessionsOfUser(userId);
     }
 
+    public void setUnitSystemOfUser(UUID userId, String unitSystem) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET unit_system = :unit_system WHERE uuid = :uuid")
+                        .bind("unit_system", unitSystem)
+                        .bind("uuid", userId)
+                        .execute()
+        );
+    }
+
     public long countUsersOfTenant(TenantEntry t) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_users WHERE organization_id = :organization_id AND " +

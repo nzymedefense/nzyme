@@ -41,7 +41,8 @@ public class UserEntryMapper implements RowMapper<UserEntry> {
                 rs.getBoolean("access_all_tenant_taps"),
                 rs.getLong("failed_login_count"),
                 rs.getLong("failed_login_count") >= 5,
-                rs.getBoolean("mfa_disabled")
+                rs.getBoolean("mfa_disabled"),
+                rs.getString("unit_system")
         );
     }
 

@@ -8013,4 +8013,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_user_unit_system" author="lennartkoopmann">
+        <addColumn tableName="auth_users">
+            <column name="unit_system" type="text" defaultValue="imperial">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

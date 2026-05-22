@@ -18,6 +18,8 @@ function UserProfilePage(props) {
   const onMfaReset = props.onMfaReset;
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
 
+  const [unitSystem, setUnitSystem] = useState(user.unit_system);
+
   const resetMfa = function() {
     if (!confirm("Really reset your MFA? You will be logged out and prompted to set up a new MFA method " +
         "after you log in again.")) {
@@ -27,6 +29,14 @@ function UserProfilePage(props) {
     userProfileService.resetOwnMfa(function () {
       toast.success('MFA successfully reset.');
       onMfaReset();
+    })
+  }
+
+  const onSaveUnitSystem = (e) => {
+    e.preventDefault();
+
+    userProfileService.setOwnUnitSystem(unitSystem, () => {
+      toast.success('Unit system selection updated.');
     })
   }
 
@@ -51,6 +61,33 @@ function UserProfilePage(props) {
                     <a className="btn btn-sm btn-secondary mt-2" href={ApiRoutes.USERPROFILE.PASSWORD}>
                       Change Password
                     </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Unit System</h3>
+
+                    <div className="text-muted">
+                      You can set your preferred unit system that will be used across the web interface.
+                    </div>
+
+
+                    <div className="input-group mt-2">
+                      <select className="form-select"
+                              value={unitSystem}
+                              onChange={(e) => {
+                                setUnitSystem(e.target.value);
+                              }}>
+                        <option value="imperial">Imperial</option>
+                        <option value="metric">Metric</option>
+                      </select>
+                      <button className="btn btn-primary" type="button" onClick={onSaveUnitSystem}>Save</button>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -1,6 +1,11 @@
-import React from "react";
+import React, {useContext} from "react";
+import {speedInUserUnitSystem, speedUserSymbol} from "../../../util/UserUnitSystem";
+import {UserContext} from "../../../App";
+import numeral from "numeral";
 
 export default function LocationWind({environment}) {
+
+  const user = useContext(UserContext);
 
   const describeWind = (speed, gust) => {
     // The descriptor follows whichever is higher. Gusts are usually
@@ -17,8 +22,8 @@ export default function LocationWind({environment}) {
     else label = "dangerous winds";
 
     const parts = [];
-    if (speed != null) parts.push(`${speed} km/h`);
-    if (gust != null) parts.push(`gusts ${gust} km/h`);
+    if (speed != null) parts.push(`${numeral(speedInUserUnitSystem(speed, user)).format("0")} ${speedUserSymbol(user)}`);
+    if (gust != null) parts.push(`gusts ${numeral(speedInUserUnitSystem(gust, user)).format("0")} ${speedUserSymbol(user)}`);
 
     return `${label} (${parts.join(", ")})`;
   }

@@ -302,7 +302,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                         u.tenantId(),
                         featurePermissions,
                         subsystems,
-                        u.hasMfaDisabled()
+                        u.hasMfaDisabled(),
+                        u.unitSystem()
                 ),
                 session.get().mfaValid(),
                 user.get().mfaComplete(),

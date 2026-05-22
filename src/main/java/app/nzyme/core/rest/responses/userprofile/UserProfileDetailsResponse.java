@@ -12,10 +12,14 @@ public abstract class UserProfileDetailsResponse {
     @JsonProperty("name")
     public abstract String name();
 
-    public static UserProfileDetailsResponse create(String email, String name) {
+    @JsonProperty("unit_system")
+    public abstract String unitSystem();
+
+    public static UserProfileDetailsResponse create(String email, String name, String unitSystem) {
         return builder()
                 .email(email)
                 .name(name)
+                .unitSystem(unitSystem)
                 .build();
     }
 
@@ -29,6 +33,9 @@ public abstract class UserProfileDetailsResponse {
 
         public abstract Builder name(String name);
 
+        public abstract Builder unitSystem(String unitSystem);
+
         public abstract UserProfileDetailsResponse build();
     }
+
 }

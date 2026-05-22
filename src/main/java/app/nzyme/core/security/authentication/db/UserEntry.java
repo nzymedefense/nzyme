@@ -60,7 +60,9 @@ public abstract class UserEntry {
 
     public abstract boolean hasMfaDisabled();
 
-    public static UserEntry create(UUID uuid, UUID organizationId, UUID tenantId, String passwordHash, String passwordSalt, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, boolean accessAllTenantTaps, long failedLoginCount, boolean isLoginThrottled, boolean hasMfaDisabled) {
+    public abstract String unitSystem();
+
+    public static UserEntry create(UUID uuid, UUID organizationId, UUID tenantId, String passwordHash, String passwordSalt, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, boolean accessAllTenantTaps, long failedLoginCount, boolean isLoginThrottled, boolean hasMfaDisabled, String unitSystem) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -85,6 +87,7 @@ public abstract class UserEntry {
                 .failedLoginCount(failedLoginCount)
                 .isLoginThrottled(isLoginThrottled)
                 .hasMfaDisabled(hasMfaDisabled)
+                .unitSystem(unitSystem)
                 .build();
     }
 
@@ -139,6 +142,8 @@ public abstract class UserEntry {
         public abstract Builder isLoginThrottled(boolean isLoginThrottled);
 
         public abstract Builder hasMfaDisabled(boolean hasMfaDisabled);
+
+        public abstract Builder unitSystem(String unitSystem);
 
         public abstract UserEntry build();
     }
