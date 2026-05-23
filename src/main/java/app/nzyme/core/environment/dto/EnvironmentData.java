@@ -1,4 +1,4 @@
-package app.nzyme.core.environment;
+package app.nzyme.core.environment.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,6 +12,12 @@ public abstract class EnvironmentData {
 
     @Nullable
     public abstract String stationId();
+
+    @Nullable
+    public abstract String metar();
+
+    @Nullable
+    public abstract EnvironmentCondition condition();
 
     @Nullable
     public abstract Integer temperature();
@@ -32,6 +38,8 @@ public abstract class EnvironmentData {
 
     @JsonCreator
     public static EnvironmentData create(@JsonProperty("station_id") String stationId,
+                                         @JsonProperty("metar") String metar,
+                                         @JsonProperty("condition") EnvironmentCondition condition,
                                          @JsonProperty("temperature") Integer temperature,
                                          @JsonProperty("wind_direction") Integer windDirection,
                                          @JsonProperty("wind_speed") Integer windSpeed,
@@ -40,6 +48,8 @@ public abstract class EnvironmentData {
                                          @JsonProperty("alerts") List<LocationEnvironmentAlertDetails> alerts) {
         return builder()
                 .stationId(stationId)
+                .metar(metar)
+                .condition(condition)
                 .temperature(temperature)
                 .windDirection(windDirection)
                 .windSpeed(windSpeed)
@@ -56,6 +66,10 @@ public abstract class EnvironmentData {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder stationId(String stationId);
+
+        public abstract Builder metar(String metar);
+
+        public abstract Builder condition(EnvironmentCondition condition);
 
         public abstract Builder temperature(Integer temperature);
 

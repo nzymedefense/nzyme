@@ -7,11 +7,12 @@ package app.nzyme.core.rest.resources.locations;
  */
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.environment.EnvironmentData;
-import app.nzyme.core.environment.LocationEnvironmentAlertDetails;
+import app.nzyme.core.environment.dto.EnvironmentData;
+import app.nzyme.core.environment.dto.LocationEnvironmentAlertDetails;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.responses.locations.LocationEnvironmentAlertDetailsResponse;
+import app.nzyme.core.rest.responses.locations.LocationEnvironmentConditionDetailsResponse;
 import app.nzyme.core.rest.responses.locations.LocationEnvironmentDataResponse;
 import app.nzyme.core.rest.responses.locations.LocationSummaryResponse;
 import app.nzyme.core.taps.Tap;
@@ -24,7 +25,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +54,6 @@ public class LocationsResource extends UserAuthenticatedResource {
         List<LocationSummaryResponse> locations = Lists.newArrayList();
         for (TenantLocationEntry location : nzyme.getAuthenticationService()
                 .findAllTenantLocations(organizationId, tenantId, Integer.MAX_VALUE, 0)) {
-
 
             locations.add(buildLocationSummary(location, organizationId, tenantId));
         }
@@ -121,8 +120,19 @@ public class LocationsResource extends UserAuthenticatedResource {
                 ));
             }
 
+            LocationEnvironmentConditionDetailsResponse condition;
+            if (x.condition() != null) {
+                condition = LocationEnvironmentConditionDetailsResponse.create(
+                        x.condition().displayName(), x.condition().severity()
+                );
+            } else {
+                condition = null;
+            }
+
             environmentDataResponse = LocationEnvironmentDataResponse.create(
                     x.stationId(),
+                    x.metar(),
+                    condition,
                     x.temperature(),
                     x.windDirection(),
                     x.windSpeed(),

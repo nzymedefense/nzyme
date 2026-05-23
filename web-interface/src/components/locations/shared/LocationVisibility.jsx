@@ -16,7 +16,7 @@ export default function LocationVisibility({ environment }) {
     else if (meters < 10000) label = "hazy";
     else label = "mostly clear";
 
-    return `${label} (${numeral(distanceInUserUnitSystem(meters/1000, user)).format("0,0.0")} ${distanceUserSymbol(user)})`;
+    return `${label} (${numeral(distanceInUserUnitSystem(meters/1000, user)).format("0,0.0")} ${distanceUserSymbol(user)} visibility)`;
   }
 
   if (!environment || environment.visibility == null) {

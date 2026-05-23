@@ -8,6 +8,7 @@ import LocationTemperature from "./shared/LocationTemperature";
 import LocationWind from "./shared/LocationWind";
 import LocationVisibility from "./shared/LocationVisibility";
 import ApiRoutes from "../../util/ApiRoutes";
+import LocationWeatherCondition from "./shared/LocationWeatherCondition";
 
 const locationsService = new LocationsService();
 
@@ -31,6 +32,25 @@ export default function LocationsTable() {
     return <span className="badge text-bg-danger">{numeral(count).format("0,0")}</span>;
   };
 
+  const renderEnvironmentalAlerts = (alerts) => {
+    if (alerts === null) {
+      return <span className="text-muted">n/a</span>;
+    }
+    if (alerts.length === 0) {
+      return <span className="text-muted">None</span>;
+    }
+
+    const shown = alerts.slice(0, 2).map(a => a.event || "Unknown event").join(", ");
+    const remaining = alerts.length - 2;
+
+    return (
+      <span>
+      <span className="text-danger text-bold">{shown}</span>
+        {remaining > 0 && <span className="text-muted"> (+{remaining} more)</span>}
+    </span>
+    );
+  };
+
   if (locations === null) {
     return <LoadingSpinner />
   }
@@ -47,7 +67,7 @@ export default function LocationsTable() {
         <th>Name</th>
         <th>Taps</th>
         <th>Detection Alerts</th>
-        <th>Weather</th>
+        <th>Current Weather Observation</th>
         <th>Severe Environmental Alerts</th>
       </tr>
       </thead>
@@ -58,11 +78,12 @@ export default function LocationsTable() {
           <td>{numeral(l.tap_count).format("0,0")}</td>
           <td>{renderAlertCount(l.alert_count)}</td>
           <td>
+            <LocationWeatherCondition environment={l.environment} />,{' '}
             <LocationTemperature environment={l.environment} />,{' '}
             <LocationWind environment={l.environment} />,{' '}
             <LocationVisibility environment={l.environment} />
           </td>
-          <td>{renderAlertCount(l.environment ? l.environment.alerts.length : null)}</td>
+          <td>{renderEnvironmentalAlerts(l.environment ? l.environment.alerts : null)}</td>
         </tr>
       })}
       </tbody>

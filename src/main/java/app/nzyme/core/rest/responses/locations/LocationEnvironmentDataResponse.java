@@ -14,6 +14,14 @@ public abstract class LocationEnvironmentDataResponse {
     public abstract String stationId();
 
     @Nullable
+    @JsonProperty("metar")
+    public abstract String metar();
+
+    @Nullable
+    @JsonProperty("condition")
+    public abstract LocationEnvironmentConditionDetailsResponse condition();
+
+    @Nullable
     @JsonProperty("temperature")
     public abstract Integer temperature();
 
@@ -36,9 +44,11 @@ public abstract class LocationEnvironmentDataResponse {
     @JsonProperty("alerts")
     public abstract List<LocationEnvironmentAlertDetailsResponse> alerts();
 
-    public static LocationEnvironmentDataResponse create(String stationId, Integer temperature, Integer windDirection, Integer windSpeed, Integer windGust, Integer visibility, List<LocationEnvironmentAlertDetailsResponse> alerts) {
+    public static LocationEnvironmentDataResponse create(String stationId, String metar, LocationEnvironmentConditionDetailsResponse condition, Integer temperature, Integer windDirection, Integer windSpeed, Integer windGust, Integer visibility, List<LocationEnvironmentAlertDetailsResponse> alerts) {
         return builder()
                 .stationId(stationId)
+                .metar(metar)
+                .condition(condition)
                 .temperature(temperature)
                 .windDirection(windDirection)
                 .windSpeed(windSpeed)
@@ -55,6 +65,10 @@ public abstract class LocationEnvironmentDataResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder stationId(String stationId);
+
+        public abstract Builder metar(String metar);
+
+        public abstract Builder condition(LocationEnvironmentConditionDetailsResponse condition);
 
         public abstract Builder temperature(Integer temperature);
 
