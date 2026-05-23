@@ -109,7 +109,7 @@ import SimilarSSIDConfigurationPage from "./components/dot11/monitoring/SimilarS
 import RestrictedSubstringsConfigurationPage from "./components/dot11/monitoring/RestrictedSubstringsConfigurationPage";
 import FloorDetailsPage from "./components/system/authentication/management/tenants/locations/floors/FloorDetailsPage";
 import CreateLocationPage from "./components/system/authentication/management/tenants/locations/CreateLocationPage";
-import LocationDetailsPage from "./components/system/authentication/management/tenants/locations/LocationDetailsPage";
+import LocationManagementDetailsPage from "./components/system/authentication/management/tenants/locations/LocationManagementDetailsPage";
 import EditLocationPage from "./components/system/authentication/management/tenants/locations/EditLocationPage";
 import CreateFloorPage from "./components/system/authentication/management/tenants/locations/floors/CreateFloorPage";
 import EditFloorPage from "./components/system/authentication/management/tenants/locations/floors/EditFloorPage";
@@ -196,6 +196,7 @@ import EditMonitorPage from "./components/monitors/EditMonitorPage";
 import Toast from "./components/misc/Toast";
 import BSSIDTimelinePage from "./components/dot11/bssids/BSSIDTimelinePage";
 import LocationsOverviewPage from "./components/locations/LocationsOverviewPage";
+import LocationDetailsPage from "./components/locations/LocationDetailsPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -498,7 +499,7 @@ function App() {
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(':organizationId', ':tenantId')} element={<CreateLocationPage />}/>
-                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(':organizationId', ':tenantId', ':locationId')} element={<LocationDetailsPage />}/>
+                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(':organizationId', ':tenantId', ':locationId')} element={<LocationManagementDetailsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.EDIT(':organizationId', ':tenantId', ':locationId')} element={<EditLocationPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.CREATE(':organizationId', ':tenantId', ':locationId')} element={<CreateFloorPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(':organizationId', ':tenantId', ':locationId', ':floorId')} element={<FloorDetailsPage />}/>
@@ -558,6 +559,7 @@ function App() {
 
                               { /* Locations. */ }
                               <Route path={ApiRoutes.LOCATIONS.INDEX} element={<LocationsOverviewPage />} />
+                              <Route path={ApiRoutes.LOCATIONS.DETAILS(':uuid')} element={<LocationDetailsPage />} />
 
                               { /* Ethernet. */ }
                               <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "ethernet")} />}>

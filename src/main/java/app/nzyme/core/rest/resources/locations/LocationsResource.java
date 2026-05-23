@@ -54,65 +54,93 @@ public class LocationsResource extends UserAuthenticatedResource {
         List<LocationSummaryResponse> locations = Lists.newArrayList();
         for (TenantLocationEntry location : nzyme.getAuthenticationService()
                 .findAllTenantLocations(organizationId, tenantId, Integer.MAX_VALUE, 0)) {
-            List<Tap> taps = nzyme.getTapManager().findAllTapsAtLocation(location.uuid());
 
-            int alerts = 0;
-            for (Tap tap : taps) {
-                alerts += (int) nzyme.getDetectionAlertService()
-                        .countActiveAlertsOfTap(organizationId, tenantId, tap.uuid());
-            }
 
-            Optional<EnvironmentData> ed = nzyme.getEnvironmentService().getEnvironmentData(location.uuid());
-            LocationEnvironmentDataResponse environmentDataResponse;
-            if (ed.isPresent()) {
-                EnvironmentData x = ed.get();
-                List<LocationEnvironmentAlertDetailsResponse> eAlerts = Lists.newArrayList();
-                for (LocationEnvironmentAlertDetails a : x.alerts()) {
-                    if (a.severity() != null && severityOrdinal(a.severity()) < MIN_ALERT_SEVERITY) {
-                        continue;
-                    }
-
-                    if (!alertIsCurrentlyRelevant(a)) {
-                        continue;
-                    }
-
-                    eAlerts.add(LocationEnvironmentAlertDetailsResponse.create(
-                       a.event(),
-                       a.severity(),
-                       a.certainty(),
-                       a.urgency(),
-                       a.headline(),
-                       a.description(),
-                       a.senderName(),
-                       a.effective(),
-                       a.expires(),
-                       a.ends()
-                    ));
-                }
-
-                environmentDataResponse = LocationEnvironmentDataResponse.create(
-                        x.stationId(),
-                        x.temperature(),
-                        x.windDirection(),
-                        x.windSpeed(),
-                        x.windGust(),
-                        x.visibility(),
-                        eAlerts
-                );
-            } else {
-                environmentDataResponse = null;
-            }
-
-            locations.add(LocationSummaryResponse.create(
-                    location.uuid(),
-                    location.name(),
-                    taps.size(),
-                    alerts,
-                    environmentDataResponse
-            ));
+            locations.add(buildLocationSummary(location, organizationId, tenantId));
         }
 
         return Response.ok(locations).build();
+    }
+
+    @GET
+    @Path("/show/{location_id}")
+    public Response findOne(@Context SecurityContext sc,
+                            @PathParam("location_id") UUID locationId,
+                            @PathParam("organization_id") UUID organizationId,
+                            @PathParam("tenant_id") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(buildLocationSummary(location.get(), organizationId, tenantId)).build();
+    }
+
+    private LocationSummaryResponse buildLocationSummary(TenantLocationEntry location,
+                                                         UUID organizationId,
+                                                         UUID tenantId) {
+        List<Tap> taps = nzyme.getTapManager().findAllTapsAtLocation(location.uuid());
+
+        int alerts = 0;
+        for (Tap tap : taps) {
+            alerts += (int) nzyme.getDetectionAlertService()
+                    .countActiveAlertsOfTap(organizationId, tenantId, tap.uuid());
+        }
+
+        Optional<EnvironmentData> ed = nzyme.getEnvironmentService().getEnvironmentData(location.uuid());
+        LocationEnvironmentDataResponse environmentDataResponse;
+        if (ed.isPresent()) {
+            EnvironmentData x = ed.get();
+            List<LocationEnvironmentAlertDetailsResponse> eAlerts = Lists.newArrayList();
+            for (LocationEnvironmentAlertDetails a : x.alerts()) {
+                if (a.severity() != null && severityOrdinal(a.severity()) < MIN_ALERT_SEVERITY) {
+                    continue;
+                }
+
+                if (!alertIsCurrentlyRelevant(a)) {
+                    continue;
+                }
+
+                eAlerts.add(LocationEnvironmentAlertDetailsResponse.create(
+                        a.event(),
+                        a.severity(),
+                        a.certainty(),
+                        a.urgency(),
+                        a.headline(),
+                        a.description(),
+                        a.senderName(),
+                        a.effective(),
+                        a.expires(),
+                        a.ends()
+                ));
+            }
+
+            environmentDataResponse = LocationEnvironmentDataResponse.create(
+                    x.stationId(),
+                    x.temperature(),
+                    x.windDirection(),
+                    x.windSpeed(),
+                    x.windGust(),
+                    x.visibility(),
+                    eAlerts
+            );
+        } else {
+            environmentDataResponse = null;
+        }
+
+        return LocationSummaryResponse.create(
+                location.uuid(),
+                location.name(),
+                taps.size(),
+                alerts,
+                environmentDataResponse
+        );
     }
 
 }

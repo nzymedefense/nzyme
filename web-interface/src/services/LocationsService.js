@@ -8,6 +8,12 @@ class LocationsService {
     })
   }
 
+  findOne(locationId, organizationId, tenantId, setLocation) {
+    RESTClient.get(`/locations/organizations/${organizationId}/tenants/${tenantId}/show/${locationId}`, {}, (response) => {
+      setLocation(response.data)
+    })
+  }
+
 }
 
 export default LocationsService;

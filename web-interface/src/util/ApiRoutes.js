@@ -145,6 +145,7 @@ const ApiRoutes = {
   },
   LOCATIONS: {
     INDEX: '/locations',
+    DETAILS: uuid => `/locations/show/${uuid}`,
   },
   ETHERNET: {
     OVERVIEW: '/ethernet/overview',

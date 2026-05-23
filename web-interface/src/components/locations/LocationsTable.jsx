@@ -7,6 +7,7 @@ import numeral from "numeral";
 import LocationTemperature from "./shared/LocationTemperature";
 import LocationWind from "./shared/LocationWind";
 import LocationVisibility from "./shared/LocationVisibility";
+import ApiRoutes from "../../util/ApiRoutes";
 
 const locationsService = new LocationsService();
 
@@ -53,7 +54,7 @@ export default function LocationsTable() {
       <tbody>
       {locations.map((l, i) => {
         return <tr key={i}>
-          <td><a href="#">{l.name}</a></td>
+          <td><a href={ApiRoutes.LOCATIONS.DETAILS(l.id)}>{l.name}</a></td>
           <td>{numeral(l.tap_count).format("0,0")}</td>
           <td>{renderAlertCount(l.alert_count)}</td>
           <td>

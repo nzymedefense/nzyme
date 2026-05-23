@@ -13,7 +13,7 @@ import LatitudeLongitude from "../../../../../shared/LatitudeLongitude";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
-function LocationDetailsPage() {
+function LocationManagementDetailsPage() {
 
   usePageTitle("Tenant Location Details");
 
@@ -209,4 +209,4 @@ function LocationDetailsPage() {
 
 }
 
-export default LocationDetailsPage;
+export default LocationManagementDetailsPage;
