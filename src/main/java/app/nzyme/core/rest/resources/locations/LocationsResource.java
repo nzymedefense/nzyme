@@ -149,7 +149,9 @@ public class LocationsResource extends UserAuthenticatedResource {
                 location.name(),
                 taps.size(),
                 alerts,
-                environmentDataResponse
+                environmentDataResponse,
+                location.longitude(),
+                location.latitude()
         );
     }
 

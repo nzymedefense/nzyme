@@ -25,13 +25,23 @@ public abstract class LocationSummaryResponse {
     @JsonProperty("environment")
     public abstract LocationEnvironmentDataResponse environment();
 
-    public static LocationSummaryResponse create(UUID id, String name, int tapCount, int alertCount, LocationEnvironmentDataResponse environment) {
+    @JsonProperty("longitude")
+    @Nullable
+    public abstract Double longitude();
+
+    @JsonProperty("latitude")
+    @Nullable
+    public abstract Double latitude();
+
+    public static LocationSummaryResponse create(UUID id, String name, int tapCount, int alertCount, LocationEnvironmentDataResponse environment, Double longitude, Double latitude) {
         return builder()
                 .id(id)
                 .name(name)
                 .tapCount(tapCount)
                 .alertCount(alertCount)
                 .environment(environment)
+                .longitude(longitude)
+                .latitude(latitude)
                 .build();
     }
 
@@ -50,6 +60,10 @@ public abstract class LocationSummaryResponse {
         public abstract Builder alertCount(int alertCount);
 
         public abstract Builder environment(LocationEnvironmentDataResponse environment);
+
+        public abstract Builder longitude(Double longitude);
+
+        public abstract Builder latitude(Double latitude);
 
         public abstract LocationSummaryResponse build();
     }
