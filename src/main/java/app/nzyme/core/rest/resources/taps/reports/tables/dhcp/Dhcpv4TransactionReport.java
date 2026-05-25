@@ -35,7 +35,9 @@ public abstract class Dhcpv4TransactionReport {
     public abstract DateTime firstPacket();
     public abstract DateTime latestPacket();
     public abstract Set<String> notes();
+    @Nullable
     public abstract Boolean successful();
+    @Nullable
     public abstract Boolean complete();
 
     @JsonCreator
