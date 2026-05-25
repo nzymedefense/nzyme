@@ -7,11 +7,15 @@ package app.nzyme.core.rest.resources.locations;
  */
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntry;
+import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.environment.dto.EnvironmentData;
 import app.nzyme.core.environment.dto.LocationEnvironmentAlertDetails;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
+import app.nzyme.core.rest.RestTools;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.responses.alerts.DetectionAlertDetailsResponse;
 import app.nzyme.core.rest.responses.locations.LocationEnvironmentAlertDetailsResponse;
 import app.nzyme.core.rest.responses.locations.LocationEnvironmentConditionDetailsResponse;
 import app.nzyme.core.rest.responses.locations.LocationEnvironmentDataResponse;
@@ -33,6 +37,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static app.nzyme.core.environment.EnvironmentService.alertIsCurrentlyRelevant;
 import static app.nzyme.core.environment.EnvironmentService.severityOrdinal;
@@ -96,10 +101,10 @@ public class LocationsResource extends UserAuthenticatedResource {
         List<Tap> taps = nzyme.getTapManager().findAllTapsAtLocation(location.uuid());
 
         // Taps and alerts.
-        int alerts = 0;
+        int detectionAlertCount = 0;
         List<TapHighLevelInformationDetailsResponse> tapsList = Lists.newArrayList();
         for (Tap tap : taps) {
-            alerts += (int) nzyme.getDetectionAlertService()
+            detectionAlertCount += (int) nzyme.getDetectionAlertService()
                     .countActiveAlertsOfTap(organizationId, tenantId, tap.uuid());
 
             tapsList.add(TapHighLevelInformationDetailsResponse.create(
@@ -173,8 +178,19 @@ public class LocationsResource extends UserAuthenticatedResource {
         }
 
         // Detection alerts.
+        List<DetectionAlertDetailsResponse> detectionAlerts = Lists.newArrayList();
         if (userHasPermission(user, "alerts_view")) {
-            // TODO pull all from list of taps
+            List<UUID> tapUUIDs = taps.stream()
+                    .map(Tap::uuid)
+                    .collect(Collectors.toList());
+
+            for (DetectionAlertEntry alert : nzyme.getDetectionAlertService()
+                    .findActiveAlertsOfTaps(organizationId, tenantId, tapUUIDs, 15)) {
+                List<DetectionAlertAttributeEntry> attributes = nzyme.getDetectionAlertService()
+                        .findAlertAttributes(alert.id());
+
+                detectionAlerts.add(RestTools.buildAlertDetailsResponse(alert, attributes));
+            }
         }
 
         return LocationSummaryResponse.create(
@@ -182,7 +198,8 @@ public class LocationsResource extends UserAuthenticatedResource {
                 location.name(),
                 location.description(),
                 taps.size(),
-                alerts,
+                detectionAlertCount,
+                detectionAlerts,
                 timezone,
                 environmentDataResponse,
                 location.longitude(),

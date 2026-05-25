@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.locations;
 
+import app.nzyme.core.rest.responses.alerts.DetectionAlertDetailsResponse;
 import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
@@ -27,6 +28,9 @@ public abstract class LocationSummaryResponse {
     @JsonProperty("alert_count")
     public abstract int alertCount();
 
+    @JsonProperty("alerts")
+    public abstract List<DetectionAlertDetailsResponse> alerts();
+
     @Nullable
     @JsonProperty("timezone")
     public abstract String timezone();
@@ -46,13 +50,14 @@ public abstract class LocationSummaryResponse {
     @JsonProperty("taps")
     public abstract List<TapHighLevelInformationDetailsResponse> taps();
 
-    public static LocationSummaryResponse create(UUID id, String name, String description, int tapCount, int alertCount, String timezone, LocationEnvironmentDataResponse environment, Double longitude, Double latitude, List<TapHighLevelInformationDetailsResponse> taps) {
+    public static LocationSummaryResponse create(UUID id, String name, String description, int tapCount, int alertCount, List<DetectionAlertDetailsResponse> alerts, String timezone, LocationEnvironmentDataResponse environment, Double longitude, Double latitude, List<TapHighLevelInformationDetailsResponse> taps) {
         return builder()
                 .id(id)
                 .name(name)
                 .description(description)
                 .tapCount(tapCount)
                 .alertCount(alertCount)
+                .alerts(alerts)
                 .timezone(timezone)
                 .environment(environment)
                 .longitude(longitude)
@@ -76,6 +81,8 @@ public abstract class LocationSummaryResponse {
         public abstract Builder tapCount(int tapCount);
 
         public abstract Builder alertCount(int alertCount);
+
+        public abstract Builder alerts(List<DetectionAlertDetailsResponse> alerts);
 
         public abstract Builder timezone(String timezone);
 
