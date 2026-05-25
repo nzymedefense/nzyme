@@ -16,6 +16,8 @@ import LatitudeLongitude from "../shared/LatitudeLongitude";
 import moment from "moment";
 import momentTimezone from "moment-timezone";
 import Clock from "./Clock";
+import WithPermission from "../misc/WithPermission";
+import AlertsTableRow from "../alerts/AlertsTableRow";
 
 const locationsService = new LocationsService();
 
@@ -45,7 +47,6 @@ export default function LocationDetailsPage() {
   }
 
   /*
-  alerts
   floors
   change icon
    */
@@ -200,6 +201,42 @@ export default function LocationDetailsPage() {
           </div>
         </div>
       </div>
+
+      <WithPermission permission="alerts_view">
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Detection Alerts at This Location" slim={true} />
+
+                <p className="text-muted">Last 15 active alerts. Note that not all alerts can be limited to a single location. Always check
+                the alerts overview page for all alerts.</p>
+
+                { (location.alerts && location.alerts.length > 0) ?
+                <table className="table table-sm table-hover table-striped">
+                  <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <th>Details</th>
+                    <th>Type</th>
+                    <th>Subsystem</th>
+                    <th>First seen</th>
+                    <th>Last seen</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {location.alerts.map(function(alert, i){
+                    return <AlertsTableRow key={"alert-" + i}
+                                           hideControls={true}
+                                           alert={alert} />
+                  })}
+                  </tbody>
+                </table> : <div className="alert alert-info mb-0">No active alerts at this location.</div> }
+              </div>
+            </div>
+          </div>
+        </div>
+      </WithPermission>
 
     </>
 
