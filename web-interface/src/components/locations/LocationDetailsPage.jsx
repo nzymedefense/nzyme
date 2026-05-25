@@ -46,11 +46,6 @@ export default function LocationDetailsPage() {
     return <LoadingSpinner />;
   }
 
-  /*
-  floors
-  change icon
-   */
-
   return (
     <>
       <div className="row">

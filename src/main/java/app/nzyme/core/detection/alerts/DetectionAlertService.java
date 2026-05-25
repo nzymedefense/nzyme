@@ -330,6 +330,10 @@ public class DetectionAlertService {
     }
 
     public List<DetectionAlertEntry> findActiveAlertsOfTaps(UUID organizationId, UUID tenantId, List<UUID> taps, int limit) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT* FROM detection_alerts WHERE organization_id = :organization_id " +
                                 "AND tenant_id = :tenant_id AND is_resolved = false AND last_seen > :cutoff " +
