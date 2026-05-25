@@ -1689,3 +1689,16 @@ div.arp-description p {
 .timeline-event-ssid-row-known {
     opacity: 0.65;
 }
+
+.metar {
+    font-family: 'B612 Mono', monospace;
+    background: #f6f8fa;
+    color: #1f2328;
+    border: 1px solid #d0d7de;
+    padding: 0.875rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    letter-spacing: 0.05em;
+    -webkit-font-smoothing: antialiased;
+}

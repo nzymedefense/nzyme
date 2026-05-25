@@ -11,11 +11,14 @@ import app.nzyme.core.environment.dto.EnvironmentData;
 import app.nzyme.core.environment.dto.LocationEnvironmentAlertDetails;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
+import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.locations.LocationEnvironmentAlertDetailsResponse;
 import app.nzyme.core.rest.responses.locations.LocationEnvironmentConditionDetailsResponse;
 import app.nzyme.core.rest.responses.locations.LocationEnvironmentDataResponse;
 import app.nzyme.core.rest.responses.locations.LocationSummaryResponse;
+import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -26,6 +29,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,6 +51,8 @@ public class LocationsResource extends UserAuthenticatedResource {
     public Response findAll(@Context SecurityContext sc,
                             @PathParam("organization_id") UUID organizationId,
                             @PathParam("tenant_id") UUID tenantId) {
+        AuthenticatedUser user = getAuthenticatedUser(sc);
+
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -55,7 +61,7 @@ public class LocationsResource extends UserAuthenticatedResource {
         for (TenantLocationEntry location : nzyme.getAuthenticationService()
                 .findAllTenantLocations(organizationId, tenantId, Integer.MAX_VALUE, 0)) {
 
-            locations.add(buildLocationSummary(location, organizationId, tenantId));
+            locations.add(buildLocationSummary(location, user, organizationId, tenantId));
         }
 
         return Response.ok(locations).build();
@@ -67,6 +73,8 @@ public class LocationsResource extends UserAuthenticatedResource {
                             @PathParam("location_id") UUID locationId,
                             @PathParam("organization_id") UUID organizationId,
                             @PathParam("tenant_id") UUID tenantId) {
+        AuthenticatedUser user = getAuthenticatedUser(sc);
+
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -78,20 +86,28 @@ public class LocationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(buildLocationSummary(location.get(), organizationId, tenantId)).build();
+        return Response.ok(buildLocationSummary(location.get(), user, organizationId, tenantId)).build();
     }
 
     private LocationSummaryResponse buildLocationSummary(TenantLocationEntry location,
+                                                         AuthenticatedUser user,
                                                          UUID organizationId,
                                                          UUID tenantId) {
         List<Tap> taps = nzyme.getTapManager().findAllTapsAtLocation(location.uuid());
 
+        // Taps and alerts.
         int alerts = 0;
+        List<TapHighLevelInformationDetailsResponse> tapsList = Lists.newArrayList();
         for (Tap tap : taps) {
             alerts += (int) nzyme.getDetectionAlertService()
                     .countActiveAlertsOfTap(organizationId, tenantId, tap.uuid());
+
+            tapsList.add(TapHighLevelInformationDetailsResponse.create(
+                    tap.uuid(), tap.name(), Tools.isTapActive(tap.lastReport())
+            ));
         }
 
+        // Environment data.
         Optional<EnvironmentData> ed = nzyme.getEnvironmentService().getEnvironmentData(location.uuid());
         LocationEnvironmentDataResponse environmentDataResponse;
         if (ed.isPresent()) {
@@ -144,14 +160,34 @@ public class LocationsResource extends UserAuthenticatedResource {
             environmentDataResponse = null;
         }
 
+        // Timezone.
+        String timezone;
+        if (location.longitude() != null && location.latitude() != null
+                && location.longitude() != 0 && location.latitude() != 0) {
+            Optional<ZoneId> tz = nzyme.getEnvironmentService()
+                    .getTimezoneAtCoordinates(location.longitude(), location.latitude());
+
+            timezone = tz.map(ZoneId::getId).orElse(null);
+        } else {
+            timezone = null;
+        }
+
+        // Detection alerts.
+        if (userHasPermission(user, "alerts_view")) {
+            // TODO pull all from list of taps
+        }
+
         return LocationSummaryResponse.create(
                 location.uuid(),
                 location.name(),
+                location.description(),
                 taps.size(),
                 alerts,
+                timezone,
                 environmentDataResponse,
                 location.longitude(),
-                location.latitude()
+                location.latitude(),
+                tapsList
         );
     }
 

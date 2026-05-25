@@ -13,9 +13,11 @@ class Footer extends React.Component {
             </div>
 
             <div className="col-md-4 text-end">
-                <hr />
+              <hr />
 
-                Icons are <a href="https://fontawesome.com/" target="_blank" rel="noreferrer">FontAwesome CC BY 4.0</a>
+              Icons are <a href="https://fontawesome.com/" target="_blank" rel="noreferrer">FontAwesome CC BY 4.0</a>
+              <br />
+              Time zone data © OpenStreetMap contributors
             </div>
         </div>
     )

@@ -13,6 +13,9 @@ import LocationVisibility from "./shared/LocationVisibility";
 import LatLonMap from "../shared/LatLonMap";
 import EnvironmentalAlertsList from "./EnvironmentalAlertsList";
 import LatitudeLongitude from "../shared/LatitudeLongitude";
+import moment from "moment";
+import momentTimezone from "moment-timezone";
+import Clock from "./Clock";
 
 const locationsService = new LocationsService();
 
@@ -24,7 +27,14 @@ export default function LocationDetailsPage() {
 
   const [location, setLocation] = useState(null);
 
+  const [now, setNow] = useState(new Date());
+
   usePageTitle(location ? `Location: ${location.name}` : "Location Details");
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     locationsService.findOne(uuid, organizationId, tenantId, setLocation);
@@ -35,15 +45,9 @@ export default function LocationDetailsPage() {
   }
 
   /*
-  taps
   alerts
   floors
-  current weather
-  metar
-  severe environmental alerts
-  map
-  description
-  local time
+  change icon
    */
 
   return (
@@ -70,11 +74,23 @@ export default function LocationDetailsPage() {
         </div>
       </div>
 
+      { location.description ?
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Description" slim={true}/>
+                {location.description}
+              </div>
+            </div>
+          </div>
+        </div> : null }
+
       <div className="row mt-3">
         <div className="col-md-12">
           <div className="card">
             <div className="card-body">
-              <CardTitleWithControls title="Coordinates" slim={true}/>
+              <CardTitleWithControls title="Coordinates" slim={true} />
 
               { location.latitude && location.longitude ?
                 <><LatLonMap editMode={false}
@@ -95,6 +111,12 @@ export default function LocationDetailsPage() {
           </div>
         </div>
       </div>
+
+      { location.timezone ?
+        <div className="row mt-3">
+          <Clock title="Local Time" timezone={location.timezone} referenceTimezone={moment.tz.guess()} now={now} />
+          <Clock title="Your Time" timezone={moment.tz.guess()} referenceTimezone={moment.tz.guess()} now={now} />
+        </div> : null }
 
       <div className="row mt-3">
         <div className="col-md-4">
@@ -127,6 +149,58 @@ export default function LocationDetailsPage() {
           </div>
         </div>
       </div>
+
+      { location.environment && location.environment.metar ?
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="METAR" slim={true} />
+
+                <div className="metar mb-0">{location.environment.metar}</div>
+              </div>
+            </div>
+          </div>
+        </div> : null }
+
+      <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Taps" slim={true} />
+
+              {(location.taps && location.taps.length > 0) ?
+                <>
+                  <p className="text-muted">The following taps are present at this location:</p>
+
+                  <table className="table table-sm table-hover table-striped">
+                    <thead>
+                    <tr>
+                      <th>Tap</th>
+                      <th>Online</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {location.taps.map((tap, i) => {
+                      return (
+                        <tr key={i}>
+                          <td>{tap.name}</td>
+                          <td>
+                            {tap.is_online ? <span className="text-success"><i className="fa fa-circle"></i> Online</span>
+                              : <span className="text-danger"><i className="fa fa-circle"></i> Offline</span>}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                    </tbody>
+                  </table>
+                </>
+                : <div className="alert alert-info mb-0">No taps present at this location.</div> }
+            </div>
+          </div>
+        </div>
+      </div>
+
     </>
 
   )

@@ -10,6 +10,7 @@ import com.google.common.collect.Maps;
 import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import jakarta.validation.constraints.NotNull;
+import net.iakovlev.timeshape.TimeZoneEngine;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -22,6 +23,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.datatype.joda.JodaModule;
 
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,8 +58,12 @@ public class EnvironmentService {
 
     private Map<UUID, EnvironmentData> environmentData;
 
+    private final TimeZoneEngine timeZoneEngine;
+
     public EnvironmentService(NzymeNode nzyme) {
         this.nzyme = nzyme;
+
+        this.timeZoneEngine = TimeZoneEngine.initialize();
 
         // Reload on configuration change.
         nzyme.getRegistryChangeMonitor()
@@ -201,6 +207,10 @@ public class EnvironmentService {
         } else {
             return Optional.of(data);
         }
+    }
+
+    public Optional<ZoneId> getTimezoneAtCoordinates(double longitude, double latitude) {
+        return timeZoneEngine.query(latitude, longitude);
     }
 
     public static boolean alertIsCurrentlyRelevant(LocationEnvironmentAlertDetails a) {

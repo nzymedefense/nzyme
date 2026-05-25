@@ -6,10 +6,12 @@ import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.security.authentication.TenantScopedEntity;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
+import app.nzyme.core.security.authentication.roles.Permission;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.SecurityContext;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -74,6 +76,16 @@ public class UserAuthenticatedResource extends RestResource {
         }
 
         return false;
+    }
+
+    protected boolean userHasPermission(AuthenticatedUser user, String permission) {
+        if (user.isSuperAdministrator() || user.isOrganizationAdministrator()) {
+            return true;
+        }
+
+        // Tenant user. Check if they have permission.
+        List<String> userPermissions = nzyme.getAuthenticationService().findPermissionsOfUser(user.getUserId());
+        return userPermissions.contains(permission);
     }
 
 }

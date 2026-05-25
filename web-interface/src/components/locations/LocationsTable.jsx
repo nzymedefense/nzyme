@@ -20,7 +20,7 @@ export default function LocationsTable() {
 
   useEffect(() => {
     locationsService.findAll(organizationId, tenantId, setLocations)
-  }, []);
+  }, [organizationId, tenantId]);
 
   const renderAlertCount = (count) => {
     if (count === null) {
