@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import LatLonMap from "../../../../../shared/LatLonMap";
 import LatitudeLongitude from "../../../../../shared/LatitudeLongitude";
 
@@ -11,6 +11,13 @@ function LocationForm(props) {
   const defaultMapZoomLevel = props.defaultMapZoomLevel;
   const [longitude, setLongitude] = useState(props.longitude ? props.longitude : null);
   const [latitude, setLatitude] = useState(props.latitude ? props.latitude : null);
+
+  const icon = L.icon({
+    iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-location.png',
+    iconSize: [40, 52],
+    iconAnchor: [20, 52],
+    tooltipAnchor: [0, -52]
+  });
 
   const updateValue = function(e, setter) {
     setter(e.target.value);
@@ -55,6 +62,7 @@ function LocationForm(props) {
                            longitude={longitude}
                            containerHeight={300}
                            editMode={true}
+                           icon={icon}
                            setLatitude={setLatitude}
                            setLongitude={setLongitude}
                            defaultZoomLevel={defaultMapZoomLevel} />

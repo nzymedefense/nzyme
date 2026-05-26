@@ -18,6 +18,8 @@ import momentTimezone from "moment-timezone";
 import Clock from "./Clock";
 import WithPermission from "../misc/WithPermission";
 import AlertsTableRow from "../alerts/AlertsTableRow";
+import numeral from "numeral";
+import * as L from "leaflet";
 
 const locationsService = new LocationsService();
 
@@ -30,6 +32,13 @@ export default function LocationDetailsPage() {
   const [location, setLocation] = useState(null);
 
   const [now, setNow] = useState(new Date());
+
+  const locationIcon = L.icon({
+    iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-location.png',
+    iconSize: [40, 52],
+    iconAnchor: [20, 52],
+    tooltipAnchor: [0, -52]
+  });
 
   usePageTitle(location ? `Location: ${location.name}` : "Location Details");
 
@@ -92,6 +101,7 @@ export default function LocationDetailsPage() {
                 <><LatLonMap editMode={false}
                            containerHeight={400}
                            defaultZoomLevel={10}
+                             icon={locationIcon}
                            latitude={location.latitude}
                            longitude={location.longitude} />
                   <dl className="mt-3 mb-0">
@@ -232,6 +242,48 @@ export default function LocationDetailsPage() {
           </div>
         </div>
       </WithPermission>
+
+      <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Floors" slim={true} />
+
+              {(location.floors && location.floors.length > 0) ?
+                <>
+                  <p className="text-muted">The following floors are configured for this location:</p>
+
+                  <table className="table table-sm table-hover table-striped">
+                    <thead>
+                    <tr>
+                      <th>Number</th>
+                      <th>Name</th>
+                      <th>Floor Plan Uploaded</th>
+                      <th>Taps Placed on Floor Plan</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {location.floors.map((floor, i) => {
+                      return (
+                        <tr key={i}>
+                          <td>{floor.number}</td>
+                          <td>{floor.name}</td>
+                          <td>
+                            {floor.has_floor_plan ? <span><i className="fa-solid fa-circle-check text-success"></i> Yes</span>
+                              : <span><i className="fa-solid fa-triangle-exclamation text-warning"></i> No</span>}
+                          </td>
+                          <td>{numeral(floor.tap_count).format()}</td>
+                        </tr>
+                      )
+                    })}
+                    </tbody>
+                  </table>
+                </>
+                : <div className="alert alert-info mb-0">No floors configured for this location.</div> }
+            </div>
+          </div>
+        </div>
+      </div>
 
     </>
 

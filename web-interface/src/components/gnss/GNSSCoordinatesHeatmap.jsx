@@ -20,16 +20,16 @@ export default function GNSSCoordinatesHeatmap(props) {
 
   const onlineTapIcon = L.icon({
     iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap.png',
-    iconSize: [24, 16],
-    iconAnchor: [12, 8],
-    tooltipAnchor: [0, 0]
+    iconSize: [40, 52],
+    iconAnchor: [20, 52],
+    tooltipAnchor: [0, -52]
   });
 
   const offlineTapIcon = L.icon({
     iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap-offline.png',
-    iconSize: [24, 16],
-    iconAnchor: [12, 8],
-    tooltipAnchor: [0, 0]
+    iconSize: [40, 52],
+    iconAnchor: [20, 52],
+    tooltipAnchor: [0, -52]
   });
 
   function getDefaultCenter(coords) {

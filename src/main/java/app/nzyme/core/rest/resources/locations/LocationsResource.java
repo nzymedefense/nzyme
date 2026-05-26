@@ -12,14 +12,12 @@ import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.environment.dto.EnvironmentData;
 import app.nzyme.core.environment.dto.LocationEnvironmentAlertDetails;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
+import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.RestTools;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.alerts.DetectionAlertDetailsResponse;
-import app.nzyme.core.rest.responses.locations.LocationEnvironmentAlertDetailsResponse;
-import app.nzyme.core.rest.responses.locations.LocationEnvironmentConditionDetailsResponse;
-import app.nzyme.core.rest.responses.locations.LocationEnvironmentDataResponse;
-import app.nzyme.core.rest.responses.locations.LocationSummaryResponse;
+import app.nzyme.core.rest.responses.locations.*;
 import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Tools;
@@ -193,6 +191,20 @@ public class LocationsResource extends UserAuthenticatedResource {
             }
         }
 
+        // Floors.
+        List<LocationFloorDetailsResponse> floors = Lists.newArrayList();
+        for (TenantLocationFloorEntry floor : nzyme.getAuthenticationService()
+                .findAllFloorsOfTenantLocation(location.uuid())) {
+            boolean hasFloorPlan = floor.plan() != null;
+            int tapCount = nzyme.getTapManager()
+                    .findAllTapsOnFloor(organizationId, tenantId, location.uuid(), floor.uuid()).size();
+
+            floors.add(LocationFloorDetailsResponse.create(
+                    floor.uuid(), floor.number(), Tools.buildFloorName(floor), hasFloorPlan, tapCount
+            ));
+        }
+
+
         return LocationSummaryResponse.create(
                 location.uuid(),
                 location.name(),
@@ -204,7 +216,8 @@ public class LocationsResource extends UserAuthenticatedResource {
                 environmentDataResponse,
                 location.longitude(),
                 location.latitude(),
-                tapsList
+                tapsList,
+                floors
         );
     }
 

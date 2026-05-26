@@ -1204,6 +1204,10 @@ public class AuthenticationService {
         );
     }
 
+    public List<TenantLocationFloorEntry> findAllFloorsOfTenantLocation(UUID locationId) {
+        return findAllFloorsOfTenantLocation(locationId, Integer.MAX_VALUE, 0);
+    }
+
     public List<TenantLocationFloorEntry> findAllFloorsOfTenantLocation(UUID locationId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_tenants_locations_floors " +

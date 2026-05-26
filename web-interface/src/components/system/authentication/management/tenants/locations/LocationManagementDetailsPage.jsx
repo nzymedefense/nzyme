@@ -10,6 +10,7 @@ import numeral from "numeral";
 import usePageTitle from "../../../../../../util/UsePageTitle";
 import LatLonMap from "../../../../../shared/LatLonMap";
 import LatitudeLongitude from "../../../../../shared/LatitudeLongitude";
+import * as L from "leaflet";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -27,6 +28,13 @@ function LocationManagementDetailsPage() {
   const [location, setLocation] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
+
+  const locationIcon = L.icon({
+    iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-location.png',
+    iconSize: [40, 52],
+    iconAnchor: [20, 52],
+    tooltipAnchor: [0, -52]
+  });
 
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
@@ -134,6 +142,7 @@ function LocationManagementDetailsPage() {
                      <LatLonMap editMode={false}
                                 containerHeight={300}
                                 defaultZoomLevel={18}
+                                icon={locationIcon}
                                 latitude={location.latitude}
                                 longitude={location.longitude} />
 

@@ -26,23 +26,23 @@ const xy = function(x, y) {
 
 const transientTapIcon = L.icon({
   iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap-transient.png',
-  iconSize: [24, 16],
-  iconAnchor: [12, 8],
-  tooltipAnchor: [0, 0]
+  iconSize: [40, 52],
+  iconAnchor: [20, 52],
+  tooltipAnchor: [0, -52]
 });
 
 const onlineTapIcon = L.icon({
   iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap.png',
-  iconSize: [24, 16],
-  iconAnchor: [12, 8],
-  tooltipAnchor: [0, 0]
+  iconSize: [40, 52],
+  iconAnchor: [20, 52],
+  tooltipAnchor: [0, -52]
 });
 
 const offlineTapIcon = L.icon({
   iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap-offline.png',
-  iconSize: [24, 16],
-  iconAnchor: [12, 8],
-  tooltipAnchor: [0, 0]
+  iconSize: [40, 52],
+  iconAnchor: [20, 52],
+  tooltipAnchor: [0, -52]
 });
 
 function FloorPlan(props) {
@@ -96,27 +96,29 @@ function FloorPlan(props) {
   }, [localRevision]);
 
   useEffect(() => {
-    if (plan) {
-      const bounds = [[0, 0], [plan.length_pixels, plan.width_pixels]];
+    if (!plan) return;
 
-      if (map) {
-        // Reset map on reload.
-        map.off();
-        map.remove();
-      }
+    const bounds = [[0, 0], [plan.length_pixels, plan.width_pixels]];
 
-      setMap(L.map("floorplan", {
-        crs: L.CRS.Simple,
-        minZoom: -3,
-        maxBounds: bounds,
-        maxBoundsViscosity: 1.0,
-        scrollWheelZoom: false,
-        fullscreenControl: true,
-        fullscreenControlOptions: {
-          position: "topleft"
-        }
-      }));
-    }
+    const newMap = L.map("floorplan", {
+      crs: L.CRS.Simple,
+      minZoom: -3,
+      maxBounds: bounds,
+      maxBoundsViscosity: 1.0,
+      scrollWheelZoom: false,
+      zoomAnimation: false,
+      fadeAnimation: false,
+      fullscreenControl: true,
+      fullscreenControlOptions: { position: "topleft" }
+    });
+
+    setMap(newMap);
+
+    return () => {
+      newMap.off();
+      newMap.remove();
+      setMap(null);
+    };
   }, [plan]);
 
   useEffect(() => {
@@ -445,7 +447,7 @@ function FloorPlan(props) {
       <React.Fragment>
         <div id="floorplan" style={{height: containerHeight, backgroundColor: "#FFFFFF"}}/>
 
-        {saveButton()} {deleteButton()}
+        <div className="mt-2">{saveButton()} {deleteButton()}</div>
       </React.Fragment>
   )
 

@@ -1169,3 +1169,18 @@ span.serial-number-match {
     background-color: #1c1c22 !important;
     color: #fff !important;
 }
+
+input.form-control[type="file"]::file-selector-button {
+    background-color: #19191f;
+    border: 0;
+    border-right: 1px solid #33333d;
+    color: #c4c4d4;
+    padding: 0.375rem 0.75rem;
+    margin: -0.375rem -0.75rem;
+    margin-inline-end: 0.75rem;
+}
+
+input.form-control[type="file"]::file-selector-button:hover {
+    background-color: #25252d;
+    color: #e8e8ed;
+}

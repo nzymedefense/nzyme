@@ -19,14 +19,15 @@ export default function LatLonMap(props) {
   const longitude = props.longitude;
   const defaultZoomLevel = props.defaultZoomLevel;
 
+  const icon = props.icon ? props.icon : L.icon({
+    iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap.png',
+    iconSize: [40, 52],
+    iconAnchor: [20, 52],
+    tooltipAnchor: [0, -52]
+  });
+
   const [map, setMap] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(defaultZoomLevel ? defaultZoomLevel : 2);
-  const tapIcon = L.icon({
-    iconUrl: window.appConfig.assetsUri + 'static/leaflet/icon-tap.png',
-    iconSize: [24, 16],
-    iconAnchor: [12, 8],
-    tooltipAnchor: [0, 0]
-  });
 
   const removeMarker = () => {
     map.eachLayer(function (layer) {
@@ -41,7 +42,7 @@ export default function LatLonMap(props) {
 
     L.marker(latlng, {
       nzymeType: "tap-marker",
-      icon: tapIcon,
+      icon: icon,
       draggable: false,
       autoPan: true
     }).addTo(map);

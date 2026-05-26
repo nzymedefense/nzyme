@@ -28,15 +28,15 @@ export default function UavMap(props) {
 
   const uavIcon = L.icon({
     iconUrl: window.appConfig.assetsUri + 'static/uav/uav.png',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
     tooltipAnchor: [0, 0]
   });
 
   const operatorIcon = L.icon({
     iconUrl: window.appConfig.assetsUri + 'static/uav/operator.png',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
     tooltipAnchor: [0, 0]
   });
 

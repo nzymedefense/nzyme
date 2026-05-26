@@ -50,7 +50,10 @@ public abstract class LocationSummaryResponse {
     @JsonProperty("taps")
     public abstract List<TapHighLevelInformationDetailsResponse> taps();
 
-    public static LocationSummaryResponse create(UUID id, String name, String description, int tapCount, int alertCount, List<DetectionAlertDetailsResponse> alerts, String timezone, LocationEnvironmentDataResponse environment, Double longitude, Double latitude, List<TapHighLevelInformationDetailsResponse> taps) {
+    @JsonProperty("floors")
+    public abstract List<LocationFloorDetailsResponse> floors();
+
+    public static LocationSummaryResponse create(UUID id, String name, String description, int tapCount, int alertCount, List<DetectionAlertDetailsResponse> alerts, String timezone, LocationEnvironmentDataResponse environment, Double longitude, Double latitude, List<TapHighLevelInformationDetailsResponse> taps, List<LocationFloorDetailsResponse> floors) {
         return builder()
                 .id(id)
                 .name(name)
@@ -63,6 +66,7 @@ public abstract class LocationSummaryResponse {
                 .longitude(longitude)
                 .latitude(latitude)
                 .taps(taps)
+                .floors(floors)
                 .build();
     }
 
@@ -93,6 +97,8 @@ public abstract class LocationSummaryResponse {
         public abstract Builder latitude(Double latitude);
 
         public abstract Builder taps(List<TapHighLevelInformationDetailsResponse> taps);
+
+        public abstract Builder floors(List<LocationFloorDetailsResponse> floors);
 
         public abstract LocationSummaryResponse build();
     }
