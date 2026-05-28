@@ -20,7 +20,7 @@ pub struct Configuration {
     pub wifi_engagement_interfaces: Option<HashMap<String, WiFiEngagementInterfaceConfiguration>>,
     pub performance: Performance,
     pub protocols: Protocols,
-    pub misc: Misc
+    pub misc: Misc,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -119,7 +119,8 @@ pub struct Performance {
 pub struct Misc {
     pub training_period_minutes: i32,
     pub context_mac_ip_retention_hours: i32,
-    pub context_mac_hostname_retention_hours: i32
+    pub context_mac_hostname_retention_hours: i32,
+    pub panic_log_file_path: Option<String>
 }
 
 #[derive(Debug, Clone, Deserialize)]

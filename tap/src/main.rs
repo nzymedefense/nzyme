@@ -165,6 +165,10 @@ fn main() {
 
     wired::interfaces::print_devices();
 
+    // Install panic logger.
+    logging::install_panic_logger(configuration.misc.panic_log_file_path.clone()
+        .unwrap_or("/var/log/nzyme-tap-panic.log".to_string()));
+
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new(log_monitor)));
 
     // TODO: Unify into single Bus struct? We may be over-allocating channels here.

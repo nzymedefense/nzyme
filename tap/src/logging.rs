@@ -1,11 +1,14 @@
 use core::panic;
+use std::backtrace::Backtrace;
+use std::fs::OpenOptions;
 use std::sync::Arc;
 use fern::colors::{ColoredLevelConfig, Color};
 use log::{info, LevelFilter, warn};
 use crate::log_monitor::LogMonitor;
+use std::io::Write;
 
-pub fn initialize(config_level: &str, log_monitor: &Arc<LogMonitor>) {
-
+pub fn initialize(config_level: &str,
+                  log_monitor: &Arc<LogMonitor>) {
     let mut unknown_filter = false;
     let filter = match config_level.to_uppercase().as_str() {
         "OFF" => LevelFilter::Off,
@@ -69,4 +72,27 @@ fn format_target(target: &str) -> String {
 
     vec.remove(0);
     vec.join("::")
+}
+
+pub fn install_panic_logger(path: String) {
+    let default = std::panic::take_hook();
+    let path = path.to_string();
+
+    std::panic::set_hook(Box::new(move |info| {
+        let bt = Backtrace::force_capture();
+        let ts = chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.3f");
+        let thread = std::thread::current().name().unwrap_or("<unnamed>").to_owned();
+
+        match OpenOptions::new().create(true).append(true).open(&path) {
+            Ok(mut f) => {
+                let _ = writeln!(f, "[{ts}][PANIC][thread={thread}] {info}\n{bt}");
+                let _ = f.flush();
+            }
+            Err(e) => {
+                eprintln!("PANIC LOGGER: could not open [{}]: {}", path, e);
+            }
+        }
+
+        default(info);
+    }));
 }
