@@ -53,7 +53,8 @@ pub struct ConfigurationReportPerformance {
 pub struct ConfigurationReportMisc {
     pub training_period_minutes: i32,
     pub context_mac_ip_retention_hours: i32,
-    pub context_mac_hostname_retention_hours: i32
+    pub context_mac_hostname_retention_hours: i32,
+    pub panic_log_file_path: Option<String>
 }
 
 #[derive(Serialize)]
@@ -150,7 +151,8 @@ impl TryFrom<Configuration> for ConfigurationReport {
             misc: ConfigurationReportMisc {
                 training_period_minutes: c.misc.training_period_minutes,
                 context_mac_ip_retention_hours: c.misc.context_mac_ip_retention_hours,
-                context_mac_hostname_retention_hours: c.misc.context_mac_hostname_retention_hours
+                context_mac_hostname_retention_hours: c.misc.context_mac_hostname_retention_hours,
+                panic_log_file_path: c.misc.panic_log_file_path
             },
             protocols: ConfigurationReportProtocols {
                 wifi: ConfigurationReportProtocolsWifi {
