@@ -8021,4 +8021,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_location_monitoring_config" author="lennartkoopmann">
+        <addColumn tableName="auth_tenants_locations">
+            <column name="enable_environmental_alert_eventing" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

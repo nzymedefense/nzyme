@@ -295,6 +295,11 @@ class AuthenticationManagementService {
     RESTClient.delete("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId, successCallback)
   }
 
+  setEnvironmentalAlertEventingOfTenantLocation(locationId, organizationId, tenantId, enabled, successCallback) {
+    RESTClient.put(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/locations/show/${locationId}/environment/alerts/eventing/enabled/${enabled}`,
+      {}, successCallback)
+  }
+
   findAllFloorsOfTenantLocation(organizationId, tenantId, locationId, setFloors, limit, offset) {
     RESTClient.get("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors",
         {limit: limit, offset: offset}, (response) => {

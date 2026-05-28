@@ -33,6 +33,9 @@ public enum DetectionType {
     UAV_DETECTED_CLASSIFICATION_NEUTRAL("UAV with neutral classification detected", Subsystem.UAV),
     UAV_DETECTED_CLASSIFICATION_HOSTILE("UAV with hostile classification detected", Subsystem.UAV),
 
+    // Environmental monitoring.
+    ENVIRONMENTAL_SEVERE_ALERT("Severe environmental/weather monitoring alert received", Subsystem.GENERIC),
+
     // Wildcard subscription.
     WILDCARD("Subscribed to all detection alerts. (Wildcard)", Subsystem.GENERIC);
 

@@ -21,6 +21,7 @@ public class TenantLocationEntryMapper implements RowMapper<TenantLocationEntry>
                 rs.getString("description"),
                 rs.getDouble("latitude"),
                 rs.getDouble("longitude"),
+                rs.getBoolean("enable_environmental_alert_eventing"),
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("updated_at"))
         );

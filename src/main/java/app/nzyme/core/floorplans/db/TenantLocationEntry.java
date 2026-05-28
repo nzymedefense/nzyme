@@ -20,10 +20,11 @@ public abstract class TenantLocationEntry {
     public abstract Double latitude();
     @Nullable
     public abstract Double longitude();
+    public abstract boolean environmentalAlertEventingEnabled();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static TenantLocationEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String name, String description, Double latitude, Double longitude, DateTime createdAt, DateTime updatedAt) {
+    public static TenantLocationEntry create(long id, UUID uuid, UUID organizationId, UUID tenantId, String name, String description, Double latitude, Double longitude, boolean environmentalAlertEventingEnabled, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -33,6 +34,7 @@ public abstract class TenantLocationEntry {
                 .description(description)
                 .latitude(latitude)
                 .longitude(longitude)
+                .environmentalAlertEventingEnabled(environmentalAlertEventingEnabled)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -59,6 +61,8 @@ public abstract class TenantLocationEntry {
         public abstract Builder latitude(Double latitude);
 
         public abstract Builder longitude(Double longitude);
+
+        public abstract Builder environmentalAlertEventingEnabled(boolean environmentalAlertEventingEnabled);
 
         public abstract Builder createdAt(DateTime createdAt);
 

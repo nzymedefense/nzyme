@@ -176,6 +176,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                         fsr.location().latitude(),
                         fsr.locationFloorCount(),
                         fsr.locationTapCount(),
+                        fsr.location().environmentalAlertEventingEnabled(),
                         fsr.location().createdAt(),
                         fsr.location().updatedAt()
                 ),
@@ -302,6 +303,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                         fsr.location().latitude(),
                         fsr.locationFloorCount(),
                         fsr.locationTapCount(),
+                        fsr.location().environmentalAlertEventingEnabled(),
                         fsr.location().createdAt(),
                         fsr.location().updatedAt()
                 ),

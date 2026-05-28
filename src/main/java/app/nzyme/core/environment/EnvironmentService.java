@@ -2,11 +2,14 @@ package app.nzyme.core.environment;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.connect.ConnectRegistryKeys;
+import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.environment.dto.EnvironmentData;
 import app.nzyme.core.environment.dto.LocationEnvironmentAlertDetails;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
+import app.nzyme.plugin.Subsystem;
 import com.google.common.collect.Maps;
+import com.google.common.hash.Hashing;
 import com.google.common.net.HttpHeaders;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import jakarta.validation.constraints.NotNull;
@@ -23,6 +26,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.datatype.joda.JodaModule;
 
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.Map;
 import java.util.Optional;
@@ -32,9 +36,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+
 public class EnvironmentService {
 
     private static final Logger LOG = LogManager.getLogger(EnvironmentService.class);
+
+    public static final int MIN_ALERT_SEVERITY = 3;
 
     public static int severityOrdinal(@NotNull String severity) {
         return switch (severity) {
@@ -183,7 +190,55 @@ public class EnvironmentService {
                                 .addModule(new JodaModule())
                                 .build();
 
-                        data.put(location.uuid(), om.readValue(response.body().bytes(), EnvironmentData.class));
+                        EnvironmentData environment = om.readValue(response.body().bytes(), EnvironmentData.class);
+                        data.put(location.uuid(), environment);
+
+                        if (location.environmentalAlertEventingEnabled() && !environment.alerts().isEmpty()) {
+                            for (LocationEnvironmentAlertDetails alert : environment.alerts()) {
+                                if (alert.severity() != null && severityOrdinal(alert.severity()) < MIN_ALERT_SEVERITY) {
+                                    continue;
+                                }
+
+                                if (!alertIsCurrentlyRelevant(alert)) {
+                                    continue;
+                                }
+
+                                String headline = alert.event() == null ? "Unknown Alert Type" : alert.event();
+                                String sender = alert.senderName() == null ? "Unknown" : alert.senderName();
+                                String severity = alert.severity() == null ? "Unknown" : alert.severity();
+                                String urgency = alert.urgency() == null ? "Unknown" : alert.urgency();
+                                String certainty = alert.certainty() == null ? "Unknown" : alert.certainty();
+                                String effective = alert.effective() == null ? "Unknown" : alert.effective().toString();
+
+                                String alertKey = Hashing.sha256()
+                                        .hashString(location.uuid() + headline + alert.effective(), StandardCharsets.UTF_8)
+                                        .toString();
+
+
+                                nzyme.getDetectionAlertService().raiseAlert(
+                                        location.organizationId(),
+                                        location.tenantId(),
+                                        null,
+                                        null,
+                                        DetectionType.ENVIRONMENTAL_SEVERE_ALERT,
+                                        Subsystem.GENERIC,
+                                        "Severe environmental/weather monitoring alert received for location \"" + location.name() + "\": " + headline,
+                                        Map.of(
+                                                "alert_key", alertKey,
+                                                "headline", headline,
+                                                "sender", sender,
+                                                "severity", severity,
+                                                "urgency", urgency,
+                                                "certainty", certainty,
+                                                "effective", effective,
+                                                "location_uuid", location.uuid().toString(),
+                                                "location_name", location.name()
+                                        ),
+                                        new String[]{"alert_key"},
+                                        null
+                                );
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     LOG.error("Could not download environment data from Connect for location [{}].", location.uuid(), e);

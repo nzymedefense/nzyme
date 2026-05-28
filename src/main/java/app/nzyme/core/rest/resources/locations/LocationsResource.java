@@ -37,15 +37,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static app.nzyme.core.environment.EnvironmentService.alertIsCurrentlyRelevant;
-import static app.nzyme.core.environment.EnvironmentService.severityOrdinal;
+import static app.nzyme.core.environment.EnvironmentService.*;
 
 @Path("/api/locations/organizations/{organization_id}/tenants/{tenant_id}")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
 public class LocationsResource extends UserAuthenticatedResource {
-
-    private static final int MIN_ALERT_SEVERITY = 3;
 
     @Inject
     private NzymeNode nzyme;

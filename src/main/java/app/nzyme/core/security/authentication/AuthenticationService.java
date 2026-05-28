@@ -1178,6 +1178,17 @@ public class AuthenticationService {
         );
     }
 
+    public void setEnvironmentalAlertEventingOfTenantLocation(long locationId, boolean enableEnvironmentalAlertEventing) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_tenants_locations " +
+                                "SET enable_environmental_alert_eventing = :enable_environmental_alert_eventing " +
+                                "WHERE id = :id")
+                        .bind("id", locationId)
+                        .bind("enable_environmental_alert_eventing", enableEnvironmentalAlertEventing)
+                        .execute()
+        );
+    }
+
     public void updateUpdatedAtOfTenantLocation(long locationId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_tenants_locations SET updated_at = NOW() WHERE id = :id")

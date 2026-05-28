@@ -34,13 +34,16 @@ public abstract class TenantLocationDetailsResponse {
     @JsonProperty("tap_count")
     public abstract long tapCount();
 
+    @JsonProperty("environmental_alert_eventing_enabled")
+    public abstract boolean environmentalAlertEventingEnabled();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static TenantLocationDetailsResponse create(UUID id, String name, String description, Double longitude, Double latitude, long floorCount, long tapCount, DateTime createdAt, DateTime updatedAt) {
+    public static TenantLocationDetailsResponse create(UUID id, String name, String description, Double longitude, Double latitude, long floorCount, long tapCount, boolean environmentalAlertEventingEnabled, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .name(name)
@@ -49,6 +52,7 @@ public abstract class TenantLocationDetailsResponse {
                 .latitude(latitude)
                 .floorCount(floorCount)
                 .tapCount(tapCount)
+                .environmentalAlertEventingEnabled(environmentalAlertEventingEnabled)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -73,6 +77,8 @@ public abstract class TenantLocationDetailsResponse {
         public abstract Builder floorCount(long floorCount);
 
         public abstract Builder tapCount(long tapCount);
+
+        public abstract Builder environmentalAlertEventingEnabled(boolean environmentalAlertEventingEnabled);
 
         public abstract Builder createdAt(DateTime createdAt);
 

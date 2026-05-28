@@ -11,6 +11,7 @@ import usePageTitle from "../../../../../../util/UsePageTitle";
 import LatLonMap from "../../../../../shared/LatLonMap";
 import LatitudeLongitude from "../../../../../shared/LatitudeLongitude";
 import * as L from "leaflet";
+import CardTitleWithControls from "../../../../../shared/CardTitleWithControls";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -26,6 +27,7 @@ function LocationManagementDetailsPage() {
   const [tenant, setTenant] = useState(null);
 
   const [location, setLocation] = useState(null);
+  const [environmentalAlertEventingEnabled, setEnvironmentalAlertEventingEnabled] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
 
@@ -42,6 +44,23 @@ function LocationManagementDetailsPage() {
     authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation)
   }, [organizationId, tenantId, locationId])
 
+  useEffect(() => {
+    if (location) {
+      setEnvironmentalAlertEventingEnabled(location.environmental_alert_eventing_enabled);
+    }
+  }, [location])
+
+
+  const onEnvironmentalAlertEventingToggle = (e) => {
+    setEnvironmentalAlertEventingEnabled(e.target.checked);
+
+    authenticationManagementService.setEnvironmentalAlertEventingOfTenantLocation(
+      locationId, organizationId, tenantId, e.target.checked, () => {
+        toast.success("Environmental monitoring settings updated.");
+      }
+    );
+  }
+
   const deleteLocation = () => {
     if (!confirm("Really delete location?")) {
       return;
@@ -57,7 +76,7 @@ function LocationManagementDetailsPage() {
     return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS_PAGE(organization.id, tenant.id)} />
   }
 
-  if (!organization || !tenant || !location) {
+  if (!organization || !tenant || !location || environmentalAlertEventingEnabled === null) {
     return <LoadingSpinner />
   }
 
@@ -118,7 +137,7 @@ function LocationManagementDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Description</h3>
+                    <CardTitleWithControls title="Description" slim={true} />
 
                     <p>
                       {location.description ? location.description : <em>No Description.</em>}
@@ -137,7 +156,7 @@ function LocationManagementDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Position</h3>
+                    <CardTitleWithControls title="Position" slim={true} />
 
                      <LatLonMap editMode={false}
                                 containerHeight={300}
@@ -163,13 +182,36 @@ function LocationManagementDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Floors</h3>
+                    <CardTitleWithControls title="Floors" slim={true} />
 
                     <FloorsTable organizationId={organizationId} tenantId={tenantId} locationId={locationId} />
 
                     <a className="btn btn-sm btn-secondary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.CREATE(organization.id, tenant.id, location.id)}>
                       Create Floor
                     </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <CardTitleWithControls title="Environmental Monitoring"
+                                           slim={true}
+                                           helpLink="https://go.nzyme.org/environmental-monitoring" />
+
+                    <div className="form-check form-switch mt-2">
+                      <input className="form-check-input"
+                             checked={environmentalAlertEventingEnabled}
+                             onChange={onEnvironmentalAlertEventingToggle}
+                             type="checkbox"
+                             id="enableEnvironmentalAlertEventing"/>
+                      <label className="form-check-label" htmlFor="enableEnvironmentalAlertEventing">
+                        Create detection events for severe environmental alerts
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -181,7 +223,7 @@ function LocationManagementDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Delete Location</h3>
+                    <CardTitleWithControls title="Delete Location" slim={true} />
 
                     <p>
                       You can only delete a location if it has no floors.
@@ -199,7 +241,7 @@ function LocationManagementDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Metadata</h3>
+                    <CardTitleWithControls title="Metadata" slim={true} />
 
                     <dl className="mb-0">
                       <dt>Created At</dt>

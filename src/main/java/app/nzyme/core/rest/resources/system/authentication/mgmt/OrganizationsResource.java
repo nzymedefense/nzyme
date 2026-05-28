@@ -1779,7 +1779,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         long floorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(tl.uuid());
         long tapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(tl.uuid());
         return Response.ok(TenantLocationDetailsResponse.create(
-                tl.uuid(), tl.name(), tl.description(), tl.longitude(), tl.latitude(), floorCount, tapCount, tl.createdAt(), tl.updatedAt()
+                tl.uuid(),
+                tl.name(),
+                tl.description(),
+                tl.longitude(),
+                tl.latitude(),
+                floorCount,
+                tapCount,
+                tl.environmentalAlertEventingEnabled(),
+                tl.createdAt(),
+                tl.updatedAt()
         )).build();
     }
 
@@ -1811,7 +1820,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             long tapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(tl.uuid());
 
             locations.add(TenantLocationDetailsResponse.create(
-                    tl.uuid(), tl.name(), tl.description(), tl.longitude(), tl.latitude(), floorCount, tapCount, tl.createdAt(), tl.updatedAt()
+                    tl.uuid(),
+                    tl.name(),
+                    tl.description(),
+                    tl.longitude(),
+                    tl.latitude(),
+                    floorCount,
+                    tapCount,
+                    tl.environmentalAlertEventingEnabled(),
+                    tl.createdAt(),
+                    tl.updatedAt()
             ));
         }
 
@@ -1928,6 +1946,41 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         nzyme.getAuthenticationService().deleteTenantLocation(tl.id());
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/environment/alerts/eventing/enabled/{enabled}")
+    public Response setEnvironmentalAlertEventingOfTenantLocation(@Context SecurityContext sc,
+                                                                  @PathParam("organizationId") UUID organizationId,
+                                                                  @PathParam("tenantId") UUID tenantId,
+                                                                  @PathParam("locationId") UUID locationId,
+                                                                  @PathParam("enabled") boolean enabled) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationEntry> result = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (result.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().setEnvironmentalAlertEventingOfTenantLocation(
+                result.get().id(), enabled
+        );
+
+        nzyme.getAuthenticationService().updateUpdatedAtOfTenantLocation(result.get().id());
 
         return Response.ok().build();
     }

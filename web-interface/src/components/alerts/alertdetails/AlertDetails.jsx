@@ -15,6 +15,7 @@ import UnapprovedSSIDAlertDetails from "./dot11/UnapprovedSSIDAlertDetails";
 import UnapprovedClientAlertDetails from "./dot11/UnapprovedClientAlertDetails";
 import UavDetectedAlertDetails from "./uav/UavDetectedAlertDetails";
 import MonitorTriggeredAlertDetails from "./generic/MonitorTriggeredAlertDetails";
+import EnvironmentalSevereAlertDetails from "./generic/EnvironmentalSevereAlertDetails";
 
 function AlertDetails(props) {
 
@@ -56,6 +57,8 @@ function AlertDetails(props) {
     case "UAV_DETECTED_CLASSIFICATION_NEUTRAL":
     case "UAV_DETECTED_CLASSIFICATION_HOSTILE":
       return <UavDetectedAlertDetails alert={alert} />
+    case "ENVIRONMENTAL_SEVERE_ALERT":
+      return <EnvironmentalSevereAlertDetails alert={alert} />
     default:
       return <GenericAlertDetails alert={alert} />
   }
