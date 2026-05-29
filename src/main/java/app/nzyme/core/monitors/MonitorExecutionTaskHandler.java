@@ -24,6 +24,7 @@ import tools.jackson.datatype.joda.JodaModule;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class MonitorExecutionTaskHandler implements TaskHandler {
@@ -120,8 +121,7 @@ public class MonitorExecutionTaskHandler implements TaskHandler {
                         Subsystem.GENERIC,
                         "Monitor \"" + monitor.name() + "\" triggered.",
                         attributes,
-                        new String[]{"monitor_uuid"},
-                        null
+                        Set.of("monitor_uuid")
                 );
 
                 // Update `last_event` state of monitor.

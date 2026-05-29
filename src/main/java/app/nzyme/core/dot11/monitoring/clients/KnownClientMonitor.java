@@ -14,10 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class KnownClientMonitor extends Periodical {
 
@@ -110,8 +107,7 @@ public class KnownClientMonitor extends Periodical {
                 Subsystem.DOT11,
                 "Unapproved client \"" + client.clientMac() + "\" connected to monitored network \""  +ssid.ssid() + "\" detected.",
                 parameters,
-                new String[]{"monitored_network", "client_mac"},
-                null
+                Set.of("monitored_network", "client_mac")
         );
     }
 

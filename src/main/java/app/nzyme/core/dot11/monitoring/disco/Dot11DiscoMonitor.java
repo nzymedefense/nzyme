@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Dot11DiscoMonitor extends Periodical {
 
@@ -85,8 +86,7 @@ public class Dot11DiscoMonitor extends Periodical {
                                 "Detected disconnection activity anomalies for monitored " +
                                         "network \"" + monitoredNetwork.ssid() + "\" (Tap: \"" + tap.name() + "\")",
                                 attributes,
-                                new String[]{"tap_id"},
-                                null
+                                Set.of("tap_id")
                         );
                     }
                 }

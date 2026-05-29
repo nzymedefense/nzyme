@@ -66,8 +66,7 @@ public class DetectionAlertService {
                            Subsystem subsystem,
                            String details,
                            Map<String, String> attributes,
-                           String[] comparisonAttributeKeys,
-                           @Nullable Float signalStrength) {
+                           Set<String> comparisonAttributeKeys) {
         if (organizationId == null || tenantId == null) {
             throw new RuntimeException("Detection alerts must have organization and tenant UUID set.");
         }

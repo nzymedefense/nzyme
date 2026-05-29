@@ -24,10 +24,7 @@ import org.jdbi.v3.core.statement.PreparedBatch;
 import org.joda.time.DateTime;
 
 import java.sql.Types;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class DHCPTable implements DataTable {
 
@@ -344,8 +341,7 @@ public class DHCPTable implements DataTable {
                     "MAC address \"" + tx.clientMac() + "\" is presenting new DHCP fingerprint " +
                             " \"" + fingerprint.get() + "\"",
                     attributes,
-                    new String[]{"asset_uuid", "new_fingerprint"},
-                    null
+                    Set.of("asset_uuid", "new_fingerprint")
             );
         }
     }

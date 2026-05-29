@@ -19,10 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.net.InetAddress;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class AssetManager {
 
@@ -258,8 +255,7 @@ public class AssetManager {
                 subsystem,
                 "New asset with MAC address \"" + mac + "\" detected.",
                 attributes,
-                new String[]{"asset_uuid"},
-                null
+                Set.of("asset_uuid")
         );
     }
 

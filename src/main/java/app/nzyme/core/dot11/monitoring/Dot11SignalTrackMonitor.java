@@ -17,10 +17,7 @@ import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class Dot11SignalTrackMonitor extends Periodical {
 
@@ -83,8 +80,7 @@ public class Dot11SignalTrackMonitor extends Periodical {
                                             "with multiple signal tracks on channel \"" + frequency.frequency() + "\". " +
                                             "(Tap: \"" + tap.name() + "\")",
                                     attributes,
-                                    new String[]{"bssid", "channel", "tap_id"},
-                                    null
+                                    Set.of("bssid", "channel", "tap_id")
                             );
                         }
                     }

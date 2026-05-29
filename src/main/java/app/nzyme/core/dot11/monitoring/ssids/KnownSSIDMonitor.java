@@ -16,6 +16,7 @@ import org.joda.time.DateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class KnownSSIDMonitor extends Periodical {
 
@@ -132,8 +133,7 @@ public class KnownSSIDMonitor extends Periodical {
                 Subsystem.DOT11,
                 "Unapproved SSID \"" + ssid.ssid() + "\" detected.",
                 parameters,
-                new String[]{"ssid"},
-                null
+                Set.of("ssid")
         );
     }
 

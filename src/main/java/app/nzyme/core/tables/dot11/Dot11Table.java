@@ -28,10 +28,7 @@ import org.joda.time.DateTime;
 import com.codahale.metrics.Timer;
 
 import java.sql.Types;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
@@ -144,8 +141,7 @@ public class Dot11Table implements DataTable {
                                 Subsystem.DOT11,
                                 "Monitored probe request for SSID \"" + ssid + "\" detected in range.",
                                 attributes,
-                                new String[]{"ssid"},
-                                report.signalStrength().average()
+                                Set.of("ssid")
                         );
                     }
 
@@ -280,8 +276,7 @@ public class Dot11Table implements DataTable {
                                     "Bandit \"" + bandit.name() + "\" advertising BSSID \"" + bssid + "\" " +
                                             "detected in range.",
                                     attributes,
-                                    new String[]{"bssid", "fingerprint", "bandit_is_custom"},
-                                    report.signalStrength().average()
+                                    Set.of("bssid", "fingerprint", "bandit_is_custom")
                             );
                         }
                     }
@@ -462,8 +457,7 @@ public class Dot11Table implements DataTable {
                                     "SSID \"" + ssid + "\" looking similar to monitored network SSID " +
                                             "\"" + monitoredSSID.ssid() + "\"",
                                     attributes,
-                                    new String[]{"similar_ssid"},
-                                    task.ssidReport().signalStrength().average()
+                                    Set.of("similar_ssid")
                             );
                         }
                     }
@@ -488,8 +482,7 @@ public class Dot11Table implements DataTable {
                                         "SSID \"" + ssid + "\" contains restricted " +
                                                 "substring \"" + rss.substring() + "\"",
                                         attributes,
-                                        new String[]{"ssid", "restricted_substring"},
-                                        task.ssidReport().signalStrength().average()
+                                        Set.of("ssid", "restricted_substring")
                                 );
                             }
                         }
@@ -519,8 +512,7 @@ public class Dot11Table implements DataTable {
                                 "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
                                         "unexpected BSSID \"" + task.bssid() + "\"",
                                 attributes,
-                                new String[]{"bssid"},
-                                task.ssidReport().signalStrength().average()
+                                Set.of("bssid")
                         );
                     }
                 } else {
@@ -543,8 +535,7 @@ public class Dot11Table implements DataTable {
                                         "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
                                                 "with unexpected fingerprint \"" + observedFingerprint + "\".",
                                         attributes,
-                                        new String[]{"bssid", "fingerprint"},
-                                        task.ssidReport().signalStrength().average()
+                                        Set.of("bssid", "fingerprint")
                                 );
                             }
                         }
@@ -568,8 +559,7 @@ public class Dot11Table implements DataTable {
                                     "Monitored network \"" + monitoredSSID.ssid() + "\" advertised on " +
                                             "unexpected frequency " + frequency + "MHz",
                                     attributes,
-                                    new String[]{"frequency"},
-                                    task.ssidReport().signalStrength().average()
+                                    Set.of("frequency")
                             );
                         }
                     }
@@ -592,8 +582,7 @@ public class Dot11Table implements DataTable {
                                     "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
                                             "unexpected security suites \"" + suite + "\"",
                                     attributes,
-                                    new String[]{"suite"},
-                                    task.ssidReport().signalStrength().average()
+                                    Set.of("suite")
                             );
                         }
                     }
@@ -661,8 +650,7 @@ public class Dot11Table implements DataTable {
                             Subsystem.DOT11,
                             "Bandit \"Pwnagotchi\" with name \"" + attributes.get("name") + "\" detected in range.",
                             attributes,
-                            new String[]{"identity"},
-                            alert.signalStrength().floatValue()
+                            Set.of("identity")
                     );
 
                     break;

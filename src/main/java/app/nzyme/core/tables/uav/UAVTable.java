@@ -485,8 +485,7 @@ public class UAVTable implements DataTable {
                 Subsystem.UAV,
                 "UAV with " + classification + " classification and designation [" + designation + "] detected in range.",
                 attributes,
-                new String[]{"identifier", "classification"},
-                null
+                Set.of("identifier", "classification")
         );
     }
 

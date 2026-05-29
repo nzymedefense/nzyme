@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -234,8 +235,7 @@ public class EnvironmentService {
                                                 "location_uuid", location.uuid().toString(),
                                                 "location_name", location.name()
                                         ),
-                                        new String[]{"alert_key"},
-                                        null
+                                        Set.of("alert_key")
                                 );
                             }
                         }
