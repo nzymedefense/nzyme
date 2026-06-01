@@ -598,7 +598,7 @@ public class UavResource extends TapDataHandlingResource {
 
                 tapDistances.put(uuid, UavToTapDistanceResponse.create(
                         TapHighLevelInformationDetailsResponse.create(
-                                uuid, tap.get().name(), Tools.isTapActive(tap.get().lastReport())
+                                uuid, tap.get().name(), null, null, Tools.isTapActive(tap.get().lastReport())
                         ),
                         distanceFeet
                 ));

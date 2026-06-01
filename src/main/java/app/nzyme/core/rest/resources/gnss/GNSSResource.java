@@ -136,6 +136,8 @@ public class GNSSResource extends TapDataHandlingResource {
             response.add(GNSSConstellationDistancesResponse.create(TapHighLevelInformationDetailsResponse.create(
                     tap.get().uuid(),
                     tap.get().name(),
+                    null,
+                    null,
                     Tools.isTapActive(tap.get().lastReport())
             ), d.gps(), d.glonass(), d.beidou(), d.galileo()));
         }
@@ -700,6 +702,8 @@ public class GNSSResource extends TapDataHandlingResource {
                     tapInfos.add(TapHighLevelInformationDetailsResponse.create(
                             tap.get().uuid(),
                             tap.get().name(),
+                            null,
+                            null,
                             Tools.isTapActive(tap.get().lastReport())
                     ));
                 }

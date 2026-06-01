@@ -62,8 +62,27 @@ public class TapsResource extends TapDataHandlingResource {
 
         List<TapHighLevelInformationDetailsResponse> tapsResponse = Lists.newArrayList();
         for (Tap tap : nzyme.getTapManager().findAllTapsByUUIDs(uuids)) {
+            Optional<TenantLocationEntry> location = nzyme
+                    .getAuthenticationService().findTenantLocation(tap.locationId(), organizationId, tenantId);
+
+            String locationName;
+            String floorName;
+            if (location.isPresent()) {
+                locationName = location.get().name();
+                Optional<TenantLocationFloorEntry> floor = nzyme.getAuthenticationService()
+                        .findFloorOfTenantLocation(location.get().uuid(), tap.floorId());
+                if (floor.isPresent()) {
+                    floorName = floor.get().name();
+                } else {
+                    floorName = null;
+                }
+            } else {
+                locationName = null;
+                floorName = null;
+            }
+
             tapsResponse.add(TapHighLevelInformationDetailsResponse.create(
-                    tap.uuid(), tap.name(), Tools.isTapActive(tap.lastReport())
+                    tap.uuid(), tap.name(), locationName, floorName, Tools.isTapActive(tap.lastReport())
             ));
         }
 

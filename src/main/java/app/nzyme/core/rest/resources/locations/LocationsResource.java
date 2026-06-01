@@ -103,7 +103,7 @@ public class LocationsResource extends UserAuthenticatedResource {
                     .countActiveAlertsOfTap(organizationId, tenantId, tap.uuid());
 
             tapsList.add(TapHighLevelInformationDetailsResponse.create(
-                    tap.uuid(), tap.name(), Tools.isTapActive(tap.lastReport())
+                    tap.uuid(), tap.name(), null, null, Tools.isTapActive(tap.lastReport())
             ));
         }
 
