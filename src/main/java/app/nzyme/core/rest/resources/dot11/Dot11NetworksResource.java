@@ -36,7 +36,6 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.joda.time.DateTime;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static app.nzyme.core.util.filters.FilterParser.parseFiltersQueryParameter;
 

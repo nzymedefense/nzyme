@@ -31,9 +31,13 @@ export default function Timeline({events, addressLastSeen, page, setPage, perPag
       timestamp: new Date().toISOString()
     };
     return (
-      <ul className="timeline-event-list timeline-event-list-single mt-4">
-        <TimelineEvent event={statusOnly} />
-      </ul>
+      <>
+        <ul className="timeline-event-list timeline-event-list-single mt-2">
+          <TimelineEvent event={statusOnly} />
+        </ul>
+
+        <div className="alert alert-info mt-3 mb-0">No timeline events.</div>
+      </>
     );
 
   }

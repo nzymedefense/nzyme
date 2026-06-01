@@ -12,6 +12,7 @@ import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import usePageTitle from "../../../util/UsePageTitle";
 import Timeline from "../../shared/timelines/Timeline";
 import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
+import TimelineFilters from "../../shared/timelines/TimelineFilters";
 
 const dot11Service = new Dot11Service();
 const timelinesService = new TimelinesService();
@@ -31,6 +32,20 @@ export default function BSSIDTimelinePage() {
 
   const [revision, setRevision] = useState(new Date());
 
+  const [filters, setFilters] = useState([
+    {name: "SSID Change", value: "DOT11_BSSID_SSID_DIFF", include: true},
+    {name: "Fingerprint Change", value: "DOT11_BSSID_FINGERPRINT_DIFF", include: true},
+    {name: "Strongest Tap", value: "DOT11_BSSID_STRONGEST_TAP", include: true}
+  ]);
+
+  const updateFilter = (filter, state) => {
+    setFilters(prev =>
+      prev.map(f =>
+        f.value === filter ? { ...f, include: state } : f
+      )
+    );
+  };
+
   usePageTitle(bssid ? `BSSID: ${bssid.summary.bssid.address} Timeline` : "BSSID Timeline");
 
   useEffect(() => {
@@ -41,18 +56,21 @@ export default function BSSIDTimelinePage() {
   useEffect(() => {
     if (bssid) {
       setEvents(null);
+
+      const excludedEventTypes = filters.filter(f => !f.include).map(f => f.value);
       timelinesService.findAllOfAddress(
         "DOT11_BSSID",
         bssid.summary.bssid.address,
         organizationId,
         tenantId,
         timeRange,
+        excludedEventTypes,
         perPage,
         (page-1)*perPage,
         setEvents
       );
     }
-  }, [bssid, organizationId, tenantId, timeRange, perPage, page, revision])
+  }, [bssid, organizationId, tenantId, timeRange, filters, perPage, page, revision])
 
   if (!bssid || !events) {
     return <LoadingSpinner />
@@ -93,11 +111,24 @@ export default function BSSIDTimelinePage() {
         <div className="col-12">
           <div className="card">
             <div className="card-body">
-              <CardTitleWithControls title="Timeline"
+              <CardTitleWithControls title="Filters"
                                      slim={true}
-                                     refreshAction={() => setRevision(new Date())}
                                      timeRange={timeRange}
                                      setTimeRange={setTimeRange} />
+
+              <TimelineFilters onFilterChange={updateFilter} filters={filters} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Events"
+                                     slim={true}
+                                     refreshAction={() => setRevision(new Date())} />
 
               <Timeline events={events}
                         addressLastSeen={bssid.summary.last_seen}

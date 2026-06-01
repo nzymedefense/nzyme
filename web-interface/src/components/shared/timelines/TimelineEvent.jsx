@@ -4,7 +4,7 @@ import {formatDuration} from "./TimelineDuration";
 import SignalStrength from "../SignalStrength";
 
 function formatTimestamp(ts) {
-  return moment(ts).format('YYYY-MM-DD HH:mm:ss');
+  return <span title={moment(ts).fromNow()}>{moment(ts).format('YYYY-MM-DD HH:mm:ss Z')}</span>
 }
 
 function SSIDList({ssids}) {

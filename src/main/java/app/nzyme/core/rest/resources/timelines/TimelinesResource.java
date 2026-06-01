@@ -27,7 +27,6 @@ import tools.jackson.datatype.joda.JodaModule;
 import java.util.List;
 import java.util.UUID;
 
-
 @Path("/api/timelines")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
@@ -51,6 +50,7 @@ public class TimelinesResource extends UserAuthenticatedResource {
                             @QueryParam("organization_id") @NotNull UUID organizationId,
                             @QueryParam("tenant_id") @NotNull UUID tenantId,
                             @QueryParam("time_range") String timeRangeParameter,
+                            @QueryParam("excluded_event_types") String excludedEventTypesP,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset) {
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
@@ -59,12 +59,16 @@ public class TimelinesResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
+        List<String> excludedEventTypes = this.objectMapper.readValue(excludedEventTypesP, new TypeReference<>() {});
+
         Timelines timelines = new Timelines(nzyme);
-        long total = timelines.countAllEventsOfAddress(organizationId, tenantId, addressType, address, timeRange, GAP_THRESHOLD);
+        long total = timelines.countAllEventsOfAddress(
+                organizationId, tenantId, addressType, address, timeRange, excludedEventTypes, GAP_THRESHOLD
+        );
 
         List<TimelineEventDetailsResponse> events = Lists.newArrayList();
-        for (TimelineEventEntry e : timelines
-                .findAllEventsOfAddress(organizationId, tenantId, addressType, address, timeRange, GAP_THRESHOLD, limit, offset)) {
+        for (TimelineEventEntry e : timelines.findAllEventsOfAddress(
+                organizationId, tenantId, addressType, address, timeRange, excludedEventTypes, GAP_THRESHOLD, limit, offset)) {
 
             events.add(TimelineEventDetailsResponse.create(
                     e.uuid(),
