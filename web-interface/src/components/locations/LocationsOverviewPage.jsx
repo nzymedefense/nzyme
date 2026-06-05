@@ -1,6 +1,7 @@
 import React from "react";
 import usePageTitle from "../../util/UsePageTitle";
 import LocationsTable from "./LocationsTable";
+import CardTitleWithControls from "../shared/CardTitleWithControls";
 
 export default function LocationsOverviewPage() {
 
@@ -18,8 +19,10 @@ export default function LocationsOverviewPage() {
         <div className="col-12">
           <div className="card">
             <div className="card-body">
-              <h3>All Locations</h3>
-              
+              <CardTitleWithControls title="All Locations"
+                                     helpLink="https://go.nzyme.org/locations"
+                                     slim={true} />
+
               <LocationsTable />
             </div>
           </div>

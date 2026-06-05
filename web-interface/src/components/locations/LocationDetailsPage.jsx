@@ -128,7 +128,9 @@ export default function LocationDetailsPage() {
         <div className="col-md-4">
           <div className="card">
             <div className="card-body">
-              <CardTitleWithControls title="Current Weather Observation" slim={true}/>
+              <CardTitleWithControls title="Current Weather Observation"
+                                     helpLink="https://go.nzyme.org/environmental-monitoring"
+                                     slim={true}/>
 
               <dl className="mb-0 mt-2">
                 <dt>Condition</dt>
@@ -146,7 +148,9 @@ export default function LocationDetailsPage() {
         <div className="col-md-8">
           <div className="card">
             <div className="card-body">
-              <CardTitleWithControls title="Environmental Alerts" slim={true}/>
+              <CardTitleWithControls title="Environmental Alerts"
+                                     helpLink="https://go.nzyme.org/environmental-monitoring"
+                                     slim={true}/>
 
               <div style={{maxHeight: 195, overflowY: "auto"}}>
                 <EnvironmentalAlertsList environment={location.environment} />
@@ -161,7 +165,9 @@ export default function LocationDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="METAR" slim={true} />
+                <CardTitleWithControls title="METAR"
+                                       helpLink="https://go.nzyme.org/environmental-monitoring"
+                                       slim={true} />
 
                 <div className="metar mb-0">{location.environment.metar}</div>
               </div>
