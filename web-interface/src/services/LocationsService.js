@@ -8,10 +8,10 @@ class LocationsService {
     })
   }
 
-  findOne(locationId, organizationId, tenantId, setLocation) {
+  findOne(locationId, organizationId, tenantId, setLocation, errorCallback = undefined) {
     RESTClient.get(`/locations/organizations/${organizationId}/tenants/${tenantId}/show/${locationId}`, {}, (response) => {
       setLocation(response.data)
-    })
+    }, errorCallback)
   }
 
 }

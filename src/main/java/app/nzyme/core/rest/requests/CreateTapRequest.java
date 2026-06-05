@@ -21,6 +21,9 @@ public abstract class CreateTapRequest {
     public abstract UUID location();
 
     @Nullable
+    public abstract UUID floor();
+
+    @Nullable
     public abstract Double latitude();
 
     @Nullable
@@ -30,12 +33,14 @@ public abstract class CreateTapRequest {
     public static CreateTapRequest create(@JsonProperty("name") String name,
                                           @JsonProperty("description") String description,
                                           @JsonProperty("location") UUID location,
+                                          @JsonProperty("floor") UUID floor,
                                           @JsonProperty("latitude") Double latitude,
                                           @JsonProperty("longitude") Double longitude) {
         return builder()
                 .name(name)
                 .description(description)
                 .location(location)
+                .floor(floor)
                 .latitude(latitude)
                 .longitude(longitude)
                 .build();
@@ -52,6 +57,8 @@ public abstract class CreateTapRequest {
         public abstract Builder description(String description);
 
         public abstract Builder location(UUID location);
+
+        public abstract Builder floor(UUID floor);
 
         public abstract Builder latitude(Double latitude);
 

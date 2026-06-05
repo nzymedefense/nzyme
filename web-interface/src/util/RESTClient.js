@@ -57,7 +57,6 @@ const RESTClient = {
             toast.error('REST call failed. (HTTP ' + error.response.status + ')')
           }
         } else {
-          console.log("REST call error: " + error);
           toast.error('REST call failed. No response. Is nzyme running?')
         }
       })

@@ -23,6 +23,9 @@ public abstract class UpdateTapRequest {
     public abstract UUID location();
 
     @Nullable
+    public abstract UUID floor();
+
+    @Nullable
     @Min(-90) @Max(90)
     public abstract Double latitude();
 
@@ -34,12 +37,14 @@ public abstract class UpdateTapRequest {
     public static UpdateTapRequest create(@JsonProperty("name") String name,
                                           @JsonProperty("description") String description,
                                           @JsonProperty("location") UUID location,
+                                          @JsonProperty("floor") UUID floor,
                                           @JsonProperty("latitude") Double latitude,
                                           @JsonProperty("longitude") Double longitude) {
         return builder()
                 .name(name)
                 .description(description)
                 .location(location)
+                .floor(floor)
                 .latitude(latitude)
                 .longitude(longitude)
                 .build();
@@ -56,6 +61,8 @@ public abstract class UpdateTapRequest {
         public abstract Builder description(String description);
 
         public abstract Builder location(UUID location);
+
+        public abstract Builder floor(UUID floor);
 
         public abstract Builder latitude(Double latitude);
 

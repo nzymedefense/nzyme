@@ -919,6 +919,7 @@ public class AuthenticationService {
                                         String name,
                                         String description,
                                         @Nullable UUID location,
+                                        @Nullable UUID floor,
                                         @Nullable Double latitude,
                                         @Nullable Double longitude) {
         String encryptedSecret;
@@ -930,9 +931,10 @@ public class AuthenticationService {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO taps(uuid, organization_id, tenant_id, secret, name, " +
-                                "description, location_uuid, latitude, longitude, deleted, created_at, updated_at) " +
-                                "VALUES(:uuid, :organization_id, :tenant_id, :secret, :name, :description, " +
-                                ":location_uuid, :latitude, :longitude, false, :created_at, :updated_at) RETURNING *")
+                                "description, location_uuid, floor_uuid, latitude, longitude, deleted, created_at, " +
+                                "updated_at) VALUES(:uuid, :organization_id, :tenant_id, :secret, :name, " +
+                                ":description, :location_uuid, :floor_uuid, :latitude, :longitude, false, " +
+                                ":created_at, :updated_at) RETURNING *")
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -940,6 +942,7 @@ public class AuthenticationService {
                         .bind("name", name)
                         .bind("description", description)
                         .bind("location_uuid", location)
+                        .bind("floor_uuid", floor)
                         .bind("latitude", latitude)
                         .bind("longitude", longitude)
                         .bind("created_at", DateTime.now())
@@ -1032,15 +1035,18 @@ public class AuthenticationService {
                         String name,
                         String description,
                         @Nullable UUID location,
+                        @Nullable UUID floor,
                         @Nullable Double latitude,
                         @Nullable Double longitude) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE taps SET name = :name, description = :description, " +
-                                "location_uuid = :location_uuid, latitude = :latitude, longitude = :longitude, updated_at = NOW() " +
+                                "location_uuid = :location_uuid, floor_uuid = :floor_uuid, latitude = :latitude, " +
+                                "longitude = :longitude, updated_at = NOW() " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND uuid = :uuid")
                         .bind("name", name)
                         .bind("description", description)
                         .bind("location_uuid", location)
+                        .bind("floor_uuid", floor)
                         .bind("latitude", latitude)
                         .bind("longitude", longitude)
                         .bind("organization_id", organizationId)

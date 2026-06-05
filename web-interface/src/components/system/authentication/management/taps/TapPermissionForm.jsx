@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import LatLonMap from "../../../../shared/LatLonMap";
 import LatitudeLongitude from "../../../../shared/LatitudeLongitude";
 import LocationSelector from "../../../../shared/locations/LocationSelector";
+import FloorSelector from "../../../../shared/locations/FloorSelector";
 
 function TapPermissionForm(props) {
 
@@ -13,6 +14,7 @@ function TapPermissionForm(props) {
   const [description, setDescription] = useState(props.description ? props.description : "");
 
   const [location, setLocation] = useState(props.location ? props.location : "");
+  const [floor, setFloor] = useState(props.floor ? props.floor : "");
 
   const [longitude, setLongitude] = useState(props.longitude ? props.longitude : null);
   const [latitude, setLatitude] = useState(props.latitude ? props.latitude : null);
@@ -27,14 +29,23 @@ function TapPermissionForm(props) {
 
   const submit = function(e) {
     e.preventDefault();
-    onClick(name, description, location, latitude, longitude);
+    onClick(name, description, location, floor, latitude, longitude);
   }
 
   const onLocationSelected = (location) => {
+    setFloor(null);
     if (!location) {
       setLocation(null);
     } else {
       setLocation(location);
+    }
+  }
+
+  const onFloorSelected = (floor) => {
+    if (!floor) {
+      setFloor(null);
+    } else {
+      setFloor(floor);
     }
   }
 
@@ -60,9 +71,8 @@ function TapPermissionForm(props) {
               <h3>Tap Location <small>Optional</small></h3>
 
               <div className="mt-3">
-                <h4>Location</h4>
-
                 <LocationSelector location={location} onLocationSelected={onLocationSelected} />
+                <FloorSelector locationId={location} floor={floor} onFloorSelected={onFloorSelected} />
               </div>
 
               <div className="mt-3">

@@ -1669,6 +1669,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 req.name(),
                 req.description(),
                 req.location(),
+                req.floor(),
                 req.latitude(),
                 req.longitude()
         );
@@ -1695,7 +1696,15 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         nzyme.getAuthenticationService().editTap(
-                organizationId, tenantId, tapId, req.name(), req.description(), req.location(), req.latitude(), req.longitude()
+                organizationId,
+                tenantId,
+                tapId,
+                req.name(),
+                req.description(),
+                req.location(),
+                req.floor(),
+                req.latitude(),
+                req.longitude()
         );
 
         return Response.ok().build();

@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import LocationsService from "../../../services/LocationsService";
 import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 import LoadingSpinner from "../../misc/LoadingSpinner";
+import {toast} from "react-toastify";
 
 const locationsService = new LocationsService();
 
@@ -14,8 +15,9 @@ export default function LocationSelector({location, onLocationSelected}) {
   const [selected, setSelected] = useState(location ? location : "");
 
   useEffect(() => {
+    setLocations(null);
     locationsService.findAll(organizationId, tenantId, setLocations)
-  }, []);
+  }, [organizationId, tenantId]);
 
   if (locations === null) {
     return <LoadingSpinner />
@@ -26,14 +28,19 @@ export default function LocationSelector({location, onLocationSelected}) {
   }
 
   return (
-    <select className="form-select"
-            value={selected}
-            onChange={(e) => {e.preventDefault(); onLocationSelected(e.target.value); setSelected(e.target.value);}}>
-      <option value="">Select a tap location</option>
-      {locations.map((location, i) => {
-        return <option value={location.id} key={i}>{location.name}</option>
-      })}
-    </select>
+    <>
+      <label htmlFor="floor-select" className="form-label">Location <small>Optional</small></label>
+
+      <select className="form-select"
+              id="location-select"
+              value={selected}
+              onChange={(e) => {e.preventDefault(); onLocationSelected(e.target.value); setSelected(e.target.value);}}>
+        <option value="">No location assigned</option>
+        {locations.map((location, i) => {
+          return <option value={location.id} key={i}>{location.name}</option>
+        })}
+      </select>
+    </>
   )
 
 }
