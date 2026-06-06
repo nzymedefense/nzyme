@@ -6,7 +6,7 @@ use strum::IntoEnumIterator;
 use strum_macros::Display;
 use statrs::statistics::{Distribution, OrderStatistics, Data};
 
-use log::{warn, error};
+use log::{warn, error, info};
 use crate::log_monitor::{LogCounts, LogMonitor};
 use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
 
@@ -14,10 +14,20 @@ use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, G
 pub struct TotalWithAverage {
     pub avg: u128,
     avg_tmp: u128,
-    pub total: u128
+    pub total: u128,
+    last_raw: Option<u32>
 }
 
 impl TotalWithAverage {
+
+    pub fn accumulate(&mut self, raw: u32) {
+        let delta = match self.last_raw {
+            None => 0,
+            Some(prev) => raw.saturating_sub(prev),
+        };
+        self.last_raw = Some(raw);
+        self.increment(delta);
+    }
 
     pub fn increment(&mut self, x: u32) {
         self.total += u128::from(x);
@@ -28,7 +38,6 @@ impl TotalWithAverage {
         self.avg = self.avg_tmp;
         self.avg_tmp = 0;
     }
-
 }
 
 #[derive(Debug)]
@@ -88,8 +97,8 @@ pub struct Capture {
     pub interface_name: String,
     pub is_running: bool,
     pub received: u32,
-    pub dropped_buffer: u32,
-    pub dropped_interface: u32
+    pub dropped_buffer: TotalWithAverage,
+    pub dropped_interface: TotalWithAverage
 }
 
 #[derive(Clone)]
@@ -128,6 +137,11 @@ impl Metrics {
 
     pub fn calculate_averages(&mut self) {
         self.processed_bytes.calculate_averages();
+
+        for capture in self.captures.values_mut() {
+            capture.dropped_buffer.calculate_averages();
+            capture.dropped_interface.calculate_averages();
+        }
 
         for channel in WiredChannelName::iter() {
             let c = self.select_channel(&channel.to_string());
@@ -168,8 +182,8 @@ impl Metrics {
                 interface_name: sname,
                 is_running: false,
                 received: 0,
-                dropped_buffer: 0,
-                dropped_interface: 0
+                dropped_buffer: TotalWithAverage::default(),
+                dropped_interface: TotalWithAverage::default()
             });
         }
     }
@@ -180,44 +194,35 @@ impl Metrics {
                           dropped_buffer: u32,
                           dropped_interface: u32,
                           increased_received: bool) {
-        if self.captures.contains_key(name) {
-           let previous = self.captures.get(name).unwrap();
+        match self.captures.get_mut(name) {
+            Some(capture) => {
+                capture.is_running = is_running;
 
-            let received = match increased_received {
-                true => previous.received + 1,
-                false => previous.received
-            };
+                if increased_received {
+                    capture.received = capture.received + 1;
+                }
 
-           // Update capture.
-           self.captures.insert(name.to_string(), Capture {
-                capture_type: previous.capture_type.clone(),
-                interface_name: previous.interface_name.clone(),
-                is_running,
-                received,
-                dropped_buffer,
-                dropped_interface
-            });
-        } else {
-            error!("Capture [{}] not found during attempted metric update. Ignoring.", name);
+                if dropped_buffer > 0 {
+                    capture.dropped_buffer.accumulate(dropped_buffer);
+                }
+
+                if dropped_interface > 0 {
+                    capture.dropped_interface.accumulate(dropped_interface);
+                }
+            },
+            None => {
+                error!("Capture [{}] not found during attempted metric update. Ignoring.", name);
+            }
         }
     }
 
     pub fn mark_capture_as_failed(&mut self, name: &str) {
-        if self.captures.contains_key(name) {
-            let previous = self.captures.get(name).unwrap();
- 
-            // Update capture.
-            self.captures.insert(name.to_string(), Capture {
-                 capture_type: previous.capture_type.clone(),
-                 interface_name: previous.interface_name.clone(),
-                 is_running: false,
-                 received: previous.received,
-                 dropped_buffer: previous.dropped_buffer,
-                 dropped_interface: previous.dropped_interface
-             });
-         } else {
-            error!("Capture [{}] not found during attempted metric update. Ignoring.", name);
-         }
+        match self.captures.get_mut(name) {
+            Some(capture) => capture.is_running = false,
+            None => {
+                error!("Capture [{}] not found during attempted metric update. Ignoring.", name);
+            }
+        }
     }
 
     pub fn select_channel(&mut self, channel: &str) -> &mut ChannelUtilization {

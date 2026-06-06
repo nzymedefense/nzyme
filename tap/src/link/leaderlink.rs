@@ -209,14 +209,14 @@ impl Leaderlink {
                     );
                 }
 
-                for capture in metrics.get_captures().into_values() {
+                for capture in metrics.get_captures().values() {
                     captures.push(CaptureReport {
                         capture_type: capture.capture_type.to_string(),
-                        interface_name: capture.interface_name,
+                        interface_name: capture.interface_name.clone(),
                         is_running: capture.is_running,
                         received: capture.received,
-                        dropped_buffer: capture.dropped_buffer,
-                        dropped_interface: capture.dropped_interface
+                        dropped_buffer: capture.dropped_buffer.avg as u32,
+                        dropped_interface: capture.dropped_interface.avg as u32
                     });
                 }
 
