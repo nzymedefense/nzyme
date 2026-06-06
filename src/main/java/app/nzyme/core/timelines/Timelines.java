@@ -64,6 +64,21 @@ public class Timelines {
                 ? ""
                 : " AND event_type NOT IN (<excluded_event_types>) ";
 
+        boolean excludeGone = excludedEventTypes.stream()
+                .anyMatch("GONE"::equalsIgnoreCase);
+
+        String goneCount = excludeGone
+                ? ""
+                : "  + COUNT(*) FILTER ( " +
+                "        WHERE prev_timestamp IS NOT NULL " +
+                "          AND timestamp - prev_timestamp > make_interval(mins => :gap_threshold_minutes) " +
+                "    ) " +
+                "  + CASE " +
+                "        WHEN MAX(timestamp) IS NOT NULL " +
+                "         AND LEAST(:tr_to::timestamptz, now()) - MAX(timestamp) > make_interval(mins => :gap_threshold_minutes) " +
+                "        THEN 1 ELSE 0 " +
+                "    END ";
+
         return nzyme.getDatabase().withHandle(handle -> {
             var query = handle.createQuery(
                             "WITH ordered AS ( " +
@@ -76,15 +91,8 @@ public class Timelines {
                                     ") " +
                                     "SELECT " +
                                     "    COUNT(*) FILTER (WHERE event_type <> 'MARK'" + eventTypeExclusion + ") " +
-                                    "  + COUNT(*) FILTER ( " +
-                                    "        WHERE prev_timestamp IS NOT NULL " +
-                                    "          AND timestamp - prev_timestamp > make_interval(mins => :gap_threshold_minutes) " +
-                                    "    ) " +
-                                    "  + CASE " +
-                                    "        WHEN MAX(timestamp) IS NOT NULL " +
-                                    "         AND LEAST(:tr_to::timestamptz, now()) - MAX(timestamp) > make_interval(mins => :gap_threshold_minutes) " +
-                                    "        THEN 1 ELSE 0 " +
-                                    "    END AS total " +
+                                    goneCount +
+                                    "    AS total " +
                                     "FROM ordered")
                     .bind("organization_id", organizationId)
                     .bind("tenant_id", tenantId)
@@ -114,6 +122,14 @@ public class Timelines {
         String eventTypeExclusion = excludedEventTypes.isEmpty()
                 ? ""
                 : " AND event_type NOT IN (<excluded_event_types>) ";
+
+        boolean excludeGone = excludedEventTypes.stream()
+                .anyMatch("GONE"::equalsIgnoreCase);
+
+        String goneUnion = excludeGone
+                ? ""
+                : " UNION ALL SELECT * FROM gone_events " +
+                " UNION ALL SELECT * FROM trailing_gap ";
 
         return nzyme.getDatabase().withHandle(handle -> {
             var query = handle.createQuery(
@@ -173,10 +189,7 @@ public class Timelines {
                                     "       AND LEAST(:tr_to::timestamptz, now()) - MAX(timestamp) > make_interval(mins => :gap_threshold_minutes) " +
                                     ") " +
                                     "SELECT * FROM real_events " +
-                                    "UNION ALL " +
-                                    "SELECT * FROM gone_events " +
-                                    "UNION ALL " +
-                                    "SELECT * FROM trailing_gap " +
+                                    goneUnion +
                                     "ORDER BY timestamp DESC " +
                                     "LIMIT :limit OFFSET :offset")
                     .bind("organization_id", organizationId)

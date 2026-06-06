@@ -33,6 +33,7 @@ export default function BSSIDTimelinePage() {
   const [revision, setRevision] = useState(new Date());
 
   const [filters, setFilters] = useState([
+    {name: "Gone/Disappeared", value: "GONE", include: true},
     {name: "SSID Change", value: "DOT11_BSSID_SSID_DIFF", include: true},
     {name: "Fingerprint Change", value: "DOT11_BSSID_FINGERPRINT_DIFF", include: true},
     {name: "Strongest Tap", value: "DOT11_BSSID_STRONGEST_TAP", include: true}
