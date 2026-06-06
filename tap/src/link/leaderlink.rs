@@ -209,7 +209,7 @@ impl Leaderlink {
                     );
                 }
 
-                for mut capture in metrics.get_captures().into_values() {
+                for capture in metrics.get_captures().into_values() {
                     captures.push(CaptureReport {
                         capture_type: capture.capture_type.to_string(),
                         interface_name: capture.interface_name,
@@ -218,10 +218,6 @@ impl Leaderlink {
                         dropped_buffer: capture.dropped_buffer,
                         dropped_interface: capture.dropped_interface
                     });
-
-                    // We reset drops to 0 because we want to only report new drops, not totals.
-                    capture.dropped_buffer = 0;
-                    capture.dropped_interface = 0;
                 }
 
                 gauges_long = metrics.get_gauges_long();
