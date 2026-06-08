@@ -18,6 +18,7 @@ import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
 import app.nzyme.core.rest.responses.system.database.*;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
+import app.nzyme.core.timelines.TimelinesRegistryKeys;
 import app.nzyme.core.uav.UavRegistryKeys;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -28,7 +29,6 @@ import com.google.common.collect.Maps;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -289,6 +289,7 @@ public class DatabaseResource extends UserAuthenticatedResource {
             case ETHERNET_DNS -> key = EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.key();
             case UAV -> key = UavRegistryKeys.UAV_RETENTION_TIME_DAYS.key();
             case GNSS -> key = GNSSRegistryKeys.GNSS_RETENTION_TIME_DAYS.key();
+            case TIMELINE_EVENTS_DOT11 -> key = TimelinesRegistryKeys.DOT11_EVENTS_RETENTION_TIME_DAYS.key();
         }
 
         nzyme.getDatabaseCoreRegistry()

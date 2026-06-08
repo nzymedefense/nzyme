@@ -5,6 +5,7 @@ import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
 import app.nzyme.core.gnss.GNSSRegistryKeys;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
+import app.nzyme.core.timelines.TimelinesRegistryKeys;
 import app.nzyme.core.uav.UavRegistryKeys;
 import jakarta.validation.constraints.NotNull;
 
@@ -42,6 +43,10 @@ public class DatabaseTools {
             case GNSS -> {
                 key = GNSSRegistryKeys.GNSS_RETENTION_TIME_DAYS.key();
                 defaultValue = GNSSRegistryKeys.GNSS_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
+            }
+            case TIMELINE_EVENTS_DOT11 -> {
+                key = TimelinesRegistryKeys.DOT11_EVENTS_RETENTION_TIME_DAYS.key();
+                defaultValue = TimelinesRegistryKeys.DOT11_EVENTS_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
             }
         }
 

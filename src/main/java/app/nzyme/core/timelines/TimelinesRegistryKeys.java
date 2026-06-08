@@ -1,7 +1,9 @@
 package app.nzyme.core.timelines;
 
 import app.nzyme.plugin.RegistryKey;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraint;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 public class TimelinesRegistryKeys {
@@ -10,6 +12,16 @@ public class TimelinesRegistryKeys {
             "timelines_dot11_bssids_last_execution",
             Optional.empty(),
             Optional.empty(),
+            false
+    );
+
+
+    public static final RegistryKey DOT11_EVENTS_RETENTION_TIME_DAYS = RegistryKey.create(
+            "timelines_dot11_events_retention_time_days",
+            Optional.of(new ArrayList<>() {{
+                add(ConfigurationEntryConstraint.createNumberRangeConstraint(1, Integer.MAX_VALUE));
+            }}),
+            Optional.of("365"),
             false
     );
 
