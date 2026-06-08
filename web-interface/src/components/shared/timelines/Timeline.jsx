@@ -53,7 +53,8 @@ export default function Timeline({events, addressLastSeen, page, setPage, perPag
         </span>
 
         <span className="pull-right text-muted">
-          Events are calculated every 5 minutes.
+          Events are calculated every 5 minutes. Event retention time
+          is {numeral(events.retention_days).format('0,0')} days.
         </span>
       </div>
 

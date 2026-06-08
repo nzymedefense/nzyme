@@ -8,14 +8,18 @@ import java.util.List;
 @AutoValue
 public abstract class TimelineResponse {
 
+    @JsonProperty("retention_days")
+    public abstract int retentionDays();
+
     @JsonProperty("total")
     public abstract long total();
 
     @JsonProperty("events")
     public abstract List<TimelineEventDetailsResponse> events();
 
-    public static TimelineResponse create(long total, List<TimelineEventDetailsResponse> events) {
+    public static TimelineResponse create(int retentionDays, long total, List<TimelineEventDetailsResponse> events) {
         return builder()
+                .retentionDays(retentionDays)
                 .total(total)
                 .events(events)
                 .build();
@@ -27,6 +31,8 @@ public abstract class TimelineResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder retentionDays(int retentionDays);
+
         public abstract Builder total(long total);
 
         public abstract Builder events(List<TimelineEventDetailsResponse> events);

@@ -6,6 +6,7 @@ import app.nzyme.core.rest.responses.timelines.TimelineEventDetailsResponse;
 import app.nzyme.core.rest.responses.timelines.TimelineResponse;
 import app.nzyme.core.timelines.TimelineAddressType;
 import app.nzyme.core.timelines.Timelines;
+import app.nzyme.core.timelines.TimelinesRegistryKeys;
 import app.nzyme.core.timelines.db.TimelineEventEntry;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -80,7 +81,12 @@ public class TimelinesResource extends UserAuthenticatedResource {
             ));
         }
 
-        return Response.ok(TimelineResponse.create(total, events)).build();
+        @SuppressWarnings("OptionalGetWithoutIsPresent")
+        int retentionTimeDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                .getValue(TimelinesRegistryKeys.DOT11_EVENTS_RETENTION_TIME_DAYS.key(), organizationId, tenantId)
+                .orElse(TimelinesRegistryKeys.DOT11_EVENTS_RETENTION_TIME_DAYS.defaultValue().get()));
+
+        return Response.ok(TimelineResponse.create(retentionTimeDays, total, events)).build();
     }
 
 }
