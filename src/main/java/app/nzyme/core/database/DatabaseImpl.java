@@ -492,7 +492,7 @@ public class DatabaseImpl implements Database {
                 tables.add(new DataTableInformation(
                         "dot11_timeline_events",
                         "SELECT COUNT(*) FROM dot11_timeline_events e WHERE (e.organization_id, e.tenant_id) IN (SELECT t.organization_id, t.tenant_id FROM taps t WHERE t.uuid IN (<taps>))",
-                        "DELETE FROM dot11_timeline_events WHERE (organization_id, tenant_id) IN (SELECT t.organization_id, t.tenant_id FROM taps t WHERE t.uuid IN (<taps>))"
+                        "DELETE FROM dot11_timeline_events WHERE (organization_id, tenant_id) IN (SELECT t.organization_id, t.tenant_id FROM taps t WHERE t.uuid IN (<taps>)) AND timestamp < :since"
                 ));
             }
         }
