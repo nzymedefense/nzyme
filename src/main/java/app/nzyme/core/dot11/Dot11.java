@@ -1001,7 +1001,7 @@ public class Dot11 {
         );
     }
 
-    public List<String> findSSIDsAdvertisedByBSSID(String bssid, List<UUID> taps) {
+    public List<String> findSSIDsAdvertisedByBSSID(String bssid, List<UUID> taps, TimeRange timeRange) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -1009,9 +1009,11 @@ public class Dot11 {
         Optional<String[]> x = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT ARRAY_AGG(DISTINCT(s.ssid)) " +
                                 "FROM dot11_ssids AS s " +
-                                "WHERE s.created_at > (NOW() - INTERVAL '3 days') AND " +
+                                "WHERE s.created_at >= :tr_from AND s.created_at <= :tr_to AND " +
                                 "s.bssid = :bssid AND s.tap_uuid IN (<taps>)")
                         .bind("bssid", bssid)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(String[].class)
                         .findOne()
@@ -1022,9 +1024,7 @@ public class Dot11 {
         }
 
         List<String> result = Lists.newArrayList();
-        for (String s : x.get()) {
-            result.add(s);
-        }
+        result.addAll(Arrays.asList(x.get()));
 
         return result;
     }
@@ -1079,7 +1079,7 @@ public class Dot11 {
                         authenticatedUser.getTenantId()
                 );
 
-                List<String> advertisedSSIDs = findSSIDsAdvertisedByBSSID(bssid, taps);
+                List<String> advertisedSSIDs = findSSIDsAdvertisedByBSSID(bssid, taps, TimeRangeFactory.oneDay());
 
                 connectedBSSIDs.add(ConnectedBSSID.create(
                         Dot11MacAddressResponse.create(

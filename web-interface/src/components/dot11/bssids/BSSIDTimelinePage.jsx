@@ -13,6 +13,8 @@ import usePageTitle from "../../../util/UsePageTitle";
 import Timeline from "../../shared/timelines/Timeline";
 import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
 import TimelineFilters from "../../shared/timelines/TimelineFilters";
+import TimelineTapTable from "../../shared/timelines/TimelineTapTable";
+import TruncatedList from "../../shared/TruncatedList";
 
 const dot11Service = new Dot11Service();
 const timelinesService = new TimelinesService();
@@ -118,6 +120,46 @@ export default function BSSIDTimelinePage() {
                                      setTimeRange={setTimeRange} />
 
               <TimelineFilters onFilterChange={updateFilter} filters={filters} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Taps" slim={true} />
+
+              <p>The following taps observed the BSSID in the selected timeframe:</p>
+
+              <TimelineTapTable taps={events.taps} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-5">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="SSIDs" slim={true} />
+
+              <p>SSIDs advertised by the BSSID in the selected timeframe:</p>
+
+              <TruncatedList items={events.ssids} limit={5} />
+            </div>
+          </div>
+        </div>
+
+        <div className="col-7">
+          <div className="card">
+            <div className="card-body">
+              <CardTitleWithControls title="Fingerprints" slim={true} />
+
+              <p>Fingerprints of the BSSID in the selected timeframe:</p>
+
+              <TruncatedList items={events.fingerprints} limit={5} />
             </div>
           </div>
         </div>
