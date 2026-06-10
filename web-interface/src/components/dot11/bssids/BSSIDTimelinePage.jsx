@@ -15,6 +15,7 @@ import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelecto
 import TimelineFilters from "../../shared/timelines/TimelineFilters";
 import TimelineTapTable from "../../shared/timelines/TimelineTapTable";
 import TruncatedList from "../../shared/TruncatedList";
+import {toast} from "react-toastify";
 
 const dot11Service = new Dot11Service();
 const timelinesService = new TimelinesService();
@@ -33,6 +34,8 @@ export default function BSSIDTimelinePage() {
   const perPage = 50;
 
   const [revision, setRevision] = useState(new Date());
+
+  const [notFound, setNotFound] = useState(false);
 
   const [filters, setFilters] = useState([
     {name: "Gone/Disappeared", value: "GONE", include: true},
@@ -53,7 +56,16 @@ export default function BSSIDTimelinePage() {
 
   useEffect(() => {
     setBSSID(null);
-    dot11Service.findBSSID(bssidParam, "*", setBSSID);
+    dot11Service.findBSSID(bssidParam, "*", (response) => {
+      setNotFound(false);
+      setBSSID(response.data)
+    }, (error) => {
+      setNotFound(true);
+      if (error && (error.response.status === 404 || error.response.status === 400)) {
+      } else {
+        toast.error("Could not fetch BSSID.")
+      }
+    });
   }, [bssidParam]);
 
   useEffect(() => {
@@ -74,6 +86,12 @@ export default function BSSIDTimelinePage() {
       );
     }
   }, [bssid, organizationId, tenantId, timeRange, filters, perPage, page, revision])
+
+  if (notFound) {
+    return (
+      <div className="alert alert-warning">BSSID not found. It may have been retention-cleaned.</div>
+    )
+  }
 
   if (!bssid || !events) {
     return <LoadingSpinner />

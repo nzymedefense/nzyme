@@ -17,6 +17,7 @@ import app.nzyme.core.shared.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.Tools;
 import app.nzyme.core.util.filters.Filters;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -132,7 +133,8 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
-        Optional<BSSIDSummary> bssidResult = nzyme.getDot11().findBSSID(bssidParam, Integer.MAX_VALUE, tapUuids);
+        Optional<BSSIDSummary> bssidResult = nzyme.getDot11()
+                .findBSSID(bssidParam, TimeRangeFactory.allTime(), tapUuids);
 
         if (bssidResult.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();

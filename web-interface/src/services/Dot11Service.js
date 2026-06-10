@@ -8,13 +8,11 @@ class Dot11Service {
     })
   }
 
-  findBSSID(bssid, taps, setBSSID) {
+  findBSSID(bssid, taps, successCallback, errorCallback = undefined) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get("/dot11/networks/bssids/show/" + bssid, { taps: tapsList },
-        function (response) {
-          setBSSID(response.data)
-    })
+        successCallback, errorCallback)
   }
 
   getBSSIDAdvertisementHistogram(bssid, timeRange, taps, setHistogram) {

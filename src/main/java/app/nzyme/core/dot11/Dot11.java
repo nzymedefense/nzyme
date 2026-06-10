@@ -243,7 +243,7 @@ public class Dot11 {
         );
     }
 
-    public Optional<BSSIDSummary> findBSSID(String bssid, int minutes, List<UUID> taps) {
+    public Optional<BSSIDSummary> findBSSID(String bssid, TimeRange timeRange, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
                                 "MIN(b.created_at) AS first_seen, MAX(b.created_at) AS last_seen, " +
@@ -264,10 +264,11 @@ public class Dot11 {
                                 "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS(s.security_settings) AS security_elem ON TRUE " +
                                 "LEFT JOIN LATERAL JSONB_ARRAY_ELEMENTS_TEXT(security_elem->'protocols') AS protocol_elem ON TRUE " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
-                                "WHERE b.bssid = :bssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
-                                "GROUP BY b.bssid")
+                                "WHERE b.bssid = :bssid AND b.created_at >= :tr_from AND b.created_at <= :tr_to " +
+                                "AND b.tap_uuid IN (<taps>) GROUP BY b.bssid")
                         .bind("bssid", bssid)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .mapTo(BSSIDSummary.class)
                         .findOne()

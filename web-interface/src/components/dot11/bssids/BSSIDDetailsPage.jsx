@@ -19,11 +19,12 @@ import BSSIDSignalWaterfallChart from "./BSSIDSignalWaterfallChart";
 import ReadOnlyTrilaterationResultFloorPlanWrapper
   from "../../shared/floorplan/ReadOnlyTrilaterationResultFloorPlanWrapper";
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
-import {Presets, Relative} from "../../shared/timerange/TimeRange";
+import {Presets} from "../../shared/timerange/TimeRange";
 import ChannelSelector from "../util/ChannelSelector";
 import usePageTitle from "../../../util/UsePageTitle";
 import {BSSID_MENU_ITEMS} from "./BSSIDMenuItems";
 import SectionMenuBar from "../../shared/SectionMenuBar";
+import {toast} from "react-toastify";
 
 const dot11Service = new Dot11Service();
 
@@ -37,7 +38,7 @@ function BSSIDDetailsPage() {
   const [bssid, setBSSID] = useState(null);
   const [ssids, setSSIDs] = useState(null);
 
-  const [ssidsTimeRange, setSsidsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [ssidsTimeRange, setSsidsTimeRange] = useState(Presets.ALL_TIME);
   const [signalWaterfallTimeRange, setSignalWaterfallTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [advertisementsBeaconTimeRange, setAdvertisementsBeaconTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [advertisementsProbeRespTimeRange, setAdvertisementsProbeRespTimeRange] = useState(Presets.RELATIVE_HOURS_24);
@@ -53,30 +54,45 @@ function BSSIDDetailsPage() {
   const [trilaterationError, setTrilaterationError] = useState(null);
   const [trilaterationRevision, setTrilaterationRevision] = useState(0);
 
+  const [notFound, setNotFound] = useState(false);
+
   usePageTitle(bssid ? `BSSID: ${bssid.summary.bssid.address}` : "BSSID Details");
 
   useEffect(() => {
     setBSSID(null);
-    dot11Service.findBSSID(bssidParam, selectedTaps, setBSSID);
+    dot11Service.findBSSID(bssidParam, selectedTaps, (response) => {
+      setNotFound(false);
+      setBSSID(response.data)
+    }, (error) => {
+      setNotFound(true);
+      if (error && (error.response.status === 404 || error.response.status === 400)) {
+      } else {
+        toast.error("Could not fetch BSSID.")
+      }
+    });
   }, [bssidParam, selectedTaps]);
 
   useEffect(() => {
-    setSSIDs(null);
-    dot11Service.findSSIDsOfBSSID(bssidParam, ssidsTimeRange, selectedTaps, (ssids) => setSSIDs(ssids));
-  }, [ssidsTimeRange, selectedTaps]);
+    if (bssid) {
+      setSSIDs(null);
+      dot11Service.findSSIDsOfBSSID(bssidParam, ssidsTimeRange, selectedTaps, (ssids) => setSSIDs(ssids));
+    }
+  }, [ssidsTimeRange, selectedTaps, bssid, notFound]);
 
   useEffect(() => {
-    setTrilaterationResult(null);
-    if (trilaterationFloor == null) {
-      dot11Service.findBSSIDLocation(
+    if (bssid) {
+      setTrilaterationResult(null);
+      if (trilaterationFloor == null) {
+        dot11Service.findBSSIDLocation(
           bssidParam, null, null, trilaterationTimeRange, setTrilaterationResult, setTrilaterationError
-      );
-    } else {
-      dot11Service.findBSSIDLocation(
+        );
+      } else {
+        dot11Service.findBSSIDLocation(
           bssidParam, trilaterationFloor.location, trilaterationFloor.floor, trilaterationTimeRange, setTrilaterationResult, setTrilaterationError
-      );
+        );
+      }
     }
-  }, [bssidParam, selectedTaps, trilaterationFloor, trilaterationRevision, trilaterationTimeRange]);
+  }, [bssidParam, selectedTaps, trilaterationFloor, trilaterationRevision, trilaterationTimeRange, bssid]);
 
   useEffect(() => {
     if (bssid) {
@@ -112,6 +128,12 @@ function BSSIDDetailsPage() {
 
   const onTrilaterationRefresh = () => {
     setTrilaterationRevision((prevRev => prevRev + 1));
+  }
+
+  if (notFound) {
+    return (
+      <div className="alert alert-warning">BSSID not found. Make sure you have the correct taps selected.</div>
+    )
   }
 
   if (!bssid) {
