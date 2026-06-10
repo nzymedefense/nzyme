@@ -33,6 +33,8 @@ import app.nzyme.core.tables.ethernet.*;
 import app.nzyme.core.tables.dot11.Dot11Table;
 import app.nzyme.core.tables.gnss.GNSSTable;
 import app.nzyme.core.tables.uav.UAVTable;
+import app.nzyme.core.timelines.TimelinesThread;
+import app.nzyme.core.timelines.tasks.Dot11BSSIDTimelineCalculationTaskHandler;
 import app.nzyme.core.uav.Uav;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -94,5 +96,8 @@ public class MetricNames {
     public static final String GNSS_ELEVATION_MASK_WRITE_TIMER = name(GNSSElevationMaskThread.class, "write-timing");
 
     public static final String MONITOR_EXECUTION_TIMER_BASE = name(MonitorExecutionTaskHandler.class, "execution-timer-");
+
+    public static final String TIMELINES_BSSIDS_TOTAL_CALCULATION_TIMER = name(Dot11BSSIDTimelineCalculationTaskHandler.class, "total-calculation-timing");
+    public static final String TIMELINES_BSSIDS_INDIVIDUAL_CALCULATION_TIMER = name(Dot11BSSIDTimelineCalculationTaskHandler.class, "individual-calculation-timing");
 
 }
