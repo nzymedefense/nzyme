@@ -1,7 +1,10 @@
 package app.nzyme.core.timelines;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.timelines.db.TimelineActivityHistogram;
+import app.nzyme.core.timelines.db.TimelineActivityHistogramBucket;
 import app.nzyme.core.timelines.db.TimelineEventEntry;
+import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
 import org.joda.time.DateTime;
 import tools.jackson.databind.ObjectMapper;
@@ -9,10 +12,7 @@ import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.datatype.joda.JodaModule;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class Timelines {
 
@@ -208,6 +208,126 @@ public class Timelines {
 
             return query.mapTo(TimelineEventEntry.class).list();
         });
+    }
+
+    public TimelineActivityHistogram getEventTypeActivityHistogram(UUID organizationId,
+                                                                   UUID tenantId,
+                                                                   TimelineAddressType addressType,
+                                                                   String address,
+                                                                   TimeRange timeRange,
+                                                                   List<String> excludedEventTypes,
+                                                                   int gapThresholdMinutes,
+                                                                   String timeZone) {
+        Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
+        String granularity = bucketing.type().getDateTruncName();
+
+        String eventTypeExclusion = excludedEventTypes.isEmpty()
+                ? ""
+                : " AND event_type NOT IN (<excluded_event_types>) ";
+
+        boolean excludeGone = excludedEventTypes.stream()
+                .anyMatch("GONE"::equalsIgnoreCase);
+
+        String goneUnion = excludeGone
+                ? ""
+                : " UNION ALL SELECT * FROM gone_events " +
+                " UNION ALL SELECT * FROM trailing_gap ";
+
+        LinkedHashMap<DateTime, Map<String, Long>> byBucket = nzyme.getDatabase().withHandle(handle -> {
+            var query = handle.createQuery(
+                            "WITH ordered AS ( " +
+                                    "    SELECT event_type, timestamp, " +
+                                    "           LAG(timestamp) OVER (ORDER BY timestamp) AS prev_timestamp " +
+                                    "    FROM dot11_timeline_events " +
+                                    "    WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                    "      AND address_type = :address_type AND address = :address " +
+                                    "      AND timestamp >= :tr_from AND timestamp <= :tr_to " +
+                                    "), " +
+                                    "real_events AS ( " +
+                                    "    SELECT date_trunc(:granularity, timestamp AT TIME ZONE :tz) AT TIME ZONE :tz AS bucket, event_type " +
+                                    "    FROM ordered " +
+                                    "    WHERE event_type <> 'MARK'" + eventTypeExclusion + " " +
+                                    "), " +
+                                    "gone_events AS ( " +
+                                    "    SELECT date_trunc(:granularity, prev_timestamp AT TIME ZONE :tz) AT TIME ZONE :tz AS bucket, 'GONE' AS event_type " +
+                                    "    FROM ordered " +
+                                    "    WHERE prev_timestamp IS NOT NULL " +
+                                    "      AND timestamp - prev_timestamp > make_interval(mins => :gap_threshold_minutes) " +
+                                    "), " +
+                                    "trailing_gap AS ( " +
+                                    "    SELECT date_trunc(:granularity, MAX(timestamp) AT TIME ZONE :tz) AT TIME ZONE :tz AS bucket, 'GONE' AS event_type " +
+                                    "    FROM ordered " +
+                                    "    HAVING MAX(timestamp) IS NOT NULL " +
+                                    "       AND LEAST(:tr_to::timestamptz, now()) - MAX(timestamp) > make_interval(mins => :gap_threshold_minutes) " +
+                                    "), " +
+                                    "combined AS ( " +
+                                    "    SELECT * FROM real_events " +
+                                    goneUnion +
+                                    ") " +
+                                    "SELECT bucket, event_type, COUNT(*) AS count " +
+                                    "FROM combined " +
+                                    "GROUP BY bucket, event_type " +
+                                    "ORDER BY bucket")
+                    .bind("organization_id", organizationId)
+                    .bind("tenant_id", tenantId)
+                    .bind("address_type", addressType)
+                    .bind("address", address)
+                    .bind("tr_from", timeRange.from())
+                    .bind("tr_to", timeRange.to())
+                    .bind("granularity", granularity)
+                    .bind("tz", timeZone)
+                    .bind("gap_threshold_minutes", gapThresholdMinutes);
+
+            if (!excludedEventTypes.isEmpty()) {
+                query.bindList("excluded_event_types", excludedEventTypes);
+            }
+
+            return query.reduceRows(
+                    new LinkedHashMap<>(),
+                    (acc, row) -> {
+                        DateTime bucket = row.getColumn("bucket", DateTime.class);
+                        String eventType = row.getColumn("event_type", String.class);
+                        long count = row.getColumn("count", Long.class);
+                        acc.computeIfAbsent(bucket, k -> new HashMap<>())
+                                .merge(eventType, count, Long::sum);
+                        return acc;
+                    });
+        });
+
+        List<TimelineActivityHistogramBucket> buckets = new ArrayList<>(byBucket.size());
+        Map<String, Long> totalsByEventType = new HashMap<>();
+        long totalEvents = 0;
+
+        for (Map.Entry<DateTime, Map<String, Long>> entry : byBucket.entrySet()) {
+            Map<String, Long> counts = entry.getValue();
+            long bucketTotal = 0;
+            for (Map.Entry<String, Long> c : counts.entrySet()) {
+                bucketTotal += c.getValue();
+                totalsByEventType.merge(c.getKey(), c.getValue(), Long::sum);
+            }
+            totalEvents += bucketTotal;
+            buckets.add(TimelineActivityHistogramBucket.create(entry.getKey(), bucketTotal, counts));
+        }
+
+        DateTime resolvedTo = timeRange.isAllTime()
+                ? DateTime.now()
+                : timeRange.to();
+
+        DateTime resolvedFrom;
+        if (timeRange.isAllTime()) {
+            resolvedFrom = buckets.isEmpty() ? resolvedTo : buckets.get(0).bucket();
+        } else {
+            resolvedFrom = timeRange.from();
+        }
+
+        return TimelineActivityHistogram.create(
+                resolvedFrom,
+                resolvedTo,
+                bucketing.type(),
+                totalEvents,
+                totalsByEventType,
+                buckets
+        );
     }
 
     public Optional<TimelineEventEntry> findLatestEventOfTypeAndAddress(UUID organizationId,

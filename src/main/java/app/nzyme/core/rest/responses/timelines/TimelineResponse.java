@@ -27,7 +27,10 @@ public abstract class TimelineResponse {
     @JsonProperty("taps")
     public abstract List<TapHighLevelInformationDetailsResponse> taps();
 
-    public static TimelineResponse create(int retentionDays, long total, List<TimelineEventDetailsResponse> events, List<String> ssids, List<String> fingerprints, List<TapHighLevelInformationDetailsResponse> taps) {
+    @JsonProperty("activity_histogram")
+    public abstract TimelineActivityHistogramResponse histogram();
+
+    public static TimelineResponse create(int retentionDays, long total, List<TimelineEventDetailsResponse> events, List<String> ssids, List<String> fingerprints, List<TapHighLevelInformationDetailsResponse> taps, TimelineActivityHistogramResponse histogram) {
         return builder()
                 .retentionDays(retentionDays)
                 .total(total)
@@ -35,6 +38,7 @@ public abstract class TimelineResponse {
                 .ssids(ssids)
                 .fingerprints(fingerprints)
                 .taps(taps)
+                .histogram(histogram)
                 .build();
     }
 
@@ -55,6 +59,8 @@ public abstract class TimelineResponse {
         public abstract Builder fingerprints(List<String> fingerprints);
 
         public abstract Builder taps(List<TapHighLevelInformationDetailsResponse> taps);
+
+        public abstract Builder histogram(TimelineActivityHistogramResponse histogram);
 
         public abstract TimelineResponse build();
     }

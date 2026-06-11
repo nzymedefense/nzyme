@@ -1184,3 +1184,21 @@ input.form-control[type="file"]::file-selector-button:hover {
     background-color: #25252d;
     color: #e8e8ed;
 }
+
+.timeline-histogram {
+    --th-empty: #2a2a33;
+    --th-muted: #9a9ab0;
+    --th-faint: #6b7280;
+    --th-hover-outline: rgba(232, 232, 237, 0.85);
+}
+
+.timeline-histogram-tooltip {
+    background: #1c1c22;
+    border-color: #33333d;
+    color: #e8e8ed;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.timeline-histogram-tooltip-row-count {
+    color: #c4c4d4;
+}

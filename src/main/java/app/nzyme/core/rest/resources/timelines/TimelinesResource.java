@@ -6,6 +6,8 @@ import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.RestTools;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
+import app.nzyme.core.rest.responses.timelines.TimelineActivityHistogramBucketResponse;
+import app.nzyme.core.rest.responses.timelines.TimelineActivityHistogramResponse;
 import app.nzyme.core.rest.responses.timelines.TimelineEventDetailsResponse;
 import app.nzyme.core.rest.responses.timelines.TimelineResponse;
 import app.nzyme.core.shared.db.TapBasedSignalStrengthResult;
@@ -13,6 +15,8 @@ import app.nzyme.core.taps.Tap;
 import app.nzyme.core.timelines.TimelineAddressType;
 import app.nzyme.core.timelines.Timelines;
 import app.nzyme.core.timelines.TimelinesRegistryKeys;
+import app.nzyme.core.timelines.db.TimelineActivityHistogram;
+import app.nzyme.core.timelines.db.TimelineActivityHistogramBucket;
 import app.nzyme.core.timelines.db.TimelineEventEntry;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.Tools;
@@ -32,6 +36,7 @@ import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.datatype.joda.JodaModule;
 
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -61,6 +66,7 @@ public class TimelinesResource extends UserAuthenticatedResource {
                             @QueryParam("tenant_id") @NotNull UUID tenantId,
                             @QueryParam("time_range") String timeRangeParameter,
                             @QueryParam("excluded_event_types") String excludedEventTypesP,
+                            @QueryParam("time_zone") String timeZone,
                             @QueryParam("limit") int limit,
                             @QueryParam("offset") int offset) {
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
@@ -140,9 +146,37 @@ public class TimelinesResource extends UserAuthenticatedResource {
                 .getValue(TimelinesRegistryKeys.DOT11_EVENTS_RETENTION_TIME_DAYS.key(), organizationId, tenantId)
                 .orElse(TimelinesRegistryKeys.DOT11_EVENTS_RETENTION_TIME_DAYS.defaultValue().get()));
 
-        return Response.ok(
-                TimelineResponse.create(retentionTimeDays, total, events, ssids, fingerprints, recordingTaps)
-        ).build();
+        String tz;
+        try {
+            tz = ZoneId.of(timeZone).getId();
+        } catch (Exception e) {
+            tz = "UTC";
+        }
+
+        TimelineActivityHistogram ah = timelines.getEventTypeActivityHistogram(
+                organizationId, tenantId, addressType, address, timeRange, excludedEventTypes, GAP_THRESHOLD, tz
+        );
+
+        List<TimelineActivityHistogramBucketResponse> buckets = Lists.newArrayList();
+        for (TimelineActivityHistogramBucket bucket : ah.buckets()) {
+            buckets.add(TimelineActivityHistogramBucketResponse.create(
+                    bucket.bucket(), bucket.total(), bucket.countsByEventType())
+            );
+        }
+
+        TimelineActivityHistogramResponse activityHistogramResponse = TimelineActivityHistogramResponse.create(
+                ah.from(), ah.to(), ah.bucketType().toString(), ah.totalsByEventType(), buckets
+        );
+
+        return Response.ok(TimelineResponse.create(
+                retentionTimeDays,
+                total,
+                events,
+                ssids,
+                fingerprints,
+                recordingTaps,
+                activityHistogramResponse
+        )).build();
     }
 
 }
