@@ -49,6 +49,10 @@ fn main() {
                 // $ nzyme-util sona generate-config
                 generate_sona_configuration_app::run();
             }
+            SonaSubcommand::Test => {
+                // $ nzyme-util sona test
+                // TODO ENTRY POINT HERE
+            }
         },
 
         None => {

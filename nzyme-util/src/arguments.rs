@@ -87,5 +87,6 @@ pub struct SonaCommand {
 
 #[derive(Subcommand, Debug)]
 pub enum SonaSubcommand {
-    GenerateConfig
+    GenerateConfig,
+    Test
 }

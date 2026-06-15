@@ -1,1 +1,2 @@
 pub mod generate_sona_configuration_app;
+mod test;
