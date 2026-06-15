@@ -1810,6 +1810,8 @@ div.arp-description p {
 }
 
 .timeline-histogram-cell {
+    display: flex;
+    overflow: hidden;
     width: var(--th-cw);
     height: var(--th-ch);
     margin-bottom: var(--th-gap);
@@ -1903,4 +1905,10 @@ div.arp-description p {
 .timeline-histogram-tooltip-row-count {
     color: #555;
     font-variant-numeric: tabular-nums;
+}
+
+.timeline-histogram-band {
+    height: 100%;
+    flex-basis: 0;
+    min-width: 2px;
 }

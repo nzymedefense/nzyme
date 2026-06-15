@@ -2,7 +2,6 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import moment from "moment";
 import timelineEventEnumToTitle from "./TimelineEventTitle";
 
-const DAY_MS = 86400000, HOUR_MS = 3600000, MIN_MS = 60000;
 const LEVEL_ALPHA = [0, 0.28, 0.5, 0.72, 1.0];
 const SAT = 68, LUM = 62;
 const MIN_CELL_W = 5;
@@ -21,11 +20,6 @@ function zoned(value, tz) {
   return moment(value);
 }
 
-function dominantType(counts) {
-  let best = null, bestV = -1;
-  for (const k in counts) if (counts[k] > bestV) { best = k; bestV = counts[k]; }
-  return best;
-}
 function levelFor(v, max) {
   if (v <= 0 || max <= 0) return 0;
   const r = v / max;
@@ -115,7 +109,7 @@ function placeLabels(columns, layout, stepPx) {
   return out;
 }
 
-export function TimelineActivityHistogram({ data = DEMO_DAY, timeZone = "local", hueForType }) {
+export function TimelineActivityHistogram({ data, timeZone = "local", hueForType }) {
   const [hover, setHover] = useState(null);
   const [gridRef, gridW] = useWidth(); // width available to the columns
 
@@ -191,19 +185,30 @@ export function TimelineActivityHistogram({ data = DEMO_DAY, timeZone = "local",
                 {col.slots.map((slot, r) => {
                   const live = !!slot;
                   const b = live ? slot.bucket : null;
-                  let modifier = "", bg;
+                  const filled = live && b && b.total > 0;
+                  let modifier = "";
                   if (!live) modifier = " timeline-histogram-cell-void";
-                  else if (!b || b.total === 0) modifier = " timeline-histogram-cell-empty";
-                  else bg = fill(dominantType(b.counts_by_event_type), LEVEL_ALPHA[levelFor(b.total, maxTotal)]);
+                  else if (!filled) modifier = " timeline-histogram-cell-empty";
                   const hovered = live && hover && hover.ms === slot.ms;
+
+                  let bands = null;
+                  if (filled) {
+                    const alpha = LEVEL_ALPHA[levelFor(b.total, maxTotal)];
+                    bands = Object.keys(b.counts_by_event_type).sort().map((t) => (
+                      <span key={t} className="timeline-histogram-band"
+                            style={{ flexGrow: b.counts_by_event_type[t], background: fill(t, alpha) }} />
+                    ));
+                  }
+
                   return (
                     <div key={r}
                          className={"timeline-histogram-cell" + modifier + (hovered ? " is-hover" : "")}
-                         style={bg ? { background: bg } : undefined}
                          onMouseEnter={live ? (e) => setHover({ ms: slot.ms, m: slot.m, bucket: slot.bucket, x: e.clientX, y: e.clientY }) : undefined}
                          onMouseMove={live ? (e) => setHover((h) => (h && h.ms === slot.ms ? { ...h, x: e.clientX, y: e.clientY } : h)) : undefined}
                          onMouseLeave={live ? () => setHover((h) => (h && h.ms === slot.ms ? null : h)) : undefined}
-                    />
+                    >
+                      {bands}
+                    </div>
                   );
                 })}
               </div>
