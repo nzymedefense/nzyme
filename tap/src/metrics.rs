@@ -96,7 +96,7 @@ pub struct Capture {
     pub capture_type: CaptureType,
     pub interface_name: String,
     pub is_running: bool,
-    pub received: u32,
+    pub received: u128,
     pub dropped_buffer: TotalWithAverage,
     pub dropped_interface: TotalWithAverage
 }

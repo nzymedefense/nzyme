@@ -215,8 +215,8 @@ impl Leaderlink {
                         interface_name: capture.interface_name.clone(),
                         is_running: capture.is_running,
                         received: capture.received,
-                        dropped_buffer: capture.dropped_buffer.avg as u32,
-                        dropped_interface: capture.dropped_interface.avg as u32
+                        dropped_buffer: capture.dropped_buffer.avg,
+                        dropped_interface: capture.dropped_interface.avg
                     });
                 }
 

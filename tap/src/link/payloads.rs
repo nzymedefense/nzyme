@@ -250,9 +250,9 @@ pub struct CaptureReport {
     pub capture_type: String,
     pub interface_name: String,
     pub is_running: bool,
-    pub received: u32,
-    pub dropped_buffer: u32,
-    pub dropped_interface: u32
+    pub received: u128,
+    pub dropped_buffer: u128,
+    pub dropped_interface: u128
 }
 
 #[derive(Serialize)]
