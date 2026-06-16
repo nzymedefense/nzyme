@@ -689,7 +689,6 @@ fn render_footer(f: &mut Frame, area: Rect) {
         .block(Block::default().borders(Borders::TOP));
     f.render_widget(p, area);
 }
-----------------------------------------------------------------
 
 enum CheckState {
     Pass,
