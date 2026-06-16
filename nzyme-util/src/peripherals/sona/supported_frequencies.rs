@@ -1,6 +1,20 @@
-use crate::wireless::dot11::sona::sona::SonaVersion;
-use crate::wireless::dot11::supported_frequency::{SupportedChannelWidth, SupportedFrequency};
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SonaVersion {
+    One,
+}
 
+#[derive(Debug, Clone, Copy)]
+pub enum SupportedChannelWidth {
+    Mhz20,
+}
+
+#[derive(Debug, Clone)]
+pub struct SupportedFrequency {
+    pub frequency: u16,
+    pub channel_widths: Vec<SupportedChannelWidth>,
+}
+
+#[allow(non_snake_case)]
 pub fn getSonaSupportedFrequencies(sona_version: SonaVersion) -> Vec<SupportedFrequency> {
     match sona_version {
         SonaVersion::One => vec![

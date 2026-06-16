@@ -4,12 +4,13 @@ mod usb;
 mod arguments;
 mod apps;
 mod tools;
+mod peripherals;
 
 use clap::Parser;
 use crate::apps::firmware::{flash_firmware_app, verify_firmware_app};
 use crate::apps::devices::list_devices_app;
 use crate::apps::release::verify_release_app;
-use crate::apps::sona::generate_sona_configuration_app;
+use crate::apps::sona::{generate_sona_configuration_app, sona_test_app};
 
 use crate::arguments::{CliArguments, Command, DevicesSubcommand, FirmwareSubcommand, ReleaseSubcommand, SonaSubcommand};
 use crate::exit_codes::EX_OK;
@@ -51,7 +52,7 @@ fn main() {
             }
             SonaSubcommand::Test => {
                 // $ nzyme-util sona test
-                // TODO ENTRY POINT HERE
+                sona_test_app::run();
             }
         },
 
