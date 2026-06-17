@@ -69,13 +69,11 @@ class Dot11Service {
     })
   }
 
-  findSSIDOfBSSID(bssid, ssid, timeRange, taps, setSSID) {
+  findSSIDOfBSSID(bssid, ssid, timeRange, taps, successCallback, errorCallback = undefined) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 
     RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + encodeURIComponent(ssid),
-        { time_range: timeRange, taps: tapsList }, function (response) {
-          setSSID(response.data);
-    })
+        { time_range: timeRange, taps: tapsList }, successCallback, errorCallback)
   }
 
   getSSIDOfBSSIDAdvertisementHistogram(bssid, ssid, timeRange, taps, setHistogram) {

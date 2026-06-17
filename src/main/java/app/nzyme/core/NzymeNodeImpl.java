@@ -63,6 +63,7 @@ import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.subsystems.Subsystems;
 import app.nzyme.core.timelines.TimelinesThread;
 import app.nzyme.core.timelines.tasks.Dot11BSSIDTimelineCalculationTaskHandler;
+import app.nzyme.core.timelines.tasks.Dot11SSIDTimelineCalculationTaskHandler;
 import app.nzyme.core.uav.Uav;
 import app.nzyme.plugin.*;
 import app.nzyme.plugin.distributed.messaging.MessageBus;
@@ -281,6 +282,10 @@ public class NzymeNodeImpl implements NzymeNode {
         this.tasksQueue.onMessageReceived(
                 TaskType.TIMELINES_CALCULATION_DOT11_BSSID,
                 new Dot11BSSIDTimelineCalculationTaskHandler(this)
+        );
+        this.tasksQueue.onMessageReceived(
+                TaskType.TIMELINES_CALCULATION_DOT11_SSID,
+                new Dot11SSIDTimelineCalculationTaskHandler(this)
         );
 
         try {

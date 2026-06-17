@@ -3,10 +3,13 @@ package app.nzyme.core.timelines;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.timelines.tasks.Dot11BSSIDTimelineCalculationTask;
+import app.nzyme.core.timelines.tasks.Dot11SSIDTimelineCalculationTask;
+import app.nzyme.plugin.RegistryKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import java.rmi.registry.Registry;
 import java.util.Optional;
 
 public class TimelinesThread extends Periodical {
@@ -28,15 +31,20 @@ public class TimelinesThread extends Periodical {
     protected void execute() {
         try {
             // 802.11 BSSIDs
-            Optional<DateTime> bssidsLastExecution = nzyme.getDatabaseCoreRegistry()
-                    .getValue(TimelinesRegistryKeys.TIMELINES_DOT11_BSSIDS_LAST_EXECUTION.key())
-                    .map(DateTime::parse);
-            if (bssidsLastExecution.isEmpty() || bssidsLastExecution.get().isBefore(DateTime.now().minusMinutes(1).plusSeconds(10))) {
-                // Due for execution.
+            Optional<DateTime> bssidsLastExecution = getLastExecutionTime(
+                    TimelinesRegistryKeys.TIMELINES_DOT11_BSSIDS_LAST_EXECUTION
+            );
+            if (checkForPendingExecution(bssidsLastExecution)) {
                 nzyme.getTasksQueue().publish(new Dot11BSSIDTimelineCalculationTask());
             }
 
             // 802.11 SSIDs
+            Optional<DateTime> ssidsLastExecution = getLastExecutionTime(
+                    TimelinesRegistryKeys.TIMELINES_DOT11_SSIDS_LAST_EXECUTION
+            );
+            if (checkForPendingExecution(ssidsLastExecution)) {
+                nzyme.getTasksQueue().publish(new Dot11SSIDTimelineCalculationTask());
+            }
 
             // 802.11 Connected Clients
 
@@ -49,6 +57,15 @@ public class TimelinesThread extends Periodical {
     @Override
     public String getName() {
         return "TimelinesThread";
+    }
+
+    private Optional<DateTime> getLastExecutionTime(RegistryKey registryKey) {
+        return nzyme.getDatabaseCoreRegistry().getValue(registryKey.key()).map(DateTime::parse);
+    }
+
+    private boolean checkForPendingExecution(Optional<DateTime> lastExecution) {
+        return lastExecution.isEmpty()
+                || lastExecution.get().isBefore(DateTime.now().minusMinutes(1).plusSeconds(10));
     }
 
 }

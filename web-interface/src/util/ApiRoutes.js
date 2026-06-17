@@ -243,7 +243,10 @@ const ApiRoutes = {
         DETAILS: (bssid) => `/dot11/bssids/show/${bssid}`,
         TIMELIME: (bssid) => `/dot11/bssids/show/${bssid}/timeline`,
       },
-      SSID: (bssid, ssid, frequency) => `/dot11/bssids/show/${bssid}/ssids/show/${ssid}/frequencies/show/${frequency}`
+      SSIDS: {
+        DETAILS: (bssid, ssid, frequency) => `/dot11/bssids/show/${bssid}/ssids/show/${ssid}/frequencies/show/${frequency}`,
+        TIMELINE: (bssid, ssid, frequency) => `/dot11/bssids/show/${bssid}/ssids/show/${ssid}/frequencies/show/${frequency}/timeline`,
+      }
     },
     CLIENTS: {
       CONNECTED: '/dot11/clients/connected',

@@ -24,6 +24,9 @@ import Dot11SecurityProtocolList from "../../shared/Dot11SecurityProtocolList";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 import {Presets} from "../../../shared/timerange/TimeRange";
 import usePageTitle from "../../../../util/UsePageTitle";
+import SectionMenuBar from "../../../shared/SectionMenuBar";
+import {BSSID_MENU_ITEMS} from "../BSSIDMenuItems";
+import {SSID_MENU_ITEMS} from "./SSIDMenuItems";
 
 const dot11Service = new Dot11Service();
 
@@ -51,7 +54,7 @@ function SSIDDetailsPage() {
   usePageTitle(ssid ? `SSID: ${ssid.ssid}` : "SSID Details");
 
   useEffect(() => {
-    dot11Service.findSSIDOfBSSID(bssidParam, ssidParam, ssidTimeRange, selectedTaps, setSSID);
+    dot11Service.findSSIDOfBSSID(bssidParam, ssidParam, ssidTimeRange, selectedTaps, (response) => setSSID(response.data));
   }, [selectedTaps])
 
   useEffect(() => {
@@ -78,7 +81,7 @@ function SSIDDetailsPage() {
   return (
     <React.Fragment>
       <div className="row">
-        <div className="col-md-10">
+        <div className="col-md-12">
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
@@ -89,11 +92,16 @@ function SSIDDetailsPage() {
             </ol>
           </nav>
         </div>
+      </div>
 
-        <div className="col-md-2">
-          <a className="btn btn-primary float-end" href={ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX}>Back</a>
+      <div className="row">
+        <div className="col-md-12">
+          <SectionMenuBar items={SSID_MENU_ITEMS(ssid.bssid.address, ssid.ssid, frequencyParam)}
+                          activeRoute={ApiRoutes.DOT11.NETWORKS.SSIDS.DETAILS(ssid.bssid.address, ssid.ssid, frequencyParam)}/>
         </div>
+      </div>
 
+      <div className="row mt-3">
         <div className="col-md-12">
           <h1>
             Network Details

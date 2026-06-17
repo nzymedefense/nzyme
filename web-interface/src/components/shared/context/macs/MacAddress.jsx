@@ -111,7 +111,7 @@ function MacAddress(props) {
   return (
       <span onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
         {hideActiveIndicator ? null : <AssetActiveIndicator active={assetIsActive} hideText={true} />}
-        {typeElement()}{addressElement()}{randomizedIcon()}{contextElement()}{ouiElement()}{assetNameElement()}{filterElement ? filterElement : null}
+        {typeElement()}{addressElement()} {randomizedIcon()}{contextElement()}{ouiElement()}{assetNameElement()}{filterElement ? filterElement : null}
 
         {overlay ? <ContextOverlayVisibilityWrapper visible={overlayVisible} overlay={overlay} /> : null }
       </span>

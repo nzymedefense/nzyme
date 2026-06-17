@@ -78,7 +78,7 @@ function BSSIDDetailsRows(props) {
                 return (
                   <tr key={"ssid-" + i}>
                     <td>
-                      <a href={ApiRoutes.DOT11.NETWORKS.SSID(bssid.address, ssid.ssid, ssid.frequency)}>{ssid.ssid}</a>{' '}
+                      <a href={ApiRoutes.DOT11.NETWORKS.SSIDS.DETAILS(bssid.address, ssid.ssid, ssid.frequency)}>{ssid.ssid}</a>{' '}
                     </td>
                     <td><InfrastructureTypes types={ssid.infrastructure_types} /></td>
                     <td>

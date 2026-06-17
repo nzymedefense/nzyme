@@ -454,7 +454,24 @@ public class Dot11 {
         return isDisconnectedClient || isConnectedClient;
     }
 
-    public List<SSIDChannelDetails> findSSIDsOfBSSID(TimeRange timeRange, String bssid, List<UUID> taps) {
+    public Optional<Integer> findMostActiveChannelOfSSID(TimeRange timeRange, String bssid, String ssid, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT c.frequency, MAX(c.stats_frames) AS frames FROM dot11_ssids AS s " +
+                                "LEFT JOIN dot11_channels AS c ON c.ssid_id = s.id " +
+                                "WHERE s.bssid = :bssid AND s.ssid = :ssid AND s.tap_uuid IN (<taps>) " +
+                                "AND s.created_at >= :tr_from AND s.created_at <= :tr_to " +
+                                "GROUP BY c.frequency ORDER BY SUM(c.stats_frames) DESC LIMIT 1")
+                        .bind("bssid", bssid)
+                        .bind("ssid", ssid)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(Integer.class)
+                        .findOne()
+        );
+    }
+
+    public List<SSIDChannelDetails> findSSIDPerChannelsOfBSSID(TimeRange timeRange, String bssid, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -482,6 +499,24 @@ public class Dot11 {
                         .bindList("taps", taps)
                         .mapTo(SSIDChannelDetails.class)
                         .list()
+        );
+    }
+
+    public Set<String> findSSIDNamesOfBSSID(TimeRange timeRange, String bssid, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(ssid) FROM dot11_ssids " +
+                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND bssid = :bssid AND tap_uuid IN (<taps>)")
+                        .bind("bssid", bssid)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(String.class)
+                        .set()
         );
     }
 
@@ -525,6 +560,50 @@ public class Dot11 {
                         .bindList("taps", taps)
                         .mapTo(SSIDDetails.class)
                         .findOne()
+        );
+    }
+
+    public Set<Double> getRatesOfSSID(TimeRange timeRange, String bssid, String ssid, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT rate_elem " +
+                                "FROM dot11_ssids AS s " +
+                                "CROSS JOIN LATERAL UNNEST(s.rates) AS rate_elem " +
+                                "WHERE s.created_at >= :tr_from AND s.created_at <= :tr_to " +
+                                "AND s.bssid = :bssid AND s.ssid = :ssid " +
+                                "AND s.tap_uuid IN (<taps>)")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("bssid", bssid)
+                        .bind("ssid", ssid)
+                        .bindList("taps", taps)
+                        .mapTo(Double.class)
+                        .set()
+        );
+    }
+
+    public Set<Double> getSecuritySettingsOfSSID(TimeRange timeRange, String bssid, String ssid, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT rate_elem " +
+                                "FROM dot11_ssids AS s " +
+                                "CROSS JOIN LATERAL UNNEST(s.rates) AS rate_elem " +
+                                "WHERE s.created_at >= :tr_from AND s.created_at <= :tr_to " +
+                                "AND s.bssid = :bssid AND s.ssid = :ssid " +
+                                "AND s.tap_uuid IN (<taps>)")
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bind("bssid", bssid)
+                        .bind("ssid", ssid)
+                        .bindList("taps", taps)
+                        .mapTo(Double.class)
+                        .set()
         );
     }
 

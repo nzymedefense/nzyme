@@ -37,6 +37,7 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.datatype.joda.JodaModule;
 
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -100,45 +101,54 @@ public class TimelinesResource extends UserAuthenticatedResource {
                 .findAllTapsOfTenant(organizationId, tenantId)
                 .stream().map(Tap::uuid).toList();
 
-        List<String> ssids = nzyme.getDot11().findSSIDsAdvertisedByBSSID(address, tenantTapIds, timeRange);
-        List<String> fingerprints = nzyme.getDot11().findFingerprintsOfBSSID(address, timeRange, tenantTapIds);
-        List<TapHighLevelInformationDetailsResponse> recordingTaps = Lists.newArrayList();
-        for (TapBasedSignalStrengthResult recordingTap : nzyme.getDot11()
-                .findBSSIDSignalStrengthPerTap(address, timeRange, tenantTapIds)) {
-            Optional<Tap> tap = nzyme.getTapManager().findTap(recordingTap.tapUuid());
+        List<String> ssids;
+        List<String> fingerprints;
+        List<TapHighLevelInformationDetailsResponse> recordingTaps;
+        if (addressType == TimelineAddressType.DOT11_BSSID) {
+            ssids = nzyme.getDot11().findSSIDsAdvertisedByBSSID(address, tenantTapIds, timeRange);
+            fingerprints = nzyme.getDot11().findFingerprintsOfBSSID(address, timeRange, tenantTapIds);
+            recordingTaps = Lists.newArrayList();
+            for (TapBasedSignalStrengthResult recordingTap : nzyme.getDot11()
+                    .findBSSIDSignalStrengthPerTap(address, timeRange, tenantTapIds)) {
+                Optional<Tap> tap = nzyme.getTapManager().findTap(recordingTap.tapUuid());
 
-            if (tap.isEmpty()) {
-                continue;
-            }
+                if (tap.isEmpty()) {
+                    continue;
+                }
 
-            String locationName;
-            String floorName;
-            if (tap.get().locationId() != null) {
-                locationName = nzyme.getAuthenticationService()
-                        .findTenantLocation(tap.get().locationId(), organizationId, tenantId)
-                        .map(TenantLocationEntry::name)
-                        .orElse(null);
-
-                if (locationName != null && tap.get().floorId() != null) {
-                    floorName = nzyme.getAuthenticationService()
-                            .findFloorOfTenantLocation(tap.get().locationId(), tap.get().floorId())
-                            .map(Tools::buildFloorName)
+                String locationName;
+                String floorName;
+                if (tap.get().locationId() != null) {
+                    locationName = nzyme.getAuthenticationService()
+                            .findTenantLocation(tap.get().locationId(), organizationId, tenantId)
+                            .map(TenantLocationEntry::name)
                             .orElse(null);
+
+                    if (locationName != null && tap.get().floorId() != null) {
+                        floorName = nzyme.getAuthenticationService()
+                                .findFloorOfTenantLocation(tap.get().locationId(), tap.get().floorId())
+                                .map(Tools::buildFloorName)
+                                .orElse(null);
+                    } else {
+                        floorName = null;
+                    }
                 } else {
+                    locationName = null;
                     floorName = null;
                 }
-            } else {
-                locationName = null;
-                floorName = null;
-            }
 
-            recordingTaps.add(TapHighLevelInformationDetailsResponse.create(
-                    tap.get().uuid(),
-                    tap.get().name(),
-                    locationName,
-                    floorName,
-                    Tools.isTapActive(tap.get().lastReport())
-            ));
+                recordingTaps.add(TapHighLevelInformationDetailsResponse.create(
+                        tap.get().uuid(),
+                        tap.get().name(),
+                        locationName,
+                        floorName,
+                        Tools.isTapActive(tap.get().lastReport())
+                ));
+            }
+        } else {
+            ssids = Collections.emptyList();
+            fingerprints = Collections.emptyList();
+            recordingTaps = Collections.emptyList();
         }
 
         @SuppressWarnings("OptionalGetWithoutIsPresent")

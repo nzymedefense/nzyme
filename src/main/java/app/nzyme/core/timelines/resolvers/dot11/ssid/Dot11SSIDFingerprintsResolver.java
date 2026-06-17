@@ -1,32 +1,27 @@
-package app.nzyme.core.timelines.resolvers.dot11.bssid;
+package app.nzyme.core.timelines.resolvers.dot11.ssid;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.dot11.db.SSIDDetails;
 import app.nzyme.core.timelines.TimelineAddressType;
 import app.nzyme.core.timelines.TimelineEventType;
 import app.nzyme.core.timelines.resolvers.ResolverResult;
 import app.nzyme.core.timelines.resolvers.TimelineResolver;
 import app.nzyme.core.timelines.resolvers.helpers.StringSetComparison;
-import app.nzyme.core.util.TimeRange;
 import com.google.common.collect.Sets;
-import org.joda.time.DateTime;
 import tools.jackson.core.type.TypeReference;
 
 import java.util.*;
 
-import static app.nzyme.core.timelines.Timelines.EVENT_HORIZON_MINUTES;
+import static app.nzyme.core.timelines.tasks.Dot11SSIDTimelineCalculationTaskHandler.buildSSIDKey;
 
-public class Dot11BSSIDFingerprintResolver extends TimelineResolver {
+public class Dot11SSIDFingerprintsResolver extends TimelineResolver {
 
-    public Dot11BSSIDFingerprintResolver(NzymeNode nzyme, UUID organizationId, UUID tenantId) {
+    public Dot11SSIDFingerprintsResolver(NzymeNode nzyme, UUID organizationId, UUID tenantId) {
         super(nzyme, organizationId, tenantId);
     }
 
-    public Optional<ResolverResult> resolve(String bssid, List<UUID> taps) {
-        DateTime now = DateTime.now();
-
-        HashSet<String> currentFingerprints = Sets.newHashSet(nzyme.getDot11().findFingerprintsOfBSSID(
-                bssid, TimeRange.create(now.minusMinutes(EVENT_HORIZON_MINUTES), now, false), taps)
-        );
+    public Optional<ResolverResult> resolve(SSIDDetails ssidDetails, String bssid, String ssid) {
+        HashSet<String> currentFingerprints = Sets.newHashSet(ssidDetails.fingerprints());
 
         if (currentFingerprints.isEmpty()) {
             return Optional.empty();
@@ -35,9 +30,9 @@ public class Dot11BSSIDFingerprintResolver extends TimelineResolver {
         Optional<Set<String>> previousFingerprints = timelines.findLatestEventOfTypeAndAddress(
                         organizationId,
                         tenantId,
-                        TimelineAddressType.DOT11_BSSID,
-                        bssid,
-                        TimelineEventType.DOT11_BSSID_FINGERPRINT_DIFF)
+                        TimelineAddressType.DOT11_SSID,
+                        buildSSIDKey(bssid, ssid),
+                        TimelineEventType.DOT11_SSID_FINGERPRINTS_DIFF)
                 .map(event -> {
                     Map<String, Object> details = objectMapper.readValue(event.eventDetails(), new TypeReference<>() {});
                     @SuppressWarnings("unchecked")
@@ -54,6 +49,5 @@ public class Dot11BSSIDFingerprintResolver extends TimelineResolver {
                 "known_fingerprints"
         );
     }
-
 
 }

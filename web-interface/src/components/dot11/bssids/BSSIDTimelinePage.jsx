@@ -41,7 +41,7 @@ export default function BSSIDTimelinePage() {
   const [filters, setFilters] = useState([
     {name: "Gone/Disappeared", value: "GONE", include: true},
     {name: "SSID Change", value: "DOT11_BSSID_SSID_DIFF", include: true},
-    {name: "Fingerprint Change", value: "DOT11_BSSID_FINGERPRINT_DIFF", include: true},
+    {name: "Fingerprints Change", value: "DOT11_BSSID_FINGERPRINT_DIFF", include: true},
     {name: "Strongest Tap", value: "DOT11_BSSID_STRONGEST_TAP", include: true}
   ]);
 
@@ -53,7 +53,7 @@ export default function BSSIDTimelinePage() {
     );
   };
 
-  usePageTitle(bssid ? `BSSID: ${bssid.summary.bssid.address} Timeline` : "BSSID Timeline");
+  usePageTitle(bssid ? `BSSID Timeline: ${bssid.summary.bssid.address}` : "BSSID Timeline");
 
   useEffect(() => {
     setBSSID(null);
@@ -61,8 +61,8 @@ export default function BSSIDTimelinePage() {
       setNotFound(false);
       setBSSID(response.data)
     }, (error) => {
-      setNotFound(true);
       if (error && (error.response.status === 404 || error.response.status === 400)) {
+        setNotFound(true);
       } else {
         toast.error("Could not fetch BSSID.")
       }

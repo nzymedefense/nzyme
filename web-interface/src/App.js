@@ -197,6 +197,7 @@ import Toast from "./components/misc/Toast";
 import BSSIDTimelinePage from "./components/dot11/bssids/BSSIDTimelinePage";
 import LocationsOverviewPage from "./components/locations/LocationsOverviewPage";
 import LocationDetailsPage from "./components/locations/LocationDetailsPage";
+import SSIDTimelinePage from "./components/dot11/bssids/ssids/SSIDTimelinePage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -631,7 +632,8 @@ function App() {
                                 <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS.INDEX} element={<BSSIDsPage />}/>
                                 <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS.DETAILS(':bssidParam')} element={<BSSIDDetailsPage />}/>
                                 <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS.TIMELIME(':bssidParam')} element={<BSSIDTimelinePage />}/>
-                                <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />
+                                <Route path={ApiRoutes.DOT11.NETWORKS.SSIDS.DETAILS(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />
+                                <Route path={ApiRoutes.DOT11.NETWORKS.SSIDS.TIMELINE(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDTimelinePage />} />
 
                                 { /* 802.11/Clients. */}
                                 <Route path={ApiRoutes.DOT11.CLIENTS.CONNECTED} element={<ClientsPage />}/>

@@ -1466,9 +1466,24 @@ div.arp-description p {
     background: #7a3e9b;
 }
 
-.timeline-event-marker[data-kind="unknown"] {
-    border-color: #555;
-    background: #555;
+.timeline-event-marker[data-kind="rates"] {
+    border-color: #14b8a6;
+    background: #14b8a6;
+}
+
+.timeline-event-marker[data-kind="protocols"] {
+    border-color: #303f9f;
+    background: #303f9f;
+}
+
+.timeline-event-marker[data-kind="suites"] {
+    border-color: #7986cb;
+    background: #7986cb;
+}
+
+.timeline-event-marker[data-kind="channel"] {
+    border-color: #546e7a;
+    background: #546e7a;
 }
 
 .timeline-event-body {
@@ -1522,13 +1537,43 @@ div.arp-description p {
     padding: 0;
 }
 
-.timeline-event-ssid-list {
-    display: inline-flex;
+.timeline-event-channel-row {
+    display: flex;
     align-items: baseline;
-    gap: 6px;
+    gap: 8px;
+    margin-top: 2px;
 }
 
-.timeline-event-ssid-prefix {
+.timeline-event-channel-row-prefix {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: #888;
+    min-width: 28px;
+}
+
+.timeline-event-channel-row-prev {
+    opacity: 0.65;
+}
+
+.timeline-event-channel-row-empty {
+    font-style: italic;
+    color: #888;
+}
+
+.timeline-event-channel-name {
+    font-weight: 600;
+    color: #111;
+}
+
+.timeline-event-channel-freq {
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    color: #555;
+}
+
+.timeline-event-attribute-prefix {
     font-family: "Geist Mono", monospace;
     font-weight: 700;
     color: #111;
@@ -1537,16 +1582,17 @@ div.arp-description p {
     text-align: center;
 }
 
-.timeline-event-ssid {
+.timeline-event-attribute {
     font-family: "Geist Mono", monospace;
     font-size: 12px;
     color: #111;
     background: #e4e6ea;
     padding: 1px 6px;
     border-radius: 2px;
+    overflow-wrap: anywhere;
 }
 
-.timeline-event-ssid-sep {
+.timeline-event-attribute-sep {
     color: #888;
 }
 
@@ -1669,7 +1715,7 @@ div.arp-description p {
     color: #888;
 }
 
-.timeline-event-ssid-row {
+.timeline-event-attribute-row {
     display: flex;
     align-items: baseline;
     gap: 8px;
@@ -1677,7 +1723,7 @@ div.arp-description p {
     flex-wrap: wrap;
 }
 
-.timeline-event-ssid-row-prefix {
+.timeline-event-attribute-row-prefix {
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -1686,7 +1732,7 @@ div.arp-description p {
     min-width: 52px;
 }
 
-.timeline-event-ssid-row-known {
+.timeline-event-attribute-row-known {
     opacity: 0.65;
 }
 
@@ -1911,4 +1957,10 @@ div.arp-description p {
     height: 100%;
     flex-basis: 0;
     min-width: 2px;
+}
+
+.timeline-event-type-unit {
+    font-size: 0.85em;
+    opacity: 0.6;
+    font-weight: normal;
 }

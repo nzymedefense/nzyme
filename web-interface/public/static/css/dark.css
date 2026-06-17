@@ -1045,6 +1045,11 @@ span.serial-number-match {
     background: #c084fc;
 }
 
+.timeline-event-marker[data-kind="rates"] {
+    border-color: #14b8a6;
+    background: #14b8a6;
+}
+
 .timeline-event-marker[data-kind="active"] {
     border-color: #34d399;
     background: #34d399;
@@ -1087,16 +1092,16 @@ span.serial-number-match {
     color: #6b7280;
 }
 
-.timeline-event-ssid-prefix {
+.timeline-event-attribute-prefix {
     color: #e8e8ed;
 }
 
-.timeline-event-ssid {
+.timeline-event-attribute {
     background: #25252d;
     color: #e8e8ed;
 }
 
-.timeline-event-ssid-sep {
+.timeline-event-attribute-sep {
     color: #4b5060;
 }
 
@@ -1153,7 +1158,28 @@ span.serial-number-match {
     color: #6b7280;
 }
 
-.timeline-event-ssid-row-prefix {
+.timeline-event-attribute-row-prefix {
+    color: #6b7280;
+}
+
+.timeline-event-marker[data-kind="channel"] {
+    border-color: #90a4ae;
+    background: #90a4ae;
+}
+
+.timeline-event-channel-name {
+    color: #e8e8ed;
+}
+
+.timeline-event-channel-freq {
+    color: #6b7280;
+}
+
+.timeline-event-channel-row-prefix {
+    color: #6b7280;
+}
+
+.timeline-event-channel-row-empty {
     color: #6b7280;
 }
 

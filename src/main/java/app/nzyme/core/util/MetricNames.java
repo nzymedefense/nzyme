@@ -35,6 +35,7 @@ import app.nzyme.core.tables.gnss.GNSSTable;
 import app.nzyme.core.tables.uav.UAVTable;
 import app.nzyme.core.timelines.TimelinesThread;
 import app.nzyme.core.timelines.tasks.Dot11BSSIDTimelineCalculationTaskHandler;
+import app.nzyme.core.timelines.tasks.Dot11SSIDTimelineCalculationTaskHandler;
 import app.nzyme.core.uav.Uav;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -99,5 +100,7 @@ public class MetricNames {
 
     public static final String TIMELINES_BSSIDS_TOTAL_CALCULATION_TIMER = name(Dot11BSSIDTimelineCalculationTaskHandler.class, "total-calculation-timing");
     public static final String TIMELINES_BSSIDS_INDIVIDUAL_CALCULATION_TIMER = name(Dot11BSSIDTimelineCalculationTaskHandler.class, "individual-calculation-timing");
+    public static final String TIMELINES_SSIDS_TOTAL_CALCULATION_TIMER = name(Dot11SSIDTimelineCalculationTaskHandler.class, "total-calculation-timing");
+    public static final String TIMELINES_SSIDS_INDIVIDUAL_CALCULATION_TIMER = name(Dot11SSIDTimelineCalculationTaskHandler.class, "individual-calculation-timing");
 
 }

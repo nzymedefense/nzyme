@@ -11,9 +11,9 @@ import app.nzyme.core.timelines.TimelineEventType;
 import app.nzyme.core.timelines.Timelines;
 import app.nzyme.core.timelines.TimelinesRegistryKeys;
 import app.nzyme.core.timelines.resolvers.ResolverResult;
-import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDFingerprintResolver;
+import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDFingerprintsResolver;
 import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDStrongestTapResolver;
-import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDSSIDAnnouncementResolver;
+import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDSSIDsAnnouncementResolver;
 import app.nzyme.core.util.MetricNames;
 import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.filters.Filters;
@@ -80,7 +80,7 @@ public class Dot11BSSIDTimelineCalculationTaskHandler implements TaskHandler {
                         int eventsWritten = 0;
 
                         // SSIDs.
-                        Dot11BSSIDSSIDAnnouncementResolver ssids = new Dot11BSSIDSSIDAnnouncementResolver(
+                        Dot11BSSIDSSIDsAnnouncementResolver ssids = new Dot11BSSIDSSIDsAnnouncementResolver(
                                 nzyme, tenant.organizationUuid(), tenant.uuid()
                         );
                         Optional<ResolverResult> ssidsResult = ssids.resolve(bssid.bssid(), taps);
@@ -99,7 +99,7 @@ public class Dot11BSSIDTimelineCalculationTaskHandler implements TaskHandler {
                         }
 
                         // Fingerprints.
-                        Dot11BSSIDFingerprintResolver fingerprints = new Dot11BSSIDFingerprintResolver(
+                        Dot11BSSIDFingerprintsResolver fingerprints = new Dot11BSSIDFingerprintsResolver(
                                 nzyme, tenant.organizationUuid(), tenant.uuid()
                         );
                         Optional<ResolverResult> fingerprintsResult = fingerprints.resolve(bssid.bssid(), taps);

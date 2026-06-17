@@ -307,7 +307,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        List<SSIDChannelDetails> ssids = nzyme.getDot11().findSSIDsOfBSSID(timeRange, bssid, tapUuids);
+        List<SSIDChannelDetails> ssids = nzyme.getDot11().findSSIDPerChannelsOfBSSID(timeRange, bssid, tapUuids);
 
         // Find main active channel per SSID.
         Map<String, Map<Integer, Long>> activeChannels = Maps.newHashMap();
