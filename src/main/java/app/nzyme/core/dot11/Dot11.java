@@ -454,6 +454,22 @@ public class Dot11 {
         return isDisconnectedClient || isConnectedClient;
     }
 
+    public Optional<Integer> findMostActiveChannelOfBSSID(TimeRange timeRange, String bssid, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT c.frequency, MAX(c.stats_frames) AS frames FROM dot11_ssids AS s " +
+                                "LEFT JOIN dot11_channels AS c ON c.ssid_id = s.id " +
+                                "WHERE s.bssid = :bssid AND s.tap_uuid IN (<taps>) " +
+                                "AND s.created_at >= :tr_from AND s.created_at <= :tr_to " +
+                                "GROUP BY c.frequency ORDER BY SUM(c.stats_frames) DESC LIMIT 1")
+                        .bind("bssid", bssid)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .bindList("taps", taps)
+                        .mapTo(Integer.class)
+                        .findOne()
+        );
+    }
+
     public Optional<Integer> findMostActiveChannelOfSSID(TimeRange timeRange, String bssid, String ssid, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT c.frequency, MAX(c.stats_frames) AS frames FROM dot11_ssids AS s " +

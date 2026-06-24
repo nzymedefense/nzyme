@@ -40,6 +40,7 @@ export default function BSSIDTimelinePage() {
 
   const [filters, setFilters] = useState([
     {name: "Gone/Disappeared", value: "GONE", include: true},
+    {name: "Active Channel Change", value: "DOT11_BSSID_ACTIVE_CHANNEL", include: true},
     {name: "SSID Change", value: "DOT11_BSSID_SSID_DIFF", include: true},
     {name: "Fingerprints Change", value: "DOT11_BSSID_FINGERPRINT_DIFF", include: true},
     {name: "Strongest Tap", value: "DOT11_BSSID_STRONGEST_TAP", include: true}

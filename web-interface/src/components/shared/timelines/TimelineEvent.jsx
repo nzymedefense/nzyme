@@ -379,6 +379,7 @@ export default function TimelineEvent({event}) {
     case 'DOT11_SSID_FINGERPRINTS_DIFF':
       return <FingerprintDiffEvent event={event} />;
     case 'DOT11_SSID_ACTIVE_CHANNEL':
+    case 'DOT11_BSSID_ACTIVE_CHANNEL':
       return <ActiveChannelEvent event={event} />;
     default:
       return (

@@ -11,6 +11,7 @@ import app.nzyme.core.timelines.TimelineEventType;
 import app.nzyme.core.timelines.Timelines;
 import app.nzyme.core.timelines.TimelinesRegistryKeys;
 import app.nzyme.core.timelines.resolvers.ResolverResult;
+import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDActiveChannelResolver;
 import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDFingerprintsResolver;
 import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDStrongestTapResolver;
 import app.nzyme.core.timelines.resolvers.dot11.bssid.Dot11BSSIDSSIDsAnnouncementResolver;
@@ -78,6 +79,25 @@ public class Dot11BSSIDTimelineCalculationTaskHandler implements TaskHandler {
                         taps)) {
                     try(Timer.Context ignored2 = individualTimer.time()) {
                         int eventsWritten = 0;
+
+                        // Active channel.
+                        Dot11BSSIDActiveChannelResolver channel = new Dot11BSSIDActiveChannelResolver(
+                                nzyme, tenant.organizationUuid(), tenant.uuid()
+                        );
+                        Optional<ResolverResult> channelResult = channel.resolve(bssid.bssid(), taps);
+
+                        if (channelResult.isPresent()) {
+                            timelines.writeDot11TimelineEvent(
+                                    tenant.organizationUuid(),
+                                    tenant.uuid(),
+                                    TimelineAddressType.DOT11_BSSID,
+                                    bssid.bssid(),
+                                    TimelineEventType.DOT11_BSSID_ACTIVE_CHANNEL,
+                                    channelResult.get().payload(),
+                                    now
+                            );
+                            eventsWritten++;
+                        }
 
                         // SSIDs.
                         Dot11BSSIDSSIDsAnnouncementResolver ssids = new Dot11BSSIDSSIDsAnnouncementResolver(
