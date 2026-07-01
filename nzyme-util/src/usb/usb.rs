@@ -5,9 +5,10 @@ use crate::usb::nzyme_usb_device::NzymeUsbDevice;
 
 pub const NZYME_VID: u16 = 0x390C;
 
+pub const SONA_HUB_PID: u16 = 0x0101;
 pub const SONA_WIFI_PID: u16 = 0x0100;
-pub const SONA_BLUETOOTH_PID: u16 = 0x0101;
-pub const SONA_IOT_PID: u16 = 0x102;
+pub const SONA_BLUETOOTH_PID: u16 = 0x0102;
+pub const SONA_IOT_PID: u16 = 0x103;
 
 pub const LIMINA_PID: u16 = 0x0200;
 
@@ -42,6 +43,11 @@ pub fn detect_nzyme_usb_devices() -> Result<Vec<NzymeUsbDevice>>  {
         let desc = device.device_descriptor()?;
 
         if desc.vendor_id() == NZYME_VID {
+            if desc.product_id() == SONA_HUB_PID {
+                // We don't care about the hub.
+                continue;
+            }
+
             nzyme_devices.push(build_nzyme_device_info(&device, &desc)?);
         }
     }
