@@ -9,6 +9,7 @@ mod logging;
 mod alerting;
 mod processor_controller;
 mod log_monitor;
+mod log_buffer;
 mod state;
 mod context;
 mod protocols;
@@ -17,10 +18,12 @@ mod wireless;
 mod rpi;
 mod peripherals;
 mod usb;
+mod android;
 
 use std::{process::exit, sync::{Arc, Mutex}, thread::{self, sleep}, time, time::Duration};
 use std::collections::HashMap;
 use anyhow::Error;
+use chrono::Utc;
 use clap::Parser;
 use crossbeam_channel::{Receiver};
 use configuration::Configuration;
@@ -36,8 +39,10 @@ use wireless::dot11::channel_hopper::ChannelHopper;
 use wireless::dot11::dot11_broker::Dot11Broker;
 use wired::ethernet::ethernet_broker::EthernetBroker;
 use wireless::{bluetooth, dot11};
+use crate::android::debug::android_debug::AndroidDebugListener;
 use crate::helpers::network::Channel;
 use crate::link::payloads::ConfigurationReport;
+use crate::log_buffer::LogBuffer;
 use crate::log_monitor::LogMonitor;
 use crate::peripherals::limina::limina::Limina;
 use crate::processor_controller::ProcessorController;
@@ -66,6 +71,8 @@ struct Arguments {
 }
 
 fn main() {
+    let process_started_at = Utc::now();
+
     let args = Arguments::parse();
     let log_level = args.log_level.unwrap_or_else(|| "info".to_string());
 
@@ -75,7 +82,7 @@ fn main() {
          * if it is not set to info
          */
         if log_level != "info" {
-            logging::initialize(&log_level, &Arc::new(LogMonitor::default()));
+            logging::initialize(&log_level, &Arc::new(LogMonitor::default()), &Arc::new(LogBuffer::new()));
         }
 
         let nl = dot11::nl::Nl::new();
@@ -134,7 +141,8 @@ fn main() {
     }
 
     let log_monitor = Arc::new(LogMonitor::default());
-    logging::initialize(&log_level, &log_monitor);
+    let log_buffer = Arc::new(LogBuffer::new());
+    logging::initialize(&log_level, &log_monitor, &log_buffer);
 
     info!("Starting nzyme tap version [{}].", env!("CARGO_PKG_VERSION"));
 
@@ -229,6 +237,21 @@ fn main() {
         configuration.clone())
     );
     context_engine.initialize();
+
+    // Android debug listener.
+    let android_metrics = metrics.clone();
+    let android_configuration = configuration.clone();
+    let android_log_buffer = log_buffer.clone();
+    thread::spawn(move || {
+        info!("Initializing Android debug subsystem.");
+        let listener = AndroidDebugListener::new(
+            process_started_at, android_configuration, android_metrics, android_log_buffer
+        );
+
+        thread::spawn(move || {
+            listener.listen();
+        });
+    });
 
     // Ethernet handler.
     let ethernet_handlerbus = ethernet_bus.clone();

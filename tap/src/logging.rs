@@ -6,9 +6,11 @@ use fern::colors::{ColoredLevelConfig, Color};
 use log::{info, LevelFilter, warn};
 use crate::log_monitor::LogMonitor;
 use std::io::Write;
+use crate::log_buffer::{LogBuffer, LogBufferLine};
 
 pub fn initialize(config_level: &str,
-                  log_monitor: &Arc<LogMonitor>) {
+                  log_monitor: &Arc<LogMonitor>,
+                  log_buffer: &Arc<LogBuffer>) {
     let mut unknown_filter = false;
     let filter = match config_level.to_uppercase().as_str() {
         "OFF" => LevelFilter::Off,
@@ -32,9 +34,17 @@ pub fn initialize(config_level: &str,
         .trace(Color::BrightBlack);
 
     let monitor = log_monitor.clone();
+    let buffer = log_buffer.clone();
     let result = fern::Dispatch::new()
         .format(move |out, message, record| {
+            let now = chrono::Local::now();
             monitor.mark(&record.level());
+
+            buffer.push(LogBufferLine {
+                timestamp: now,
+                level: record.level(),
+                message: message.to_string(),
+            });
 
             out.finish(format_args!(
                 "{color_line}[{level}][{date}][{target}]{color_line} {message}\x1B[0m",
@@ -42,7 +52,7 @@ pub fn initialize(config_level: &str,
                     "\x1B[{}m",
                     colors_line.get_color(&record.level()).to_fg_str()
                 ),
-                date = chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+                date = now.format("%Y-%m-%d %H:%M:%S"),
                 target = format_target(record.target()),
                 level = record.level(),
                 message = message,
