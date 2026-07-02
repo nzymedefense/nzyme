@@ -164,8 +164,6 @@ import EditCotCertificatePage
 import DisconnectedClientsPage from "./components/dot11/clients/DisconnectedClientsPage";
 import EditCustomTypePage from "./components/uav/types/EditCustomTypePage";
 import EthernetAssetsPage from "./components/ethernet/assets/EthernetAssetsPage";
-import BluetoothMonitoringPage from "./components/bluetooth/monitoring/BluetoothMonitoringPage";
-import CreateBluetoothMonitoringRulePage from "./components/bluetooth/monitoring/CreateBluetoothMonitoringRulePage";
 import DHCPTransactionsPage from "./components/ethernet/assets/dhcp/DHCPTransactionsPage";
 import DHCPTransactionDetailsPage from "./components/ethernet/assets/dhcp/DHCPTransactionDetailsPage";
 import GlobalTenantSelectorForm from "./components/system/tenantselector/GlobalTenantSelectorForm";
@@ -649,10 +647,6 @@ function App() {
                                 { /* Bluetooth Clients/Devices. */}
                                 <Route path={ApiRoutes.BLUETOOTH.DEVICES.INDEX} element={<BluetoothDevicesPage />}/>
                                 <Route path={ApiRoutes.BLUETOOTH.DEVICES.DETAILS(':macParam')} element={<BluetoothDeviceDetailsPage />}/>
-
-                                { /* Bluetooth Monitoring. */}
-                                <Route path={ApiRoutes.BLUETOOTH.MONITORING.INDEX} element={<BluetoothMonitoringPage />}/>
-                                <Route path={ApiRoutes.BLUETOOTH.MONITORING.RULES.CREATE(':organizationId', ':tenantId')} element={<CreateBluetoothMonitoringRulePage />}/>
                               </Route>
 
                               { /* UAV. */ }
