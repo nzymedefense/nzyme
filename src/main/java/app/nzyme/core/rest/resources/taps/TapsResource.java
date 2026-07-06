@@ -90,6 +90,50 @@ public class TapsResource extends TapDataHandlingResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ANY)
+    @Path("/show/{uuid}/highlevel")
+    public Response findOneWithHighLevelInformation(@Context SecurityContext sc,
+                                                    @PathParam("uuid") UUID uuid,
+                                                    @QueryParam("organization_id") @NotNull UUID organizationId,
+                                                    @QueryParam("tenant_id") @NotNull UUID tenantId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)
+                || !tapIdAccessible(authenticatedUser, nzyme, uuid)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Tap> tap = nzyme.getTapManager().findTap(uuid);
+
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationEntry> location = nzyme
+                .getAuthenticationService().findTenantLocation(tap.get().locationId(), organizationId, tenantId);
+
+        String locationName;
+        String floorName;
+        if (location.isPresent()) {
+            locationName = location.get().name();
+            Optional<TenantLocationFloorEntry> floor = nzyme.getAuthenticationService()
+                    .findFloorOfTenantLocation(location.get().uuid(), tap.get().floorId());
+            floorName = floor.map(TenantLocationFloorEntry::name).orElse(null);
+        } else {
+            locationName = null;
+            floorName = null;
+        }
+
+        return Response.ok(TapHighLevelInformationDetailsResponse.create(
+                tap.get().uuid(),
+                tap.get().name(),
+                locationName,
+                floorName,
+                Tools.isTapActive(tap.get().lastReport())
+        )).build();
+    }
+
+    @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     public Response findAll(@Context SecurityContext sc,
                             @QueryParam("organization_id") @NotNull UUID organizationId,

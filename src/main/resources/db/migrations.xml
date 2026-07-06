@@ -8029,4 +8029,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_gnss_elevation_mask_cutoff_to_taps" author="lennartkoopmann">
+        <addColumn tableName="taps">
+            <column name="gnss_elevation_mask_cutoff" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

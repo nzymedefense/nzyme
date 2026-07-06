@@ -6,7 +6,7 @@ import Store from "../../util/Store";
 
 // TODO this has a good amount of overlap with the individual PRN sky plot. We may eventually want to share more.
 
-export default function GNSSSkyPlot({ satellites, elevationMask, height = 520 }) {
+export default function GNSSSkyPlot({ satellites, tapId, elevationMask, height = 520 }) {
   const containerRef = useRef(null);
   const tooltipRef = useRef(null);
   const [darkMode, setDarkMode] = React.useState(Store.get('dark_mode'));
@@ -551,7 +551,7 @@ export default function GNSSSkyPlot({ satellites, elevationMask, height = 520 })
         .style("opacity", (d) => (d.used ? 1.0 : 0.5))
         .attr("title", (d) => `${d.constellation} PRN ${d.prn} `)
         .on("click", (event, d) => {
-          window.location.href = ApiRoutes.GNSS.PRN(d.constellation, d.prn);
+          window.location.href = ApiRoutes.GNSS.TAP_DETAILS.PRN(tapId, d.constellation, d.prn);
         })
         .on("mousemove", (event, d) => {
           if (!tooltip) return;

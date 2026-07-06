@@ -6,16 +6,10 @@ import app.nzyme.core.gnss.Constellation;
 import app.nzyme.core.gnss.GNSSRegistryKeys;
 import app.nzyme.core.gnss.db.*;
 import app.nzyme.core.gnss.db.elevationmasks.GNSSElevationMaskAzimuthBucket;
-import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntry;
 import app.nzyme.core.rest.TapDataHandlingResource;
-import app.nzyme.core.rest.authentication.AuthenticatedUser;
-import app.nzyme.core.rest.requests.CreateGNSSMonitoringRuleRequest;
 import app.nzyme.core.rest.requests.GenericConfigurationUpdateRequest;
-import app.nzyme.core.rest.requests.UpdateGNSSMonitoringRuleRequest;
 import app.nzyme.core.rest.responses.gnss.*;
 import app.nzyme.core.rest.responses.gnss.monitoring.GNSSMonitoringConfigurationResponse;
-import app.nzyme.core.rest.responses.gnss.monitoring.GNSSMonitoringRuleDetailsResponse;
-import app.nzyme.core.rest.responses.gnss.monitoring.GNSSMonitoringRulesListResponse;
 import app.nzyme.core.rest.responses.shared.LatLonResponse;
 import app.nzyme.core.rest.responses.taps.TapHighLevelInformationDetailsResponse;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
@@ -54,12 +48,40 @@ public class GNSSResource extends TapDataHandlingResource {
     private NzymeNode nzyme;
 
     @GET
+    @Path("/taps")
+    public Response taps(@Context SecurityContext sc,
+                         @QueryParam("show_all") boolean showAll,
+                         @QueryParam("organization_id") UUID organizationId,
+                         @QueryParam("tenant_id") UUID tenantId) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        DateTime captureCutoff;
+        if (showAll) {
+            captureCutoff = new DateTime(0);
+        } else {
+            captureCutoff = DateTime.now().minusHours(1);
+        }
+
+        List<GNSSTapDetailsResponse> taps = Lists.newArrayList();
+        for (Tap tap : nzyme.getGnss().findAllTapsWithGNSSCapture(organizationId, tenantId, captureCutoff)) {
+            taps.add(GNSSTapDetailsResponse.create(tap.uuid(), tap.name()));
+        }
+
+        return Response.ok(GNSSTapListResponse.create(taps)).build();
+    }
+
+    @GET
     @Path("/constellations/{constellation}/coordinates")
     public Response constellationCoordinates(@Context SecurityContext sc,
                                              @PathParam("constellation") String constellationParam,
                                              @QueryParam("time_range") @Valid String timeRangeParameter,
-                                             @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                             @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         Constellation constellation;
@@ -71,23 +93,21 @@ public class GNSSResource extends TapDataHandlingResource {
 
         // Coordinates.
         List<LatLonResponse> coordinates = Lists.newArrayList();
-        for (LatLonResult coords : nzyme.getGnss().getRecordedCoordinates(constellation, timeRange, taps)) {
+        for (LatLonResult coords : nzyme.getGnss().getRecordedCoordinates(constellation, timeRange, tapId)) {
             coordinates.add(LatLonResponse.create(coords.lat(), coords.lon()));
         }
 
         // Tap locations.
         List<GNSSTapLocationResponse> tapLocations = Lists.newArrayList();
-        for (UUID tapUuid : taps) {
-            Optional<Tap> tap = nzyme.getTapManager().findTap(tapUuid);
-            if (tap.isPresent() && tap.get().latitude() != null && tap.get().longitude() != null
-                    && tap.get().latitude() != 0 && tap.get().longitude() != 0) {
-                tapLocations.add(GNSSTapLocationResponse.create(
-                        tap.get().latitude(),
-                        tap.get().longitude(),
-                        Tools.isTapActive(tap.get().lastReport()),
-                        tap.get().name()
-                ));
-            }
+        Optional<Tap> tap = nzyme.getTapManager().findTap(tapId);
+        if (tap.isPresent() && tap.get().latitude() != null && tap.get().longitude() != null
+                && tap.get().latitude() != 0 && tap.get().longitude() != 0) {
+            tapLocations.add(GNSSTapLocationResponse.create(
+                    tap.get().latitude(),
+                    tap.get().longitude(),
+                    Tools.isTapActive(tap.get().lastReport()),
+                    tap.get().name()
+            ));
         }
 
         return Response.ok(GNSSConstellationCoordinatesResponse.create(coordinates, tapLocations)).build();
@@ -97,14 +117,16 @@ public class GNSSResource extends TapDataHandlingResource {
     @Path("/pdop/histogram")
     public Response pdopHistogram(@Context SecurityContext sc,
                                   @QueryParam("time_range") @Valid String timeRangeParameter,
-                                  @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                  @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Map<DateTime, GNSSDoubleBucketResponse> histogram = Maps.newHashMap();
-        for (GNSSDoubleBucket bucket : nzyme.getGnss().getPdopHistogram(timeRange, bucketing, taps)) {
+        for (GNSSDoubleBucket bucket : nzyme.getGnss().getPdopHistogram(timeRange, bucketing, tapId)) {
             histogram.put(bucket.bucket(), GNSSDoubleBucketResponse.create(
                     bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
             ));
@@ -117,30 +139,30 @@ public class GNSSResource extends TapDataHandlingResource {
     @Path("/distances")
     public Response distances(@Context SecurityContext sc,
                               @QueryParam("time_range") @Valid String timeRangeParameter,
-                              @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                              @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         List<GNSSConstellationDistancesResponse> response = Lists.newArrayList();
 
-        for (UUID tapId : taps) {
-            Optional<Tap> tap = nzyme.getTapManager().findTap(tapId);
+        Optional<Tap> tap = nzyme.getTapManager().findTap(tapId);
 
-            if (tap.isEmpty() || tap.get().latitude() == null || tap.get().longitude() == null) {
-                continue;
-            }
-
-            GNSSConstellationDistances d = nzyme.getGnss().getConstellationDistancesFromTap(timeRange, tap.get());
-
-            response.add(GNSSConstellationDistancesResponse.create(TapHighLevelInformationDetailsResponse.create(
-                    tap.get().uuid(),
-                    tap.get().name(),
-                    null,
-                    null,
-                    Tools.isTapActive(tap.get().lastReport())
-            ), d.gps(), d.glonass(), d.beidou(), d.galileo()));
+        if (tap.isEmpty() || tap.get().latitude() == null || tap.get().longitude() == null) {
+           return Response.status(Response.Status.NOT_FOUND).build();
         }
+
+        GNSSConstellationDistances d = nzyme.getGnss().getConstellationDistancesFromTap(timeRange, tap.get());
+
+        response.add(GNSSConstellationDistancesResponse.create(TapHighLevelInformationDetailsResponse.create(
+                tap.get().uuid(),
+                tap.get().name(),
+                null,
+                null,
+                Tools.isTapActive(tap.get().lastReport())
+        ), d.gps(), d.glonass(), d.beidou(), d.galileo()));
 
         return Response.ok(response).build();
     }
@@ -149,14 +171,16 @@ public class GNSSResource extends TapDataHandlingResource {
     @Path("/fix/satellites/histogram")
     public Response fixSatellitesHistogram(@Context SecurityContext sc,
                                            @QueryParam("time_range") @Valid String timeRangeParameter,
-                                           @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                           @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Map<DateTime, GNSSIntegerBucketResponse> histogram = Maps.newHashMap();
-        for (GNSSIntegerBucket bucket : nzyme.getGnss().getFixSatelliteHistogram(timeRange, bucketing, taps)) {
+        for (GNSSIntegerBucket bucket : nzyme.getGnss().getFixSatelliteHistogram(timeRange, bucketing, tapId)) {
             histogram.put(bucket.bucket(), GNSSIntegerBucketResponse.create(
                     bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
             ));
@@ -169,14 +193,16 @@ public class GNSSResource extends TapDataHandlingResource {
     @Path("/fix/status/histogram")
     public Response fixStatusHistogram(@Context SecurityContext sc,
                                        @QueryParam("time_range") @Valid String timeRangeParameter,
-                                       @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                       @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Map<DateTime, GNSSStringBucketResponse> histogram = Maps.newHashMap();
-        for (GNSSStringBucket bucket : nzyme.getGnss().getFixStatusHistogram(timeRange, bucketing, taps)) {
+        for (GNSSStringBucket bucket : nzyme.getGnss().getFixStatusHistogram(timeRange, bucketing, tapId)) {
             histogram.put(bucket.bucket(), GNSSStringBucketResponse.create(
                     bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
             ));
@@ -189,14 +215,16 @@ public class GNSSResource extends TapDataHandlingResource {
     @Path("/altitude/histogram")
     public Response altitudeHistogram(@Context SecurityContext sc,
                                       @QueryParam("time_range") @Valid String timeRangeParameter,
-                                      @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                      @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Map<DateTime, GNSSIntegerBucketResponse> histogram = Maps.newHashMap();
-        for (GNSSIntegerBucket bucket : nzyme.getGnss().getAltitudeHistogram(timeRange, bucketing, taps)) {
+        for (GNSSIntegerBucket bucket : nzyme.getGnss().getAltitudeHistogram(timeRange, bucketing, tapId)) {
             histogram.put(bucket.bucket(), GNSSIntegerBucketResponse.create(
                     bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
             ));
@@ -209,14 +237,16 @@ public class GNSSResource extends TapDataHandlingResource {
     @Path("/satellites/visible/histogram")
     public Response satellitesInViewHistogram(@Context SecurityContext sc,
                                               @QueryParam("time_range") @Valid String timeRangeParameter,
-                                              @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                              @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Map<DateTime, GNSSIntegerBucketResponse> histogram = Maps.newHashMap();
-        for (GNSSIntegerBucket bucket : nzyme.getGnss().getSatellitesInViewHistogram(timeRange, bucketing, taps)) {
+        for (GNSSIntegerBucket bucket : nzyme.getGnss().getSatellitesInViewHistogram(timeRange, bucketing, tapId)) {
             histogram.put(bucket.bucket(), GNSSIntegerBucketResponse.create(
                     bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
             ));
@@ -229,18 +259,21 @@ public class GNSSResource extends TapDataHandlingResource {
     @Path("/satellites/visible/list")
     public Response satellitesInViewList(@Context SecurityContext sc,
                                          @QueryParam("time_range") @Valid String timeRangeParameter,
-                                         @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                         @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         List<SatelliteInViewResponse> satellites = Lists.newArrayList();
-        for (GNSSSatelliteInView sat : nzyme.getGnss().findAllSatellitesInView(timeRange, taps)) {
+        for (GNSSSatelliteInView sat : nzyme.getGnss().findAllSatellitesInView(timeRange, tapId)) {
             // Get previous positions to draw a track.
             Constellation constellation = Constellation.valueOf(sat.constellation());
 
             List<GNSSPRNTrackPointResponse> trackPoints = Lists.newArrayList();
             for (GNSSPRNTrackPoint point : nzyme.getGnss()
-                    .findRecentSatelliteTrack(constellation, sat.prn(), DateTime.now().minusMinutes(15), taps)) {
+                    .findRecentSatelliteTrack(constellation, sat.prn(), DateTime.now().minusMinutes(15), tapId)) {
                 trackPoints.add(GNSSPRNTrackPointResponse.create(
                         point.averageSno(),
                         point.azimuthDegrees(),
@@ -270,11 +303,13 @@ public class GNSSResource extends TapDataHandlingResource {
     @GET
     @Path("/elevationmask")
     public Response elevationMask(@Context SecurityContext sc,
-                                  @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                  @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         Map<Integer, GNSSElevationMaskAzimuthBucketResponse> response = Maps.newHashMap();
-        for (GNSSElevationMaskAzimuthBucket bucket : nzyme.getGnss().getElevationMask(taps)) {
+        for (GNSSElevationMaskAzimuthBucket bucket : nzyme.getGnss().getElevationMask(tapId)) {
             response.put(bucket.azimuthBucket(),  GNSSElevationMaskAzimuthBucketResponse.create(
                     bucket.azimuthBucket(),
                     bucket.skylineElevation(),
@@ -295,16 +330,13 @@ public class GNSSResource extends TapDataHandlingResource {
 
     @DELETE
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
-    @Path("/elevationmask/tap/{tapUuid}")
-    public Response cleanElevationMask(@Context SecurityContext sc, @PathParam("tapUuid") UUID tapUuid) {
-        AuthenticatedUser user = getAuthenticatedUser(sc);
-
-        List<UUID> userAccessibleTaps = nzyme.getTapManager().allTapUUIDsAccessibleByUser(user);
-        if (!userAccessibleTaps.contains(tapUuid)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+    @Path("/elevationmask/tap/{tap}")
+    public Response cleanElevationMask(@Context SecurityContext sc, @PathParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getGnss().cleanElevationMask(tapUuid);
+        nzyme.getGnss().cleanElevationMask(tapId);
 
         return Response.ok().build();
     }
@@ -313,14 +345,16 @@ public class GNSSResource extends TapDataHandlingResource {
     @Path("/rfmon/jamming-indicator/histogram")
     public Response rfmonJammingIndicatorHistogram(@Context SecurityContext sc,
                                                    @QueryParam("time_range") @Valid String timeRangeParameter,
-                                                   @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                                   @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Map<DateTime, GNSSIntegerBucketResponse> histogram = Maps.newHashMap();
-        for (GNSSIntegerBucket bucket : nzyme.getGnss().getMonRfJammingIndicatorHistogram(timeRange, bucketing, taps)) {
+        for (GNSSIntegerBucket bucket : nzyme.getGnss().getMonRfJammingIndicatorHistogram(timeRange, bucketing, tapId)) {
             histogram.put(bucket.bucket(), GNSSIntegerBucketResponse.create(
                     bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
             ));
@@ -333,14 +367,16 @@ public class GNSSResource extends TapDataHandlingResource {
     @Path("/rfmon/agc-count/histogram")
     public Response rfmonAgcCountHistogram(@Context SecurityContext sc,
                                            @QueryParam("time_range") @Valid String timeRangeParameter,
-                                           @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                           @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Map<DateTime, GNSSIntegerBucketResponse> histogram = Maps.newHashMap();
-        for (GNSSIntegerBucket bucket : nzyme.getGnss().getMonRfAgcCountHistogram(timeRange, bucketing, taps)) {
+        for (GNSSIntegerBucket bucket : nzyme.getGnss().getMonRfAgcCountHistogram(timeRange, bucketing, tapId)) {
             histogram.put(bucket.bucket(), GNSSIntegerBucketResponse.create(
                     bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
             ));
@@ -353,14 +389,16 @@ public class GNSSResource extends TapDataHandlingResource {
     @Path("/rfmon/noise/histogram")
     public Response rfmonNoiseHistogram(@Context SecurityContext sc,
                                         @QueryParam("time_range") @Valid String timeRangeParameter,
-                                        @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                        @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.getConfig(timeRange);
 
         Map<DateTime, GNSSIntegerBucketResponse> histogram = Maps.newHashMap();
-        for (GNSSIntegerBucket bucket : nzyme.getGnss().getMonRfNoiseHistogram(timeRange, bucketing, taps)) {
+        for (GNSSIntegerBucket bucket : nzyme.getGnss().getMonRfNoiseHistogram(timeRange, bucketing, tapId)) {
             histogram.put(bucket.bucket(), GNSSIntegerBucketResponse.create(
                     bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
             ));
@@ -375,8 +413,11 @@ public class GNSSResource extends TapDataHandlingResource {
                                                  @PathParam("constellation") String constellationParam,
                                                  @PathParam("prn") @Min(1) int prn,
                                                  @QueryParam("time_range") @Valid String timeRangeParameter,
-                                                 @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                                 @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.BucketingConfiguration.create(Bucketing.Type.MINUTE);
 
@@ -389,7 +430,7 @@ public class GNSSResource extends TapDataHandlingResource {
 
         Map<DateTime, Integer> response = Maps.newHashMap();
         for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
-                .getPrnSnoHistogram(constellation, prn, timeRange, bucketing, taps)) {
+                .getPrnSnoHistogram(constellation, prn, timeRange, bucketing, tapId)) {
             response.put(bucket.bucket(), bucket.value());
         }
 
@@ -402,8 +443,11 @@ public class GNSSResource extends TapDataHandlingResource {
                                                        @PathParam("constellation") String constellationParam,
                                                        @PathParam("prn") @Min(1) int prn,
                                                        @QueryParam("time_range") @Valid String timeRangeParameter,
-                                                       @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                                       @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.BucketingConfiguration.create(Bucketing.Type.MINUTE);
 
@@ -417,7 +461,7 @@ public class GNSSResource extends TapDataHandlingResource {
         Map<DateTime, Integer> response = Maps.newHashMap();
 
         for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
-                .getPrnElevationHistogram(constellation, prn, timeRange, bucketing, taps)) {
+                .getPrnElevationHistogram(constellation, prn, timeRange, bucketing, tapId)) {
             response.put(bucket.bucket(), bucket.value());
         }
 
@@ -430,8 +474,11 @@ public class GNSSResource extends TapDataHandlingResource {
                                                      @PathParam("constellation") String constellationParam,
                                                      @PathParam("prn") @Min(1) int prn,
                                                      @QueryParam("time_range") @Valid String timeRangeParameter,
-                                                     @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                                     @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.BucketingConfiguration.create(Bucketing.Type.MINUTE);
 
@@ -445,7 +492,7 @@ public class GNSSResource extends TapDataHandlingResource {
         Map<DateTime, Integer> response = Maps.newHashMap();
 
         for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
-                .getPrnAzimuthHistogram(constellation, prn, timeRange, bucketing, taps)) {
+                .getPrnAzimuthHistogram(constellation, prn, timeRange, bucketing, tapId)) {
             response.put(bucket.bucket(), bucket.value());
         }
 
@@ -458,8 +505,11 @@ public class GNSSResource extends TapDataHandlingResource {
                                                      @PathParam("constellation") String constellationParam,
                                                      @PathParam("prn") @Min(1) int prn,
                                                      @QueryParam("time_range") @Valid String timeRangeParameter,
-                                                     @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                                     @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.BucketingConfiguration.create(Bucketing.Type.MINUTE);
 
@@ -473,7 +523,7 @@ public class GNSSResource extends TapDataHandlingResource {
         Map<DateTime, Integer> response = Maps.newHashMap();
 
         for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
-                .getPrnDopplerHistogram(constellation, prn, timeRange, bucketing, taps)) {
+                .getPrnDopplerHistogram(constellation, prn, timeRange, bucketing, tapId)) {
             response.put(bucket.bucket(), bucket.value());
         }
 
@@ -486,8 +536,11 @@ public class GNSSResource extends TapDataHandlingResource {
                                                             @PathParam("constellation") String constellationParam,
                                                             @PathParam("prn") @Min(1) int prn,
                                                             @QueryParam("time_range") @Valid String timeRangeParameter,
-                                                            @QueryParam("taps") String tapIds) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+                                                            @QueryParam("tap") UUID tapId) {
+        if (!tapIdAccessible(getAuthenticatedUser(sc), nzyme, tapId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
         Bucketing.BucketingConfiguration bucketing = Bucketing.BucketingConfiguration.create(Bucketing.Type.MINUTE);
 
@@ -500,126 +553,11 @@ public class GNSSResource extends TapDataHandlingResource {
 
         Map<DateTime, Integer> response = Maps.newHashMap();
         for (GenericIntegerHistogramEntry bucket : nzyme.getGnss()
-                .getPrnMultipathIndexHistogram(constellation, prn, timeRange, bucketing, taps)) {
+                .getPrnMultipathIndexHistogram(constellation, prn, timeRange, bucketing, tapId)) {
             response.put(bucket.bucket(), bucket.value());
         }
 
         return Response.ok(response).build();
-    }
-
-    @GET
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
-    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules/show/{uuid}")
-    public Response findMonitoringRule(@Context SecurityContext sc,
-                                       @PathParam("uuid") UUID uuid,
-                                       @PathParam("organizationId") UUID organizationId,
-                                       @PathParam("tenantId") UUID tenantId) {
-        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        Optional<GNSSMonitoringRuleEntry> rule = nzyme.getGnss()
-                .findMonitoringRuleOfTenant(uuid, organizationId, tenantId);
-
-        if (rule.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        return Response.ok(buildMonitoringRuleResponse(rule.get())).build();
-    }
-
-    @GET
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
-    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules")
-    public Response findAllMonitoringRules(@Context SecurityContext sc,
-                                           @PathParam("organizationId") UUID organizationId,
-                                           @PathParam("tenantId") UUID tenantId,
-                                           @QueryParam("limit") int limit,
-                                           @QueryParam("offset") int offset) {
-        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        long total = nzyme.getGnss().countAllMonitoringRulesOfTenant(organizationId, tenantId);
-
-        List<GNSSMonitoringRuleDetailsResponse> rules = Lists.newArrayList();
-        for (GNSSMonitoringRuleEntry rule : nzyme.getGnss()
-                .findAllMonitoringRulesOfTenant(organizationId, tenantId, limit, offset)) {
-            rules.add(buildMonitoringRuleResponse(rule));
-        }
-
-        return Response.ok(GNSSMonitoringRulesListResponse.create(total, rules)).build();
-    }
-
-    @POST
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
-    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules")
-    public Response createMonitoringRule(@Context SecurityContext sc,
-                                         @PathParam("organizationId") UUID organizationId,
-                                         @PathParam("tenantId") UUID tenantId,
-                                         @Valid CreateGNSSMonitoringRuleRequest request) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, request.taps());
-
-        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        nzyme.getGnss().createMonitoringRule(
-                request.name(), request.description(), request.conditions(), taps, organizationId, tenantId
-        );
-
-        return Response.ok().build();
-    }
-
-    @PUT
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
-    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules/show/{uuid}")
-    public Response editMonitoringRule(@Context SecurityContext sc,
-                                       @PathParam("uuid") UUID uuid,
-                                       @PathParam("organizationId") UUID organizationId,
-                                       @PathParam("tenantId") UUID tenantId,
-                                       @Valid UpdateGNSSMonitoringRuleRequest request) {
-        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, request.taps());
-
-        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        Optional<GNSSMonitoringRuleEntry> rule = nzyme.getGnss()
-                .findMonitoringRuleOfTenant(uuid, organizationId, tenantId);
-
-        if (rule.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        nzyme.getGnss().updateMonitoringRule(
-                rule.get().id(), request.name(), request.description(), request.conditions(), taps
-        );
-
-        return Response.ok().build();
-    }
-
-    @DELETE
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "gnss_monitoring_manage" })
-    @Path("/monitoring/organization/{organizationId}/tenant/{tenantId}/rules/show/{uuid}")
-    public Response deleteMonitoringRule(@Context SecurityContext sc,
-                                         @PathParam("uuid") UUID uuid,
-                                         @PathParam("organizationId") UUID organizationId,
-                                         @PathParam("tenantId") UUID tenantId) {
-        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        Optional<GNSSMonitoringRuleEntry> rule = nzyme.getGnss()
-                .findMonitoringRuleOfTenant(uuid, organizationId, tenantId);
-
-        if (rule.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        nzyme.getGnss().deleteMonitoringRule(rule.get().id());
-
-        return Response.ok().build();
     }
 
     @GET
@@ -685,49 +623,6 @@ public class GNSSResource extends TapDataHandlingResource {
         }
 
         return Response.ok().build();
-    }
-
-    private GNSSMonitoringRuleDetailsResponse buildMonitoringRuleResponse(GNSSMonitoringRuleEntry rule) {
-        List<TapHighLevelInformationDetailsResponse> taps;
-
-        if (rule.taps().isEmpty()) {
-            taps = null;
-        } else {
-            List<TapHighLevelInformationDetailsResponse> tapInfos = Lists.newArrayList();
-
-            for (UUID tapUuid : rule.taps().get()) {
-                Optional<Tap> tap = nzyme.getTapManager().findTap(tapUuid);
-
-                if (tap.isPresent()) {
-                    tapInfos.add(TapHighLevelInformationDetailsResponse.create(
-                            tap.get().uuid(),
-                            tap.get().name(),
-                            null,
-                            null,
-                            Tools.isTapActive(tap.get().lastReport())
-                    ));
-                }
-            }
-
-            taps = tapInfos;
-        }
-
-        return GNSSMonitoringRuleDetailsResponse.create(
-                rule.uuid(),
-                rule.organizationId(),
-                rule.tenantId(),
-                rule.name(),
-                rule.description(),
-                rule.conditions()
-                        .values()
-                        .stream()
-                        .mapToInt(List::size)
-                        .sum(),
-                rule.conditions(),
-                taps,
-                rule.updatedAt(),
-                rule.createdAt()
-        );
     }
 
 }

@@ -52,6 +52,14 @@ public class TapDataHandlingResource extends UserAuthenticatedResource {
         );
     }
 
+    protected boolean tapIdAccessible(AuthenticatedUser requestingUser,
+                                     NzymeNode nzyme,
+                                     UUID tapId) {
+        return nzyme.getTapManager()
+                .allTapUUIDsAccessibleByUser(requestingUser)
+                .contains(tapId);
+    }
+
     private List<UUID> parseAndValidateTapIds(AuthenticatedUser requestingUser,
                                               List<String> tapIds,
                                               List<UUID> userAccessibleTaps) {

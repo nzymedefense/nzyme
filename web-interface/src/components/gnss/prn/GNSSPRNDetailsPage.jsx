@@ -13,19 +13,26 @@ import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import GNSSPRNDopplerHistogram from "./GNSSPRNDopplerHistogram";
 import GNSSPRNMultipathIndexHistogram from "./GNSSPRNMultipathIndexHistogram";
 import usePageTitle from "../../../util/UsePageTitle";
+import TapService from "../../../services/TapsService";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
+import LoadingSpinner from "../../misc/LoadingSpinner";
 
 const gnssService = new GnssService();
+const tapService = new TapService();
 
 export default function GNSSPRNDetailsPage(props) {
 
   const {constellation} = useParams();
   const {prn} = useParams();
+  const {tapId} = useParams();
 
+  const [organizationId, tenantId] = useSelectedTenant();
   const tapContext = useContext(TapContext);
-  const selectedTaps = tapContext.taps;
 
   const [timeRange, setTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [revision, setRevision] = useState(new Date());
+
+  const [tap, setTap] = useState(null);
 
   const [snoHistogram, setSnoHistogram] = useState(null);
   const [elevationHistogram, setElevationHistogram] = useState(null);
@@ -34,14 +41,10 @@ export default function GNSSPRNDetailsPage(props) {
   const [multipathHistogram, setMultipathHistogram] = useState(null);
   const [elevationMask, setElevationMask] = useState(null);
 
-  usePageTitle((prn && constellation) ? `GNSS ${constellation} PRN: ${prn}` : "GNSS PRN Details");
+  usePageTitle((prn && constellation && tap) ? `GNSS ${constellation} PRN: ${prn} (at Tap ${tap.name})` : "GNSS PRN Details");
 
   useEffect(() => {
-    enableTapSelector(tapContext);
-
-    return () => {
-      disableTapSelector(tapContext);
-    }
+    disableTapSelector(tapContext);
   }, [tapContext]);
 
   useEffect(() => {
@@ -52,13 +55,23 @@ export default function GNSSPRNDetailsPage(props) {
     setMultipathHistogram(null);
     setElevationMask(null);
 
-    gnssService.getPrnSnoHistogram(constellation, prn, timeRange, selectedTaps, setSnoHistogram);
-    gnssService.getPrnElevationHistogram(constellation, prn, timeRange, selectedTaps, setElevationHistogram);
-    gnssService.getPrnAzimuthHistogram(constellation, prn, timeRange, selectedTaps, setAzimuthHistogram);
-    gnssService.getPrnDopplerHistogram(constellation, prn, timeRange, selectedTaps, setDopplerHistogram);
-    gnssService.getPrnMultipathHistogram(constellation, prn, timeRange, selectedTaps, setMultipathHistogram);
-    gnssService.getElevationMask(selectedTaps, setElevationMask);
-  }, [constellation, prn, selectedTaps, timeRange, revision]);
+    gnssService.getPrnSnoHistogram(constellation, prn, timeRange, tapId, setSnoHistogram);
+    gnssService.getPrnElevationHistogram(constellation, prn, timeRange, tapId, setElevationHistogram);
+    gnssService.getPrnAzimuthHistogram(constellation, prn, timeRange, tapId, setAzimuthHistogram);
+    gnssService.getPrnDopplerHistogram(constellation, prn, timeRange, tapId, setDopplerHistogram);
+    gnssService.getPrnMultipathHistogram(constellation, prn, timeRange, tapId, setMultipathHistogram);
+    gnssService.getElevationMask(tapId, setElevationMask);
+  }, [constellation, prn, tapId, timeRange, revision]);
+
+  useEffect(() => {
+    setTap(null);
+
+    tapService.findTapHighLevel(tapId, organizationId, tenantId, setTap);
+  }, [tapId, organizationId, tenantId])
+
+  if (!tap) {
+    return <LoadingSpinner />
+  }
 
   return (
     <React.Fragment>
@@ -67,15 +80,16 @@ export default function GNSSPRNDetailsPage(props) {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item">GNSS</li>
-              <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.CONSTELLATIONS.SATELLITES}>Satellites</a></li>
-              <li className="breadcrumb-item">{constellation} PRN <span className="machine-data">{prn}</span></li>
-              <li className="breadcrumb-item active" aria-current="page">Details</li>
+              <li className="breadcrumb-item">Taps</li>
+              <li className="breadcrumb-item">{tap.name}</li>
+              <li className="breadcrumb-item"><a href={ApiRoutes.GNSS.TAP_DETAILS.SATELLITES(tapId)}>Satellites</a></li>
+              <li className="breadcrumb-item active">{constellation} PRN <span className="machine-data">{prn}</span></li>
             </ol>
           </nav>
         </div>
 
         <div className="col-2">
-          <a href={ApiRoutes.GNSS.CONSTELLATIONS.SATELLITES} className="btn btn-secondary float-end">Back</a>
+          <a href={ApiRoutes.GNSS.TAP_DETAILS.SATELLITES(tapId)} className="btn btn-secondary float-end">Back</a>
         </div>
       </div>
 

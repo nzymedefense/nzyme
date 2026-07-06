@@ -8,9 +8,7 @@ import GNSSPRN from "./GNSSPRN";
 import GNSSCn0 from "./GNSSCn0";
 import GNSSMultipathIndicator from "./GNSSMultipathIndicator";
 
-export default function GNSSSatellitesInViewTable(props) {
-
-  const satellites = props.satellites;
+export default function GNSSSatellitesInViewTable({tapId, satellites}) {
 
   if (satellites == null) {
     return <GenericWidgetLoadingSpinner height={500} />
@@ -55,7 +53,7 @@ export default function GNSSSatellitesInViewTable(props) {
               <td><GNSSMultipathIndicator indicator={sat.maximum_multipath_indicator} /></td>
               <td><GNSSDegrees degrees={sat.azimuth_degrees} /></td>
               <td><GNSSDegrees degrees={sat.elevation_degrees} /></td>
-              <td><a href={ApiRoutes.GNSS.PRN(sat.constellation, sat.prn)}>Details</a></td>
+              <td><a href={ApiRoutes.GNSS.TAP_DETAILS.PRN(tapId, sat.constellation, sat.prn)}>Details</a></td>
             </tr>
           )
         })}

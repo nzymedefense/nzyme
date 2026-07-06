@@ -45,8 +45,12 @@ public class GNSSElevationMaskThread extends Periodical {
                                         "AS azimuth_bucket, sats.elevation_degrees::double precision AS elevation, " +
                                         "sats.average_sno::double precision AS sno FROM gnss_sats_in_view sats" +
                                         " JOIN gnss_constellations c ON sats.gnss_constellation_id = c.id " +
+                                        "JOIN taps t ON c.tap_uuid = t.uuid " +
                                         "CROSS JOIN params p WHERE c.timestamp >= p.window_start " +
-                                        "AND c.timestamp < p.window_end AND sats.azimuth_degrees IS NOT NULL " +
+                                        "AND c.timestamp < p.window_end " +
+                                        "AND (t.gnss_elevation_mask_cutoff IS NULL " +
+                                        "OR c.timestamp >= t.gnss_elevation_mask_cutoff) " +
+                                        "AND sats.azimuth_degrees IS NOT NULL " +
                                         "AND sats.elevation_degrees IS NOT NULL AND sats.average_sno IS NOT NULL " +
                                         "AND sats.elevation_degrees >= p.el_min_deg AND sats.azimuth_degrees >= 0 " +
                                         "AND sats.azimuth_degrees < 360 ), agg AS (" +

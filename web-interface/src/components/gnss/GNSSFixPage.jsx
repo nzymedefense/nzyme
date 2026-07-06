@@ -15,17 +15,25 @@ import {GNSS_MENU_ITEMS} from "./GNSSMenuItems";
 import {Presets} from "../shared/timerange/TimeRange";
 import usePageTitle from "../../util/UsePageTitle";
 import {timeRangeFromURLOrDefault} from "../shared/timerange/TimeRangeSelector";
+import {useParams} from "react-router-dom";
+import TapService from "../../services/TapsService";
+import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
+import LoadingSpinner from "../misc/LoadingSpinner";
+import Routes from "../../util/ApiRoutes";
 
 const gnssService = new GnssService();
+const tapService = new TapService();
 
-export default function GNSSConstellationsFixPage() {
+export default function GNSSFixPage() {
 
-  usePageTitle("GNSS Fix");
+  const {tapId} = useParams();
 
+  const [organizationId, tenantId] = useSelectedTenant();
   const tapContext = useContext(TapContext);
-  const selectedTaps = tapContext.taps;
 
   const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24, "primary"));
+
+  const [tap, setTap] = useState(null);
 
   const [pdopHistogram, setPdopHistogram] = useState(null);
   const [fixSatellitesHistogram, setFixSatellitesHistogram] = useState(null);
@@ -40,12 +48,10 @@ export default function GNSSConstellationsFixPage() {
 
   const [revision, setRevision] = useState(new Date());
 
-  useEffect(() => {
-    enableTapSelector(tapContext);
+  usePageTitle(tap ? "GNSS Fix at Tap \"" + tap.name + "\"" : "GNSS Fix");
 
-    return () => {
-      disableTapSelector(tapContext);
-    }
+  useEffect(() => {
+    disableTapSelector(tapContext);
   }, [tapContext]);
 
   useEffect(() => {
@@ -55,12 +61,17 @@ export default function GNSSConstellationsFixPage() {
     setAltitudeHistogram(null);
     setConstellationCoordinates(null);
 
-    gnssService.getPdopHistogram(timeRange, selectedTaps, setPdopHistogram);
-    gnssService.getFixSatellitesHistogram(timeRange, selectedTaps, setFixSatellitesHistogram);
-    gnssService.getFixStatusHistogram(timeRange, selectedTaps, setFixStatusHistogram);
-    gnssService.getAltitudeHistogram(timeRange, selectedTaps, setAltitudeHistogram);
+    gnssService.getPdopHistogram(timeRange, tapId, setPdopHistogram);
+    gnssService.getFixSatellitesHistogram(timeRange, tapId, setFixSatellitesHistogram);
+    gnssService.getFixStatusHistogram(timeRange, tapId, setFixStatusHistogram);
+    gnssService.getAltitudeHistogram(timeRange, tapId, setAltitudeHistogram);
+  }, [timeRange, tapId, revision])
 
-  }, [timeRange, selectedTaps, revision])
+  useEffect(() => {
+    setTap(null);
+
+    tapService.findTapHighLevel(tapId, organizationId, tenantId, setTap);
+  }, [tapId, organizationId, tenantId])
 
   useEffect(() => {
     setConstellationCoordinates(null);
@@ -69,20 +80,42 @@ export default function GNSSConstellationsFixPage() {
     gnssService.getConstellationCoordinates(
       constellationCoordinatesConstellation,
       constellationCoordinatesTimeRange,
-      selectedTaps,
+      tapId,
       setConstellationCoordinates
     );
 
-    gnssService.getDistances(constellationCoordinatesTimeRange, selectedTaps, setDistances);
-  }, [constellationCoordinatesConstellation, constellationCoordinatesTimeRange, timeRange, selectedTaps, revision])
+    gnssService.getDistances(constellationCoordinatesTimeRange, tapId, setDistances);
+  }, [constellationCoordinatesConstellation, constellationCoordinatesTimeRange, timeRange, tapId, revision])
+
+  if (!tap) {
+    return <LoadingSpinner />
+  }
 
   return (
     <React.Fragment>
 
       <div className="row">
-        <div className="col-md-12">
-          <SectionMenuBar items={GNSS_MENU_ITEMS}
-                          activeRoute={ApiRoutes.GNSS.CONSTELLATIONS.FIX} />
+        <div className="col-12">
+          <nav aria-label="breadcrumb">
+            <ol className="breadcrumb">
+              <li className="breadcrumb-item">
+                <a href={Routes.GNSS.OVERVIEW}>GNSS</a>
+              </li>
+              <li className="breadcrumb-item">Taps</li>
+              <li className="breadcrumb-item">{tap.name}</li>
+              <li className="breadcrumb-item active">Fix</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-10">
+          <SectionMenuBar items={GNSS_MENU_ITEMS(tapId)}
+                          activeRoute={ApiRoutes.GNSS.TAP_DETAILS.FIX(tapId)} />
+        </div>
+        <div className="col-md-2">
+          <a href={ApiRoutes.GNSS.OVERVIEW} className="btn btn-secondary float-end">Back</a>
         </div>
       </div>
 

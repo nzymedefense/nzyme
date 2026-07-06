@@ -5,6 +5,7 @@ import app.nzyme.core.database.generic.LatLonResult;
 import app.nzyme.core.gnss.db.*;
 import app.nzyme.core.gnss.db.elevationmasks.GNSSElevationMaskAzimuthBucket;
 import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntry;
+import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
@@ -26,12 +27,25 @@ public class GNSS {
         this.om = new ObjectMapper();
     }
 
+    public List<Tap> findAllTapsWithGNSSCapture(UUID organizationId, UUID tenantId, DateTime captureCutoff) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT t.* FROM taps AS t " +
+                                "WHERE EXISTS (SELECT 1 FROM tap_captures AS c " +
+                                "WHERE c.tap_uuid = t.uuid AND c.capture_type = 'Gnss' " +
+                                "AND c.updated_at >= :capture_cutoff) " +
+                                "AND t.organization_id = :organization_id AND t.tenant_id = :tenant_id " +
+                                "ORDER BY t.name ASC")
+                        .bind("capture_cutoff", captureCutoff)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(Tap.class)
+                        .list()
+        );
+    }
+
     public List<LatLonResult> getRecordedCoordinates(Constellation constellation,
                                                      TimeRange timeRange,
-                                                     List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
+                                                     UUID tap) {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT round(c.lat::numeric, 5)::double precision AS lat, " +
@@ -41,21 +55,17 @@ public class GNSS {
                                 "AS c (lat double precision, lon double precision) " +
                                 "WHERE gnss.constellation = :constellation " +
                                 "AND timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>)")
+                                "AND tap_uuid = :tap")
                         .bind("constellation", constellation)
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(LatLonResult.class)
                         .list()
         );
     }
 
-    public List<GNSSSatelliteInView> findAllSatellitesInView(TimeRange timeRange, List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+    public List<GNSSSatelliteInView> findAllSatellitesInView(TimeRange timeRange, UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT gnss.constellation, s.prn, (AVG(s.average_sno))::int as average_sno, " +
                                 "(AVG(s.average_doppler_hz))::int as average_doppler_hz, " +
@@ -70,12 +80,12 @@ public class GNSS {
                                 "FROM gnss_constellations AS gnss " +
                                 "JOIN gnss_sats_in_view AS s ON s.gnss_constellation_id = gnss.id " +
                                 "WHERE s.prn IS NOT NULL AND timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "AND tap_uuid = :tap " +
                                 "GROUP BY gnss.constellation, s.prn " +
                                 "ORDER BY constellation, prn")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GNSSSatelliteInView.class)
                         .list()
         );
@@ -84,21 +94,17 @@ public class GNSS {
     public List<GNSSPRNTrackPoint> findRecentSatelliteTrack(Constellation constellation,
                                                             int prn,
                                                             DateTime since,
-                                                            List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                            UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.azimuth_degrees, s.elevation_degrees, s.average_sno, c.timestamp " +
                                 "FROM gnss_sats_in_view AS s " +
                                 "LEFT JOIN public.gnss_constellations c on s.gnss_constellation_id = c.id " +
                                 "WHERE s.prn = :prn AND c.constellation = :constellation AND c.timestamp > :since " +
-                                "AND c.tap_uuid IN (<taps>) ORDER BY c.timestamp DESC")
+                                "AND c.tap_uuid = :tap ORDER BY c.timestamp DESC")
                         .bind("prn", prn)
                         .bind("constellation", constellation)
                         .bind("since", since)
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GNSSPRNTrackPoint.class)
                         .list()
         );
@@ -139,11 +145,7 @@ public class GNSS {
 
     public List<GNSSDoubleBucket> getPdopHistogram(TimeRange timeRange,
                                                    Bucketing.BucketingConfiguration bucketing,
-                                                   List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                   UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "AVG(maximum_pdop) FILTER (WHERE constellation = 'GPS') AS gps, " +
@@ -151,24 +153,20 @@ public class GNSS {
                                 "AVG(maximum_pdop) FILTER (WHERE constellation = 'BeiDou') AS beidou, " +
                                 "AVG(maximum_pdop) FILTER (WHERE constellation = 'Galileo') AS galileo " +
                                 "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GNSSDoubleBucket.class)
                         .list()
         );
     }
 
     public List<GNSSIntegerBucket> getFixSatelliteHistogram(TimeRange timeRange,
-                                                           Bucketing.BucketingConfiguration bucketing,
-                                                           List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                            Bucketing.BucketingConfiguration bucketing,
+                                                            UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(maximum_fix_satellite_count) FILTER " +
@@ -180,12 +178,12 @@ public class GNSS {
                                 "ROUND(AVG(maximum_fix_satellite_count) FILTER " +
                                 "(WHERE constellation = 'Galileo'))::int AS galileo " +
                                 "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GNSSIntegerBucket.class)
                         .list()
         );
@@ -193,11 +191,7 @@ public class GNSS {
 
     public List<GNSSStringBucket> getFixStatusHistogram(TimeRange timeRange,
                                                         Bucketing.BucketingConfiguration bucketing,
-                                                        List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                        UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery(
                                 "SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
@@ -256,14 +250,14 @@ public class GNSS {
 
                                         "FROM gnss_constellations " +
                                         "WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                        "AND tap_uuid IN (<taps>) " +
+                                        "AND tap_uuid = :tap " +
                                         "GROUP BY bucket " +
                                         "ORDER BY bucket DESC"
                         )
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GNSSStringBucket.class)
                         .list()
         );
@@ -271,11 +265,7 @@ public class GNSS {
 
     public List<GNSSIntegerBucket> getAltitudeHistogram(TimeRange timeRange,
                                                         Bucketing.BucketingConfiguration bucketing,
-                                                        List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                        UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(maximum_altitude_meters) FILTER " +
@@ -287,12 +277,12 @@ public class GNSS {
                                 "ROUND(AVG(maximum_altitude_meters) FILTER " +
                                 "(WHERE constellation = 'Galileo'))::int AS galileo " +
                                 "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GNSSIntegerBucket.class)
                         .list()
         );
@@ -300,11 +290,7 @@ public class GNSS {
 
     public List<GNSSIntegerBucket> getSatellitesInViewHistogram(TimeRange timeRange,
                                                                 Bucketing.BucketingConfiguration bucketing,
-                                                                List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                                UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(maximum_satellites_in_view_count) FILTER " +
@@ -316,12 +302,12 @@ public class GNSS {
                                 "ROUND(AVG(maximum_satellites_in_view_count) FILTER " +
                                 "(WHERE constellation = 'Galileo'))::int AS galileo " +
                                 "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GNSSIntegerBucket.class)
                         .list()
         );
@@ -329,11 +315,7 @@ public class GNSS {
 
     public List<GNSSIntegerBucket> getMonRfJammingIndicatorHistogram(TimeRange timeRange,
                                                                      Bucketing.BucketingConfiguration bucketing,
-                                                                     List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                                     UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(maximum_jamming_indicator) FILTER " +
@@ -345,12 +327,12 @@ public class GNSS {
                                 "ROUND(AVG(maximum_jamming_indicator) FILTER " +
                                 "(WHERE constellation = 'Galileo'))::int AS galileo " +
                                 "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GNSSIntegerBucket.class)
                         .list()
         );
@@ -358,11 +340,7 @@ public class GNSS {
 
     public List<GNSSIntegerBucket> getMonRfAgcCountHistogram(TimeRange timeRange,
                                                              Bucketing.BucketingConfiguration bucketing,
-                                                             List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                             UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(maximum_agc_count) FILTER " +
@@ -374,12 +352,12 @@ public class GNSS {
                                 "ROUND(AVG(maximum_agc_count) FILTER " +
                                 "(WHERE constellation = 'Galileo'))::int AS galileo " +
                                 "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GNSSIntegerBucket.class)
                         .list()
         );
@@ -387,11 +365,7 @@ public class GNSS {
 
     public List<GNSSIntegerBucket> getMonRfNoiseHistogram(TimeRange timeRange,
                                                           Bucketing.BucketingConfiguration bucketing,
-                                                          List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                          UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(maximum_noise) FILTER " +
@@ -403,12 +377,12 @@ public class GNSS {
                                 "ROUND(AVG(maximum_noise) FILTER " +
                                 "(WHERE constellation = 'Galileo'))::int AS galileo " +
                                 "FROM gnss_constellations WHERE timestamp >= :tr_from AND timestamp <= :tr_to " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GNSSIntegerBucket.class)
                         .list()
         );
@@ -418,24 +392,20 @@ public class GNSS {
                                                                  int prn,
                                                                  TimeRange timeRange,
                                                                  Bucketing.BucketingConfiguration bucketing,
-                                                                 List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                                 UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(average_sno)) AS value FROM gnss_constellations AS gnss " +
                                 "LEFT JOIN public.gnss_sats_in_view AS sats on gnss.id = sats.gnss_constellation_id " +
                                 "WHERE gnss.constellation = :constellation AND sats.prn = :prn " +
-                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("constellation", constellation)
                         .bind("prn", prn)
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GenericIntegerHistogramEntry.class)
                         .list()
         );
@@ -445,24 +415,20 @@ public class GNSS {
                                                                        int prn,
                                                                        TimeRange timeRange,
                                                                        Bucketing.BucketingConfiguration bucketing,
-                                                                       List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                                       UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(elevation_degrees)) AS value FROM gnss_constellations AS gnss " +
                                 "LEFT JOIN public.gnss_sats_in_view AS sats on gnss.id = sats.gnss_constellation_id " +
                                 "WHERE gnss.constellation = :constellation AND sats.prn = :prn " +
-                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("constellation", constellation)
                         .bind("prn", prn)
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GenericIntegerHistogramEntry.class)
                         .list()
         );
@@ -472,24 +438,20 @@ public class GNSS {
                                                                      int prn,
                                                                      TimeRange timeRange,
                                                                      Bucketing.BucketingConfiguration bucketing,
-                                                                     List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                                     UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(azimuth_degrees)) AS value FROM gnss_constellations AS gnss " +
                                 "LEFT JOIN public.gnss_sats_in_view AS sats on gnss.id = sats.gnss_constellation_id " +
                                 "WHERE gnss.constellation = :constellation AND sats.prn = :prn " +
-                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("constellation", constellation)
                         .bind("prn", prn)
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GenericIntegerHistogramEntry.class)
                         .list()
         );
@@ -499,24 +461,20 @@ public class GNSS {
                                                                      int prn,
                                                                      TimeRange timeRange,
                                                                      Bucketing.BucketingConfiguration bucketing,
-                                                                     List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                                     UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, timestamp) AS bucket, " +
                                 "ROUND(AVG(average_doppler_hz)) AS value FROM gnss_constellations AS gnss " +
                                 "LEFT JOIN public.gnss_sats_in_view AS sats on gnss.id = sats.gnss_constellation_id " +
                                 "WHERE gnss.constellation = :constellation AND sats.prn = :prn " +
-                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "AND timestamp >= :tr_from AND timestamp <= :tr_to AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("constellation", constellation)
                         .bind("prn", prn)
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GenericIntegerHistogramEntry.class)
                         .list()
         );
@@ -526,169 +484,45 @@ public class GNSS {
                                                                             int prn,
                                                                             TimeRange timeRange,
                                                                             Bucketing.BucketingConfiguration bucketing,
-                                                                            List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                                            UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, c.timestamp) AS bucket, " +
                                 "MAX(s.maximum_multipath_indicator) AS value " +
                                 "FROM gnss_constellations AS c " +
                                 "LEFT JOIN public.gnss_sats_in_view s ON c.id = s.gnss_constellation_id " +
                                 "WHERE s.prn = :prn AND c.constellation = :constellation AND timestamp >= :tr_from " +
-                                "AND timestamp <= :tr_to AND tap_uuid IN (<taps>) " +
+                                "AND timestamp <= :tr_to AND tap_uuid = :tap " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
                         .bind("constellation", constellation)
                         .bind("prn", prn)
                         .bind("date_trunc", bucketing.type().getDateTruncName())
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
-                        .bindList("taps", taps)
+                        .bind("tap", tap)
                         .mapTo(GenericIntegerHistogramEntry.class)
                         .list()
         );
     }
 
-    public List<GNSSElevationMaskAzimuthBucket> getElevationMask(List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+    public List<GNSSElevationMaskAzimuthBucket> getElevationMask(UUID tap) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM gnss_elevation_mask WHERE tap_uuid IN (<taps>)")
-                        .bindList("taps", taps)
+                handle.createQuery("SELECT * FROM gnss_elevation_mask WHERE tap_uuid = :tap")
+                        .bind("tap", tap)
                         .mapTo(GNSSElevationMaskAzimuthBucket.class)
                         .list()
         );
     }
 
     public void cleanElevationMask(UUID tap) {
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("DELETE FROM gnss_elevation_mask WHERE tap_uuid = :tap_uuid")
-                        .bind("tap_uuid", tap)
-                        .execute()
-        );
+        nzyme.getDatabase().useTransaction(handle -> {
+            handle.createUpdate("UPDATE taps SET gnss_elevation_mask_cutoff = NOW() WHERE uuid = :tap_uuid")
+                    .bind("tap_uuid", tap)
+                    .execute();
+
+            handle.createUpdate("DELETE FROM gnss_elevation_mask WHERE tap_uuid = :tap_uuid")
+                    .bind("tap_uuid", tap)
+                    .execute();
+        });
     }
 
-    public void createMonitoringRule(String name,
-                                     @Nullable String description,
-                                     Map<String, List<Object>> conditions,
-                                     List<UUID> taps,
-                                     UUID organizationId,
-                                     UUID tenantId) {
-
-        String conditionsJson;
-        String tapsJson;
-        try {
-            conditionsJson = om.writeValueAsString(conditions);
-
-            if (taps.isEmpty()) {
-                tapsJson = null;
-            } else {
-                tapsJson  = om.writeValueAsString(taps);
-            }
-        } catch (JacksonException e) {
-            throw new RuntimeException(e);
-        }
-
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO gnss_monitoring_rules(uuid, organization_id, tenant_id, name, " +
-                                "description, conditions, taps, updated_at, created_at) VALUES(:uuid, " +
-                                ":organization_id, :tenant_id, :name, :description, :conditions::jsonb, " +
-                                ":taps::jsonb, NOW(), NOW())")
-                        .bind("uuid", UUID.randomUUID())
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
-                        .bind("name", name)
-                        .bind("description", description)
-                        .bind("conditions", conditionsJson)
-                        .bind("taps", tapsJson)
-                        .execute()
-        );
-    }
-
-    public long countAllMonitoringRulesOfTenant(UUID organizationId, UUID tenantId) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM gnss_monitoring_rules " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
-                        .mapTo(Long.class)
-                        .one()
-        );
-    }
-
-    public List<GNSSMonitoringRuleEntry> findAllMonitoringRulesOfTenant(UUID organizationId,
-                                                                        UUID tenantId,
-                                                                        int limit,
-                                                                        int offset) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM gnss_monitoring_rules " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
-                                "LIMIT :limit OFFSET :offset")
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
-                        .bind("limit", limit)
-                        .bind("offset", offset)
-                        .mapTo(GNSSMonitoringRuleEntry.class)
-                        .list()
-        );
-    }
-
-    public Optional<GNSSMonitoringRuleEntry> findMonitoringRuleOfTenant(UUID uuid,
-                                                                        UUID organizationId,
-                                                                        UUID tenantId) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM gnss_monitoring_rules " +
-                                "WHERE uuid = :uuid AND organization_id = :organization_id " +
-                                "AND tenant_id = :tenant_id")
-                        .bind("uuid", uuid)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
-                        .mapTo(GNSSMonitoringRuleEntry.class)
-                        .findOne()
-        );
-    }
-
-    public void updateMonitoringRule(long id,
-                                     String name,
-                                     @Nullable String description,
-                                     Map<String, List<Object>> conditions,
-                                     List<UUID> taps) {
-        String conditionsJson;
-        String tapsJson;
-        try {
-            conditionsJson = om.writeValueAsString(conditions);
-
-            if (taps.isEmpty()) {
-                tapsJson = null;
-            } else {
-                tapsJson = om.writeValueAsString(taps);
-            }
-        } catch (JacksonException e) {
-            throw new RuntimeException(e);
-        }
-
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE gnss_monitoring_rules SET name = :name, description = :description, " +
-                                "conditions = :conditions::jsonb, taps = :taps::jsonb, updated_at = NOW() " +
-                                "WHERE id = :id")
-                        .bind("name", name)
-                        .bind("description", description)
-                        .bind("conditions", conditionsJson)
-                        .bind("taps", tapsJson)
-                        .bind("id", id)
-                        .execute()
-        );
-
-    }
-
-    public void deleteMonitoringRule(long id) {
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("DELETE FROM gnss_monitoring_rules WHERE id = :id")
-                        .bind("id", id)
-                        .execute()
-        );
-    }
 }

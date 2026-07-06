@@ -515,8 +515,16 @@ public class DatabaseImpl implements Database {
         return jdbi.withHandle(callback);
     }
 
+    public <R, X extends Exception> R inTransaction(HandleCallback<R, X> callback) throws X {
+        return jdbi.inTransaction(callback);
+    }
+
     public <X extends Exception> void useHandle(final HandleConsumer<X> callback) throws X {
         jdbi.useHandle(callback);
+    }
+
+    public <X extends Exception> void useTransaction(final HandleConsumer<X> callback) throws X {
+        jdbi.useTransaction(callback);
     }
 
     private void routeLiquibaseLogging(Liquibase liquibase) {

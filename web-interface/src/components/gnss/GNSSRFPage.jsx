@@ -12,17 +12,25 @@ import ApiRoutes from "../../util/ApiRoutes";
 import {GNSS_MENU_ITEMS} from "./GNSSMenuItems";
 import usePageTitle from "../../util/UsePageTitle";
 import {timeRangeFromURLOrDefault} from "../shared/timerange/TimeRangeSelector";
+import {useParams} from "react-router-dom";
+import TapService from "../../services/TapsService";
+import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
+import LoadingSpinner from "../misc/LoadingSpinner";
+import Routes from "../../util/ApiRoutes";
 
 const gnssService = new GnssService();
+const tapService = new TapService();
 
-export default function GNSSConstellationsRFPage() {
+export default function GNSSRFPage() {
 
-  usePageTitle("GNSS RF");
+  const {tapId} = useParams();
 
+  const [organizationId, tenantId] = useSelectedTenant();
   const tapContext = useContext(TapContext);
-  const selectedTaps = tapContext.taps;
 
   const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24));
+
+  const [tap, setTap] = useState(null);
 
   const [rfMonJammingIndicatorHistogram, setRfMonJammingIndicatorHistogram] = useState(null);
   const [rfMonAgcCountHistogram, setRfMonAgcCountHistogram] = useState(null);
@@ -30,12 +38,10 @@ export default function GNSSConstellationsRFPage() {
 
   const [revision, setRevision] = useState(new Date());
 
-  useEffect(() => {
-    enableTapSelector(tapContext);
+  usePageTitle(tap ? "GNSS RF at Tap \"" + tap.name + "\"" : "GNSS RF");
 
-    return () => {
-      disableTapSelector(tapContext);
-    }
+  useEffect(() => {
+    disableTapSelector(tapContext);
   }, [tapContext]);
 
   useEffect(() => {
@@ -43,19 +49,47 @@ export default function GNSSConstellationsRFPage() {
     setRfMonAgcCountHistogram(null);
     setRfMonNoiseHistogram(null);
 
-    gnssService.getRfMonJammingIndicatorHistogram(timeRange, selectedTaps, setRfMonJammingIndicatorHistogram)
-    gnssService.getRfMonAgcCountHistogram(timeRange, selectedTaps, setRfMonAgcCountHistogram)
-    gnssService.getRfMonNoiseHistogram(timeRange, selectedTaps, setRfMonNoiseHistogram)
+    gnssService.getRfMonJammingIndicatorHistogram(timeRange, tapId, setRfMonJammingIndicatorHistogram)
+    gnssService.getRfMonAgcCountHistogram(timeRange, tapId, setRfMonAgcCountHistogram)
+    gnssService.getRfMonNoiseHistogram(timeRange, tapId, setRfMonNoiseHistogram)
 
-  }, [timeRange, selectedTaps, revision])
+  }, [timeRange, tapId, revision])
+
+  useEffect(() => {
+    setTap(null);
+
+    tapService.findTapHighLevel(tapId, organizationId, tenantId, setTap);
+  }, [tapId, organizationId, tenantId])
+
+  if (!tap) {
+    return <LoadingSpinner />
+  }
 
   return (
     <React.Fragment>
 
       <div className="row">
-        <div className="col-md-12">
-          <SectionMenuBar items={GNSS_MENU_ITEMS}
-                          activeRoute={ApiRoutes.GNSS.CONSTELLATIONS.RF} />
+        <div className="col-12">
+          <nav aria-label="breadcrumb">
+            <ol className="breadcrumb">
+              <li className="breadcrumb-item">
+                <a href={Routes.GNSS.OVERVIEW}>GNSS</a>
+              </li>
+              <li className="breadcrumb-item">Taps</li>
+              <li className="breadcrumb-item">{tap.name}</li>
+              <li className="breadcrumb-item active">RF</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-10">
+          <SectionMenuBar items={GNSS_MENU_ITEMS(tapId)}
+                          activeRoute={ApiRoutes.GNSS.TAP_DETAILS.RF(tapId)} />
+        </div>
+        <div className="col-md-2">
+          <a href={ApiRoutes.GNSS.OVERVIEW} className="btn btn-secondary float-end">Back</a>
         </div>
       </div>
 
@@ -67,7 +101,6 @@ export default function GNSSConstellationsRFPage() {
                                      timeRange={timeRange}
                                      setTimeRange={setTimeRange}
                                      refreshAction={() => setRevision(new Date())} />
-
 
               <GNSSRfMonNoiseHistogram histogram={rfMonNoiseHistogram} setTimeRange={setTimeRange} />
             </div>

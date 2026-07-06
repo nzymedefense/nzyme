@@ -169,20 +169,16 @@ import DHCPTransactionDetailsPage from "./components/ethernet/assets/dhcp/DHCPTr
 import GlobalTenantSelectorForm from "./components/system/tenantselector/GlobalTenantSelectorForm";
 import AssetDetailsPage from "./components/ethernet/assets/AssetDetailsPage";
 import ARPPacketsPage from "./components/ethernet/assets/arp/ARPPacketsPage";
-import GNSSConstellationsFixPage from "./components/gnss/GNSSConstellationsFixPage";
+import GNSSFixPage from "./components/gnss/GNSSFixPage";
 import GNSSPRNDetailsPage from "./components/gnss/prn/GNSSPRNDetailsPage";
-import GNSSMonitoringRulesPage from "./components/gnss/monitoring/GNSSMonitoringRulesPage";
-import CreateGNSSMonitoringRulePage from "./components/gnss/monitoring/CreateGNSSMonitoringRulePage";
-import GNSSMonitoringRuleDetailsPage from "./components/gnss/monitoring/GNSSMonitoringRuleDetailsPage";
-import EditGNSSMonitoringRulePage from "./components/gnss/monitoring/EditGNSSMonitoringRulePage";
 import GNSSMonitoringSettingsPage from "./components/gnss/monitoring/GNSSMonitoringSettingsPage";
 import ReconPage from "./components/ethernet/recon/ReconPage";
 import TCPSessionDetailsPage from "./components/ethernet/l4/tcp/TCPSessionDetailsPage";
 import UDPSessionDetailsPage from "./components/ethernet/l4/udp/UDPSessionDetailsPage";
 import EthernetAssetsSettingsPage from "./components/ethernet/assets/EthernetAssetsSettingsPage";
 import EthernetOverviewPage from "./components/ethernet/EthernetOverviewPage";
-import GNSSConstellationsRFPage from "./components/gnss/GNSSConstellationsRFPage";
-import GNSSConstellationsSatellitesPage from "./components/gnss/GNSSConstellationsSatellitesPage";
+import GNSSRFPage from "./components/gnss/GNSSRFPage";
+import GNSSSatellitesPage from "./components/gnss/GNSSSatellitesPage";
 import {NTPOverviewPage} from "./components/ethernet/time/ntp/NTPOverviewPage";
 import NTPTransactionDetailsPage from "./components/ethernet/time/ntp/NTPTransactionDetailsPage";
 import Dot11MonitorsPage from "./components/dot11/monitoring/Dot11MonitorsPage";
@@ -196,6 +192,7 @@ import BSSIDTimelinePage from "./components/dot11/bssids/BSSIDTimelinePage";
 import LocationsOverviewPage from "./components/locations/LocationsOverviewPage";
 import LocationDetailsPage from "./components/locations/LocationDetailsPage";
 import SSIDTimelinePage from "./components/dot11/bssids/ssids/SSIDTimelinePage";
+import GNSSOverviewPage from "./components/gnss/GNSSOverviewPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -662,18 +659,14 @@ function App() {
 
                               { /* GNSS. */ }
                               <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "gnss")} />}>
+                                <Route path={ApiRoutes.GNSS.OVERVIEW} element={<GNSSOverviewPage />}/>
+
                                 { /* GNSS Constellations and PRNs. */}
-                                <Route path={ApiRoutes.GNSS.CONSTELLATIONS.FIX} element={<GNSSConstellationsFixPage />}/>
-                                <Route path={ApiRoutes.GNSS.CONSTELLATIONS.RF} element={<GNSSConstellationsRFPage />}/>
-                                <Route path={ApiRoutes.GNSS.CONSTELLATIONS.SATELLITES} element={<GNSSConstellationsSatellitesPage />}/>
+                                <Route path={ApiRoutes.GNSS.TAP_DETAILS.FIX(':tapId')} element={<GNSSFixPage />}/>
+                                <Route path={ApiRoutes.GNSS.TAP_DETAILS.RF(':tapId')} element={<GNSSRFPage />}/>
+                                <Route path={ApiRoutes.GNSS.TAP_DETAILS.SATELLITES(':tapId')} element={<GNSSSatellitesPage />}/>
 
-                                <Route path={ApiRoutes.GNSS.PRN(':constellation', ':prn')} element={<GNSSPRNDetailsPage />}/>
-
-                                { /* GNSS Monitoring Rules. */}
-                                <Route path={ApiRoutes.GNSS.MONITORING.RULES.INDEX} element={<GNSSMonitoringRulesPage />}/>
-                                <Route path={ApiRoutes.GNSS.MONITORING.RULES.DETAILS(':uuid')} element={<GNSSMonitoringRuleDetailsPage />}/>
-                                <Route path={ApiRoutes.GNSS.MONITORING.RULES.CREATE} element={<CreateGNSSMonitoringRulePage />}/>
-                                <Route path={ApiRoutes.GNSS.MONITORING.RULES.EDIT(':uuid')} element={<EditGNSSMonitoringRulePage />}/>
+                                <Route path={ApiRoutes.GNSS.TAP_DETAILS.PRN(':tapId',':constellation', ':prn')} element={<GNSSPRNDetailsPage />}/>
 
                                 { /* GNSS Monitoring Settings. */}
                                 <Route path={ApiRoutes.GNSS.MONITORING.SETTINGS} element={<GNSSMonitoringSettingsPage />}/>
