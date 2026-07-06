@@ -2,6 +2,7 @@ package app.nzyme.core.rest.resources.gnss;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.generic.LatLonResult;
+import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.gnss.Constellation;
 import app.nzyme.core.gnss.GNSSRegistryKeys;
 import app.nzyme.core.gnss.db.*;
@@ -16,6 +17,7 @@ import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
+import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
@@ -66,7 +68,36 @@ public class GNSSResource extends TapDataHandlingResource {
 
         List<GNSSTapDetailsResponse> taps = Lists.newArrayList();
         for (Tap tap : nzyme.getGnss().findAllTapsWithGNSSCapture(organizationId, tenantId, captureCutoff)) {
-            taps.add(GNSSTapDetailsResponse.create(tap.uuid(), tap.name()));
+            Optional<TenantLocationEntry> location = nzyme
+                    .getAuthenticationService().findTenantLocation(tap.locationId(), organizationId, tenantId);
+
+            UUID locationUuid = location.map(TenantLocationEntry::uuid).orElse(null);
+            String locationName = location.map(TenantLocationEntry::name).orElse(null);
+
+            GNSSConstellationDistances distances = nzyme.getGnss()
+                    .getConstellationDistancesFromTap(TimeRangeFactory.fifteenMinutes(), tap);
+
+            Map<DateTime, GNSSStringBucketResponse> fixQualityHistogram = Maps.newHashMap();
+            for (GNSSStringBucket bucket : nzyme.getGnss().getFixStatusHistogram(
+                    TimeRangeFactory.relative(30),
+                    Bucketing.BucketingConfiguration.create(Bucketing.Type.MINUTE),
+                    tap.uuid())) {
+                fixQualityHistogram.put(bucket.bucket(), GNSSStringBucketResponse.create(
+                        bucket.gps(), bucket.glonass(), bucket.beidou(), bucket.galileo()
+                ));
+            }
+
+            taps.add(GNSSTapDetailsResponse.create(
+                    tap.uuid(),
+                    tap.name(),
+                    locationUuid,
+                    locationName,
+                    fixQualityHistogram,
+                    distances.beidou(),
+                    distances.galileo(),
+                    distances.glonass(),
+                    distances.gps())
+            );
         }
 
         return Response.ok(GNSSTapListResponse.create(taps)).build();

@@ -20,13 +20,13 @@ function NotConnectedPage() {
                       <div className="card-body p-4 p-lg-5 text-black">
                         <h1 className="mb-3 pb-3 text-danger">Error.</h1>
                         <p className="text-danger">
-                          <strong>Web interface unable to connect to nzyme REST API.</strong>
+                          <strong>Web interface unable to connect to Nzyme REST API.</strong>
                         </p>
 
                         <div className="mt-4">
                           <h6>Common issues include:</h6>
                           <ul>
-                            <li>No nzyme node is running.</li>
+                            <li>No Nzyme node is running.</li>
                             <li>A firewall blocks access from your browser to the leader node REST API.</li>
                             <li>The REST API is listening on an interface that is not reachable by your browser.</li>
                             <li>A node tells your browser a
