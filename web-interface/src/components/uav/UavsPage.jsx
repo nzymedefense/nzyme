@@ -6,7 +6,7 @@ import {disableTapSelector, enableTapSelector} from "../misc/TapSelector";
 import CardTitleWithControls from "../shared/CardTitleWithControls";
 import UavsTable from "./UavsTable";
 import useSelectedTenant from "../system/tenantselector/useSelectedTenant";
-import UavTacticalMap from "./UavTacticalMap";
+import UavLiveMap from "./UavLiveMap";
 import ApiRoutes from "../../util/ApiRoutes";
 import {Navigate} from "react-router-dom";
 import usePageTitle from "../../util/UsePageTitle";
@@ -83,11 +83,11 @@ export default function UavsPage() {
           <div className="col-12">
             <div className="card">
               <div className="card-body">
-                <CardTitleWithControls title="Tactical Live Map"
+                <CardTitleWithControls title="Live Map"
                                        fixedAppliedTimeRange={timeRange}
                                        refreshAction={() => setRevision(new Date())} />
 
-                <UavTacticalMap containerHeight={600} uavs={uavs} onUavClick={onUavClick} />
+                <UavLiveMap containerHeight={600} uavs={uavs} onUavClick={onUavClick} />
               </div>
             </div>
           </div>

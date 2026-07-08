@@ -11,7 +11,7 @@ import GenericWidgetLoadingSpinner from "../widgets/GenericWidgetLoadingSpinner"
 import {latLng} from "leaflet/src/geo";
 import {sanitizeHtml} from "../../util/Tools";
 
-export default function UavTacticalMap(props) {
+export default function UavLiveMap(props) {
 
   const uavs = props.uavs;
   const containerHeight = props.containerHeight;
