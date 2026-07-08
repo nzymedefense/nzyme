@@ -8037,4 +8037,8 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="remove_cot_outputs" author="lennartkoopmann">
+        <dropTable tableName="integrations_cot_outputs" />
+    </changeSet>
+
 </databaseChangeLog>

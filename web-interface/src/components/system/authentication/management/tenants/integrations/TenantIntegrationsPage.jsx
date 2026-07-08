@@ -5,14 +5,14 @@ import Routes from "../../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import SectionMenuBar from "../../../../../shared/SectionMenuBar";
 import {TENANT_MENU_ITEMS} from "../TenantMenuItems";
-import CardTitleWithControls from "../../../../../shared/CardTitleWithControls";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
-import CotOutputsTable from "./cot/CotOutputsTable";
 import usePageTitle from "../../../../../../util/UsePageTitle";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 export default function TenantIntegrationsPage() {
+
+  // PLACEHOLDER UNTIL WE HAVE TENANT-SPECIFIC INTEGRATIONS.
 
   usePageTitle("Integrations of Tenant");
 
@@ -79,28 +79,9 @@ export default function TenantIntegrationsPage() {
         </div>
       </div>
 
-      <div className="row mt-3">
-        <div className="col-xl-12 col-xxl-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Cursor on Target (CoT)" slim={true}/>
+      <div className="alert alert-info mt-2">No integrations available.</div>
 
-              <p className="text-muted">
-                You can <a href="https://go.nzyme.org/cursor-on-target">learn more about CoT in the documentation</a>.
-              </p>
 
-              <CotOutputsTable organizationId={organizationId} tenantId={tenantId} />
-
-              <div className="mt-2">
-                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.CREATE(organization.id, tenant.id)}
-                   className="btn btn-sm btn-secondary">
-                  Create Cursor on Target Output
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </React.Fragment>
   )
 

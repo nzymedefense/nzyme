@@ -153,14 +153,6 @@ import CreateCustomTypePage from "./components/uav/types/CreateCustomTypePage";
 import TenantIntegrationsPage from "./components/system/authentication/management/tenants/integrations/TenantIntegrationsPage";
 import OrganizationQuotasPage from "./components/system/authentication/management/organizations/OrganizationQuotasPage";
 import TenantQuotasPage from "./components/system/authentication/management/tenants/TenantQuotasPage";
-import CreateCotOutputPage
-  from "./components/system/authentication/management/tenants/integrations/cot/CreateCotOutputPage";
-import CotOutputDetailsPage
-  from "./components/system/authentication/management/tenants/integrations/cot/CotOutputDetailsPage";
-import EditCotOutputPage
-  from "./components/system/authentication/management/tenants/integrations/cot/EditCotOutputPage";
-import EditCotCertificatePage
-  from "./components/system/authentication/management/tenants/integrations/cot/EditCotCertificatePage";
 import DisconnectedClientsPage from "./components/dot11/clients/DisconnectedClientsPage";
 import EditCustomTypePage from "./components/uav/types/EditCustomTypePage";
 import EthernetAssetsPage from "./components/ethernet/assets/EthernetAssetsPage";
@@ -500,10 +492,6 @@ function App() {
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.CREATE(':organizationId', ':tenantId', ':locationId')} element={<CreateFloorPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(':organizationId', ':tenantId', ':locationId', ':floorId')} element={<FloorDetailsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.EDIT(':organizationId', ':tenantId', ':locationId', ':floorId')} element={<EditFloorPage />}/>
-                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.CREATE(':organizationId', ':tenantId')} element={<CreateCotOutputPage />}/>
-                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.DETAILS(':organizationId', ':tenantId', ':outputId')} element={<CotOutputDetailsPage />}/>
-                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.EDIT(':organizationId', ':tenantId', ':outputId')} element={<EditCotOutputPage />}/>
-                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.INTEGRATIONS.COT.EDIT_CLIENT_CERTIFICATE(':organizationId', ':tenantId', ':outputId')} element={<EditCotCertificatePage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<TenantUserDetailsPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.EDIT(':organizationId', ':tenantId', ':userId')} element={<EditTenantUserPage />}/>

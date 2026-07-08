@@ -46,7 +46,6 @@ import app.nzyme.core.floorplans.db.TenantLocationFloorEntryMapper;
 import app.nzyme.core.gnss.db.*;
 import app.nzyme.core.gnss.db.elevationmasks.GNSSElevationMaskAzimuthBucketMapper;
 import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntryMapper;
-import app.nzyme.core.integrations.tenant.cot.db.CotOutputEntryMapper;
 import app.nzyme.core.monitoring.GaugeEntryAverageMapper;
 import app.nzyme.core.monitoring.TimerEntryAverageMapper;
 import app.nzyme.core.monitoring.TimerEntryMapper;
@@ -190,7 +189,6 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new UavEntryMapper())
                 .registerRowMapper(new UavTimelineEntryMapper())
                 .registerRowMapper(new UavTypeEntryMapper())
-                .registerRowMapper(new CotOutputEntryMapper())
                 .registerRowMapper(new UavVectorEntryMapper())
                 .registerRowMapper(new DHCPTransactionMapper())
                 .registerRowMapper(new AssetEntryMapper())

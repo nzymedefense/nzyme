@@ -4,8 +4,7 @@ public enum QuotaType {
 
     TAPS("Taps"),
     TENANTS("Tenants"),
-    TENANT_USERS("Users"),
-    INTEGRATIONS_COT("Cursor on Target Integrations");
+    TENANT_USERS("Users");
 
     private final String humanReadable;
 

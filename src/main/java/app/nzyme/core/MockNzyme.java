@@ -34,7 +34,6 @@ import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.gnss.GNSS;
 import app.nzyme.core.integrations.geoip.GeoIpService;
-import app.nzyme.core.integrations.tenant.cot.CotService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.monitors.Monitors;
 import app.nzyme.core.ouis.OuiService;
@@ -383,12 +382,6 @@ public class MockNzyme implements NzymeNode {
     public NzymeHttpServer getHttpServer() {
         return null;
     }
-
-    @Override
-    public CotService getCotService() {
-        return null;
-    }
-
 
     @Override
     public void registerRetroService(RetroService retroService) {

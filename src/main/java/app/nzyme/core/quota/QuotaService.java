@@ -97,8 +97,6 @@ public class QuotaService {
                 }
 
                 return users;
-            case INTEGRATIONS_COT:
-                return (int) nzyme.getCotService().countAllOutputsOfOrganization(organizationUuid);
         };
 
         return -1;
@@ -118,8 +116,6 @@ public class QuotaService {
                 return nzyme.getAuthenticationService()
                         .findAllUsersOfTenant(organizationUuid, tenantUuid, Integer.MAX_VALUE, 0)
                         .size();
-            case INTEGRATIONS_COT:
-                return (int) nzyme.getCotService().countAllOutputsOfTenant(organizationUuid, tenantUuid);
         };
 
         return -1;
