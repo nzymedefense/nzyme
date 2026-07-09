@@ -95,7 +95,7 @@ export default function GNSSFixPage() {
     <React.Fragment>
 
       <div className="row">
-        <div className="col-12">
+        <div className="col-10">
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
@@ -107,18 +107,18 @@ export default function GNSSFixPage() {
             </ol>
           </nav>
         </div>
-      </div>
-
-      <div className="row">
-        <div className="col-md-10">
-          <SectionMenuBar items={GNSS_MENU_ITEMS(tapId)}
-                          activeRoute={ApiRoutes.GNSS.TAP_DETAILS.FIX(tapId)} />
-        </div>
         <div className="col-md-2">
           <span className="float-end">
             <a href="https://go.nzyme.org/gnss-fix" className="btn btn-outline-secondary me-1" target="_blank">Help</a>
             <a href={ApiRoutes.GNSS.OVERVIEW} className="btn btn-secondary">Back</a>
           </span>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-12">
+          <SectionMenuBar items={GNSS_MENU_ITEMS(tapId)}
+                          activeRoute={ApiRoutes.GNSS.TAP_DETAILS.FIX(tapId)} />
         </div>
       </div>
 
