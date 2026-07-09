@@ -102,7 +102,7 @@ export default function BSSIDTimelinePage() {
   return (
     <React.Fragment>
       <div className="row">
-        <div className="col-md-12">
+        <div className="col-md-10">
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
@@ -111,6 +111,11 @@ export default function BSSIDTimelinePage() {
               <li className="breadcrumb-item active" aria-current="page">Timeline</li>
             </ol>
           </nav>
+        </div>
+        <div className="col-md-2">
+          <a href="https://go.nzyme.org/wifi-timelines" className="btn btn-outline-secondary float-end" target="_blank">
+            Help
+          </a>
         </div>
       </div>
 
