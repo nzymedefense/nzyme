@@ -276,12 +276,12 @@ const ApiRoutes = {
     }
   },
   GNSS: {
-    OVERVIEW: '/gnss',
+    OVERVIEW: '/gnss/data',
     TAP_DETAILS: {
-      FIX: (tapId) => `/gnss/details/tap/${tapId}/constellations`,
-      RF: (tapId) => `/gnss/details/tap/${tapId}/rf`,
-      SATELLITES: (tapId) => `/gnss/details/tap/${tapId}/satellites`,
-      PRN: (tapId, constellation, prn) => `/gnss/details/tap/${tapId}/constellation/${constellation}/prns/show/${prn}`,
+      FIX: (tapId) => `/gnss/data/tap/${tapId}/constellations`,
+      RF: (tapId) => `/gnss/data/tap/${tapId}/rf`,
+      SATELLITES: (tapId) => `/gnss/data/tap/${tapId}/satellites`,
+      PRN: (tapId, constellation, prn) => `/gnss/data/tap/${tapId}/constellation/${constellation}/prns/show/${prn}`,
     },
     MONITORING: {
       SETTINGS: '/gnss/monitoring/settings'

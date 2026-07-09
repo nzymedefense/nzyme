@@ -115,7 +115,10 @@ export default function GNSSFixPage() {
                           activeRoute={ApiRoutes.GNSS.TAP_DETAILS.FIX(tapId)} />
         </div>
         <div className="col-md-2">
-          <a href={ApiRoutes.GNSS.OVERVIEW} className="btn btn-secondary float-end">Back</a>
+          <span className="float-end">
+            <a href="https://go.nzyme.org/gnss-fix" className="btn btn-outline-secondary me-1" target="_blank">Help</a>
+            <a href={ApiRoutes.GNSS.OVERVIEW} className="btn btn-secondary">Back</a>
+          </span>
         </div>
       </div>
 

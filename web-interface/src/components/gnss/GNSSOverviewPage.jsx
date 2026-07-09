@@ -25,8 +25,11 @@ export default function GNSSOverviewPage() {
   return (
     <React.Fragment>
       <div className="row">
-        <div className="col-12">
+        <div className="col-10">
           <h1>GNSS Overview</h1>
+        </div>
+        <div className="col-2">
+          <a href="https://go.nzyme.org/gnss-overview" className="btn btn-secondary float-end" target="_blank">Help</a>
         </div>
       </div>
 

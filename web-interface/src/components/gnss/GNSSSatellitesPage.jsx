@@ -83,7 +83,10 @@ export default function GNSSSatellitesPage() {
                           activeRoute={ApiRoutes.GNSS.TAP_DETAILS.SATELLITES(tapId)} />
         </div>
         <div className="col-md-2">
-          <a href={ApiRoutes.GNSS.OVERVIEW} className="btn btn-secondary float-end">Back</a>
+          <span className="float-end">
+            <a href="https://go.nzyme.org/gnss-sats" className="btn btn-outline-secondary me-1" target="_blank">Help</a>
+            <a href={ApiRoutes.GNSS.OVERVIEW} className="btn btn-secondary">Back</a>
+          </span>
         </div>
       </div>
 
@@ -92,6 +95,7 @@ export default function GNSSSatellitesPage() {
           <div className="card">
             <div className="card-body">
               <CardTitleWithControls title="Sky Plot"
+                                     helpLink="https://go.nzyme.org/gnss-sky-plot"
                                      fixedTimeRange={timeRange}
                                      refreshAction={() => setRevision(new Date())} />
               <div className="d-flex justify-content-center">

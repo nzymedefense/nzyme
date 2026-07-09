@@ -9,6 +9,10 @@ export default function GNSSTapsTable({taps}) {
     return <LoadingSpinner />
   }
 
+  if (taps.taps.length === 0) {
+    return <div className="alert alert-info mb-0 mt-2">None found.</div>
+  }
+
   return (
       <table className="table table-sm table-hover table-striped">
         <thead>
