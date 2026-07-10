@@ -10,10 +10,8 @@ import {toast} from "react-toastify";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import SectionMenuBar from "../../../shared/SectionMenuBar";
-import {BSSID_MENU_ITEMS} from "../BSSIDMenuItems";
 import CardTitleWithControls from "../../../shared/CardTitleWithControls";
 import TimelineFilters from "../../../shared/timelines/TimelineFilters";
-import TimelineTapTable from "../../../shared/timelines/TimelineTapTable";
 import {TimelineActivityHistogram} from "../../../shared/timelines/TimelineActivityHistogram";
 import Timeline from "../../../shared/timelines/Timeline";
 import {SSID_MENU_ITEMS} from "./SSIDMenuItems";
@@ -106,7 +104,7 @@ export default function SSIDTimelinePage() {
   return (
     <React.Fragment>
       <div className="row">
-        <div className="col-md-12">
+        <div className="col-md-10">
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
@@ -117,6 +115,11 @@ export default function SSIDTimelinePage() {
               <li className="breadcrumb-item active">Timeline</li>
             </ol>
           </nav>
+        </div>
+        <div className="col-md-2">
+          <a href="https://go.nzyme.org/wifi-timelines" className="btn btn-outline-secondary float-end" target="_blank">
+            Help
+          </a>
         </div>
       </div>
 
