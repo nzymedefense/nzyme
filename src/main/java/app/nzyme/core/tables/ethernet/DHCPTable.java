@@ -168,7 +168,8 @@ public class DHCPTable implements DataTable {
                                 "additional_vendor_classes = :additional_vendor_classes::jsonb, " +
                                 "timestamps = :timestamps::jsonb, " +
                                 "latest_packet = :latest_packet, notes = :notes::jsonb, is_complete = :is_complete, " +
-                                "is_successful = :is_successful, updated_at = NOW()")
+                                "is_successful = :is_successful, updated_at = NOW() WHERE id = :id")
+                        .bind("id", existingTx.get())
                         .bind("additional_client_macs", additionalClientMacs)
                         .bind("server_mac", tx.serverMac())
                         .bind("additional_server_macs", additionalServerMacs)

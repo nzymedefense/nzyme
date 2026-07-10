@@ -166,8 +166,8 @@ public class DHCP {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT date_trunc(:date_trunc, first_packet) AS bucket, " +
                                 "COUNT(*) AS total_transaction_count, " +
-                                "COUNT(*) FILTER (WHERE is_successful = true) AS successful_transaction_count, " +
-                                "COUNT(*) FILTER (WHERE is_successful = false) AS failed_transaction_count " +
+                                "COUNT(*) FILTER (WHERE is_complete = true AND is_successful = true) AS successful_transaction_count, " +
+                                "COUNT(*) FILTER (WHERE is_complete = false OR is_successful = false) AS failed_transaction_count " +
                                 "FROM dhcp_transactions WHERE created_at >= :tr_from AND created_at <= :tr_to " +
                                 "AND tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
