@@ -141,10 +141,10 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         }
 
         // Calculate location.
-        LocationSolver solver = new LocationSolver(nzyme);
+        LocationSolver solver = new LocationSolver();
         LocationSolver.TrilaterationResult bssidLocation;
         try {
-            bssidLocation = solver.solve(signals, fsr.floor());
+            bssidLocation = solver.solve(signals, fsr.taps(), fsr.floor());
         } catch (LocationSolver.InvalidTapsException e) {
             LOG.error("Could not calculate BSSID location.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -268,10 +268,10 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         }
 
         // Calculate location.
-        LocationSolver solver = new LocationSolver(nzyme);
+        LocationSolver solver = new LocationSolver();
         LocationSolver.TrilaterationResult clientLocation;
         try {
-            clientLocation = solver.solve(signals, fsr.floor());
+            clientLocation = solver.solve(signals, fsr.taps(), fsr.floor());
         } catch (LocationSolver.InvalidTapsException e) {
             LOG.error("Could not calculate client location.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();

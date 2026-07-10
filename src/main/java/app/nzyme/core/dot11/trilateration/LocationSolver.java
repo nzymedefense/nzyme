@@ -1,6 +1,5 @@
 package app.nzyme.core.dot11.trilateration;
 
-import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.TapBasedSignalStrengthResultHistogramEntry;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.taps.Tap;
@@ -15,7 +14,6 @@ import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
-import org.joda.time.Duration;
 
 import java.util.*;
 
@@ -23,13 +21,12 @@ public class LocationSolver {
 
     private static final Logger LOG = LogManager.getLogger(LocationSolver.class);
 
-    private final NzymeNode nzyme;
-
-    public LocationSolver(NzymeNode nzyme) {
-        this.nzyme = nzyme;
-    }
+    private static final double REFERENCE_RSSI_AT_1M = -25;
+    private static final double BOUNDARY_PADDING_METERS = 3.0;
+    private static final double OUTSIDE_OF_PLAN_THRESHOLD_PERCENT = 66;
 
     public TrilaterationResult solve(List<TapBasedSignalStrengthResultHistogramEntry> signals,
+                                     List<Tap> floorTaps,
                                      TenantLocationFloorEntry floor)
             throws InvalidTapsException {
 
@@ -38,154 +35,161 @@ public class LocationSolver {
             throw new RuntimeException("Cannot run location solver on incomplete floor configuration.");
         }
 
-        // Sort the signal data into a queryable histogram.
-        Map<DateTime, List<TapBasedSignalStrengthResultHistogramEntry>> histo = Maps.newHashMap();
-        DateTime earliest = DateTime.now();
-        DateTime latest = DateTime.now();
+        int planWidthPixels = floor.planWidthPixels();
+        int planLengthPixels = floor.planLengthPixels();
+        int planWidthMeters = floor.planWidthMeters();
+        int planLengthMeters = floor.planLengthMeters();
+
+        Map<DateTime, List<TapBasedSignalStrengthResultHistogramEntry>> histo = new TreeMap<>();
         for (TapBasedSignalStrengthResultHistogramEntry signal : signals) {
-            List<TapBasedSignalStrengthResultHistogramEntry> entry = histo.get(signal.bucket());
-
-            if (entry != null) {
-                entry.add(signal);
-            } else {
-                histo.put(signal.bucket(), new ArrayList<>(){{ add(signal); }});
-            }
-
-            if (signal.bucket().isAfter(latest)) {
-                latest = signal.bucket();
-            }
-
-            if (signal.bucket().isBefore(earliest)) {
-                earliest = signal.bucket();
-            }
+            histo.computeIfAbsent(signal.bucket(), k -> Lists.newArrayList()).add(signal);
         }
 
-        // Cache taps.
         Map<UUID, Tap> taps = Maps.newHashMap();
-        for (Tap tap : nzyme.getTapManager().findAllTapsOfAllUsers()) {
+        for (Tap tap : floorTaps) {
             taps.put(tap.uuid(), tap);
         }
 
         int totalDataPoints = 0;
         int distancesOutsideOfBoundaries = 0;
+        int attemptedSolves = 0;
+        int gatedOutOfBounds = 0;
 
-        Duration duration = new Duration(earliest, latest);
         Map<DateTime, TrilaterationLocation> result = new TreeMap<>();
         Map<Tap, Integer> outsideOfBoundarySignalStrengths = Maps.newHashMap();
         Map<Tap, Integer> outsideOfBoundarySignalCounts = Maps.newHashMap();
-        for (int x = (int) duration.getStandardMinutes(); x != 0; x--) {
-            DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
 
-            List<TapBasedSignalStrengthResultHistogramEntry> signal = histo.get(bucket);
+        for (Map.Entry<DateTime, List<TapBasedSignalStrengthResultHistogramEntry>> bucketEntry : histo.entrySet()) {
+            DateTime bucket = bucketEntry.getKey();
+            List<TapBasedSignalStrengthResultHistogramEntry> signal = bucketEntry.getValue();
 
-            if (signal != null) {
-                List<Double[]> positions = Lists.newArrayList();
-                List<Double> distances = Lists.newArrayList();
+            List<Double[]> positions = Lists.newArrayList();
+            List<Double> distances = Lists.newArrayList();
 
-                for (TapBasedSignalStrengthResultHistogramEntry s : signal) {
-                    Tap tap = taps.get(s.tapUuid());
+            for (TapBasedSignalStrengthResultHistogramEntry s : signal) {
+                Tap tap = taps.get(s.tapUuid());
 
-                    if (tap == null) {
-                        continue;
-                    }
-
-                    if (tap.x() == null || tap.y() == null) {
-                        continue;
-                    }
-
-                    double distance = calculateDistance(-15, s.signalStrength(), floor.pathLossExponent());
-
-                    totalDataPoints++;
-                    if(isDistanceOutsideOfBoundaries(
-                            distance,
-                            tap.x(),
-                            tap.y(),
-                            floor.planWidthMeters(),
-                            floor.planLengthMeters(),
-                            floor.planWidthPixels(),
-                            floor.planLengthPixels())) {
-                        outsideOfBoundarySignalStrengths.put(
-                                tap, Math.round(outsideOfBoundarySignalStrengths
-                                                .getOrDefault(tap, 0)+s.signalStrength()
-                                )
-                        );
-                        outsideOfBoundarySignalCounts.put(
-                                tap, outsideOfBoundarySignalCounts.getOrDefault(tap, 0)+1
-                        );
-                        distancesOutsideOfBoundaries++;
-                        continue;
-                    }
-
-                    positions.add(new Double[]{(double) tap.x(), (double) tap.y()});
-                    distances.add(distance);
-                }
-
-                if (positions.size() < 3 || positions.size() != distances.size()) {
-                    // All signals outside of floor plan boundaries.
-                    if (distancesOutsideOfBoundaries == signal.size()) {
-                        continue;
-                    }
-
-                    // The signal loop above didn't find all taps or didn't have all signals. Skip this minute.
+                if (tap == null) {
                     continue;
                 }
 
-
-                double[][] positionsArr = new double[positions.size()][];
-                int i = 0;
-                for (Double[] value : positions) {
-                    positionsArr[i] = new double[]{value[0], value[1]};
-                    i++;
+                if (tap.x() == null || tap.y() == null) {
+                    continue;
                 }
 
-                NonLinearLeastSquaresSolver solver = new NonLinearLeastSquaresSolver(
-                        new TrilaterationFunction(positionsArr, Doubles.toArray(distances)),
-                        new LevenbergMarquardtOptimizer()
-                );
+                double distance = calculateDistance(REFERENCE_RSSI_AT_1M, s.signalStrength(), floor.pathLossExponent());
 
-                LeastSquaresOptimizer.Optimum optimum = solver.solve();
-                double[] position = optimum.getPoint().toArray();
+                totalDataPoints++;
+                if (isDistanceOutsideOfBoundaries(
+                        distance,
+                        tap.x(),
+                        tap.y(),
+                        planWidthMeters,
+                        planLengthMeters,
+                        planWidthPixels,
+                        planLengthPixels)) {
+                    outsideOfBoundarySignalStrengths.put(
+                            tap, Math.round(outsideOfBoundarySignalStrengths
+                                    .getOrDefault(tap, 0) + s.signalStrength())
+                    );
+                    outsideOfBoundarySignalCounts.put(
+                            tap, outsideOfBoundarySignalCounts.getOrDefault(tap, 0) + 1
+                    );
+                    distancesOutsideOfBoundaries++;
+                    continue;
+                }
 
-                result.put(bucket, TrilaterationLocation.create((int) position[0], (int) position[1]));
+                positions.add(new Double[]{(double) tap.x(), (double) tap.y()});
+                distances.add(distance);
             }
+
+            // Need at least three usable reference points to trilaterate.
+            if (positions.size() < 3 || positions.size() != distances.size()) {
+                continue;
+            }
+
+            double[][] positionsArr = new double[positions.size()][];
+            int i = 0;
+            for (Double[] value : positions) {
+                positionsArr[i] = new double[]{value[0], value[1]};
+                i++;
+            }
+
+            NonLinearLeastSquaresSolver solver = new NonLinearLeastSquaresSolver(
+                    new TrilaterationFunction(positionsArr, Doubles.toArray(distances)),
+                    new LevenbergMarquardtOptimizer()
+            );
+
+            LeastSquaresOptimizer.Optimum optimum = solver.solve();
+            double[] position = optimum.getPoint().toArray();
+
+            int x = (int) position[0];
+            int y = (int) position[1];
+
+            attemptedSolves++;
+
+            if (x < 0 || y < 0 || x > planWidthPixels || y > planLengthPixels) {
+                gatedOutOfBounds++;
+                LOG.debug("Discarding trilaterated position [{}, {}] outside floor plan bounds " +
+                        "([0-{}] x [0-{}]) for bucket {}.", x, y, planWidthPixels, planLengthPixels, bucket);
+                continue;
+            }
+
+            result.put(bucket, TrilaterationLocation.create(x, y));
         }
 
         Map<Integer, Map<String, Integer>> outsideOfPlanBoundariesTapStrengths = Maps.newHashMap();
-        for (Map.Entry<Tap, Integer> t :outsideOfBoundarySignalStrengths.entrySet()) {
+        for (Map.Entry<Tap, Integer> t : outsideOfBoundarySignalStrengths.entrySet()) {
             HashMap<String, Integer> location = Maps.newHashMap();
             location.put("x", t.getKey().x());
             location.put("y", t.getKey().y());
-            outsideOfPlanBoundariesTapStrengths.put(t.getValue()/outsideOfBoundarySignalCounts.get(t.getKey()), location);
+            outsideOfPlanBoundariesTapStrengths.put(
+                    t.getValue() / outsideOfBoundarySignalCounts.get(t.getKey()), location);
         }
 
-        double outsideOfPlanBoundariesPercentage = distancesOutsideOfBoundaries*100.0/totalDataPoints;
+        double outsideOfPlanBoundariesPercentage = totalDataPoints == 0
+                ? 0.0
+                : distancesOutsideOfBoundaries * 100.0 / totalDataPoints;
+
+        double gatedOutOfBoundsPercentage = attemptedSolves == 0
+                ? 0.0
+                : gatedOutOfBounds * 100.0 / attemptedSolves;
+
+        boolean isOutsideOfFloorPlanBoundaries =
+                outsideOfPlanBoundariesPercentage > OUTSIDE_OF_PLAN_THRESHOLD_PERCENT
+                        || gatedOutOfBoundsPercentage > OUTSIDE_OF_PLAN_THRESHOLD_PERCENT;
+
+        LOG.debug("Trilateration outside-of-plan signals: pre-filter {}% ({}/{} measurements), " +
+                        "gate {}% ({}/{} solvable buckets), verdict isOutside={}.",
+                String.format("%.1f", outsideOfPlanBoundariesPercentage),
+                distancesOutsideOfBoundaries, totalDataPoints,
+                String.format("%.1f", gatedOutOfBoundsPercentage),
+                gatedOutOfBounds, attemptedSolves,
+                isOutsideOfFloorPlanBoundaries);
+
         return TrilaterationResult.create(
                 result,
                 outsideOfPlanBoundariesPercentage,
-                outsideOfPlanBoundariesPercentage > 66,
+                isOutsideOfFloorPlanBoundaries,
                 outsideOfPlanBoundariesTapStrengths
         );
     }
 
-    private boolean isDistanceOutsideOfBoundaries(double distanceMeters, int tapXPixel, int tapYPixel, int floorPlanWidthMeters, int floorPlanLengthMeters, int floorPlanWidthPixels, int floorPlanLengthPixels) {
-        // Calculate scale factors.
+    private boolean isDistanceOutsideOfBoundaries(double distanceMeters,
+                                                  int tapXPixel, int tapYPixel,
+                                                  int floorPlanWidthMeters, int floorPlanLengthMeters,
+                                                  int floorPlanWidthPixels, int floorPlanLengthPixels) {
+        // Meters-per-pixel on each axis.
         double scaleX = (double) floorPlanWidthMeters / floorPlanWidthPixels;
         double scaleY = (double) floorPlanLengthMeters / floorPlanLengthPixels;
 
-        // Calculate distances in pixels to each corner.
-        double distanceToTopLeft = calculateFloorPlanDistance(tapXPixel, tapYPixel, 0, 0);
-        double distanceToTopRight = calculateFloorPlanDistance(tapXPixel, tapYPixel, floorPlanWidthPixels, 0);
-        double distanceToBottomLeft = calculateFloorPlanDistance(tapXPixel, tapYPixel, 0, floorPlanLengthPixels);
-        double distanceToBottomRight = calculateFloorPlanDistance(tapXPixel, tapYPixel, floorPlanWidthPixels, floorPlanLengthPixels);
+        double[] distancesToCorners = new double[]{
+                cornerDistanceMeters(tapXPixel, tapYPixel, 0, 0, scaleX, scaleY),
+                cornerDistanceMeters(tapXPixel, tapYPixel, floorPlanWidthPixels, 0, scaleX, scaleY),
+                cornerDistanceMeters(tapXPixel, tapYPixel, 0, floorPlanLengthPixels, scaleX, scaleY),
+                cornerDistanceMeters(tapXPixel, tapYPixel, floorPlanWidthPixels, floorPlanLengthPixels, scaleX, scaleY)
+        };
 
-        // Convert pixel distances to meters.
-        double[] distancesToCorners = new double[4];
-        distancesToCorners[0] = distanceToTopLeft * scaleX;
-        distancesToCorners[1] = distanceToTopRight * Math.sqrt(scaleX * scaleX + scaleY * scaleY);
-        distancesToCorners[2] = distanceToBottomLeft * Math.sqrt(scaleX * scaleX + scaleY * scaleY);
-        distancesToCorners[3] = distanceToBottomRight * scaleX;
-
-        // Find the maximum distance to any corner.
         double maxDistanceToCorner = 0;
         for (double dist : distancesToCorners) {
             if (dist > maxDistanceToCorner) {
@@ -193,12 +197,15 @@ public class LocationSolver {
             }
         }
 
-        // If the estimated distance to the signal source is greater than the maximum distance to any corner, it's likely outside
-        return distanceMeters > maxDistanceToCorner+3; // 3m padding. This should be configurable or more dynamic in the future.
+        return distanceMeters > maxDistanceToCorner + BOUNDARY_PADDING_METERS;
     }
 
-    private static double calculateFloorPlanDistance(double x1, double y1, double x2, double y2) {
-        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    private static double cornerDistanceMeters(int tapXPixel, int tapYPixel,
+                                               int cornerXPixel, int cornerYPixel,
+                                               double scaleX, double scaleY) {
+        double dxMeters = (cornerXPixel - tapXPixel) * scaleX;
+        double dyMeters = (cornerYPixel - tapYPixel) * scaleY;
+        return Math.sqrt(dxMeters * dxMeters + dyMeters * dyMeters);
     }
 
     private double calculateDistance(double RSSI0, double RSSI, double n) {
