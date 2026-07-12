@@ -15,7 +15,8 @@ function NavigationBar(props) {
     <nav className="navbar">
       <div className="container-fluid">
         <div className="d-flex flex-row">
-          <form method="GET" action={ApiRoutes.SEARCH.RESULTS}>
+          {/*<form method="GET" action={ApiRoutes.SEARCH.RESULTS}>*/}
+          <form method="GET" action="#" onSubmit={(e) => e.preventDefault()}>
             <div className="input-group">
               <input className="form-control" type="search" placeholder="Search" aria-label="Search" />
               <button className="btn btn-outline-secondary" type="submit">
