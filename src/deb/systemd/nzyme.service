@@ -1,6 +1,6 @@
 [Unit]
-Description=nzyme
-Documentation=https://github.com/nzymedefense/nzyme
+Description=Nzyme
+Documentation=https://github.com/nzymeorg/nzyme
 Wants=network-online.target
 After=network-online.target
 
