@@ -208,6 +208,14 @@ function TapSelector() {
   }, [availableTaps]);
 
   /*
+   * Downstream treats "*" as "all taps" and aggregates the data as if multiple taps supplied
+   * it. That's only correct when more than one tap actually exists, so we only ever collapse a
+   * full selection to "*" when there are at least two taps. A single tap is always reported as
+   * an explicit list containing that one tap, never as "*".
+   */
+  const canCollapseToAll = allUuids.length > 1;
+
+  /*
    * Build the Location -> Floor -> Tap tree. Floors are nested inside locations because the
    * same floor name (e.g. "Ground Level") can exist in several locations and only means
    * something within its location. Taps with a location but no floor, and taps with no
@@ -338,10 +346,17 @@ function TapSelector() {
 
   const isAll = preSelectedTaps === "*";
 
+  /*
+   * True when every available tap is selected, whether that's stored as "*" or, in the
+   * single-tap case, as an explicit list containing that one tap. Used to drive the master
+   * checkbox and its toggle so a single-tap "[uuid]" still reads as fully selected.
+   */
+  const allSelected = isAll || (allUuids.length > 0 && selectedSet !== null && allUuids.every((u) => selectedSet.has(u)));
+
   const workingSet = () => isAll ? new Set(allUuids) : new Set(preSelectedTaps);
 
   const commitSet = (set) => {
-    if (allUuids.length > 0 && allUuids.every((u) => set.has(u))) {
+    if (canCollapseToAll && allUuids.every((u) => set.has(u))) {
       setPreSelectedTaps("*");
     } else {
       setPreSelectedTaps(Array.from(set));
@@ -386,14 +401,16 @@ function TapSelector() {
   };
 
   const toggleAllTaps = () => {
-    if (isAll) {
+    if (allSelected) {
       setPreSelectedTaps([]); // empty selection is allowed -> "No Taps Selected"
-    } else {
+    } else if (canCollapseToAll) {
       setPreSelectedTaps("*");
+    } else {
+      setPreSelectedTaps([...allUuids]); // single tap: report it as itself, not "*"
     }
   };
 
-  const masterState = isAll
+  const masterState = allSelected
     ? {checked: true, indeterminate: false}
     : (preSelectedTaps && preSelectedTaps.length === 0
       ? {checked: false, indeterminate: false}
