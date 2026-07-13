@@ -32,7 +32,7 @@ package, execute database migrations and restart the `nzyme-node` service. Alway
 
 ```
 sudo systemctl stop nzyme
-sudo dpkg -i nzyme-node_[version].deb
+sudo dpkg -i [nzyme-node].deb
 sudo nzyme --migrate-database
 sudo systemctl daemon-reload
 sudo systemctl start nzyme
@@ -48,7 +48,7 @@ unless instructed otherwise.
 
 ```
 sudo systemctl stop nzyme-tap
-sudo dpkg -i nzyme-tap_[version].deb
+sudo dpkg -i [nzyme-tap].deb
 sudo systemctl daemon-reload
 sudo systemctl start nzyme-tap
 ```
