@@ -398,6 +398,10 @@ pub fn load(path: String) -> Result<Configuration, Error> {
         let mut assigned_channels_5g: Vec<u16> = Vec::new();
         let mut assigned_channels_6g: Vec<u16> = Vec::new();
         for interface in wifi_interfaces.values() {
+            if !interface.active {
+                continue;
+            }
+
             // Make sure every channel is only assigned once.
             if let Some(channels) = &interface.channels_2g {
                 for channel in channels {
