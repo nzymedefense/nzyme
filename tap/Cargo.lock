@@ -1565,7 +1565,7 @@ dependencies = [
 
 [[package]]
 name = "nzyme-tap"
-version = "2.0.0-alpha.18-SNAPSHOT"
+version = "2.0.0-alpha.18"
 dependencies = [
  "anyhow",
  "base64",
