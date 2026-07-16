@@ -109,7 +109,7 @@ pub fn run(release_file: String, signature_file: String, public_key_file: String
     print_pretty_sha256_hex(&pk_arr);
 
     println!("{FG_YELLOW}[!!] Additionally, always verify authenticity of this executable as \
-        documented.{RESET}");
+        documented: https://go.nzyme.org/verify-util{RESET}");
 
     if !release_ok {
         std::process::exit(EX_UNAVAILABLE);
