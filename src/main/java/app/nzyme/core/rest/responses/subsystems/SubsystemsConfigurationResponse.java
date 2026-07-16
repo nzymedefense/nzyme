@@ -19,9 +19,6 @@ public abstract class SubsystemsConfigurationResponse {
     @JsonProperty("subsystem_uav_available")
     public abstract boolean uavAvailable();
 
-    @JsonProperty("subsystem_gnss_available")
-    public abstract boolean gnssAvailable();
-
     @JsonProperty("subsystem_ethernet_enabled")
     public abstract ConfigurationEntryResponse ethernetEnabled();
 
@@ -34,21 +31,16 @@ public abstract class SubsystemsConfigurationResponse {
     @JsonProperty("subsystem_uav_enabled")
     public abstract ConfigurationEntryResponse uavEnabled();
 
-    @JsonProperty("subsystem_gnss_enabled")
-    public abstract ConfigurationEntryResponse gnssEnabled();
-
-    public static SubsystemsConfigurationResponse create(boolean ethernetAvailable, boolean dot11Available, boolean bluetoothAvailable, boolean uavAvailable, boolean gnssAvailable, ConfigurationEntryResponse ethernetEnabled, ConfigurationEntryResponse dot11Enabled, ConfigurationEntryResponse bluetoothEnabled, ConfigurationEntryResponse uavEnabled, ConfigurationEntryResponse gnssEnabled) {
+    public static SubsystemsConfigurationResponse create(boolean ethernetAvailable, boolean dot11Available, boolean bluetoothAvailable, boolean uavAvailable, ConfigurationEntryResponse ethernetEnabled, ConfigurationEntryResponse dot11Enabled, ConfigurationEntryResponse bluetoothEnabled, ConfigurationEntryResponse uavEnabled) {
         return builder()
                 .ethernetAvailable(ethernetAvailable)
                 .dot11Available(dot11Available)
                 .bluetoothAvailable(bluetoothAvailable)
                 .uavAvailable(uavAvailable)
-                .gnssAvailable(gnssAvailable)
                 .ethernetEnabled(ethernetEnabled)
                 .dot11Enabled(dot11Enabled)
                 .bluetoothEnabled(bluetoothEnabled)
                 .uavEnabled(uavEnabled)
-                .gnssEnabled(gnssEnabled)
                 .build();
     }
 
@@ -66,8 +58,6 @@ public abstract class SubsystemsConfigurationResponse {
 
         public abstract Builder uavAvailable(boolean uavAvailable);
 
-        public abstract Builder gnssAvailable(boolean gnssAvailable);
-
         public abstract Builder ethernetEnabled(ConfigurationEntryResponse ethernetEnabled);
 
         public abstract Builder dot11Enabled(ConfigurationEntryResponse dot11Enabled);
@@ -75,8 +65,6 @@ public abstract class SubsystemsConfigurationResponse {
         public abstract Builder bluetoothEnabled(ConfigurationEntryResponse bluetoothEnabled);
 
         public abstract Builder uavEnabled(ConfigurationEntryResponse uavEnabled);
-
-        public abstract Builder gnssEnabled(ConfigurationEntryResponse gnssEnabled);
 
         public abstract SubsystemsConfigurationResponse build();
     }

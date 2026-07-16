@@ -7,7 +7,6 @@ public enum DataCategory {
     ETHERNET_L4,
     ETHERNET_DNS,
     UAV,
-    GNSS,
     TIMELINE_EVENTS_DOT11
 
 }

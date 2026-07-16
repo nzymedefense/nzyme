@@ -16,7 +16,6 @@ pub struct Configuration {
     pub ethernet_interfaces: Option<HashMap<String, EthernetInterface>>,
     pub rawip_interfaces: Option<HashMap<String, RawIpInterface>>,
     pub bluetooth_interfaces: Option<HashMap<String, BluetoothInterface>>,
-    pub gnss_interfaces: Option<HashMap<String, GNSSInterface>>,
     pub wifi_engagement_interfaces: Option<HashMap<String, WiFiEngagementInterfaceConfiguration>>,
     pub performance: Performance,
     pub protocols: Protocols,
@@ -82,14 +81,6 @@ pub enum EngagementTarget {
     UAV
 }
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct GNSSInterface {
-    pub active: bool,
-    pub delay_seconds: Option<u32>,
-    pub offset_lat: Option<f64>,
-    pub offset_lon: Option<f64>
-}
-
 #[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Deserialize, Eq, PartialEq)]
 pub enum ChannelWidthHoppingMode {
@@ -135,7 +126,6 @@ pub struct Protocols {
     pub dhcpv4: ProtocolsDhcpv4,
     pub ntp: ProtocolsNtp,
     pub uav_remote_id: ProtocolsUavRemoteId,
-    pub gnss: ProtocolsGnss
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -194,11 +184,6 @@ pub struct ProtocolsNtp {
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsUavRemoteId {
     pub pipeline_size: i32
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct ProtocolsGnss {
-    pub nmea_pipeline_size: i32
 }
 
 pub fn load(path: String) -> Result<Configuration, Error> {
@@ -384,12 +369,6 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     if doc.protocols.uav_remote_id.pipeline_size <= 0 {
         bail!("Configuration variable `protocols.uav_remote_id.pipeline_size` must be set to a \
             value greater than 0.");
-    }
-
-    // GNSS NMEA messages.
-    if doc.protocols.gnss.nmea_pipeline_size <= 0 {
-        bail!("Configuration variable `protocols.gnss_generic.nmea_pipeline_size` must be set to a value \
-            greater than 0.");
     }
 
     // Validate WiFi interfaces configuration

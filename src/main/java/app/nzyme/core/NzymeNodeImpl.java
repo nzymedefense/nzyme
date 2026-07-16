@@ -42,8 +42,6 @@ import app.nzyme.core.environment.EnvironmentService;
 import app.nzyme.core.ethernet.L4ConnectionCleaner;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
-import app.nzyme.core.gnss.GNSS;
-import app.nzyme.core.gnss.GNSSElevationMaskThread;
 import app.nzyme.core.integrations.ScheduledIntegrationsManager;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
@@ -142,7 +140,6 @@ public class NzymeNodeImpl implements NzymeNode {
     private final Dot11 dot11;
     private final Bluetooth bluetooth;
     private final Uav uav;
-    private final GNSS gnss;
 
     private final AssetManager assets;
 
@@ -212,7 +209,6 @@ public class NzymeNodeImpl implements NzymeNode {
         this.dot11 = new Dot11(this);
         this.bluetooth = new Bluetooth(this);
         this.uav = new Uav(this);
-        this.gnss = new GNSS(this);
 
         this.assets = new AssetManager(this);
 
@@ -338,7 +334,6 @@ public class NzymeNodeImpl implements NzymeNode {
         periodicalManager.scheduleAtFixedRate(new DatabaseRetentionCleaner(this), 1, 60, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new AssetMonitor(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new AssetStatisticsCleaner(this), 1, 10, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new GNSSElevationMaskThread(this), 0, 30, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new MonitorsThread(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new TimelinesThread(this), 0, EVENT_HORIZON_MINUTES, TimeUnit.MINUTES);
         if (configuration.versionchecksEnabled()) {
@@ -443,11 +438,6 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public Uav getUav() {
         return uav;
-    }
-
-    @Override
-    public GNSS getGnss() {
-        return gnss;
     }
 
     @Override

@@ -68,7 +68,6 @@ pub struct ConfigurationReportProtocols {
     pub socks: ConfigurationReportProtocolsSocks,
     pub dhcpv4: ConfigurationReportProtocolsDhcpv4,
     pub uav_remote_id: ConfigurationReportProtocolsUavRemoteId,
-    pub gnss: ConfigurationReportProtocolsGnss
 }
 
 #[derive(Serialize)]
@@ -122,11 +121,6 @@ pub struct ConfigurationReportProtocolsDhcpv4 {
 #[derive(Serialize)]
 pub struct ConfigurationReportProtocolsUavRemoteId {
     pub pipeline_size: i32
-}
-
-#[derive(Serialize)]
-pub struct ConfigurationReportProtocolsGnss {
-    pub nmea_pipeline_size: i32
 }
 
 impl TryFrom<Configuration> for ConfigurationReport {
@@ -189,10 +183,7 @@ impl TryFrom<Configuration> for ConfigurationReport {
                 },
                 uav_remote_id: ConfigurationReportProtocolsUavRemoteId {
                     pipeline_size: c.protocols.uav_remote_id.pipeline_size
-                },
-                gnss: ConfigurationReportProtocolsGnss {
-                    nmea_pipeline_size: c.protocols.gnss.nmea_pipeline_size
-                },
+                }
             }
         })
     }

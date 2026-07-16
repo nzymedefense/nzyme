@@ -36,11 +36,4 @@ public class SubsystemRegistryKeys {
             false
     );
 
-    public static final RegistryKey GNSS_ENABLED = RegistryKey.create(
-            "subsystem_gnss_enabled",
-            Optional.of(new ImmutableList.Builder().add(ConfigurationEntryConstraint.createSimpleBooleanConstraint()).build()),
-            Optional.of("true"),
-            false
-    );
-
 }

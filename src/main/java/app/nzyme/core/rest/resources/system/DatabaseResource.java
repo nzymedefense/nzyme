@@ -10,7 +10,6 @@ import app.nzyme.core.database.tasks.OrganizationPurgeCategoryTask;
 import app.nzyme.core.database.tasks.TenantPurgeCategoryTask;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
-import app.nzyme.core.gnss.GNSSRegistryKeys;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.SetDatabaseCategoryRetentionTimeRequest;
@@ -288,7 +287,6 @@ public class DatabaseResource extends UserAuthenticatedResource {
             case ETHERNET_L4 -> key = EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key();
             case ETHERNET_DNS -> key = EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.key();
             case UAV -> key = UavRegistryKeys.UAV_RETENTION_TIME_DAYS.key();
-            case GNSS -> key = GNSSRegistryKeys.GNSS_RETENTION_TIME_DAYS.key();
             case TIMELINE_EVENTS_DOT11 -> key = TimelinesRegistryKeys.DOT11_EVENTS_RETENTION_TIME_DAYS.key();
         }
 

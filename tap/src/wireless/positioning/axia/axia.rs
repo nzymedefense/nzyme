@@ -1,1 +1,0 @@
-pub const AXIA_1_PID: u16 = 0x0400;

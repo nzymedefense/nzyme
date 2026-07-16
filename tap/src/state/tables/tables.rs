@@ -15,10 +15,8 @@ use crate::messagebus::bus::Bus;
 use crate::metrics::Metrics;
 use crate::state::tables::arp_table::ArpTable;
 use crate::state::tables::dhcp_table::DhcpTable;
-use crate::state::tables::gnss_monitor_table::GnssMonitorTable;
 use crate::state::tables::ntp_table::NtpTable;
 use crate::state::tables::uav_table::UavTable;
-use crate::wired::packets::NtpPacket;
 use crate::wireless::dot11::engagement::engagement_control::EngagementControl;
 
 pub struct Tables {
@@ -32,8 +30,7 @@ pub struct Tables {
     pub ssh: Arc<Mutex<SshTable>>,
     pub socks: Arc<Mutex<SocksTable>>,
     pub ntp: Arc<Mutex<NtpTable>>,
-    pub uav: Arc<Mutex<UavTable>>,
-    pub gnss_monitor: Arc<Mutex<GnssMonitorTable>>
+    pub uav: Arc<Mutex<UavTable>>
 }
 
 impl Tables {
@@ -65,8 +62,7 @@ impl Tables {
             ssh: Arc::new(Mutex::new(SshTable::new(leaderlink.clone(), metrics.clone()))),
             socks: Arc::new(Mutex::new(SocksTable::new(leaderlink.clone(), metrics.clone()))),
             ntp: Arc::new(Mutex::new(NtpTable::new(leaderlink.clone(), metrics.clone()))),
-            uav: Arc::new(Mutex::new(UavTable::new(leaderlink.clone(), metrics.clone(), engagement_control))),
-            gnss_monitor: Arc::new(Mutex::new(GnssMonitorTable::new(leaderlink.clone(), metrics)))
+            uav: Arc::new(Mutex::new(UavTable::new(leaderlink.clone(), metrics.clone(), engagement_control)))
         }
     }
 
@@ -157,14 +153,6 @@ impl Tables {
                     uav.process_report();
                 },
                 Err(e) => error!("Could not acquire UAV table lock for report processing: {}", e)
-            }
-
-            match self.gnss_monitor.lock() {
-                Ok(gnss_monitor) => {
-                    gnss_monitor.calculate_metrics();
-                    gnss_monitor.process_report();
-                },
-                Err(e) => error!("Could not acquire GNSS Monitor table lock for report processing: {}", e)
             }
         }
     }

@@ -12,8 +12,6 @@ pub const SONA_IOT_PID: u16 = 0x103;
 
 pub const LIMINA_PID: u16 = 0x0200;
 
-pub const AXIA_PID: u16 = 0x0400;
-
 pub fn find_bootloader_of_pid(pid: u16) -> Result<u16> {
     match pid {
         // Limina.
@@ -21,9 +19,6 @@ pub fn find_bootloader_of_pid(pid: u16) -> Result<u16> {
 
         // Sona. (WiFi, Bluetooth, 802.15.4)
         SONA_WIFI_PID | SONA_BLUETOOTH_PID | SONA_IOT_PID | 0x0002 => Ok(0x0002),
-
-        // Axia.
-        AXIA_PID | 0x0004 => Ok(0x0004),
 
         _ => bail!("Unknown PID <{}>.", pid)
     }

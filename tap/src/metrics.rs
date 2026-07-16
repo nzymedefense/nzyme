@@ -75,10 +75,6 @@ pub struct Channels {
     ntp_pipeline: ChannelUtilization,
 
     uav_remote_id_pipeline: ChannelUtilization,
-
-    gnss_nmea_pipeline: ChannelUtilization,
-    gnss_ubx_mon_rf_pipeline: ChannelUtilization,
-    gnss_ubx_rxm_measx_pipeline: ChannelUtilization
 }
 
 #[derive(Clone, Display)]
@@ -87,8 +83,7 @@ pub enum CaptureType {
     RawIp,
     WiFi,
     WiFiEngagement,
-    Bluetooth,
-    Gnss
+    Bluetooth
 }
 
 #[derive(Clone)]
@@ -241,9 +236,6 @@ impl Metrics {
             "Dhcpv4Pipeline" => &mut self.channels.dhcpv4_pipeline,
             "NtpPipeline" => &mut self.channels.ntp_pipeline,
             "UavRemoteIdPipeline" => &mut self.channels.uav_remote_id_pipeline,
-            "GnssNmeaMessagesPipeline" => &mut self.channels.gnss_nmea_pipeline,
-            "GnssUbxMonRfPipeline" => &mut self.channels.gnss_ubx_mon_rf_pipeline,
-            "GnssUbxRxmMeasxPipeline" => &mut self.channels.gnss_ubx_rxm_measx_pipeline,
             _ => panic!("Unknown channel {}", channel)
         }
     }

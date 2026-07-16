@@ -43,9 +43,6 @@ import app.nzyme.core.events.db.EventEntryMapper;
 import app.nzyme.core.events.db.SubscriptionEntryMapper;
 import app.nzyme.core.floorplans.db.TenantLocationEntryMapper;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntryMapper;
-import app.nzyme.core.gnss.db.*;
-import app.nzyme.core.gnss.db.elevationmasks.GNSSElevationMaskAzimuthBucketMapper;
-import app.nzyme.core.gnss.db.monitoring.GNSSMonitoringRuleEntryMapper;
 import app.nzyme.core.monitoring.GaugeEntryAverageMapper;
 import app.nzyme.core.monitoring.TimerEntryAverageMapper;
 import app.nzyme.core.monitoring.TimerEntryMapper;
@@ -199,13 +196,7 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new ArpPacketEntryMapper())
                 .registerRowMapper(new ARPStatisticsBucketMapper())
                 .registerRowMapper(new ArpSenderTargetCountPairMapper())
-                .registerRowMapper(new GNSSIntegerBucketMapper())
-                .registerRowMapper(new GNSSDoubleBucketMapper())
-                .registerRowMapper(new GNSSStringBucketMapper())
                 .registerRowMapper(new LatLonResultMapper())
-                .registerRowMapper(new GNSSSatelliteInViewMapper())
-                .registerRowMapper(new GNSSConstellationDistancesMapper())
-                .registerRowMapper(new GNSSMonitoringRuleEntryMapper())
                 .registerRowMapper(new TimerEntryAverageMapper())
                 .registerRowMapper(new GaugeEntryAverageMapper())
                 .registerRowMapper(new TapMetricsGaugeAggregationMapper())
@@ -219,8 +210,6 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new StringNumberNumberAggregationResultMapper())
                 .registerRowMapper(new L4AddressDataAddressNumberNumberAggregationResultMapper())
                 .registerRowMapper(new DHCPStatisticsBucketMapper())
-                .registerRowMapper(new GNSSElevationMaskAzimuthBucketMapper())
-                .registerRowMapper(new GNSSPRNTrackPointMapper())
                 .registerRowMapper(new NTPTransactionEntryMapper())
                 .registerRowMapper(new StringDoubleDoubleNumberAggregationResultMapper())
                 .registerRowMapper(new StringStringNumberAggregationResultMapper())
@@ -477,13 +466,6 @@ public class DatabaseImpl implements Database {
                         "uavs",
                         "SELECT COUNT(*) FROM uavs WHERE tap_uuid IN (<taps>)",
                         "DELETE FROM uavs WHERE last_seen < :since AND tap_uuid IN (<taps>)"
-                ));
-            }
-            case GNSS -> {
-                tables.add(new DataTableInformation(
-                        "gnss_constellations",
-                        "SELECT COUNT(*) FROM gnss_constellations WHERE tap_uuid IN (<taps>)",
-                        "DELETE FROM gnss_constellations WHERE timestamp < :since AND tap_uuid IN (<taps>)"
                 ));
             }
             case TIMELINE_EVENTS_DOT11 -> {

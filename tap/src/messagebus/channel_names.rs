@@ -26,8 +26,5 @@ pub enum BluetoothChannelName {
 
 #[derive(Debug, Clone, EnumIter, Display)]
 pub enum GenericChannelName {
-    UavRemoteIdPipeline,
-    GnssNmeaMessagesPipeline,
-    GnssUbxMonRfPipeline,
-    GnssUbxRxmMeasxPipeline
+    UavRemoteIdPipeline
 }

@@ -19,7 +19,6 @@ import app.nzyme.core.rest.resources.dot11.Dot11ClientsResource;
 import app.nzyme.core.rest.resources.dot11.Dot11MonitoredNetworksResource;
 import app.nzyme.core.rest.resources.dot11.Dot11NetworksResource;
 import app.nzyme.core.rest.resources.ethernet.*;
-import app.nzyme.core.rest.resources.gnss.GNSSResource;
 import app.nzyme.core.rest.resources.locations.LocationsResource;
 import app.nzyme.core.rest.resources.monitors.MonitorsResource;
 import app.nzyme.core.rest.resources.system.authentication.AuthenticationResource;
@@ -176,7 +175,6 @@ public class NzymeHttpServer {
         resourceConfig.register(AssetsResource.class);
         resourceConfig.register(L4Resource.class);
         resourceConfig.register(ArpResource.class);
-        resourceConfig.register(GNSSResource.class);
         resourceConfig.register(TimeResource.class);
         resourceConfig.register(MonitorsResource.class);
         resourceConfig.register(TimelinesResource.class);

@@ -52,8 +52,6 @@ use crate::wireless::dot11::sona;
 use crate::wireless::dot11::sona::command_router::SonaCommandRouter;
 use crate::wireless::dot11::sona::commands::{SonaCommand};
 use crate::wireless::dot11::sona::sona_tools::extract_serial_from_interface_name;
-use crate::wireless::positioning;
-use crate::wireless::positioning::axia;
 
 #[derive(Parser,Debug)]
 struct Arguments {
@@ -497,97 +495,6 @@ fn main() {
                         Err(e) => error!("Could not acquire mutex of metrics: {}", e)
                     }
                     sleep(Duration::from_secs(5));
-                }
-            });
-        }
-    }
-
-    // GNSS capture.
-    if let Some(gnss_interfaces) = &configuration.gnss_interfaces {
-        for (interface_name, interface_config) in gnss_interfaces {
-            if !interface_config.active {
-                info!("Skipping disabled GNSS interface [{}].", interface_name);
-                continue;
-            }
-
-            let capture_metrics = metrics.clone();
-            let capture_bus = generic_bus.clone();
-            let interface_name = interface_name.clone();
-            let interface_config = interface_config.clone();
-            thread::spawn(move || {
-                if interface_name.starts_with("axia-") {
-                    let serial = match extract_serial_from_interface_name("axia", &interface_name) {
-                        Ok(serial) => serial,
-                        Err(e) => {
-                            error!("Could not extract Axia serial from interface name [{}].", interface_name);
-                            return;
-                        }
-                    };
-
-                    match capture_metrics.lock() {
-                        Ok(mut metrics) => metrics.register_new_capture(
-                            &interface_name, metrics::CaptureType::Gnss
-                        ),
-                        Err(e) => error!("Could not acquire mutex of metrics: {}", e)
-                    }
-
-                    let mut axia_capture = axia::capture::Capture {
-                        metrics: capture_metrics.clone(), bus: capture_bus
-                    };
-
-                    if let Some(delay_seconds) = interface_config.delay_seconds {
-                        info!("Delaying start of GNSS capture [{}] for <{}> seconds.",
-                            interface_name, delay_seconds);
-
-                        sleep(Duration::from_secs(delay_seconds as u64));
-                    }
-
-                    loop {
-                        axia_capture.run(&interface_config, &serial);
-
-                        error!("Axia capture disconnected. Retrying in 5 seconds.");
-                        match capture_metrics.lock() {
-                            Ok(mut metrics) => metrics.mark_capture_as_failed("Axia"),
-                            Err(e) => error!("Could not acquire mutex of metrics: {}", e)
-                        }
-                        sleep(Duration::from_secs(5));
-                    }
-                } else {
-                    // Generic GNSS adapter.
-                    let mut gnss_capture = positioning::gnss_generic::capture::Capture {
-                        metrics: capture_metrics.clone(),
-                        bus: capture_bus
-                    };
-
-                    let full_device_name = positioning::gnss_generic::capture::Capture::build_full_capture_name(
-                        &interface_name
-                    );
-
-                    match capture_metrics.lock() {
-                        Ok(mut metrics) => metrics.register_new_capture(
-                            &full_device_name, metrics::CaptureType::Gnss
-                        ),
-                        Err(e) => error!("Could not acquire mutex of metrics: {}", e)
-                    }
-
-                    if let Some(delay_seconds) = interface_config.delay_seconds {
-                        info!("Delaying start of GNSS capture [{}] for <{}> seconds.",
-                            interface_name, delay_seconds);
-
-                        sleep(Duration::from_secs(delay_seconds as u64));
-                    }
-
-                    loop {
-                        gnss_capture.run(&full_device_name, &interface_config);
-
-                        error!("GNSS capture [{}] disconnected. Retrying in 5 seconds.",
-                        &full_device_name);
-                        match capture_metrics.lock() {
-                            Ok(mut metrics) => metrics.mark_capture_as_failed(&full_device_name),
-                            Err(e) => error!("Could not acquire mutex of metrics: {}", e)
-                        }
-                        sleep(Duration::from_secs(5));
-                    }
                 }
             });
         }

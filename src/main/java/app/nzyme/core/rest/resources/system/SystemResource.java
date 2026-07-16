@@ -208,7 +208,6 @@ public class SystemResource {
                 true,
                 true,
                 true,
-                true,
                 ConfigurationEntryResponse.create(
                         SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
                         "Ethernet is enabled",
@@ -247,16 +246,6 @@ public class SystemResource {
                         SubsystemRegistryKeys.UAV_ENABLED.defaultValue().orElse(null),
                         SubsystemRegistryKeys.UAV_ENABLED.requiresRestart(),
                         SubsystemRegistryKeys.UAV_ENABLED.constraints().orElse(Collections.emptyList()),
-                        "subsystems"
-                ),
-                ConfigurationEntryResponse.create(
-                        SubsystemRegistryKeys.GNSS_ENABLED.key(),
-                        "GNSS is enabled",
-                        nzyme.getSubsystems().isEnabled(Subsystem.GNSS, null, null),
-                        ConfigurationEntryValueType.BOOLEAN,
-                        SubsystemRegistryKeys.GNSS_ENABLED.defaultValue().orElse(null),
-                        SubsystemRegistryKeys.GNSS_ENABLED.requiresRestart(),
-                        SubsystemRegistryKeys.GNSS_ENABLED.constraints().orElse(Collections.emptyList()),
                         "subsystems"
                 )
         );

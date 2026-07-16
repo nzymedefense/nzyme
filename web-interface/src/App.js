@@ -161,16 +161,11 @@ import DHCPTransactionDetailsPage from "./components/ethernet/assets/dhcp/DHCPTr
 import GlobalTenantSelectorForm from "./components/system/tenantselector/GlobalTenantSelectorForm";
 import AssetDetailsPage from "./components/ethernet/assets/AssetDetailsPage";
 import ARPPacketsPage from "./components/ethernet/assets/arp/ARPPacketsPage";
-import GNSSFixPage from "./components/gnss/GNSSFixPage";
-import GNSSPRNDetailsPage from "./components/gnss/prn/GNSSPRNDetailsPage";
-import GNSSMonitoringSettingsPage from "./components/gnss/monitoring/GNSSMonitoringSettingsPage";
 import ReconPage from "./components/ethernet/recon/ReconPage";
 import TCPSessionDetailsPage from "./components/ethernet/l4/tcp/TCPSessionDetailsPage";
 import UDPSessionDetailsPage from "./components/ethernet/l4/udp/UDPSessionDetailsPage";
 import EthernetAssetsSettingsPage from "./components/ethernet/assets/EthernetAssetsSettingsPage";
 import EthernetOverviewPage from "./components/ethernet/EthernetOverviewPage";
-import GNSSRFPage from "./components/gnss/GNSSRFPage";
-import GNSSSatellitesPage from "./components/gnss/GNSSSatellitesPage";
 import {NTPOverviewPage} from "./components/ethernet/time/ntp/NTPOverviewPage";
 import NTPTransactionDetailsPage from "./components/ethernet/time/ntp/NTPTransactionDetailsPage";
 import Dot11MonitorsPage from "./components/dot11/monitoring/Dot11MonitorsPage";
@@ -184,7 +179,6 @@ import BSSIDTimelinePage from "./components/dot11/bssids/BSSIDTimelinePage";
 import LocationsOverviewPage from "./components/locations/LocationsOverviewPage";
 import LocationDetailsPage from "./components/locations/LocationDetailsPage";
 import SSIDTimelinePage from "./components/dot11/bssids/ssids/SSIDTimelinePage";
-import GNSSOverviewPage from "./components/gnss/GNSSOverviewPage";
 
 const pingService = new PingService();
 const authenticationService = new AuthenticationService();
@@ -643,21 +637,6 @@ function App() {
                                 <Route path={ApiRoutes.UAV.TYPES.EDIT(':uuid')} element={<EditCustomTypePage />}/>
 
                                 <Route path={ApiRoutes.UAV.MONITORING.INDEX} element={<UavMonitoringPage />}/>
-                              </Route>
-
-                              { /* GNSS. */ }
-                              <Route element={<ProtectedRoute execute={userHasSubsystem(userInformation, "gnss")} />}>
-                                <Route path={ApiRoutes.GNSS.OVERVIEW} element={<GNSSOverviewPage />}/>
-
-                                { /* GNSS Constellations and PRNs. */}
-                                <Route path={ApiRoutes.GNSS.TAP_DETAILS.FIX(':tapId')} element={<GNSSFixPage />}/>
-                                <Route path={ApiRoutes.GNSS.TAP_DETAILS.RF(':tapId')} element={<GNSSRFPage />}/>
-                                <Route path={ApiRoutes.GNSS.TAP_DETAILS.SATELLITES(':tapId')} element={<GNSSSatellitesPage />}/>
-
-                                <Route path={ApiRoutes.GNSS.TAP_DETAILS.PRN(':tapId',':constellation', ':prn')} element={<GNSSPRNDetailsPage />}/>
-
-                                { /* GNSS Monitoring Settings. */}
-                                <Route path={ApiRoutes.GNSS.MONITORING.SETTINGS} element={<GNSSMonitoringSettingsPage />}/>
                               </Route>
 
                               { /* Context. */ }

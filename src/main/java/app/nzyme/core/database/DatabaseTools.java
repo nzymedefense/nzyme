@@ -3,7 +3,6 @@ package app.nzyme.core.database;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.ethernet.EthernetRegistryKeys;
-import app.nzyme.core.gnss.GNSSRegistryKeys;
 import app.nzyme.core.rest.responses.bluetooth.BluetoothRegistryKeys;
 import app.nzyme.core.timelines.TimelinesRegistryKeys;
 import app.nzyme.core.uav.UavRegistryKeys;
@@ -39,10 +38,6 @@ public class DatabaseTools {
             case UAV -> {
                 key = UavRegistryKeys.UAV_RETENTION_TIME_DAYS.key();
                 defaultValue = UavRegistryKeys.UAV_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
-            }
-            case GNSS -> {
-                key = GNSSRegistryKeys.GNSS_RETENTION_TIME_DAYS.key();
-                defaultValue = GNSSRegistryKeys.GNSS_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
             }
             case TIMELINE_EVENTS_DOT11 -> {
                 key = TimelinesRegistryKeys.DOT11_EVENTS_RETENTION_TIME_DAYS.key();

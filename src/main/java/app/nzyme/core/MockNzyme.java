@@ -32,7 +32,6 @@ import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.environment.EnvironmentService;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
-import app.nzyme.core.gnss.GNSS;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.monitors.Monitors;
@@ -255,11 +254,6 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public Uav getUav() {
-        return null;
-    }
-
-    @Override
-    public GNSS getGnss() {
         return null;
     }
 

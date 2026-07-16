@@ -37,7 +37,6 @@ import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.Subsystem;
 import app.nzyme.plugin.distributed.messaging.ClusterMessage;
-import app.nzyme.plugin.distributed.messaging.Message;
 import app.nzyme.plugin.distributed.messaging.MessageType;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
@@ -179,14 +178,12 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         boolean dot11Available = nzyme.getSubsystems().isEnabled(Subsystem.DOT11, null, null);
         boolean bluetoothAvailable = nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, null, null);
         boolean uavAvailable = nzyme.getSubsystems().isEnabled(Subsystem.UAV, null, null);
-        boolean gnssAvailable = nzyme.getSubsystems().isEnabled(Subsystem.GNSS, null, null);
 
         SubsystemsConfigurationResponse response = SubsystemsConfigurationResponse.create(
                 ethernetAvailable,
                 dot11Available,
                 bluetoothAvailable,
                 uavAvailable,
-                gnssAvailable,
                 ConfigurationEntryResponse.create(
                         SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
                         "Ethernet is enabled",
@@ -225,16 +222,6 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                         SubsystemRegistryKeys.UAV_ENABLED.defaultValue().orElse(null),
                         SubsystemRegistryKeys.UAV_ENABLED.requiresRestart(),
                         SubsystemRegistryKeys.UAV_ENABLED.constraints().orElse(Collections.emptyList()),
-                        "subsystems"
-                ),
-                ConfigurationEntryResponse.create(
-                        SubsystemRegistryKeys.GNSS_ENABLED.key(),
-                        "GNSS is enabled",
-                        nzyme.getSubsystems().isEnabled(Subsystem.GNSS,  org.get().uuid(), null),
-                        ConfigurationEntryValueType.BOOLEAN,
-                        SubsystemRegistryKeys.GNSS_ENABLED.defaultValue().orElse(null),
-                        SubsystemRegistryKeys.GNSS_ENABLED.requiresRestart(),
-                        SubsystemRegistryKeys.GNSS_ENABLED.constraints().orElse(Collections.emptyList()),
                         "subsystems"
                 )
         );
@@ -884,14 +871,12 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         boolean dot11Available = nzyme.getSubsystems().isEnabled(Subsystem.DOT11, organizationId, null);
         boolean bluetoothAvailable = nzyme.getSubsystems().isEnabled(Subsystem.BLUETOOTH, organizationId, null);
         boolean uavAvailable = nzyme.getSubsystems().isEnabled(Subsystem.UAV, organizationId, null);
-        boolean gnssAvailable = nzyme.getSubsystems().isEnabled(Subsystem.GNSS, organizationId, null);
 
         SubsystemsConfigurationResponse response = SubsystemsConfigurationResponse.create(
                 ethernetAvailable,
                 dot11Available,
                 bluetoothAvailable,
                 uavAvailable,
-                gnssAvailable,
                 ConfigurationEntryResponse.create(
                         SubsystemRegistryKeys.ETHERNET_ENABLED.key(),
                         "Ethernet is enabled",
@@ -930,16 +915,6 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                         SubsystemRegistryKeys.UAV_ENABLED.defaultValue().orElse(null),
                         SubsystemRegistryKeys.UAV_ENABLED.requiresRestart(),
                         SubsystemRegistryKeys.UAV_ENABLED.constraints().orElse(Collections.emptyList()),
-                        "subsystems"
-                ),
-                ConfigurationEntryResponse.create(
-                        SubsystemRegistryKeys.GNSS_ENABLED.key(),
-                        "GNSS is enabled",
-                        nzyme.getSubsystems().isEnabled(Subsystem.GNSS,  organizationId, tenantId),
-                        ConfigurationEntryValueType.BOOLEAN,
-                        SubsystemRegistryKeys.GNSS_ENABLED.defaultValue().orElse(null),
-                        SubsystemRegistryKeys.GNSS_ENABLED.requiresRestart(),
-                        SubsystemRegistryKeys.GNSS_ENABLED.constraints().orElse(Collections.emptyList()),
                         "subsystems"
                 )
         );

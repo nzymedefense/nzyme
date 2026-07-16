@@ -8041,4 +8041,12 @@
         <dropTable tableName="integrations_cot_outputs" />
     </changeSet>
 
+    <changeSet id="cleanup_20260716" author="lennartkoopmann">
+        <dropTable tableName="gnss_constellations" />
+        <dropTable tableName="gnss_elevation_mask" />
+        <dropTable tableName="gnss_monitoring_rules" />
+        <dropTable tableName="gnss_sats_in_view" />
+        <dropColumn tableName="taps" columnName="gnss_elevation_mask_cutoff" />
+    </changeSet>
+
 </databaseChangeLog>
