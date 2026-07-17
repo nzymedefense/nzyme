@@ -4,6 +4,7 @@ import CreateUserForm from "../system/authentication/management/users/shared/Cre
 import {toast} from "react-toastify";
 import AuthenticationManagementService from "../../services/AuthenticationManagementService";
   import usePageTitle from "../../util/UsePageTitle";
+  import TermsOfUseModal from "./TermsOfUseModal";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -46,7 +47,9 @@ function SetupWizardPage(props) {
                           with nzyme.
                         </p>
 
-                        <hr />
+                        <TermsOfUseModal />
+
+                        <hr className="mb-4" />
 
                         <h2 className="mb-3">First Super Administrator User</h2>
 
