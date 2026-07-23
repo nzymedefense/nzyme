@@ -49,12 +49,14 @@ export default function DNSTransactionsTable(props) {
         <table className="table table-sm table-hover table-striped mb-4">
           <thead>
           <tr>
+            <th>Timestamp</th>
             <th>Query Value</th>
             <th>Query Type</th>
-            <th>Timestamp</th>
             <th>Query eTLD</th>
-            <th>Client</th>
-            <th>Server</th>
+            <th>Client Address</th>
+            <th>Client MAC</th>
+            <th>Server Address</th>
+            <th>Server MAC</th>
           </tr>
           </thead>
           <tbody>
