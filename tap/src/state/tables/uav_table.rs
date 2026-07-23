@@ -245,6 +245,16 @@ impl UavTable {
         hasher.finalize().iter().map(|b| format!("{:02x}", b)).collect()
     }
 
+    pub fn is_active(&self) -> bool {
+        match self.uavs.lock() {
+            Ok(uavs) => !uavs.is_empty(),
+            Err(e) => {
+                error!("Could not acquire mutex to determine UAV table state: {}", e);
+                false
+            }
+        }
+    }
+
     pub fn calculate_metrics(&self) {
         let (uavs_size, vector_reports): (i128, i128) = match self.uavs.lock() {
             Ok(uavs) => {

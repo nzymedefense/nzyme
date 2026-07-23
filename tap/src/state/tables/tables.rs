@@ -30,7 +30,10 @@ pub struct Tables {
     pub ssh: Arc<Mutex<SshTable>>,
     pub socks: Arc<Mutex<SocksTable>>,
     pub ntp: Arc<Mutex<NtpTable>>,
-    pub uav: Arc<Mutex<UavTable>>
+    pub uav: Arc<Mutex<UavTable>>,
+    has_ethernet: bool,
+    has_dot11: bool,
+    has_bluetooth: bool
 }
 
 impl Tables {
@@ -40,6 +43,16 @@ impl Tables {
                ethernet_bus: Arc<Bus>,
                engagement_control: Arc<EngagementControl>,
                configuration: &Configuration) -> Self {
+        let has_ethernet_default = configuration.ethernet_interfaces.as_ref()
+            .is_some_and(|map| map.values().any(|i| i.active));
+        let has_ethernet_raw = configuration.rawip_interfaces.as_ref()
+            .is_some_and(|map| map.values().any(|i| i.active));
+        let has_ethernet = has_ethernet_default || has_ethernet_raw;
+        let has_bluetooth = configuration.bluetooth_interfaces.as_ref()
+            .is_some_and(|map| map.values().any(|i| i.active));
+        let has_dot11 = configuration.wifi_interfaces.as_ref()
+            .is_some_and(|map| map.values().any(|i| i.active));
+
         Tables {
             dot11: Arc::new(Mutex::new(Dot11Table::new(leaderlink.clone()))),
             bluetooth: Arc::new(Mutex::new(BluetoothTable::new(leaderlink.clone(), metrics.clone()))),
@@ -62,7 +75,10 @@ impl Tables {
             ssh: Arc::new(Mutex::new(SshTable::new(leaderlink.clone(), metrics.clone()))),
             socks: Arc::new(Mutex::new(SocksTable::new(leaderlink.clone(), metrics.clone()))),
             ntp: Arc::new(Mutex::new(NtpTable::new(leaderlink.clone(), metrics.clone()))),
-            uav: Arc::new(Mutex::new(UavTable::new(leaderlink.clone(), metrics.clone(), engagement_control)))
+            uav: Arc::new(Mutex::new(UavTable::new(leaderlink.clone(), metrics.clone(), engagement_control))),
+            has_ethernet,
+            has_dot11,
+            has_bluetooth
         }
     }
 
@@ -70,87 +86,99 @@ impl Tables {
         loop {
             thread::sleep(Duration::from_secs(10));
 
-            match self.dot11.lock() {
-                Ok(dot11) => dot11.process_report(),
-                Err(e) => error!("Could not acquire 802.11 table lock for report processing: {}", e)
-            }
-            
-            match self.bluetooth.lock() {
-                Ok(bluetooth) => {
-                    bluetooth.calculate_metrics();
-                    bluetooth.process_report();
-                },
-                Err(e) => error!("Could not acquire Bluetooth table lock for report processing: {}", e)
+            if self.has_dot11 {
+                match self.dot11.lock() {
+                    Ok(dot11) => dot11.process_report(),
+                    Err(e) => error!("Could not acquire 802.11 table lock for report processing: {}", e)
+                }
             }
 
-            match self.arp.lock() {
-                Ok(arp) => {
-                    arp.calculate_metrics();
-                    arp.process_report();
-                },
-                Err(e) => error!("Could not acquire ARP table lock for report processing: {}", e)
+            if self.has_bluetooth {
+                match self.bluetooth.lock() {
+                    Ok(bluetooth) => {
+                        bluetooth.calculate_metrics();
+                        bluetooth.process_report();
+                    },
+                    Err(e) => error!("Could not acquire Bluetooth table lock for report processing: {}", e)
+                }
             }
 
-            match self.dhcp.lock() {
-                Ok(dhcp) => {
-                    dhcp.calculate_metrics();
-                    dhcp.process_report();
-                },
-                Err(e) => error!("Could not acquire DHCP table lock for report processing: {}", e)
-            }
-            
-            match self.tcp.lock() {
-                Ok(tcp) => {
-                    tcp.calculate_metrics();
-                    tcp.process_report();
-                },
-                Err(e) => error!("Could not acquire TCP table lock for report processing: {}", e)
-            }
+            if self.has_ethernet {
+                match self.arp.lock() {
+                    Ok(arp) => {
+                        arp.calculate_metrics();
+                        arp.process_report();
+                    },
+                    Err(e) => error!("Could not acquire ARP table lock for report processing: {}", e)
+                }
 
-            match self.udp.lock() {
-                Ok(udp) => {
-                    udp.calculate_metrics();
-                    udp.process_report();
-                },
-                Err(e) => error!("Could not acquire UDP table lock for report processing: {}", e)
-            }
+                match self.dhcp.lock() {
+                    Ok(dhcp) => {
+                        dhcp.calculate_metrics();
+                        dhcp.process_report();
+                    },
+                    Err(e) => error!("Could not acquire DHCP table lock for report processing: {}", e)
+                }
 
-            match self.dns.lock() {
-                Ok(dns) => {
-                    dns.calculate_metrics();
-                    dns.process_report();
-                },
-                Err(e) => error!("Could not acquire DNS table lock for report processing: {}", e)
-            }
+                match self.tcp.lock() {
+                    Ok(tcp) => {
+                        tcp.calculate_metrics();
+                        tcp.process_report();
+                    },
+                    Err(e) => error!("Could not acquire TCP table lock for report processing: {}", e)
+                }
 
-            match self.ssh.lock() {
-                Ok(ssh) => {
-                    ssh.calculate_metrics();
-                    ssh.process_report();
-                },
-                Err(e) => error!("Could not acquire SSH table lock for report processing: {}", e)
-            }
+                match self.udp.lock() {
+                    Ok(udp) => {
+                        udp.calculate_metrics();
+                        udp.process_report();
+                    },
+                    Err(e) => error!("Could not acquire UDP table lock for report processing: {}", e)
+                }
 
-            match self.socks.lock() {
-                Ok(socks) => {
-                    socks.calculate_metrics();
-                    socks.process_report();
-                },
-                Err(e) => error!("Could not acquire SOCKS table lock for report processing: {}", e)
-            }
+                match self.dns.lock() {
+                    Ok(dns) => {
+                        dns.calculate_metrics();
+                        dns.process_report();
+                    },
+                    Err(e) => error!("Could not acquire DNS table lock for report processing: {}", e)
+                }
 
-            match self.ntp.lock() {
-                Ok(ntp) => {
-                    ntp.calculate_metrics();
-                    ntp.process_report();
-                },
-                Err(e) => error!("Could not acquire SOCKS table lock for report processing: {}", e)
+                match self.ssh.lock() {
+                    Ok(ssh) => {
+                        ssh.calculate_metrics();
+                        ssh.process_report();
+                    },
+                    Err(e) => error!("Could not acquire SSH table lock for report processing: {}", e)
+                }
+
+                match self.socks.lock() {
+                    Ok(socks) => {
+                        socks.calculate_metrics();
+                        socks.process_report();
+                    },
+                    Err(e) => error!("Could not acquire SOCKS table lock for report processing: {}", e)
+                }
+
+                match self.ntp.lock() {
+                    Ok(ntp) => {
+                        ntp.calculate_metrics();
+                        ntp.process_report();
+                    },
+                    Err(e) => error!("Could not acquire SOCKS table lock for report processing: {}", e)
+                }
             }
 
             match self.uav.lock() {
-                Ok(uav) => {
-                    uav.calculate_metrics();
-                    uav.process_report();
+                Ok(uavs) => {
+                    /*
+                     * UAVs subsystem doesn't have own captures but uses 802.11. We have to
+                     * determine activity in this way instead of checking if any captures exist.
+                     */
+                    if uavs.is_active() {
+                        uavs.calculate_metrics();
+                        uavs.process_report();
+                    }
                 },
                 Err(e) => error!("Could not acquire UAV table lock for report processing: {}", e)
             }
