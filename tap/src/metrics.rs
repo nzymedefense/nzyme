@@ -73,6 +73,7 @@ pub struct Channels {
     ssh_pipeline: ChannelUtilization,
     dhcpv4_pipeline: ChannelUtilization,
     ntp_pipeline: ChannelUtilization,
+    rtsp_pipeline: ChannelUtilization,
 
     uav_remote_id_pipeline: ChannelUtilization,
 }
@@ -235,6 +236,7 @@ impl Metrics {
             "SshPipeline" => &mut self.channels.ssh_pipeline,
             "Dhcpv4Pipeline" => &mut self.channels.dhcpv4_pipeline,
             "NtpPipeline" => &mut self.channels.ntp_pipeline,
+            "RtspPipeline" => &mut self.channels.rtsp_pipeline,
             "UavRemoteIdPipeline" => &mut self.channels.uav_remote_id_pipeline,
             _ => panic!("Unknown channel {}", channel)
         }

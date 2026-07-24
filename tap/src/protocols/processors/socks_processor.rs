@@ -2,17 +2,15 @@ use std::sync::{Arc, Mutex};
 use log::error;
 use crate::wired::packets::SocksTunnel;
 use crate::state::tables::socks_table::SocksTable;
-use crate::metrics::Metrics;
 
 pub struct SocksProcessor {
-    table: Arc<Mutex<SocksTable>>,
-    metrics: Arc<Mutex<Metrics>>
+    table: Arc<Mutex<SocksTable>>
 }
 
 impl SocksProcessor {
 
-    pub fn new(metrics: Arc<Mutex<Metrics>>, table: Arc<Mutex<SocksTable>>) -> Self {
-        Self { metrics, table }
+    pub fn new(table: Arc<Mutex<SocksTable>>) -> Self {
+        Self { table }
     }
 
     pub fn process(&mut self, tunnel: Arc<SocksTunnel>) {

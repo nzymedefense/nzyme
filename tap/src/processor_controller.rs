@@ -20,6 +20,7 @@ use crate::state::tables::tables::Tables;
 use crate::system_state::SystemState;
 use crate::protocols::processors::bluetooth_device_processor::BluetoothDeviceProcessor;
 use crate::protocols::processors::ntp_processor::NtpProcessor;
+use crate::protocols::processors::rtsp_processor::RtspProcessor;
 
 const DEFAULT_WIFI_PROCESSORS: i32 = 1;
 const DEFAULT_TCP_PROCESSORS: i32 = 2;
@@ -170,9 +171,10 @@ impl ProcessorController {
                 self.metrics.clone(),
                 &self.configuration
             );
-            let mut ssh_processor = SshProcessor::new(self.metrics.clone(), self.tables.ssh.clone());
-            let mut socks_processor = SocksProcessor::new(self.metrics.clone(), self.tables.socks.clone());
+            let mut ssh_processor = SshProcessor::new(self.tables.ssh.clone());
+            let mut socks_processor = SocksProcessor::new(self.tables.socks.clone());
             let mut ntp_processor = NtpProcessor::new(self.tables.ntp.clone());
+            let mut rtsp_processor = RtspProcessor::new(self.tables.rtsp.clone());
 
             thread::spawn(move || {
                 loop {
@@ -229,7 +231,7 @@ impl ProcessorController {
                         
                         recv(ethernet_bus.ssh_pipeline.receiver) -> msg => {
                             match msg {
-                                Ok(packet) => ssh_processor.process(packet),
+                                Ok(session) => ssh_processor.process(session),
                                 Err(e) => {
                                     error!("SSH receiver disconnected: {}", e);
                                     break;
@@ -239,7 +241,7 @@ impl ProcessorController {
                         
                         recv(ethernet_bus.socks_pipeline.receiver) -> msg => {
                             match msg {
-                                Ok(packet) => socks_processor.process(packet),
+                                Ok(session) => socks_processor.process(session),
                                 Err(e) => {
                                     error!("SOCKS receiver disconnected: {}", e);
                                     break;
@@ -252,6 +254,16 @@ impl ProcessorController {
                                 Ok(packet) => ntp_processor.process(packet),
                                 Err(e) => {
                                     error!("NTP receiver disconnected: {}", e);
+                                    break;
+                                }
+                            }
+                        }
+
+                        recv(ethernet_bus.rtsp_pipeline.receiver) -> msg => {
+                            match msg {
+                                Ok(session) => rtsp_processor.process(session),
+                                Err(e) => {
+                                    error!("RTSP receiver disconnected: {}", e);
                                     break;
                                 }
                             }

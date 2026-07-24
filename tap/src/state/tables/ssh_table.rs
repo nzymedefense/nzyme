@@ -25,8 +25,8 @@ impl SshTable {
         }
     }
 
-    pub fn register_session(&mut self, session_ref: Arc<SshSession>) {
-        let session = (*session_ref.clone()).clone(); // Escape Arc.
+    pub fn register_session(&self, session_ref: Arc<SshSession>) {
+        let session = (*session_ref).clone(); // Escape Arc.
 
         match self.sessions.lock() {
             Ok(mut sessions) => {

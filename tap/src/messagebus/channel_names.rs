@@ -9,6 +9,7 @@ pub enum WiredChannelName {
     DnsPipeline,
     SocksPipeline,
     SshPipeline,
+    RtspPipeline,
     Dhcpv4Pipeline,
     NtpPipeline
 }

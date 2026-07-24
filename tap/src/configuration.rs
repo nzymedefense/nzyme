@@ -125,6 +125,7 @@ pub struct Protocols {
     pub socks: ProtocolsSocks,
     pub dhcpv4: ProtocolsDhcpv4,
     pub ntp: ProtocolsNtp,
+    pub rtsp: ProtocolsRtsp,
     pub uav_remote_id: ProtocolsUavRemoteId,
 }
 
@@ -178,6 +179,11 @@ pub struct ProtocolsDhcpv4 {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProtocolsNtp {
+    pub pipeline_size: i32
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ProtocolsRtsp {
     pub pipeline_size: i32
 }
 
@@ -362,6 +368,12 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     // NTP.
     if doc.protocols.ntp.pipeline_size <= 0 {
         bail!("Configuration variable `protocols.ntp.pipeline_size` must be set to a value \
+            greater than 0.");
+    }
+
+    // RTSP.
+    if doc.protocols.rtsp.pipeline_size <= 0 {
+        bail!("Configuration variable `protocols.rtsp.pipeline_size` must be set to a value \
             greater than 0.");
     }
 

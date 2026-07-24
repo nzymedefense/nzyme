@@ -319,14 +319,13 @@ pub struct SshSession {
 impl SshSession {
 
     pub fn estimate_struct_size(&self) -> u32 {
-        // Fixed size types
-        let mut size = mem::size_of::<SshVersion>() as u32 * 2 // client_version, server_version
-            + mem::size_of::<GenericConnectionStatus>() as u32 // connection_status
-            + mem::size_of::<u64>() as u32                     // tunneled_bytes
-            + mem::size_of::<L4Key>() as u32           // tcp_session_key
-            + mem::size_of::<u16>() as u32 * 2                 // source_port, destination_port
-            + mem::size_of::<IpAddr>() as u32 * 2              // source_address, destination_address
-            + mem::size_of::<DateTime<Utc>>() as u32 * 2;      // established_at, most_recent_segment_time
+        let mut size = mem::size_of::<SshVersion>() as u32 * 2
+            + mem::size_of::<GenericConnectionStatus>() as u32
+            + mem::size_of::<u64>() as u32
+            + mem::size_of::<L4Key>() as u32
+            + mem::size_of::<u16>() as u32 * 2
+            + mem::size_of::<IpAddr>() as u32 * 2
+            + mem::size_of::<DateTime<Utc>>() as u32 * 2;
 
         // Add size for terminated_at if it's present
         size += mem::size_of::<DateTime<Utc>>() as u32 * self.terminated_at.is_some() as u32;
@@ -338,6 +337,103 @@ impl SshSession {
         if let Some(destination_mac) = &self.destination_mac {
             size += destination_mac.len() as u32
         }
+
+        size
+    }
+
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RtspState {
+    Probing,
+    Describing,
+    Establishing,
+    Started
+}
+
+#[derive(Debug, Clone)]
+pub enum RtspMediaLocator {
+    Interleaved { rtp_channel: u8, rtcp_channel: Option<u8> },
+
+    Udp {
+        client_rtp_port: u16,
+        client_rtcp_port: Option<u16>,
+        server_rtp_port: Option<u16>,
+        server_rtcp_port: Option<u16>,
+        redirect_destination: Option<IpAddr>,
+    },
+
+    Multicast { group: IpAddr, port: u16 }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RtspAuthPosture {
+    Unknown,
+    None,
+    Basic { authenticated: bool },
+    Digest { authenticated: bool }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct RtspMediaDescription {
+    pub has_video: bool,
+    pub has_audio: bool,
+    pub video_codec: Option<String>,
+    pub audio_codec: Option<String>,
+    pub resolution: Option<String>
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RtspFlag {
+    UnauthenticatedStream,
+    BasicAuthCleartext,
+    AuthFailures(u32),
+    MediaRedirect,
+    PublishAttempt,
+    UnusualTransport
+}
+
+#[derive(Debug, Clone)]
+pub struct RtspSession {
+    pub setup_tcp_session_key: L4Key,
+    pub state: RtspState,
+    pub media: Option<RtspMediaLocator>,
+    pub request_uri: Option<String>,
+    pub client_agent: Option<String>,
+    pub server_info: Option<String>,
+    pub auth: RtspAuthPosture,
+    pub media_desc: Option<RtspMediaDescription>,
+    pub flags: Vec<RtspFlag>
+}
+
+impl RtspSession {
+
+    pub fn estimate_struct_size(&self) -> u32 {
+        let mut size = mem::size_of::<L4Key>() as u32
+            + mem::size_of::<RtspState>() as u32
+            + mem::size_of::<Option<RtspMediaLocator>>() as u32
+            + mem::size_of::<RtspAuthPosture>() as u32
+            + mem::size_of::<Option<String>>() as u32 * 3
+            + mem::size_of::<Option<RtspMediaDescription>>() as u32
+            + mem::size_of::<Vec<RtspFlag>>() as u32;
+
+        if let Some(uri) = &self.request_uri {
+            size += uri.len() as u32;
+        }
+        if let Some(agent) = &self.client_agent {
+            size += agent.len() as u32;
+        }
+        if let Some(server) = &self.server_info {
+            size += server.len() as u32;
+        }
+
+        if let Some(desc) = &self.media_desc {
+            if let Some(c) = &desc.video_codec { size += c.len() as u32; }
+            if let Some(c) = &desc.audio_codec { size += c.len() as u32; }
+            if let Some(r) = &desc.resolution  { size += r.len() as u32; }
+        }
+
+        size += self.flags.len() as u32 * mem::size_of::<RtspFlag>() as u32;
 
         size
     }

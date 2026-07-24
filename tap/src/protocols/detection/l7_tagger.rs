@@ -1,16 +1,16 @@
 use std::collections::{HashMap, HashSet};
 use std::panic;
 use std::sync::{Arc, Mutex, MutexGuard};
-use log::error;
+use log::{error, info};
 use strum_macros::Display;
-use crate::protocols::detection::l7_tagger::L7Tag::{HTTP, Unencrypted, SOCKS, SSH};
+use crate::protocols::detection::l7_tagger::L7Tag::{HTTP, Unencrypted, SOCKS, SSH, RTSP};
 use crate::state::tables::tcp_table::TcpSession;
 use crate::protocols::parsers::l4_key::L4Key;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::WiredChannelName;
 use crate::metrics::Metrics;
-use crate::protocols::detection::taggers::network_protocols::{http_tagger, socks_tagger, ssh_tagger};
+use crate::protocols::detection::taggers::network_protocols::{http_tagger, rtsp_tagger, socks_tagger, ssh_tagger};
 use crate::state::tables::udp_table::UdpConversation;
 use crate::to_pipeline;
 
@@ -27,6 +27,7 @@ pub enum L7Tag {
     TLS,
     DNS,
     SSH,
+    RTSP,
     SOCKS,
     DHCP4,
     NTP
@@ -206,6 +207,37 @@ fn tag_all_tcp(client_to_server: &[u8],
         record_timer(
             ssh_timer_untagged.elapsed_microseconds(),
             "tables.tcp.timer.sessions.tagging.ssh.untagged",
+            metrics
+        );
+    }
+
+    // RTSP.
+    let mut rtsp_timer_untagged = Timer::new();
+    let mut rtsp_timer_tagged = Timer::new();
+    if let Some(rtsp) = rtsp_tagger::tag(client_to_server, server_to_client, session) {
+        rtsp_timer_tagged.stop();
+        record_timer(
+            rtsp_timer_tagged.elapsed_microseconds(),
+            "tables.tcp.timer.sessions.tagging.rtsp.tagged",
+            metrics
+        );
+
+        info!("state: {:?}", rtsp.state);
+
+        let len = rtsp.estimate_struct_size();
+        to_pipeline!(
+            WiredChannelName::RtspPipeline,
+            bus.rtsp_pipeline.sender,
+            Arc::new(rtsp),
+            len
+        );
+
+        tags.extend([RTSP]);
+    } else {
+        rtsp_timer_untagged.stop();
+        record_timer(
+            rtsp_timer_untagged.elapsed_microseconds(),
+            "tables.tcp.timer.sessions.tagging.rtsp.untagged",
             metrics
         );
     }

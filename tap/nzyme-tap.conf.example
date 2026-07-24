@@ -80,6 +80,9 @@ pipeline_size = 1024
 [protocols.ntp]
 pipeline_size = 1024
 
+[protocols.rtsp]
+pipeline_size = 256
+
 [protocols.arp]
 pipeline_size = 1024
 poisoning_monitor = true
@@ -89,7 +92,7 @@ poisoning_window_seconds = 30
 pipeline_size = 1024
 
 [protocols.uav_remote_id]
-pipeline_size = 1024
+pipeline_size = 256
 
 [misc]
 training_period_minutes = 5

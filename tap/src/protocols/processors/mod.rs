@@ -9,3 +9,4 @@ pub mod dhcpv4_processor;
 pub mod uav_remote_id_processor;
 pub mod bluetooth_device_processor;
 pub mod ntp_processor;
+pub mod rtsp_processor;
