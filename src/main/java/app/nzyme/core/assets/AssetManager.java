@@ -251,13 +251,14 @@ public class AssetManager {
         );
     }
 
-    public long countAssetsOfIpAddress(InetAddress ip, UUID organizationId, UUID tenantId) {
+    public long countAssetsOfIpAddress(InetAddress ip, UUID organizationId, DateTime ipActivityCutoff, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT a.id) FROM assets AS a " +
                                 "INNER JOIN assets_ip_addresses AS i ON i.asset_id = a.id " +
-                                "WHERE i.address = :ip AND a.organization_id = :organization_id " +
-                                "AND a.tenant_id = :tenant_id")
+                                "WHERE i.address = :ip AND i.last_seen > :ip_activity_cutoff " +
+                                "AND a.organization_id = :organization_id AND a.tenant_id = :tenant_id")
                         .bind("ip", ip)
+                        .bind("ip_activity_cutoff", ipActivityCutoff)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .mapTo(Long.class)

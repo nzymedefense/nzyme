@@ -68,10 +68,11 @@ public class IPAddressesResource extends TapDataHandlingResource {
         }
 
         // Associated assets.
+        DateTime ipActivityCutoff = new DateTime().minusDays(7);
         List<AssetDetailsResponse> assets = Lists.newArrayList();
-        long totalAssets = nzyme.getAssetsManager().countAssetsOfIpAddress(address, organizationId, tenantId);
+        long totalAssets = nzyme.getAssetsManager().countAssetsOfIpAddress(address, organizationId, ipActivityCutoff, tenantId);
         for (AssetEntry asset : nzyme.getAssetsManager()
-                .findAssetsByIpAddress(address, organizationId, tenantId, new DateTime().minusDays(7), limit, offset)) {
+                .findAssetsByIpAddress(address, organizationId, tenantId, ipActivityCutoff, limit, offset)) {
             Optional<MacAddressContextEntry> context = nzyme.getContextService()
                     .findMacAddressContext(asset.mac(), organizationId, tenantId);
 
