@@ -2,7 +2,7 @@ package app.nzyme.core.registry;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.RegistryChangeMonitor;
-import com.google.api.client.util.Lists;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;

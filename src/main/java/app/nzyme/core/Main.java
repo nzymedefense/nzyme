@@ -48,6 +48,9 @@ public class Main {
     public static void main(String[] argv) {
         Logging.appendCounter();
 
+        // Disable Liquibase usage analytics. Must be set before any Liquibase class is loaded.
+        System.setProperty("liquibase.analytics.enabled", "false");
+
         final CLIArguments cliArguments = new CLIArguments();
 
         // Parse CLI arguments.
