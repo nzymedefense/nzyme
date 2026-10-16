@@ -75,8 +75,18 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<RtspStream> {
     })
 }
 
+/*
+ * Only the beginning of a stream is inspected. The RTSP request line and the response status
+ * line both carry the version token, and CSeq is a mandatory header of the very first message,
+ * so everything we need to decide is within the first few hundred bytes. Scanning the whole
+ * (up to reassembly buffer sized) stream would make this tagger the most expensive one to
+ * reject for every non-RTSP session.
+ */
+const DETECTION_WINDOW: usize = 4096;
+
 fn is_rtsp(buf: &[u8]) -> bool {
-    contains_ci(buf, b"RTSP/1.") && contains_ci(buf, b"\r\ncseq:")
+    let head = &buf[..buf.len().min(DETECTION_WINDOW)];
+    contains_ci(head, b"RTSP/1.") && contains_ci(head, b"\r\ncseq:")
 }
 
 /*

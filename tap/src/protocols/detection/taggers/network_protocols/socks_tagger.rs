@@ -8,8 +8,16 @@ use crate::state::tables::tcp_table::TcpSession;
 use crate::protocols::parsers::tcp::tcp_tools::determine_tcp_session_state;
 use crate::helpers::network::{string_up_to_null_byte, to_ipv4_address, to_ipv6_address};
 use crate::tracemark;
+use crate::protocols::detection::taggers::tunnel_payload::TunnelPayload;
 
-pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> {
+const SOCKS4_REPLY_LENGTH: usize = 8;
+
+/*
+ * Returns the parsed tunnel and the offsets at which the tunneled payload starts in each
+ * direction, so the application protocol taggers can be run on what is carried inside the
+ * tunnel. A failed or incomplete handshake yields an empty payload.
+ */
+pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<(SocksTunnel, TunnelPayload)> {
     if cts.len() < 2 {
         return None;
     }
@@ -55,6 +63,16 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
             None
         };
 
+        /*
+         * The tunneled payload starts right after the request (SOCKS4) or after the trailing,
+         * null-terminated host name (SOCKS4a). The reply is always 8 bytes long.
+         */
+        let payload_cts_offset = match (&tunneled_destination_address, &tunneled_destination_host) {
+            (Some(_), _) => Some(cursor),
+            (None, Some(host)) => Some(cursor + host.len() + 1),
+            (None, None) => None // Incomplete SOCKS4a request.
+        };
+
         let handshake_status = match *stc.get(1).unwrap() {
             0x5A => SocksConnectionHandshakeStatus::Granted,
             0x5B => SocksConnectionHandshakeStatus::Rejected,
@@ -77,7 +95,13 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
             Socks4A
         };
 
-        return Some(SocksTunnel {
+        let payload = match payload_cts_offset {
+            Some(offset) if handshake_status == SocksConnectionHandshakeStatus::Granted =>
+                TunnelPayload::new(offset, SOCKS4_REPLY_LENGTH),
+            _ => TunnelPayload::none(cts, stc)
+        };
+
+        return Some((SocksTunnel {
             socks_type,
             authentication_status: SocksAuthenticationResult::Success,
             handshake_status,
@@ -97,7 +121,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
             established_at: session.start_time,
             terminated_at,
             most_recent_segment_time: session.most_recent_segment_time
-        })
+        }, payload));
     }
 
     // SOCKS 5?
@@ -136,9 +160,9 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
 
         if server_chosen_auth_method == SocksAuthenticationMethod::NoneAcceptable {
             // Server did not accept any of the offered auth methods.
-            return Some(build_auth_failed_result(session,
-                                                 SocksAuthenticationResult::Failure,
-                                                 None))
+            return Some((build_auth_failed_result(session,
+                                                  SocksAuthenticationResult::Failure,
+                                                  None), TunnelPayload::none(cts, stc)))
         }
 
         // Authentication.
@@ -156,23 +180,23 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
                  * chosen authentication method.
                  */
                 debug!("Could not parse SOCKS5 authentication steps: {}", e);
-                return Some(build_auth_failed_result(session, 
-                                                     SocksAuthenticationResult::Unknown,
-                                                     None))
+                return Some((build_auth_failed_result(session,
+                                                      SocksAuthenticationResult::Unknown,
+                                                      None), TunnelPayload::none(cts, stc)))
             }
         };
 
         if auth_result != SocksAuthenticationResult::Success {
-            return Some(build_auth_failed_result(session,
-                                                 SocksAuthenticationResult::Failure,
-                                                 username))
+            return Some((build_auth_failed_result(session,
+                                                  SocksAuthenticationResult::Failure,
+                                                  username), TunnelPayload::none(cts, stc)))
         }
 
         // We have a completed, successful authentication at this point.
         cts_cursor += auth_cts_offset;
         stc_cursor += auth_stc_offset;
 
-        if cts[cts_cursor] != 0x05 || cts.len() < cts_cursor+4 || stc.len() < stc_cursor+4 {
+        if cts.len() < cts_cursor+4 || stc.len() < stc_cursor+4 || cts[cts_cursor] != 0x05 {
             tracemark!("SOCKS");
             return None;
         }
@@ -268,7 +292,14 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
 
         let (connection_status, terminated_at) = determine_tcp_session_state(session);
 
-        return Some(SocksTunnel {
+        let payload = if handshake_status == SocksConnectionHandshakeStatus::Granted {
+            // The connect request ends with the 2 byte port we just read.
+            TunnelPayload::new(cts_cursor + 2, socks5_reply_end(stc, stc_cursor))
+        } else {
+            TunnelPayload::none(cts, stc)
+        };
+
+        return Some((SocksTunnel {
             socks_type: SocksType::Socks5,
             authentication_status: SocksAuthenticationResult::Success,
             handshake_status,
@@ -288,7 +319,7 @@ pub fn tag(cts: &[u8], stc: &[u8], session: &TcpSession) -> Option<SocksTunnel> 
             established_at: session.start_time,
             terminated_at,
             most_recent_segment_time: session.most_recent_segment_time
-        })
+        }, payload));
     }
 
     // Not SOCKS.
@@ -389,6 +420,27 @@ fn process_socks5_username_password_auth(cts: &[u8], stc: &[u8])
     Ok((auth_result, Some(username), cts_cursor, stc_cursor))
 }
 
+/*
+ * Returns the index at which the tunneled payload starts after a SOCKS5 reply whose REP field
+ * is at `rep_index`. Reply layout: VER REP RSV ATYP BND.ADDR BND.PORT. Returns the buffer
+ * length (empty payload) if the reply is incomplete or malformed.
+ */
+fn socks5_reply_end(stc: &[u8], rep_index: usize) -> usize {
+    let atyp_index = rep_index + 2;
+
+    let address_length = match stc.get(atyp_index) {
+        Some(0x01) => 4,  // IPv4
+        Some(0x04) => 16, // IPv6
+        Some(0x03) => match stc.get(atyp_index + 1) { // Domain name, length-prefixed.
+            Some(len) => 1 + *len as usize,
+            None => return stc.len()
+        },
+        _ => return stc.len()
+    };
+
+    (atyp_index + 1 + address_length + 2).min(stc.len())
+}
+
 fn is_socks_4a_address(address: &[u8]) -> bool {
     address.len() == 4
         && address[0] == 0x00
@@ -422,5 +474,49 @@ fn build_auth_failed_result(session: &TcpSession,
         established_at: session.start_time,
         terminated_at: session.end_time,
         most_recent_segment_time: session.most_recent_segment_time
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn socks5_reply_end_ipv4() {
+        // VER REP RSV ATYP(IPv4) ADDR(4) PORT(2) | payload
+        let stc = [0x05, 0x00, 0x00, 0x01, 10, 0, 0, 1, 0x1F, 0x90, b'H', b'T', b'T', b'P'];
+        assert_eq!(socks5_reply_end(&stc, 1), 10);
+        assert_eq!(&stc[socks5_reply_end(&stc, 1)..], b"HTTP");
+    }
+
+    #[test]
+    fn socks5_reply_end_ipv6() {
+        let mut stc = vec![0x05, 0x00, 0x00, 0x04];
+        stc.extend([0u8; 16]);
+        stc.extend([0x00, 0x50]);
+        stc.extend(b"X");
+        assert_eq!(socks5_reply_end(&stc, 1), 22);
+    }
+
+    #[test]
+    fn socks5_reply_end_domain() {
+        // ATYP(domain) LEN=3 "foo" PORT(2) | payload
+        let stc = [0x05, 0x00, 0x00, 0x03, 3, b'f', b'o', b'o', 0x00, 0x50, b'Z'];
+        assert_eq!(socks5_reply_end(&stc, 1), 10);
+    }
+
+    #[test]
+    fn socks5_reply_end_incomplete_or_malformed_yields_empty_payload() {
+        // Truncated inside the address.
+        let truncated = [0x05, 0x00, 0x00, 0x01, 10, 0];
+        assert_eq!(socks5_reply_end(&truncated, 1), truncated.len());
+
+        // Missing ATYP entirely.
+        let short = [0x05, 0x00];
+        assert_eq!(socks5_reply_end(&short, 1), short.len());
+
+        // Unknown ATYP.
+        let unknown = [0x05, 0x00, 0x00, 0x09, 1, 2, 3];
+        assert_eq!(socks5_reply_end(&unknown, 1), unknown.len());
     }
 }

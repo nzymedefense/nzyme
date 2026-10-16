@@ -3,14 +3,16 @@ use std::panic;
 use std::sync::{Arc, Mutex, MutexGuard};
 use log::{debug, error, info};
 use strum_macros::Display;
-use crate::protocols::detection::l7_tagger::L7Tag::{HTTP, Unencrypted, SOCKS, SSH, RTSP, STUN, TURN, RTP, DTLS};
-use crate::state::tables::tcp_table::TcpSession;
+use crate::protocols::detection::l7_tagger::L7Tag::{HTTP, Unencrypted, SOCKS, SSH, RTSP, STUN, TURN, RTP, DTLS, TLS};
+use chrono::{DateTime, Utc};
+use crate::state::tables::tcp_table::{TcpSession, TcpSessionState};
 use crate::protocols::parsers::l4_key::L4Key;
 use crate::helpers::timer::{record_timer, Timer};
 use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::WiredChannelName;
 use crate::metrics::Metrics;
-use crate::protocols::detection::taggers::network_protocols::{http_tagger, rtsp_tagger, socks_tagger, ssh_tagger};
+use crate::protocols::detection::taggers::network_protocols::{http_tagger, rtsp_tagger, socks_tagger, ssh_tagger, tls_tagger};
+use crate::protocols::detection::taggers::tunnel_payload::TunnelPayload;
 use crate::protocols::detection::taggers::tagger_command::TaggerCommand;
 use crate::protocols::parsers::{dtls_tagger, rtp_tagger, stun_tagger};
 use crate::protocols::parsers::rtp_tagger::RtpStream;
@@ -42,10 +44,50 @@ pub enum L7Tag {
     WebRTC
 }
 
+/*
+ * Everything a TCP session exposes to the taggers that can change over the lifetime of the
+ * session. A session is only re-tagged when this fingerprint differs from the one recorded at
+ * its previous tagging run. Idle sessions (no new segments, no state change) are skipped
+ * entirely, including the segment reassembly, which is the common case for long-lived
+ * connections. If you add a session field that a tagger reads, add it here.
+ */
+#[derive(Debug, Clone, PartialEq)]
+pub struct TcpTaggingFingerprint {
+    state: TcpSessionState,
+    segments_count: u64,
+    bytes_count: u64,
+    most_recent_segment_time: DateTime<Utc>,
+    end_time: Option<DateTime<Utc>>
+}
+
+impl TcpTaggingFingerprint {
+
+    pub fn of(session: &TcpSession) -> Self {
+        Self {
+            state: session.state.clone(),
+            segments_count: session.segments_count,
+            bytes_count: session.bytes_count(),
+            most_recent_segment_time: session.most_recent_segment_time,
+            end_time: session.end_time
+        }
+    }
+
+}
+
 pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>,
                         bus: Arc<Bus>,
                         metrics: Arc<Mutex<Metrics>>) {
+    let mut tagged_count: i128 = 0;
+    let mut skipped_count: i128 = 0;
+
     for session in sessions.values_mut() {
+        let fingerprint = TcpTaggingFingerprint::of(session);
+        if session.tagging_fingerprint.as_ref() == Some(&fingerprint) {
+            // Nothing the taggers look at has changed since the last run.
+            skipped_count += 1;
+            continue;
+        }
+
         let mut client_to_server_data: Vec<u8> = vec![];
         let mut server_to_client_data: Vec<u8> = vec![];
 
@@ -86,6 +128,21 @@ pub fn tag_tcp_sessions(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>,
                 }}}}
             }
         }
+
+        /*
+         * Recorded after a panic as well: re-running the same input every cycle would only
+         * repeat the error. The session is tagged again once new data or a state change arrives.
+         */
+        session.tagging_fingerprint = Some(fingerprint);
+        tagged_count += 1;
+    }
+
+    match metrics.lock() {
+        Ok(mut metrics) => {
+            metrics.set_gauge("tables.tcp.sessions.tagging.tagged", tagged_count);
+            metrics.set_gauge("tables.tcp.sessions.tagging.skipped", skipped_count);
+        },
+        Err(e) => error!("Could not acquire metrics mutex: {}", e)
     }
 }
 
@@ -147,154 +204,164 @@ pub fn tag_udp_sessions(conversations: &mut MutexGuard<HashMap<L4Key, UdpConvers
     }
 }
 
+struct TcpTaggerContext<'a> {
+    session: &'a TcpSession,
+    bus: &'a Arc<Bus>
+}
+
+struct TunnelMatch {
+    tags: Vec<L7Tag>,
+    payload: TunnelPayload
+}
+
+type TunnelTagger = fn(&[u8], &[u8], &TcpTaggerContext) -> Option<TunnelMatch>;
+type ApplicationTagger = fn(&[u8], &[u8], &TcpTaggerContext) -> Option<Vec<L7Tag>>;
+
+struct TaggerEntry<T> {
+    // Used in metric names: tables.tcp.timer.sessions.tagging.<name>.<tagged|untagged>
+    name: &'static str,
+    tag: T
+}
+
+const TCP_TUNNEL_TAGGERS: &[TaggerEntry<TunnelTagger>] = &[
+    TaggerEntry { name: "socks", tag: tag_socks },
+];
+
+/*
+ * Ordered by how cheaply a tagger rejects a stream that is not its protocol, because the
+ * common case is a session that matches nothing but the first entry (TLS) or nothing at all.
+ */
+const TCP_APPLICATION_TAGGERS: &[TaggerEntry<ApplicationTagger>] = &[
+    TaggerEntry { name: "tls",  tag: tag_tls },
+    TaggerEntry { name: "ssh",  tag: tag_ssh },
+    TaggerEntry { name: "stun", tag: tag_stun },
+    TaggerEntry { name: "http", tag: tag_http },
+    TaggerEntry { name: "rtsp", tag: tag_rtsp },
+];
+
 fn tag_all_tcp(client_to_server: &[u8],
                server_to_client: &[u8],
                session: &TcpSession,
                bus: &Arc<Bus>,
                metrics: &Arc<Mutex<Metrics>>) -> HashSet<L7Tag> {
+    let context = TcpTaggerContext { session, bus };
     let mut tags = HashSet::new();
 
-    // HTTP.
-    let mut http_timer_untagged = Timer::new();
-    let mut http_timer_tagged = Timer::new();
-    if http_tagger::tag(client_to_server, server_to_client).is_some() {
-        http_timer_tagged.stop();
-        record_timer(
-            http_timer_tagged.elapsed_microseconds(),
-            "tables.tcp.timer.sessions.tagging.http.tagged",
-            metrics
-        );
+    // Tunnels. The application taggers below run on the tunneled payload.
+    let (mut payload_cts, mut payload_stc) = (client_to_server, server_to_client);
+    for entry in TCP_TUNNEL_TAGGERS {
+        let result = timed_tcp_tagger(entry.name, metrics, || {
+            (entry.tag)(client_to_server, server_to_client, &context)
+        });
 
-        tags.extend([HTTP, Unencrypted]);
-    } else {
-        http_timer_untagged.stop();
-        record_timer(
-            http_timer_untagged.elapsed_microseconds(),
-            "tables.tcp.timer.sessions.tagging.http.untagged",
-            metrics
-        );
-    }
-
-    // SOCKS.
-    let mut socks_timer_untagged = Timer::new();
-    let mut socks_timer_tagged = Timer::new();
-    if let Some(socks) = socks_tagger::tag(client_to_server, server_to_client, session) {
-        socks_timer_tagged.stop();
-        record_timer(
-            socks_timer_tagged.elapsed_microseconds(),
-            "tables.tcp.timer.sessions.tagging.socks.tagged",
-            metrics
-        );
-
-        let len = socks.estimate_struct_size();
-        to_pipeline!(
-            WiredChannelName::SocksPipeline,
-            bus.socks_pipeline.sender,
-            Arc::new(socks),
-            len
-        );
-
-        tags.extend([SOCKS]);
-    } else {
-        socks_timer_untagged.stop();
-        record_timer(
-            socks_timer_untagged.elapsed_microseconds(),
-            "tables.tcp.timer.sessions.tagging.socks.untagged",
-            metrics
-        );
-    }
-    
-    // SSH.
-    let mut ssh_timer_untagged = Timer::new();
-    let mut ssh_timer_tagged = Timer::new();
-    if let Some(ssh) = ssh_tagger::tag(client_to_server, server_to_client, session) {
-        ssh_timer_tagged.stop();
-        record_timer(
-            ssh_timer_tagged.elapsed_microseconds(),
-            "tables.tcp.timer.sessions.tagging.ssh.tagged",
-            metrics
-        );
-
-        let len = ssh.estimate_struct_size();
-        to_pipeline!(
-            WiredChannelName::SshPipeline,
-            bus.ssh_pipeline.sender,
-            Arc::new(ssh),
-            len
-        );
-        
-        tags.extend([SSH]);
-    } else {
-        ssh_timer_untagged.stop();
-        record_timer(
-            ssh_timer_untagged.elapsed_microseconds(),
-            "tables.tcp.timer.sessions.tagging.ssh.untagged",
-            metrics
-        );
-    }
-
-    // RTSP.
-    let mut rtsp_timer_untagged = Timer::new();
-    let mut rtsp_timer_tagged = Timer::new();
-    if let Some(rtsp) = rtsp_tagger::tag(client_to_server, server_to_client, session) {
-        rtsp_timer_tagged.stop();
-        record_timer(
-            rtsp_timer_tagged.elapsed_microseconds(),
-            "tables.tcp.timer.sessions.tagging.rtsp.tagged",
-            metrics
-        );
-
-        let len = rtsp.estimate_struct_size();
-        to_pipeline!(
-            WiredChannelName::RtspPipeline,
-            bus.rtsp_pipeline.sender,
-            Arc::new(rtsp),
-            len
-        );
-
-        tags.extend([RTSP, Unencrypted]);
-    } else {
-        rtsp_timer_untagged.stop();
-        record_timer(
-            rtsp_timer_untagged.elapsed_microseconds(),
-            "tables.tcp.timer.sessions.tagging.rtsp.untagged",
-            metrics
-        );
-    }
-
-    // STUN / TURN.
-    let mut stun_timer_untagged = Timer::new();
-    let mut stun_timer_tagged = Timer::new();
-    if let Some(stun) = stun_tagger::tag_tcp(client_to_server, server_to_client, session) {
-        stun_timer_tagged.stop();
-        record_timer(
-            stun_timer_tagged.elapsed_microseconds(),
-            "tables.tcp.timer.sessions.tagging.stun.tagged",
-            metrics
-        );
-
-        tags.extend([STUN]);
-        if stun.is_turn {
-            tags.extend([TURN]);
+        if let Some(tunnel) = result {
+            tags.extend(tunnel.tags);
+            (payload_cts, payload_stc) = tunnel.payload.slice(client_to_server, server_to_client);
+            break;
         }
+    }
 
-        let len = stun.estimate_struct_size();
-        to_pipeline!(
-            WiredChannelName::StunPipeline,
-            bus.stun_pipeline.sender,
-            Arc::new(stun),
-            len
-        );
-    } else {
-        stun_timer_untagged.stop();
-        record_timer(
-            stun_timer_untagged.elapsed_microseconds(),
-            "tables.tcp.timer.sessions.tagging.stun.untagged",
-            metrics
-        );
+    // Application protocol. First match wins.
+    for entry in TCP_APPLICATION_TAGGERS {
+        let result = timed_tcp_tagger(entry.name, metrics, || {
+            (entry.tag)(payload_cts, payload_stc, &context)
+        });
+
+        if let Some(protocol_tags) = result {
+            tags.extend(protocol_tags);
+            break;
+        }
     }
 
     tags
+}
+
+fn timed_tcp_tagger<T>(name: &str,
+                       metrics: &Arc<Mutex<Metrics>>,
+                       tagger: impl FnOnce() -> Option<T>) -> Option<T> {
+    let mut timer = Timer::new();
+    let result = tagger();
+    timer.stop();
+
+    let outcome = if result.is_some() { "tagged" } else { "untagged" };
+    record_timer(
+        timer.elapsed_microseconds(),
+        &format!("tables.tcp.timer.sessions.tagging.{}.{}", name, outcome),
+        metrics
+    );
+
+    result
+}
+
+fn tag_socks(cts: &[u8], stc: &[u8], context: &TcpTaggerContext) -> Option<TunnelMatch> {
+    let (socks, payload) = socks_tagger::tag(cts, stc, context.session)?;
+
+    let len = socks.estimate_struct_size();
+    to_pipeline!(
+        WiredChannelName::SocksPipeline,
+        context.bus.socks_pipeline.sender,
+        Arc::new(socks),
+        len
+    );
+
+    Some(TunnelMatch { tags: vec![SOCKS], payload })
+}
+
+
+fn tag_tls(cts: &[u8], stc: &[u8], _context: &TcpTaggerContext) -> Option<Vec<L7Tag>> {
+    // Detection only for now. Full parser in future releases.
+    tls_tagger::tag(cts, stc).map(|_| vec![TLS])
+}
+
+fn tag_ssh(cts: &[u8], stc: &[u8], context: &TcpTaggerContext) -> Option<Vec<L7Tag>> {
+    let ssh = ssh_tagger::tag(cts, stc, context.session)?;
+
+    let len = ssh.estimate_struct_size();
+    to_pipeline!(
+        WiredChannelName::SshPipeline,
+        context.bus.ssh_pipeline.sender,
+        Arc::new(ssh),
+        len
+    );
+
+    Some(vec![SSH])
+}
+
+fn tag_stun(cts: &[u8], stc: &[u8], context: &TcpTaggerContext) -> Option<Vec<L7Tag>> {
+    let stun = stun_tagger::tag_tcp(cts, stc, context.session)?;
+
+    let mut tags = vec![STUN];
+    if stun.is_turn {
+        tags.push(TURN);
+    }
+
+    let len = stun.estimate_struct_size();
+    to_pipeline!(
+        WiredChannelName::StunPipeline,
+        context.bus.stun_pipeline.sender,
+        Arc::new(stun),
+        len
+    );
+
+    Some(tags)
+}
+
+fn tag_http(cts: &[u8], stc: &[u8], _context: &TcpTaggerContext) -> Option<Vec<L7Tag>> {
+    http_tagger::tag(cts, stc).map(|_| vec![HTTP, Unencrypted])
+}
+
+fn tag_rtsp(cts: &[u8], stc: &[u8], context: &TcpTaggerContext) -> Option<Vec<L7Tag>> {
+    let rtsp = rtsp_tagger::tag(cts, stc, context.session)?;
+
+    let len = rtsp.estimate_struct_size();
+    to_pipeline!(
+        WiredChannelName::RtspPipeline,
+        context.bus.rtsp_pipeline.sender,
+        Arc::new(rtsp),
+        len
+    );
+
+    Some(vec![RTSP, Unencrypted])
 }
 
 fn tag_all_udp(client_to_server: &[u8],

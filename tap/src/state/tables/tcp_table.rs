@@ -5,7 +5,7 @@ use std::sync::{Mutex, MutexGuard};
 use chrono::{DateTime, Duration, Utc};
 use log::{debug, error, trace, warn};
 use strum_macros::Display;
-use crate::protocols::detection::l7_tagger::{L7Tag, tag_tcp_sessions};
+use crate::protocols::detection::l7_tagger::{L7Tag, tag_tcp_sessions, TcpTaggingFingerprint};
 use crate::wired::packets::{TcpSegment};
 use crate::state::tables::tcp_table::TcpSessionState::{ClosedFin, ClosedRst, ClosedTimeout, Established, FinWait1, FinWait2, Refused, SynReceived, SynSent};
 use crate::protocols::parsers::l4_key::L4Key;
@@ -55,7 +55,12 @@ pub struct TcpSession {
     pub syn_maximum_segment_size: Option<u16>,
     pub syn_window_scale_multiplier: Option<u8>,
     pub syn_options: Vec<u8>,
-    pub tags: HashSet<L7Tag>
+    pub tags: HashSet<L7Tag>,
+    /*
+     * Session attributes as seen by the L7 taggers at the last tagging run. Used to decide
+     * if attributes changed and a new tagging run is required.
+     */
+    pub tagging_fingerprint: Option<TcpTaggingFingerprint>
 }
 
 impl TcpSession {
@@ -189,7 +194,8 @@ impl TcpTable {
                                 syn_maximum_segment_size: segment.maximum_segment_size,
                                 syn_window_scale_multiplier: segment.window_scale_multiplier,
                                 syn_options: segment.options.clone(),
-                                tags: HashSet::new()
+                                tags: HashSet::new(),
+                                tagging_fingerprint: None
                             };
 
                             trace!("New TCP Session: {:?}, State: {:?}, Flags: {:?}",
