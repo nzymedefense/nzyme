@@ -10,6 +10,7 @@ use crate::wired::packets::{Dhcpv4Packet, NtpPacket, RtspStream, SocksTunnel, Ss
 use crate::messagebus::channel_names::{BluetoothChannelName, Dot11ChannelName, GenericChannelName, WiredChannelName};
 use crate::protocols::detection::taggers::remoteid::messages::UavRemoteIdMessage;
 use crate::protocols::parsers::stun_tagger::StunFlow;
+use crate::wired::ethernet::types::tls_session::TlsSession;
 use crate::wired::ethernet::types::webrtc_conversation::WebRtcConversation;
 use crate::wired::packets::{
     ArpPacket,
@@ -35,6 +36,7 @@ pub struct Bus {
     pub udp_pipeline: NzymeChannel<Datagram>,
     pub dns_pipeline: NzymeChannel<DNSPacket>,
     pub ssh_pipeline: NzymeChannel<SshSession>,
+    pub tls_pipeline: NzymeChannel<TlsSession>,
     pub socks_pipeline: NzymeChannel<SocksTunnel>,
     pub dhcpv4_pipeline: NzymeChannel<Dhcpv4Packet>,
     pub ntp_pipeline: NzymeChannel<NtpPacket>,
@@ -111,6 +113,8 @@ impl Bus<> {
             bounded(configuration.protocols.socks.pipeline_size as usize);
         let (ssh_pipeline_sender, ssh_pipeline_receiver) =
             bounded(configuration.protocols.ssh.pipeline_size as usize);
+        let (tls_pipeline_sender, tls_pipeline_receiver) =
+            bounded(configuration.protocols.tls.pipeline_size as usize);
         let (dhcpv4_pipeline_sender, dhcpv4_pipeline_receiver) =
             bounded(configuration.protocols.dhcpv4.pipeline_size as usize);
         let (ntp_pipeline_sender, ntp_pipeline_receiver) =
@@ -206,6 +210,14 @@ impl Bus<> {
                     name: WiredChannelName::SshPipeline.to_string()
                 }),
                 receiver: Arc::new(ssh_pipeline_receiver),
+            },
+            tls_pipeline: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics: metrics.clone(),
+                    sender: tls_pipeline_sender,
+                    name: WiredChannelName::TlsPipeline.to_string()
+                }),
+                receiver: Arc::new(tls_pipeline_receiver),
             },
             dhcpv4_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {

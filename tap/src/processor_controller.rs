@@ -12,6 +12,7 @@ use crate::protocols::processors::dns_processor::DnsProcessor;
 use crate::protocols::processors::dot11::dot11_frame_processor::Dot11FrameProcessor;
 use crate::protocols::processors::socks_processor::SocksProcessor;
 use crate::protocols::processors::ssh_processor::SshProcessor;
+use crate::protocols::processors::tls_processor::TlsProcessor;
 use crate::protocols::processors::tcp_processor::TcpProcessor;
 use crate::protocols::processors::uav_remote_id_processor::UavRemoteIdProcessor;
 use crate::protocols::processors::udp_processor::UDPProcessor;
@@ -174,6 +175,7 @@ impl ProcessorController {
                 &self.configuration
             );
             let mut ssh_processor = SshProcessor::new(self.tables.ssh.clone());
+            let mut tls_processor = TlsProcessor::new(self.tables.tls.clone());
             let mut socks_processor = SocksProcessor::new(self.tables.socks.clone());
             let mut ntp_processor = NtpProcessor::new(self.tables.ntp.clone());
             let mut rtsp_processor = RtspProcessor::new(self.tables.rtsp.clone());
@@ -243,6 +245,16 @@ impl ProcessorController {
                             }
                         }
                         
+                        recv(ethernet_bus.tls_pipeline.receiver) -> msg => {
+                            match msg {
+                                Ok(session) => tls_processor.process(session),
+                                Err(e) => {
+                                    error!("TLS receiver disconnected: {}", e);
+                                    break;
+                                }
+                            }
+                        }
+
                         recv(ethernet_bus.socks_pipeline.receiver) -> msg => {
                             match msg {
                                 Ok(session) => socks_processor.process(session),

@@ -8,6 +8,7 @@ use crate::state::tables::dot11_table::Dot11Table;
 use crate::state::tables::dns_table::DnsTable;
 use crate::state::tables::socks_table::SocksTable;
 use crate::state::tables::ssh_table::SshTable;
+use crate::state::tables::tls_table::TlsTable;
 use crate::state::tables::tcp_table::TcpTable;
 use crate::state::tables::udp_table::UdpTable;
 use crate::link::leaderlink::Leaderlink;
@@ -32,6 +33,7 @@ pub struct Tables {
     pub udp: Arc<Mutex<UdpTable>>,
     pub dns: Arc<Mutex<DnsTable>>,
     pub ssh: Arc<Mutex<SshTable>>,
+    pub tls: Arc<Mutex<TlsTable>>,
     pub socks: Arc<Mutex<SocksTable>>,
     pub ntp: Arc<Mutex<NtpTable>>,
     pub rtsp: Arc<Mutex<RtspTable>>,
@@ -82,6 +84,7 @@ impl Tables {
             ))),
             udp: Arc::new(Mutex::new(UdpTable::new(leaderlink.clone(), ethernet_bus.clone(), metrics.clone()))),
             ssh: Arc::new(Mutex::new(SshTable::new(leaderlink.clone(), metrics.clone()))),
+            tls: Arc::new(Mutex::new(TlsTable::new(leaderlink.clone(), metrics.clone()))),
             socks: Arc::new(Mutex::new(SocksTable::new(leaderlink.clone(), metrics.clone()))),
             ntp: Arc::new(Mutex::new(NtpTable::new(leaderlink.clone(), metrics.clone()))),
             rtsp: Arc::new(Mutex::new(RtspTable::new(leaderlink.clone(), metrics.clone()))),
@@ -166,6 +169,14 @@ impl Tables {
                         ssh.process_report();
                     },
                     Err(e) => error!("Could not acquire SSH table lock for report processing: {}", e)
+                });
+
+                timed(&mut cycle, "tls", || match self.tls.lock() {
+                    Ok(tls) => {
+                        tls.calculate_metrics();
+                        tls.process_report();
+                    },
+                    Err(e) => error!("Could not acquire TLS table lock for report processing: {}", e)
                 });
 
                 timed(&mut cycle, "socks", || match self.socks.lock() {

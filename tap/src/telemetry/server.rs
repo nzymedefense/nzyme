@@ -492,6 +492,7 @@ fn channel_capacity(name: &str, c: &Configuration) -> u64 {
         "DnsPipeline" => c.protocols.dns.pipeline_size as i64,
         "SocksPipeline" => c.protocols.socks.pipeline_size as i64,
         "SshPipeline" => c.protocols.ssh.pipeline_size as i64,
+        "TlsPipeline" => c.protocols.tls.pipeline_size as i64,
         "Dhcpv4Pipeline" => c.protocols.dhcpv4.pipeline_size as i64,
         "NtpPipeline" => c.protocols.ntp.pipeline_size as i64,
         "RtspPipeline" => c.protocols.rtsp.pipeline_size as i64,

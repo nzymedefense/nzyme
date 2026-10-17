@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::panic;
 use std::sync::{Arc, Mutex, MutexGuard};
-use log::{debug, error, info};
+use log::{debug, error};
 use strum_macros::Display;
 use crate::protocols::detection::l7_tagger::L7Tag::{HTTP, Unencrypted, SOCKS, SSH, RTSP, STUN, TURN, RTP, DTLS, TLS};
 use chrono::{DateTime, Utc};
@@ -18,6 +18,7 @@ use crate::protocols::parsers::{dtls_tagger, rtp_tagger, stun_tagger};
 use crate::protocols::parsers::rtp_tagger::RtpStream;
 use crate::state::tables::udp_table::UdpConversation;
 use crate::to_pipeline;
+use crate::wired::ethernet::types::tls_session::TlsSession;
 use crate::wired::ethernet::types::webrtc_conversation::WebRtcConversation;
 
 #[allow(clippy::upper_case_acronyms)]
@@ -309,10 +310,16 @@ fn tag_socks(cts: &[u8], stc: &[u8], context: &TcpTaggerContext) -> Option<Tunne
 
 
 fn tag_tls(cts: &[u8], stc: &[u8], context: &TcpTaggerContext) -> Option<Vec<L7Tag>> {
-    let tls = tls_tagger::tag(cts, stc)?;
+    let handshake = tls_tagger::tag(cts, stc)?;
+    let tls = TlsSession::build(handshake, context.session);
 
-    // TODO: to pipeline
-    info!("TLS session {:?}: {:?}", context.session.session_key, tls);
+    let len = tls.estimate_struct_size();
+    to_pipeline!(
+        WiredChannelName::TlsPipeline,
+        context.bus.tls_pipeline.sender,
+        Arc::new(tls),
+        len
+    );
 
     Some(vec![TLS])
 }
