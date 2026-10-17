@@ -308,9 +308,13 @@ fn tag_socks(cts: &[u8], stc: &[u8], context: &TcpTaggerContext) -> Option<Tunne
 }
 
 
-fn tag_tls(cts: &[u8], stc: &[u8], _context: &TcpTaggerContext) -> Option<Vec<L7Tag>> {
-    // Detection only for now. Full parser in future releases.
-    tls_tagger::tag(cts, stc).map(|_| vec![TLS])
+fn tag_tls(cts: &[u8], stc: &[u8], context: &TcpTaggerContext) -> Option<Vec<L7Tag>> {
+    let tls = tls_tagger::tag(cts, stc)?;
+
+    // TODO: to pipeline
+    info!("TLS session {:?}: {:?}", context.session.session_key, tls);
+
+    Some(vec![TLS])
 }
 
 fn tag_ssh(cts: &[u8], stc: &[u8], context: &TcpTaggerContext) -> Option<Vec<L7Tag>> {

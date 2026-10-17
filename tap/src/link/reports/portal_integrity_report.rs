@@ -53,7 +53,7 @@ pub fn generate(p: &ProbeResult) -> PortalIntegrityReport {
             TlsReport {
                 chain_der: tls.chain_der.clone(),
                 leaf_sha256: tls.leaf_sha256.to_string(),
-                protocol_version: tls.protocol_version.clone(),
+                protocol_version: tls.protocol_version.map(|v| v.to_string()),
                 cipher_suite: tls.cipher_suite,
                 sni: tls.sni,
             }

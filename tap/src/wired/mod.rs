@@ -7,3 +7,4 @@ pub mod interfaces;
 pub mod wired_broker;
 pub mod portalintegrity;
 pub mod mac;
+pub mod tls;

@@ -11,6 +11,7 @@ use strum_macros::Display;
 use crate::wired::portalintegrity::stack::Stack;
 use crate::wired::portalintegrity::tls;
 use crate::wired::portalintegrity::tls::{CapturedTls, TlsSlot};
+use crate::wired::tls::version::TlsVersion;
 
 const CONNECT_TIMEOUT: StdDuration = StdDuration::from_secs(8);
 const IO_TIMEOUT: StdDuration = StdDuration::from_secs(8);
@@ -95,7 +96,7 @@ impl ProbeResult {
                 debug!("         tls: leaf_sha256={} chain_len={} version={} cipher={:?}",
                     t.leaf_sha256,
                     t.chain_der.len(),
-                    t.protocol_version.as_deref().unwrap_or("?"),
+                    t.protocol_version.map(|v| v.to_string()).unwrap_or("?".to_string()),
                     t.cipher_suite,
                 );
             }
@@ -262,7 +263,7 @@ fn read_https(stack: &mut Stack, handle: smoltcp::iface::SocketHandle, host: &st
     let captured = {
         let mut rec = slot.lock().ok().and_then(|g| g.clone());
         if let Some(rec) = rec.as_mut() {
-            rec.protocol_version = conn.protocol_version().map(protocol_version_str);
+            rec.protocol_version = conn.protocol_version().map(TlsVersion::from);
             rec.cipher_suite = conn.negotiated_cipher_suite().map(|cs| u16::from(cs.suite()));
             rec.sni = Some(host.to_string());
         }
@@ -270,16 +271,6 @@ fn read_https(stack: &mut Stack, handle: smoltcp::iface::SocketHandle, host: &st
     };
 
     Ok((raw, completeness, captured))
-}
-
-fn protocol_version_str(v: rustls::ProtocolVersion) -> String {
-    use rustls::ProtocolVersion::*;
-    match v {
-        TLSv1_3 => "TLSv1.3",
-        TLSv1_2 => "TLSv1.2",
-        other => return format!("{:?}", other), // future-proof fallback
-    }
-        .to_string()
 }
 
 fn read_http_message<R: Read>(stream: &mut R) -> Result<(Vec<u8>, Completeness)> {
