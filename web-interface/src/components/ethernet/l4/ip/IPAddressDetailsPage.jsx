@@ -265,7 +265,7 @@ export default function IPAddressDetailsPage() {
 
                 <WithPermission permission="network_context_manage">
                   <a href={ApiRoutes.CONTEXT.NETWORKS.CREATE + "?cidr=" + encodeURIComponent(address.address)}
-                     className="btn btn-secondary">
+                     className="btn btn-secondary mt-2">
                     Add Context
                   </a>
                 </WithPermission>
