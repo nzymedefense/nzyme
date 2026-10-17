@@ -11,6 +11,7 @@ use crate::helpers::encoding::to_hex;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TlsCertificate {
+    pub der: Vec<u8>,
     pub fingerprint_sha256: String,
     pub der_length: usize,
     pub parsed: bool,
@@ -30,6 +31,7 @@ pub struct TlsCertificate {
 impl TlsCertificate {
     pub fn from_der(der: &[u8]) -> Self {
         let mut certificate = TlsCertificate {
+            der: der.to_vec(),
             fingerprint_sha256: to_hex(&Sha256::digest(der)),
             der_length: der.len(),
             parsed: false,
@@ -138,6 +140,7 @@ mod tests {
         assert!(leaf.parsed);
         assert_eq!(leaf.fingerprint_sha256, LEAF_SHA256);
         assert_eq!(leaf.der_length, LEAF_DER.len());
+        assert_eq!(leaf.der, LEAF_DER);
         assert_eq!(leaf.subject, LEAF_SUBJECT);
         assert_eq!(leaf.issuer, CA_SUBJECT);
         assert!(!leaf.self_signed);

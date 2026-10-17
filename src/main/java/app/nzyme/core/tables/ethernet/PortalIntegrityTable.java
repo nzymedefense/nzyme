@@ -1,5 +1,6 @@
 package app.nzyme.core.tables.ethernet;
 
+import app.nzyme.core.ethernet.tls.CertificateStore;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.rest.resources.taps.reports.tables.portalintegrity.PortalIntegrityCheckContext;
 import app.nzyme.core.rest.resources.taps.reports.tables.portalintegrity.PortalIntegrityHopReport;
@@ -95,15 +96,7 @@ public class PortalIntegrityTable implements DataTable {
                             pos++;
                             chainHexes.add(bytesToHex(sha256));
 
-                            // Dedup store: one row per unique cert, keyed by its own hash.
-                            handle.createUpdate("INSERT INTO certificates(sha256, der, first_seen, last_seen, created_at) " +
-                                            "VALUES(:sha256, :der, :first_seen, :last_seen, NOW()) " +
-                                            "ON CONFLICT (sha256) DO UPDATE SET last_seen = EXCLUDED.last_seen")
-                                    .bind("sha256", sha256)
-                                    .bind("der", der)
-                                    .bind("first_seen", report.probedAt())
-                                    .bind("last_seen", report.probedAt())
-                                    .execute();
+                            CertificateStore.upsert(handle, der, report.probedAt());
                         }
 
                         ObjectNode tlsNode = om.createObjectNode();
@@ -164,7 +157,7 @@ public class PortalIntegrityTable implements DataTable {
                             .bind("completeness", hop.completeness())
                             .bind("raw", raw)
                             .bind("body_sha256", bodySha256)
-                            .bind("tls_leaf_sha256", leafSha256)
+                            .bind("tls_leaf_sha256", leafSha256 == null ? null : bytesToHex(leafSha256))
                             .bind("tls", tlsJson)
                             .execute();
 

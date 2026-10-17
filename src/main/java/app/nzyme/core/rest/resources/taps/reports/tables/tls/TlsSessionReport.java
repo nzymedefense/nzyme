@@ -30,8 +30,8 @@ public abstract class TlsSessionReport {
     @Nullable
     public abstract TlsServerHelloReport serverHello();
     public abstract boolean helloRetryRequest();
-    public abstract List<TlsCertificateReport> serverCertificates();
-    public abstract List<TlsCertificateReport> clientCertificates();
+    public abstract List<String> serverChainSha256();
+    public abstract List<String> clientChainSha256();
     public abstract boolean clientCertificateRequested();
     public abstract List<TlsAlertReport> alerts();
     public abstract boolean clientChangeCipherSpec();
@@ -56,8 +56,8 @@ public abstract class TlsSessionReport {
                                           @JsonProperty("client_hello") TlsClientHelloReport clientHello,
                                           @JsonProperty("server_hello") TlsServerHelloReport serverHello,
                                           @JsonProperty("hello_retry_request") boolean helloRetryRequest,
-                                          @JsonProperty("server_certificates") List<TlsCertificateReport> serverCertificates,
-                                          @JsonProperty("client_certificates") List<TlsCertificateReport> clientCertificates,
+                                          @JsonProperty("server_chain_sha256") List<String> serverChainSha256,
+                                          @JsonProperty("client_chain_sha256") List<String> clientChainSha256,
                                           @JsonProperty("client_certificate_requested") boolean clientCertificateRequested,
                                           @JsonProperty("alerts") List<TlsAlertReport> alerts,
                                           @JsonProperty("client_change_cipher_spec") boolean clientChangeCipherSpec,
@@ -81,8 +81,8 @@ public abstract class TlsSessionReport {
                 .clientHello(clientHello)
                 .serverHello(serverHello)
                 .helloRetryRequest(helloRetryRequest)
-                .serverCertificates(serverCertificates)
-                .clientCertificates(clientCertificates)
+                .serverChainSha256(serverChainSha256)
+                .clientChainSha256(clientChainSha256)
                 .clientCertificateRequested(clientCertificateRequested)
                 .alerts(alerts)
                 .clientChangeCipherSpec(clientChangeCipherSpec)
@@ -128,9 +128,9 @@ public abstract class TlsSessionReport {
 
         public abstract Builder helloRetryRequest(boolean helloRetryRequest);
 
-        public abstract Builder serverCertificates(List<TlsCertificateReport> serverCertificates);
+        public abstract Builder serverChainSha256(List<String> serverChainSha256);
 
-        public abstract Builder clientCertificates(List<TlsCertificateReport> clientCertificates);
+        public abstract Builder clientChainSha256(List<String> clientChainSha256);
 
         public abstract Builder clientCertificateRequested(boolean clientCertificateRequested);
 

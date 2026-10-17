@@ -72,6 +72,7 @@ impl TlsSession {
         }
 
         for cert in handshake.server_certificates.iter().chain(handshake.client_certificates.iter()) {
+            size += cert.der.len() as u32;
             size += (cert.fingerprint_sha256.len() + cert.subject.len() + cert.issuer.len()
                 + cert.serial.len() + cert.public_key_algorithm.len()
                 + cert.signature_algorithm.len()) as u32;

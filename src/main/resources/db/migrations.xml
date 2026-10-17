@@ -9054,4 +9054,291 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_certificate_details" author="lennartkoopmann">
+        <addColumn tableName="certificates">
+            <column name="sha1" type="bytea">
+                <constraints nullable="true" />
+            </column>
+            <column name="parsed_at" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+            <column name="parse_error" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="version" type="smallint">
+                <constraints nullable="true" />
+            </column>
+            <column name="serial" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="subject" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="issuer" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="common_name" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="subject_alternative_names" type="text[]">
+                <constraints nullable="true" />
+            </column>
+            <column name="san_text" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="not_before" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+            <column name="not_after" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+            <column name="is_ca" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="self_signed" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="public_key_algorithm" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="public_key_bits" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="signature_algorithm" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="extended_key_usage" type="text[]">
+                <constraints nullable="true" />
+            </column>
+            <column name="subject_key_identifier" type="bytea">
+                <constraints nullable="true" />
+            </column>
+            <column name="authority_key_identifier" type="bytea">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <createIndex tableName="certificates" indexName="certificates_sha1">
+            <column name="sha1" />
+        </createIndex>
+        <createIndex tableName="certificates" indexName="certificates_not_after">
+            <column name="not_after" />
+        </createIndex>
+        <createIndex tableName="certificates" indexName="certificates_not_before">
+            <column name="not_before" />
+        </createIndex>
+        <createIndex tableName="certificates" indexName="certificates_issuer">
+            <column name="issuer" />
+        </createIndex>
+        <createIndex tableName="certificates" indexName="certificates_aki">
+            <column name="authority_key_identifier" />
+        </createIndex>
+        <createIndex tableName="certificates" indexName="certificates_unparsed">
+            <column name="parsed_at" />
+        </createIndex>
+        <sql>CREATE INDEX certificates_san_array ON certificates USING gin (subject_alternative_names)</sql>
+    </changeSet>
+
+    <changeSet id="enable_pg_trgm" author="lennartkoopmann" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">SELECT COUNT(*) FROM pg_available_extensions WHERE name = 'pg_trgm'</sqlCheck>
+        </preConditions>
+        <sql>CREATE EXTENSION IF NOT EXISTS pg_trgm</sql>
+    </changeSet>
+
+    <changeSet id="add_certificate_trigram_indexes" author="lennartkoopmann">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">SELECT COUNT(*) FROM pg_extension WHERE extname = 'pg_trgm'</sqlCheck>
+        </preConditions>
+        <sql>CREATE INDEX certificates_subject_trgm ON certificates USING gin (subject gin_trgm_ops)</sql>
+        <sql>CREATE INDEX certificates_issuer_trgm ON certificates USING gin (issuer gin_trgm_ops)</sql>
+        <sql>CREATE INDEX certificates_san_trgm ON certificates USING gin (san_text gin_trgm_ops)</sql>
+    </changeSet>
+
+    <changeSet id="add_tls_sessions" author="lennartkoopmann">
+        <createTable tableName="tls_sessions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="tcp_session_key" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="source_mac" type="varchar(17)">
+                <constraints nullable="true" />
+            </column>
+            <column name="destination_mac" type="varchar(17)">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_address" type="inet">
+                <constraints nullable="false" />
+            </column>
+            <column name="source_port" type="integer">
+                <constraints nullable="false" />
+            </column>
+            <column name="destination_address" type="inet">
+                <constraints nullable="false" />
+            </column>
+            <column name="destination_port" type="integer">
+                <constraints nullable="false" />
+            </column>
+            <column name="connection_status" type="varchar(24)">
+                <constraints nullable="false" />
+            </column>
+            <column name="bytes_count" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="server_name" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="version" type="varchar(16)">
+                <constraints nullable="true" />
+            </column>
+            <column name="client_max_version" type="varchar(16)">
+                <constraints nullable="true" />
+            </column>
+            <column name="cipher_suite" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="alpn_selected" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="session_resumed" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="hello_retry_request" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="encrypted_client_hello" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="client_certificate_requested" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="client_change_cipher_spec" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="server_change_cipher_spec" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="client_app_data_records" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="client_app_data_bytes" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="server_app_data_records" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="server_app_data_bytes" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="client_hello" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+            <column name="server_hello" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+            <column name="alerts" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_leaf_sha256" type="bytea">
+                <constraints nullable="true" />
+            </column>
+            <column name="server_chain_sha256" type="bytea[]">
+                <constraints nullable="true" />
+            </column>
+            <column name="client_leaf_sha256" type="bytea">
+                <constraints nullable="true" />
+            </column>
+            <column name="client_chain_sha256" type="bytea[]">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="server_leaf_self_signed" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="server_chain_length" type="smallint">
+                <constraints nullable="true" />
+            </column>
+            <column name="sni_matches_certificate" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="leaf_valid_at_handshake" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="chain_trusted" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="chain_trust_error" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="established_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="terminated_at" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+            <column name="most_recent_segment_time" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="tls_sessions" indexName="tls_sessions_upsert">
+            <column name="tap_uuid" />
+            <column name="tcp_session_key" />
+            <column name="established_at" />
+        </createIndex>
+        <createIndex tableName="tls_sessions" indexName="tls_sessions_tap_time">
+            <column name="tap_uuid" />
+            <column name="established_at" />
+        </createIndex>
+        <createIndex tableName="tls_sessions" indexName="tls_sessions_recent">
+            <column name="most_recent_segment_time" />
+        </createIndex>
+        <createIndex tableName="tls_sessions" indexName="tls_sessions_server_name">
+            <column name="server_name" />
+        </createIndex>
+        <createIndex tableName="tls_sessions" indexName="tls_sessions_destination">
+            <column name="destination_address" />
+        </createIndex>
+        <createIndex tableName="tls_sessions" indexName="tls_sessions_source">
+            <column name="source_address" />
+        </createIndex>
+        <createIndex tableName="tls_sessions" indexName="tls_sessions_server_leaf">
+            <column name="server_leaf_sha256" />
+        </createIndex>
+        <createIndex tableName="tls_sessions" indexName="tls_sessions_client_leaf">
+            <column name="client_leaf_sha256" />
+        </createIndex>
+        <sql>CREATE INDEX tls_sessions_server_chain ON tls_sessions USING gin (server_chain_sha256)</sql>
+        <sql>CREATE INDEX tls_sessions_client_chain ON tls_sessions USING gin (client_chain_sha256)</sql>
+        <sql>CREATE INDEX tls_sessions_untrusted ON tls_sessions (chain_trusted) WHERE chain_trusted = false</sql>
+    </changeSet>
+
+    <changeSet id="add_tls_sessions_unique_key" author="lennartkoopmann">
+        <sql>DELETE FROM tls_sessions a USING tls_sessions b WHERE a.tap_uuid = b.tap_uuid AND a.tcp_session_key = b.tcp_session_key AND a.id &lt; b.id</sql>
+        <dropIndex tableName="tls_sessions" indexName="tls_sessions_upsert" />
+        <createIndex tableName="tls_sessions" indexName="tls_sessions_tap_key" unique="true">
+            <column name="tap_uuid" />
+            <column name="tcp_session_key" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

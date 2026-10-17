@@ -59,21 +59,20 @@ public class TlsSessionsReportTest {
         assertEquals(serverHello.alpn(), "h2");
         assertFalse(serverHello.sessionResumed());
 
-        assertEquals(session.serverCertificates().size(), 2);
-        TlsCertificateReport leaf = session.serverCertificates().get(0);
-        assertTrue(leaf.parsed());
-        assertEquals(leaf.subject(), "C=US, O=nzyme test, CN=tls-test.nzyme.local");
-        assertEquals(leaf.issuer(), "C=US, O=nzyme test, CN=nzyme test CA");
-        assertEquals(leaf.fingerprintSha256().length(), 64);
-        assertEquals(leaf.subjectAlternativeNames().size(), 3);
-        assertNotNull(leaf.notBefore());
-        assertNotNull(leaf.notAfter());
-        assertFalse(leaf.selfSigned());
-        assertFalse(leaf.isCa());
-        assertEquals(leaf.publicKeyBits(), 256L);
-        assertEquals(leaf.signatureAlgorithm(), "ecdsa-with-SHA256");
-        assertTrue(session.serverCertificates().get(1).isCa());
-        assertTrue(session.clientCertificates().isEmpty());
+        assertEquals(session.serverChainSha256(), java.util.List.of(
+                "60e588b0f2805d5a80f41a738035765dcc14f669afd0c6b705f955387f1e5dcb",
+                "cdf99a4bd3a5626bc9c1cd447ce2fea8ac8fd5da764e5f25fbf0cc9faa737f47"));
+        assertTrue(session.clientChainSha256().isEmpty());
+
+        assertEquals(report.certificates().size(), 2);
+        for (java.util.Map.Entry<String, String> cert : report.certificates().entrySet()) {
+            byte[] der = java.util.Base64.getDecoder().decode(cert.getValue());
+            app.nzyme.core.ethernet.tls.CertificateDetails details = app.nzyme.core.ethernet.tls.CertificateParser.parse(der);
+            assertTrue(details.parsed());
+            assertEquals(com.google.common.io.BaseEncoding.base16().lowerCase().encode(details.sha256()), cert.getKey());
+        }
+        assertEquals(app.nzyme.core.ethernet.tls.CertificateParser.parse(java.util.Base64.getDecoder().decode(
+                report.certificates().get(session.serverChainSha256().get(0)))).commonName(), "tls-test.nzyme.local");
 
         assertEquals(session.alerts().size(), 1);
         TlsAlertReport alert = session.alerts().get(0);

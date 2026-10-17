@@ -55,6 +55,7 @@ public class TablesService {
                 .put("udp", new UDPTable(this))
                 .put("dns", new DNSTable(this))
                 .put("ssh", new SSHTable(this))
+                .put("tls", new TLSTable(this))
                 .put("socks", new SOCKSTable(this))
                 .put("ntp", new NTPTable(this))
                 .put("rtsp", new RTSPTable(this))
@@ -115,6 +116,10 @@ public class TablesService {
 
     public SSHTable ssh() {
         return (SSHTable) tables.get("ssh");
+    }
+
+    public TLSTable tls() {
+        return (TLSTable) tables.get("tls");
     }
 
     public SOCKSTable socks() {

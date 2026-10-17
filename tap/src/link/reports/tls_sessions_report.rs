@@ -2,14 +2,23 @@ use std::collections::HashMap;
 use std::sync::MutexGuard;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
+use serde_with::{serde_as, base64::Base64};
 use crate::protocols::detection::taggers::network_protocols::tls_tagger::{ClientHello, ServerHello, TlsAlert};
 use crate::protocols::parsers::l4_key::L4Key;
 use crate::wired::ethernet::types::tls_session::TlsSession;
 use crate::wired::tls::certificate::TlsCertificate;
 
+/*
+ * Certificates are shipped once per report as raw DER, keyed by their SHA-256 fingerprint.
+ * Sessions reference them by fingerprint. The node parses and stores them in its shared
+ * certificates table.
+ */
+#[serde_as]
 #[derive(Serialize)]
 pub struct TlsSessionsReport {
-    pub sessions: Vec<TlsSessionReport>
+    pub sessions: Vec<TlsSessionReport>,
+    #[serde_as(as = "HashMap<_, Base64>")]
+    pub certificates: HashMap<String, Vec<u8>>
 }
 
 #[derive(Serialize)]
@@ -28,8 +37,9 @@ pub struct TlsSessionReport {
     pub client_hello: Option<TlsClientHelloReport>,
     pub server_hello: Option<TlsServerHelloReport>,
     pub hello_retry_request: bool,
-    pub server_certificates: Vec<TlsCertificateReport>,
-    pub client_certificates: Vec<TlsCertificateReport>,
+    // Leaf first. SHA-256 fingerprints, hex. Keys into the report's `certificates`.
+    pub server_chain_sha256: Vec<String>,
+    pub client_chain_sha256: Vec<String>,
     pub client_certificate_requested: bool,
     pub alerts: Vec<TlsAlertReport>,
     pub client_change_cipher_spec: bool,
@@ -71,24 +81,6 @@ pub struct TlsServerHelloReport {
 }
 
 #[derive(Serialize)]
-pub struct TlsCertificateReport {
-    pub fingerprint_sha256: String,
-    pub der_length: u64,
-    pub parsed: bool,
-    pub subject: String,
-    pub issuer: String,
-    pub serial: String,
-    pub subject_alternative_names: Vec<String>,
-    pub not_before: Option<DateTime<Utc>>,
-    pub not_after: Option<DateTime<Utc>>,
-    pub self_signed: bool,
-    pub is_ca: bool,
-    pub public_key_algorithm: String,
-    pub public_key_bits: u64,
-    pub signature_algorithm: String
-}
-
-#[derive(Serialize)]
 pub struct TlsAlertReport {
     pub direction: String,
     pub level: u8,
@@ -97,9 +89,19 @@ pub struct TlsAlertReport {
 }
 
 pub fn generate(s: &MutexGuard<HashMap<L4Key, TlsSession>>) -> TlsSessionsReport {
-    let sessions = s.values().map(session_report).collect();
+    let mut certificates: HashMap<String, Vec<u8>> = HashMap::new();
+    let mut sessions = Vec::with_capacity(s.len());
 
-    TlsSessionsReport { sessions }
+    for session in s.values() {
+        let hs = &session.handshake;
+        for cert in hs.server_certificates.iter().chain(hs.client_certificates.iter()) {
+            certificates.entry(cert.fingerprint_sha256.clone()).or_insert_with(|| cert.der.clone());
+        }
+
+        sessions.push(session_report(session));
+    }
+
+    TlsSessionsReport { sessions, certificates }
 }
 
 fn session_report(session: &TlsSession) -> TlsSessionReport {
@@ -120,8 +122,8 @@ fn session_report(session: &TlsSession) -> TlsSessionReport {
         client_hello: hs.client_hello.as_ref().map(client_hello_report),
         server_hello: hs.server_hello.as_ref().map(server_hello_report),
         hello_retry_request: hs.hello_retry_request,
-        server_certificates: hs.server_certificates.iter().map(certificate_report).collect(),
-        client_certificates: hs.client_certificates.iter().map(certificate_report).collect(),
+        server_chain_sha256: chain_fingerprints(&hs.server_certificates),
+        client_chain_sha256: chain_fingerprints(&hs.client_certificates),
         client_certificate_requested: hs.client_certificate_requested,
         alerts: hs.alerts.iter().map(alert_report).collect(),
         client_change_cipher_spec: hs.client_change_cipher_spec,
@@ -131,6 +133,10 @@ fn session_report(session: &TlsSession) -> TlsSessionReport {
         server_application_data_records: hs.server_application_data_records as u64,
         server_application_data_bytes: hs.server_application_data_bytes as u64
     }
+}
+
+fn chain_fingerprints(chain: &[TlsCertificate]) -> Vec<String> {
+    chain.iter().map(|c| c.fingerprint_sha256.clone()).collect()
 }
 
 fn client_hello_report(ch: &ClientHello) -> TlsClientHelloReport {
@@ -165,25 +171,6 @@ fn server_hello_report(sh: &ServerHello) -> TlsServerHelloReport {
     }
 }
 
-fn certificate_report(cert: &TlsCertificate) -> TlsCertificateReport {
-    TlsCertificateReport {
-        fingerprint_sha256: cert.fingerprint_sha256.clone(),
-        der_length: cert.der_length as u64,
-        parsed: cert.parsed,
-        subject: cert.subject.clone(),
-        issuer: cert.issuer.clone(),
-        serial: cert.serial.clone(),
-        subject_alternative_names: cert.subject_alternative_names.clone(),
-        not_before: cert.not_before,
-        not_after: cert.not_after,
-        self_signed: cert.self_signed,
-        is_ca: cert.is_ca,
-        public_key_algorithm: cert.public_key_algorithm.clone(),
-        public_key_bits: cert.public_key_bits as u64,
-        signature_algorithm: cert.signature_algorithm.clone()
-    }
-}
-
 fn alert_report(alert: &TlsAlert) -> TlsAlertReport {
     TlsAlertReport {
         direction: format!("{:?}", alert.direction),
@@ -195,8 +182,10 @@ fn alert_report(alert: &TlsAlert) -> TlsAlertReport {
 
 #[cfg(test)]
 mod tests {
+    use base64::Engine;
     use serde_json::Value;
     use crate::wired::ethernet::types::tls_session::tests::test_tls_session;
+    use crate::wired::tls::certificate::testdata::{CA_DER, CA_SHA256, LEAF_DER, LEAF_SHA256};
     use super::*;
 
     fn report_json() -> Value {
@@ -226,14 +215,39 @@ mod tests {
         assert_eq!(session["server_hello"]["version"], "TLSv1.2");
         assert_eq!(session["server_hello"]["cipher_suite"], 0xC02F);
         assert_eq!(session["server_hello"]["alpn"], "h2");
-        assert_eq!(session["server_certificates"].as_array().unwrap().len(), 2);
-        assert_eq!(session["server_certificates"][0]["subject"], "C=US, O=nzyme test, CN=tls-test.nzyme.local");
-        assert_eq!(session["server_certificates"][1]["is_ca"], true);
+        assert_eq!(session["server_chain_sha256"][0], LEAF_SHA256);
+        assert_eq!(session["server_chain_sha256"][1], CA_SHA256);
+        assert_eq!(session["client_chain_sha256"].as_array().unwrap().len(), 0);
         assert_eq!(session["alerts"][0]["direction"], "ServerToClient");
         assert_eq!(session["alerts"][0]["description_name"], "close_notify");
         assert_eq!(session["server_application_data_bytes"], 3900);
 
+        // Certificates shipped once, as base64 DER, keyed by fingerprint.
+        let certificates = json["certificates"].as_object().unwrap();
+        assert_eq!(certificates.len(), 2);
+        let decode = |k: &str| base64::engine::general_purpose::STANDARD
+            .decode(certificates[k].as_str().unwrap()).unwrap();
+        assert_eq!(decode(LEAF_SHA256), LEAF_DER);
+        assert_eq!(decode(CA_SHA256), CA_DER);
+
         // Fixture for the node-side deserialization test.
         println!("REPORT_FIXTURE {}", json);
+    }
+
+    #[test]
+    fn deduplicates_certificates_across_sessions() {
+        let a = test_tls_session();
+        let mut b = test_tls_session();
+        b.source_port = 51001;
+        b.tcp_session_key = L4Key::new(b.source_address, b.source_port, b.destination_address, b.destination_port);
+
+        let mut sessions = HashMap::new();
+        sessions.insert(a.tcp_session_key.clone(), a);
+        sessions.insert(b.tcp_session_key.clone(), b);
+        let sessions = std::sync::Mutex::new(sessions);
+        let report = generate(&sessions.lock().unwrap());
+
+        assert_eq!(report.sessions.len(), 2);
+        assert_eq!(report.certificates.len(), 2);
     }
 }

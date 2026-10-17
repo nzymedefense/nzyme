@@ -157,7 +157,8 @@ public class TablesResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        LOG.info("Received TLS sessions report from tap [{}]: {}", tap.getUuid(), report);
+        LOG.debug("Received TLS sessions report from tap [{}]: {}", tap.getUuid(), report);
+        nzyme.getTablesService().tls().handleReport(tap.getUuid(), DateTime.now(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

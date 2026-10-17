@@ -1,4 +1,8 @@
 {
+  "certificates": {
+    "60e588b0f2805d5a80f41a738035765dcc14f669afd0c6b705f955387f1e5dcb": "MIICOTCCAd6gAwIBAgIUJ5+LRSuSraZT/Xl0Xlq9EOM0VF4wCgYIKoZIzj0EAwIwOjELMAkGA1UEBhMCVVMxEzARBgNVBAoMCm56eW1lIHRlc3QxFjAUBgNVBAMMDW56eW1lIHRlc3QgQ0EwIBcNMjYxMDE2MjMyNjU1WhgPMjEyNjA5MjIyMzI2NTVaMEExCzAJBgNVBAYTAlVTMRMwEQYDVQQKDApuenltZSB0ZXN0MR0wGwYDVQQDDBR0bHMtdGVzdC5uenltZS5sb2NhbDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABAbcTQV5jdaxug0mg1X3TR3vAybEh2kB1NRpvM6J2bjZZGpIL5z/w0tLSmabqF1J2QkIC+0ejekWi9wRyrFYwAGjgbgwgbUwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCB4AwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMDYGA1UdEQQvMC2CFHRscy10ZXN0Lm56eW1lLmxvY2Fsgg9hbHQubnp5bWUubG9jYWyHBAoAAAEwHQYDVR0OBBYEFNZvKifj6RziKLc8cJtEwKn70bNiMB8GA1UdIwQYMBaAFF6J2erXcnSPubVsuXIJNx+CY8t8MAoGCCqGSM49BAMCA0kAMEYCIQCd6g4HkkJyD1Uuh57pt3rAvO4R6eTn7kLttPrHTvlr2QIhAMxFNwCPdmHIUXvIcXsMSk8wA6lvLg7Y7LJYbbbuVZTC",
+    "cdf99a4bd3a5626bc9c1cd447ce2fea8ac8fd5da764e5f25fbf0cc9faa737f47": "MIIB2jCCAYGgAwIBAgIULJe28tSRnaCTn8F8MCULf5pnNd4wCgYIKoZIzj0EAwIwOjELMAkGA1UEBhMCVVMxEzARBgNVBAoMCm56eW1lIHRlc3QxFjAUBgNVBAMMDW56eW1lIHRlc3QgQ0EwIBcNMjYxMDE2MjMyNjU1WhgPMjEyNjA5MjIyMzI2NTVaMDoxCzAJBgNVBAYTAlVTMRMwEQYDVQQKDApuenltZSB0ZXN0MRYwFAYDVQQDDA1uenltZSB0ZXN0IENBMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE35koVWPRB/lzy7h/e5XaglR9t5NKPW9AdAyTShMtMk5z9ec5SQepB9Gq6adecCm4MrmBWa197r6RjzORfmD3g6NjMGEwHQYDVR0OBBYEFF6J2erXcnSPubVsuXIJNx+CY8t8MB8GA1UdIwQYMBaAFF6J2erXcnSPubVsuXIJNx+CY8t8MA8GA1UdEwEB/wQFMAMBAf8wDgYDVR0PAQH/BAQDAgEGMAoGCCqGSM49BAMCA0cAMEQCIEA1oIhHphZerYKJsr9MyWPqsl6bRnCQyblVN21MPkvaAiARYsxKVdkwGpM5TioxvbP2uMwg1kN0kO0lXzHwQQ4lhA=="
+  },
   "sessions": [
     {
       "alerts": [
@@ -13,7 +17,7 @@
       "client_application_data_bytes": 420,
       "client_application_data_records": 3,
       "client_certificate_requested": false,
-      "client_certificates": [],
+      "client_chain_sha256": [],
       "client_change_cipher_spec": true,
       "client_hello": {
         "alpn": [
@@ -64,43 +68,9 @@
       "most_recent_segment_time": "2026-10-16T12:00:05Z",
       "server_application_data_bytes": 3900,
       "server_application_data_records": 5,
-      "server_certificates": [
-        {
-          "der_length": 573,
-          "fingerprint_sha256": "60e588b0f2805d5a80f41a738035765dcc14f669afd0c6b705f955387f1e5dcb",
-          "is_ca": false,
-          "issuer": "C=US, O=nzyme test, CN=nzyme test CA",
-          "not_after": "2126-09-22T23:26:55Z",
-          "not_before": "2026-10-16T23:26:55Z",
-          "parsed": true,
-          "public_key_algorithm": "EC prime256v1",
-          "public_key_bits": 256,
-          "self_signed": false,
-          "serial": "27:9f:8b:45:2b:92:ad:a6:53:fd:79:74:5e:5a:bd:10:e3:34:54:5e",
-          "signature_algorithm": "ecdsa-with-SHA256",
-          "subject": "C=US, O=nzyme test, CN=tls-test.nzyme.local",
-          "subject_alternative_names": [
-            "DNS:tls-test.nzyme.local",
-            "DNS:alt.nzyme.local",
-            "IP:10.0.0.1"
-          ]
-        },
-        {
-          "der_length": 478,
-          "fingerprint_sha256": "cdf99a4bd3a5626bc9c1cd447ce2fea8ac8fd5da764e5f25fbf0cc9faa737f47",
-          "is_ca": true,
-          "issuer": "C=US, O=nzyme test, CN=nzyme test CA",
-          "not_after": "2126-09-22T23:26:55Z",
-          "not_before": "2026-10-16T23:26:55Z",
-          "parsed": true,
-          "public_key_algorithm": "EC prime256v1",
-          "public_key_bits": 256,
-          "self_signed": true,
-          "serial": "2c:97:b6:f2:d4:91:9d:a0:93:9f:c1:7c:30:25:0b:7f:9a:67:35:de",
-          "signature_algorithm": "ecdsa-with-SHA256",
-          "subject": "C=US, O=nzyme test, CN=nzyme test CA",
-          "subject_alternative_names": []
-        }
+      "server_chain_sha256": [
+        "60e588b0f2805d5a80f41a738035765dcc14f669afd0c6b705f955387f1e5dcb",
+        "cdf99a4bd3a5626bc9c1cd447ce2fea8ac8fd5da764e5f25fbf0cc9faa737f47"
       ],
       "server_change_cipher_spec": true,
       "server_hello": {
