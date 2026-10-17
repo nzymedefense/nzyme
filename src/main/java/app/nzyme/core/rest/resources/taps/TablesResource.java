@@ -16,6 +16,7 @@ import app.nzyme.core.rest.resources.taps.reports.tables.rtsp.RtspStreamsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.socks.SocksTunnelsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.ssh.SshSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.tcp.TcpSessionsReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.tls.TlsSessionsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.uav.UavsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.udp.UdpConversationsReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.webrtc.WebRTCConversationsReport;
@@ -142,6 +143,21 @@ public class TablesResource {
 
         LOG.debug("Received SSH sessions report from tap [{}]: {}", tap.getUuid(), report);
         nzyme.getTablesService().ssh().handleReport(tap.getUuid(), DateTime.now(), report);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("/tls/sessions")
+    public Response tlsSessions(@Context SecurityContext sc, TlsSessionsReport report) {
+        AuthenticatedTap tap = ((AuthenticatedTap) sc.getUserPrincipal());
+
+        if (!nzyme.getSubsystems().isEnabled(Subsystem.ETHERNET, tap.getOrganizationId(), tap.getTenantId())) {
+            LOG.debug("Rejecting TLS sessions report from tap [{}]: Subsystem is disabled.", tap.getUuid());
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        LOG.info("Received TLS sessions report from tap [{}]: {}", tap.getUuid(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

@@ -2,13 +2,14 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use log::error;
 use crate::protocols::parsers::l4_key::L4Key;
+use crate::helpers::timer::{record_timer, Timer};
 use crate::link::leaderlink::Leaderlink;
+use crate::link::reports::tls_sessions_report;
 use crate::metrics::Metrics;
 use crate::state::tables::table_helpers::clear_mutex_hashmap;
 use crate::wired::ethernet::types::tls_session::TlsSession;
 
 pub struct TlsTable {
-    #[allow(dead_code)]
     leaderlink: Arc<Mutex<Leaderlink>>,
     metrics: Arc<Mutex<Metrics>>,
     sessions: Mutex<HashMap<L4Key, TlsSession>>
@@ -34,8 +35,43 @@ impl TlsTable {
             Err(e) => error!("Could not acquire TLS sessions table mutex: {}", e)
         }
     }
-    
+
     pub fn process_report(&self) {
+        match self.sessions.lock() {
+            Ok(sessions) => {
+                // Generate JSON.
+                let mut timer = Timer::new();
+                let report = match serde_json::to_string(&tls_sessions_report::generate(&sessions)) {
+                    Ok(report) => report,
+                    Err(e) => {
+                        error!("Could not serialize TLS sessions report: {}", e);
+                        return;
+                    }
+                };
+                timer.stop();
+                record_timer(
+                    timer.elapsed_microseconds(),
+                    "tables.tls.timer.report_generation",
+                    &self.metrics
+                );
+
+                // Send report.
+                match self.leaderlink.lock() {
+                    Ok(link) => {
+                        if let Err(e) = link.send_report("tls/sessions", report) {
+                            error!("Could not submit TLS sessions report: {}", e);
+                        }
+                    },
+                    Err(e) => error!("Could not acquire leader link lock for TLS sessions \
+                                        report submission: {}", e)
+                }
+            },
+            Err(e) => {
+                error!("Could not acquire TLS sessions table mutex for report generation: {}", e);
+            }
+        }
+
+        // Clean up.
         clear_mutex_hashmap(&self.sessions);
     }
 

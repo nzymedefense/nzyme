@@ -7,8 +7,6 @@ use crate::protocols::parsers::tcp::tcp_tools::determine_tcp_session_state;
 use crate::state::tables::tcp_table::TcpSession;
 use crate::wired::packets::GenericConnectionStatus;
 
-// Timestamps are not read until the TLS sessions report exists.
-#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct TlsSession {
     pub handshake: TlsHandshake,
@@ -91,7 +89,7 @@ impl TlsSession {
 pub mod tests {
     use std::collections::{BTreeMap, HashSet};
     use chrono::TimeZone;
-    use crate::protocols::detection::taggers::network_protocols::tls_tagger::{ClientHello, TlsAlert, TlsDirection};
+    use crate::protocols::detection::taggers::network_protocols::tls_tagger::{ClientHello, ServerHello, TlsAlert, TlsDirection};
     use crate::state::tables::tcp_table::TcpSessionState;
     use crate::wired::tls::certificate::TlsCertificate;
     use crate::wired::tls::version::TlsVersion;
@@ -156,13 +154,8 @@ pub mod tests {
         assert_eq!(tls.most_recent_segment_time, tcp.most_recent_segment_time);
     }
 
-    #[test]
-    fn size_estimate_grows_with_content() {
-        let tcp = test_tcp_session();
-        let empty = TlsSession::build(TlsHandshake::default(), &tcp);
-        let base = empty.estimate_struct_size();
-        assert!(base >= mem::size_of::<TlsSession>() as u32);
-
+    // A TLS 1.2 session with everything filled in that the parser can produce.
+    pub fn test_tls_session() -> TlsSession {
         let handshake = TlsHandshake {
             client_hello: Some(ClientHello {
                 record_version: TlsVersion::Tls10,
@@ -180,17 +173,45 @@ pub mod tests {
                 offers_pre_shared_key: false,
                 encrypted_client_hello: false
             }),
-            server_certificates: vec![TlsCertificate::from_der(&[0xFF; 32])],
+            server_hello: Some(ServerHello {
+                record_version: TlsVersion::Tls12,
+                legacy_version: TlsVersion::Tls12,
+                version: TlsVersion::Tls12,
+                cipher_suite: 0xC02F,
+                compression_method: 0,
+                extensions: vec![0, 11, 16, 23],
+                alpn: Some("h2".to_string()),
+                session_resumed: false
+            }),
+            hello_retry_request: false,
+            server_certificates: vec![
+                TlsCertificate::from_der(crate::wired::tls::certificate::testdata::LEAF_DER),
+                TlsCertificate::from_der(crate::wired::tls::certificate::testdata::CA_DER)
+            ],
+            client_certificates: vec![],
+            client_certificate_requested: false,
             alerts: vec![TlsAlert {
                 direction: TlsDirection::ServerToClient,
-                level: 2,
-                description: 40,
-                description_name: "handshake_failure"
+                level: 1,
+                description: 0,
+                description_name: "close_notify"
             }],
-            ..Default::default()
+            client_change_cipher_spec: true,
+            server_change_cipher_spec: true,
+            client_application_data_records: 3,
+            client_application_data_bytes: 420,
+            server_application_data_records: 5,
+            server_application_data_bytes: 3900
         };
 
-        let full = TlsSession::build(handshake, &tcp);
-        assert!(full.estimate_struct_size() > base);
+        TlsSession::build(handshake, &test_tcp_session())
+    }
+
+    #[test]
+    fn size_estimate_grows_with_content() {
+        let empty = TlsSession::build(TlsHandshake::default(), &test_tcp_session());
+        let base = empty.estimate_struct_size();
+        assert!(base >= mem::size_of::<TlsSession>() as u32);
+        assert!(test_tls_session().estimate_struct_size() > base);
     }
 }

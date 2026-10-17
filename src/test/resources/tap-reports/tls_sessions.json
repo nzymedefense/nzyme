@@ -1,0 +1,127 @@
+{
+  "sessions": [
+    {
+      "alerts": [
+        {
+          "description": 0,
+          "description_name": "close_notify",
+          "direction": "ServerToClient",
+          "level": 1
+        }
+      ],
+      "bytes_count": 5500,
+      "client_application_data_bytes": 420,
+      "client_application_data_records": 3,
+      "client_certificate_requested": false,
+      "client_certificates": [],
+      "client_change_cipher_spec": true,
+      "client_hello": {
+        "alpn": [
+          "h2",
+          "http/1.1"
+        ],
+        "cipher_suites": [
+          4865,
+          4866,
+          4867
+        ],
+        "ec_point_formats": [
+          0
+        ],
+        "encrypted_client_hello": false,
+        "extensions": [
+          0,
+          10,
+          13,
+          16,
+          43
+        ],
+        "legacy_version": "TLSv1.2",
+        "offers_pre_shared_key": false,
+        "offers_session_ticket": false,
+        "record_version": "TLSv1.0",
+        "server_name": "example.com",
+        "session_id_present": true,
+        "signature_algorithms": [
+          1027,
+          2052
+        ],
+        "supported_groups": [
+          29,
+          23
+        ],
+        "supported_versions": [
+          "TLSv1.3",
+          "TLSv1.2"
+        ]
+      },
+      "connection_status": "Inactive",
+      "destination_address": "93.184.216.34",
+      "destination_mac": "aa:bb:cc:dd:ee:02",
+      "destination_port": 443,
+      "established_at": "2026-10-16T12:00:00Z",
+      "hello_retry_request": false,
+      "most_recent_segment_time": "2026-10-16T12:00:05Z",
+      "server_application_data_bytes": 3900,
+      "server_application_data_records": 5,
+      "server_certificates": [
+        {
+          "der_length": 573,
+          "fingerprint_sha256": "60e588b0f2805d5a80f41a738035765dcc14f669afd0c6b705f955387f1e5dcb",
+          "is_ca": false,
+          "issuer": "C=US, O=nzyme test, CN=nzyme test CA",
+          "not_after": "2126-09-22T23:26:55Z",
+          "not_before": "2026-10-16T23:26:55Z",
+          "parsed": true,
+          "public_key_algorithm": "EC prime256v1",
+          "public_key_bits": 256,
+          "self_signed": false,
+          "serial": "27:9f:8b:45:2b:92:ad:a6:53:fd:79:74:5e:5a:bd:10:e3:34:54:5e",
+          "signature_algorithm": "ecdsa-with-SHA256",
+          "subject": "C=US, O=nzyme test, CN=tls-test.nzyme.local",
+          "subject_alternative_names": [
+            "DNS:tls-test.nzyme.local",
+            "DNS:alt.nzyme.local",
+            "IP:10.0.0.1"
+          ]
+        },
+        {
+          "der_length": 478,
+          "fingerprint_sha256": "cdf99a4bd3a5626bc9c1cd447ce2fea8ac8fd5da764e5f25fbf0cc9faa737f47",
+          "is_ca": true,
+          "issuer": "C=US, O=nzyme test, CN=nzyme test CA",
+          "not_after": "2126-09-22T23:26:55Z",
+          "not_before": "2026-10-16T23:26:55Z",
+          "parsed": true,
+          "public_key_algorithm": "EC prime256v1",
+          "public_key_bits": 256,
+          "self_signed": true,
+          "serial": "2c:97:b6:f2:d4:91:9d:a0:93:9f:c1:7c:30:25:0b:7f:9a:67:35:de",
+          "signature_algorithm": "ecdsa-with-SHA256",
+          "subject": "C=US, O=nzyme test, CN=nzyme test CA",
+          "subject_alternative_names": []
+        }
+      ],
+      "server_change_cipher_spec": true,
+      "server_hello": {
+        "alpn": "h2",
+        "cipher_suite": 49199,
+        "compression_method": 0,
+        "extensions": [
+          0,
+          11,
+          16,
+          23
+        ],
+        "legacy_version": "TLSv1.2",
+        "record_version": "TLSv1.2",
+        "session_resumed": false,
+        "version": "TLSv1.2"
+      },
+      "source_address": "10.0.0.10",
+      "source_mac": "aa:bb:cc:dd:ee:01",
+      "source_port": 51000,
+      "terminated_at": "2026-10-16T12:00:05Z"
+    }
+  ]
+}
