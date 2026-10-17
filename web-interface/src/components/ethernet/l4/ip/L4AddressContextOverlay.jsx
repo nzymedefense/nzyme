@@ -72,9 +72,16 @@ export default function L4AddressContextOverlay({address}) {
     const asset = ctx.assets[0]
     const more = ctx.assets.length-1;
 
+    let name;
+    if (asset.name && asset.name.trim().length > 0) {
+      name = asset.name;
+    } else {
+      name = asset.uuid.substr(0, 6)
+    }
+
     return (
       <span>
-        <a href={ApiRoutes.ETHERNET.ASSETS.DETAILS(asset.uuid)} className="machine-data">{asset.name}</a>{' '}
+        <a href={ApiRoutes.ETHERNET.ASSETS.DETAILS(asset.uuid)} className="machine-data">{name}</a>{' '}
         {more > 0 ? <span className="italic text-muted">[+{more} more]</span> : null}
       </span>
     )
