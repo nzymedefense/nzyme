@@ -359,6 +359,8 @@ public class DatabaseResource extends UserAuthenticatedResource {
             case BLUETOOTH -> key = BluetoothRegistryKeys.BLUETOOTH_RETENTION_TIME_DAYS.key();
             case ETHERNET_L4 -> key = EthernetRegistryKeys.L4_RETENTION_TIME_DAYS.key();
             case ETHERNET_DNS -> key = EthernetRegistryKeys.DNS_RETENTION_TIME_DAYS.key();
+            case PORTAL_INTEGRITY -> key = EthernetRegistryKeys.PORTAL_INTEGRITY_RETENTION_TIME_DAYS.key();
+            case TLS_CERTIFICATES -> key = EthernetRegistryKeys.TLS_CERTIFICATES_RETENTION_TIME_DAYS.key();
             case UAV -> key = UavRegistryKeys.UAV_RETENTION_TIME_DAYS.key();
             case TIMELINE_EVENTS_DOT11 -> key = TimelinesRegistryKeys.DOT11_EVENTS_RETENTION_TIME_DAYS.key();
         }

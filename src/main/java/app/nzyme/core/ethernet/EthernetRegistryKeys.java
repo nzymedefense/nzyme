@@ -35,5 +35,13 @@ public class EthernetRegistryKeys {
             false
     );
 
+    public static final RegistryKey TLS_CERTIFICATES_RETENTION_TIME_DAYS = RegistryKey.create(
+            "ethernet_tls_certificates_retention_time_days",
+            Optional.of(new ArrayList<>() {{
+                add(ConfigurationEntryConstraint.createNumberRangeConstraint(1, Integer.MAX_VALUE));
+            }}),
+            Optional.of("180"),
+            false
+    );
 
 }

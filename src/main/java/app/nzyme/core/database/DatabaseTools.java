@@ -39,6 +39,10 @@ public class DatabaseTools {
                     key = EthernetRegistryKeys.PORTAL_INTEGRITY_RETENTION_TIME_DAYS.key();
                     defaultValue = EthernetRegistryKeys.PORTAL_INTEGRITY_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
             }
+            case TLS_CERTIFICATES -> {
+                key = EthernetRegistryKeys.TLS_CERTIFICATES_RETENTION_TIME_DAYS.key();
+                defaultValue = EthernetRegistryKeys.TLS_CERTIFICATES_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");
+            }
             case UAV -> {
                 key = UavRegistryKeys.UAV_RETENTION_TIME_DAYS.key();
                 defaultValue = UavRegistryKeys.UAV_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING");

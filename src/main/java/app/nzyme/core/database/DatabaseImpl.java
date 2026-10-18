@@ -497,6 +497,11 @@ public class DatabaseImpl implements Database {
                         "SELECT COUNT(*) FROM webrtc_conversations WHERE tap_uuid IN (<taps>)",
                         "DELETE FROM webrtc_conversations WHERE last_activity < :since AND tap_uuid IN (<taps>)"
                 ));
+                tables.add(new DataTableInformation(
+                        "tls_sessions",
+                        "SELECT COUNT(*) FROM tls_sessions WHERE tap_uuid IN (<taps>)",
+                        "DELETE FROM tls_sessions WHERE most_recent_segment_time < :since AND tap_uuid IN (<taps>)"
+                ));
             }
             case ETHERNET_DNS -> {
                 tables.add(new DataTableInformation(
@@ -528,6 +533,32 @@ public class DatabaseImpl implements Database {
                         "portal_integrity_reports",
                         "SELECT COUNT(*) FROM portal_integrity_reports WHERE tap_uuid IN (<taps>)",
                         "DELETE FROM portal_integrity_reports WHERE probed_at < :since AND tap_uuid IN (<taps>)"
+                ));
+            }
+            case TLS_CERTIFICATES -> {
+                /*
+                 * Certificates are shared across taps and tenants, keyed by fingerprint. A tenant's row count is
+                 * the number of distinct certificates its taps have referenced. Purging drops certificates that
+                 * have not been seen for the retention time, but never one that a stored TLS session or portal
+                 * integrity report still references, so no details page loses its chain.
+                 */
+                tables.add(new DataTableInformation(
+                        "certificates",
+                        "SELECT COUNT(DISTINCT sha256) FROM (" +
+                                "SELECT h.sha256 FROM tls_sessions AS s " +
+                                "CROSS JOIN LATERAL unnest(COALESCE(s.server_chain_sha256, '{}') || COALESCE(s.client_chain_sha256, '{}')) AS h(sha256) " +
+                                "WHERE s.tap_uuid IN (<taps>) " +
+                                "UNION ALL " +
+                                "SELECT decode(j.hex, 'hex') AS sha256 FROM portal_integrity_hops AS hop " +
+                                "JOIN portal_integrity_reports AS r ON r.uuid = hop.report_uuid " +
+                                "CROSS JOIN LATERAL jsonb_array_elements_text(COALESCE(hop.tls->'chain_sha256', '[]'::jsonb)) AS j(hex) " +
+                                "WHERE r.tap_uuid IN (<taps>)" +
+                                ") AS refs",
+                        "DELETE FROM certificates AS c WHERE c.last_seen < :since " +
+                                "AND NOT EXISTS (SELECT 1 FROM tls_sessions AS s " +
+                                "WHERE s.server_chain_sha256 @> ARRAY[c.sha256] OR s.client_chain_sha256 @> ARRAY[c.sha256]) " +
+                                "AND NOT EXISTS (SELECT 1 FROM portal_integrity_hops AS hop " +
+                                "WHERE hop.tls->'chain_sha256' ?? encode(c.sha256, 'hex'))"
                 ));
             }
             case UAV -> {
