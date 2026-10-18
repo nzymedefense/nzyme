@@ -331,7 +331,31 @@ public class TLSResource extends TapDataHandlingResource {
                 orderColumnParam, orderDirectionParam, limit, offset, StringHistogram.VERSIONS);
     }
 
-    private enum StringHistogram { SERVER_NAMES, SERVER_PORTS, VERSIONS }
+    @GET
+    @Path("/sessions/ja4/top/histogram")
+    @Operation(operationId = "findTlsTopJa4", summary = "List top JA4 client fingerprints",
+            description = "Returns the JA4 TLS client fingerprints with the most sessions in the time range, with "
+                    + "the session count and the number of bytes exchanged. Sessions without an observed ClientHello "
+                    + "are not included.")
+    @ApiResponse(responseCode = "200", description = "Histogram found.",
+            content = @Content(schema = @Schema(implementation = ThreeColumnTableHistogramResponse.class)))
+    @ApiResponse(responseCode = "400", description = "The sorting column or direction is not valid.", content = @Content)
+    @ApiResponse(responseCode = "404", description = "Organization or tenant not found, or not accessible by the calling user.", content = @Content)
+    public Response topJa4Histogram(@Parameter(hidden = true) @Context SecurityContext sc,
+                                    @Parameter(description = "Organization UUID.") @QueryParam("organization_id") UUID organizationId,
+                                    @Parameter(description = "Tenant UUID.") @QueryParam("tenant_id") UUID tenantId,
+                                    @Parameter(description = "Time range selector. Accepts the same format as the web interface time range picker.") @QueryParam("time_range") @Valid String timeRangeParameter,
+                                    @Parameter(description = "JSON encoded filter definition as produced by the web interface filter builder.") @QueryParam("filters") String filtersParameter,
+                                    @Parameter(description = "Comma separated list of tap UUIDs to include. Omit for all taps the user can access.") @QueryParam("taps") String taps,
+                                    @Parameter(description = "Sorting column. Must be passed together with the sorting direction.") @QueryParam("order_column") @Nullable String orderColumnParam,
+                                    @Parameter(description = "Sorting direction, ASC or DESC.") @QueryParam("order_direction") @Nullable String orderDirectionParam,
+                                    @Parameter(description = "Page size.") @QueryParam("limit") int limit,
+                                    @Parameter(description = "Page offset.") @QueryParam("offset") int offset) {
+        return stringHistogram(sc, organizationId, tenantId, timeRangeParameter, filtersParameter, taps,
+                orderColumnParam, orderDirectionParam, limit, offset, StringHistogram.JA4);
+    }
+
+    private enum StringHistogram { SERVER_NAMES, SERVER_PORTS, VERSIONS, JA4 }
 
     private Response addressHistogram(SecurityContext sc, UUID organizationId, UUID tenantId, String timeRangeParameter,
                                       String filtersParameter, String taps, String orderColumnParam,
@@ -411,6 +435,10 @@ public class TLSResource extends TapDataHandlingResource {
             case SERVER_PORTS -> {
                 count = tls.getTopServerPortsCount(timeRange, filters, tapUUIDs);
                 results = tls.getTopServerPorts(timeRange, filters, limit, offset, orderColumn, orderDirection, tapUUIDs);
+            }
+            case JA4 -> {
+                count = tls.getTopJa4Count(timeRange, filters, tapUUIDs);
+                results = tls.getTopJa4(timeRange, filters, limit, offset, orderColumn, orderDirection, tapUUIDs);
             }
             default -> {
                 count = tls.getVersionsCount(timeRange, filters, tapUUIDs);
@@ -932,6 +960,7 @@ public class TLSResource extends TapDataHandlingResource {
                 .cipherSuite(s.cipherSuite())
                 .alpnSelected(s.alpnSelected())
                 .alpnOffered(s.alpnOffered())
+                .ja4(s.ja4())
                 .sessionResumed(s.sessionResumed())
                 .helloRetryRequest(s.helloRetryRequest())
                 .encryptedClientHello(s.encryptedClientHello())

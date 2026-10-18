@@ -47,6 +47,7 @@ import {
   ALLOWED_CERTIFICATE_SOURCE_VALUES,
   CERTIFICATE_SOURCE_SELECT_OPTIONS
 } from "./validators/CertificateSourceValidator";
+import {ALLOWED_TLS_ALERT_VALUES, TLS_ALERT_SELECT_OPTIONS} from "./validators/TLSAlertValidator";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -166,6 +167,13 @@ export const FILTER_TYPE = {
       (value) => validateEnum(ALLOWED_CERTIFICATE_SOURCE_VALUES, value)
     ],
     placeholder: "TLS"
+  },
+  TLS_ALERT: {
+    name: "tls_alert",
+    validators: [
+      (value) => validateEnum(ALLOWED_TLS_ALERT_VALUES, String(value))
+    ],
+    placeholder: "handshake_failure"
   }
 }
 
@@ -519,6 +527,24 @@ export const OPERATORS = {
     validators: [],
     options: CERTIFICATE_SOURCE_SELECT_OPTIONS,
     field_type: FIELD_TYPE.SELECT
+  },
+  TLS_ALERT_CONTAINS: {
+    name: "tls_alert_contains",
+    sign: "Contains",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: TLS_ALERT_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  TLS_ALERT_NOT_CONTAINS: {
+    name: "tls_alert_not_contains",
+    sign: "Does not contain",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: TLS_ALERT_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
   }
 }
 
@@ -735,6 +761,14 @@ export default function Filters(props) {
             OPERATORS.CERTIFICATE_SOURCE_NOT_EQUALS,
             OPERATORS.IS_NULL,
             OPERATORS.IS_NOT_NULL
+          ])
+          break;
+        case FILTER_TYPE.TLS_ALERT:
+          setAllowedOperators([
+            OPERATORS.TLS_ALERT_CONTAINS,
+            OPERATORS.TLS_ALERT_NOT_CONTAINS,
+            OPERATORS.IS_EMPTY,
+            OPERATORS.IS_NOT_EMPTY
           ])
           break;
       }

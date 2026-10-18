@@ -38,6 +38,11 @@ const TYPES = {
     load: (...args) => tlsService.getVersionsHistogram(...args),
     titles: ["Version", "Sessions", "Bytes Exchanged"],
     filter: {field: "version"}
+  },
+  ja4: {
+    load: (...args) => tlsService.getTopJa4Histogram(...args),
+    titles: ["JA4 Fingerprint", "Sessions", "Bytes Exchanged"],
+    filter: {field: "ja4"}
   }
 }
 

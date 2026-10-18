@@ -6,6 +6,7 @@ import SOCKSTunnelDetails from "../tunnels/socks/SOCKSTunnelDetails";
 import NTPTransactionDetails from "../time/ntp/NTPTransactionDetails";
 import STUNSessionDetails from "../nat/traversal/shared/STUNSessionDetails";
 import RTSPStreamDetails from "../streams/rtsp/RTSPStreamDetails";
+import TLSSessionDetails from "../tls/TLSSessionDetails";
 
 export default function L4TagDetails({session}) {
 
@@ -69,6 +70,25 @@ export default function L4TagDetails({session}) {
     }
   }
 
+  const tls = () => {
+    if (session.tags.includes("TLS")) {
+      return (
+        <div className="row mt-3">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body card-container">
+                <CardTitleWithControls title="Encapsulated TLS Session"
+                                       internalLink={ApiRoutes.ETHERNET.TLS.SESSIONS.DETAILS(session.session_key)} />
+
+                <TLSSessionDetails sessionKey={session.session_key} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  }
+
   const rtsp = () => {
     if (session.tags.includes("RTSP")) {
       return (
@@ -91,6 +111,7 @@ export default function L4TagDetails({session}) {
       <React.Fragment>
         {ssh()}
         {socks()}
+        {tls()}
         {ntp()}
         {rtsp()}
       </React.Fragment>

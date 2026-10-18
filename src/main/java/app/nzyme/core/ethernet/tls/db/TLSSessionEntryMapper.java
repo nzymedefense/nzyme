@@ -33,6 +33,7 @@ public class TLSSessionEntryMapper implements RowMapper<TLSSessionEntry> {
                 .cipherSuite(nullableInt(rs, "cipher_suite"))
                 .alpnSelected(rs.getString("alpn_selected"))
                 .alpnOffered(stringListFromJson(rs.getString("alpn_offered")))
+                .ja4(rs.getString("ja4"))
                 .sessionResumed(rs.getBoolean("session_resumed"))
                 .helloRetryRequest(rs.getBoolean("hello_retry_request"))
                 .encryptedClientHello(rs.getBoolean("encrypted_client_hello"))

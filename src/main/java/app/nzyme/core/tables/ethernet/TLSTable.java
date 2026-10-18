@@ -2,6 +2,7 @@ package app.nzyme.core.tables.ethernet;
 
 import app.nzyme.core.ethernet.tls.CertificateDetails;
 import app.nzyme.core.ethernet.tls.CertificateStore;
+import app.nzyme.core.ethernet.tls.JA4;
 import app.nzyme.core.ethernet.tls.TlsChainValidator;
 import app.nzyme.core.ethernet.tls.TlsHostnameMatcher;
 import app.nzyme.core.rest.resources.taps.reports.tables.tls.TlsAlertReport;
@@ -94,7 +95,7 @@ public class TLSTable implements DataTable {
             "client_app_data_records, client_app_data_bytes, server_app_data_records, server_app_data_bytes, " +
             "client_hello, server_hello, alerts, server_leaf_sha256, server_chain_sha256, client_leaf_sha256, " +
             "client_chain_sha256, server_leaf_self_signed, server_chain_length, sni_matches_certificate, " +
-            "leaf_valid_at_handshake, chain_trusted, chain_trust_error, established_at, terminated_at, " +
+            "leaf_valid_at_handshake, chain_trusted, chain_trust_error, ja4, established_at, terminated_at, " +
             "most_recent_segment_time, updated_at, created_at) " +
             "VALUES(:uuid, :tap_uuid, :tcp_session_key, :source_mac, :destination_mac, :source_address::inet, " +
             ":source_port, :destination_address::inet, :destination_port, :connection_status, :bytes_count, " +
@@ -104,7 +105,7 @@ public class TLSTable implements DataTable {
             ":client_app_data_bytes, :server_app_data_records, :server_app_data_bytes, :client_hello::jsonb, " +
             ":server_hello::jsonb, :alerts::jsonb, :server_leaf_sha256, :server_chain_sha256, " +
             ":client_leaf_sha256, :client_chain_sha256, :server_leaf_self_signed, :server_chain_length, " +
-            ":sni_matches_certificate, :leaf_valid_at_handshake, :chain_trusted, :chain_trust_error, " +
+            ":sni_matches_certificate, :leaf_valid_at_handshake, :chain_trusted, :chain_trust_error, :ja4, " +
             ":established_at, :terminated_at, :most_recent_segment_time, NOW(), NOW()) " +
             "ON CONFLICT (tap_uuid, tcp_session_key) DO UPDATE SET " +
             "connection_status = EXCLUDED.connection_status, bytes_count = EXCLUDED.bytes_count, " +
@@ -127,7 +128,8 @@ public class TLSTable implements DataTable {
             "server_chain_length = EXCLUDED.server_chain_length, " +
             "sni_matches_certificate = EXCLUDED.sni_matches_certificate, " +
             "leaf_valid_at_handshake = EXCLUDED.leaf_valid_at_handshake, chain_trusted = EXCLUDED.chain_trusted, " +
-            "chain_trust_error = EXCLUDED.chain_trust_error, terminated_at = EXCLUDED.terminated_at, " +
+            "chain_trust_error = EXCLUDED.chain_trust_error, ja4 = EXCLUDED.ja4, " +
+            "terminated_at = EXCLUDED.terminated_at, " +
             "most_recent_segment_time = EXCLUDED.most_recent_segment_time, updated_at = NOW() " +
             "WHERE EXCLUDED.most_recent_segment_time >= tls_sessions.most_recent_segment_time";
 
@@ -217,6 +219,7 @@ public class TLSTable implements DataTable {
                 .bind("leaf_valid_at_handshake", leafValid)
                 .bind("chain_trusted", trust.trusted())
                 .bind("chain_trust_error", trust.error())
+                .bind("ja4", JA4.calculate(ch))
                 .bind("terminated_at", s.terminatedAt())
                 .bind("most_recent_segment_time", s.mostRecentSegmentTime());
     }

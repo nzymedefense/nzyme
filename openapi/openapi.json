@@ -12311,6 +12311,106 @@
         "tags" : [ "TLS" ]
       }
     },
+    "/api/ethernet/tls/sessions/ja4/top/histogram" : {
+      "get" : {
+        "description" : "Returns the JA4 TLS client fingerprints with the most sessions in the time range, with the session count and the number of bytes exchanged. Sessions without an observed ClientHello are not included.",
+        "operationId" : "findTlsTopJa4",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Time range selector. Accepts the same format as the web interface time range picker.",
+          "in" : "query",
+          "name" : "time_range",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Comma separated list of tap UUIDs to include. Omit for all taps the user can access.",
+          "in" : "query",
+          "name" : "taps",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting column. Must be passed together with the sorting direction.",
+          "in" : "query",
+          "name" : "order_column",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting direction, ASC or DESC.",
+          "in" : "query",
+          "name" : "order_direction",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Page size.",
+          "in" : "query",
+          "name" : "limit",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Page offset.",
+          "in" : "query",
+          "name" : "offset",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ThreeColumnTableHistogramResponse"
+                }
+              }
+            },
+            "description" : "Histogram found."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "The sorting column or direction is not valid."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "List top JA4 client fingerprints",
+        "tags" : [ "TLS" ]
+      }
+    },
     "/api/ethernet/tls/sessions/ports/top/histogram" : {
       "get" : {
         "description" : "Returns the server ports with the most TLS sessions in the time range, with the session count and the number of bytes exchanged. Useful to find TLS on ports other than 443.",
@@ -12613,7 +12713,7 @@
     },
     "/api/ethernet/tls/sessions/show/{session_key}" : {
       "get" : {
-        "description" : "Returns a single TLS session by the session key of the underlying TCP session, with the complete ClientHello and ServerHello, all alerts, the server and client certificate chains as far as they were visible, and the taps that recorded the session.",
+        "description" : "Returns a single TLS session by the session key of the underlying TCP session, with the complete ClientHello and ServerHello, all alerts, and the server and client certificate chains as far as they were visible.",
         "operationId" : "findTlsSession",
         "parameters" : [ {
           "description" : "Session key of the underlying TCP session.",
@@ -27789,6 +27889,9 @@
           "hello_retry_request" : {
             "type" : "boolean"
           },
+          "ja4" : {
+            "type" : "string"
+          },
           "leaf_valid_at_handshake" : {
             "type" : "boolean"
           },
@@ -27891,24 +27994,6 @@
           },
           "session" : {
             "$ref" : "#/components/schemas/TLSSessionDetailsResponse"
-          },
-          "taps" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/TLSSessionTapResponse"
-            }
-          }
-        }
-      },
-      "TLSSessionTapResponse" : {
-        "type" : "object",
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "uuid" : {
-            "type" : "string",
-            "format" : "uuid"
           }
         }
       },

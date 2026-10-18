@@ -74,6 +74,10 @@ export default class TLSService {
     this.getTopHistogram("/ethernet/tls/sessions/versions/histogram", ...args)
   }
 
+  getTopJa4Histogram(...args) {
+    this.getTopHistogram("/ethernet/tls/sessions/ja4/top/histogram", ...args)
+  }
+
   findAllCertificates(organizationId, tenantId, timeRange, filters, orderColumn, orderDirection, taps, limit, offset, setCertificates) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 

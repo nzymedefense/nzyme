@@ -61,8 +61,37 @@ public class TLSSessionFilters implements SqlFilterProvider {
                 return GeneratedSql.create(booleanMatch(bindId, "tls.client_certificate_requested", operator), "");
             case "encrypted_client_hello":
                 return GeneratedSql.create(booleanMatch(bindId, "tls.encrypted_client_hello", operator), "");
+            case "chain_trust_error":
+                return GeneratedSql.create(stringMatch(bindId, "tls.chain_trust_error", operator), "");
+            case "ja4":
+                return GeneratedSql.create(stringMatch(bindId, "tls.ja4", operator), "");
+            case "alert":
+                return GeneratedSql.create(alertMatch(bindId, operator), "");
             default:
                 throw new RuntimeException("Unknown field name [" + fieldName + "].");
+        }
+    }
+
+    /*
+     * Alerts are stored as a JSON array per session. Encrypted alerts carry no usable description (they are
+     * almost always the close_notify at the end of a session), so only alerts visible on the wire are matched.
+     * The value is the numeric alert description from RFC 8446.
+     */
+    private static String alertMatch(String bindId, FilterOperator operator) {
+        String visible = "SELECT 1 FROM jsonb_array_elements(tls.alerts) AS alert " +
+                "WHERE NOT COALESCE((alert ->> 'encrypted')::boolean, false)";
+
+        switch (operator) {
+            case CONTAINS:
+                return "EXISTS (" + visible + " AND (alert ->> 'description')::int = :" + bindId + "::int)";
+            case NOT_CONTAINS:
+                return "NOT EXISTS (" + visible + " AND (alert ->> 'description')::int = :" + bindId + "::int)";
+            case IS_EMPTY:
+                return "NOT EXISTS (" + visible + ")";
+            case IS_NOT_EMPTY:
+                return "EXISTS (" + visible + ")";
+            default:
+                throw new RuntimeException("Invalid operator [" + operator + "] for TLS alert field.");
         }
     }
 

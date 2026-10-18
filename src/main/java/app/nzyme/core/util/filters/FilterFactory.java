@@ -100,10 +100,12 @@ public class FilterFactory {
                         parameter.field(), FilterOperator.IS_NOT_PRIVATE, optionallyTransformedValue(parameter), parameter.value()
                 );
             case "contains":
+            case "tls_alert_contains":
                 return Filter.create(
                         parameter.field(), FilterOperator.CONTAINS, optionallyTransformedValue(parameter), parameter.value()
                 );
             case "not_contains":
+            case "tls_alert_not_contains":
                 return Filter.create(
                         parameter.field(), FilterOperator.NOT_CONTAINS, optionallyTransformedValue(parameter), parameter.value()
                 );

@@ -13,6 +13,7 @@ import TLSService from "../../../services/ethernet/TLSService";
 import TLSCipherSuite, {cipherSuiteName} from "./TLSCipherSuite";
 import TLSChainTrust from "./TLSChainTrust";
 import TLSChainTable from "./TLSChainTable";
+import ApiRoutes from "../../../util/ApiRoutes";
 import {
   alertLevelName,
   ecPointFormatName,
@@ -210,6 +211,18 @@ export default function TLSSessionDetails({ sessionKey }) {
                   <dd>
                     {session.alpn_offered && session.alpn_offered.length > 0 ?
                         session.alpn_offered.join(", ") : <span className="text-muted">None</span>}
+                  </dd>
+                  <dt>JA4 Client Fingerprint</dt>
+                  <dd>
+                    {session.ja4 ?
+                        <React.Fragment>
+                          <span className="machine-data">{session.ja4}</span>
+                          <a href={ApiRoutes.ETHERNET.TLS.SESSIONS.INDEX + "?filters=" + encodeURIComponent(JSON.stringify({ja4: [{field: "ja4", operator: "equals", value: session.ja4}]}))}
+                             title="Show all sessions with this fingerprint">
+                            <i className="fa-brands fa-searchengin filter-value hide-narrow"></i>
+                          </a>
+                        </React.Fragment>
+                        : na("No ClientHello observed.")}
                   </dd>
                   <dt>Session Resumed</dt>
                   <dd>{yesNo(session.session_resumed)}</dd>

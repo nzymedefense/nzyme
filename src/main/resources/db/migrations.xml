@@ -9341,4 +9341,13 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_tls_sessions_ja4" author="lennartkoopmann">
+        <addColumn tableName="tls_sessions">
+            <column name="ja4" type="varchar(36)" />
+        </addColumn>
+        <createIndex tableName="tls_sessions" indexName="tls_sessions_ja4">
+            <column name="ja4" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

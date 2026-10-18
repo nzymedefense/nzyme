@@ -170,6 +170,22 @@ export default function TLSSessionsPage() {
               </div>
             </div>
           </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Top Client Fingerprints (JA4)"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <TLSTopHistogram type="ja4"
+                                 timeRange={timeRange}
+                                 filters={filters}
+                                 setFilters={setFilters}
+                                 revision={revision} />
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="row mt-3">

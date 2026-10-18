@@ -51,6 +51,10 @@ public abstract class TLSSessionDetailsResponse {
     @JsonProperty("alpn_offered")
     public abstract List<String> alpnOffered();
 
+    @Nullable
+    @JsonProperty("ja4")
+    public abstract String ja4();
+
     @JsonProperty("session_resumed")
     public abstract boolean sessionResumed();
 
@@ -137,6 +141,7 @@ public abstract class TLSSessionDetailsResponse {
         public abstract Builder cipherSuite(Integer cipherSuite);
         public abstract Builder alpnSelected(String alpnSelected);
         public abstract Builder alpnOffered(List<String> alpnOffered);
+        public abstract Builder ja4(String ja4);
         public abstract Builder sessionResumed(boolean sessionResumed);
         public abstract Builder helloRetryRequest(boolean helloRetryRequest);
         public abstract Builder encryptedClientHello(boolean encryptedClientHello);

@@ -39,6 +39,7 @@ public class TLS {
         VERSION("MIN(tls.version)"),
         CIPHER_SUITE("MIN(tls.cipher_suite)"),
         ALPN("MIN(tls.alpn_selected)"),
+        JA4("MIN(tls.ja4)"),
         LEAF_COMMON_NAME("MIN(leaf.common_name)"),
         LEAF_ISSUER("MIN(leaf.issuer)"),
         CHAIN_TRUSTED("BOOL_AND(tls.chain_trusted)"),
@@ -111,6 +112,7 @@ public class TLS {
                     "MIN(tls.cipher_suite) AS cipher_suite, " +
                     "MIN(tls.alpn_selected) AS alpn_selected, " +
                     "MIN(tls.client_hello->>'alpn') AS alpn_offered, " +
+                    "MIN(tls.ja4) AS ja4, " +
                     "BOOL_OR(tls.session_resumed) AS session_resumed, " +
                     "BOOL_OR(tls.hello_retry_request) AS hello_retry_request, " +
                     "BOOL_OR(tls.encrypted_client_hello) AS encrypted_client_hello, " +
@@ -315,6 +317,7 @@ public class TLS {
                 "MIN(tls.destination_port) AS server_port, " +
                 "MIN(tls.server_name) AS server_name, " +
                 "MIN(tls.version) AS version, " +
+                "MIN(tls.ja4) AS ja4, " +
                 "MAX(tls.bytes_count) AS bytes_count " +
                 FROM_SESSIONS +
                 "WHERE " + SESSIONS_TIME_RANGE +
@@ -380,6 +383,14 @@ public class TLS {
 
     public List<StringNumberNumberAggregationResult> getVersions(TimeRange timeRange, Filters filters, int limit, int offset, ThreeColumnWithKeyHistogramOrderColumn orderColumn, OrderDirection orderDirection, List<UUID> taps) {
         return findTopStrings("sess.version", timeRange, filters, limit, offset, orderColumn, orderDirection, taps);
+    }
+
+    public long getTopJa4Count(TimeRange timeRange, Filters filters, List<UUID> taps) {
+        return countDistinct("sess.ja4", timeRange, filters, taps);
+    }
+
+    public List<StringNumberNumberAggregationResult> getTopJa4(TimeRange timeRange, Filters filters, int limit, int offset, ThreeColumnWithKeyHistogramOrderColumn orderColumn, OrderDirection orderDirection, List<UUID> taps) {
+        return findTopStrings("sess.ja4", timeRange, filters, limit, offset, orderColumn, orderDirection, taps);
     }
 
     private long countDistinct(String keySql, TimeRange timeRange, Filters filters, List<UUID> taps) {

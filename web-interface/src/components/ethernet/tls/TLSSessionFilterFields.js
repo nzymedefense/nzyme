@@ -13,6 +13,7 @@ export const TLS_SESSION_FILTER_FIELDS = {
   cipher_suite: { title: "Cipher Suite (IANA Number)", type: FILTER_TYPE.NUMERIC },
   alpn: { title: "ALPN (Selected by Server)", type: FILTER_TYPE.STRING },
   alpn_offered: { title: "ALPN (Offered by Client)", type: FILTER_TYPE.STRING },
+  ja4: { title: "JA4 Client Fingerprint", type: FILTER_TYPE.STRING },
   connection_status: { title: "Status", type: FILTER_TYPE.CONNECTION_STATUS },
   bytes: { title: "Bytes", type: FILTER_TYPE.NUMERIC },
   duration: { title: "Duration (ms)", type: FILTER_TYPE.NUMERIC },
@@ -20,10 +21,12 @@ export const TLS_SESSION_FILTER_FIELDS = {
   leaf_common_name: { title: "Server Certificate Common Name", type: FILTER_TYPE.STRING },
   leaf_issuer: { title: "Server Certificate Issuer", type: FILTER_TYPE.STRING },
   chain_trusted: { title: "Chain Trusted", type: FILTER_TYPE.BOOLEAN },
+  chain_trust_error: { title: "Chain Trust Error", type: FILTER_TYPE.STRING },
   sni_matches_certificate: { title: "SNI Matches Certificate", type: FILTER_TYPE.BOOLEAN },
   leaf_valid_at_handshake: { title: "Certificate Valid at Handshake", type: FILTER_TYPE.BOOLEAN },
   leaf_self_signed: { title: "Self-Signed Server Certificate", type: FILTER_TYPE.BOOLEAN },
   session_resumed: { title: "Session Resumed", type: FILTER_TYPE.BOOLEAN },
   client_certificate_requested: { title: "Client Certificate Requested", type: FILTER_TYPE.BOOLEAN },
-  encrypted_client_hello: { title: "Encrypted Client Hello", type: FILTER_TYPE.BOOLEAN }
+  encrypted_client_hello: { title: "Encrypted Client Hello", type: FILTER_TYPE.BOOLEAN },
+  alert: { title: "Alert (Unencrypted)", type: FILTER_TYPE.TLS_ALERT }
 }
