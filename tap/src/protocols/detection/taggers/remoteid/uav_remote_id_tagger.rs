@@ -1,7 +1,7 @@
 use anyhow::{Result, bail};
 use base64::Engine;
 use chrono::Utc;
-use log::{debug, error, info, warn};
+use log::{debug, info, warn};
 use uuid::Uuid;
 use crate::protocols::detection::taggers::remoteid::messages::{BasicIdMessage, ClassificationCategory, ClassificationClass, ClassificationType, HeightType, IdType, LocationVectorMessage, OperationalStatus, OperatorIdMessage, OperatorLocationType, UavRemoteIdMessage, SelfIdMessage, SystemMessage, UavIdSummary, UavType, RemoteIdType};
 use crate::tracemark;
@@ -395,7 +395,7 @@ fn ascii_padded_to_string(buf: &[u8]) -> String {
     match std::str::from_utf8(text_slice) {
         Ok(s) => s.to_string(),
         Err(_) => {
-            error!("Could not convert to buffer to string. Returning empty string.");
+            debug!("Could not convert to buffer to string. Returning empty string.");
             "".to_string()
         }
     }
