@@ -117,6 +117,9 @@ import LookAndFeelPage from "./components/system/lookandfeel/LookAndFeelPage";
 import IPAddressDetailsPage from "./components/ethernet/l4/ip/IPAddressDetailsPage";
 import SOCKSTunnelsPage from "./components/ethernet/tunnels/socks/SOCKSTunnelsPage";
 import SSHSessionsPage from "./components/ethernet/remote/ssh/SSHSessionsPage";
+import TLSSessionsPage from "./components/ethernet/tls/TLSSessionsPage";
+import TLSCertificatesPage from "./components/ethernet/tls/TLSCertificatesPage";
+import EthernetTLSCertificateDetailsPage from "./components/ethernet/tls/TLSCertificateDetailsPage";
 import DNSTransactionLogsPage from "./components/ethernet/dns/logs/DNSTransactionLogsPage";
 import ConnectPage from "./components/system/connect/ConnectPage";
 import BluetoothDevicesPage from "./components/bluetooth/devices/BluetoothDevicesPage";
@@ -591,6 +594,11 @@ function App() {
                                 { /* Ethernet/Remote. */}
                                 <Route path={ApiRoutes.ETHERNET.REMOTE.SSH.INDEX} element={<SSHSessionsPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.REMOTE.SSH.SESSION_DETAILS(':sessionId')} element={<SSHSessionDetailsPage />}/>
+
+                                { /* Ethernet/TLS. */}
+                                <Route path={ApiRoutes.ETHERNET.TLS.SESSIONS.INDEX} element={<TLSSessionsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.TLS.CERTIFICATES.INDEX} element={<TLSCertificatesPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.TLS.CERTIFICATES.DETAILS(':sha256')} element={<EthernetTLSCertificateDetailsPage />}/>
 
                                 { /* Ethernet/Tunnels. */}
                                 <Route path={ApiRoutes.ETHERNET.TUNNELS.SOCKS.INDEX} element={<SOCKSTunnelsPage />}/>

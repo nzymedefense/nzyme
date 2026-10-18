@@ -1,0 +1,29 @@
+import {FILTER_TYPE} from "../../shared/filtering/Filters";
+
+export const TLS_SESSION_FILTER_FIELDS = {
+  session_key: { title: "Session ID", type: FILTER_TYPE.STRING },
+  client_address: { title: "Client IP Address", type: FILTER_TYPE.IP_ADDRESS },
+  client_mac: { title: "Client MAC Address", type: FILTER_TYPE.MAC_ADDRESS },
+  server_address: { title: "Server IP Address", type: FILTER_TYPE.IP_ADDRESS },
+  server_mac: { title: "Server MAC Address", type: FILTER_TYPE.MAC_ADDRESS },
+  server_port: { title: "Server Port", type: FILTER_TYPE.NUMERIC },
+  server_name: { title: "Server Name (SNI)", type: FILTER_TYPE.STRING },
+  version: { title: "Negotiated Version", type: FILTER_TYPE.STRING },
+  client_max_version: { title: "Client Max Version", type: FILTER_TYPE.STRING },
+  cipher_suite: { title: "Cipher Suite (IANA Number)", type: FILTER_TYPE.NUMERIC },
+  alpn: { title: "ALPN (Selected by Server)", type: FILTER_TYPE.STRING },
+  alpn_offered: { title: "ALPN (Offered by Client)", type: FILTER_TYPE.STRING },
+  connection_status: { title: "Status", type: FILTER_TYPE.STRING },
+  bytes: { title: "Bytes", type: FILTER_TYPE.NUMERIC },
+  duration: { title: "Duration (ms)", type: FILTER_TYPE.NUMERIC },
+  leaf_fingerprint: { title: "Server Certificate Fingerprint (SHA-256)", type: FILTER_TYPE.STRING },
+  leaf_common_name: { title: "Server Certificate Common Name", type: FILTER_TYPE.STRING },
+  leaf_issuer: { title: "Server Certificate Issuer", type: FILTER_TYPE.STRING },
+  chain_trusted: { title: "Chain Trusted", type: FILTER_TYPE.BOOLEAN },
+  sni_matches_certificate: { title: "SNI Matches Certificate", type: FILTER_TYPE.BOOLEAN },
+  leaf_valid_at_handshake: { title: "Certificate Valid at Handshake", type: FILTER_TYPE.BOOLEAN },
+  leaf_self_signed: { title: "Self-Signed Server Certificate", type: FILTER_TYPE.BOOLEAN },
+  session_resumed: { title: "Session Resumed", type: FILTER_TYPE.BOOLEAN },
+  client_certificate_requested: { title: "Client Certificate Requested", type: FILTER_TYPE.BOOLEAN },
+  encrypted_client_hello: { title: "Encrypted Client Hello", type: FILTER_TYPE.BOOLEAN }
+}

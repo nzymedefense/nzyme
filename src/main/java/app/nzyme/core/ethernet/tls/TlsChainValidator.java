@@ -38,7 +38,12 @@ public class TlsChainValidator {
         }
 
         try {
-            trustManager.checkServerTrusted(certs, certs[0].getPublicKey().getAlgorithm());
+            /*
+             * The JDK trust manager accepts only the TLS key exchange names as authType and rejects
+             * key algorithm names such as "EC". "UNKNOWN" skips the key usage check against the
+             * exchange, which is what we want for a passively observed handshake.
+             */
+            trustManager.checkServerTrusted(certs, "UNKNOWN");
             return Result.create(true, null);
         } catch (Exception e) {
             String message = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();

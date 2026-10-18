@@ -171,6 +171,7 @@ public class NzymeHttpServer {
         resourceConfig.register(Dot11LocationsResource.class);
         resourceConfig.register(SocksResource.class);
         resourceConfig.register(SSHResource.class);
+        resourceConfig.register(TLSResource.class);
         resourceConfig.register(ConnectResource.class);
         resourceConfig.register(BluetoothDevicesResource.class);
         resourceConfig.register(Dot11MonitoredProbeRequestResource.class);

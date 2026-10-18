@@ -10,6 +10,7 @@ import app.nzyme.core.ethernet.portalintegrity.PortalIntegrity;
 import app.nzyme.core.ethernet.rtsp.RTSP;
 import app.nzyme.core.ethernet.socks.SOCKS;
 import app.nzyme.core.ethernet.ssh.SSH;
+import app.nzyme.core.ethernet.tls.TLS;
 import app.nzyme.core.ethernet.l4.tcp.TCP;
 import app.nzyme.core.ethernet.time.ntp.NTP;
 import app.nzyme.core.ethernet.webrtc.WebRTC;
@@ -24,6 +25,7 @@ public class Ethernet {
     private final TCP tcp;
     private final DNS dns;
     private final SSH ssh;
+    private final TLS tls;
     private final SOCKS socks;
     private final NTP ntp;
     private final RTSP rtsp;
@@ -40,6 +42,7 @@ public class Ethernet {
         this.tcp = new TCP(this);
         this.dns = new DNS(this);
         this.ssh = new SSH(this);
+        this.tls = new TLS(this);
         this.socks = new SOCKS(this);
         this.ntp = new NTP(this);
         this.rtsp = new RTSP(this);
@@ -74,6 +77,10 @@ public class Ethernet {
 
     public SSH ssh() {
         return ssh;
+    }
+
+    public TLS tls() {
+        return tls;
     }
 
     public SOCKS socks() {

@@ -46,4 +46,22 @@ public class TlsHostnameMatcherTest {
         assertNull(empty.error());
     }
 
+    @Test
+    public void testPublicChainIsTrusted() throws Exception {
+        // Chain served by www.example.com, leaf first, as captured by a tap. Roots in the JVM trust store.
+        java.util.List<CertificateDetails> chain = new java.util.ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            chain.add(CertificateParser.parse(com.google.common.io.Resources.toByteArray(
+                    com.google.common.io.Resources.getResource("certificates/example_com_chain/" + i + ".der"))));
+        }
+
+        TlsChainValidator.Result result = new TlsChainValidator().validate(chain);
+        assertNull(result.error(), result.error());
+        assertTrue(result.trusted());
+
+        CertificateDetails leaf = chain.get(0);
+        assertTrue(TlsHostnameMatcher.matches("www.example.com", leaf));
+        assertFalse(TlsHostnameMatcher.matches("www.example.org", leaf));
+    }
+
 }

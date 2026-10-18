@@ -63,6 +63,11 @@ function Sidebar(props) {
                 title="Remote Access"
                 icon={<i className="sidebar-icon fa-solid fa-plug"/>}/>
             <NavigationLink
+                href={ApiRoutes.ETHERNET.TLS.SESSIONS.INDEX}
+                pathMatch="/ethernet/tls/"
+                title="TLS"
+                icon={<i className="sidebar-icon fa-solid fa-lock"/>}/>
+            <NavigationLink
                 href={ApiRoutes.ETHERNET.TUNNELS.SOCKS.INDEX}
                 title="Tunnels"
                 icon={<i className="sidebar-icon fa-solid fa-car-tunnel"/>}/>

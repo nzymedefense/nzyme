@@ -184,6 +184,15 @@ const ApiRoutes = {
         SESSION_DETAILS: sessionId => `/ethernet/remoteaccess/ssh/sessions/show/${sessionId}`
       }
     },
+    TLS: {
+      SESSIONS: {
+        INDEX: '/ethernet/tls/sessions'
+      },
+      CERTIFICATES: {
+        INDEX: '/ethernet/tls/certificates',
+        DETAILS: (sha256) => `/ethernet/tls/certificates/show/${sha256}`
+      }
+    },
     STREAMS: {
       RTSP: {
         INDEX: '/ethernet/streams/rtsp',
