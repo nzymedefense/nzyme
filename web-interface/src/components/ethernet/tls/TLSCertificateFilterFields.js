@@ -10,9 +10,9 @@ export const TLS_CERTIFICATE_FILTER_FIELDS = {
   is_ca: { title: "Is CA", type: FILTER_TYPE.BOOLEAN },
   self_signed: { title: "Self-Signed", type: FILTER_TYPE.BOOLEAN },
   expired: { title: "Expired", type: FILTER_TYPE.BOOLEAN },
-  public_key_algorithm: { title: "Public Key Algorithm", type: FILTER_TYPE.STRING },
+  public_key_algorithm: { title: "Public Key Algorithm", type: FILTER_TYPE.PUBLIC_KEY_ALGORITHM },
   public_key_bits: { title: "Public Key Bits", type: FILTER_TYPE.NUMERIC },
-  signature_algorithm: { title: "Signature Algorithm", type: FILTER_TYPE.STRING },
+  signature_algorithm: { title: "Signature Algorithm", type: FILTER_TYPE.SIGNATURE_ALGORITHM },
   session_count: { title: "Session Count", type: FILTER_TYPE.NUMERIC },
-  source: { title: "Source (TLS, PORTAL_INTEGRITY)", type: FILTER_TYPE.STRING }
+  source: { title: "Source", type: FILTER_TYPE.CERTIFICATE_SOURCE }
 }

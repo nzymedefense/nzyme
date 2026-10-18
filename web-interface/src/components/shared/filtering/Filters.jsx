@@ -30,6 +30,23 @@ import {
   ALLOWED_L4_CONNECTION_TYPE_VALUES,
   L4_CONNECTION_TYPE_SELECT_OPTIONS
 } from "./validators/L4ConnectionTypeValidator";
+import {
+  ALLOWED_CONNECTION_STATUS_VALUES,
+  CONNECTION_STATUS_SELECT_OPTIONS
+} from "./validators/ConnectionStatusValidator";
+import {ALLOWED_TLS_VERSION_VALUES, TLS_VERSION_SELECT_OPTIONS} from "./validators/TLSVersionValidator";
+import {
+  ALLOWED_PUBLIC_KEY_ALGORITHM_VALUES,
+  PUBLIC_KEY_ALGORITHM_SELECT_OPTIONS
+} from "./validators/PublicKeyAlgorithmValidator";
+import {
+  ALLOWED_SIGNATURE_ALGORITHM_VALUES,
+  SIGNATURE_ALGORITHM_SELECT_OPTIONS
+} from "./validators/SignatureAlgorithmValidator";
+import {
+  ALLOWED_CERTIFICATE_SOURCE_VALUES,
+  CERTIFICATE_SOURCE_SELECT_OPTIONS
+} from "./validators/CertificateSourceValidator";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -114,6 +131,41 @@ export const FILTER_TYPE = {
       (value) => validateEnum(ALLOWED_L4_CONNECTION_TYPE_VALUES, value, true)
     ],
     placeholder: "UDP"
+  },
+  CONNECTION_STATUS: {
+    name: "connection_status",
+    validators: [
+      (value) => validateEnum(ALLOWED_CONNECTION_STATUS_VALUES, value)
+    ],
+    placeholder: "Active"
+  },
+  TLS_VERSION: {
+    name: "tls_version",
+    validators: [
+      (value) => validateEnum(ALLOWED_TLS_VERSION_VALUES, value)
+    ],
+    placeholder: "TLSv1.3"
+  },
+  PUBLIC_KEY_ALGORITHM: {
+    name: "public_key_algorithm",
+    validators: [
+      (value) => validateEnum(ALLOWED_PUBLIC_KEY_ALGORITHM_VALUES, value)
+    ],
+    placeholder: "RSA"
+  },
+  SIGNATURE_ALGORITHM: {
+    name: "signature_algorithm",
+    validators: [
+      (value) => validateEnum(ALLOWED_SIGNATURE_ALGORITHM_VALUES, value)
+    ],
+    placeholder: "SHA256withRSA"
+  },
+  CERTIFICATE_SOURCE: {
+    name: "certificate_source",
+    validators: [
+      (value) => validateEnum(ALLOWED_CERTIFICATE_SOURCE_VALUES, value)
+    ],
+    placeholder: "TLS"
   }
 }
 
@@ -377,6 +429,96 @@ export const OPERATORS = {
     validators: [],
     options: L4_CONNECTION_TYPE_SELECT_OPTIONS,
     field_type: FIELD_TYPE.SELECT
+  },
+  CONNECTION_STATUS_EQUALS: {
+    name: "connection_status_equals",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: CONNECTION_STATUS_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  CONNECTION_STATUS_NOT_EQUALS: {
+    name: "connection_status_not_equals",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: CONNECTION_STATUS_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  TLS_VERSION_EQUALS: {
+    name: "tls_version_equals",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: TLS_VERSION_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  TLS_VERSION_NOT_EQUALS: {
+    name: "tls_version_not_equals",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: TLS_VERSION_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  PUBLIC_KEY_ALGORITHM_EQUALS: {
+    name: "public_key_algorithm_equals",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: PUBLIC_KEY_ALGORITHM_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  PUBLIC_KEY_ALGORITHM_NOT_EQUALS: {
+    name: "public_key_algorithm_not_equals",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: PUBLIC_KEY_ALGORITHM_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  SIGNATURE_ALGORITHM_EQUALS: {
+    name: "signature_algorithm_equals",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: SIGNATURE_ALGORITHM_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  SIGNATURE_ALGORITHM_NOT_EQUALS: {
+    name: "signature_algorithm_not_equals",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: SIGNATURE_ALGORITHM_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  CERTIFICATE_SOURCE_EQUALS: {
+    name: "certificate_source_equals",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: CERTIFICATE_SOURCE_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  CERTIFICATE_SOURCE_NOT_EQUALS: {
+    name: "certificate_source_not_equals",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: CERTIFICATE_SOURCE_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
   }
 }
 
@@ -551,6 +693,46 @@ export default function Filters(props) {
           setAllowedOperators([
             OPERATORS.L4_CONNECTION_TYPE_EQUALS,
             OPERATORS.L4_CONNECTION_TYPE_NOT_EQUALS,
+            OPERATORS.IS_NULL,
+            OPERATORS.IS_NOT_NULL
+          ])
+          break;
+        case FILTER_TYPE.CONNECTION_STATUS:
+          setAllowedOperators([
+            OPERATORS.CONNECTION_STATUS_EQUALS,
+            OPERATORS.CONNECTION_STATUS_NOT_EQUALS,
+            OPERATORS.IS_NULL,
+            OPERATORS.IS_NOT_NULL
+          ])
+          break;
+        case FILTER_TYPE.TLS_VERSION:
+          setAllowedOperators([
+            OPERATORS.TLS_VERSION_EQUALS,
+            OPERATORS.TLS_VERSION_NOT_EQUALS,
+            OPERATORS.IS_NULL,
+            OPERATORS.IS_NOT_NULL
+          ])
+          break;
+        case FILTER_TYPE.PUBLIC_KEY_ALGORITHM:
+          setAllowedOperators([
+            OPERATORS.PUBLIC_KEY_ALGORITHM_EQUALS,
+            OPERATORS.PUBLIC_KEY_ALGORITHM_NOT_EQUALS,
+            OPERATORS.IS_NULL,
+            OPERATORS.IS_NOT_NULL
+          ])
+          break;
+        case FILTER_TYPE.SIGNATURE_ALGORITHM:
+          setAllowedOperators([
+            OPERATORS.SIGNATURE_ALGORITHM_EQUALS,
+            OPERATORS.SIGNATURE_ALGORITHM_NOT_EQUALS,
+            OPERATORS.IS_NULL,
+            OPERATORS.IS_NOT_NULL
+          ])
+          break;
+        case FILTER_TYPE.CERTIFICATE_SOURCE:
+          setAllowedOperators([
+            OPERATORS.CERTIFICATE_SOURCE_EQUALS,
+            OPERATORS.CERTIFICATE_SOURCE_NOT_EQUALS,
             OPERATORS.IS_NULL,
             OPERATORS.IS_NOT_NULL
           ])

@@ -1,0 +1,9 @@
+export const ALLOWED_SIGNATURE_ALGORITHM_VALUES = [
+  "SHA256withRSA", "SHA384withRSA", "SHA512withRSA", "SHA1withRSA", "MD5withRSA", "RSASSA-PSS",
+  "SHA256withECDSA", "SHA384withECDSA", "SHA512withECDSA", "SHA1withECDSA",
+  "Ed25519", "Ed448",
+  "SHA256withDSA", "SHA1withDSA"
+];
+export const SIGNATURE_ALGORITHM_SELECT_OPTIONS = ALLOWED_SIGNATURE_ALGORITHM_VALUES.map((v) => {
+  return {name: v, value: v}
+});

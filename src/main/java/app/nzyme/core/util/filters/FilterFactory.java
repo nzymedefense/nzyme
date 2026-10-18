@@ -19,6 +19,11 @@ public class FilterFactory {
             case "completion_status_equals":
             case "active_status_equals":
             case "l4_connection_type_equals":
+            case "connection_status_equals":
+            case "tls_version_equals":
+            case "public_key_algorithm_equals":
+            case "signature_algorithm_equals":
+            case "certificate_source_equals":
                 return Filter.create(
                         parameter.field(), FilterOperator.EQUALS, optionallyTransformedValue(parameter), parameter.value()
                 );
@@ -26,6 +31,11 @@ public class FilterFactory {
             case "completion_status_not_equals":
             case "active_status_not_equals":
             case "l4_connection_type_not_equals":
+            case "connection_status_not_equals":
+            case "tls_version_not_equals":
+            case "public_key_algorithm_not_equals":
+            case "signature_algorithm_not_equals":
+            case "certificate_source_not_equals":
                 return Filter.create(
                         parameter.field(), FilterOperator.NOT_EQUALS, optionallyTransformedValue(parameter), parameter.value()
                 );
