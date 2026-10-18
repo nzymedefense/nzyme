@@ -260,13 +260,25 @@ public class TLS {
                                 "WHERE " + SESSIONS_TIME_RANGE_OVERLAPS +
                                 "AND tls.tap_uuid IN (<taps>) " + filterFragment.whereSql() + " " +
                                 "GROUP BY tls.tcp_session_key HAVING 1=1 " + filterFragment.havingSql() +
+                                "), " +
+                                "deltas AS (" +
+                                "SELECT GREATEST(FLOOR(EXTRACT(EPOCH FROM (sess.established_at - " +
+                                "date_trunc(:date_trunc, :tr_from::timestamptz))) / :bucket_size_s), 0)::bigint AS idx, " +
+                                "1 AS delta FROM sess " +
+                                "UNION ALL " +
+                                "SELECT FLOOR(EXTRACT(EPOCH FROM (sess.most_recent_segment_time - " +
+                                "date_trunc(:date_trunc, :tr_from::timestamptz))) / :bucket_size_s)::bigint + 1 AS idx, " +
+                                "-1 AS delta FROM sess" +
+                                "), " +
+                                "per_bucket AS (" +
+                                "SELECT idx, SUM(delta) AS delta FROM deltas GROUP BY idx" +
                                 ") " +
-                                "SELECT b.bucket AS bucket, COUNT(sess.tcp_session_key) AS value " +
+                                "SELECT b.bucket AS bucket, " +
+                                "SUM(COALESCE(p.delta, 0)) OVER (ORDER BY b.bucket)::bigint AS value " +
                                 "FROM buckets AS b " +
-                                "LEFT JOIN sess " +
-                                "ON sess.established_at <= b.bucket + make_interval(secs => :bucket_size_s) " +
-                                "AND sess.most_recent_segment_time >= b.bucket " +
-                                "GROUP BY b.bucket ORDER BY b.bucket DESC")
+                                "LEFT JOIN per_bucket AS p ON p.idx = FLOOR(EXTRACT(EPOCH FROM (b.bucket - " +
+                                "date_trunc(:date_trunc, :tr_from::timestamptz))) / :bucket_size_s)::bigint " +
+                                "ORDER BY b.bucket DESC")
                         .bind("tr_from", timeRange.from())
                         .bind("tr_to", timeRange.to())
                         .bind("date_trunc", bucketing.type().getDateTruncName())
