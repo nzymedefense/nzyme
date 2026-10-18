@@ -255,6 +255,7 @@ public class TLSTable implements DataTable {
             node.put("level", alert.level());
             node.put("description", alert.description());
             node.put("description_name", alert.descriptionName());
+            node.put("encrypted", alert.encrypted());
         }
         return array;
     }

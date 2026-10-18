@@ -2,6 +2,7 @@ import React from "react";
 import {useParams} from "react-router-dom";
 import ApiRoutes from "../../../util/ApiRoutes";
 import usePageTitle from "../../../util/UsePageTitle";
+import TLSCertificateDetails from "./TLSCertificateDetails";
 
 export default function TLSCertificateDetailsPage() {
 
@@ -24,25 +25,8 @@ export default function TLSCertificateDetailsPage() {
           </div>
         </div>
 
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <h1>
-              Certificate &quot;{sha256}&quot;
-            </h1>
-          </div>
-        </div>
+        <TLSCertificateDetails sha256={sha256} />
 
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <div className="mb-0 alert alert-info">
-                  Certificate details are not implemented yet.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </React.Fragment>
   )
 

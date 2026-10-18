@@ -11,17 +11,20 @@ public abstract class TlsAlertReport {
     public abstract int level();
     public abstract int description();
     public abstract String descriptionName();
+    public abstract boolean encrypted();
 
     @JsonCreator
     public static TlsAlertReport create(@JsonProperty("direction") String direction,
                                         @JsonProperty("level") int level,
                                         @JsonProperty("description") int description,
-                                        @JsonProperty("description_name") String descriptionName) {
+                                        @JsonProperty("description_name") String descriptionName,
+                                        @JsonProperty("encrypted") boolean encrypted) {
         return builder()
                 .direction(direction)
                 .level(level)
                 .description(description)
                 .descriptionName(descriptionName)
+                .encrypted(encrypted)
                 .build();
     }
 
@@ -38,6 +41,7 @@ public abstract class TlsAlertReport {
         public abstract Builder description(int description);
 
         public abstract Builder descriptionName(String descriptionName);
+        public abstract Builder encrypted(boolean encrypted);
 
         public abstract TlsAlertReport build();
     }

@@ -186,7 +186,8 @@ const ApiRoutes = {
     },
     TLS: {
       SESSIONS: {
-        INDEX: '/ethernet/tls/sessions'
+        INDEX: '/ethernet/tls/sessions',
+        DETAILS: (sessionKey) => `/ethernet/tls/sessions/show/${sessionKey}`
       },
       CERTIFICATES: {
         INDEX: '/ethernet/tls/certificates',

@@ -10,14 +10,23 @@ import app.nzyme.core.ethernet.l4.db.L4AddressAttributes;
 import app.nzyme.core.ethernet.l4.db.L4AddressData;
 import app.nzyme.core.ethernet.l4.tcp.db.TcpSessionEntry;
 import app.nzyme.core.ethernet.tls.TLS;
+import app.nzyme.core.ethernet.tls.db.TLSCertificateDetailsEntry;
 import app.nzyme.core.ethernet.tls.db.TLSCertificateEntry;
+import app.nzyme.core.ethernet.tls.db.TLSChainCertificateEntry;
 import app.nzyme.core.ethernet.tls.db.TLSSessionEntry;
+import app.nzyme.core.ethernet.tls.db.TLSSessionTapEntry;
 import app.nzyme.core.rest.RestHelpers;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.responses.ethernet.L4AddressResponse;
+import app.nzyme.core.rest.responses.ethernet.tls.TLSAlertResponse;
 import app.nzyme.core.rest.responses.ethernet.tls.TLSCertificateDetailsResponse;
+import app.nzyme.core.rest.responses.ethernet.tls.TLSCertificateFullDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.tls.TLSCertificatesListResponse;
+import app.nzyme.core.rest.responses.ethernet.tls.TLSChainCertificateResponse;
+import app.nzyme.core.rest.responses.ethernet.tls.TLSClientHelloResponse;
+import app.nzyme.core.rest.responses.ethernet.tls.TLSServerHelloResponse;
 import app.nzyme.core.rest.responses.ethernet.tls.TLSSessionDetailsResponse;
+import app.nzyme.core.rest.responses.ethernet.tls.TLSSessionFullDetailsResponse;
 import app.nzyme.core.rest.responses.ethernet.tls.TLSSessionsListResponse;
 import app.nzyme.core.rest.responses.shared.HistogramValueStructureResponse;
 import app.nzyme.core.rest.responses.shared.HistogramValueType;
@@ -44,6 +53,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
@@ -51,9 +61,12 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.joda.time.DateTime;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,6 +84,8 @@ import static app.nzyme.core.util.filters.FilterParser.parseFiltersQueryParamete
         externalDocs = @ExternalDocumentation(description = "TLS in the Nzyme documentation",
                 url = "https://go.nzyme.org/ethernet-tls"))
 public class TLSResource extends TapDataHandlingResource {
+
+    private static final ObjectMapper OM = new ObjectMapper();
 
     @Inject
     private NzymeNode nzyme;
@@ -123,6 +138,57 @@ public class TLSResource extends TapDataHandlingResource {
         }
 
         return Response.ok(TLSSessionsListResponse.create(total, sessions)).build();
+    }
+
+    @GET
+    @Path("/sessions/show/{session_key}")
+    @Operation(operationId = "findTlsSession", summary = "Get a TLS session",
+            description = "Returns a single TLS session by the session key of the underlying TCP session, with the "
+                    + "complete ClientHello and ServerHello, all alerts, and the server and client certificate chains as "
+                    + "far as they were visible.")
+    @ApiResponse(responseCode = "200", description = "Session found.",
+            content = @Content(schema = @Schema(implementation = TLSSessionFullDetailsResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Session not found, or organization or tenant not accessible by the calling user.", content = @Content)
+    public Response session(@Parameter(hidden = true) @Context SecurityContext sc,
+                            @Parameter(description = "Session key of the underlying TCP session.") @PathParam("session_key") String sessionKey,
+                            @Parameter(description = "Organization UUID.") @QueryParam("organization_id") UUID organizationId,
+                            @Parameter(description = "Tenant UUID.") @QueryParam("tenant_id") UUID tenantId,
+                            @Parameter(description = "Comma separated list of tap UUIDs to include. Omit for all taps the user can access.") @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TLSSessionEntry> session = nzyme.getEthernet().tls().findSession(sessionKey, taps);
+
+        if (session.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<TLSSessionTapEntry> tapEntries = nzyme.getEthernet().tls().findSessionTapEntries(sessionKey, taps);
+
+        if (tapEntries.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // The most recently updated tap row carries the most complete picture of the handshake.
+        TLSSessionTapEntry primary = tapEntries.get(0);
+
+        return Response.ok(TLSSessionFullDetailsResponse.builder()
+                .session(buildSessionDetails(session.get(), organizationId, tenantId, taps))
+                .clientHello(parseClientHello(primary.clientHello()))
+                .serverHello(parseServerHello(primary.serverHello()))
+                .alerts(parseAlerts(primary.alerts()))
+                .serverChain(buildChain(primary.serverChainSha256()))
+                .clientChain(buildChain(primary.clientChainSha256()))
+                .clientChangeCipherSpec(primary.clientChangeCipherSpec())
+                .serverChangeCipherSpec(primary.serverChangeCipherSpec())
+                .clientAppDataRecords(primary.clientAppDataRecords())
+                .clientAppDataBytes(primary.clientAppDataBytes())
+                .serverAppDataRecords(primary.serverAppDataRecords())
+                .serverAppDataBytes(primary.serverAppDataBytes())
+                .build()).build();
     }
 
     @GET
@@ -419,6 +485,83 @@ public class TLSResource extends TapDataHandlingResource {
     }
 
     @GET
+    @Path("/certificates/show/{sha256}")
+    @Operation(operationId = "findTlsCertificate", summary = "Get a certificate",
+            description = "Returns a single certificate by its SHA-256 fingerprint. The certificate fields are "
+                    + "global, the usage counters are scoped to the time range and taps. A certificate is only "
+                    + "returned if one of the passed taps has seen it, in a TLS session or a portal integrity probe.")
+    @ApiResponse(responseCode = "200", description = "Certificate found.",
+            content = @Content(schema = @Schema(implementation = TLSCertificateFullDetailsResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Certificate not found, not seen by the passed taps, or organization or tenant not accessible by the calling user.", content = @Content)
+    public Response certificate(@Parameter(hidden = true) @Context SecurityContext sc,
+                                @Parameter(description = "SHA-256 fingerprint of the certificate, lowercase hex.") @PathParam("sha256") String sha256,
+                                @Parameter(description = "Organization UUID.") @QueryParam("organization_id") UUID organizationId,
+                                @Parameter(description = "Tenant UUID.") @QueryParam("tenant_id") UUID tenantId,
+                                @Parameter(description = "Time range selector for the usage counters. Accepts the same format as the web interface time range picker.") @QueryParam("time_range") @Valid String timeRangeParameter,
+                                @Parameter(description = "Comma separated list of tap UUIDs to include. Omit for all taps the user can access.") @QueryParam("taps") String tapIds) {
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        String fingerprint = sha256 == null ? null : sha256.toLowerCase();
+
+        if (!nzyme.getEthernet().tls().isCertificateVisible(fingerprint, taps)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TLSCertificateDetailsEntry> certificate = nzyme.getEthernet().tls()
+                .findCertificate(fingerprint, timeRange, taps);
+
+        if (certificate.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TLSCertificateDetailsEntry c = certificate.get();
+
+        TLSChainCertificateResponse issuer = null;
+        if (c.authorityKeyIdentifier() != null && !Boolean.TRUE.equals(c.selfSigned())) {
+            issuer = nzyme.getEthernet().tls().findIssuerCertificate(c.authorityKeyIdentifier(), taps)
+                    .map(TLSResource::buildChainCertificate)
+                    .orElse(null);
+        }
+
+        return Response.ok(TLSCertificateFullDetailsResponse.builder()
+                .certificate(TLSCertificateDetailsResponse.builder()
+                        .sha256(c.sha256())
+                        .sha1(c.sha1())
+                        .parsed(c.parsed())
+                        .subject(c.subject())
+                        .issuer(c.issuer())
+                        .commonName(c.commonName())
+                        .subjectAlternativeNames(c.subjectAlternativeNames())
+                        .notBefore(c.notBefore())
+                        .notAfter(c.notAfter())
+                        .isCa(c.isCa())
+                        .selfSigned(c.selfSigned())
+                        .publicKeyAlgorithm(c.publicKeyAlgorithm())
+                        .publicKeyBits(c.publicKeyBits())
+                        .signatureAlgorithm(c.signatureAlgorithm())
+                        .extendedKeyUsage(c.extendedKeyUsage())
+                        .firstSeen(c.firstSeen())
+                        .lastSeen(c.lastSeen())
+                        .sessionCount(c.sessionCount())
+                        .sources(c.sources())
+                        .build())
+                .parseError(c.parseError())
+                .version(c.version())
+                .serial(c.serial())
+                .subjectKeyIdentifier(c.subjectKeyIdentifier())
+                .authorityKeyIdentifier(c.authorityKeyIdentifier())
+                .pem(toPem(c.der()))
+                .derLength(c.der().length)
+                .issuerCertificate(issuer)
+                .build()).build();
+    }
+
+    @GET
     @Path("/certificates/expiring")
     @Operation(operationId = "findTlsExpiringCertificates", summary = "List expiring TLS certificates",
             description = "Returns certificates that were in use in the time range and are expired or expire within "
@@ -602,6 +745,136 @@ public class TLSResource extends TapDataHandlingResource {
         }
 
         return Response.ok(ThreeColumnTableHistogramResponse.create(count, true, values)).build();
+    }
+
+    private static String toPem(byte[] der) {
+        return "-----BEGIN CERTIFICATE-----\n"
+                + Base64.getMimeEncoder(64, "\n".getBytes()).encodeToString(der)
+                + "\n-----END CERTIFICATE-----";
+    }
+
+    private List<TLSChainCertificateResponse> buildChain(List<String> hashes) {
+        List<TLSChainCertificateResponse> chain = Lists.newArrayList();
+        for (TLSChainCertificateEntry c : nzyme.getEthernet().tls().findChainCertificates(hashes)) {
+            chain.add(buildChainCertificate(c));
+        }
+
+        return chain;
+    }
+
+    private static TLSChainCertificateResponse buildChainCertificate(TLSChainCertificateEntry c) {
+        return TLSChainCertificateResponse.builder()
+                .sha256(c.sha256())
+                .parsed(c.parsed())
+                .subject(c.subject())
+                .issuer(c.issuer())
+                .commonName(c.commonName())
+                .notBefore(c.notBefore())
+                .notAfter(c.notAfter())
+                .isCa(c.isCa())
+                .selfSigned(c.selfSigned())
+                .publicKeyAlgorithm(c.publicKeyAlgorithm())
+                .publicKeyBits(c.publicKeyBits())
+                .signatureAlgorithm(c.signatureAlgorithm())
+                .build();
+    }
+
+    // The hello messages are stored as the JSON the tap reported. A row written by an older node version may lack fields.
+    @Nullable
+    private static TLSClientHelloResponse parseClientHello(@Nullable String json) {
+        JsonNode node = readJson(json);
+        if (node == null || !node.isObject()) {
+            return null;
+        }
+
+        return TLSClientHelloResponse.builder()
+                .recordVersion(text(node, "record_version"))
+                .legacyVersion(text(node, "legacy_version"))
+                .supportedVersions(strings(node, "supported_versions"))
+                .cipherSuites(ints(node, "cipher_suites"))
+                .extensions(ints(node, "extensions"))
+                .supportedGroups(ints(node, "supported_groups"))
+                .ecPointFormats(ints(node, "ec_point_formats"))
+                .signatureAlgorithms(ints(node, "signature_algorithms"))
+                .alpn(strings(node, "alpn"))
+                .sessionIdPresent(bool(node, "session_id_present"))
+                .offersSessionTicket(bool(node, "offers_session_ticket"))
+                .offersPreSharedKey(bool(node, "offers_pre_shared_key"))
+                .build();
+    }
+
+    @Nullable
+    private static TLSServerHelloResponse parseServerHello(@Nullable String json) {
+        JsonNode node = readJson(json);
+        if (node == null || !node.isObject()) {
+            return null;
+        }
+
+        return TLSServerHelloResponse.create(
+                text(node, "record_version"),
+                text(node, "legacy_version"),
+                node.path("compression_method").asInt(0),
+                ints(node, "extensions")
+        );
+    }
+
+    private static List<TLSAlertResponse> parseAlerts(@Nullable String json) {
+        JsonNode node = readJson(json);
+        List<TLSAlertResponse> alerts = Lists.newArrayList();
+        if (node == null || !node.isArray()) {
+            return alerts;
+        }
+
+        for (JsonNode alert : node) {
+            alerts.add(TLSAlertResponse.create(
+                    alert.path("direction").asString("Unknown"),
+                    alert.path("level").asInt(0),
+                    alert.path("description").asInt(0),
+                    text(alert, "description_name"),
+                    bool(alert, "encrypted")
+            ));
+        }
+
+        return alerts;
+    }
+
+    @Nullable
+    private static JsonNode readJson(@Nullable String json) {
+        if (json == null || json.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return OM.readTree(json);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static String text(JsonNode node, String field) {
+        JsonNode value = node.get(field);
+        return value == null || value.isNull() ? null : value.asString();
+    }
+
+    private static boolean bool(JsonNode node, String field) {
+        return node.path(field).asBoolean(false);
+    }
+
+    private static List<String> strings(JsonNode node, String field) {
+        List<String> values = Lists.newArrayList();
+        for (JsonNode value : node.path(field)) {
+            values.add(value.asString());
+        }
+        return values;
+    }
+
+    private static List<Integer> ints(JsonNode node, String field) {
+        List<Integer> values = Lists.newArrayList();
+        for (JsonNode value : node.path(field)) {
+            values.add(value.asInt());
+        }
+        return values;
     }
 
     private static TLSCertificateDetailsResponse buildCertificateDetails(TLSCertificateEntry c) {

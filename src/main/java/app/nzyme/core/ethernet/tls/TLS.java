@@ -6,8 +6,11 @@ import app.nzyme.core.database.generic.L4AddressDataAddressNumberNumberAggregati
 import app.nzyme.core.database.generic.StringNumberNumberAggregationResult;
 import app.nzyme.core.database.generic.ThreeColumnWithKeyHistogramOrderColumn;
 import app.nzyme.core.ethernet.Ethernet;
+import app.nzyme.core.ethernet.tls.db.TLSCertificateDetailsEntry;
 import app.nzyme.core.ethernet.tls.db.TLSCertificateEntry;
+import app.nzyme.core.ethernet.tls.db.TLSChainCertificateEntry;
 import app.nzyme.core.ethernet.tls.db.TLSSessionEntry;
+import app.nzyme.core.ethernet.tls.db.TLSSessionTapEntry;
 import app.nzyme.core.shared.db.GenericIntegerHistogramEntry;
 import app.nzyme.core.util.Bucketing;
 import app.nzyme.core.util.TimeRange;
@@ -15,9 +18,13 @@ import app.nzyme.core.util.filters.FilterSql;
 import app.nzyme.core.util.filters.FilterSqlFragment;
 import app.nzyme.core.util.filters.Filters;
 
+import com.google.common.io.BaseEncoding;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class TLS {
 
@@ -677,6 +684,148 @@ public class TLS {
                         .mapTo(StringNumberNumberAggregationResult.class)
                         .list()
         );
+    }
+
+    private static final Pattern SHA256_HEX = Pattern.compile("^[0-9a-f]{64}$");
+
+    public Optional<TLSSessionEntry> findSession(String sessionKey, List<UUID> taps) {
+        if (sessionKey == null || taps.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery(SESSION_ENTRY_COLUMNS +
+                                FROM_SESSIONS +
+                                "WHERE tls.tcp_session_key = :tcp_session_key AND tls.tap_uuid IN (<taps>) " +
+                                "GROUP BY tls.tcp_session_key")
+                        .bindList("taps", taps)
+                        .bind("tcp_session_key", sessionKey)
+                        .mapTo(TLSSessionEntry.class)
+                        .findOne()
+        );
+    }
+
+    public List<TLSSessionTapEntry> findSessionTapEntries(String sessionKey, List<UUID> taps) {
+        if (sessionKey == null || taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT tap_uuid, client_hello::text AS client_hello, " +
+                                "server_hello::text AS server_hello, alerts::text AS alerts, " +
+                                "ARRAY(SELECT encode(h, 'hex') FROM unnest(server_chain_sha256) AS h) AS server_chain_sha256, " +
+                                "ARRAY(SELECT encode(h, 'hex') FROM unnest(client_chain_sha256) AS h) AS client_chain_sha256, " +
+                                "client_change_cipher_spec, server_change_cipher_spec, " +
+                                "client_app_data_records, client_app_data_bytes, " +
+                                "server_app_data_records, server_app_data_bytes, most_recent_segment_time " +
+                                "FROM tls_sessions " +
+                                "WHERE tcp_session_key = :tcp_session_key AND tap_uuid IN (<taps>) " +
+                                "ORDER BY most_recent_segment_time DESC")
+                        .bindList("taps", taps)
+                        .bind("tcp_session_key", sessionKey)
+                        .mapTo(TLSSessionTapEntry.class)
+                        .list()
+        );
+    }
+
+    public List<TLSChainCertificateEntry> findChainCertificates(List<String> sha256Hashes) {
+        List<byte[]> hashes = sha256Hashes.stream()
+                .filter(h -> h != null && SHA256_HEX.matcher(h).matches())
+                .map(h -> BaseEncoding.base16().lowerCase().decode(h))
+                .toList();
+
+        if (hashes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<TLSChainCertificateEntry> found = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT encode(c.sha256, 'hex') AS sha256, c.parsed_at, c.parse_error, " +
+                                "c.subject, c.issuer, c.common_name, c.not_before, c.not_after, c.is_ca, " +
+                                "c.self_signed, c.public_key_algorithm, c.public_key_bits, c.signature_algorithm " +
+                                "FROM certificates AS c WHERE c.sha256 IN (<hashes>)")
+                        .bindList("hashes", hashes)
+                        .mapTo(TLSChainCertificateEntry.class)
+                        .list()
+        );
+
+        return sha256Hashes.stream()
+                .flatMap(h -> found.stream().filter(c -> c.sha256().equals(h)))
+                .toList();
+    }
+
+    public boolean isCertificateVisible(String sha256, List<UUID> taps) {
+        if (sha256 == null || !SHA256_HEX.matcher(sha256).matches() || taps.isEmpty()) {
+            return false;
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT EXISTS(SELECT 1 FROM tls_sessions " +
+                                "WHERE tap_uuid IN (<taps>) " +
+                                "AND (server_chain_sha256 @> ARRAY[decode(:sha256, 'hex')] " +
+                                "OR client_chain_sha256 @> ARRAY[decode(:sha256, 'hex')])) " +
+                                "OR EXISTS(SELECT 1 FROM portal_integrity_hops AS hop " +
+                                "JOIN portal_integrity_reports AS r ON r.uuid = hop.report_uuid " +
+                                "WHERE r.tap_uuid IN (<taps>) " +
+                                "AND jsonb_exists(COALESCE(hop.tls->'chain_sha256', '[]'::jsonb), :sha256))")
+                        .bindList("taps", taps)
+                        .bind("sha256", sha256)
+                        .mapTo(Boolean.class)
+                        .one()
+        );
+    }
+
+    public Optional<TLSCertificateDetailsEntry> findCertificate(String sha256, TimeRange timeRange, List<UUID> taps) {
+        if (sha256 == null || !SHA256_HEX.matcher(sha256).matches() || taps.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("WITH " + CERTIFICATE_REFERENCES +
+                                "SELECT encode(c.sha256, 'hex') AS sha256, encode(c.sha1, 'hex') AS sha1, " +
+                                "c.parsed_at, c.parse_error, c.version, c.serial, c.subject, c.issuer, " +
+                                "c.common_name, c.subject_alternative_names, c.not_before, c.not_after, " +
+                                "c.is_ca, c.self_signed, c.public_key_algorithm, c.public_key_bits, " +
+                                "c.signature_algorithm, c.extended_key_usage, " +
+                                "encode(c.subject_key_identifier, 'hex') AS subject_key_identifier, " +
+                                "encode(c.authority_key_identifier, 'hex') AS authority_key_identifier, " +
+                                "c.der, c.first_seen, c.last_seen, " +
+                                "COUNT(DISTINCT refs.reference_key) AS session_count, " +
+                                "ARRAY_REMOVE(ARRAY_AGG(DISTINCT refs.source), NULL) AS sources " +
+                                "FROM certificates AS c LEFT JOIN refs ON refs.sha256 = c.sha256 " +
+                                "WHERE c.sha256 = decode(:sha256, 'hex') " +
+                                "GROUP BY c.sha256")
+                        .bindList("taps", taps)
+                        .bind("sha256", sha256)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
+                        .mapTo(TLSCertificateDetailsEntry.class)
+                        .findOne()
+        );
+    }
+
+    public Optional<TLSChainCertificateEntry> findIssuerCertificate(String authorityKeyIdentifier, List<UUID> taps) {
+        if (authorityKeyIdentifier == null || authorityKeyIdentifier.isEmpty()
+                || !authorityKeyIdentifier.matches("^[0-9a-f]+$") || taps.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Optional<TLSChainCertificateEntry> issuer = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT encode(c.sha256, 'hex') AS sha256, c.parsed_at, c.parse_error, " +
+                                "c.subject, c.issuer, c.common_name, c.not_before, c.not_after, c.is_ca, " +
+                                "c.self_signed, c.public_key_algorithm, c.public_key_bits, c.signature_algorithm " +
+                                "FROM certificates AS c " +
+                                "WHERE c.subject_key_identifier = decode(:ski, 'hex') AND c.is_ca = true " +
+                                "ORDER BY c.last_seen DESC LIMIT 1")
+                        .bind("ski", authorityKeyIdentifier)
+                        .mapTo(TLSChainCertificateEntry.class)
+                        .findOne()
+        );
+
+        if (issuer.isPresent() && !isCertificateVisible(issuer.get().sha256(), taps)) {
+            return Optional.empty();
+        }
+
+        return issuer;
     }
 
 }

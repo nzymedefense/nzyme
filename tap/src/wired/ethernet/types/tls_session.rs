@@ -195,7 +195,8 @@ pub mod tests {
                 direction: TlsDirection::ServerToClient,
                 level: 1,
                 description: 0,
-                description_name: "close_notify"
+                description_name: "close_notify",
+                encrypted: false
             }],
             client_change_cipher_spec: true,
             server_change_cipher_spec: true,

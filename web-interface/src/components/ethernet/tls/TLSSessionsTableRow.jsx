@@ -6,7 +6,7 @@ import {formatDurationMs, truncate} from "../../../util/Tools";
 import moment from "moment/moment";
 import FilterValueIcon from "../../shared/filtering/FilterValueIcon";
 import FullCopy from "../../shared/FullCopy";
-import FullCopyShortenedId from "../../shared/FullCopyShortenedId";
+import TLSSessionKey from "./TLSSessionKey";
 import EthernetMacAddress from "../../shared/context/macs/EthernetMacAddress";
 import InternalAddressOnlyWrapper from "../shared/InternalAddressOnlyWrapper";
 import {TLS_SESSION_FILTER_FIELDS} from "./TLSSessionFilterFields";
@@ -82,7 +82,7 @@ export default function TLSSessionsTableRow(props) {
   return (
       <tr>
         <td>
-          <FullCopyShortenedId value={session.tcp_session_key} />
+          <TLSSessionKey sessionKey={session.tcp_session_key} />
           {filterIcon("session_key", session.tcp_session_key)}
         </td>
         <td>

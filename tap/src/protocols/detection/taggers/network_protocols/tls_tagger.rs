@@ -50,7 +50,12 @@ pub struct TlsAlert {
     pub direction: TlsDirection,
     pub level: u8,
     pub description: u8,
-    pub description_name: &'static str
+    pub description_name: &'static str,
+    /*
+     * Alerts sent after the direction's ChangeCipherSpec are encrypted. Only the fact that an
+     * alert was sent is known, level and description are zero and the name is "encrypted".
+     */
+    pub encrypted: bool
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -244,12 +249,23 @@ fn parse_direction(buf: &[u8], direction: TlsDirection) -> DirectionParse {
             },
             RECORD_TYPE_ALERT => {
                 if body.len() >= 2 && result.alerts.len() < MAX_ALERTS {
-                    result.alerts.push(TlsAlert {
-                        direction,
-                        level: body[0],
-                        description: body[1],
-                        description_name: alert_description_name(body[1])
-                    });
+                    if result.change_cipher_spec {
+                        result.alerts.push(TlsAlert {
+                            direction,
+                            level: 0,
+                            description: 0,
+                            description_name: "encrypted",
+                            encrypted: true
+                        });
+                    } else {
+                        result.alerts.push(TlsAlert {
+                            direction,
+                            level: body[0],
+                            description: body[1],
+                            description_name: alert_description_name(body[1]),
+                            encrypted: false
+                        });
+                    }
                 }
             },
             RECORD_TYPE_CHANGE_CIPHER_SPEC => {
@@ -1074,6 +1090,27 @@ mod tests {
         assert_eq!(tls.alerts[0].direction, TlsDirection::ServerToClient);
         assert_eq!(tls.alerts[0].level, 2);
         assert_eq!(tls.alerts[0].description_name, "handshake_failure");
+    }
+
+    #[test]
+    fn marks_alerts_after_change_cipher_spec_as_encrypted() {
+        // A plaintext close_notify, then a ChangeCipherSpec, then an encrypted alert record
+        // whose bytes happen to look like a user_canceled alert with an invalid level.
+        let mut buf = vec![RECORD_TYPE_ALERT, 0x03, 0x03, 0x00, 0x02, 0x01, 0x00];
+        buf.extend_from_slice(&[RECORD_TYPE_CHANGE_CIPHER_SPEC, 0x03, 0x03, 0x00, 0x01, 0x01]);
+        buf.extend_from_slice(&[RECORD_TYPE_ALERT, 0x03, 0x03, 0x00, 0x02, 0x9F, 0x5A]);
+
+        let parsed = parse_direction(&buf, TlsDirection::ClientToServer);
+        assert_eq!(parsed.alerts.len(), 2);
+
+        assert!(!parsed.alerts[0].encrypted);
+        assert_eq!(parsed.alerts[0].level, 1);
+        assert_eq!(parsed.alerts[0].description_name, "close_notify");
+
+        assert!(parsed.alerts[1].encrypted);
+        assert_eq!(parsed.alerts[1].level, 0);
+        assert_eq!(parsed.alerts[1].description, 0);
+        assert_eq!(parsed.alerts[1].description_name, "encrypted");
     }
 
     #[test]

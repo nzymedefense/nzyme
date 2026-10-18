@@ -11904,6 +11904,71 @@
         "tags" : [ "TLS" ]
       }
     },
+    "/api/ethernet/tls/certificates/show/{sha256}" : {
+      "get" : {
+        "description" : "Returns a single certificate by its SHA-256 fingerprint. The certificate fields are global, the usage counters are scoped to the time range and taps. A certificate is only returned if one of the passed taps has seen it, in a TLS session or a portal integrity probe.",
+        "operationId" : "findTlsCertificate",
+        "parameters" : [ {
+          "description" : "SHA-256 fingerprint of the certificate, lowercase hex.",
+          "in" : "path",
+          "name" : "sha256",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Time range selector for the usage counters. Accepts the same format as the web interface time range picker.",
+          "in" : "query",
+          "name" : "time_range",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Comma separated list of tap UUIDs to include. Omit for all taps the user can access.",
+          "in" : "query",
+          "name" : "taps",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TLSCertificateFullDetailsResponse"
+                }
+              }
+            },
+            "description" : "Certificate found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Certificate not found, not seen by the passed taps, or organization or tenant not accessible by the calling user."
+          }
+        },
+        "summary" : "Get a certificate",
+        "tags" : [ "TLS" ]
+      }
+    },
     "/api/ethernet/tls/certificates/signaturealgorithms/histogram" : {
       "get" : {
         "description" : "Returns the signature algorithms of certificates seen in the time range, with the number of sessions and probes that used them and the number of distinct certificates.",
@@ -12543,6 +12608,64 @@
           }
         },
         "summary" : "List top TLS servers",
+        "tags" : [ "TLS" ]
+      }
+    },
+    "/api/ethernet/tls/sessions/show/{session_key}" : {
+      "get" : {
+        "description" : "Returns a single TLS session by the session key of the underlying TCP session, with the complete ClientHello and ServerHello, all alerts, the server and client certificate chains as far as they were visible, and the taps that recorded the session.",
+        "operationId" : "findTlsSession",
+        "parameters" : [ {
+          "description" : "Session key of the underlying TCP session.",
+          "in" : "path",
+          "name" : "session_key",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Comma separated list of tap UUIDs to include. Omit for all taps the user can access.",
+          "in" : "query",
+          "name" : "taps",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TLSSessionFullDetailsResponse"
+                }
+              }
+            },
+            "description" : "Session found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Session not found, or organization or tenant not accessible by the calling user."
+          }
+        },
+        "summary" : "Get a TLS session",
         "tags" : [ "TLS" ]
       }
     },
@@ -27262,6 +27385,28 @@
           }
         }
       },
+      "TLSAlertResponse" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "description_name" : {
+            "type" : "string"
+          },
+          "direction" : {
+            "type" : "string"
+          },
+          "encrypted" : {
+            "type" : "boolean"
+          },
+          "level" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "TLSCertificateDetailsResponse" : {
         "type" : "object",
         "properties" : {
@@ -27336,6 +27481,40 @@
             "items" : {
               "type" : "string"
             }
+          }
+        }
+      },
+      "TLSCertificateFullDetailsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "authority_key_identifier" : {
+            "type" : "string"
+          },
+          "certificate" : {
+            "$ref" : "#/components/schemas/TLSCertificateDetailsResponse"
+          },
+          "der_length" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "issuer_certificate" : {
+            "$ref" : "#/components/schemas/TLSChainCertificateResponse"
+          },
+          "parse_error" : {
+            "type" : "string"
+          },
+          "pem" : {
+            "type" : "string"
+          },
+          "serial" : {
+            "type" : "string"
+          },
+          "subject_key_identifier" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -27419,6 +27598,139 @@
           "total" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "TLSChainCertificateResponse" : {
+        "type" : "object",
+        "properties" : {
+          "common_name" : {
+            "type" : "string"
+          },
+          "is_ca" : {
+            "type" : "boolean"
+          },
+          "issuer" : {
+            "type" : "string"
+          },
+          "not_after" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "not_before" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "parsed" : {
+            "type" : "boolean"
+          },
+          "public_key_algorithm" : {
+            "type" : "string"
+          },
+          "public_key_bits" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "self_signed" : {
+            "type" : "boolean"
+          },
+          "sha256" : {
+            "type" : "string"
+          },
+          "signature_algorithm" : {
+            "type" : "string"
+          },
+          "subject" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TLSClientHelloResponse" : {
+        "type" : "object",
+        "properties" : {
+          "alpn" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "cipher_suites" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          },
+          "ec_point_formats" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          },
+          "extensions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          },
+          "legacy_version" : {
+            "type" : "string"
+          },
+          "offers_pre_shared_key" : {
+            "type" : "boolean"
+          },
+          "offers_session_ticket" : {
+            "type" : "boolean"
+          },
+          "record_version" : {
+            "type" : "string"
+          },
+          "session_id_present" : {
+            "type" : "boolean"
+          },
+          "signature_algorithms" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          },
+          "supported_groups" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          },
+          "supported_versions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "TLSServerHelloResponse" : {
+        "type" : "object",
+        "properties" : {
+          "compression_method" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "extensions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          },
+          "legacy_version" : {
+            "type" : "string"
+          },
+          "record_version" : {
+            "type" : "string"
           }
         }
       },
@@ -27525,6 +27837,78 @@
           },
           "version" : {
             "type" : "string"
+          }
+        }
+      },
+      "TLSSessionFullDetailsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "alerts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TLSAlertResponse"
+            }
+          },
+          "client_app_data_bytes" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "client_app_data_records" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "client_chain" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TLSChainCertificateResponse"
+            }
+          },
+          "client_change_cipher_spec" : {
+            "type" : "boolean"
+          },
+          "client_hello" : {
+            "$ref" : "#/components/schemas/TLSClientHelloResponse"
+          },
+          "server_app_data_bytes" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "server_app_data_records" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "server_chain" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TLSChainCertificateResponse"
+            }
+          },
+          "server_change_cipher_spec" : {
+            "type" : "boolean"
+          },
+          "server_hello" : {
+            "$ref" : "#/components/schemas/TLSServerHelloResponse"
+          },
+          "session" : {
+            "$ref" : "#/components/schemas/TLSSessionDetailsResponse"
+          },
+          "taps" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TLSSessionTapResponse"
+            }
+          }
+        }
+      },
+      "TLSSessionTapResponse" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
           }
         }
       },

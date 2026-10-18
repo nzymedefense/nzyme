@@ -85,7 +85,8 @@ pub struct TlsAlertReport {
     pub direction: String,
     pub level: u8,
     pub description: u8,
-    pub description_name: String
+    pub description_name: String,
+    pub encrypted: bool
 }
 
 pub fn generate(s: &MutexGuard<HashMap<L4Key, TlsSession>>) -> TlsSessionsReport {
@@ -176,7 +177,8 @@ fn alert_report(alert: &TlsAlert) -> TlsAlertReport {
         direction: format!("{:?}", alert.direction),
         level: alert.level,
         description: alert.description,
-        description_name: alert.description_name.to_string()
+        description_name: alert.description_name.to_string(),
+        encrypted: alert.encrypted
     }
 }
 
@@ -220,6 +222,7 @@ mod tests {
         assert_eq!(session["client_chain_sha256"].as_array().unwrap().len(), 0);
         assert_eq!(session["alerts"][0]["direction"], "ServerToClient");
         assert_eq!(session["alerts"][0]["description_name"], "close_notify");
+        assert_eq!(session["alerts"][0]["encrypted"], false);
         assert_eq!(session["server_application_data_bytes"], 3900);
 
         // Certificates shipped once, as base64 DER, keyed by fingerprint.

@@ -10,6 +10,22 @@ export default class TLSService {
     )
   }
 
+  findSession(sessionKey, organizationId, tenantId, taps, setSession) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get(`/ethernet/tls/sessions/show/${sessionKey}`, { organization_id: organizationId, tenant_id: tenantId, taps: tapsList },
+        (response) => setSession(response.data)
+    )
+  }
+
+  findCertificate(sha256, organizationId, tenantId, timeRange, taps, setCertificate) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
+
+    RESTClient.get(`/ethernet/tls/certificates/show/${sha256}`, { organization_id: organizationId, tenant_id: tenantId, time_range: timeRange, taps: tapsList },
+        (response) => setCertificate(response.data)
+    )
+  }
+
   getActiveSessionCountHistogram(setHistogram, timeRange, filters, taps) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : (taps === "*" ? "*" : null)
 

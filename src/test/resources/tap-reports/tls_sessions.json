@@ -9,6 +9,7 @@
         {
           "description": 0,
           "description_name": "close_notify",
+          "encrypted": false,
           "direction": "ServerToClient",
           "level": 1
         }

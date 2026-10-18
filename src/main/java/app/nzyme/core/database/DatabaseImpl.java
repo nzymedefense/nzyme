@@ -43,6 +43,9 @@ import app.nzyme.core.ethernet.socks.db.SocksTunnelEntryMapper;
 import app.nzyme.core.ethernet.ssh.db.SSHSessionEntryMapper;
 import app.nzyme.core.ethernet.tls.db.TLSCertificateEntryMapper;
 import app.nzyme.core.ethernet.tls.db.TLSSessionEntryMapper;
+import app.nzyme.core.ethernet.tls.db.TLSSessionTapEntryMapper;
+import app.nzyme.core.ethernet.tls.db.TLSChainCertificateEntryMapper;
+import app.nzyme.core.ethernet.tls.db.TLSCertificateDetailsEntryMapper;
 import app.nzyme.core.ethernet.l4.tcp.db.TcpSessionEntryMapper;
 import app.nzyme.core.ethernet.l4.udp.db.UdpConversationEntryMapper;
 import app.nzyme.core.ethernet.time.ntp.db.NTPTransactionEntryMapper;
@@ -219,6 +222,9 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new SSHSessionEntryMapper())
                 .registerRowMapper(new TLSSessionEntryMapper())
                 .registerRowMapper(new TLSCertificateEntryMapper())
+                .registerRowMapper(new TLSSessionTapEntryMapper())
+                .registerRowMapper(new TLSChainCertificateEntryMapper())
+                .registerRowMapper(new TLSCertificateDetailsEntryMapper())
                 .registerRowMapper(new DateTimeNumberAggregationResultMapper())
                 .registerRowMapper(new TimerEntryMapper())
                 .registerRowMapper(new BluetoothDeviceEntryMapper())
