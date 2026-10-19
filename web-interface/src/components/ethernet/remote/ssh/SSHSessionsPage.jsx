@@ -20,6 +20,9 @@ import SSHTopClientsHistogram from "./SSHTopClientsHistogram";
 import SSHTopServersHistogram from "./SSHTopServersHistogram";
 import SSHTopClientTypesHistogram from "./SSHTopClientTypesHistogram";
 import SSHTopServerTypesHistogram from "./SSHTopServerTypesHistogram";
+import onSaveFiltersAsMonitor from "../../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../../misc/RenderConditionally";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -29,6 +32,8 @@ export default function SSHSessionsPage() {
 
   usePageTitle("SSH Sessions");
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
 
@@ -36,6 +41,7 @@ export default function SSHSessionsPage() {
   const [filters, setFilters] = useState(
     queryParametersToFilters(urlQuery.get("filters"), SSH_FILTER_FIELDS)
   );
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   const [revision, setRevision] = useState(new Date());
 
@@ -68,115 +74,120 @@ export default function SSHSessionsPage() {
 
                 <Filters filters={filters}
                          setFilters={setFilters}
-                         fields={SSH_FILTER_FIELDS} />
+                         fields={SSH_FILTER_FIELDS}
+                         monitorType="ETHERNET_SSH_SESSION"
+                         onMonitorsReady={() => setMonitorsReady(true)}
+                         onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_SSH_SESSION", organizationId, tenantId)} />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Active Sessions"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+        <RenderConditionally render={monitorsReady}>
+          <div className="row mt-3">
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Active Sessions"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <SSHActiveSessionsHistogram timeRange={timeRange}
-                                            setTimeRange={setTimeRange}
-                                            filters={filters}
-                                            revision={revision} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Top Servers"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
-
-                <SSHTopServersHistogram timeRange={timeRange}
-                                        setTimeRange={setTimeRange}
-                                        filters={filters}
-                                        setFilters={setFilters}
-                                        revision={revision} />
-
+                  <SSHActiveSessionsHistogram timeRange={timeRange}
+                                              setTimeRange={setTimeRange}
+                                              filters={filters}
+                                              revision={revision} />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Top Clients"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+          <div className="row mt-3">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Top Servers"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <SSHTopClientsHistogram timeRange={timeRange}
-                                        setTimeRange={setTimeRange}
-                                        filters={filters}
-                                        setFilters={setFilters}
-                                        revision={revision} />
+                  <SSHTopServersHistogram timeRange={timeRange}
+                                          setTimeRange={setTimeRange}
+                                          filters={filters}
+                                          setFilters={setFilters}
+                                          revision={revision} />
 
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Top Clients"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
+
+                  <SSHTopClientsHistogram timeRange={timeRange}
+                                          setTimeRange={setTimeRange}
+                                          filters={filters}
+                                          setFilters={setFilters}
+                                          revision={revision} />
+
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="row mt-3">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Top Server Types"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+          <div className="row mt-3">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Top Server Types"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <SSHTopServerTypesHistogram timeRange={timeRange}
-                                            setTimeRange={setTimeRange}
-                                            filters={filters}
-                                            setFilters={setFilters}
-                                            revision={revision} />
+                  <SSHTopServerTypesHistogram timeRange={timeRange}
+                                              setTimeRange={setTimeRange}
+                                              filters={filters}
+                                              setFilters={setFilters}
+                                              revision={revision} />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Top Client Types"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
+
+                  <SSHTopClientTypesHistogram timeRange={timeRange}
+                                              setTimeRange={setTimeRange}
+                                              filters={filters}
+                                              setFilters={setFilters}
+                                              revision={revision} />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Top Client Types"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+          <div className="row mt-3">
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="All Sessions"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <SSHTopClientTypesHistogram timeRange={timeRange}
-                                            setTimeRange={setTimeRange}
-                                            filters={filters}
-                                            setFilters={setFilters}
-                                            revision={revision} />
+                  <SSHSessionsTable timeRange={timeRange}
+                                    filters={filters}
+                                    setFilters={setFilters}
+                                    revision={revision} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="All Sessions"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
-
-                <SSHSessionsTable timeRange={timeRange}
-                                  filters={filters}
-                                  setFilters={setFilters}
-                                  revision={revision} />
-              </div>
-            </div>
-          </div>
-        </div>
+        </RenderConditionally>
       </React.Fragment>
   )
 

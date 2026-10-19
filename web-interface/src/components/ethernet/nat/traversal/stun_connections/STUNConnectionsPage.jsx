@@ -16,6 +16,9 @@ import STUNConnectionsTable from "./STUNConnectionsTable";
 import STUNConnectionsTopClientsHistogram from "./STUNConnectionsTopClientsHistogram";
 import STUNConnectionsTopServersHistogram from "./STUNConnectionsTopServersHistogram";
 import STUNConnectionsActiveHistogram from "./STUNConnectionsActiveHistogram";
+import onSaveFiltersAsMonitor from "../../../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../../../misc/RenderConditionally";
+import useSelectedTenant from "../../../../system/tenantselector/useSelectedTenant";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -25,6 +28,8 @@ export default function STUNConnectionsPage() {
 
   usePageTitle("STUN Connections");
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
   const selectedTaps = tapContext.taps;
@@ -33,6 +38,7 @@ export default function STUNConnectionsPage() {
   const [filters, setFilters] = useState(
     queryParametersToFilters(urlQuery.get("filters"), STUN_CONNECTIONS_FILTER_FIELDS)
   );
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   const [histogram, setHistogram] = useState(null);
 
@@ -72,81 +78,86 @@ export default function STUNConnectionsPage() {
 
               <Filters filters={filters}
                        setFilters={setFilters}
-                       fields={STUN_CONNECTIONS_FILTER_FIELDS} />
+                       fields={STUN_CONNECTIONS_FILTER_FIELDS}
+                       monitorType="ETHERNET_STUN_CONNECTION"
+                       onMonitorsReady={() => setMonitorsReady(true)}
+                       onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_STUN_CONNECTION", organizationId, tenantId)} />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="row mt-3">
-        <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Active Connections"
-                                     timeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())} />
+      <RenderConditionally render={monitorsReady}>
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Active Connections"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
 
-              <STUNConnectionsActiveHistogram timeRange={timeRange}
-                                              setTimeRange={setTimeRange}
-                                              filters={filters}
-                                              revision={revision} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="row mt-3">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Top Clients"
-                                     timeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())} />
-
-              <STUNConnectionsTopClientsHistogram timeRange={timeRange}
-                                                  setTimeRange={setTimeRange}
-                                                  filters={filters}
-                                                  setFilters={setFilters}
-                                                  revision={revision} />
-
+                <STUNConnectionsActiveHistogram timeRange={timeRange}
+                                                setTimeRange={setTimeRange}
+                                                filters={filters}
+                                                revision={revision} />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Top Servers"
-                                     timeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())} />
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Top Clients"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
 
-              <STUNConnectionsTopServersHistogram timeRange={timeRange}
-                                                  setTimeRange={setTimeRange}
-                                                  filters={filters}
-                                                  setFilters={setFilters}
-                                                  revision={revision} />
+                <STUNConnectionsTopClientsHistogram timeRange={timeRange}
+                                                    setTimeRange={setTimeRange}
+                                                    filters={filters}
+                                                    setFilters={setFilters}
+                                                    revision={revision} />
 
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Top Servers"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <STUNConnectionsTopServersHistogram timeRange={timeRange}
+                                                    setTimeRange={setTimeRange}
+                                                    filters={filters}
+                                                    setFilters={setFilters}
+                                                    revision={revision} />
+
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="row mt-3">
-        <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="All Connections"
-                                     timeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())} />
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="All Connections"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
 
-              <STUNConnectionsTable timeRange={timeRange}
-                                    filters={filters}
-                                    setFilters={setFilters}
-                                    revision={revision} />
+                <STUNConnectionsTable timeRange={timeRange}
+                                      filters={filters}
+                                      setFilters={setFilters}
+                                      revision={revision} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </RenderConditionally>
     </React.Fragment>
   )
 

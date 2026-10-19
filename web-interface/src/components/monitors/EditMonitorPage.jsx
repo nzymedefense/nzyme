@@ -13,6 +13,7 @@ import reconstructFromNodeData from "../shared/filtering/FilterReconstructor";
 import {onNumberInputKeyDown} from "../../util/Tools";
 import monitorTypeToFilterFields from "./shared/MonitorFilterFields";
 import {toast} from "react-toastify";
+import {monitorTypeToSubsystem} from "./shared/MonitorUserPermission";
 
 const monitorsService = new MonitorsService();
 const tapsService = new TapsService();
@@ -81,6 +82,18 @@ export default function EditMonitorPage() {
             <li className="breadcrumb-item active">Edit</li>
           </ol>
         )
+      default:
+        if (monitorTypeToSubsystem(monitor.type) === "ETHERNET") {
+          return (
+            <ol className="breadcrumb">
+              <li className="breadcrumb-item"><a href={ApiRoutes.ETHERNET.OVERVIEW}>Ethernet</a></li>
+              <li className="breadcrumb-item">Monitoring</li>
+              <li className="breadcrumb-item"><a href={ApiRoutes.ETHERNET.MONITORING.MONITORS.INDEX}>Monitors</a></li>
+              <li className="breadcrumb-item"><a href={ApiRoutes.ALERTS.MONITORS.DETAILS(monitor.uuid)}>{monitor.name}</a></li>
+              <li className="breadcrumb-item active">Edit</li>
+            </ol>
+          )
+        }
     }
   }
 

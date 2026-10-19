@@ -4,6 +4,7 @@ import numeral from "numeral";
 import WithPermission from "../../../misc/WithPermission";
 import requiredUserPermissionForMonitorWriteAccess from "../../../monitors/shared/MonitorUserPermission";
 import WithoutPermission from "../../../misc/WithoutPermission";
+import MonitorType from "../../../monitors/shared/MonitorType";
 
 export default function MonitorTriggeredAlertDetails({ alert }) {
 
@@ -25,7 +26,7 @@ export default function MonitorTriggeredAlertDetails({ alert }) {
                   </WithoutPermission>
                 </dd>
                 <dt>Monitor Type</dt>
-                <dd>{alert.attributes.monitor_type}</dd>
+                <dd><MonitorType type={alert.attributes.monitor_type} /></dd>
                 <dt>Trigger Condition</dt>
                 <dd>More than {numeral(alert.attributes.trigger_condition).format("0,0")} {alert.attributes.trigger_condition === 1 ? "result" : "results"}</dd>
 

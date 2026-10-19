@@ -16,6 +16,9 @@ import {timeRangeFromURLOrDefault} from "../../../shared/timerange/TimeRangeSele
 import SOCKSTopServersHistogram from "./SOCKSTopServersHistogram";
 import SOCKSTopClientsHistogram from "./SOCKSTopClientsHistogram";
 import SOCKSActiveTunnelsHistogram from "./SOCKSActiveTunnelsHistogram";
+import onSaveFiltersAsMonitor from "../../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../../misc/RenderConditionally";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -25,6 +28,8 @@ export default function SOCKSTunnelsPage() {
 
   usePageTitle("SOCKS Tunnels");
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
 
@@ -32,6 +37,7 @@ export default function SOCKSTunnelsPage() {
   const [filters, setFilters] = useState(
     queryParametersToFilters(urlQuery.get("filters"), SOCKS_FILTER_FIELDS)
   );
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   const [revision, setRevision] = useState(new Date());
 
@@ -64,81 +70,86 @@ export default function SOCKSTunnelsPage() {
 
                 <Filters filters={filters}
                          setFilters={setFilters}
-                         fields={SOCKS_FILTER_FIELDS} />
+                         fields={SOCKS_FILTER_FIELDS}
+                         monitorType="ETHERNET_SOCKS_TUNNEL"
+                         onMonitorsReady={() => setMonitorsReady(true)}
+                         onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_SOCKS_TUNNEL", organizationId, tenantId)} />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Active Tunnels"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+        <RenderConditionally render={monitorsReady}>
+          <div className="row mt-3">
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Active Tunnels"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <SOCKSActiveTunnelsHistogram timeRange={timeRange}
-                                             setTimeRange={setTimeRange}
-                                             filters={filters}
-                                             revision={revision} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Top Servers"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
-
-                <SOCKSTopServersHistogram timeRange={timeRange}
-                                          setTimeRange={setTimeRange}
-                                          filters={filters}
-                                          setFilters={setFilters}
-                                          revision={revision} />
-
+                  <SOCKSActiveTunnelsHistogram timeRange={timeRange}
+                                               setTimeRange={setTimeRange}
+                                               filters={filters}
+                                               revision={revision} />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Top Clients"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+          <div className="row mt-3">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Top Servers"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <SOCKSTopClientsHistogram timeRange={timeRange}
-                                          setTimeRange={setTimeRange}
-                                          filters={filters}
-                                          setFilters={setFilters}
-                                          revision={revision} />
+                  <SOCKSTopServersHistogram timeRange={timeRange}
+                                            setTimeRange={setTimeRange}
+                                            filters={filters}
+                                            setFilters={setFilters}
+                                            revision={revision} />
 
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Top Clients"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
+
+                  <SOCKSTopClientsHistogram timeRange={timeRange}
+                                            setTimeRange={setTimeRange}
+                                            filters={filters}
+                                            setFilters={setFilters}
+                                            revision={revision} />
+
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="All Tunnels"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+          <div className="row mt-3">
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="All Tunnels"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <SOCKSTunnelsTable timeRange={timeRange}
-                                   filters={filters}
-                                   setFilters={setFilters}
-                                   revision={revision} />
+                  <SOCKSTunnelsTable timeRange={timeRange}
+                                     filters={filters}
+                                     setFilters={setFilters}
+                                     revision={revision} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </RenderConditionally>
       </React.Fragment>
 )
 

@@ -26,6 +26,15 @@ class MonitorsService {
       })
   }
 
+  findAllOfSubsystem(subsystem, organizationId, tenantId, filters, orderColumn, orderDirection, limit, offset, setMonitors) {
+    RESTClient.get(`/monitors/subsystem/${subsystem}`,
+      { limit: limit, offset: offset, organization_id: organizationId, tenant_id: tenantId,
+        filters: filters, order_column: orderColumn, order_direction: orderDirection },
+      function (response) {
+        setMonitors(response.data);
+      })
+  }
+
   createMonitor(monitorType, name, description, taps, trigger_condition, interval, lookback, filters, organizationId, tenantId, successCallback, errorCallback) {
     const tapsParam = (taps && taps === "*") ? null : taps;
 

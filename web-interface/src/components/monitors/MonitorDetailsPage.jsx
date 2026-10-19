@@ -19,6 +19,7 @@ import monitorTypeToFilterFields from "./shared/MonitorFilterFields";
 import monitorTypeToSearchLink from "./shared/MonitorReplay";
 import WithPermission from "../misc/WithPermission";
 import MonitorDetectionsTimelineTable from "./MonitorDetectionsTimelineTable";
+import {monitorTypeToSubsystem} from "./shared/MonitorUserPermission";
 import {capitalizeFirstLetterAndLowercase} from "../../util/Tools";
 
 const monitorsService = new MonitorsService();
@@ -69,6 +70,17 @@ export default function MonitorDetailsPage() {
             <li className="breadcrumb-item active">{monitor.name}</li>
           </ol>
         )
+      default:
+        if (monitorTypeToSubsystem(monitor.type) === "ETHERNET") {
+          return (
+            <ol className="breadcrumb">
+              <li className="breadcrumb-item"><a href={ApiRoutes.ETHERNET.OVERVIEW}>Ethernet</a></li>
+              <li className="breadcrumb-item">Monitoring</li>
+              <li className="breadcrumb-item"><a href={ApiRoutes.ETHERNET.MONITORING.MONITORS.INDEX}>Monitors</a></li>
+              <li className="breadcrumb-item active">{monitor.name}</li>
+            </ol>
+          )
+        }
     }
   }
   const backLink = () => {
@@ -79,6 +91,10 @@ export default function MonitorDetailsPage() {
         return ApiRoutes.DOT11.MONITORING.MONITORS.INDEX
       case "BLUETOOTH_DEVICE":
         return ApiRoutes.BLUETOOTH.MONITORING.MONITORS.INDEX;
+      default:
+        if (monitorTypeToSubsystem(monitor.type) === "ETHERNET") {
+          return ApiRoutes.ETHERNET.MONITORING.MONITORS.INDEX;
+        }
     }
   }
 

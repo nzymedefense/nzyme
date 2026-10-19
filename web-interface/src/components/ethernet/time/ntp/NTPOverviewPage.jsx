@@ -17,6 +17,9 @@ import NTPClientRequestResponseRatioHistogram from "./NTPClientRequestResponseRa
 import NTPTopServersHistogram from "./NTPTopServersHistogram";
 import usePageTitle from "../../../../util/UsePageTitle";
 import {timeRangeFromURLOrDefault} from "../../../shared/timerange/TimeRangeSelector";
+import onSaveFiltersAsMonitor from "../../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../../misc/RenderConditionally";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const timeService = new TimeService();
 
@@ -27,6 +30,8 @@ const useQuery = () => {
 export function NTPOverviewPage() {
 
   usePageTitle("NTP Transactions");
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const urlQuery = useQuery();
   const tapContext = useContext(TapContext);
@@ -41,6 +46,7 @@ export function NTPOverviewPage() {
   const [filters, setFilters] = useState(
     queryParametersToFilters(urlQuery.get("filters"), NTP_FILTER_FIELDS)
   );
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -51,10 +57,14 @@ export function NTPOverviewPage() {
   }, [tapContext]);
 
   useEffect(() => {
+    if (!monitorsReady) {
+      return;
+    }
+
     setTransactionsHistogram(null);
 
     timeService.getNTPTransactionsHistogram(timeRange, filters, selectedTaps, setTransactionsHistogram);
-  }, [selectedTaps, timeRange, filters, revision]);
+  }, [selectedTaps, timeRange, filters, revision, monitorsReady]);
 
   return (
     <>
@@ -74,73 +84,78 @@ export function NTPOverviewPage() {
 
               <Filters filters={filters}
                        setFilters={setFilters}
-                       fields={NTP_FILTER_FIELDS} />
+                       fields={NTP_FILTER_FIELDS}
+                       monitorType="ETHERNET_NTP_TRANSACTION"
+                       onMonitorsReady={() => setMonitorsReady(true)}
+                       onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_NTP_TRANSACTION", organizationId, tenantId)} />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="row mt-3">
-        <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Transactions"
-                                     fixedTimeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())}/>
+      <RenderConditionally render={monitorsReady}>
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Transactions"
+                                       fixedTimeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())}/>
 
-              <NTPTransactionsHistogram histogram={transactionsHistogram} timeRange={timeRange} setTimeRange={setTimeRange} />
+                <NTPTransactionsHistogram histogram={transactionsHistogram} timeRange={timeRange} setTimeRange={setTimeRange} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="row mt-3">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Top Servers"
-                                     fixedTimeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())}/>
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Top Servers"
+                                       fixedTimeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())}/>
 
-              <NTPTopServersHistogram filters={filters}
+                <NTPTopServersHistogram filters={filters}
+                                        setFilters={setFilters}
+                                        timeRange={timeRange}
+                                        revision={revision} />
+              </div>
+            </div>
+          </div>
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Client Request/Response Ratio"
+                                       fixedTimeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())}/>
+
+                <NTPClientRequestResponseRatioHistogram filters={filters}
+                                                        setFilters={setFilters}
+                                                        timeRange={timeRange}
+                                                        revision={revision} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Transactions"
+                                       fixedTimeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())}/>
+
+                <NTPTransactionsTable filters={filters}
                                       setFilters={setFilters}
                                       timeRange={timeRange}
                                       revision={revision} />
+              </div>
             </div>
           </div>
         </div>
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Client Request/Response Ratio"
-                                     fixedTimeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())}/>
-
-              <NTPClientRequestResponseRatioHistogram filters={filters}
-                                                      setFilters={setFilters}
-                                                      timeRange={timeRange}
-                                                      revision={revision} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="row mt-3">
-        <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Transactions"
-                                     fixedTimeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())}/>
-
-              <NTPTransactionsTable filters={filters}
-                                    setFilters={setFilters}
-                                    timeRange={timeRange}
-                                    revision={revision} />
-            </div>
-          </div>
-        </div>
-      </div>
+      </RenderConditionally>
     </>
   )
 

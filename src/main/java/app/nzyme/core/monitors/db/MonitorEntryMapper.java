@@ -26,6 +26,9 @@ public class MonitorEntryMapper implements RowMapper<MonitorEntry> {
             taps = null;
         }
 
+        DateTime statusChangedAt = rs.getTimestamp("status_changed_at") == null ?
+                null : new DateTime(rs.getTimestamp("status_changed_at"));
+
         DateTime last_run = rs.getTimestamp("last_run") == null ?
                 null : new DateTime(rs.getTimestamp("last_run"));
 
@@ -48,6 +51,7 @@ public class MonitorEntryMapper implements RowMapper<MonitorEntry> {
                 rs.getString("filters"),
                 rs.getBoolean("alerted"),
                 rs.getString("status"),
+                statusChangedAt,
                 last_run,
                 lastEvent,
                 new DateTime(rs.getTimestamp("created_at")),

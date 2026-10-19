@@ -47,6 +47,9 @@ public abstract class MonitorEntry implements TenantScopedEntity {
     public abstract Boolean alerted();
     @JsonProperty("status")
     public abstract String status();
+    @JsonProperty("status_changed_at")
+    @Nullable
+    public abstract DateTime statusChangedAt();
     @JsonProperty("last_run")
     @Nullable
     public abstract DateTime lastRun();
@@ -74,6 +77,7 @@ public abstract class MonitorEntry implements TenantScopedEntity {
                                       @JsonProperty("filters") String filters,
                                       @JsonProperty("alerted") Boolean alerted,
                                       @JsonProperty("status") String status,
+                                      @JsonProperty("status_changed_at") DateTime statusChangedAt,
                                       @JsonProperty("last_run") DateTime lastRun,
                                       @JsonProperty("last_event") DateTime lastEvent,
                                       @JsonProperty("created_at") DateTime createdAt,
@@ -94,6 +98,7 @@ public abstract class MonitorEntry implements TenantScopedEntity {
                 .filters(filters)
                 .alerted(alerted)
                 .status(status)
+                .statusChangedAt(statusChangedAt)
                 .lastRun(lastRun)
                 .lastEvent(lastEvent)
                 .createdAt(createdAt)
@@ -136,6 +141,8 @@ public abstract class MonitorEntry implements TenantScopedEntity {
         public abstract Builder alerted(Boolean alerted);
 
         public abstract Builder status(String status);
+
+        public abstract Builder statusChangedAt(DateTime statusChangedAt);
 
         public abstract Builder lastRun(DateTime lastRun);
 

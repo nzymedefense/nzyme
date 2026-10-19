@@ -17,6 +17,9 @@ import NATService from "../../../../../services/ethernet/NATService";
 import STUNDiscoveriesHistogram from "./STUNDiscoveriesHistogram";
 import STUNDiscoveriesTopClientsHistogram from "./STUNDiscoveriesTopClientsHistogram";
 import STUNDiscoveriesTopServersHistogram from "./STUNDiscoveriesTopServersHistogram";
+import onSaveFiltersAsMonitor from "../../../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../../../misc/RenderConditionally";
+import useSelectedTenant from "../../../../system/tenantselector/useSelectedTenant";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -28,6 +31,8 @@ export default function STUNDiscoveriesPage() {
 
   usePageTitle("STUN Discoveries");
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
   const selectedTaps = tapContext.taps;
@@ -36,6 +41,7 @@ export default function STUNDiscoveriesPage() {
   const [filters, setFilters] = useState(
     queryParametersToFilters(urlQuery.get("filters"), STUN_DISCOVERY_FILTER_FIELDS)
   );
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   const [histogram, setHistogram] = useState(null);
 
@@ -50,10 +56,14 @@ export default function STUNDiscoveriesPage() {
   }, [tapContext]);
 
   useEffect(() => {
+    if (!monitorsReady) {
+      return;
+    }
+
     setHistogram(null);
 
     natService.getSTUNDiscoveriesHistogram(timeRange, filters, selectedTaps, setHistogram);
-  }, [selectedTaps, timeRange, filters, revision]);
+  }, [selectedTaps, timeRange, filters, revision, monitorsReady]);
 
   return (
     <React.Fragment>
@@ -75,73 +85,78 @@ export default function STUNDiscoveriesPage() {
 
               <Filters filters={filters}
                        setFilters={setFilters}
-                       fields={STUN_DISCOVERY_FILTER_FIELDS} />
+                       fields={STUN_DISCOVERY_FILTER_FIELDS}
+                       monitorType="ETHERNET_STUN_DISCOVERY"
+                       onMonitorsReady={() => setMonitorsReady(true)}
+                       onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_STUN_DISCOVERY", organizationId, tenantId)} />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="row mt-3">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Top Clients"
-                                     fixedTimeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())}/>
+      <RenderConditionally render={monitorsReady}>
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Top Clients"
+                                       fixedTimeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())}/>
 
-              <STUNDiscoveriesTopClientsHistogram filters={filters}
-                                                  setFilters={setFilters}
-                                                  timeRange={timeRange}
-                                                  revision={revision} />
+                <STUNDiscoveriesTopClientsHistogram filters={filters}
+                                                    setFilters={setFilters}
+                                                    timeRange={timeRange}
+                                                    revision={revision} />
+              </div>
+            </div>
+          </div>
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Top Servers"
+                                       fixedTimeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())}/>
+
+                <STUNDiscoveriesTopServersHistogram filters={filters}
+                                                    setFilters={setFilters}
+                                                    timeRange={timeRange}
+                                                    revision={revision} />
+              </div>
             </div>
           </div>
         </div>
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Top Servers"
-                                     fixedTimeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())}/>
 
-              <STUNDiscoveriesTopServersHistogram filters={filters}
-                                                  setFilters={setFilters}
-                                                  timeRange={timeRange}
-                                                  revision={revision} />
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="All Discoveries"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <STUNDiscoveriesHistogram data={histogram} timeRange={timeRange} setTimeRange={setTimeRange} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="row mt-3">
-        <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="All Discoveries"
-                                     timeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())} />
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="All Discoveries"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
 
-              <STUNDiscoveriesHistogram data={histogram} timeRange={timeRange} setTimeRange={setTimeRange} />
+                <STUNDiscoveriesTable timeRange={timeRange}
+                                      filters={filters}
+                                      setFilters={setFilters}
+                                      revision={revision} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="row mt-3">
-        <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="All Discoveries"
-                                     timeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())} />
-
-              <STUNDiscoveriesTable timeRange={timeRange}
-                                    filters={filters}
-                                    setFilters={setFilters}
-                                    revision={revision} />
-            </div>
-          </div>
-        </div>
-      </div>
+      </RenderConditionally>
     </React.Fragment>
   )
 

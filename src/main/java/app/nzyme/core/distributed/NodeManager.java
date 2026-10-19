@@ -374,11 +374,12 @@ public class NodeManager {
             writeTimer(MetricExternalName.REPORT_PROCESSING_SOCKS_TIMER.database_label,
                     metrics.getTimers().get(MetricNames.SOCKS_TOTAL_REPORT_PROCESSING_TIMER));
 
-            // Write all report execution timers.
+            // Write all monitor execution timers.
             for (Map.Entry<String, Timer> timer : metrics.getTimers().entrySet()) {
                 if (timer.getKey().startsWith(MetricNames.MONITOR_EXECUTION_TIMER_BASE)) {
                     writeTimer(
-                            "monitor_execution_" + timer.getKey().split(MetricNames.MONITOR_EXECUTION_TIMER_BASE)[1],
+                            MetricNames.MONITOR_EXECUTION_TIMER_DATABASE_PREFIX
+                                    + timer.getKey().split(MetricNames.MONITOR_EXECUTION_TIMER_BASE)[1],
                             timer.getValue()
                     );
                 }

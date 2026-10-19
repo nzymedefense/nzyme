@@ -169,7 +169,7 @@
     },
     "name" : "Metrics Exporters"
   }, {
-    "description" : "Monitors turn a saved search filter into a persistent alert condition. Nzyme runs each monitor in its configured interval and raises a MONITOR_TRIGGERED detection event when the number of results in the lookback window is larger than the trigger condition. Monitors exist for several subsystems, for example WiFi and Bluetooth.",
+    "description" : "Monitors turn a saved search filter into a persistent alert condition. Nzyme runs each monitor in its configured interval and raises a detection event of the subsystem the monitor belongs to (MONITOR_TRIGGERED_ETHERNET, MONITOR_TRIGGERED_DOT11 or MONITOR_TRIGGERED_BLUETOOTH) when the number of results in the lookback window is larger than the trigger condition. Monitors exist for the Ethernet, WiFi and Bluetooth subsystems.",
     "externalDocs" : {
       "description" : "Monitors in the Nzyme documentation",
       "url" : "https://go.nzyme.org/monitors"
@@ -13412,7 +13412,7 @@
     },
     "/api/monitors/show/{id}/detections/timeline" : {
       "get" : {
-        "description" : "Returns the timeline of the MONITOR_TRIGGERED alert of this monitor, most recent period first. The timeline is empty if the monitor never triggered. Requires the alerts_view feature permission.",
+        "description" : "Returns the timeline of the monitor triggered alert of this monitor, most recent period first. The timeline is empty if the monitor never triggered. Requires the alerts_view feature permission.",
         "operationId" : "findMonitorAlertTimeline",
         "parameters" : [ {
           "description" : "Monitor UUID.",
@@ -13468,6 +13468,103 @@
         "tags" : [ "Monitors" ]
       }
     },
+    "/api/monitors/subsystem/{subsystem}" : {
+      "get" : {
+        "description" : "Returns all monitors of all monitor types that belong to the requested subsystem and tenant. The result can be narrowed down with a filter definition and sorted by one of the monitor attributes. Without sorting parameters, monitors are ordered by name. The tap list of each monitor is reduced to the taps the calling user can access and partial data is flagged accordingly. The page size cannot be larger than 200.",
+        "operationId" : "findMonitorsOfSubsystem",
+        "parameters" : [ {
+          "description" : "Subsystem to list monitors of.",
+          "in" : "path",
+          "name" : "subsystem",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "NZYME_SYS", "DOT11", "ETHERNET", "BLUETOOTH", "UAV", "GENERIC" ]
+          }
+        }, {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder. Supported fields: name, description, type, enabled, alerted, interval, lookback, trigger_condition, tap_count.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting column. One of NAME, TYPE, TAPS, INTERVAL, LOOKBACK, TRIGGER_CONDITION, ENABLED, ALERTED, LAST_EVENT, CREATED_AT, UPDATED_AT. Must be passed together with the sorting direction.",
+          "in" : "query",
+          "name" : "order_column",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting direction, ASC or DESC.",
+          "in" : "query",
+          "name" : "order_direction",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Page size.",
+          "in" : "query",
+          "name" : "limit",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Page offset.",
+          "in" : "query",
+          "name" : "offset",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MonitorListResponse"
+                }
+              }
+            },
+            "description" : "Monitors found."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "The page size is larger than 200, the page offset is negative, or the sorting parameters are invalid."
+          },
+          "403" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not accessible by the calling user."
+          }
+        },
+        "summary" : "List monitors of a subsystem",
+        "tags" : [ "Monitors" ]
+      }
+    },
     "/api/monitors/type/{monitor_type}" : {
       "get" : {
         "description" : "Returns all monitors of the requested type that belong to the tenant, ordered by name. The tap list of each monitor is reduced to the taps the calling user can access and partial data is flagged accordingly. The page size cannot be larger than 200.",
@@ -13479,7 +13576,7 @@
           "required" : true,
           "schema" : {
             "type" : "string",
-            "enum" : [ "DOT11_BSSID", "DOT11_CLIENT_CONNECTED", "DOT11_CLIENT_DISCONNECTED", "BLUETOOTH_DEVICE" ]
+            "enum" : [ "DOT11_BSSID", "DOT11_CLIENT_CONNECTED", "DOT11_CLIENT_DISCONNECTED", "BLUETOOTH_DEVICE", "ETHERNET_ASSET", "ETHERNET_L4_SESSION", "ETHERNET_DNS_TRANSACTION", "ETHERNET_DHCP_TRANSACTION", "ETHERNET_ARP_PACKET", "ETHERNET_SSH_SESSION", "ETHERNET_SOCKS_TUNNEL", "ETHERNET_TLS_SESSION", "ETHERNET_TLS_CERTIFICATE", "ETHERNET_RTSP_STREAM", "ETHERNET_WEBRTC_SESSION", "ETHERNET_NTP_TRANSACTION", "ETHERNET_STUN_DISCOVERY", "ETHERNET_STUN_CONNECTION", "ETHERNET_PORTAL_INTEGRITY_REPORT" ]
           }
         }, {
           "description" : "Organization UUID.",
@@ -13553,7 +13650,7 @@
           "required" : true,
           "schema" : {
             "type" : "string",
-            "enum" : [ "DOT11_BSSID", "DOT11_CLIENT_CONNECTED", "DOT11_CLIENT_DISCONNECTED", "BLUETOOTH_DEVICE" ]
+            "enum" : [ "DOT11_BSSID", "DOT11_CLIENT_CONNECTED", "DOT11_CLIENT_DISCONNECTED", "BLUETOOTH_DEVICE", "ETHERNET_ASSET", "ETHERNET_L4_SESSION", "ETHERNET_DNS_TRANSACTION", "ETHERNET_DHCP_TRANSACTION", "ETHERNET_ARP_PACKET", "ETHERNET_SSH_SESSION", "ETHERNET_SOCKS_TUNNEL", "ETHERNET_TLS_SESSION", "ETHERNET_TLS_CERTIFICATE", "ETHERNET_RTSP_STREAM", "ETHERNET_WEBRTC_SESSION", "ETHERNET_NTP_TRANSACTION", "ETHERNET_STUN_DISCOVERY", "ETHERNET_STUN_CONNECTION", "ETHERNET_PORTAL_INTEGRITY_REPORT" ]
           }
         } ],
         "requestBody" : {
@@ -16260,6 +16357,91 @@
         },
         "summary" : "Place a tap on a floor plan",
         "tags" : [ "Locations", "Organizations" ]
+      }
+    },
+    "/api/system/authentication/mgmt/organizations/show/{organizationId}/tenants/show/{tenantId}/monitors/performance" : {
+      "get" : {
+        "description" : "Returns all monitors of the tenant, of all subsystems, together with the execution timing of each monitor. Every node times the monitor executions it performs and reports the timer once per minute. The timing combines the latest report of every node that reported within the last two minutes and is null for a monitor that no running node has executed yet. Timings are in microseconds. Monitors without a timing sort last in both directions. Without sorting parameters, monitors are ordered by name. The page size cannot be larger than 200. Requires organization administrator permissions.",
+        "externalDocs" : {
+          "description" : "Monitors in the Nzyme documentation",
+          "url" : "https://go.nzyme.org/monitors"
+        },
+        "operationId" : "findTenantMonitorPerformance",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organizationId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenantId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Sorting column. One of NAME, TYPE, ENABLED, ALERTED, INTERVAL, LAST_RUN, LAST_EVENT, TIMER_MAX, TIMER_MIN, TIMER_MEAN, TIMER_P99, TIMER_STDDEV, EXECUTIONS. Must be passed together with the sorting direction.",
+          "in" : "query",
+          "name" : "order_column",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting direction, ASC or DESC.",
+          "in" : "query",
+          "name" : "order_direction",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Page size.",
+          "in" : "query",
+          "name" : "limit",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Page offset.",
+          "in" : "query",
+          "name" : "offset",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MonitorPerformanceListResponse"
+                }
+              }
+            },
+            "description" : "Monitors found."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "The page size is larger than 200, the page offset is negative, or the sorting parameters are invalid."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "List monitors of a tenant with execution timings",
+        "tags" : [ "Tenants", "Organizations" ]
       }
     },
     "/api/system/authentication/mgmt/organizations/show/{organizationId}/tenants/show/{tenantId}/quotas" : {
@@ -25363,6 +25545,64 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/MonitorDetailsResponse"
+            }
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "MonitorPerformanceDetailsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "alerted" : {
+            "type" : "boolean"
+          },
+          "enabled" : {
+            "type" : "boolean"
+          },
+          "execution_timer" : {
+            "$ref" : "#/components/schemas/TimerResponse"
+          },
+          "interval" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "last_event" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "last_run" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "lookback" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "MonitorPerformanceListResponse" : {
+        "type" : "object",
+        "properties" : {
+          "monitors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MonitorPerformanceDetailsResponse"
             }
           },
           "total" : {

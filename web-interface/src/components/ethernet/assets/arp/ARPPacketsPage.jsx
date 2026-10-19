@@ -20,6 +20,8 @@ import ARPRequesterPairsHistogram from "./ARPRequesterPairsHistogram";
 import ARPResponderPairsHistogram from "./ARPResponderPairsHistogram";
 import usePageTitle from "../../../../util/UsePageTitle";
 import {timeRangeFromURLOrDefault} from "../../../shared/timerange/TimeRangeSelector";
+import onSaveFiltersAsMonitor from "../../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../../misc/RenderConditionally";
 
 const assetsService = new AssetsService();
 
@@ -53,6 +55,7 @@ export default function ARPPacketsPage() {
   const [filters, setFilters] = useState(
       queryParametersToFilters(urlQuery.get("filters"), ARP_FILTER_FIELDS)
   );
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -63,6 +66,10 @@ export default function ARPPacketsPage() {
   }, [tapContext]);
 
   useEffect(() => {
+    if (!monitorsReady) {
+      return;
+    }
+
     setPackets(null);
     setStatistics(null);
 
@@ -80,7 +87,7 @@ export default function ARPPacketsPage() {
         (page-1)*perPage,
         setPackets
     );
-  }, [selectedTaps, filters, organizationId, tenantId, timeRange, orderColumn, orderDirection, page, revision]);
+  }, [selectedTaps, filters, organizationId, tenantId, timeRange, orderColumn, orderDirection, page, revision, monitorsReady]);
 
   return (
       <React.Fragment>
@@ -102,107 +109,112 @@ export default function ARPPacketsPage() {
 
                 <Filters filters={filters}
                          setFilters={setFilters}
-                         fields={ARP_FILTER_FIELDS} />
+                         fields={ARP_FILTER_FIELDS}
+                         monitorType="ETHERNET_ARP_PACKET"
+                         onMonitorsReady={() => setMonitorsReady(true)}
+                         onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_ARP_PACKET", organizationId, tenantId)} />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="row mt-3">
-          <div className="col-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Total ARP Packets"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+        <RenderConditionally render={monitorsReady}>
+          <div className="row mt-3">
+            <div className="col-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Total ARP Packets"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <ARPPacketsChart statistics={statistics} timeRange={timeRange} setTimeRange={setTimeRange} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="ARP Request to Reply Ratio"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
-
-                <ARPRequestToReplyRatioChart statistics={statistics} timeRange={timeRange} setTimeRange={setTimeRange} />
+                  <ARPPacketsChart statistics={statistics} timeRange={timeRange} setTimeRange={setTimeRange} />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Gratuitous ARP Packets"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+          <div className="row mt-3">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="ARP Request to Reply Ratio"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <ARPGratuitousPacketsChart statistics={statistics} timeRange={timeRange} setTimeRange={setTimeRange} />
+                  <ARPRequestToReplyRatioChart statistics={statistics} timeRange={timeRange} setTimeRange={setTimeRange} />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Gratuitous ARP Packets"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
+
+                  <ARPGratuitousPacketsChart statistics={statistics} timeRange={timeRange} setTimeRange={setTimeRange} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="row mt-3">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="ARP Requesters"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+          <div className="row mt-3">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="ARP Requesters"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <ARPRequesterPairsHistogram timeRange={timeRange}
-                                            setFilters={setFilters}
-                                            filters={filters}
-                                            revision={revision} />
+                  <ARPRequesterPairsHistogram timeRange={timeRange}
+                                              setFilters={setFilters}
+                                              filters={filters}
+                                              revision={revision} />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="ARP Responders"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
+
+                  <ARPResponderPairsHistogram timeRange={timeRange}
+                                              setFilters={setFilters}
+                                              filters={filters}
+                                              revision={revision} />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="ARP Responders"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+          <div className="row mt-3">
+            <div className="col-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="ARP Packets"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <ARPResponderPairsHistogram timeRange={timeRange}
-                                            setFilters={setFilters}
-                                            filters={filters}
-                                            revision={revision} />
+                  <ARPPacketsTable packets={packets}
+                                   timeRange={timeRange}
+                                   page={page}
+                                   setPage={setPage}
+                                   perPage={perPage}
+                                   orderColumn={orderColumn}
+                                   orderDirection={orderDirection}
+                                   setOrderColumn={setOrderColumn}
+                                   setOrderDirection={setOrderDirection}
+                                   setFilters={setFilters} />
+
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="ARP Packets"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
-
-                <ARPPacketsTable packets={packets}
-                                 timeRange={timeRange}
-                                 page={page}
-                                 setPage={setPage}
-                                 perPage={perPage}
-                                 orderColumn={orderColumn}
-                                 orderDirection={orderDirection}
-                                 setOrderColumn={setOrderColumn}
-                                 setOrderDirection={setOrderDirection}
-                                 setFilters={setFilters} />
-
-              </div>
-            </div>
-          </div>
-        </div>
+        </RenderConditionally>
       </React.Fragment>
   )
 

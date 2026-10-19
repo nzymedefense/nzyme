@@ -9350,4 +9350,23 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="split_monitor_triggered_detection_type_by_subsystem" author="lennartkoopmann">
+        <!--
+          The generic MONITOR_TRIGGERED detection type was replaced by subsystem-specific types. Existing
+          subscriptions and alerts of the removed type cannot be mapped automatically (alert checksums include
+          the detection type), so they are removed. Monitors themselves are not affected and will raise alerts
+          of the new types on their next trigger.
+        -->
+        <sql>DELETE FROM event_subscriptions WHERE event_type = 'DETECTION' AND reference = 'MONITOR_TRIGGERED'</sql>
+        <sql>DELETE FROM detection_alerts WHERE detection_type = 'MONITOR_TRIGGERED'</sql>
+    </changeSet>
+
+    <changeSet id="add_status_changed_at_to_monitors" author="lennartkoopmann">
+        <addColumn tableName="monitors">
+            <column name="status_changed_at" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

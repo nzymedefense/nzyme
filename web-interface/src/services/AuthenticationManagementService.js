@@ -95,6 +95,12 @@ class AuthenticationManagementService {
         successCallback);
   }
 
+  getMonitorPerformanceOfTenantOfOrganization(organizationId, tenantId, orderColumn, orderDirection, limit, offset, setMonitors) {
+    RESTClient.get(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/monitors/performance`,
+      { order_column: orderColumn, order_direction: orderDirection, limit: limit, offset: offset },
+      (response) => setMonitors(response.data))
+  }
+
   getQuotasOfTenantOfOrganization(organizationId, tenantId, setQuotas) {
     RESTClient.get(`/system/authentication/mgmt/organizations/show/${organizationId}/tenants/show/${tenantId}/quotas`, {}, (response) => setQuotas(response.data))
   }

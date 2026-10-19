@@ -14,6 +14,9 @@ import {DNS_MENU_ITEMS} from "../DNSMenuItems";
 import {queryParametersToFilters} from "../../../shared/filtering/FilterQueryParameters";
 import usePageTitle from "../../../../util/UsePageTitle";
 import {timeRangeFromURLOrDefault} from "../../../shared/timerange/TimeRangeSelector";
+import onSaveFiltersAsMonitor from "../../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../../misc/RenderConditionally";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -23,11 +26,14 @@ export default function DNSTransactionLogsPage() {
 
   usePageTitle("DNS Transaction Logs");
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
 
   const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24))
   const [filters, setFilters] = useState(queryParametersToFilters(urlQuery.get("filters"), DNS_FILTER_FIELDS));
+  const [monitorsReady, setMonitorsReady] = useState(false);
   const [revision, setRevision] = useState(new Date());
 
   useEffect(() => {
@@ -55,44 +61,51 @@ export default function DNSTransactionLogsPage() {
                                        timeRange={timeRange}
                                        setTimeRange={setTimeRange} />
 
-                <Filters filters={filters} setFilters={setFilters} fields={DNS_FILTER_FIELDS} />
+                <Filters filters={filters}
+                         setFilters={setFilters}
+                         fields={DNS_FILTER_FIELDS}
+                         monitorType="ETHERNET_DNS_TRANSACTION"
+                         onMonitorsReady={() => setMonitorsReady(true)}
+                         onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_DNS_TRANSACTION", organizationId, tenantId)} />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="row mt-3">
-          <div className="col-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Transaction Count"
-                                       refreshAction={() => { setRevision(new Date()) }} />
+        <RenderConditionally render={monitorsReady}>
+          <div className="row mt-3">
+            <div className="col-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Transaction Count"
+                                         refreshAction={() => { setRevision(new Date()) }} />
 
-                <DNSTransactionCountChart timeRange={timeRange}
-                                          filters={filters}
-                                          setFilters={setFilters}
-                                          setTimeRange={setTimeRange}
-                                          revision={revision} />
+                  <DNSTransactionCountChart timeRange={timeRange}
+                                            filters={filters}
+                                            setFilters={setFilters}
+                                            setTimeRange={setTimeRange}
+                                            revision={revision} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="row mt-3">
-          <div className="col-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Transactions"
-                                       refreshAction={() => { setRevision(new Date()) }} />
+          <div className="row mt-3">
+            <div className="col-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Transactions"
+                                         refreshAction={() => { setRevision(new Date()) }} />
 
-                <DNSTransactionsTable timeRange={timeRange}
-                                      filters={filters}
-                                      setFilters={setFilters}
-                                      revision={revision}/>
+                  <DNSTransactionsTable timeRange={timeRange}
+                                        filters={filters}
+                                        setFilters={setFilters}
+                                        revision={revision}/>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </RenderConditionally>
       </React.Fragment>
   )
 

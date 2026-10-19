@@ -10,10 +10,15 @@ import {PORTAL_INTEGRITY_REPORTS_FILTER_FIELDS} from "./PortalIntegrityReportsFi
 import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import Filters from "../../shared/filtering/Filters";
 import PortalIntegrityReportsTable from "./PortalIntegrityReportsTable";
+import onSaveFiltersAsMonitor from "../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../misc/RenderConditionally";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 export default function PortalIntegrityPage() {
 
   usePageTitle("Portal Integrity Reports");
+
+  const [organizationId, tenantId] = useSelectedTenant();
 
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
@@ -22,6 +27,7 @@ export default function PortalIntegrityPage() {
   const [filters, setFilters] = useState(
     queryParametersToFilters(urlQuery.get("filters"), PORTAL_INTEGRITY_REPORTS_FILTER_FIELDS)
   );
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   const [histogram, setHistogram] = useState(null);
 
@@ -54,28 +60,33 @@ export default function PortalIntegrityPage() {
 
               <Filters filters={filters}
                        setFilters={setFilters}
-                       fields={PORTAL_INTEGRITY_REPORTS_FILTER_FIELDS} />
+                       fields={PORTAL_INTEGRITY_REPORTS_FILTER_FIELDS}
+                       monitorType="ETHERNET_PORTAL_INTEGRITY_REPORT"
+                       onMonitorsReady={() => setMonitorsReady(true)}
+                       onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_PORTAL_INTEGRITY_REPORT", organizationId, tenantId)} />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="row mt-3">
-        <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="All Reports"
-                                     timeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())} />
+      <RenderConditionally render={monitorsReady}>
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="All Reports"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
 
-              <PortalIntegrityReportsTable timeRange={timeRange}
-                                           filters={filters}
-                                           setFilters={setFilters}
-                                           revision={revision} />
+                <PortalIntegrityReportsTable timeRange={timeRange}
+                                             filters={filters}
+                                             setFilters={setFilters}
+                                             revision={revision} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </RenderConditionally>
     </>
   )
 

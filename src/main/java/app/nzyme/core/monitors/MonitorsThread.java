@@ -6,10 +6,18 @@ import app.nzyme.core.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
 public class MonitorsThread extends Periodical {
 
     private static final Logger LOG = LogManager.getLogger(MonitorsThread.class);
+
+    /*
+     * A monitor that has been PENDING or EXECUTING for longer than this (or three times its interval, whichever
+     * is longer) is considered stuck. This happens when a node restarts or a task is lost while the monitor is
+     * in flight, because only the executing node sets the monitor back to IDLE.
+     */
+    public static final Duration MINIMUM_STUCK_TIMEOUT = Duration.standardMinutes(5);
 
     private final NzymeNode nzyme;
 
@@ -34,6 +42,13 @@ public class MonitorsThread extends Periodical {
                     continue;
                 }
 
+                if (isStuck(monitor, status)) {
+                    LOG.warn("Monitor [{}] has been in status [{}] since [{}]. Considering it stuck and " +
+                            "resetting it to IDLE.", monitor.uuid(), status, monitor.statusChangedAt());
+                    nzyme.getMonitors().setMonitorStatus(monitor.uuid(), MonitorStatus.IDLE);
+                    status = MonitorStatus.IDLE;
+                }
+
                 boolean executionDue;
                 if (monitor.lastRun() == null) {
                     executionDue = true;
@@ -56,6 +71,22 @@ public class MonitorsThread extends Periodical {
                 LOG.error("Could not run monitor [{}] execution check. Skipping.", monitor.uuid(), e);
             }
         }
+    }
+
+    public static boolean isStuck(MonitorEntry monitor, MonitorStatus status) {
+        if (status != MonitorStatus.PENDING && status != MonitorStatus.EXECUTING) {
+            return false;
+        }
+
+        // Monitors that changed status before the status timestamp existed are stuck by definition.
+        if (monitor.statusChangedAt() == null) {
+            return true;
+        }
+
+        Duration intervalBased = Duration.standardMinutes(monitor.interval()).multipliedBy(3);
+        Duration timeout = intervalBased.isLongerThan(MINIMUM_STUCK_TIMEOUT) ? intervalBased : MINIMUM_STUCK_TIMEOUT;
+
+        return monitor.statusChangedAt().plus(timeout).isBefore(DateTime.now());
     }
 
     @Override

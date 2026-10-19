@@ -16,6 +16,8 @@ import LatestAssetsHistogram from "./LatestAssetsHistogram";
 import DisappearedAssetsHistogram from "./DisappearedAssetsHistogram";
 import usePageTitle from "../../../util/UsePageTitle";
 import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelector";
+import onSaveFiltersAsMonitor from "../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../misc/RenderConditionally";
 
 const assetsService = new AssetsService();
 
@@ -45,13 +47,18 @@ export default function EthernetAssetsPage() {
   const [filters, setFilters] = useState(
     queryParametersToFilters(urlQuery.get("filters"), ASSET_FILTER_FIELDS)
   );
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   useEffect(() => {
+    if (!monitorsReady) {
+      return;
+    }
+
     setAssets(null);
     if (organizationId && tenantId) {
       assetsService.findAllAssets(organizationId, tenantId, timeRange, orderColumn, orderDirection, filters, perPage, (page-1)*perPage, setAssets);
     }
-  }, [organizationId, tenantId, timeRange, orderColumn, orderDirection, filters, page, revision]);
+  }, [organizationId, tenantId, timeRange, orderColumn, orderDirection, filters, page, revision, monitorsReady]);
 
   return (
       <React.Fragment>
@@ -89,68 +96,73 @@ export default function EthernetAssetsPage() {
 
                 <Filters filters={filters}
                          setFilters={setFilters}
-                         fields={ASSET_FILTER_FIELDS} />
+                         fields={ASSET_FILTER_FIELDS}
+                         monitorType="ETHERNET_ASSET"
+                         onMonitorsReady={() => setMonitorsReady(true)}
+                         onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_ASSET", organizationId, tenantId)} />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="row mt-3">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Newest Assets"
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+        <RenderConditionally render={monitorsReady}>
+          <div className="row mt-3">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Newest Assets"
+                                         timeRange={timeRange}
+                                         setTimeRange={setTimeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <LatestAssetsHistogram filters={filters}
-                                       setFilters={setFilters}
-                                       timeRange={timeRange}
-                                       revision={revision} />
+                  <LatestAssetsHistogram filters={filters}
+                                         setFilters={setFilters}
+                                         timeRange={timeRange}
+                                         revision={revision} />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Recently Disappeared Assets"
+                                         timeRange={timeRange}
+                                         setTimeRange={setTimeRange}
+                                         refreshAction={() => setRevision(new Date())} />
+
+                  <DisappearedAssetsHistogram filters={filters}
+                                              setFilters={setFilters}
+                                              timeRange={timeRange}
+                                              revision={revision} />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Recently Disappeared Assets"
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+          <div className="row mt-3">
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Assets"
+                                         timeRange={timeRange}
+                                         setTimeRange={setTimeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <DisappearedAssetsHistogram filters={filters}
-                                            setFilters={setFilters}
-                                            timeRange={timeRange}
-                                            revision={revision} />
+                  <AssetsTable assets={assets}
+                               setFilters={setFilters}
+                               page={page}
+                               setPage={setPage}
+                               perPage={perPage}
+                               orderColumn={orderColumn}
+                               setOrderColumn={setOrderColumn}
+                               orderDirection={orderDirection}
+                               setOrderDirection={setOrderDirection} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Assets"
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       refreshAction={() => setRevision(new Date())} />
-
-                <AssetsTable assets={assets}
-                             setFilters={setFilters}
-                             page={page}
-                             setPage={setPage}
-                             perPage={perPage}
-                             orderColumn={orderColumn}
-                             setOrderColumn={setOrderColumn}
-                             orderDirection={orderDirection}
-                             setOrderDirection={setOrderDirection} />
-              </div>
-            </div>
-          </div>
-        </div>
+        </RenderConditionally>
       </React.Fragment>
   )
 

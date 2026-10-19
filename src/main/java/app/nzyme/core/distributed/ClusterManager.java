@@ -1,6 +1,7 @@
 package app.nzyme.core.distributed;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.monitoring.TimerEntryAverage;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshot;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
@@ -66,6 +67,37 @@ public class ClusterManager {
         Map<UUID, TimerSnapshot> result = Maps.newTreeMap();
         for (TimerSnapshot timer : timers) {
             result.put(timer.nodeId(), timer);
+        }
+
+        return result;
+    }
+
+    /*
+     * Returns the most recent timer snapshot of every node for all metrics with the given name prefix, combined
+     * into one entry per metric name. The counters are cumulative since each node started, so the sum is the
+     * total number of calls of all currently reporting nodes.
+     */
+    public Map<String, TimerEntryAverage> findLatestClusterTimersWithPrefix(String metricNamePrefix) {
+        List<TimerEntryAverage> timers = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT metric_name AS name, MAX(metric_max) AS max, MIN(metric_min) AS min, " +
+                                "AVG(metric_mean) AS mean, MAX(metric_p99) AS p99, AVG(metric_stddev) AS stddev, " +
+                                "SUM(metric_counter) AS counter FROM (" +
+                                "SELECT DISTINCT ON (node_id, metric_name) node_id, metric_name, metric_max, " +
+                                "metric_min, metric_mean, metric_p99, metric_stddev, metric_counter " +
+                                "FROM node_metrics_timers " +
+                                "WHERE left(metric_name, char_length(:prefix)) = :prefix " +
+                                "AND created_at > :created_at " +
+                                "ORDER BY node_id, metric_name, created_at DESC" +
+                                ") AS latest GROUP BY metric_name")
+                        .bind("prefix", metricNamePrefix)
+                        .bind("created_at", DateTime.now().minusMinutes(2))
+                        .mapTo(TimerEntryAverage.class)
+                        .list()
+        );
+
+        Map<String, TimerEntryAverage> result = Maps.newHashMap();
+        for (TimerEntryAverage timer : timers) {
+            result.put(timer.name(), timer);
         }
 
         return result;

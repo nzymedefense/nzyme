@@ -1,14 +1,13 @@
 package app.nzyme.core.monitors;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.monitors.db.MonitorEntry;
 import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.MetricNames;
+import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.TimeRangeFactory;
 import app.nzyme.core.util.filters.FilterParser;
 import app.nzyme.core.util.filters.Filters;
-import app.nzyme.plugin.Subsystem;
 import app.nzyme.plugin.distributed.tasksqueue.ReceivedTask;
 import app.nzyme.plugin.distributed.tasksqueue.TaskHandler;
 import app.nzyme.plugin.distributed.tasksqueue.TaskProcessingResult;
@@ -83,29 +82,47 @@ public class MonitorExecutionTaskHandler implements TaskHandler {
                         .toList();
             }
 
-            long count;
-            switch (type) {
-                case DOT11_BSSID -> {
-                    count = nzyme.getDot11()
-                            .countBSSIDs(TimeRangeFactory.relative(monitor.lookback()), filters, taps);
-                }
-                case DOT11_CLIENT_CONNECTED -> {
-                    count = nzyme.getDot11()
-                            .countBSSIDClients(TimeRangeFactory.relative(monitor.lookback()), filters, taps);
-                }
-                case DOT11_CLIENT_DISCONNECTED -> {
-                    count = nzyme.getDot11()
-                            .countClients(TimeRangeFactory.relative(monitor.lookback()), filters, false, taps);
-                }
-                case BLUETOOTH_DEVICE ->  {
-                    count = nzyme.getBluetooth()
-                            .countAllDevices(TimeRangeFactory.relative(monitor.lookback()), filters, taps);
-                }
-                default -> {
-                    LOG.error("Monitor type [{}] is not implemented. Skipping.", monitor.type());
-                    return TaskProcessingResult.FAILURE;
-                }
-            }
+            TimeRange lookback = TimeRangeFactory.relative(monitor.lookback());
+            long count = switch (type) {
+                case DOT11_BSSID -> nzyme.getDot11()
+                        .countBSSIDs(lookback, filters, taps);
+                case DOT11_CLIENT_CONNECTED -> nzyme.getDot11()
+                        .countBSSIDClients(lookback, filters, taps);
+                case DOT11_CLIENT_DISCONNECTED -> nzyme.getDot11()
+                        .countClients(lookback, filters, false, taps);
+                case BLUETOOTH_DEVICE -> nzyme.getBluetooth()
+                        .countAllDevices(lookback, filters, taps);
+                case ETHERNET_ASSET -> nzyme.getAssetsManager()
+                        .countAssets(lookback, filters, monitor.organizationId(), monitor.tenantId());
+                case ETHERNET_L4_SESSION -> nzyme.getEthernet().l4()
+                        .countAllSessions(lookback, filters, taps);
+                case ETHERNET_DNS_TRANSACTION -> nzyme.getEthernet().dns()
+                        .countAllQueries(lookback, filters, taps);
+                case ETHERNET_DHCP_TRANSACTION -> nzyme.getEthernet().dhcp()
+                        .countAllTransactions(lookback, filters, taps);
+                case ETHERNET_ARP_PACKET -> nzyme.getEthernet().arp()
+                        .countAllPackets(lookback, filters, taps);
+                case ETHERNET_SSH_SESSION -> nzyme.getEthernet().ssh()
+                        .countAllSessions(lookback, filters, taps);
+                case ETHERNET_SOCKS_TUNNEL -> nzyme.getEthernet().socks()
+                        .countAllTunnels(lookback, filters, taps);
+                case ETHERNET_TLS_SESSION -> nzyme.getEthernet().tls()
+                        .countAllSessions(lookback, filters, taps);
+                case ETHERNET_TLS_CERTIFICATE -> nzyme.getEthernet().tls()
+                        .countAllCertificates(lookback, filters, taps);
+                case ETHERNET_RTSP_STREAM -> nzyme.getEthernet().rtsp()
+                        .countAllStreams(lookback, filters, taps);
+                case ETHERNET_WEBRTC_SESSION -> nzyme.getEthernet().webRtc()
+                        .countAllSessions(lookback, filters, taps);
+                case ETHERNET_NTP_TRANSACTION -> nzyme.getEthernet().ntp()
+                        .countAllTransactions(lookback, filters, taps);
+                case ETHERNET_STUN_DISCOVERY -> nzyme.getEthernet().nat()
+                        .countAllDiscoveries(lookback, filters, taps);
+                case ETHERNET_STUN_CONNECTION -> nzyme.getEthernet().nat()
+                        .countAllNegotiations(lookback, filters, taps);
+                case ETHERNET_PORTAL_INTEGRITY_REPORT -> nzyme.getEthernet().portalIntegrity()
+                        .countAllIntegrityReports(lookback, filters, taps);
+            };
 
             if (count > monitor.triggerCondition()) {
                 // Raise alert.
@@ -121,8 +138,8 @@ public class MonitorExecutionTaskHandler implements TaskHandler {
                         monitor.tenantId(),
                         null,
                         null,
-                        DetectionType.MONITOR_TRIGGERED,
-                        Subsystem.GENERIC,
+                        type.getDetectionType(),
+                        type.getSubsystem(),
                         "Monitor \"" + monitor.name() + "\" triggered.",
                         attributes,
                         Set.of("monitor_uuid")

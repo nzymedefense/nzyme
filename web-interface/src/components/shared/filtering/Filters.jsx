@@ -48,6 +48,10 @@ import {
   CERTIFICATE_SOURCE_SELECT_OPTIONS
 } from "./validators/CertificateSourceValidator";
 import {ALLOWED_TLS_ALERT_VALUES, TLS_ALERT_SELECT_OPTIONS} from "./validators/TLSAlertValidator";
+import {
+  ALLOWED_ETHERNET_MONITOR_TYPE_VALUES,
+  ETHERNET_MONITOR_TYPE_SELECT_OPTIONS
+} from "./validators/EthernetMonitorTypeValidator";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -174,6 +178,13 @@ export const FILTER_TYPE = {
       (value) => validateEnum(ALLOWED_TLS_ALERT_VALUES, String(value))
     ],
     placeholder: "handshake_failure"
+  },
+  ETHERNET_MONITOR_TYPE: {
+    name: "ethernet_monitor_type",
+    validators: [
+      (value) => validateEnum(ALLOWED_ETHERNET_MONITOR_TYPE_VALUES, value)
+    ],
+    placeholder: "ETHERNET_L4_SESSION"
   }
 }
 
@@ -454,6 +465,24 @@ export const OPERATORS = {
     no_value: false,
     validators: [],
     options: CONNECTION_STATUS_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  ETHERNET_MONITOR_TYPE_EQUALS: {
+    name: "ethernet_monitor_type_equals",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: ETHERNET_MONITOR_TYPE_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  ETHERNET_MONITOR_TYPE_NOT_EQUALS: {
+    name: "ethernet_monitor_type_not_equals",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: ETHERNET_MONITOR_TYPE_SELECT_OPTIONS,
     field_type: FIELD_TYPE.SELECT
   },
   TLS_VERSION_EQUALS: {
@@ -769,6 +798,12 @@ export default function Filters(props) {
             OPERATORS.TLS_ALERT_NOT_CONTAINS,
             OPERATORS.IS_EMPTY,
             OPERATORS.IS_NOT_EMPTY
+          ])
+          break;
+        case FILTER_TYPE.ETHERNET_MONITOR_TYPE:
+          setAllowedOperators([
+            OPERATORS.ETHERNET_MONITOR_TYPE_EQUALS,
+            OPERATORS.ETHERNET_MONITOR_TYPE_NOT_EQUALS
           ])
           break;
       }

@@ -45,6 +45,7 @@ const ApiRoutes = {
           DATABASE_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/database`,
           QUOTAS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/quotas`,
           SUBSYSTEMS_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/subsystems`,
+          MONITOR_PERFORMANCE_PAGE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/monitors/performance`,
           CREATE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/tenants/create`,
           EDIT: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/edit`,
           LOCATIONS: {
@@ -227,6 +228,11 @@ const ApiRoutes = {
     PORTAL_INTEGRITY: {
       INDEX: '/ethernet/portalintegrity',
       REPORT_DETAILS: (uuid) => `/ethernet/portalintegrity/show/${uuid}`
+    },
+    MONITORING: {
+      MONITORS: {
+        INDEX: '/ethernet/monitoring/monitors'
+      }
     },
     BEACONS: {
       INDEX: '/ethernet/beacons'

@@ -22,7 +22,9 @@ function AlertDetails(props) {
   const alert = props.alert;
 
   switch (alert.detection_type) {
-    case "MONITOR_TRIGGERED":
+    case "MONITOR_TRIGGERED_ETHERNET":
+    case "MONITOR_TRIGGERED_DOT11":
+    case "MONITOR_TRIGGERED_BLUETOOTH":
       return <MonitorTriggeredAlertDetails alert={alert} />
     case "DOT11_MONITOR_BSSID":
       return <MonitorBSSIDAlertDetails alert={alert} />

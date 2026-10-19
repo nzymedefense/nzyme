@@ -111,6 +111,8 @@ public class MetricNames {
     public static final String UAV_CONNECT_TYPE_LOOKUP_TIMING = name(Uav.class, "connect-type-lookup-timing");
 
     public static final String MONITOR_EXECUTION_TIMER_BASE = name(MonitorExecutionTaskHandler.class, "execution-timer-");
+    // Prefix of the per-monitor execution timers as written to the node metrics tables. Followed by the monitor UUID.
+    public static final String MONITOR_EXECUTION_TIMER_DATABASE_PREFIX = "monitor_execution_";
 
     public static final String TIMELINES_BSSIDS_TOTAL_CALCULATION_TIMER = name(Dot11BSSIDTimelineCalculationTaskHandler.class, "total-calculation-timing");
     public static final String TIMELINES_BSSIDS_INDIVIDUAL_CALCULATION_TIMER = name(Dot11BSSIDTimelineCalculationTaskHandler.class, "individual-calculation-timing");

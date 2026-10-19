@@ -16,6 +16,9 @@ import RTSPStreamsTable from "./RTSPStreamsTable";
 import RTSPActiveStreamsHistogram from "./RTSPActiveStreamsHistogram";
 import RTSPTopServersHistogram from "./RTSPTopServersHistogram";
 import RTSPTopClientsHistogram from "./RTSPTopClientsHistogram";
+import onSaveFiltersAsMonitor from "../../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../../misc/RenderConditionally";
+import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -25,6 +28,8 @@ export default function RTSPStreamsPage() {
 
   usePageTitle("RTSP Streams");
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const tapContext = useContext(TapContext);
   const urlQuery = useQuery();
 
@@ -32,6 +37,7 @@ export default function RTSPStreamsPage() {
   const [filters, setFilters] = useState(
     queryParametersToFilters(urlQuery.get("filters"), RTSP_FILTER_FIELDS)
   );
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   const [revision, setRevision] = useState(new Date());
 
@@ -63,83 +69,88 @@ export default function RTSPStreamsPage() {
 
               <Filters filters={filters}
                        setFilters={setFilters}
-                       fields={RTSP_FILTER_FIELDS} />
+                       fields={RTSP_FILTER_FIELDS}
+                       monitorType="ETHERNET_RTSP_STREAM"
+                       onMonitorsReady={() => setMonitorsReady(true)}
+                       onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_RTSP_STREAM", organizationId, tenantId)} />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="row mt-3">
-        <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Active Streams"
-                                     timeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())} />
+      <RenderConditionally render={monitorsReady}>
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Active Streams"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
 
-              <RTSPActiveStreamsHistogram timeRange={timeRange}
-                                          setTimeRange={setTimeRange}
-                                          filters={filters}
-                                          revision={revision} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="row mt-3">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Top Servers"
-                                     timeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())} />
-
-              <RTSPTopServersHistogram timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       filters={filters}
-                                       setFilters={setFilters}
-                                       revision={revision} />
-
+                <RTSPActiveStreamsHistogram timeRange={timeRange}
+                                            setTimeRange={setTimeRange}
+                                            filters={filters}
+                                            revision={revision} />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="Top Clients"
-                                     timeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())} />
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Top Servers"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
 
-              <RTSPTopClientsHistogram timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       filters={filters}
-                                       setFilters={setFilters}
-                                       revision={revision} />
+                <RTSPTopServersHistogram timeRange={timeRange}
+                                         setTimeRange={setTimeRange}
+                                         filters={filters}
+                                         setFilters={setFilters}
+                                         revision={revision} />
 
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="Top Clients"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
+
+                <RTSPTopClientsHistogram timeRange={timeRange}
+                                         setTimeRange={setTimeRange}
+                                         filters={filters}
+                                         setFilters={setFilters}
+                                         revision={revision} />
+
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="row mt-3">
-        <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <CardTitleWithControls title="All RTSP Streams"
-                                     helpLink="https://go.nzyme.org/ethernet-rtsp"
-                                     timeRange={timeRange}
-                                     refreshAction={() => setRevision(new Date())} />
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <CardTitleWithControls title="All RTSP Streams"
+                                       helpLink="https://go.nzyme.org/ethernet-rtsp"
+                                       timeRange={timeRange}
+                                       refreshAction={() => setRevision(new Date())} />
 
-              <RTSPStreamsTable timeRange={timeRange}
-                                filters={filters}
-                                setFilters={setFilters}
-                                revision={revision} />
+                <RTSPStreamsTable timeRange={timeRange}
+                                  filters={filters}
+                                  setFilters={setFilters}
+                                  revision={revision} />
 
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </RenderConditionally>
     </React.Fragment>
   )
 

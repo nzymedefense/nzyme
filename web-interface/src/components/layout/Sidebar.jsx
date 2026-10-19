@@ -89,6 +89,12 @@ function Sidebar(props) {
               href={ApiRoutes.ETHERNET.PORTAL_INTEGRITY.INDEX}
               title="Portal Integrity"
               icon={<i className="sidebar-icon fa-solid fa-archway"/>}/>
+            <NavigationLink
+              href={ApiRoutes.ETHERNET.MONITORING.MONITORS.INDEX}
+              pathMatch="/ethernet/monitoring/"
+              title="Monitoring"
+              icon={<i className="sidebar-icon fa-solid fa-eye"/>}
+              show={userHasPermission(user, "ethernet_monitoring_manage")}/>
             {/*
             <NavigationLink
               href={ApiRoutes.ETHERNET.RECON.INDEX}

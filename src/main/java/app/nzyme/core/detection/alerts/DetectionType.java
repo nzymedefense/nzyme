@@ -8,8 +8,10 @@ public enum DetectionType {
     ASSETS_NEW("New asset detected", Subsystem.ETHERNET),
     ASSETS_DHCP_FINGERPRINT_NEW("Asset is presenting a new DHCP fingerprint", Subsystem.ETHERNET),
 
-    // Generic Monitors.
-    MONITOR_TRIGGERED("Monitor triggered", Subsystem.GENERIC),
+    // Monitors.
+    MONITOR_TRIGGERED_ETHERNET("Ethernet Monitor triggered", Subsystem.ETHERNET),
+    MONITOR_TRIGGERED_DOT11("WiFi Monitor triggered", Subsystem.DOT11),
+    MONITOR_TRIGGERED_BLUETOOTH("Bluetooth Monitor triggered", Subsystem.BLUETOOTH),
 
     // Dot11 Monitoring alerts.
     DOT11_MONITOR_BSSID("WiFi Network Monitor: Unexpected BSSID detected", Subsystem.DOT11),

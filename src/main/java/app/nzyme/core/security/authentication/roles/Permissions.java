@@ -54,6 +54,13 @@ public class Permissions {
                         "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
                 false
         ));
+        put("ethernet_monitoring_manage", Permission.create(
+                "ethernet_monitoring_manage",
+                "Manage Ethernet Monitoring",
+                "Allows user to create, edit and delete configurations of Ethernet monitoring. This can " +
+                        "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
+                false
+        ));
         put("ethernet_assets_manage", Permission.create(
                 "ethernet_assets_manage",
                 "Manage Ethernet Assets",

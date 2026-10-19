@@ -1,10 +1,11 @@
 package app.nzyme.core.rest.resources.monitors;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.detection.alerts.DetectionType;
+import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.detection.alerts.db.DetectionAlertTimelineEntry;
 import app.nzyme.core.monitors.MonitorType;
+import app.nzyme.core.monitors.Monitors;
 import app.nzyme.core.monitors.db.MonitorEntry;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
@@ -15,6 +16,8 @@ import app.nzyme.core.rest.responses.alerts.DetectionAlertTimelineListResponse;
 import app.nzyme.core.rest.responses.monitors.MonitorDetailsResponse;
 import app.nzyme.core.rest.responses.monitors.MonitorListResponse;
 import app.nzyme.core.util.Tools;
+import app.nzyme.core.util.filters.Filters;
+import app.nzyme.plugin.Subsystem;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -26,6 +29,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -49,9 +53,10 @@ import static app.nzyme.core.util.filters.FilterParser.parseFiltersQueryParamete
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
 @Tag(name = "Monitors", description = "Monitors turn a saved search filter into a persistent alert condition. "
-        + "Nzyme runs each monitor in its configured interval and raises a MONITOR_TRIGGERED detection event when "
-        + "the number of results in the lookback window is larger than the trigger condition. Monitors exist for "
-        + "several subsystems, for example WiFi and Bluetooth.",
+        + "Nzyme runs each monitor in its configured interval and raises a detection event of the subsystem the "
+        + "monitor belongs to (MONITOR_TRIGGERED_ETHERNET, MONITOR_TRIGGERED_DOT11 or MONITOR_TRIGGERED_BLUETOOTH) "
+        + "when the number of results in the lookback window is larger than the trigger condition. Monitors exist "
+        + "for the Ethernet, WiFi and Bluetooth subsystems.",
         externalDocs = @ExternalDocumentation(description = "Monitors in the Nzyme documentation",
                 url = "https://go.nzyme.org/monitors"))
 public class MonitorsResource extends TapDataHandlingResource {
@@ -120,7 +125,7 @@ public class MonitorsResource extends TapDataHandlingResource {
     @Path("/show/{id}/detections/timeline")
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_view" })
     @Operation(operationId = "findMonitorAlertTimeline", summary = "List alert timeline of a monitor",
-            description = "Returns the timeline of the MONITOR_TRIGGERED alert of this monitor, most recent period "
+            description = "Returns the timeline of the monitor triggered alert of this monitor, most recent period "
                     + "first. The timeline is empty if the monitor never triggered. Requires the "
                     + "alerts_view feature permission.")
     @ApiResponse(responseCode = "200", description = "Timeline found, or the monitor never triggered.",
@@ -138,10 +143,18 @@ public class MonitorsResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        MonitorType monitorType;
+        try {
+            monitorType = MonitorType.valueOf(monitor.get().type());
+        } catch (IllegalArgumentException e) {
+            LOG.error("Monitor [{}] has unknown type [{}].", monitor.get().uuid(), monitor.get().type());
+            return Response.serverError().build();
+        }
+
         List<DetectionAlertEntry> alerts = nzyme.getDetectionAlertService().findAllAlertsByTypeAndAttribute(
                 monitor.get().organizationId(),
                 monitor.get().tenantId(),
-                DetectionType.MONITOR_TRIGGERED.name(),
+                monitorType.getDetectionType().name(),
                 "monitor_uuid",
                 monitor.get().uuid().toString(),
                 Integer.MAX_VALUE,
@@ -208,48 +221,107 @@ public class MonitorsResource extends TapDataHandlingResource {
         long total = nzyme.getMonitors().countAllMonitorsOfType(monitorType, organizationId, tenantId);
 
         List<MonitorDetailsResponse> monitors = Lists.newArrayList();
-        nzyme.getDatabase().useHandle(handle -> {
-            for (MonitorEntry m : nzyme.getMonitors()
-                    .findAllMonitorsOfType(monitorType, organizationId, tenantId, offset, limit)) {
-                List<UUID> filteredTapUUIDs;
-                boolean partialData;
-                if (m.taps() == null) {
-                    filteredTapUUIDs = null;
-                    partialData = !user.accessAllTenantTaps;
-                } else {
-                    filteredTapUUIDs = parseAndValidateTapIdsDirect(
-                            user,
-                            nzyme,
-                            m.taps()
-                    );
-                    partialData = filteredTapUUIDs.size() != m.taps().size();
-                }
-
-                monitors.add(MonitorDetailsResponse.create(
-                        m.uuid(),
-                        m.organizationId(),
-                        m.tenantId(),
-                        m.enabled(),
-                        m.type(),
-                        m.name(),
-                        m.description(),
-                        filteredTapUUIDs,
-                        m.triggerCondition(),
-                        m.interval(),
-                        m.lookback(),
-                        m.filters(),
-                        m.alerted(),
-                        m.status(),
-                        m.lastRun(),
-                        m.lastEvent(),
-                        m.createdAt(),
-                        m.updatedAt(),
-                        partialData
-                ));
-            }
-        });
+        for (MonitorEntry m : nzyme.getMonitors()
+                .findAllMonitorsOfType(monitorType, organizationId, tenantId, offset, limit)) {
+            monitors.add(buildMonitorDetails(user, m));
+        }
 
         return Response.ok(MonitorListResponse.create(total, monitors)).build();
+    }
+
+    @GET
+    @Path("/subsystem/{subsystem}")
+    @Operation(operationId = "findMonitorsOfSubsystem", summary = "List monitors of a subsystem",
+            description = "Returns all monitors of all monitor types that belong to the requested subsystem and "
+                    + "tenant. The result can be narrowed down with a filter definition and sorted by one of the "
+                    + "monitor attributes. Without sorting parameters, monitors are ordered by name. The tap list "
+                    + "of each monitor is reduced to the taps the calling user can access and partial data is "
+                    + "flagged accordingly. The page size cannot be larger than 200.")
+    @ApiResponse(responseCode = "200", description = "Monitors found.",
+            content = @Content(schema = @Schema(implementation = MonitorListResponse.class)))
+    @ApiResponse(responseCode = "400", description = "The page size is larger than 200, the page offset is negative, or the sorting parameters are invalid.", content = @Content)
+    @ApiResponse(responseCode = "403", description = "Organization or tenant not accessible by the calling user.", content = @Content)
+    public Response findAllOfSubsystem(@Parameter(hidden = true) @Context SecurityContext sc,
+                                       @Parameter(description = "Subsystem to list monitors of.") @PathParam("subsystem") Subsystem subsystem,
+                                       @Parameter(description = "Organization UUID.") @QueryParam("organization_id") @NotNull UUID organizationId,
+                                       @Parameter(description = "Tenant UUID.") @QueryParam("tenant_id") @NotNull UUID tenantId,
+                                       @Parameter(description = "JSON encoded filter definition as produced by the web interface filter builder. Supported fields: name, description, type, enabled, alerted, interval, lookback, trigger_condition, tap_count.") @QueryParam("filters") String filtersParameter,
+                                       @Parameter(description = "Sorting column. One of NAME, TYPE, TAPS, INTERVAL, LOOKBACK, TRIGGER_CONDITION, ENABLED, ALERTED, LAST_EVENT, CREATED_AT, UPDATED_AT. Must be passed together with the sorting direction.") @QueryParam("order_column") @Nullable String orderColumnParam,
+                                       @Parameter(description = "Sorting direction, ASC or DESC.") @QueryParam("order_direction") @Nullable String orderDirectionParam,
+                                       @Parameter(description = "Page size.") @QueryParam("limit") int limit,
+                                       @Parameter(description = "Page offset.") @QueryParam("offset") int offset) {
+        AuthenticatedUser user = getAuthenticatedUser(sc);
+
+        if (limit > 200 || offset < 0) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        Filters filters = parseFiltersQueryParameter(filtersParameter);
+
+        Monitors.OrderColumn orderColumn = Monitors.OrderColumn.NAME;
+        OrderDirection orderDirection = OrderDirection.ASC;
+        if (orderColumnParam != null && orderDirectionParam != null) {
+            try {
+                orderColumn = Monitors.OrderColumn.valueOf(orderColumnParam.toUpperCase());
+                orderDirection = OrderDirection.valueOf(orderDirectionParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
+
+        List<MonitorType> types = MonitorType.ofSubsystem(subsystem);
+
+        long total = nzyme.getMonitors().countAllMonitorsOfTypes(types, filters, organizationId, tenantId);
+
+        List<MonitorDetailsResponse> monitors = Lists.newArrayList();
+        for (MonitorEntry m : nzyme.getMonitors().findAllMonitorsOfTypes(
+                types, filters, orderColumn, orderDirection, organizationId, tenantId, offset, limit)) {
+            monitors.add(buildMonitorDetails(user, m));
+        }
+
+        return Response.ok(MonitorListResponse.create(total, monitors)).build();
+    }
+
+    private MonitorDetailsResponse buildMonitorDetails(AuthenticatedUser user, MonitorEntry m) {
+        List<UUID> filteredTapUUIDs;
+        boolean partialData;
+        if (m.taps() == null) {
+            filteredTapUUIDs = null;
+            partialData = !user.accessAllTenantTaps;
+        } else {
+            filteredTapUUIDs = parseAndValidateTapIdsDirect(
+                    user,
+                    nzyme,
+                    m.taps()
+            );
+            partialData = filteredTapUUIDs.size() != m.taps().size();
+        }
+
+        return MonitorDetailsResponse.create(
+                m.uuid(),
+                m.organizationId(),
+                m.tenantId(),
+                m.enabled(),
+                m.type(),
+                m.name(),
+                m.description(),
+                filteredTapUUIDs,
+                m.triggerCondition(),
+                m.interval(),
+                m.lookback(),
+                m.filters(),
+                m.alerted(),
+                m.status(),
+                m.lastRun(),
+                m.lastEvent(),
+                m.createdAt(),
+                m.updatedAt(),
+                partialData
+        );
     }
 
     @POST
@@ -411,19 +483,7 @@ public class MonitorsResource extends TapDataHandlingResource {
                 && !(user.isOrganizationAdministrator() && organizationId.equals(user.getOrganizationId()))) {
             // User is not a super admin or admin of the passed org. Check user permissions.
             List<String> userPermissions = nzyme.getAuthenticationService().findPermissionsOfUser(user.getUserId());
-            String requiredPermission;
-            switch (monitorType) {
-                case DOT11_BSSID:
-                case DOT11_CLIENT_CONNECTED:
-                case DOT11_CLIENT_DISCONNECTED:
-                    requiredPermission = "dot11_monitoring_manage";
-                    break;
-                case BLUETOOTH_DEVICE:
-                    requiredPermission = "bluetooth_monitoring_manage";
-                    break;
-                default:
-                    return false;
-            }
+            String requiredPermission = monitorType.getRequiredManagePermission();
 
             if (!userPermissions.contains(requiredPermission)) {
                 return false;

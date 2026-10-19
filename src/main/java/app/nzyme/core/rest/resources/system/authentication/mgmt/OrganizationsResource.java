@@ -10,11 +10,18 @@ import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
+import app.nzyme.core.database.OrderDirection;
+import app.nzyme.core.monitoring.TimerEntryAverage;
+import app.nzyme.core.monitors.MonitorPerformanceEntry;
+import app.nzyme.core.monitors.Monitors;
 import app.nzyme.core.quota.QuotaType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.authentication.SessionOnly;
 import app.nzyme.core.rest.requests.*;
+import app.nzyme.core.rest.responses.metrics.TimerResponse;
+import app.nzyme.core.rest.responses.monitors.MonitorPerformanceDetailsResponse;
+import app.nzyme.core.rest.responses.monitors.MonitorPerformanceListResponse;
 import app.nzyme.core.rest.responses.authentication.SessionDetailsResponse;
 import app.nzyme.core.rest.responses.authentication.SessionsListResponse;
 import app.nzyme.core.rest.responses.authentication.apikeys.ApiKeyDetailsResponse;
@@ -64,6 +71,7 @@ import org.bouncycastle.util.encoders.Base64;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.joda.time.DateTime;
 
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -947,6 +955,86 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         return Response.ok(quotas).build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/monitors/performance")
+    @Operation(operationId = "findTenantMonitorPerformance", summary = "List monitors of a tenant with execution timings",
+            description = "Returns all monitors of the tenant, of all subsystems, together with the execution "
+                    + "timing of each monitor. Every node times the monitor executions it performs and reports "
+                    + "the timer once per minute. The timing combines the latest report of every node that "
+                    + "reported within the last two minutes and is null for a monitor that no running node has "
+                    + "executed yet. Timings are in microseconds. Monitors without a timing sort last in both "
+                    + "directions. Without sorting parameters, monitors are ordered by name. The page size cannot "
+                    + "be larger than 200. Requires organization administrator permissions.", tags = {"Tenants"},
+            externalDocs = @ExternalDocumentation(description = "Monitors in the Nzyme documentation",
+                    url = "https://go.nzyme.org/monitors"))
+    @ApiResponse(responseCode = "200", description = "Monitors found.",
+            content = @Content(schema = @Schema(implementation = MonitorPerformanceListResponse.class)))
+    @ApiResponse(responseCode = "400", description = "The page size is larger than 200, the page offset is negative, or the sorting parameters are invalid.", content = @Content)
+    @ApiResponse(responseCode = "404", description = "Organization or tenant not found, or not accessible by the calling user.", content = @Content)
+    public Response getTenantMonitorPerformance(@Parameter(hidden = true) @Context SecurityContext sc,
+                                                @Parameter(description = "Organization UUID.") @PathParam("organizationId") UUID organizationId,
+                                                @Parameter(description = "Tenant UUID.") @PathParam("tenantId") UUID tenantId,
+                                                @Parameter(description = "Sorting column. One of NAME, TYPE, ENABLED, ALERTED, INTERVAL, LAST_RUN, LAST_EVENT, TIMER_MAX, TIMER_MIN, TIMER_MEAN, TIMER_P99, TIMER_STDDEV, EXECUTIONS. Must be passed together with the sorting direction.") @QueryParam("order_column") @Nullable String orderColumnParam,
+                                                @Parameter(description = "Sorting direction, ASC or DESC.") @QueryParam("order_direction") @Nullable String orderDirectionParam,
+                                                @Parameter(description = "Page size.") @QueryParam("limit") int limit,
+                                                @Parameter(description = "Page offset.") @QueryParam("offset") int offset) {
+        if (limit > 200 || offset < 0) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Monitors.PerformanceOrderColumn orderColumn = Monitors.PerformanceOrderColumn.NAME;
+        OrderDirection orderDirection = OrderDirection.ASC;
+        if (orderColumnParam != null && orderDirectionParam != null) {
+            try {
+                orderColumn = Monitors.PerformanceOrderColumn.valueOf(orderColumnParam.toUpperCase());
+                orderDirection = OrderDirection.valueOf(orderDirectionParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
+
+        long total = nzyme.getMonitors().countAllMonitorsOfTenant(organizationId, tenantId);
+
+        List<MonitorPerformanceDetailsResponse> monitors = Lists.newArrayList();
+        for (MonitorPerformanceEntry p : nzyme.getMonitors().findAllMonitorsOfTenantWithPerformance(
+                organizationId, tenantId, orderColumn, orderDirection, offset, limit)) {
+            TimerEntryAverage timer = p.executionTimer();
+
+            TimerResponse timerResponse = null;
+            if (timer != null) {
+                timerResponse = TimerResponse.create(
+                        timer.mean(),
+                        timer.max(),
+                        timer.min(),
+                        timer.stddev(),
+                        timer.p99(),
+                        (long) timer.counter()
+                );
+            }
+
+            monitors.add(MonitorPerformanceDetailsResponse.create(
+                    p.monitor().uuid(),
+                    p.monitor().name(),
+                    p.monitor().type(),
+                    p.monitor().enabled(),
+                    p.monitor().alerted(),
+                    p.monitor().status(),
+                    p.monitor().interval(),
+                    p.monitor().lookback(),
+                    p.monitor().lastRun(),
+                    p.monitor().lastEvent(),
+                    timerResponse
+            ));
+        }
+
+        return Response.ok(MonitorPerformanceListResponse.create(total, monitors)).build();
     }
 
     @PUT

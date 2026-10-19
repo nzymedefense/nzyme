@@ -15,6 +15,9 @@ import {timeRangeFromURLOrDefault} from "../../shared/timerange/TimeRangeSelecto
 import SectionMenuBar from "../../shared/SectionMenuBar";
 import ApiRoutes from "../../../util/ApiRoutes";
 import {L4_MENU_ITEMS} from "./L4MenuItems";
+import onSaveFiltersAsMonitor from "../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../misc/RenderConditionally";
+import useSelectedTenant from "../../system/tenantselector/useSelectedTenant";
 
 const useQuery = () => {
   return new URLSearchParams(useLocation().search);
@@ -24,6 +27,8 @@ export default function L4SessionsPage() {
 
   usePageTitle("TCP/UDP Sessions");
 
+  const [organizationId, tenantId] = useSelectedTenant();
+
   const urlQuery = useQuery();
 
   const [timeRange, setTimeRange] = useState(() => timeRangeFromURLOrDefault(Presets.RELATIVE_HOURS_24));
@@ -32,6 +37,7 @@ export default function L4SessionsPage() {
   const [filters, setFilters] = useState(
       queryParametersToFilters(urlQuery.get("filters"), L4_SESSIONS_FILTER_FIELDS)
   );
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   return (
       <React.Fragment>
@@ -53,101 +59,106 @@ export default function L4SessionsPage() {
 
                 <Filters filters={filters}
                          setFilters={setFilters}
-                         fields={L4_SESSIONS_FILTER_FIELDS} />
+                         fields={L4_SESSIONS_FILTER_FIELDS}
+                         monitorType="ETHERNET_L4_SESSION"
+                         onMonitorsReady={() => setMonitorsReady(true)}
+                         onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_L4_SESSION", organizationId, tenantId)} />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="row mt-3">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Top Traffic Source Addresses"
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+        <RenderConditionally render={monitorsReady}>
+          <div className="row mt-3">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Top Traffic Source Addresses"
+                                         timeRange={timeRange}
+                                         setTimeRange={setTimeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <L4SessionsTopTrafficSourceAddressesHistogram filters={filters}
-                                                              setFilters={setFilters}
-                                                              timeRange={timeRange}
-                                                              revision={revision} />
+                  <L4SessionsTopTrafficSourceAddressesHistogram filters={filters}
+                                                                setFilters={setFilters}
+                                                                timeRange={timeRange}
+                                                                revision={revision} />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Top Traffic Destination Addresses"
+                                         timeRange={timeRange}
+                                         setTimeRange={setTimeRange}
+                                         refreshAction={() => setRevision(new Date())} />
+
+                  <L4SessionsTopTrafficDestinationAddressesHistogram filters={filters}
+                                                                     setFilters={setFilters}
+                                                                     timeRange={timeRange}
+                                                                     revision={revision} />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Top Traffic Destination Addresses"
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+          <div className="row mt-3">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Top Destination Ports"
+                                         timeRange={timeRange}
+                                         setTimeRange={setTimeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <L4SessionsTopTrafficDestinationAddressesHistogram filters={filters}
-                                                                   setFilters={setFilters}
-                                                                   timeRange={timeRange}
-                                                                   revision={revision} />
+                  <p className="help-text">Sorted by traffic bytes.</p>
+
+                  <L4SessionsTopDestinationPortsHistogram filters={filters}
+                                                          setFilters={setFilters}
+                                                          timeRange={timeRange}
+                                                          revision={revision} />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Least Common Non-Ephemeral Destination Ports"
+                                         timeRange={timeRange}
+                                         setTimeRange={setTimeRange}
+                                         refreshAction={() => setRevision(new Date())} />
+
+                  <p className="help-text">Sorted by session count.</p>
+
+                  <L4SessionsLeastCommonNonEphemeralDestinationPortsHistogram filters={filters}
+                                                                              setFilters={setFilters}
+                                                                              timeRange={timeRange}
+                                                                              revision={revision} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="row mt-3">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Top Destination Ports"
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+          <div className="row mt-3">
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Sessions"
+                                         timeRange={timeRange}
+                                         setTimeRange={setTimeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <p className="help-text">Sorted by traffic bytes.</p>
-
-                <L4SessionsTopDestinationPortsHistogram filters={filters}
-                                                        setFilters={setFilters}
-                                                        timeRange={timeRange}
-                                                        revision={revision} />
+                  <L4SessionsTable filters={filters}
+                                   timeRange={timeRange}
+                                   setFilters={setFilters}
+                                   revision={revision} />
+                </div>
               </div>
             </div>
           </div>
-
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Least Common Non-Ephemeral Destination Ports"
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       refreshAction={() => setRevision(new Date())} />
-
-                <p className="help-text">Sorted by session count.</p>
-
-                <L4SessionsLeastCommonNonEphemeralDestinationPortsHistogram filters={filters}
-                                                                            setFilters={setFilters}
-                                                                            timeRange={timeRange}
-                                                                            revision={revision} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Sessions"
-                                       timeRange={timeRange}
-                                       setTimeRange={setTimeRange}
-                                       refreshAction={() => setRevision(new Date())} />
-
-                <L4SessionsTable filters={filters}
-                                 timeRange={timeRange}
-                                 setFilters={setFilters}
-                                 revision={revision} />
-              </div>
-            </div>
-          </div>
-        </div>
+        </RenderConditionally>
       </React.Fragment>
   )
 

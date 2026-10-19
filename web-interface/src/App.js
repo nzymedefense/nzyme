@@ -157,6 +157,7 @@ import CreateCustomTypePage from "./components/uav/types/CreateCustomTypePage";
 import TenantIntegrationsPage from "./components/system/authentication/management/tenants/integrations/TenantIntegrationsPage";
 import OrganizationQuotasPage from "./components/system/authentication/management/organizations/OrganizationQuotasPage";
 import TenantQuotasPage from "./components/system/authentication/management/tenants/TenantQuotasPage";
+import TenantMonitorPerformancePage from "./components/system/authentication/management/tenants/TenantMonitorPerformancePage";
 import DisconnectedClientsPage from "./components/dot11/clients/DisconnectedClientsPage";
 import EditCustomTypePage from "./components/uav/types/EditCustomTypePage";
 import EthernetAssetsPage from "./components/ethernet/assets/EthernetAssetsPage";
@@ -191,6 +192,7 @@ import PortalIntegrityPage from "./components/ethernet/portalintegrity/PortalInt
 import PortalIntegrityReportDetailsPage from "./components/ethernet/portalintegrity/PortalIntegrityReportDetailsPage";
 import RTSPStreamDetailsPage from "./components/ethernet/streams/rtsp/RTSPStreamDetailsPage";
 import BluetoothMonitorsPage from "./components/bluetooth/monitoring/BluetoothMonitorsPage";
+import EthernetMonitorsPage from "./components/ethernet/monitoring/EthernetMonitorsPage";
 import WebRTCSessionsPage from "./components/ethernet/streams/webrtc/WebRTCSessionsPage";
 import WebRTCSessionDetailsPage from "./components/ethernet/streams/webrtc/WebRTCSessionDetailsPage";
 import NetworksContextPage from "./components/context/networks/NetworkContextPage";
@@ -506,6 +508,7 @@ function App() {
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DATABASE_PAGE(':organizationId', ':tenantId')} element={<TenantDatabasePage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.QUOTAS_PAGE(':organizationId', ':tenantId')} element={<TenantQuotasPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.SUBSYSTEMS_PAGE(':organizationId', ':tenantId')} element={<TenantSubsystemsPage />}/>
+                              <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.MONITOR_PERFORMANCE_PAGE(':organizationId', ':tenantId')} element={<TenantMonitorPerformancePage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
                               <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(':organizationId', ':tenantId')} element={<CreateLocationPage />}/>
@@ -630,6 +633,9 @@ function App() {
                                 { /* Ethernet/Portal Integrity */ }
                                 <Route path={ApiRoutes.ETHERNET.PORTAL_INTEGRITY.INDEX} element={<PortalIntegrityPage />}/>
                                 <Route path={ApiRoutes.ETHERNET.PORTAL_INTEGRITY.REPORT_DETAILS(':uuid')} element={<PortalIntegrityReportDetailsPage />}/>
+
+                                { /* Ethernet Monitoring. */}
+                                <Route path={ApiRoutes.ETHERNET.MONITORING.MONITORS.INDEX} element={<EthernetMonitorsPage />}/>
                               </Route>
 
                               { /* 802.11. */ }

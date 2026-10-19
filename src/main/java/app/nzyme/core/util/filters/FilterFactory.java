@@ -24,6 +24,7 @@ public class FilterFactory {
             case "public_key_algorithm_equals":
             case "signature_algorithm_equals":
             case "certificate_source_equals":
+            case "ethernet_monitor_type_equals":
                 return Filter.create(
                         parameter.field(), FilterOperator.EQUALS, optionallyTransformedValue(parameter), parameter.value()
                 );
@@ -36,6 +37,7 @@ public class FilterFactory {
             case "public_key_algorithm_not_equals":
             case "signature_algorithm_not_equals":
             case "certificate_source_not_equals":
+            case "ethernet_monitor_type_not_equals":
                 return Filter.create(
                         parameter.field(), FilterOperator.NOT_EQUALS, optionallyTransformedValue(parameter), parameter.value()
                 );

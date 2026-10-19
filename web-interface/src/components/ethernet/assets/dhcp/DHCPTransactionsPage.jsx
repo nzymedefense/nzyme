@@ -16,6 +16,8 @@ import useSelectedTenant from "../../../system/tenantselector/useSelectedTenant"
 import DHCPTransactionsChart from "./DHCPTransactionsChart";
 import usePageTitle from "../../../../util/UsePageTitle";
 import {timeRangeFromURLOrDefault} from "../../../shared/timerange/TimeRangeSelector";
+import onSaveFiltersAsMonitor from "../../../shared/filtering/monitors/SaveMonitorCallback";
+import RenderConditionally from "../../../misc/RenderConditionally";
 
 const assetsService = new AssetsService();
 
@@ -50,6 +52,7 @@ export default function DHCPTransactionsPage() {
   const [filters, setFilters] = useState(
       queryParametersToFilters(urlQuery.get("filters"), DHCP_FILTER_FIELDS)
   );
+  const [monitorsReady, setMonitorsReady] = useState(false);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -60,6 +63,10 @@ export default function DHCPTransactionsPage() {
   }, [tapContext]);
 
   useEffect(() => {
+    if (!monitorsReady) {
+      return;
+    }
+
     setData(null);
     setStatistics(null);
 
@@ -77,7 +84,7 @@ export default function DHCPTransactionsPage() {
         (page-1)*perPage,
         setData
     );
-  }, [selectedTaps, organizationId, tenantId, timeRange, orderColumn, orderDirection, filters, page, revision]);
+  }, [selectedTaps, organizationId, tenantId, timeRange, orderColumn, orderDirection, filters, page, revision, monitorsReady]);
 
   return (
       <React.Fragment>
@@ -98,48 +105,53 @@ export default function DHCPTransactionsPage() {
 
                 <Filters filters={filters}
                          setFilters={setFilters}
-                         fields={DHCP_FILTER_FIELDS} />
+                         fields={DHCP_FILTER_FIELDS}
+                         monitorType="ETHERNET_DHCP_TRANSACTION"
+                         onMonitorsReady={() => setMonitorsReady(true)}
+                         onSaveAsMonitor={onSaveFiltersAsMonitor("ETHERNET_DHCP_TRANSACTION", organizationId, tenantId)} />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="row mt-3">
-          <div className="col-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="Total DHCP Transactions"
-                                       timeRange={timeRange}
-                                       refreshAction={() => setRevision(new Date())} />
+        <RenderConditionally render={monitorsReady}>
+          <div className="row mt-3">
+            <div className="col-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="Total DHCP Transactions"
+                                         timeRange={timeRange}
+                                         refreshAction={() => setRevision(new Date())} />
 
-                <DHCPTransactionsChart statistics={statistics} timeRange={timeRange} setTimeRange={setTimeRange} />
+                  <DHCPTransactionsChart statistics={statistics} timeRange={timeRange} setTimeRange={setTimeRange} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <CardTitleWithControls title="DHCP Transactions"
-                                       refreshAction={() => setRevision(new Date())}
-                                       helpLink="https://go.nzyme.org/ethernet-dhcp" />
+          <div className="row mt-3">
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-body">
+                  <CardTitleWithControls title="DHCP Transactions"
+                                         refreshAction={() => setRevision(new Date())}
+                                         helpLink="https://go.nzyme.org/ethernet-dhcp" />
 
-                <DHCPTransactionsTable data={data}
-                                       timeRange={timeRange}
-                                       page={page}
-                                       setPage={setPage}
-                                       perPage={perPage}
-                                       orderColumn={orderColumn}
-                                       orderDirection={orderDirection}
-                                       setOrderColumn={setOrderColumn}
-                                       setOrderDirection={setOrderDirection}
-                                       setFilters={setFilters} />
+                  <DHCPTransactionsTable data={data}
+                                         timeRange={timeRange}
+                                         page={page}
+                                         setPage={setPage}
+                                         perPage={perPage}
+                                         orderColumn={orderColumn}
+                                         orderDirection={orderDirection}
+                                         setOrderColumn={setOrderColumn}
+                                         setOrderDirection={setOrderDirection}
+                                         setFilters={setFilters} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </RenderConditionally>
       </React.Fragment>
   )
 
