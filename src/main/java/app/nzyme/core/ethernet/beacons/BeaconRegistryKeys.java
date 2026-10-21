@@ -20,7 +20,7 @@ public class BeaconRegistryKeys {
     public static final RegistryKey SOURCE_UDP_ENABLED = booleanKey("ethernet_beacons_source_udp_enabled", true);
 
     public static final RegistryKey INCLUDE_SITE_LOCAL_DESTINATIONS =
-            booleanKey("ethernet_beacons_include_site_local_destinations", true);
+            booleanKey("ethernet_beacons_include_site_local_destinations", false);
 
     // Detection parameters.
     public static final RegistryKey DETECTION_WINDOW_MINUTES =

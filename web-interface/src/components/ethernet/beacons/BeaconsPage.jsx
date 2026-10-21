@@ -76,6 +76,15 @@ export default function BeaconsPage() {
     beaconsService.findActiveBeaconsHistogram(organizationId, tenantId, filters, histogramTimeRange, setHistogram);
   }, [organizationId, tenantId, filters, histogramTimeRange, revision]);
 
+  // Reloads the data in place, without replacing the table with a spinner. Keeps the scroll position stable when a
+  // classification is changed in the table.
+  const refreshQuietly = () => {
+    beaconsService.findAllBeacons(
+      organizationId, tenantId, filters, orderColumn, orderDirection, perPage, (page-1)*perPage, setBeacons
+    );
+    beaconsService.findActiveBeaconsHistogram(organizationId, tenantId, filters, histogramTimeRange, setHistogram);
+  }
+
   const classificationCounts = () => {
     if (!beacons) {
       return null;
@@ -163,7 +172,7 @@ export default function BeaconsPage() {
                                               filters={filters}
                                               organizationId={organizationId}
                                               tenantId={tenantId}
-                                              onChanged={() => setRevision(new Date())} />
+                                              onChanged={refreshQuietly} />
                     : null}
                 </div>
               </div>
@@ -181,7 +190,7 @@ export default function BeaconsPage() {
                             organizationId={organizationId}
                             tenantId={tenantId}
                             canEdit={canEdit}
-                            onBeaconChanged={() => setRevision(new Date())} />
+                            onBeaconChanged={refreshQuietly} />
             </div>
           </div>
         </div>
