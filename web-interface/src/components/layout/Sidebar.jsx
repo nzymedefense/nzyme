@@ -51,6 +51,11 @@ function Sidebar(props) {
                 title="Assets"
                 icon={<i className="sidebar-icon fa-solid fa-list"/>}/>
             <NavigationLink
+                href={ApiRoutes.ETHERNET.BEACONS.INDEX}
+                pathMatch="/ethernet/beacons"
+                title="Beacons"
+                icon={<i className="sidebar-icon fa-solid fa-location-arrow"/>}/>
+            <NavigationLink
                 href={ApiRoutes.ETHERNET.L4.OVERVIEW}
                 title="TCP/UDP"
                 icon={<i className="sidebar-icon fa-solid fa-road"/>}/>
@@ -95,11 +100,6 @@ function Sidebar(props) {
               title="Monitoring"
               icon={<i className="sidebar-icon fa-solid fa-eye"/>}
               show={userHasPermission(user, "ethernet_monitoring_manage")}/>
-            <NavigationLink
-                href={ApiRoutes.ETHERNET.BEACONS.INDEX}
-                pathMatch="/ethernet/beacons"
-                title="Beacons"
-                icon={<i className="sidebar-icon fa-solid fa-location-arrow"/>}/>
             {/*
             <NavigationLink
               href={ApiRoutes.ETHERNET.RECON.INDEX}
