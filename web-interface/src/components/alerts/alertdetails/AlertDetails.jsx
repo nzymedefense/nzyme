@@ -16,6 +16,7 @@ import UnapprovedClientAlertDetails from "./dot11/UnapprovedClientAlertDetails";
 import UavDetectedAlertDetails from "./uav/UavDetectedAlertDetails";
 import MonitorTriggeredAlertDetails from "./generic/MonitorTriggeredAlertDetails";
 import EnvironmentalSevereAlertDetails from "./generic/EnvironmentalSevereAlertDetails";
+import BeaconAlertDetails from "./ethernet/BeaconAlertDetails";
 
 function AlertDetails(props) {
 
@@ -61,6 +62,11 @@ function AlertDetails(props) {
       return <UavDetectedAlertDetails alert={alert} />
     case "ENVIRONMENTAL_SEVERE_ALERT":
       return <EnvironmentalSevereAlertDetails alert={alert} />
+    case "BEACON_NEW":
+    case "BEACON_NEW_SOURCE":
+    case "BEACON_ACTIVITY_SUSPICIOUS":
+    case "BEACON_ACTIVITY_MALICIOUS":
+      return <BeaconAlertDetails alert={alert} />
     default:
       return <GenericAlertDetails alert={alert} />
   }

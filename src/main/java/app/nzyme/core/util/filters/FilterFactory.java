@@ -25,6 +25,8 @@ public class FilterFactory {
             case "signature_algorithm_equals":
             case "certificate_source_equals":
             case "ethernet_monitor_type_equals":
+            case "beacon_type_equals":
+            case "beacon_classification_equals":
                 return Filter.create(
                         parameter.field(), FilterOperator.EQUALS, optionallyTransformedValue(parameter), parameter.value()
                 );
@@ -38,6 +40,8 @@ public class FilterFactory {
             case "signature_algorithm_not_equals":
             case "certificate_source_not_equals":
             case "ethernet_monitor_type_not_equals":
+            case "beacon_type_not_equals":
+            case "beacon_classification_not_equals":
                 return Filter.create(
                         parameter.field(), FilterOperator.NOT_EQUALS, optionallyTransformedValue(parameter), parameter.value()
                 );

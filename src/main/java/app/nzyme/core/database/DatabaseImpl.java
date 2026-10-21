@@ -60,6 +60,11 @@ import app.nzyme.core.monitoring.TimerEntryAverageMapper;
 import app.nzyme.core.monitoring.TimerEntryMapper;
 import app.nzyme.core.monitoring.health.db.IndicatorStatusMapper;
 import app.nzyme.core.monitors.db.MonitorEntryMapper;
+import app.nzyme.core.ethernet.beacons.db.BeaconEntryMapper;
+import app.nzyme.core.ethernet.beacons.db.BeaconSourceEntryMapper;
+import app.nzyme.core.ethernet.beacons.db.BeaconCheckinEntryMapper;
+import app.nzyme.core.ethernet.beacons.db.BeaconNoteEntryMapper;
+import app.nzyme.core.ethernet.beacons.db.BeaconExclusionEntryMapper;
 import app.nzyme.core.registry.RegistryEntryMapper;
 import app.nzyme.core.security.authentication.db.*;
 import app.nzyme.core.security.sessions.db.SessionEntryMapper;
@@ -266,6 +271,11 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new StringStringNumberAggregationResultMapper())
                 .registerRowMapper(new L4AddressDataMapper())
                 .registerRowMapper(new MonitorEntryMapper())
+                .registerRowMapper(new BeaconEntryMapper())
+                .registerRowMapper(new BeaconSourceEntryMapper())
+                .registerRowMapper(new BeaconCheckinEntryMapper())
+                .registerRowMapper(new BeaconNoteEntryMapper())
+                .registerRowMapper(new BeaconExclusionEntryMapper())
                 .registerRowMapper(new TimelineEventEntryMapper())
                 .registerRowMapper(new RTSPStreamEntryMapper())
                 .registerRowMapper(new NATTraversalDiscoveryEntryMapper())

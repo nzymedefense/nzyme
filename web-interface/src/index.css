@@ -1365,6 +1365,14 @@ div.dropdown-headline ul.dropdown-menu {
     color: #CC3636;
 }
 
+.classification.classification-benign {
+    color: #367E18;
+}
+
+.classification.classification-suspicious {
+    color: #B8860B;
+}
+
 span.serial-number-match {
     font-family: "Geist Mono", monospace;
 }
@@ -1992,4 +2000,21 @@ div.arp-description p {
 dl.cidr-calculator dt, dl.cidr-calculator dd {
     float: left;
     margin-right: 5px;
+}
+
+.classification-select.form-select-sm {
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+    font-weight: bold;
+}
+
+a.classification-edit {
+    font-size: 0.7rem;
+    color: #adb5bd;
+    text-decoration: none;
+    opacity: 0.5;
+}
+
+tr:hover a.classification-edit, a.classification-edit:hover {
+    opacity: 1;
 }

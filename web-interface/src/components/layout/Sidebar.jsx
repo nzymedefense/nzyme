@@ -95,15 +95,16 @@ function Sidebar(props) {
               title="Monitoring"
               icon={<i className="sidebar-icon fa-solid fa-eye"/>}
               show={userHasPermission(user, "ethernet_monitoring_manage")}/>
+            <NavigationLink
+                href={ApiRoutes.ETHERNET.BEACONS.INDEX}
+                pathMatch="/ethernet/beacons"
+                title="Beacons"
+                icon={<i className="sidebar-icon fa-solid fa-location-arrow"/>}/>
             {/*
             <NavigationLink
               href={ApiRoutes.ETHERNET.RECON.INDEX}
               title="Recon"
-              icon={<i className="sidebar-icon fa-solid fa-binoculars"/>}/>
-            <NavigationLink
-                href={ApiRoutes.ETHERNET.BEACONS.INDEX}
-                title="Beacons"
-                icon={<i className="sidebar-icon fa-solid fa-location-arrow"/>}/> */}
+              icon={<i className="sidebar-icon fa-solid fa-binoculars"/>}/> */}
           </SidebarSubmenu>
 
           <SidebarSubmenu title="WiFi"

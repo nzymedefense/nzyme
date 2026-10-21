@@ -8,6 +8,11 @@ public enum DetectionType {
     ASSETS_NEW("New asset detected", Subsystem.ETHERNET),
     ASSETS_DHCP_FINGERPRINT_NEW("Asset is presenting a new DHCP fingerprint", Subsystem.ETHERNET),
 
+    BEACON_NEW("New beacon detected", Subsystem.ETHERNET),
+    BEACON_NEW_SOURCE("New device joined a known beacon", Subsystem.ETHERNET),
+    BEACON_ACTIVITY_SUSPICIOUS("Activity on beacon classified as suspicious", Subsystem.ETHERNET),
+    BEACON_ACTIVITY_MALICIOUS("Activity on beacon classified as malicious", Subsystem.ETHERNET),
+
     // Monitors.
     MONITOR_TRIGGERED_ETHERNET("Ethernet Monitor triggered", Subsystem.ETHERNET),
     MONITOR_TRIGGERED_DOT11("WiFi Monitor triggered", Subsystem.DOT11),

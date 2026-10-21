@@ -9369,4 +9369,279 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="create_beacons_tables" author="lennartkoopmann">
+        <createTable tableName="beacons">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="type" type="varchar(16)">
+                <constraints nullable="false" />
+            </column>
+            <column name="destination_key" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="destination_host" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="destination_address" type="inet">
+                <constraints nullable="true" />
+            </column>
+            <column name="destination_port" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="destination_is_site_local" type="boolean">
+                <constraints nullable="false" />
+            </column>
+            <column name="name" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="description" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="classification" type="varchar(16)">
+                <constraints nullable="false" />
+            </column>
+            <column name="classification_changed_at" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_count" type="integer">
+                <constraints nullable="false" />
+            </column>
+            <column name="checkin_count" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column name="interval_seconds" type="double precision">
+                <constraints nullable="false" />
+            </column>
+            <column name="interval_jitter" type="double precision">
+                <constraints nullable="false" />
+            </column>
+            <column name="enrichment" type="jsonb">
+                <constraints nullable="true" />
+            </column>
+            <column name="first_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="beacons" indexName="beacons_uuid" unique="true">
+            <column name="uuid" />
+        </createIndex>
+
+        <createIndex tableName="beacons" indexName="beacons_destination" unique="true">
+            <column name="organization_id" />
+            <column name="tenant_id" />
+            <column name="type" />
+            <column name="destination_key" />
+        </createIndex>
+
+        <createIndex tableName="beacons" indexName="beacons_tenant_name" unique="true">
+            <column name="organization_id" />
+            <column name="tenant_id" />
+            <column name="name" />
+        </createIndex>
+
+        <createTable tableName="beacon_sources">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="beacon_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="beacon_sources_beacon_id" references="beacons(id)" deleteCascade="true" />
+            </column>
+            <column name="source_address" type="inet">
+                <constraints nullable="false" />
+            </column>
+            <column name="source_mac" type="varchar(17)">
+                <constraints nullable="true" />
+            </column>
+            <column name="checkin_count" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column name="interval_seconds" type="double precision">
+                <constraints nullable="false" />
+            </column>
+            <column name="interval_jitter" type="double precision">
+                <constraints nullable="false" />
+            </column>
+            <column name="regularity" type="double precision">
+                <constraints nullable="false" />
+            </column>
+            <column name="first_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="beacon_sources" indexName="beacon_sources_uuid" unique="true">
+            <column name="uuid" />
+        </createIndex>
+
+        <createIndex tableName="beacon_sources" indexName="beacon_sources_beacon">
+            <column name="beacon_id" />
+        </createIndex>
+
+        <sql>CREATE UNIQUE INDEX beacon_sources_identity ON beacon_sources (beacon_id, source_address, COALESCE(source_mac, ''))</sql>
+
+        <createTable tableName="beacon_checkins">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="beacon_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="beacon_checkins_beacon_id" references="beacons(id)" deleteCascade="true" />
+            </column>
+            <column name="beacon_source_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="beacon_checkins_source_id" references="beacon_sources(id)" deleteCascade="true" />
+            </column>
+            <column name="timestamp" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="destination_address" type="inet">
+                <constraints nullable="true" />
+            </column>
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+        <createIndex tableName="beacon_checkins" indexName="beacon_checkins_source_timestamp" unique="true">
+            <column name="beacon_source_id" />
+            <column name="timestamp" />
+        </createIndex>
+        <createIndex tableName="beacon_checkins" indexName="beacon_checkins_beacon_timestamp">
+            <column name="beacon_id" />
+            <column name="timestamp" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add_analysis_columns_to_beacon_checkins" author="lennartkoopmann">
+        <addColumn tableName="beacon_checkins">
+            <column name="session_key" type="text" />
+            <column name="l4_type" type="varchar(3)" />
+            <column name="session_count" type="integer" defaultValueNumeric="1" />
+            <column name="bytes_rx" type="bigint" />
+            <column name="bytes_tx" type="bigint" />
+            <column name="bytes_total" type="bigint" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="create_beacon_notes_table" author="lennartkoopmann">
+        <createTable tableName="beacon_notes">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="beacon_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="beacon_notes_beacon_id_fk" references="beacons(id)" deleteCascade="true" />
+            </column>
+            <column name="author_user_id" type="uuid" />
+            <column name="author_name" type="text" />
+            <column name="author_email" type="text" />
+            <column name="note" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <createIndex tableName="beacon_notes" indexName="beacon_notes_uuid" unique="true">
+            <column name="uuid" />
+        </createIndex>
+        <createIndex tableName="beacon_notes" indexName="beacon_notes_beacon_id">
+            <column name="beacon_id" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add_destination_mac_to_beacon_checkins" author="lennartkoopmann">
+        <addColumn tableName="beacon_checkins">
+            <column name="destination_mac" type="text" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="rename_beacon_classification_ok_to_benign" author="lennartkoopmann">
+        <update tableName="beacons">
+            <column name="classification" value="BENIGN" />
+            <where>classification = 'OK'</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="create_beacon_exclusions_table" author="lennartkoopmann">
+        <createTable tableName="beacon_exclusions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="name" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="description" type="text" />
+            <column name="enabled" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false" />
+            </column>
+            <column name="destination_cidr" type="text" />
+            <column name="destination_host" type="text" />
+            <column name="destination_ports" type="text" />
+            <column name="beacon_types" type="text" />
+            <column name="source_cidr" type="text" />
+            <column name="source_mac" type="text" />
+            <column name="match_count" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_matched_at" type="timestamp with time zone" />
+            <column name="created_by_user_id" type="uuid" />
+            <column name="created_by_name" type="text" />
+            <column name="created_by_email" type="text" />
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <createIndex tableName="beacon_exclusions" indexName="beacon_exclusions_uuid" unique="true">
+            <column name="uuid" />
+        </createIndex>
+        <createIndex tableName="beacon_exclusions" indexName="beacon_exclusions_tenant">
+            <column name="organization_id" />
+            <column name="tenant_id" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

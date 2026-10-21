@@ -235,7 +235,15 @@ const ApiRoutes = {
       }
     },
     BEACONS: {
-      INDEX: '/ethernet/beacons'
+      INDEX: '/ethernet/beacons',
+      DETAILS: uuid => `/ethernet/beacons/show/${uuid}`,
+      SETTINGS: '/ethernet/beacons/settings',
+      EXCLUSIONS: {
+        INDEX: '/ethernet/beacons/exclusions',
+        CREATE: '/ethernet/beacons/exclusions/create',
+        DETAILS: uuid => `/ethernet/beacons/exclusions/show/${uuid}`,
+        EDIT: uuid => `/ethernet/beacons/exclusions/show/${uuid}/edit`
+      }
     },
     RECON: {
       INDEX: '/ethernet/recon'

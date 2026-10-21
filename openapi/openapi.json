@@ -99,6 +99,12 @@
     "description" : "An asset is a device Nzyme detected in the monitored Ethernet traffic, identified by its MAC address. Nzyme builds this inventory passively and uses it to enrich MAC addresses with the hostnames and IP addresses of the asset, its DHCP fingerprints and when it was first and last seen.",
     "name" : "Assets"
   }, {
+    "description" : "Exclusions keep traffic out of beacon detection. An exclusion is a set of criteria for the destination (address or network, host name pattern, ports, beacon types) and for the calling device (address or network, MAC address). Every criterion that is set must match. Traffic matching an enabled exclusion never becomes a beacon, and existing beacons that match stop receiving check-ins. An exclusion can also be applied to the existing beacons, which deletes them.",
+    "name" : "Beacon Exclusions"
+  }, {
+    "description" : "A beacon is a destination that one or more devices in the monitored Ethernet traffic call out to in regular intervals. This is how software checks for updates and reports telemetry, but also how malware maintains a command and control channel. Nzyme detects beacons passively from TLS, HTTP, SSH, SOCKS, DNS, TCP and UDP traffic, groups them by destination and gives each one a random name until an operator names and classifies it. Beacons are never retention cleaned, only their check-in history is.",
+    "name" : "Beacons"
+  }, {
     "description" : "DHCP transactions that taps recorded on the Ethernet network, including client and server addresses, offered and requested IP addresses, DHCP fingerprints and timelines. Nzyme also uses DHCP traffic to enrich the asset inventory, and its fingerprints help to detect spoofing.",
     "name" : "DHCP"
   }, {
@@ -7303,6 +7309,1742 @@
         },
         "summary" : "Delete an IP address of an asset",
         "tags" : [ "Assets" ]
+      }
+    },
+    "/api/ethernet/beacons" : {
+      "get" : {
+        "description" : "Returns all beacons of the tenant, most recently seen first by default. Each beacon carries its destination, name, classification, number of calling devices, the median check-in interval in seconds and its jitter. The response also includes the number of beacons per classification, independent of the filters. Results are paginated.",
+        "operationId" : "findBeacons",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting column. Defaults to the time the beacon was last seen.",
+          "in" : "query",
+          "name" : "order_column",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting direction, ASC or DESC.",
+          "in" : "query",
+          "name" : "order_direction",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Page size.",
+          "in" : "query",
+          "name" : "limit",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Page offset.",
+          "in" : "query",
+          "name" : "offset",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconsListResponse"
+                }
+              }
+            },
+            "description" : "Beacons found."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Unknown sorting column or direction."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "List beacons of a tenant",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/exclusions" : {
+      "get" : {
+        "description" : "Returns the exclusions of the tenant, sorted by name by default. Each exclusion includes which existing beacons it currently applies to. Results are paginated.",
+        "operationId" : "findBeaconExclusions",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting column: NAME, ENABLED, LAST_MATCHED_AT, MATCH_COUNT, CREATED_AT or UPDATED_AT. Defaults to NAME.",
+          "in" : "query",
+          "name" : "order_column",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting direction, ASC or DESC.",
+          "in" : "query",
+          "name" : "order_direction",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Page size.",
+          "in" : "query",
+          "name" : "limit",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Page offset.",
+          "in" : "query",
+          "name" : "offset",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconExclusionsListResponse"
+                }
+              }
+            },
+            "description" : "Exclusions found."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Unknown sorting column or direction."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "List beacon exclusions of a tenant",
+        "tags" : [ "Beacon Exclusions" ]
+      }
+    },
+    "/api/ethernet/beacons/exclusions/organization/{organization_id}/tenant/{tenant_id}" : {
+      "post" : {
+        "description" : "Creates an exclusion. It takes effect with the next detection run. Pass apply_to_existing_beacons to also delete the existing beacons it matches right away. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "createBeaconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BeaconExclusionRequest"
+              }
+            }
+          },
+          "description" : "The exclusion.",
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconExclusionResponse"
+                }
+              }
+            },
+            "description" : "Exclusion created."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description" : "Invalid name or criteria. The response body contains the reason."
+          }
+        },
+        "summary" : "Create a beacon exclusion",
+        "tags" : [ "Beacon Exclusions" ]
+      }
+    },
+    "/api/ethernet/beacons/exclusions/organization/{organization_id}/tenant/{tenant_id}/preview" : {
+      "post" : {
+        "description" : "Validates the criteria and returns the existing beacons and devices they match, without saving anything. Use this to show the impact of an exclusion before creating it. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "previewBeaconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BeaconExclusionRequest"
+              }
+            }
+          },
+          "description" : "The criteria. Name and description are ignored.",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconExclusionImpactResponse"
+                }
+              }
+            },
+            "description" : "Impact calculated."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description" : "Invalid criteria. The response body contains the reason."
+          }
+        },
+        "summary" : "Preview which existing beacons an exclusion would apply to",
+        "tags" : [ "Beacon Exclusions" ]
+      }
+    },
+    "/api/ethernet/beacons/exclusions/organization/{organization_id}/tenant/{tenant_id}/show/{exclusion_uuid}" : {
+      "delete" : {
+        "description" : "Deletes an exclusion. Traffic it matched is detected again with the next detection run. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "deleteBeaconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Exclusion UUID.",
+          "in" : "path",
+          "name" : "exclusion_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion deleted."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Delete a beacon exclusion",
+        "tags" : [ "Beacon Exclusions" ]
+      },
+      "put" : {
+        "description" : "Replaces name, description, enabled state and all criteria of an exclusion. Changes take effect with the next detection run. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "updateBeaconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Exclusion UUID.",
+          "in" : "path",
+          "name" : "exclusion_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BeaconExclusionRequest"
+              }
+            }
+          },
+          "description" : "The new exclusion data.",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconExclusionResponse"
+                }
+              }
+            },
+            "description" : "Exclusion updated."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion, organization or tenant not found, or not accessible by the calling user."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description" : "Invalid name or criteria. The response body contains the reason."
+          }
+        },
+        "summary" : "Update a beacon exclusion",
+        "tags" : [ "Beacon Exclusions" ]
+      }
+    },
+    "/api/ethernet/beacons/exclusions/organization/{organization_id}/tenant/{tenant_id}/show/{exclusion_uuid}/apply" : {
+      "post" : {
+        "description" : "Deletes every existing beacon whose calling devices all match the exclusion, and removes the matching devices from beacons where only some devices match. This cannot be undone, but a deleted beacon is detected again under a new name if the exclusion is removed and the devices keep calling out. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "applyBeaconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Exclusion UUID.",
+          "in" : "path",
+          "name" : "exclusion_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconExclusionImpactResponse"
+                }
+              }
+            },
+            "description" : "Exclusion applied. The response describes what was deleted."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion, organization or tenant not found, or not accessible by the calling user."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description" : "The exclusion has invalid criteria."
+          }
+        },
+        "summary" : "Apply a beacon exclusion to the existing beacons",
+        "tags" : [ "Beacon Exclusions" ]
+      }
+    },
+    "/api/ethernet/beacons/exclusions/organization/{organization_id}/tenant/{tenant_id}/show/{exclusion_uuid}/enabled/{enabled}" : {
+      "put" : {
+        "description" : "A disabled exclusion is kept but no longer applied. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "setBeaconExclusionEnabled",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Exclusion UUID.",
+          "in" : "path",
+          "name" : "exclusion_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "true or false.",
+          "in" : "path",
+          "name" : "enabled",
+          "required" : true,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion updated."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Enable or disable a beacon exclusion",
+        "tags" : [ "Beacon Exclusions" ]
+      }
+    },
+    "/api/ethernet/beacons/exclusions/show/{exclusion_uuid}" : {
+      "get" : {
+        "description" : "Returns one exclusion, including which existing beacons it currently applies to.",
+        "operationId" : "findBeaconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Exclusion UUID.",
+          "in" : "path",
+          "name" : "exclusion_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconExclusionResponse"
+                }
+              }
+            },
+            "description" : "Exclusion found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Get a beacon exclusion",
+        "tags" : [ "Beacon Exclusions" ]
+      }
+    },
+    "/api/ethernet/beacons/histogram/active" : {
+      "get" : {
+        "description" : "Returns the number of distinct beacons of the tenant that recorded at least one check-in per time bucket. Respects the same filters as the beacons list. The response is an object that maps each bucket timestamp to a count. The bucket size is chosen automatically from the time range.",
+        "operationId" : "findActiveBeaconsHistogram",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder. Same fields as the beacons list.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Time range selector. Accepts the same format as the web interface time range picker.",
+          "in" : "query",
+          "name" : "time_range",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Histogram found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Get the number of active beacons over time",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/organization/{organization_id}/tenant/{tenant_id}" : {
+      "delete" : {
+        "description" : "Deletes every beacon of the tenant with all sources, check-ins and notes. Exclusions and the detection configuration are kept. Beacons are detected again under new random names if the devices keep calling out, unless an exclusion matches them. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "deleteAllBeacons",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconsDeletedResponse"
+                }
+              }
+            },
+            "description" : "Beacons deleted."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Delete all beacons of a tenant",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/organization/{organization_id}/tenant/{tenant_id}/classify/{classification}" : {
+      "put" : {
+        "description" : "Sets the classification of every beacon of the tenant that matches the given filters to UNKNOWN, BENIGN, SUSPICIOUS or MALICIOUS. Without filters, all beacons of the tenant are classified. Beacons that already have the classification are left untouched. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "classifyBeacons",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "New classification: UNKNOWN, BENIGN, SUSPICIOUS or MALICIOUS.",
+          "in" : "path",
+          "name" : "classification",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder. Same fields as the beacons list. Omit to classify all beacons of the tenant.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconBulkClassificationResponse"
+                }
+              }
+            },
+            "description" : "Beacons classified."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Unknown classification."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Classify all beacons matching filters",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/organization/{organization_id}/tenant/{tenant_id}/configuration" : {
+      "get" : {
+        "description" : "Returns the beacon detection settings of the tenant in three groups: detection parameters (window, thresholds, check-in retention), enabled data sources and alerting. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "findBeaconsConfiguration",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconsConfigurationResponse"
+                }
+              }
+            },
+            "description" : "Configuration found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Get the beacon detection configuration of a tenant",
+        "tags" : [ "Beacons" ]
+      },
+      "put" : {
+        "description" : "Updates one or more beacon detection settings of the tenant. Accepted keys are the keys returned by the configuration endpoint. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "updateBeaconsConfiguration",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GenericConfigurationUpdateRequest"
+              }
+            }
+          },
+          "description" : "Map of configuration keys and their new values, wrapped in a change field.",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Configuration updated."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "The change contains a key that is not part of the beacon configuration."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "The change is empty or a value violates the constraints of its configuration key."
+          }
+        },
+        "summary" : "Update the beacon detection configuration of a tenant",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/organization/{organization_id}/tenant/{tenant_id}/show/{beacon_uuid}" : {
+      "delete" : {
+        "description" : "Deletes a beacon with all of its sources and check-ins. The beacon is detected again under a new random name if the devices keep calling out. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "deleteBeacon",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon deleted."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Delete a beacon",
+        "tags" : [ "Beacons" ]
+      },
+      "put" : {
+        "description" : "Sets the name and description of a beacon. Names must be unique within the tenant. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "updateBeacon",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateBeaconRequest"
+              }
+            }
+          },
+          "description" : "New name and description.",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon updated."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, organization or tenant not found, or not accessible by the calling user."
+          },
+          "409" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Another beacon of the tenant already has this name."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "The name is empty or too long."
+          }
+        },
+        "summary" : "Rename a beacon or change its description",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/organization/{organization_id}/tenant/{tenant_id}/show/{beacon_uuid}/classify/{classification}" : {
+      "put" : {
+        "description" : "Sets the classification of a beacon to UNKNOWN, BENIGN, SUSPICIOUS or MALICIOUS. Depending on the tenant configuration, activity on suspicious and malicious beacons raises detection alerts. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "classifyBeacon",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "New classification: UNKNOWN, BENIGN, SUSPICIOUS or MALICIOUS.",
+          "in" : "path",
+          "name" : "classification",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon classified."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Unknown classification."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Classify a beacon",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/organization/{organization_id}/tenant/{tenant_id}/show/{beacon_uuid}/notes" : {
+      "post" : {
+        "description" : "Adds an operator note to a beacon. The calling user is recorded as the author. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "createBeaconNote",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateBeaconNoteRequest"
+              }
+            }
+          },
+          "description" : "The note.",
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Note created."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, organization or tenant not found, or not accessible by the calling user."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "The note is empty or too long."
+          }
+        },
+        "summary" : "Add a note to a beacon",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/organization/{organization_id}/tenant/{tenant_id}/show/{beacon_uuid}/notes/{note_uuid}" : {
+      "delete" : {
+        "description" : "Deletes one operator note. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "deleteBeaconNote",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Note UUID.",
+          "in" : "path",
+          "name" : "note_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Note deleted."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, note, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Delete a note of a beacon",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/show/{beacon_uuid}" : {
+      "get" : {
+        "description" : "Returns one beacon with all of its details, including the enrichment data collected from the underlying protocol, like TLS server name, JA4 fingerprint and certificate details.",
+        "operationId" : "findBeacon",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconDetailsResponse"
+                }
+              }
+            },
+            "description" : "Beacon found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Get a beacon",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/show/{beacon_uuid}/checkins" : {
+      "get" : {
+        "description" : "Returns the recorded check-ins of a beacon in the time range, most recent first. A check-in is one connection or query of a source to the beacon destination, with parallel connections collapsed into one. Optionally limited to one source and filtered by client address or MAC, destination address or MAC, size and number of parallel connections. Results are paginated.",
+        "operationId" : "findBeaconCheckins",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Optional source UUID to limit the list to one calling device.",
+          "in" : "query",
+          "name" : "source_uuid",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Time range selector. Accepts the same format as the web interface time range picker.",
+          "in" : "query",
+          "name" : "time_range",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Page size.",
+          "in" : "query",
+          "name" : "limit",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Page offset.",
+          "in" : "query",
+          "name" : "offset",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconCheckinsListResponse"
+                }
+              }
+            },
+            "description" : "Check-ins found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, source, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "List check-ins of a beacon",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/show/{beacon_uuid}/checkins/histogram" : {
+      "get" : {
+        "description" : "Returns the number of recorded check-ins per time bucket. The response is an object that maps each bucket timestamp to a count. The bucket size is chosen automatically from the time range. Optionally limited to one source of the beacon.",
+        "operationId" : "findBeaconCheckinHistogram",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Optional source UUID to limit the histogram to one calling device.",
+          "in" : "query",
+          "name" : "source_uuid",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Time range selector. Accepts the same format as the web interface time range picker.",
+          "in" : "query",
+          "name" : "time_range",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Histogram found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, source, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Get the check-in histogram of a beacon",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/show/{beacon_uuid}/checkins/histogram/bytes" : {
+      "get" : {
+        "description" : "Returns the average size of a check-in in bytes per time bucket. The size of a check-in is the total number of bytes transferred by its underlying connections. Check-ins without size information, like DNS queries, are not included. The response is an object that maps each bucket timestamp to the average. Optionally limited to one source of the beacon.",
+        "operationId" : "findBeaconCheckinBytesHistogram",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Optional source UUID to limit the histogram to one calling device.",
+          "in" : "query",
+          "name" : "source_uuid",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Time range selector. Accepts the same format as the web interface time range picker.",
+          "in" : "query",
+          "name" : "time_range",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Histogram found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, source, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Get the check-in size histogram of a beacon",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/show/{beacon_uuid}/checkins/points" : {
+      "get" : {
+        "description" : "Returns every check-in in the time range as a point with its timestamp, size in bytes and the number of seconds since the previous check-in of the same device. Intended for scatter plots. Returns the most recent points up to a fixed limit and flags truncation. Optionally limited to one source of the beacon and filtered like the check-ins list.",
+        "operationId" : "findBeaconCheckinPoints",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Optional source UUID to limit the points to one calling device.",
+          "in" : "query",
+          "name" : "source_uuid",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder. Same fields as the check-ins list.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Time range selector. Accepts the same format as the web interface time range picker.",
+          "in" : "query",
+          "name" : "time_range",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconCheckinPointsResponse"
+                }
+              }
+            },
+            "description" : "Points found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, source, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Get individual check-ins of a beacon for plotting",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/show/{beacon_uuid}/destination/connections" : {
+      "get" : {
+        "description" : "Returns all TCP and UDP connections to the destination address of the beacon that the taps of the tenant recorded in the time range, summarized by L4 type and destination port. This includes the beacon connections themselves and shows what else devices talk to the destination about. Empty for beacons without a known destination address.",
+        "operationId" : "findBeaconDestinationConnections",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Time range selector. Accepts the same format as the web interface time range picker.",
+          "in" : "query",
+          "name" : "time_range",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconDestinationConnectionsResponse"
+                }
+              }
+            },
+            "description" : "Summary found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Summarize all connections to the beacon destination",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/show/{beacon_uuid}/notes" : {
+      "get" : {
+        "description" : "Returns the operator notes of a beacon, most recent first.",
+        "operationId" : "findBeaconNotes",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconNotesListResponse"
+                }
+              }
+            },
+            "description" : "Notes found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "List notes of a beacon",
+        "tags" : [ "Beacons" ]
+      }
+    },
+    "/api/ethernet/beacons/show/{beacon_uuid}/sources" : {
+      "get" : {
+        "description" : "Returns the devices (sources) that call out to the beacon destination. Each source carries its own check-in count, median interval, jitter and regularity, which is the share of its intervals that fell within the jitter tolerance. Sources are linked to assets by MAC address where possible. Results are paginated.",
+        "operationId" : "findBeaconSources",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Beacon UUID.",
+          "in" : "path",
+          "name" : "beacon_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Sorting column. Defaults to the time the source was last seen.",
+          "in" : "query",
+          "name" : "order_column",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting direction, ASC or DESC.",
+          "in" : "query",
+          "name" : "order_direction",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Page size.",
+          "in" : "query",
+          "name" : "limit",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Page offset.",
+          "in" : "query",
+          "name" : "offset",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeaconSourcesListResponse"
+                }
+              }
+            },
+            "description" : "Sources found."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Unknown sorting column or direction."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Beacon, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "List devices calling a beacon",
+        "tags" : [ "Beacons" ]
       }
     },
     "/api/ethernet/dhcp/transactions" : {
@@ -22483,6 +24225,655 @@
           }
         }
       },
+      "BeaconBulkClassificationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "updated_count" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Number of beacons whose classification was set."
+          }
+        }
+      },
+      "BeaconCheckinPointResponse" : {
+        "type" : "object",
+        "properties" : {
+          "bytes_total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "interval_seconds" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "source_address" : {
+            "type" : "string"
+          },
+          "source_uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "BeaconCheckinPointsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "limit" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "points" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BeaconCheckinPointResponse"
+            }
+          },
+          "truncated" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "BeaconCheckinResponse" : {
+        "type" : "object",
+        "properties" : {
+          "bytes_rx" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "bytes_total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "bytes_tx" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "destination" : {
+            "$ref" : "#/components/schemas/L4AddressResponse"
+          },
+          "destination_address" : {
+            "type" : "string"
+          },
+          "destination_mac" : {
+            "type" : "string"
+          },
+          "destination_mac_data" : {
+            "$ref" : "#/components/schemas/EthernetMacAddressResponse"
+          },
+          "l4_type" : {
+            "type" : "string"
+          },
+          "session_count" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "session_key" : {
+            "type" : "string"
+          },
+          "source" : {
+            "$ref" : "#/components/schemas/L4AddressResponse"
+          },
+          "source_address" : {
+            "type" : "string"
+          },
+          "source_mac" : {
+            "type" : "string"
+          },
+          "source_uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "tap_name" : {
+            "type" : "string"
+          },
+          "tap_uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "BeaconCheckinsListResponse" : {
+        "type" : "object",
+        "properties" : {
+          "checkins" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BeaconCheckinResponse"
+            }
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "BeaconDestinationConnectionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "bytes_rx" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "bytes_tx" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "destination_port" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "first_seen" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "is_beacon_port" : {
+            "type" : "boolean"
+          },
+          "l4_type" : {
+            "type" : "string"
+          },
+          "last_seen" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "session_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "source_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "BeaconDestinationConnectionsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "connections" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BeaconDestinationConnectionResponse"
+            }
+          },
+          "destination_address" : {
+            "type" : "string"
+          }
+        }
+      },
+      "BeaconDetailsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "checkin_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "classification" : {
+            "type" : "string"
+          },
+          "classification_changed_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "created_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "destination" : {
+            "type" : "string"
+          },
+          "destination_address" : {
+            "type" : "string"
+          },
+          "destination_address_data" : {
+            "$ref" : "#/components/schemas/L4AddressResponse"
+          },
+          "destination_host" : {
+            "type" : "string"
+          },
+          "destination_is_site_local" : {
+            "type" : "boolean"
+          },
+          "destination_key" : {
+            "type" : "string"
+          },
+          "destination_port" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "enrichment" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object"
+            }
+          },
+          "first_seen" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "interval_jitter" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "interval_seconds" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "last_seen" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "matching_exclusions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BeaconExclusionReferenceResponse"
+            }
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "organization_id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "source_count" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tenant_id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "type_human_readable" : {
+            "type" : "string"
+          },
+          "updated_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "BeaconExclusionImpactResponse" : {
+        "type" : "object",
+        "description" : "Which existing beacons an exclusion applies to.",
+        "properties" : {
+          "beacons" : {
+            "type" : "array",
+            "description" : "A sample of the matching beacons, complete matches first. Limited to 25 entries.",
+            "items" : {
+              "$ref" : "#/components/schemas/BeaconExclusionMatchedBeaconResponse"
+            }
+          },
+          "complete_beacons" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Beacons where every calling device matches. Applying the exclusion deletes these entirely."
+          },
+          "matching_beacons" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Beacons where at least one calling device matches."
+          },
+          "matching_sources" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Calling devices (beacon sources) that match, across all beacons."
+          }
+        }
+      },
+      "BeaconExclusionMatchedBeaconResponse" : {
+        "type" : "object",
+        "description" : "A sample of the matching beacons, complete matches first. Limited to 25 entries.",
+        "properties" : {
+          "complete" : {
+            "type" : "boolean"
+          },
+          "destination" : {
+            "type" : "string"
+          },
+          "matching_sources" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "total_sources" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "BeaconExclusionReferenceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "BeaconExclusionRequest" : {
+        "type" : "object",
+        "description" : "Body for creating, updating or previewing a beacon exclusion. All criteria are optional, but at least one must be set. A beacon or candidate is excluded when every set criterion matches.",
+        "properties" : {
+          "apply_to_existing_beacons" : {
+            "type" : "boolean",
+            "description" : "Only when creating: also delete the existing beacons that match the exclusion. Defaults to false.",
+            "writeOnly" : true
+          },
+          "beacon_types" : {
+            "type" : "array",
+            "description" : "Beacon types to match: TLS, HTTP, SSH, SOCKS, DNS, TCP, UDP. Omit or pass an empty list to match all types.",
+            "items" : {
+              "type" : "string",
+              "description" : "Beacon types to match: TLS, HTTP, SSH, SOCKS, DNS, TCP, UDP. Omit or pass an empty list to match all types."
+            },
+            "writeOnly" : true
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "Optional description of why the exclusion exists.",
+            "writeOnly" : true
+          },
+          "destination_cidr" : {
+            "type" : "string",
+            "description" : "Destination IP address or CIDR network, like 10.0.0.0/8 or 2001:db8::/32. Matches the destination address of a beacon. DNS beacons have no destination address.",
+            "writeOnly" : true
+          },
+          "destination_host" : {
+            "type" : "string",
+            "description" : "Destination host name pattern. Use * as a wildcard. *.example.com matches example.com and all of its subdomains. Matches the TLS server name, SOCKS tunneled host or DNS domain of a beacon.",
+            "writeOnly" : true
+          },
+          "destination_ports" : {
+            "type" : "string",
+            "description" : "Destination ports and port ranges, comma separated, like 443 or 80,443,8000-8100.",
+            "writeOnly" : true
+          },
+          "enabled" : {
+            "type" : "boolean",
+            "description" : "Whether the exclusion is active. Defaults to true.",
+            "writeOnly" : true
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Name of the exclusion. Required when creating or updating, ignored for previews.",
+            "writeOnly" : true
+          },
+          "source_cidr" : {
+            "type" : "string",
+            "description" : "IP address or CIDR network of the calling device.",
+            "writeOnly" : true
+          },
+          "source_mac" : {
+            "type" : "string",
+            "description" : "MAC address of the calling device.",
+            "writeOnly" : true
+          }
+        }
+      },
+      "BeaconExclusionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "beacon_types" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "created_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "created_by_email" : {
+            "type" : "string"
+          },
+          "created_by_name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "destination_cidr" : {
+            "type" : "string"
+          },
+          "destination_host" : {
+            "type" : "string"
+          },
+          "destination_ports" : {
+            "type" : "string"
+          },
+          "enabled" : {
+            "type" : "boolean"
+          },
+          "impact" : {
+            "$ref" : "#/components/schemas/BeaconExclusionImpactResponse"
+          },
+          "last_matched_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "match_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "source_cidr" : {
+            "type" : "string"
+          },
+          "source_mac" : {
+            "type" : "string"
+          },
+          "updated_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "BeaconExclusionsListResponse" : {
+        "type" : "object",
+        "properties" : {
+          "exclusions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BeaconExclusionResponse"
+            }
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "BeaconNoteResponse" : {
+        "type" : "object",
+        "properties" : {
+          "author_email" : {
+            "type" : "string"
+          },
+          "author_name" : {
+            "type" : "string"
+          },
+          "created_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "note" : {
+            "type" : "string"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "BeaconNotesListResponse" : {
+        "type" : "object",
+        "properties" : {
+          "notes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BeaconNoteResponse"
+            }
+          }
+        }
+      },
+      "BeaconSourceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "address" : {
+            "$ref" : "#/components/schemas/L4AddressResponse"
+          },
+          "asset_name" : {
+            "type" : "string"
+          },
+          "asset_uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "checkin_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "first_seen" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "interval_jitter" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "interval_seconds" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "last_seen" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "regularity" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "source_address" : {
+            "type" : "string"
+          },
+          "source_mac" : {
+            "type" : "string"
+          },
+          "source_mac_oui" : {
+            "type" : "string"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "BeaconSourcesListResponse" : {
+        "type" : "object",
+        "properties" : {
+          "sources" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BeaconSourceResponse"
+            }
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "BeaconsConfigurationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "alerting" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ConfigurationEntryResponse"
+            }
+          },
+          "detection" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ConfigurationEntryResponse"
+            }
+          },
+          "sources" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ConfigurationEntryResponse"
+            }
+          }
+        }
+      },
+      "BeaconsDeletedResponse" : {
+        "type" : "object",
+        "properties" : {
+          "deleted_count" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Number of beacons that were deleted."
+          }
+        }
+      },
+      "BeaconsListResponse" : {
+        "type" : "object",
+        "properties" : {
+          "beacons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BeaconDetailsResponse"
+            }
+          },
+          "classification_counts" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "BluetoothDeviceDetailsResponse" : {
         "type" : "object",
         "properties" : {
@@ -23024,6 +25415,18 @@
           }
         },
         "required" : [ "fingerprint" ]
+      },
+      "CreateBeaconNoteRequest" : {
+        "type" : "object",
+        "description" : "Body for adding a note to a beacon.",
+        "properties" : {
+          "note" : {
+            "type" : "string",
+            "description" : "Text of the note.",
+            "writeOnly" : true
+          }
+        },
+        "required" : [ "note" ]
       },
       "CreateCustomBanditRequest" : {
         "type" : "object",
@@ -29758,6 +32161,23 @@
             }
           }
         }
+      },
+      "UpdateBeaconRequest" : {
+        "type" : "object",
+        "description" : "Body for renaming a beacon or changing its description.",
+        "properties" : {
+          "description" : {
+            "type" : "string",
+            "description" : "Description or operator notes. Pass an empty string or omit to clear.",
+            "writeOnly" : true
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "New name of the beacon. Must be unique within the tenant.",
+            "writeOnly" : true
+          }
+        },
+        "required" : [ "name" ]
       },
       "UpdateConfigurationRequest" : {
         "type" : "object",

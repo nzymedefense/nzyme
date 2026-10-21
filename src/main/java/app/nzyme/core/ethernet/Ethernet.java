@@ -2,6 +2,7 @@ package app.nzyme.core.ethernet;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.ethernet.arp.ARP;
+import app.nzyme.core.ethernet.beacons.Beacons;
 import app.nzyme.core.ethernet.dhcp.DHCP;
 import app.nzyme.core.ethernet.dns.DNS;
 import app.nzyme.core.ethernet.l4.L4;
@@ -32,6 +33,7 @@ public class Ethernet {
     private final NAT nat;
     private final WebRTC webRtc;
     private final PortalIntegrity portalIntegrity;
+    private final Beacons beacons;
 
     public Ethernet(NzymeNode nzyme) {
         this.nzyme = nzyme;
@@ -49,6 +51,7 @@ public class Ethernet {
         this.nat = new NAT(this);
         this.webRtc = new WebRTC(this);
         this.portalIntegrity = new PortalIntegrity(this);
+        this.beacons = new Beacons(nzyme);
     }
 
     public NzymeNode getNzyme() {
@@ -101,6 +104,10 @@ public class Ethernet {
 
     public WebRTC webRtc() {
         return webRtc;
+    }
+
+    public Beacons beacons() {
+        return beacons;
     }
 
     public PortalIntegrity portalIntegrity() {

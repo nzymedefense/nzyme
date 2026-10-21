@@ -57,7 +57,8 @@ public class Permissions {
         put("ethernet_monitoring_manage", Permission.create(
                 "ethernet_monitoring_manage",
                 "Manage Ethernet Monitoring",
-                "Allows user to create, edit and delete configurations of Ethernet monitoring. This can " +
+                "Allows user to create, edit and delete configurations of Ethernet monitoring, including " +
+                        "naming and classifying beacons and changing beacon detection settings. This can " +
                         "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
                 false
         ));

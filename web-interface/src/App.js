@@ -80,6 +80,12 @@ import DatabasePage from "./components/system/database/DatabasePage";
 import SSIDDetailsPage from "./components/dot11/bssids/ssids/SSIDDetailsPage";
 import ClientsPage from "./components/dot11/clients/ClientsPage";
 import BeaconsPage from "./components/ethernet/beacons/BeaconsPage";
+import BeaconDetailsPage from "./components/ethernet/beacons/BeaconDetailsPage";
+import BeaconsSettingsPage from "./components/ethernet/beacons/BeaconsSettingsPage";
+import BeaconExclusionsPage from "./components/ethernet/beacons/exclusions/BeaconExclusionsPage";
+import CreateBeaconExclusionPage from "./components/ethernet/beacons/exclusions/CreateBeaconExclusionPage";
+import EditBeaconExclusionPage from "./components/ethernet/beacons/exclusions/EditBeaconExclusionPage";
+import BeaconExclusionDetailsPage from "./components/ethernet/beacons/exclusions/BeaconExclusionDetailsPage";
 import ClientDetailsPage from "./components/dot11/clients/ClientDetailsPage";
 import BSSIDDetailsPage from "./components/dot11/bssids/BSSIDDetailsPage";
 import Dot11OverviewPage from "./components/dot11/Dot11OverviewPage";
@@ -626,6 +632,12 @@ function App() {
 
                                 { /* Ethernet/Beacons. */}
                                 <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.BEACONS.DETAILS(':uuid')} element={<BeaconDetailsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.BEACONS.SETTINGS} element={<BeaconsSettingsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.BEACONS.EXCLUSIONS.INDEX} element={<BeaconExclusionsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.BEACONS.EXCLUSIONS.CREATE} element={<CreateBeaconExclusionPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.BEACONS.EXCLUSIONS.DETAILS(':uuid')} element={<BeaconExclusionDetailsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.BEACONS.EXCLUSIONS.EDIT(':uuid')} element={<EditBeaconExclusionPage />}/>
 
                                 { /* Ethernet/Recon. */}
                                 <Route path={ApiRoutes.ETHERNET.RECON.INDEX} element={<ReconPage />}/>

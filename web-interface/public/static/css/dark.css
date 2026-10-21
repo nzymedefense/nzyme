@@ -814,6 +814,14 @@ div.connect-status-pending {
     color: #ef4444;
 }
 
+.classification.classification-benign {
+    color: #34d399;
+}
+
+.classification.classification-suspicious {
+    color: #f59e0b;
+}
+
 i.signal-strength-good {
     color: #34d399;
 }
@@ -1268,4 +1276,21 @@ button.btn-outline-primary:active {
 a.btn-outline-primary:focus-visible,
 button.btn-outline-primary:focus-visible {
     box-shadow: 0 0 0 2px rgba(123, 147, 219, 0.25);
+}
+
+.classification-select.form-select-sm {
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+    font-weight: bold;
+}
+
+a.classification-edit {
+    font-size: 0.7rem;
+    color: #adb5bd;
+    text-decoration: none;
+    opacity: 0.5;
+}
+
+tr:hover a.classification-edit, a.classification-edit:hover {
+    opacity: 1;
 }

@@ -52,6 +52,11 @@ import {
   ALLOWED_ETHERNET_MONITOR_TYPE_VALUES,
   ETHERNET_MONITOR_TYPE_SELECT_OPTIONS
 } from "./validators/EthernetMonitorTypeValidator";
+import {ALLOWED_BEACON_TYPE_VALUES, BEACON_TYPE_SELECT_OPTIONS} from "./validators/BeaconTypeValidator";
+import {
+  ALLOWED_BEACON_CLASSIFICATION_VALUES,
+  BEACON_CLASSIFICATION_SELECT_OPTIONS
+} from "./validators/BeaconClassificationValidator";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -185,6 +190,20 @@ export const FILTER_TYPE = {
       (value) => validateEnum(ALLOWED_ETHERNET_MONITOR_TYPE_VALUES, value)
     ],
     placeholder: "ETHERNET_L4_SESSION"
+  },
+  BEACON_TYPE: {
+    name: "beacon_type",
+    validators: [
+      (value) => validateEnum(ALLOWED_BEACON_TYPE_VALUES, value)
+    ],
+    placeholder: "TLS"
+  },
+  BEACON_CLASSIFICATION: {
+    name: "beacon_classification",
+    validators: [
+      (value) => validateEnum(ALLOWED_BEACON_CLASSIFICATION_VALUES, value)
+    ],
+    placeholder: "UNKNOWN"
   }
 }
 
@@ -483,6 +502,42 @@ export const OPERATORS = {
     no_value: false,
     validators: [],
     options: ETHERNET_MONITOR_TYPE_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  BEACON_TYPE_EQUALS: {
+    name: "beacon_type_equals",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: BEACON_TYPE_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  BEACON_TYPE_NOT_EQUALS: {
+    name: "beacon_type_not_equals",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: BEACON_TYPE_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  BEACON_CLASSIFICATION_EQUALS: {
+    name: "beacon_classification_equals",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: BEACON_CLASSIFICATION_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  BEACON_CLASSIFICATION_NOT_EQUALS: {
+    name: "beacon_classification_not_equals",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: BEACON_CLASSIFICATION_SELECT_OPTIONS,
     field_type: FIELD_TYPE.SELECT
   },
   TLS_VERSION_EQUALS: {
@@ -804,6 +859,18 @@ export default function Filters(props) {
           setAllowedOperators([
             OPERATORS.ETHERNET_MONITOR_TYPE_EQUALS,
             OPERATORS.ETHERNET_MONITOR_TYPE_NOT_EQUALS
+          ])
+          break;
+        case FILTER_TYPE.BEACON_TYPE:
+          setAllowedOperators([
+            OPERATORS.BEACON_TYPE_EQUALS,
+            OPERATORS.BEACON_TYPE_NOT_EQUALS
+          ])
+          break;
+        case FILTER_TYPE.BEACON_CLASSIFICATION:
+          setAllowedOperators([
+            OPERATORS.BEACON_CLASSIFICATION_EQUALS,
+            OPERATORS.BEACON_CLASSIFICATION_NOT_EQUALS
           ])
           break;
       }

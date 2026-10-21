@@ -264,6 +264,12 @@ public class NodesResource {
             timers.put("report_processing_socks", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
                     node.uuid(), MetricExternalName.REPORT_PROCESSING_SOCKS_TIMER.database_label, handle)));
 
+            // Beacon detection timers.
+            timers.put("beacon_detection_run", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
+                    node.uuid(), MetricExternalName.BEACON_DETECTION_RUN_TIMER.database_label, handle)));
+            timers.put("beacon_candidate_discovery", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
+                    node.uuid(), MetricExternalName.BEACON_CANDIDATE_DISCOVERY_TIMER.database_label, handle)));
+
             // Database connection pool.
             timers.put("database_pool_wait", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
                     node.uuid(), MetricExternalName.DATABASE_POOL_WAIT_TIMER.database_label, handle)));
