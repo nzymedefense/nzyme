@@ -246,7 +246,9 @@ const ApiRoutes = {
       }
     },
     RECON: {
-      INDEX: '/ethernet/recon'
+      SCANS: {
+        INDEX: '/ethernet/recon/scans'
+      }
     }
   },
   DOT11: {

@@ -9,7 +9,7 @@ use crate::state::tables::dns_table::DnsTable;
 use crate::state::tables::socks_table::SocksTable;
 use crate::state::tables::ssh_table::SshTable;
 use crate::state::tables::tls_table::TlsTable;
-use crate::state::tables::tcp_table::TcpTable;
+use crate::state::tables::tcp_table::{TcpTable, DEFAULT_HANDSHAKE_TIMEOUT_SECONDS};
 use crate::state::tables::udp_table::UdpTable;
 use crate::link::leaderlink::Leaderlink;
 use crate::messagebus::bus::Bus;
@@ -80,7 +80,9 @@ impl Tables {
                 ethernet_bus.clone(),
                 metrics.clone(),
                 configuration.protocols.tcp.reassembly_buffer_size,
-                configuration.protocols.tcp.session_timeout_seconds
+                configuration.protocols.tcp.session_timeout_seconds,
+                configuration.protocols.tcp.handshake_timeout_seconds
+                    .unwrap_or(DEFAULT_HANDSHAKE_TIMEOUT_SECONDS)
             ))),
             udp: Arc::new(Mutex::new(UdpTable::new(leaderlink.clone(), ethernet_bus.clone(), metrics.clone()))),
             ssh: Arc::new(Mutex::new(SshTable::new(leaderlink.clone(), metrics.clone()))),

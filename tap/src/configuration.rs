@@ -172,7 +172,8 @@ pub struct ProtocolsTcp {
     pub pipeline_size: i32,
     pub processors: Option<i32>,
     pub reassembly_buffer_size: i32,
-    pub session_timeout_seconds: i32
+    pub session_timeout_seconds: i32,
+    pub handshake_timeout_seconds: Option<i32>
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -380,6 +381,16 @@ pub fn load(path: String) -> Result<Configuration, Error> {
     if doc.protocols.tcp.reassembly_buffer_size <= 0 {
         bail!("Configuration variable `protocols.tcp.reassembly_buffer_size` must be set to a \
             value greater than 0.");
+    }
+    if let Some(handshake_timeout) = doc.protocols.tcp.handshake_timeout_seconds {
+        if handshake_timeout <= 0 {
+            bail!("Configuration variable `protocols.tcp.handshake_timeout_seconds` must be set \
+                to a value greater than 0.");
+        }
+        if handshake_timeout > doc.protocols.tcp.session_timeout_seconds {
+            bail!("Configuration variable `protocols.tcp.handshake_timeout_seconds` must not be \
+                greater than `protocols.tcp.session_timeout_seconds`.");
+        }
     }
     if doc.protocols.tcp.processors.is_some() && doc.protocols.tcp.processors.unwrap() <= 0 {
         bail!("Configuration variable `protocols.tcp.processors` must be set to a value greater \

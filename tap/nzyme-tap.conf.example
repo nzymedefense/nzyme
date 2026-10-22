@@ -70,6 +70,7 @@ pipeline_size = 65535
 processors = 3
 reassembly_buffer_size = 1048576
 session_timeout_seconds = 1800
+handshake_timeout_seconds = 60
 
 [protocols.udp]
 pipeline_size = 65535

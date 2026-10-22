@@ -22,8 +22,20 @@ pub struct TcpTable {
     metrics: Arc<Mutex<Metrics>>,
     sessions: Mutex<HashMap<L4Key, TcpSession>>,
     reassembly_buffer_size: i32,
-    session_timeout_seconds: i32
+    session_timeout_seconds: i32,
+    handshake_timeout_seconds: i32
 }
+
+/*
+ * How long a session may stay in the handshake (SynSent, SynReceived) before it is considered
+ * unanswered and timed out. Real TCP stacks stop retransmitting a SYN after roughly a minute, and
+ * scans leave large numbers of handshake-less sessions behind that would otherwise be held and
+ * re-reported for the full session timeout.
+ *
+ * This is the default. It is user-configurable via `protocols.tcp.handshake_timeout_seconds`
+ * in the tap configuration file.
+ */
+pub const DEFAULT_HANDSHAKE_TIMEOUT_SECONDS: i32 = 60;
 
 #[derive(Debug)]
 pub struct TcpSession {
@@ -90,14 +102,16 @@ impl TcpTable {
                ethernet_bus: Arc<Bus>,
                metrics: Arc<Mutex<Metrics>>,
                reassembly_buffer_size: i32,
-               session_timeout_seconds: i32) -> Self {
+               session_timeout_seconds: i32,
+               handshake_timeout_seconds: i32) -> Self {
         Self {
             leaderlink,
             ethernet_bus,
             metrics,
             sessions: Mutex::new(HashMap::new()),
             reassembly_buffer_size,
-            session_timeout_seconds
+            session_timeout_seconds,
+            handshake_timeout_seconds
         }
     }
 
@@ -121,7 +135,8 @@ impl TcpTable {
                         session.bytes_count_rx_incremental += bytes_rx;
                         session.bytes_count_tx_incremental += bytes_tx;
 
-                        if session.end_time.is_none() && (session_state == ClosedFin || session_state == ClosedRst) {
+                        if session.end_time.is_none()
+                            && (session_state == ClosedFin || session_state == ClosedRst || session_state == Refused) {
                             session.end_time = Some(segment.timestamp);
                         }
 
@@ -224,7 +239,11 @@ impl TcpTable {
             Ok(mut sessions) => {
                 // Mark all timed out sessions in table as ClosedTimeout.
                 let mut timer = Timer::new();
-                timeout_sweep(&mut sessions, self.session_timeout_seconds as i64);
+                timeout_sweep(
+                    &mut sessions,
+                    self.session_timeout_seconds as i64,
+                    self.handshake_timeout_seconds as i64
+                );
                 timer.stop();
                 record_timer(
                     timer.elapsed_microseconds(),
@@ -268,7 +287,7 @@ impl TcpTable {
                     Err(e) => error!("Could not acquire leader link lock for TCP report submission: {}", e)
                 }
 
-                // Delete all timed out and closedfin/closedrst sessions in table.
+                // Delete all timed out, refused and closedfin/closedrst sessions in table.
                 retention_sweep(&mut sessions);
 
                 // Reset all incremental counters.
@@ -385,20 +404,41 @@ fn insert_session_segment(segment: &TcpSegment, segments: &mut BTreeMap<u32, Vec
     }
 }
 
-fn timeout_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>, timeout: i64) {
-    for session in sessions.values_mut() {
-        if Utc::now() - session.most_recent_segment_time
-            > Duration::try_seconds(timeout).unwrap() {
+fn is_terminal_state(state: &TcpSessionState) -> bool {
+    matches!(state, ClosedFin | ClosedRst | ClosedTimeout | Refused)
+}
 
+fn timeout_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>,
+                 session_timeout: i64,
+                 handshake_timeout: i64) {
+    let now = Utc::now();
+    let session_timeout = Duration::try_seconds(session_timeout).unwrap();
+    let handshake_timeout = Duration::try_seconds(handshake_timeout).unwrap();
+
+    for session in sessions.values_mut() {
+        // Never overwrite a state that is already final. (Would turn Refused into ClosedTimeout.)
+        if is_terminal_state(&session.state) {
+            continue;
+        }
+
+        let idle = now - session.most_recent_segment_time;
+
+        // Sessions that never completed the handshake time out early.
+        let timeout = match session.state {
+            SynSent | SynReceived => handshake_timeout,
+            _ => session_timeout
+        };
+
+        if idle > timeout {
             debug!("Timeout sweep for TCP session: {:?}", session);
             session.state = ClosedTimeout;
-            session.end_time = Some(Utc::now());
+            session.end_time = Some(now);
         }
     }
 }
 
 fn retention_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>) {
-    sessions.retain(|_, s| s.state != ClosedTimeout && s.state != ClosedRst && s.state != ClosedFin)
+    sessions.retain(|_, s| !is_terminal_state(&s.state))
 }
 
 fn incremental_counter_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession>>) {
@@ -406,5 +446,134 @@ fn incremental_counter_sweep(sessions: &mut MutexGuard<HashMap<L4Key, TcpSession
         session.segments_count_incremental = 0;
         session.bytes_count_rx_incremental = 0;
         session.bytes_count_tx_incremental = 0;
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::net::Ipv4Addr;
+
+    fn session(port: u16, state: TcpSessionState, idle_seconds: i64) -> (L4Key, TcpSession) {
+        let src = IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1));
+        let dst = IpAddr::V4(Ipv4Addr::new(10, 0, 0, 2));
+        let key = L4Key::new(src, 40000, dst, port);
+        let last = Utc::now() - Duration::try_seconds(idle_seconds).unwrap();
+
+        (key.clone(), TcpSession {
+            session_key: key,
+            state,
+            source_mac: None,
+            destination_mac: None,
+            source_address: src,
+            source_port: 40000,
+            destination_address: dst,
+            destination_port: port,
+            start_time: last,
+            end_time: None,
+            most_recent_segment_time: last,
+            segments_count: 1,
+            segments_count_incremental: 1,
+            bytes_count_rx: 0,
+            bytes_count_tx: 60,
+            bytes_count_rx_incremental: 0,
+            bytes_count_tx_incremental: 60,
+            segments_client_to_server: BTreeMap::new(),
+            segments_server_to_client: BTreeMap::new(),
+            syn_ip_ttl: 64,
+            syn_ip_tos: 0,
+            syn_ip_df: true,
+            syn_cwr: false,
+            syn_ece: false,
+            syn_window_size: 1024,
+            syn_maximum_segment_size: None,
+            syn_window_scale_multiplier: None,
+            syn_options: Vec::new(),
+            tags: HashSet::new(),
+            tagging_fingerprint: None
+        })
+    }
+
+    fn table(entries: Vec<(L4Key, TcpSession)>) -> Mutex<HashMap<L4Key, TcpSession>> {
+        Mutex::new(entries.into_iter().collect())
+    }
+
+    fn state_of(sessions: &MutexGuard<HashMap<L4Key, TcpSession>>, port: u16) -> TcpSessionState {
+        let key = L4Key::new(
+            IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1)), 40000,
+            IpAddr::V4(Ipv4Addr::new(10, 0, 0, 2)), port
+        );
+        sessions.get(&key).unwrap().state.clone()
+    }
+
+    #[test]
+    fn handshake_sessions_time_out_early() {
+        let t = table(vec![
+            session(1, SynSent, 90),
+            session(2, SynReceived, 90),
+            session(3, SynSent, 30),
+            session(4, Established, 90)
+        ]);
+        let mut sessions = t.lock().unwrap();
+
+        timeout_sweep(&mut sessions, 1800, 60);
+
+        assert_eq!(state_of(&sessions, 1), ClosedTimeout);
+        assert_eq!(state_of(&sessions, 2), ClosedTimeout);
+        assert_eq!(state_of(&sessions, 3), SynSent);
+        assert_eq!(state_of(&sessions, 4), Established);
+        assert!(sessions.get(&session(1, SynSent, 0).0).unwrap().end_time.is_some());
+    }
+
+    #[test]
+    fn established_sessions_use_session_timeout() {
+        let t = table(vec![
+            session(1, Established, 1700),
+            session(2, Established, 1900),
+            session(3, FinWait1, 1900)
+        ]);
+        let mut sessions = t.lock().unwrap();
+
+        timeout_sweep(&mut sessions, 1800, 60);
+
+        assert_eq!(state_of(&sessions, 1), Established);
+        assert_eq!(state_of(&sessions, 2), ClosedTimeout);
+        assert_eq!(state_of(&sessions, 3), ClosedTimeout);
+    }
+
+    #[test]
+    fn terminal_states_are_never_overwritten() {
+        let t = table(vec![
+            session(1, Refused, 5000),
+            session(2, ClosedFin, 5000),
+            session(3, ClosedRst, 5000)
+        ]);
+        let mut sessions = t.lock().unwrap();
+
+        timeout_sweep(&mut sessions, 1800, 60);
+
+        assert_eq!(state_of(&sessions, 1), Refused);
+        assert_eq!(state_of(&sessions, 2), ClosedFin);
+        assert_eq!(state_of(&sessions, 3), ClosedRst);
+    }
+
+    #[test]
+    fn retention_sweep_drops_refused_and_closed_sessions() {
+        let t = table(vec![
+            session(1, Refused, 0),
+            session(2, ClosedFin, 0),
+            session(3, ClosedRst, 0),
+            session(4, ClosedTimeout, 0),
+            session(5, SynSent, 0),
+            session(6, Established, 0),
+            session(7, FinWait2, 0)
+        ]);
+        let mut sessions = t.lock().unwrap();
+
+        retention_sweep(&mut sessions);
+
+        assert_eq!(sessions.len(), 3);
+        assert_eq!(state_of(&sessions, 5), SynSent);
+        assert_eq!(state_of(&sessions, 6), Established);
+        assert_eq!(state_of(&sessions, 7), FinWait2);
     }
 }

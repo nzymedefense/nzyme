@@ -172,7 +172,7 @@ import DHCPTransactionDetailsPage from "./components/ethernet/assets/dhcp/DHCPTr
 import GlobalTenantSelectorForm from "./components/system/tenantselector/GlobalTenantSelectorForm";
 import AssetDetailsPage from "./components/ethernet/assets/AssetDetailsPage";
 import ARPPacketsPage from "./components/ethernet/assets/arp/ARPPacketsPage";
-import ReconPage from "./components/ethernet/recon/ReconPage";
+import ReconScansPage from "./components/ethernet/recon/ReconScansPage";
 import TCPSessionDetailsPage from "./components/ethernet/l4/tcp/TCPSessionDetailsPage";
 import UDPSessionDetailsPage from "./components/ethernet/l4/udp/UDPSessionDetailsPage";
 import EthernetAssetsSettingsPage from "./components/ethernet/assets/EthernetAssetsSettingsPage";
@@ -640,7 +640,7 @@ function App() {
                                 <Route path={ApiRoutes.ETHERNET.BEACONS.EXCLUSIONS.EDIT(':uuid')} element={<EditBeaconExclusionPage />}/>
 
                                 { /* Ethernet/Recon. */}
-                                <Route path={ApiRoutes.ETHERNET.RECON.INDEX} element={<ReconPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.RECON.SCANS.INDEX} element={<ReconScansPage />}/>
 
                                 { /* Ethernet/Portal Integrity */ }
                                 <Route path={ApiRoutes.ETHERNET.PORTAL_INTEGRITY.INDEX} element={<PortalIntegrityPage />}/>
