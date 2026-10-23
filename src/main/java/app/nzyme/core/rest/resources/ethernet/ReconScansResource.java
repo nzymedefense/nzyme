@@ -388,6 +388,7 @@ public class ReconScansResource extends TapDataHandlingResource {
     private static final RegistryKey[] CONFIGURATION_KEYS = {
             ReconRegistryKeys.DETECTION_ENABLED,
             ReconRegistryKeys.INCLUDE_EXTERNAL_SOURCES,
+            ReconRegistryKeys.INCLUDE_EXTERNAL_TARGETS,
             ReconRegistryKeys.DETECTION_WINDOW_MINUTES,
             ReconRegistryKeys.PORT_SCAN_MINIMUM_PORTS,
             ReconRegistryKeys.HOST_SWEEP_MINIMUM_HOSTS,
@@ -420,6 +421,7 @@ public class ReconScansResource extends TapDataHandlingResource {
         List<ConfigurationEntryResponse> detection = Lists.newArrayList();
         detection.add(booleanEntry(ReconRegistryKeys.DETECTION_ENABLED, "Scan detection enabled", organizationId, tenantId));
         detection.add(booleanEntry(ReconRegistryKeys.INCLUDE_EXTERNAL_SOURCES, "Include scans from external (non site-local) sources", organizationId, tenantId));
+        detection.add(booleanEntry(ReconRegistryKeys.INCLUDE_EXTERNAL_TARGETS, "Include scans against external (non site-local) targets", organizationId, tenantId));
         detection.add(numberEntry(ReconRegistryKeys.DETECTION_WINDOW_MINUTES, "Detection window (Minutes)", organizationId, tenantId));
         detection.add(numberEntry(ReconRegistryKeys.PORT_SCAN_MINIMUM_PORTS, "Port scan: Minimum ports on one host", organizationId, tenantId));
         detection.add(numberEntry(ReconRegistryKeys.HOST_SWEEP_MINIMUM_HOSTS, "Host sweep: Minimum hosts", organizationId, tenantId));

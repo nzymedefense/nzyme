@@ -17,6 +17,8 @@ public class ReconRegistryKeys {
 
     public static final RegistryKey INCLUDE_EXTERNAL_SOURCES =
             booleanKey("ethernet_recon_include_external_sources", false);
+    public static final RegistryKey INCLUDE_EXTERNAL_TARGETS =
+            booleanKey("ethernet_recon_include_external_targets", false);
 
     // Detection parameters.
     public static final RegistryKey DETECTION_WINDOW_MINUTES =

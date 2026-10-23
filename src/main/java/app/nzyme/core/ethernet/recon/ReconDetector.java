@@ -310,6 +310,8 @@ public class ReconDetector {
     private void buildProbesTable(Handle handle, List<UUID> taps, DateTime since, DateTime until, ReconConfiguration config) {
         String sourceCondition = config.includeExternalSources() ? "" : "AND source_address_is_site_local = true ";
 
+        String targetCondition = config.includeExternalTargets() ? "" : "AND destination_address_is_site_local = true ";
+
         handle.execute("DROP TABLE IF EXISTS recon_probes");
         handle.createUpdate("CREATE TEMPORARY TABLE recon_probes ON COMMIT DROP AS " +
                         "SELECT l4_type, host(source_address) AS source_address, source_mac, " +
@@ -320,7 +322,7 @@ public class ReconDetector {
                         "string_agg(DISTINCT tap_uuid::text, ',') AS taps " +
                         "FROM l4_sessions WHERE tap_uuid IN (<taps>) AND start_time >= :since AND start_time <= :until " +
                         "AND destination_address_is_multicast = false AND source_address_is_multicast = false " +
-                        sourceCondition +
+                        sourceCondition + targetCondition +
                         "AND (l4_type <> 'UDP' OR (destination_port < :udp_dynamic_port_start " +
                         "AND NOT jsonb_exists_any(COALESCE(tags, '[]'::jsonb), string_to_array(:excluded_udp_tags, ',')))) " +
                         "GROUP BY l4_type, source_address, source_mac, destination_address, destination_port")

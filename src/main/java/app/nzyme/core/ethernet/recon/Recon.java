@@ -96,6 +96,7 @@ public class Recon {
                 booleanValue(ReconRegistryKeys.SOURCE_UDP_ENABLED, organizationId, tenantId),
                 booleanValue(ReconRegistryKeys.SOURCE_ARP_ENABLED, organizationId, tenantId),
                 booleanValue(ReconRegistryKeys.INCLUDE_EXTERNAL_SOURCES, organizationId, tenantId),
+                booleanValue(ReconRegistryKeys.INCLUDE_EXTERNAL_TARGETS, organizationId, tenantId),
                 intValue(ReconRegistryKeys.DETECTION_WINDOW_MINUTES, organizationId, tenantId),
                 intValue(ReconRegistryKeys.PORT_SCAN_MINIMUM_PORTS, organizationId, tenantId),
                 intValue(ReconRegistryKeys.HOST_SWEEP_MINIMUM_HOSTS, organizationId, tenantId),

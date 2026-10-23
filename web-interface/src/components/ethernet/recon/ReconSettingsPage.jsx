@@ -62,7 +62,10 @@ export default function ReconSettingsPage() {
                 answer or was refused, which separates scanning from a client that simply talks to many servers.
                 A scan stays open while the device keeps probing within the detection window. Scans from devices
                 outside your site-local networks are ignored by default because the internet constantly probes
-                any reachable address.
+                any reachable address. Scans against external targets are ignored by default as well, because
+                mail servers trying a provider&apos;s pool of addresses, clients reaching CDNs and peer-to-peer
+                software all look like sweeps of the internet. Enable it to also catch internal devices scanning
+                the internet. ARP sweeps are always local.
               </p>
 
               <ReconConfiguration organizationId={organizationId} tenantId={tenantId} section="detection" />
