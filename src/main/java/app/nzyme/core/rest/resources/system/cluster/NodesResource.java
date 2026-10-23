@@ -270,6 +270,12 @@ public class NodesResource {
             timers.put("beacon_candidate_discovery", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
                     node.uuid(), MetricExternalName.BEACON_CANDIDATE_DISCOVERY_TIMER.database_label, handle)));
 
+            // Recon detection timers.
+            timers.put("recon_detection_run", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
+                    node.uuid(), MetricExternalName.RECON_DETECTION_RUN_TIMER.database_label, handle)));
+            timers.put("recon_candidate_discovery", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
+                    node.uuid(), MetricExternalName.RECON_CANDIDATE_DISCOVERY_TIMER.database_label, handle)));
+
             // Database connection pool.
             timers.put("database_pool_wait", buildTimerResponse(nzyme.getNodeManager().findLatestActiveMetricsTimerValue(
                     node.uuid(), MetricExternalName.DATABASE_POOL_WAIT_TIMER.database_label, handle)));

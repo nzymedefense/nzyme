@@ -247,7 +247,15 @@ const ApiRoutes = {
     },
     RECON: {
       SCANS: {
-        INDEX: '/ethernet/recon/scans'
+        INDEX: '/ethernet/recon/scans',
+        DETAILS: uuid => `/ethernet/recon/scans/show/${uuid}`,
+        SETTINGS: '/ethernet/recon/scans/settings',
+        EXCLUSIONS: {
+          INDEX: '/ethernet/recon/scans/exclusions',
+          CREATE: '/ethernet/recon/scans/exclusions/create',
+          DETAILS: uuid => `/ethernet/recon/scans/exclusions/show/${uuid}`,
+          EDIT: uuid => `/ethernet/recon/scans/exclusions/show/${uuid}/edit`
+        }
       }
     }
   },

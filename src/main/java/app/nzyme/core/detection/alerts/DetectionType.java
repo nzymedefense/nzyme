@@ -13,6 +13,8 @@ public enum DetectionType {
     BEACON_ACTIVITY_SUSPICIOUS("Activity on beacon classified as suspicious", Subsystem.ETHERNET),
     BEACON_ACTIVITY_MALICIOUS("Activity on beacon classified as malicious", Subsystem.ETHERNET),
 
+    RECON_SCAN_NEW("Network scan detected", Subsystem.ETHERNET),
+
     // Monitors.
     MONITOR_TRIGGERED_ETHERNET("Ethernet Monitor triggered", Subsystem.ETHERNET),
     MONITOR_TRIGGERED_DOT11("WiFi Monitor triggered", Subsystem.DOT11),

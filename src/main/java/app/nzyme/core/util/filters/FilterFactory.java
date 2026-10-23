@@ -27,6 +27,8 @@ public class FilterFactory {
             case "ethernet_monitor_type_equals":
             case "beacon_type_equals":
             case "beacon_classification_equals":
+            case "recon_scan_type_equals":
+            case "recon_target_outcome_equals":
                 return Filter.create(
                         parameter.field(), FilterOperator.EQUALS, optionallyTransformedValue(parameter), parameter.value()
                 );
@@ -42,6 +44,8 @@ public class FilterFactory {
             case "ethernet_monitor_type_not_equals":
             case "beacon_type_not_equals":
             case "beacon_classification_not_equals":
+            case "recon_scan_type_not_equals":
+            case "recon_target_outcome_not_equals":
                 return Filter.create(
                         parameter.field(), FilterOperator.NOT_EQUALS, optionallyTransformedValue(parameter), parameter.value()
                 );

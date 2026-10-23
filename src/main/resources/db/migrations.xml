@@ -9644,4 +9644,148 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="create_recon_tables" author="lennartkoopmann">
+        <createTable tableName="recon_scans">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="type" type="varchar(32)">
+                <constraints nullable="false" />
+            </column>
+            <column name="source_address" type="inet" />
+            <column name="source_mac" type="varchar(17)" />
+            <column name="target_address" type="inet" />
+            <column name="host_count" type="integer" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="port_count" type="integer" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="probe_count" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="open_count" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="closed_count" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="unanswered_count" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="targets_truncated" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="enrichment" type="jsonb" />
+            <column name="tap_uuids" type="jsonb" />
+            <column name="first_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <createIndex tableName="recon_scans" indexName="recon_scans_uuid" unique="true">
+            <column name="uuid" />
+        </createIndex>
+        <createIndex tableName="recon_scans" indexName="recon_scans_tenant_last_seen">
+            <column name="organization_id" />
+            <column name="tenant_id" />
+            <column name="last_seen" />
+        </createIndex>
+
+        <createTable tableName="recon_scan_targets">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="scan_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="recon_scan_targets_scan_id" references="recon_scans(id)" deleteCascade="true" />
+            </column>
+            <column name="target_address" type="inet">
+                <constraints nullable="false" />
+            </column>
+            <column name="target_port" type="integer" />
+            <column name="outcome" type="varchar(16)">
+                <constraints nullable="false" />
+            </column>
+            <column name="outcome_rank" type="integer" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="probe_count" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="first_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <createIndex tableName="recon_scan_targets" indexName="recon_scan_targets_scan">
+            <column name="scan_id" />
+        </createIndex>
+        <sql>CREATE UNIQUE INDEX recon_scan_targets_identity ON recon_scan_targets (scan_id, target_address, COALESCE(target_port, -1))</sql>
+
+        <createTable tableName="recon_exclusions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="name" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="description" type="text" />
+            <column name="enabled" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false" />
+            </column>
+            <column name="scan_types" type="text" />
+            <column name="source_cidr" type="text" />
+            <column name="source_mac" type="text" />
+            <column name="target_cidr" type="text" />
+            <column name="match_count" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_matched_at" type="timestamp with time zone" />
+            <column name="created_by_user_id" type="uuid" />
+            <column name="created_by_name" type="text" />
+            <column name="created_by_email" type="text" />
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <createIndex tableName="recon_exclusions" indexName="recon_exclusions_uuid" unique="true">
+            <column name="uuid" />
+        </createIndex>
+        <createIndex tableName="recon_exclusions" indexName="recon_exclusions_tenant">
+            <column name="organization_id" />
+            <column name="tenant_id" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

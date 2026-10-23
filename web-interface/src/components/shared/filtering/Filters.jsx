@@ -57,6 +57,11 @@ import {
   ALLOWED_BEACON_CLASSIFICATION_VALUES,
   BEACON_CLASSIFICATION_SELECT_OPTIONS
 } from "./validators/BeaconClassificationValidator";
+import {ALLOWED_RECON_SCAN_TYPE_VALUES, RECON_SCAN_TYPE_SELECT_OPTIONS} from "./validators/ReconScanTypeValidator";
+import {
+  ALLOWED_RECON_TARGET_OUTCOME_VALUES,
+  RECON_TARGET_OUTCOME_SELECT_OPTIONS
+} from "./validators/ReconTargetOutcomeValidator";
 
 export const FILTER_TYPE = {
   STRING: {
@@ -204,6 +209,20 @@ export const FILTER_TYPE = {
       (value) => validateEnum(ALLOWED_BEACON_CLASSIFICATION_VALUES, value)
     ],
     placeholder: "UNKNOWN"
+  },
+  RECON_SCAN_TYPE: {
+    name: "recon_scan_type",
+    validators: [
+      (value) => validateEnum(ALLOWED_RECON_SCAN_TYPE_VALUES, value)
+    ],
+    placeholder: "TCP_PORT_SCAN"
+  },
+  RECON_TARGET_OUTCOME: {
+    name: "recon_target_outcome",
+    validators: [
+      (value) => validateEnum(ALLOWED_RECON_TARGET_OUTCOME_VALUES, value)
+    ],
+    placeholder: "OPEN"
   }
 }
 
@@ -540,6 +559,42 @@ export const OPERATORS = {
     options: BEACON_CLASSIFICATION_SELECT_OPTIONS,
     field_type: FIELD_TYPE.SELECT
   },
+  RECON_SCAN_TYPE_EQUALS: {
+    name: "recon_scan_type_equals",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: RECON_SCAN_TYPE_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  RECON_SCAN_TYPE_NOT_EQUALS: {
+    name: "recon_scan_type_not_equals",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: RECON_SCAN_TYPE_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  RECON_TARGET_OUTCOME_EQUALS: {
+    name: "recon_target_outcome_equals",
+    sign: "==",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: RECON_TARGET_OUTCOME_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
+  RECON_TARGET_OUTCOME_NOT_EQUALS: {
+    name: "recon_target_outcome_not_equals",
+    sign: "!=",
+    placeholder: null,
+    no_value: false,
+    validators: [],
+    options: RECON_TARGET_OUTCOME_SELECT_OPTIONS,
+    field_type: FIELD_TYPE.SELECT
+  },
   TLS_VERSION_EQUALS: {
     name: "tls_version_equals",
     sign: "==",
@@ -871,6 +926,18 @@ export default function Filters(props) {
           setAllowedOperators([
             OPERATORS.BEACON_CLASSIFICATION_EQUALS,
             OPERATORS.BEACON_CLASSIFICATION_NOT_EQUALS
+          ])
+          break;
+        case FILTER_TYPE.RECON_SCAN_TYPE:
+          setAllowedOperators([
+            OPERATORS.RECON_SCAN_TYPE_EQUALS,
+            OPERATORS.RECON_SCAN_TYPE_NOT_EQUALS
+          ])
+          break;
+        case FILTER_TYPE.RECON_TARGET_OUTCOME:
+          setAllowedOperators([
+            OPERATORS.RECON_TARGET_OUTCOME_EQUALS,
+            OPERATORS.RECON_TARGET_OUTCOME_NOT_EQUALS
           ])
           break;
       }

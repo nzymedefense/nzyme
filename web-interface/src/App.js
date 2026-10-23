@@ -173,6 +173,12 @@ import GlobalTenantSelectorForm from "./components/system/tenantselector/GlobalT
 import AssetDetailsPage from "./components/ethernet/assets/AssetDetailsPage";
 import ARPPacketsPage from "./components/ethernet/assets/arp/ARPPacketsPage";
 import ReconScansPage from "./components/ethernet/recon/ReconScansPage";
+import ReconScanDetailsPage from "./components/ethernet/recon/ReconScanDetailsPage";
+import ReconSettingsPage from "./components/ethernet/recon/ReconSettingsPage";
+import ReconExclusionsPage from "./components/ethernet/recon/exclusions/ReconExclusionsPage";
+import CreateReconExclusionPage from "./components/ethernet/recon/exclusions/CreateReconExclusionPage";
+import ReconExclusionDetailsPage from "./components/ethernet/recon/exclusions/ReconExclusionDetailsPage";
+import EditReconExclusionPage from "./components/ethernet/recon/exclusions/EditReconExclusionPage";
 import TCPSessionDetailsPage from "./components/ethernet/l4/tcp/TCPSessionDetailsPage";
 import UDPSessionDetailsPage from "./components/ethernet/l4/udp/UDPSessionDetailsPage";
 import EthernetAssetsSettingsPage from "./components/ethernet/assets/EthernetAssetsSettingsPage";
@@ -641,6 +647,12 @@ function App() {
 
                                 { /* Ethernet/Recon. */}
                                 <Route path={ApiRoutes.ETHERNET.RECON.SCANS.INDEX} element={<ReconScansPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.RECON.SCANS.DETAILS(':uuid')} element={<ReconScanDetailsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.RECON.SCANS.SETTINGS} element={<ReconSettingsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.RECON.SCANS.EXCLUSIONS.INDEX} element={<ReconExclusionsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.RECON.SCANS.EXCLUSIONS.CREATE} element={<CreateReconExclusionPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.RECON.SCANS.EXCLUSIONS.DETAILS(':uuid')} element={<ReconExclusionDetailsPage />}/>
+                                <Route path={ApiRoutes.ETHERNET.RECON.SCANS.EXCLUSIONS.EDIT(':uuid')} element={<EditReconExclusionPage />}/>
 
                                 { /* Ethernet/Portal Integrity */ }
                                 <Route path={ApiRoutes.ETHERNET.PORTAL_INTEGRITY.INDEX} element={<PortalIntegrityPage />}/>

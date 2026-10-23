@@ -17,6 +17,7 @@ import UavDetectedAlertDetails from "./uav/UavDetectedAlertDetails";
 import MonitorTriggeredAlertDetails from "./generic/MonitorTriggeredAlertDetails";
 import EnvironmentalSevereAlertDetails from "./generic/EnvironmentalSevereAlertDetails";
 import BeaconAlertDetails from "./ethernet/BeaconAlertDetails";
+import ReconScanAlertDetails from "./ethernet/ReconScanAlertDetails";
 
 function AlertDetails(props) {
 
@@ -67,6 +68,8 @@ function AlertDetails(props) {
     case "BEACON_ACTIVITY_SUSPICIOUS":
     case "BEACON_ACTIVITY_MALICIOUS":
       return <BeaconAlertDetails alert={alert} />
+    case "RECON_SCAN_NEW":
+      return <ReconScanAlertDetails alert={alert} />
     default:
       return <GenericAlertDetails alert={alert} />
   }

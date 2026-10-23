@@ -130,6 +130,12 @@
     "description" : "RTSP streams that Nzyme taps observed on the network. RTSP is what cameras, network video recorders and streaming appliances use to negotiate live audio and video. Nzyme reads the clear text control connection and links the media flow back to it, so a stream reports its negotiation state, its authentication posture and the devices on both ends.",
     "name" : "RTSP"
   }, {
+    "description" : "Exclusions keep devices out of scan detection. An exclusion is a set of criteria for the scanning device (address or network, MAC address), the scan types and the scanned targets (address or network). Every criterion that is set must match. Use them for vulnerability scanners, monitoring systems and other devices that probe the network on purpose. An exclusion can also be applied to the existing scans, which deletes them.",
+    "name" : "Recon Exclusions"
+  }, {
+    "description" : "A scan is a device probing the network: a port scan tries many ports of one host, a host sweep tries many hosts, an ARP sweep asks for many addresses on the local segment. Nzyme detects scans passively from the TCP, UDP and ARP traffic the taps report, merges observations of several taps and keeps a scan open while the device continues probing. Each scan carries the targets it probed and whether they answered. Scans are retention cleaned.",
+    "name" : "Recon Scans"
+  }, {
     "description" : "SSH sessions that Nzyme taps observed on the network, including the client and server software versions exchanged during the initial unencrypted handshake. Each session is tracked over its lifetime and keyed by its underlying TCP session.",
     "externalDocs" : {
       "description" : "SSH in the Nzyme documentation",
@@ -11434,6 +11440,1013 @@
         },
         "summary" : "Get a portal integrity report",
         "tags" : [ "Portal Integrity" ]
+      }
+    },
+    "/api/ethernet/recon/scans" : {
+      "get" : {
+        "description" : "Returns all detected scans of the tenant, most recently seen first by default. The response also includes the number of scans per type, independent of the filters. Results are paginated.",
+        "operationId" : "findReconScans",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting column. Defaults to the time the scan was last seen.",
+          "in" : "query",
+          "name" : "order_column",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting direction, ASC or DESC.",
+          "in" : "query",
+          "name" : "order_direction",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Page size.",
+          "in" : "query",
+          "name" : "limit",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Page offset.",
+          "in" : "query",
+          "name" : "offset",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconScansListResponse"
+                }
+              }
+            },
+            "description" : "Scans found."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Unknown sorting column or direction."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "List scans of a tenant",
+        "tags" : [ "Recon Scans" ]
+      }
+    },
+    "/api/ethernet/recon/scans/exclusions" : {
+      "get" : {
+        "description" : "Returns the exclusions of the tenant, sorted by name by default. Each exclusion includes which existing scans it currently applies to. Results are paginated.",
+        "operationId" : "findReconExclusions",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting column: NAME, ENABLED, LAST_MATCHED_AT, MATCH_COUNT, CREATED_AT or UPDATED_AT. Defaults to NAME.",
+          "in" : "query",
+          "name" : "order_column",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting direction, ASC or DESC.",
+          "in" : "query",
+          "name" : "order_direction",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Page size.",
+          "in" : "query",
+          "name" : "limit",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Page offset.",
+          "in" : "query",
+          "name" : "offset",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconExclusionsListResponse"
+                }
+              }
+            },
+            "description" : "Exclusions found."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Unknown sorting column or direction."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "List recon exclusions of a tenant",
+        "tags" : [ "Recon Exclusions" ]
+      }
+    },
+    "/api/ethernet/recon/scans/exclusions/organization/{organization_id}/tenant/{tenant_id}" : {
+      "post" : {
+        "description" : "Creates an exclusion. It takes effect with the next detection run. Pass apply_to_existing_scans to also delete the existing scans it matches right away. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "createReconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReconExclusionRequest"
+              }
+            }
+          },
+          "description" : "The exclusion.",
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconExclusionResponse"
+                }
+              }
+            },
+            "description" : "Exclusion created."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description" : "Invalid name or criteria. The response body contains the reason."
+          }
+        },
+        "summary" : "Create a recon exclusion",
+        "tags" : [ "Recon Exclusions" ]
+      }
+    },
+    "/api/ethernet/recon/scans/exclusions/organization/{organization_id}/tenant/{tenant_id}/preview" : {
+      "post" : {
+        "description" : "Validates the criteria and returns the existing scans they match, without saving anything. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "previewReconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReconExclusionRequest"
+              }
+            }
+          },
+          "description" : "The criteria. Name and description are ignored.",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconExclusionImpactResponse"
+                }
+              }
+            },
+            "description" : "Impact calculated."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description" : "Invalid criteria. The response body contains the reason."
+          }
+        },
+        "summary" : "Preview which existing scans an exclusion would apply to",
+        "tags" : [ "Recon Exclusions" ]
+      }
+    },
+    "/api/ethernet/recon/scans/exclusions/organization/{organization_id}/tenant/{tenant_id}/show/{exclusion_uuid}" : {
+      "delete" : {
+        "description" : "Deletes an exclusion. Devices it matched are detected again with the next detection run. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "deleteReconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Exclusion UUID.",
+          "in" : "path",
+          "name" : "exclusion_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion deleted."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Delete a recon exclusion",
+        "tags" : [ "Recon Exclusions" ]
+      },
+      "put" : {
+        "description" : "Replaces name, description, enabled state and all criteria of an exclusion. Changes take effect with the next detection run. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "updateReconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Exclusion UUID.",
+          "in" : "path",
+          "name" : "exclusion_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReconExclusionRequest"
+              }
+            }
+          },
+          "description" : "The new exclusion data.",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconExclusionResponse"
+                }
+              }
+            },
+            "description" : "Exclusion updated."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion, organization or tenant not found, or not accessible by the calling user."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description" : "Invalid name or criteria. The response body contains the reason."
+          }
+        },
+        "summary" : "Update a recon exclusion",
+        "tags" : [ "Recon Exclusions" ]
+      }
+    },
+    "/api/ethernet/recon/scans/exclusions/organization/{organization_id}/tenant/{tenant_id}/show/{exclusion_uuid}/apply" : {
+      "post" : {
+        "description" : "Deletes every existing scan that matches the exclusion. This cannot be undone, but a deleted scan is detected again if the exclusion is removed and the device keeps probing. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "applyReconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Exclusion UUID.",
+          "in" : "path",
+          "name" : "exclusion_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconExclusionImpactResponse"
+                }
+              }
+            },
+            "description" : "Exclusion applied. The response describes what was deleted."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion, organization or tenant not found, or not accessible by the calling user."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description" : "The exclusion has invalid criteria."
+          }
+        },
+        "summary" : "Apply a recon exclusion to the existing scans",
+        "tags" : [ "Recon Exclusions" ]
+      }
+    },
+    "/api/ethernet/recon/scans/exclusions/organization/{organization_id}/tenant/{tenant_id}/show/{exclusion_uuid}/enabled/{enabled}" : {
+      "put" : {
+        "description" : "A disabled exclusion is kept but no longer applied. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "setReconExclusionEnabled",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Exclusion UUID.",
+          "in" : "path",
+          "name" : "exclusion_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "true or false.",
+          "in" : "path",
+          "name" : "enabled",
+          "required" : true,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion updated."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Enable or disable a recon exclusion",
+        "tags" : [ "Recon Exclusions" ]
+      }
+    },
+    "/api/ethernet/recon/scans/exclusions/show/{exclusion_uuid}" : {
+      "get" : {
+        "description" : "Returns one exclusion, including which existing scans it currently applies to.",
+        "operationId" : "findReconExclusion",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Exclusion UUID.",
+          "in" : "path",
+          "name" : "exclusion_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconExclusionResponse"
+                }
+              }
+            },
+            "description" : "Exclusion found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Exclusion, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Get a recon exclusion",
+        "tags" : [ "Recon Exclusions" ]
+      }
+    },
+    "/api/ethernet/recon/scans/histogram/active" : {
+      "get" : {
+        "description" : "Returns the number of scans of the tenant that were going on per time bucket. Respects the same filters as the scans list. The response is an object that maps each bucket timestamp to a count. The bucket size is chosen automatically from the time range.",
+        "operationId" : "findActiveReconScansHistogram",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder. Same fields as the scans list.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Time range selector. Accepts the same format as the web interface time range picker.",
+          "in" : "query",
+          "name" : "time_range",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Histogram found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Get the number of active scans over time",
+        "tags" : [ "Recon Scans" ]
+      }
+    },
+    "/api/ethernet/recon/scans/organization/{organization_id}/tenant/{tenant_id}" : {
+      "delete" : {
+        "description" : "Deletes every scan of the tenant with all targets. Exclusions and the detection configuration are kept. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "deleteAllReconScans",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconScansDeletedResponse"
+                }
+              }
+            },
+            "description" : "Scans deleted."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Delete all scans of a tenant",
+        "tags" : [ "Recon Scans" ]
+      }
+    },
+    "/api/ethernet/recon/scans/organization/{organization_id}/tenant/{tenant_id}/configuration" : {
+      "get" : {
+        "description" : "Returns the scan detection settings of the tenant in three groups: detection parameters (window, thresholds, retention), enabled data sources and alerting. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "findReconConfiguration",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconConfigurationResponse"
+                }
+              }
+            },
+            "description" : "Configuration found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Get the scan detection configuration of a tenant",
+        "tags" : [ "Recon Scans" ]
+      },
+      "put" : {
+        "description" : "Updates one or more scan detection settings of the tenant. Accepted keys are the keys returned by the configuration endpoint. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "updateReconConfiguration",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GenericConfigurationUpdateRequest"
+              }
+            }
+          },
+          "description" : "Map of configuration keys and their new values, wrapped in a change field.",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Configuration updated."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "The change contains a key that is not part of the scan detection configuration."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Organization or tenant not found, or not accessible by the calling user."
+          },
+          "422" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "The change is empty or a value violates the constraints of its configuration key."
+          }
+        },
+        "summary" : "Update the scan detection configuration of a tenant",
+        "tags" : [ "Recon Scans" ]
+      }
+    },
+    "/api/ethernet/recon/scans/organization/{organization_id}/tenant/{tenant_id}/show/{scan_uuid}" : {
+      "delete" : {
+        "description" : "Deletes a scan with all of its targets. The scan is detected again as a new scan if the device keeps probing. Requires the ethernet_monitoring_manage feature permission.",
+        "operationId" : "deleteReconScan",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "path",
+          "name" : "organization_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "path",
+          "name" : "tenant_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Scan UUID.",
+          "in" : "path",
+          "name" : "scan_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Scan deleted."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Scan, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Delete a scan",
+        "tags" : [ "Recon Scans" ]
+      }
+    },
+    "/api/ethernet/recon/scans/show/{scan_uuid}" : {
+      "get" : {
+        "description" : "Returns one scan with all of its details, including the packet attributes of the probes that help identify the scanning tool.",
+        "operationId" : "findReconScan",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Scan UUID.",
+          "in" : "path",
+          "name" : "scan_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconScanDetailsResponse"
+                }
+              }
+            },
+            "description" : "Scan found."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Scan, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "Get a scan",
+        "tags" : [ "Recon Scans" ]
+      }
+    },
+    "/api/ethernet/recon/scans/show/{scan_uuid}/targets" : {
+      "get" : {
+        "description" : "Returns the hosts and ports the scan probed, with the outcome of each probe: OPEN when the target answered, CLOSED when it refused, UNANSWERED when nothing came back. Targets that answered are listed first by default. Very large scans only keep a sample of their unanswered targets. Results are paginated.",
+        "operationId" : "findReconScanTargets",
+        "parameters" : [ {
+          "description" : "Organization UUID.",
+          "in" : "query",
+          "name" : "organization_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Tenant UUID.",
+          "in" : "query",
+          "name" : "tenant_id",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "Scan UUID.",
+          "in" : "path",
+          "name" : "scan_uuid",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "description" : "JSON encoded filter definition as produced by the web interface filter builder.",
+          "in" : "query",
+          "name" : "filters",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting column: TARGET_ADDRESS, TARGET_PORT, OUTCOME, PROBE_COUNT, FIRST_SEEN or LAST_SEEN. Defaults to OUTCOME.",
+          "in" : "query",
+          "name" : "order_column",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Sorting direction, ASC or DESC.",
+          "in" : "query",
+          "name" : "order_direction",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Page size.",
+          "in" : "query",
+          "name" : "limit",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "Page offset.",
+          "in" : "query",
+          "name" : "offset",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconScanTargetsListResponse"
+                }
+              }
+            },
+            "description" : "Targets found."
+          },
+          "400" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Unknown sorting column or direction."
+          },
+          "404" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Scan, organization or tenant not found, or not accessible by the calling user."
+          }
+        },
+        "summary" : "List the targets of a scan",
+        "tags" : [ "Recon Scans" ]
       }
     },
     "/api/ethernet/rtsp/streams" : {
@@ -29267,6 +30280,395 @@
           "total" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "ReconConfigurationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "alerting" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ConfigurationEntryResponse"
+            }
+          },
+          "detection" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ConfigurationEntryResponse"
+            }
+          },
+          "sources" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ConfigurationEntryResponse"
+            }
+          }
+        }
+      },
+      "ReconExclusionImpactResponse" : {
+        "type" : "object",
+        "description" : "Which existing scans an exclusion applies to.",
+        "properties" : {
+          "matching_scans" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Existing scans that match the exclusion. Applying the exclusion deletes them."
+          },
+          "scans" : {
+            "type" : "array",
+            "description" : "A sample of the matching scans. Limited to 25 entries.",
+            "items" : {
+              "$ref" : "#/components/schemas/ReconExclusionMatchedScanResponse"
+            }
+          }
+        }
+      },
+      "ReconExclusionMatchedScanResponse" : {
+        "type" : "object",
+        "description" : "A sample of the matching scans. Limited to 25 entries.",
+        "properties" : {
+          "source" : {
+            "type" : "string"
+          },
+          "target" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "ReconExclusionReferenceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "ReconExclusionRequest" : {
+        "type" : "object",
+        "description" : "Body for creating, updating or previewing a recon exclusion. All criteria are optional, but at least one must be set. A scan is excluded when every set criterion matches.",
+        "properties" : {
+          "apply_to_existing_scans" : {
+            "type" : "boolean",
+            "description" : "Only when creating: also delete the existing scans that match the exclusion. Defaults to false.",
+            "writeOnly" : true
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "Optional description of why the exclusion exists.",
+            "writeOnly" : true
+          },
+          "enabled" : {
+            "type" : "boolean",
+            "description" : "Whether the exclusion is active. Defaults to true.",
+            "writeOnly" : true
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Name of the exclusion. Required when creating or updating, ignored for previews.",
+            "writeOnly" : true
+          },
+          "scan_types" : {
+            "type" : "array",
+            "description" : "Scan types to match: TCP_PORT_SCAN, TCP_HOST_SWEEP, UDP_PORT_SCAN, UDP_HOST_SWEEP, ARP_SWEEP. Omit or pass an empty list to match all types.",
+            "items" : {
+              "type" : "string",
+              "description" : "Scan types to match: TCP_PORT_SCAN, TCP_HOST_SWEEP, UDP_PORT_SCAN, UDP_HOST_SWEEP, ARP_SWEEP. Omit or pass an empty list to match all types."
+            },
+            "writeOnly" : true
+          },
+          "source_cidr" : {
+            "type" : "string",
+            "description" : "IP address or CIDR network of the scanning device, like 10.0.0.5 or 10.0.0.0/24.",
+            "writeOnly" : true
+          },
+          "source_mac" : {
+            "type" : "string",
+            "description" : "MAC address of the scanning device.",
+            "writeOnly" : true
+          },
+          "target_cidr" : {
+            "type" : "string",
+            "description" : "IP address or CIDR network of the scanned targets. Matches a port scan by its target host and a sweep when every observed target is inside the network.",
+            "writeOnly" : true
+          }
+        }
+      },
+      "ReconExclusionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "created_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "created_by_email" : {
+            "type" : "string"
+          },
+          "created_by_name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "enabled" : {
+            "type" : "boolean"
+          },
+          "impact" : {
+            "$ref" : "#/components/schemas/ReconExclusionImpactResponse"
+          },
+          "last_matched_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "match_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "scan_types" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "source_cidr" : {
+            "type" : "string"
+          },
+          "source_mac" : {
+            "type" : "string"
+          },
+          "target_cidr" : {
+            "type" : "string"
+          },
+          "updated_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "ReconExclusionsListResponse" : {
+        "type" : "object",
+        "properties" : {
+          "exclusions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReconExclusionResponse"
+            }
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ReconScanDetailsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "active" : {
+            "type" : "boolean"
+          },
+          "closed_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "created_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "enrichment" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object"
+            }
+          },
+          "first_seen" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "host_count" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "is_port_scan" : {
+            "type" : "boolean"
+          },
+          "last_seen" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "matching_exclusions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReconExclusionReferenceResponse"
+            }
+          },
+          "open_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "port_count" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "probe_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "source" : {
+            "type" : "string"
+          },
+          "source_address" : {
+            "type" : "string"
+          },
+          "source_address_data" : {
+            "$ref" : "#/components/schemas/L4AddressResponse"
+          },
+          "source_mac" : {
+            "type" : "string"
+          },
+          "source_mac_data" : {
+            "$ref" : "#/components/schemas/EthernetMacAddressResponse"
+          },
+          "taps" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReconScanTapResponse"
+            }
+          },
+          "target" : {
+            "type" : "string"
+          },
+          "target_address" : {
+            "type" : "string"
+          },
+          "target_address_data" : {
+            "$ref" : "#/components/schemas/L4AddressResponse"
+          },
+          "targets_truncated" : {
+            "type" : "boolean"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "type_human_readable" : {
+            "type" : "string"
+          },
+          "unanswered_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "updated_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "ReconScanTapResponse" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "uuid" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "ReconScanTargetResponse" : {
+        "type" : "object",
+        "properties" : {
+          "first_seen" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "last_seen" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "outcome" : {
+            "type" : "string"
+          },
+          "probe_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "target_address" : {
+            "type" : "string"
+          },
+          "target_address_data" : {
+            "$ref" : "#/components/schemas/L4AddressResponse"
+          },
+          "target_port" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ReconScanTargetsListResponse" : {
+        "type" : "object",
+        "properties" : {
+          "targets" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReconScanTargetResponse"
+            }
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ReconScansDeletedResponse" : {
+        "type" : "object",
+        "properties" : {
+          "deleted_count" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ReconScansListResponse" : {
+        "type" : "object",
+        "properties" : {
+          "scans" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReconScanDetailsResponse"
+            }
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "type_counts" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
           }
         }
       },

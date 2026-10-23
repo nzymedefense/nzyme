@@ -1,0 +1,16 @@
+import React from "react";
+
+export const reconScanTypeToName = (type) => {
+  switch (type) {
+    case "TCP_PORT_SCAN": return "TCP Port Scan";
+    case "TCP_HOST_SWEEP": return "TCP Host Sweep";
+    case "UDP_PORT_SCAN": return "UDP Port Scan";
+    case "UDP_HOST_SWEEP": return "UDP Host Sweep";
+    case "ARP_SWEEP": return "ARP Sweep";
+    default: return type;
+  }
+}
+
+export default function ReconScanType({type}) {
+  return <span title={type}>{reconScanTypeToName(type)}</span>
+}

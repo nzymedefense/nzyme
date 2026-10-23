@@ -65,6 +65,9 @@ import app.nzyme.core.ethernet.beacons.db.BeaconSourceEntryMapper;
 import app.nzyme.core.ethernet.beacons.db.BeaconCheckinEntryMapper;
 import app.nzyme.core.ethernet.beacons.db.BeaconNoteEntryMapper;
 import app.nzyme.core.ethernet.beacons.db.BeaconExclusionEntryMapper;
+import app.nzyme.core.ethernet.recon.db.ReconScanEntryMapper;
+import app.nzyme.core.ethernet.recon.db.ReconScanTargetEntryMapper;
+import app.nzyme.core.ethernet.recon.db.ReconExclusionEntryMapper;
 import app.nzyme.core.registry.RegistryEntryMapper;
 import app.nzyme.core.security.authentication.db.*;
 import app.nzyme.core.security.sessions.db.SessionEntryMapper;
@@ -276,6 +279,9 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new BeaconCheckinEntryMapper())
                 .registerRowMapper(new BeaconNoteEntryMapper())
                 .registerRowMapper(new BeaconExclusionEntryMapper())
+                .registerRowMapper(new ReconScanEntryMapper())
+                .registerRowMapper(new ReconScanTargetEntryMapper())
+                .registerRowMapper(new ReconExclusionEntryMapper())
                 .registerRowMapper(new TimelineEventEntryMapper())
                 .registerRowMapper(new RTSPStreamEntryMapper())
                 .registerRowMapper(new NATTraversalDiscoveryEntryMapper())

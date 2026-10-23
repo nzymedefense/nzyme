@@ -18,6 +18,7 @@
 package app.nzyme.core.util;
 
 import app.nzyme.core.ethernet.beacons.BeaconDetector;
+import app.nzyme.core.ethernet.recon.ReconDetector;
 import app.nzyme.core.bluetooth.sig.BluetoothSigService;
 import app.nzyme.core.context.ContextService;
 import app.nzyme.core.crypto.Crypto;
@@ -112,6 +113,9 @@ public class MetricNames {
 
     public static final String BEACON_DETECTION_RUN_TIMER = name(BeaconDetector.class, "detection-run-timing");
     public static final String BEACON_CANDIDATE_DISCOVERY_TIMER = name(BeaconDetector.class, "candidate-discovery-timing");
+
+    public static final String RECON_DETECTION_RUN_TIMER = name(ReconDetector.class, "detection-run-timing");
+    public static final String RECON_CANDIDATE_DISCOVERY_TIMER = name(ReconDetector.class, "candidate-discovery-timing");
     public static final String UAV_CONNECT_TYPE_LOOKUP_TIMING = name(Uav.class, "connect-type-lookup-timing");
 
     public static final String MONITOR_EXECUTION_TIMER_BASE = name(MonitorExecutionTaskHandler.class, "execution-timer-");

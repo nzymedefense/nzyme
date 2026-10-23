@@ -22,6 +22,8 @@ public enum MetricExternalName {
     REPORT_PROCESSING_SOCKS_TIMER("report_processing_socks_timer"),
     BEACON_DETECTION_RUN_TIMER("beacon_detection_run_timer"),
     BEACON_CANDIDATE_DISCOVERY_TIMER("beacon_candidate_discovery_timer"),
+    RECON_DETECTION_RUN_TIMER("recon_detection_run_timer"),
+    RECON_CANDIDATE_DISCOVERY_TIMER("recon_candidate_discovery_timer"),
 
     GEOIP_CACHE_SIZE("geoip_cache_size"),
     CONTEXT_MAC_CACHE_SIZE("context_mac_cache_size"),

@@ -379,6 +379,11 @@ public class NodeManager {
             writeTimer(MetricExternalName.BEACON_CANDIDATE_DISCOVERY_TIMER.database_label,
                     metrics.getTimers().get(MetricNames.BEACON_CANDIDATE_DISCOVERY_TIMER));
 
+            writeTimer(MetricExternalName.RECON_DETECTION_RUN_TIMER.database_label,
+                    metrics.getTimers().get(MetricNames.RECON_DETECTION_RUN_TIMER));
+            writeTimer(MetricExternalName.RECON_CANDIDATE_DISCOVERY_TIMER.database_label,
+                    metrics.getTimers().get(MetricNames.RECON_CANDIDATE_DISCOVERY_TIMER));
+
             // Write all monitor execution timers.
             for (Map.Entry<String, Timer> timer : metrics.getTimers().entrySet()) {
                 if (timer.getKey().startsWith(MetricNames.MONITOR_EXECUTION_TIMER_BASE)) {

@@ -47,6 +47,7 @@ import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.monitors.MonitorExecutionTaskHandler;
 import app.nzyme.core.ethernet.beacons.BeaconsThread;
+import app.nzyme.core.ethernet.recon.ReconThread;
 import app.nzyme.core.monitors.Monitors;
 import app.nzyme.core.monitors.MonitorsThread;
 import app.nzyme.core.ouis.OuiService;
@@ -343,6 +344,7 @@ public class NzymeNodeImpl implements NzymeNode {
         periodicalManager.scheduleAtFixedRate(new AssetStatisticsCleaner(this), 1, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new MonitorsThread(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new BeaconsThread(this), 1, 1, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new ReconThread(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new TimelinesThread(this), 0, EVENT_HORIZON_MINUTES, TimeUnit.MINUTES);
         if (configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
