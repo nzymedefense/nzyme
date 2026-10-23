@@ -73,6 +73,9 @@ public class Recon {
 
     public record TargetCounts(long total, long open, long closed, long unanswered, long hosts, long ports) { }
 
+    /** Result of storing targets: how many were new, and when the newest of them was first probed. */
+    public record TargetUpsertResult(int inserted, @Nullable DateTime latestNewTargetFirstSeen) { }
+
     private final NzymeNode nzyme;
     private final ReconExclusions exclusions;
 
@@ -280,7 +283,7 @@ public class Recon {
                                      @Nullable String enrichment,
                                      Collection<UUID> tapUuids,
                                      DateTime firstSeen,
-                                     DateTime lastSeen) {
+                                     @Nullable DateTime progressedAt) {
         TargetCounts stored = targetCounts(handle, scanId);
 
         handle.createUpdate("UPDATE recon_scans SET " +
@@ -290,7 +293,8 @@ public class Recon {
                         "enrichment = COALESCE(:enrichment::jsonb, enrichment), " +
                         "tap_uuids = (SELECT COALESCE(jsonb_agg(DISTINCT t), '[]'::jsonb) FROM " +
                         "jsonb_array_elements_text(tap_uuids || :tap_uuids::jsonb) AS t), " +
-                        "first_seen = LEAST(first_seen, :first_seen), last_seen = GREATEST(last_seen, :last_seen), " +
+                        "first_seen = LEAST(first_seen, :first_seen), " +
+                        "last_seen = GREATEST(last_seen, COALESCE(:progressed_at, last_seen)), " +
                         "updated_at = NOW() WHERE id = :id")
                 .bind("id", scanId)
                 .bind("probe_count", Math.max(stored.total(), windowProbeCount))
@@ -303,7 +307,7 @@ public class Recon {
                 .bind("enrichment", enrichment)
                 .bind("tap_uuids", tapUuidsJson(tapUuids))
                 .bind("first_seen", firstSeen)
-                .bind("last_seen", lastSeen)
+                .bind("progressed_at", progressedAt)
                 .execute();
     }
 
@@ -389,9 +393,9 @@ public class Recon {
         );
     }
 
-    public int upsertTargets(Handle handle, long scanId, List<TargetRecord> targets) {
+    public TargetUpsertResult upsertTargets(Handle handle, long scanId, List<TargetRecord> targets) {
         if (targets.isEmpty()) {
-            return 0;
+            return new TargetUpsertResult(0, null);
         }
 
         PreparedBatch batch = handle.prepareBatch("INSERT INTO recon_scan_targets(scan_id, target_address, " +
@@ -404,7 +408,7 @@ public class Recon {
                 "probe_count = GREATEST(recon_scan_targets.probe_count, EXCLUDED.probe_count), " +
                 "first_seen = LEAST(recon_scan_targets.first_seen, EXCLUDED.first_seen), " +
                 "last_seen = GREATEST(recon_scan_targets.last_seen, EXCLUDED.last_seen) " +
-                "RETURNING (xmax = 0) AS inserted");
+                "RETURNING (xmax = 0) AS inserted, first_seen");
 
         for (TargetRecord target : targets) {
             batch.bind("scan_id", scanId)
@@ -419,13 +423,18 @@ public class Recon {
         }
 
         int inserted = 0;
-        for (Boolean isInsert : batch.executePreparedBatch("inserted").mapTo(Boolean.class)) {
-            if (Boolean.TRUE.equals(isInsert)) {
+        DateTime latest = null;
+        for (Map<String, Object> row : batch.executePreparedBatch("inserted", "first_seen").mapToMap()) {
+            if (Boolean.TRUE.equals(row.get("inserted"))) {
                 inserted++;
+                DateTime firstSeen = new DateTime(row.get("first_seen"));
+                if (latest == null || firstSeen.isAfter(latest)) {
+                    latest = firstSeen;
+                }
             }
         }
 
-        return inserted;
+        return new TargetUpsertResult(inserted, latest);
     }
 
     public long countStoredTargets(Handle handle, long scanId) {

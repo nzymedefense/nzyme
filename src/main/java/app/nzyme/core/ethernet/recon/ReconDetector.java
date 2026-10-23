@@ -236,13 +236,21 @@ public class ReconDetector {
                     newScan = true;
                 }
 
+                Recon.TargetUpsertResult stored = new Recon.TargetUpsertResult(0, null);
                 if (limit > 0) {
-                    recon.upsertTargets(handle, scan.id(), targets.size() > limit ? targets.subList(0, limit) : targets);
+                    stored = recon.upsertTargets(handle, scan.id(), targets.size() > limit ? targets.subList(0, limit) : targets);
                 }
 
                 boolean truncated = candidate.probeCount > MAXIMUM_STORED_TARGETS
                         || (limit == 0 && candidate.probeCount > 0)
                         || targets.size() > limit;
+
+                DateTime progressedAt = null;
+                if (stored.inserted() > 0) {
+                    progressedAt = stored.latestNewTargetFirstSeen();
+                } else if (limit == 0 && candidate.probeCount > 0) {
+                    progressedAt = candidate.lastSeen;
+                }
 
                 recon.updateScanAggregates(
                         handle,
@@ -257,7 +265,7 @@ public class ReconDetector {
                         serializeEnrichment(candidate.enrichment),
                         candidate.tapUuids,
                         candidate.firstSeen,
-                        candidate.lastSeen
+                        progressedAt
                 );
 
                 if (newScan && config.alertOnNewScan()) {

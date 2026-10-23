@@ -215,12 +215,12 @@ export default function ReconScanDetailsPage() {
                 <dd>
                   {scan.recent ?
                     <span className="text-danger">
-                      Probes seen in the last {scan.detection_window_minutes} minutes. New probes from this device
-                      are added to this scan.
+                      Probed new targets in the last {scan.detection_window_minutes} minutes. Further targets
+                      probed by this device are added to this scan.
                     </span>
                     : <span className="text-muted">
-                      No probes in the last {scan.detection_window_minutes} minutes. New probes from this device
-                      would start a new scan.
+                      No new targets probed in the last {scan.detection_window_minutes} minutes. Repeated probes
+                      of known targets do not count. Further targets probed by this device would start a new scan.
                     </span>}
                 </dd>
                 <dt>Target</dt>
